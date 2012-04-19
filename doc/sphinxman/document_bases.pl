@@ -457,8 +457,7 @@ sub print_rst_topfile {
    print RST_OUT ".. |Br| replace:: :gbg:`Br`\n";
    print RST_OUT ".. |Kr| replace:: :gbg:`Kr`\n";
 
-   print RST_OUT "\n\n.. _`table:basisElement`:\n";
-   print RST_OUT "\n.. table:: Basis set availability by element in |PSIfour|\n\n";
+   print RST_OUT "\n\n.. table:: Basis set availability by element in |PSIfour|\n\n";
 
 }
 

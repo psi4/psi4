@@ -136,13 +136,12 @@ OptReturnType optking(void) {
       if (Opt_params.add_auxiliary_bonds)
         mol1->add_intrafragment_auxiliary_bonds();
     }
-
-    // newly constructed fragments need connectivity generated
-    if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
-      mol1->update_connectivity_by_distances();
+    else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
       mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds) mol1->add_intrafragment_auxiliary_bonds();
+      if (Opt_params.add_auxiliary_bonds)
+        mol1->add_intrafragment_auxiliary_bonds();
       mol1->add_interfragment();
+      mol1->freeze_interfragment_asymm(); // remove problematic ones?
     }
 
     // print out internal coordinates for future steps
@@ -238,6 +237,10 @@ OptReturnType optking(void) {
   else
     p_Opt_data->increment_steps_since_last_H();
 
+  // Add extra harmonic potential to intcos if user-specified
+  bool add_to_hessian = (p_Opt_data->g_iteration() == 1) ? true : false;
+  mol1->apply_constraint_forces(add_to_hessian);
+  // project out constraints for fixed intcos and unphysical displacements
   mol1->project_f_and_H();
 
   // step functions put dq in p_Opt_data->step

@@ -101,7 +101,7 @@ public:
 
     Vector3 cross(const Vector3&) const;
 
-    std::string to_string() {
+    std::string to_string() const {
         std::stringstream s;
         s << "[ " << v_[0] << ", " << v_[1] << ", " << v_[2] << " ]";
         return s.str();

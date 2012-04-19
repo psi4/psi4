@@ -1,6 +1,4 @@
 """
-**<DATABASE_NAME>**
-
 | Database of <description of members and reference energy type>.
 | Geometries from <Reference>.
 | Reference interaction energies from <Reference>.
@@ -19,8 +17,6 @@
   - ``'small'``
   - ``'large'``
   - ``'<subset>'`` <members_description>
-
-----
 
 """
 

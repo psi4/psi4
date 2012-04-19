@@ -124,6 +124,15 @@ public:
         }
     }
 
+    /// Subtracts other vector from this
+    void subtract(const boost::shared_ptr<Vector>& other) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<dimpi_[h]; ++m) {
+                vector_[h][m] -= other->vector_[h][m];
+            }
+        }
+    }
+
     /// Zeros the vector out
     void zero();
 
@@ -132,6 +141,15 @@ public:
         for (int h=0; h<nirrep_; ++h) {
             for (int m=0; m<dimpi_[h]; ++m) {
                 vector_[h][m] += other.vector_[h][m];
+            }
+        }
+    }
+
+    /// Subtracts other vector from this
+    void subtract(const Vector& other) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<dimpi_[h]; ++m) {
+                vector_[h][m] -= other.vector_[h][m];
             }
         }
     }
@@ -199,6 +217,9 @@ public:
 
     /// Vector dot product
     double dot(Vector* X);
+
+    /// Vector norm
+    double norm();
 
     /// Scale the elements of the vector
     void scale(const double& sc);

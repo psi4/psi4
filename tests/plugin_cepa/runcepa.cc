@@ -12,9 +12,9 @@ namespace psi{
 
 namespace psi{
 
-void RunCoupledPair(Options &options){
+void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
-  boost::shared_ptr<CoupledPair> cepa(new CoupledPair);
+  boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn));
   PsiReturnType status;
 
   tstart();
@@ -59,6 +59,7 @@ void RunCoupledPair(Options &options){
      Process::environment.globals["AQCC TOTAL ENERGY"] = cepa->ecepa + cepa->escf;
   }
   Process::environment.globals["CURRENT ENERGY"] = cepa->ecepa + cepa->escf;
+  Process::environment.globals["CURRENT CORRELATION ENERGY"] = cepa->ecepa;
 
 
   // dipole moments for CISD, ACPF, or AQCC

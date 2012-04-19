@@ -1,3 +1,6 @@
+
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:tutorial`:
 
 ====================
@@ -7,7 +10,7 @@ A |PSIfour| Tutorial
 Basic Input File Structure
 ==========================
 
-PSI4 reads input from a text file, which can be prepared in any standard
+|PSIfour| reads input from a text file, which can be prepared in any standard
 text editor.  The default input file name is ``input.dat`` and the
 default output file name is ``output.dat``.  So that you can give your
 files meaningful names, these defaults can be changed by specifying
@@ -23,7 +26,7 @@ In our first example, we will consider a Hartree--Fock SCF computation
 for the water molecule using a cc-pVDZ basis set.  We will specify the
 geometry of our water molecule using a standard Z-matrix.
 
-.. literalinclude:: ../../../samples/tu1-h2o-energy/input.dat
+.. literalinclude:: @SFNX_INCLUDE@samples/tu1-h2o-energy/input.dat
 
 For your convenience, this example can be found in 
 :srcsample:`tu1-h2o-energy`.
@@ -67,7 +70,7 @@ specification below.  In this example we will also specify the bond length
 and bond angle as variables (:math:`R` and :math:`A`), whose values are given
 at the end of the Z-matrix specification.
 
-.. literalinclude:: ../../../samples/tu2-ch2-energy/input.dat
+.. literalinclude:: @SFNX_INCLUDE@samples/tu2-ch2-energy/input.dat
 
 This sample input can be found in 
 :srcsample:`tu2-ch2-energy` and as
@@ -90,16 +93,16 @@ Geometry Optimization and Vibrational Frequency Analysis
 ========================================================
 
 The above examples were simple single-point energy computations
-(as specified by the :py:func:`driver.energy()` function).  Of course there are other
+(as specified by the :py:func:`~driver.energy` function).  Of course there are other
 kinds of computations to perform, such as geometry optimizations and
 vibrational frequency computations.  These can be specified by replacing
-:py:func:`driver.energy` with :py:func:`driver.optimize` or :py:func:`driver.frequency`, respectively.
+:py:func:`~driver.energy` with :py:func:`~driver.optimize` or :py:func:`~driver.frequency`, respectively.
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
 :srcsample:`tu3-h2o-opt`.
 
-.. literalinclude:: ../../../samples/tu3-h2o-opt/input.dat
+.. literalinclude:: @SFNX_INCLUDE@samples/tu3-h2o-opt/input.dat
 
 This should perform a series of gradient computations.  The gradient points
 which way is downhill in energy, and the optimizer then modifies the
@@ -123,14 +126,14 @@ not). ::
 To get harmonic vibrational frequencies, *first we must set up an input
 using the OPTIMIZED GEOMETRY*.  We can easily get the optimized geometry
 from the previous computation.  Looking at the output from running the
-previous example, we see that the OH bond length is about 0.9463 |AA| ngstroms,
+previous example, we see that the OH bond length is about 0.9463 |AA|\ ngstroms,
 and the bond angle is about 104.575 degrees.  It's good to give this many
 digits (or more) to make sure there's not significant roundoff error in the
 geometry when running a frequency computation.  So, our frequency
 computation input (which can be found as test case
 :srcsample:`tu4-h2o-freq` is:
 
-.. literalinclude:: ../../../samples/tu4-h2o-freq/input.dat
+.. literalinclude:: @SFNX_INCLUDE@samples/tu4-h2o-freq/input.dat
 
 Alternatively, it's also possible for |PSIfour| to use Cartesian coordinate
 input.  Here, the Cartesian coordinates of the optimized geometry can be
@@ -219,8 +222,9 @@ to a different coordinate system (this is important for SAPT to make
 sure the same coordinate frame is used for the computations of the two
 monomers and for the dimer).  The next keyword tells |PSIfour| to run
 in C1 point-group symmetry (i.e., without using symmetry), even if a
-higher symmetry is detected.  SAPT computations need to be run with
-symmetry turned off in this way.
+higher symmetry is detected.  SAPT computations know to turn off
+symmetry and fix orientation even without the user specifying these 
+molecule keywords.
 
 Here's the second half of the input::
 
@@ -339,7 +343,7 @@ interaction energies (in |kcalpermol|) at each geometry.  Doing all this
 in a single input is surprisingly easy in |PSIfour|.  Here's the input
 (available as :srcsample:`tu6-cp-ne2`).
 
-.. literalinclude:: ../../../samples/tu6-cp-ne2/input.dat
+.. literalinclude:: @SFNX_INCLUDE@samples/tu6-cp-ne2/input.dat
 
 First, you can see the ``molecule`` block has a couple dashes to
 separate the monomers from each other.  Also note we've used a Z-matrix to
@@ -373,7 +377,7 @@ to the ``R`` value extracted from the ``Rvals`` array.  The next line,
 CCSD(T) energy and places it in the ``ecp`` dictionary with ``R`` as
 the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
-Psithon function :py:func:`wrappers.cp` does it all for us, automatically.
+Psithon function :py:func:`~wrappers.cp` does it all for us, automatically.
 
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from

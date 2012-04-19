@@ -38,7 +38,7 @@ void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD,
 void rotate_vecs(double *w, double phi, double **v, int num_v);
 
 // arguments specify the bond length and angle in radians desired for interfragment coordinates
-bool INTERFRAG::orient_fragment(double *q_target) {
+bool INTERFRAG::orient_fragment(double *dq, double *fq) {
 
   int pts, i, xyz;
   double tval, norm, B_angle, R_B1B2, R_B2B3, e12[3], e12b[3], e12c[3], e12d[3], erot[3];
@@ -50,22 +50,77 @@ bool INTERFRAG::orient_fragment(double *q_target) {
   R_AB  = 1.0;
   theta_A = theta_B = tau = phi_A = phi_B = _pi/2;
 
-  int cnt = 0;
-  if (D_on[0]) R_AB     = q_target[cnt++];
-  if (D_on[1]) theta_A = q_target[cnt++]; 
-  if (D_on[2]) theta_B = q_target[cnt++];
-  if (D_on[3]) tau   =  q_target[cnt++];
-  if (D_on[4]) phi_A =  q_target[cnt++];
-  if (D_on[5]) phi_B =  q_target[cnt++];
+  double *q_orig = intco_values();
+  double *q_target = init_array(g_nintco());
 
-  fprintf(outfile,"\n\tInterfragment coordinates to be obtained:\n");
-  if (D_on[0]) fprintf(outfile,"\t  R_AB:%10.5f",    R_AB);
-  if (D_on[1]) fprintf(outfile,"  theta_A:%10.5f", theta_A);
-  if (D_on[2]) fprintf(outfile,"  theta_B:%10.5f", theta_B);
-  if (D_on[3]) fprintf(outfile,"  tau:%10.5f",     tau);
-  if (D_on[4]) fprintf(outfile,"  phi_A:%10.5f",   phi_A);
-  if (D_on[5]) fprintf(outfile,"  phi_B:%10.5f", phi_B);
-  fprintf(outfile,"\n");
+  for (i=0; i<g_nintco(); ++i) {
+    if (D_on[i])
+      q_target[i] = q_orig[i] + dq[i];
+  }
+
+  int cnt = 0;
+  if (D_on[0]) R_AB    = q_target[cnt++];
+  if (D_on[1]) theta_A = q_target[cnt++];
+  if (D_on[2]) theta_B = q_target[cnt++];
+  if (D_on[3]) tau     = q_target[cnt++];
+  if (D_on[4]) phi_A   = q_target[cnt++];
+  if (D_on[5]) phi_B   = q_target[cnt++];
+
+  // Make labels for printing
+  std::vector<string> lbl(6);
+  for (i=0; i<6; ++i)
+    if (inter_frag->intcos[i]->is_frozen())
+      lbl[i] = "*";
+
+  if (inter_frag->intcos[0]->is_inverse_stre())
+    lbl[0] += "1/R_AB";
+  else
+    lbl[0] += "R_AB";
+  lbl[1] += "theta_A";
+  lbl[2] += "theta_B";
+  lbl[3] += "tau";
+  lbl[4] += "phi_A";
+  lbl[5] += "phi_B";
+
+  fprintf(outfile,"\t---Interfragment coordinates between fragments %d and %d\n", A_index+1, B_index+1);
+  fprintf(outfile,"\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  fprintf(outfile,"\t ----------------------------------------------------------------------\n");
+  fprintf(outfile,"\t Coordinate             Previous        Force       Change         New \n");
+  fprintf(outfile,"\t ----------             --------       ------       ------       ------\n");
+
+  cnt = 0;
+  for (i=0; i<6; ++i) {
+    double val, force, change, target;
+    if (D_on[i]) {
+      val    = q_orig[cnt];
+      force  = fq[cnt];
+      change = dq[cnt];
+      target = q_target[cnt];
+
+      if (i == 0) { // change units for bond length coordinate
+        if (inter_frag->intcos[0]->is_inverse_stre()) { // 1/R(AB)
+          val    /= _bohr2angstroms;
+          force  /= _hartree2aJ/_bohr2angstroms;
+          change /= _bohr2angstroms;
+          target /= _bohr2angstroms;
+        }
+        else { // R(AB)
+          val    *= _bohr2angstroms;
+          force  *= _hartree2aJ/_bohr2angstroms;
+          change *= _bohr2angstroms;
+          target *= _bohr2angstroms;
+        }
+      } else { // change units for angle in degrees
+        val    *= 180.0/_pi;
+        force  *= _hartree2aJ*_pi/180.0;
+        change *= 180.0/_pi;
+        target *= 180.0/_pi;
+      }
+      fprintf(outfile,"\t%-20s%12.5f%13.5f%13.5f%13.5f\n", lbl[i].c_str(), val, force, change, target);
+      ++cnt;
+    }
+  }
+  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
 
   // copy B->geom in case this fails
   double **B_geom = B->g_geom();

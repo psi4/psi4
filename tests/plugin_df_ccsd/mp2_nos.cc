@@ -82,7 +82,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   }
 
   // establish cutoff for frozen virtuals
-  double cutoff = options.get_double("VIRTUAL_CUTOFF");
+  double cutoff = options.get_double("OCC_TOLERANCE");
   int nvirt_no = 0;
   for (int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
   ccsd->nvirt_no = nvirt_no;

@@ -113,11 +113,17 @@ void FRAG::print_geom(FILE *fp_geom) {
 
 
 void FRAG::print_intcos(FILE *fp, int atom_offset) {
-  fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
+  fprintf(fp,"\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
   for (int i=0; i<intcos.size(); ++i)
     intcos.at(i)->print(fp,geom,atom_offset);
   fprintf(fp, "\n");
   fflush(fp);
+}
+
+// fetch string definition of intco
+std::string FRAG::get_intco_definition(int coord_index, int atom_offset) {
+  fprintf(outfile,"coord_index: %d; atom_offset: %d\n", coord_index, atom_offset);
+  return intcos.at(coord_index)->get_definition_string(atom_offset);
 }
 
 void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
@@ -436,6 +442,11 @@ double * FRAG::intco_values(void) const {
   for (int i=0; i<intcos.size(); ++i)
     q[i] = intcos.at(i)->value(geom);
   return q;
+}
+
+// return the value of a single internal
+double FRAG::intco_value(int intco_index) const {
+  return intcos.at(intco_index)->value(geom);
 }
 
 // returns values of internal coordinates - using given geometry

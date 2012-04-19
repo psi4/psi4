@@ -102,15 +102,6 @@ void get_params(Options& options)
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
-        else { /* DERTYPE is absent, assume 1 if jobtype=opt; 0 if jobtype=oeprop */
-    junk = options.get_str("JOBTYPE");
-    if(junk == "OEPROP") params.dertype = 0;
-    else if(junk == "OPT") params.dertype = 1;
-    else {
-      printf("Don't know what to do with DERTYPE missing and jobtype: %s\n", junk.c_str());
-      throw PsiException("cclambda: error", __FILE__, __LINE__);
-    }
-        }
 
   /* begin local parameters */
   params.local = 0;
@@ -192,36 +183,36 @@ void get_params(Options& options)
       states_per_irrep = chkpt_rd_statespi();
     }
     else {
-            states_per_irrep = options.get_int_array("STATES_PER_IRREP");
+      states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
     }
     chkpt_close();
 
-          prop_all = 0;
-          prop_all = options.get_bool("PROP_ALL");
-                /* command-line overrides this keyword (at least for now) */
-                if (params.all) prop_all = 1;
+    prop_all = 1;
+    prop_all = options.get_bool("PROP_ALL");
+    /* command-line overrides this keyword (at least for now) */
+    if (params.all) prop_all = 1;
 
-          if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
+    if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
       prop_sym = options.get_int("PROP_SYM");
       prop_sym -= 1;
       prop_sym = moinfo.sym^prop_sym;
           }
     else { /* just use last irrep of states requested for symmetry of states */
       for (i=0;i<moinfo.nirreps;++i) {
-                    if (states_per_irrep[i] > 0)
+          if (states_per_irrep[i] > 0)
           prop_sym = i^moinfo.sym;
-                  }
+      }
     }
 
     if (options["PROP_ROOT"].has_changed()) { /* read prop_root */
       prop_root = options.get_int("PROP_ROOT");
       prop_root -= 1;
-          }
-          else { /* just use highest root, if you need only one of them */
+    }
+    else { /* just use highest root, if you need only one of them */
             prop_root = states_per_irrep[prop_sym^moinfo.sym];
                         prop_root -= 1;
-          }
-        }
+    }
+  }
 
   params.zeta = options.get_bool("ZETA");
 

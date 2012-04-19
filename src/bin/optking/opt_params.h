@@ -52,12 +52,15 @@ struct OPT_PARAMS {
   enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
   bool freeze_intrafragment; // freeze all fragments
+  bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
 
   // related to step taken
   double intrafragment_step_limit;
   double intrafragment_step_limit_min;
   double intrafragment_step_limit_max;
+
+  double interfragment_step_limit;
 
   // whether to limit changes in Hessian due to update
   bool H_update_limit;
@@ -127,6 +130,11 @@ struct OPT_PARAMS {
   bool test_B; // whether to test B matrices
   bool test_derivative_B; // whether to test derivative B matrices
   double IRC_step_size;
+  bool keep_intcos; // don't delete intco.dat
+
+  // for intcos with user-specified equilibrium values - this is the force constant
+  double fixed_eq_val_force_constant;
+
 
 };
 

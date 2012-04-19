@@ -131,7 +131,7 @@ public:
      */
     CdSalcList(boost::shared_ptr<Molecule> mol,
                boost::shared_ptr<MatrixFactory> fact,
-               int needed_irreps=0xF,
+               int needed_irreps=0xFF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
     virtual ~CdSalcList();

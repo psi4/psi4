@@ -26,7 +26,7 @@ void CIM::OccupiedDomains(){
   fprintf(outfile,"\n");
 
   // threshold for central domains
-  thresh1 = options_.get_double("THRESH1");
+  thresh1 = options_.get_double("CIM_DE_TOLERANCE1");
 
   // maximum number of domains:
   maxndomains = ndoccact;
@@ -124,7 +124,7 @@ void CIM::OccupiedDomains(){
           env[i][j] = isempty;
       }
   }
-  thresh2 = options_.get_double("THRESH2");
+  thresh2 = options_.get_double("CIM_DE_TOLERANCE2");
   // loop over unique clusters
   for (int i=0; i<ndoccact; i++){
       if (skip[i]) continue;

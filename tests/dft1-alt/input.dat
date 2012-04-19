@@ -1,0 +1,127 @@
+#! DFT Functional Test
+
+memory 250 mb
+
+E11 = -74.9493412744 #TEST
+E12 = -75.3196957567 #TEST
+E13 = -75.3185459160 #TEST
+E14 = -75.3128178610 #TEST
+E15 = -75.5662986402 #TEST
+E21 = -74.9493412744 #TEST
+E22 = -75.3196957567 #TEST
+E23 = -75.3185459160 #TEST
+E24 = -75.3128178610 #TEST
+E25 = -75.5662986402 #TEST
+E31 = -74.6448669477 #TEST
+E32 = -74.9677634492 #TEST
+E33 = -74.9709217377 #TEST
+E34 = -74.9632650037 #TEST
+E35 = -75.1947121099 #TEST
+E41 = -74.4108252721 #TEST
+E42 = -74.8155846044 #TEST
+E43 = -74.8011166756 #TEST
+E44 = -74.7977834552 #TEST
+E45 = -75.0877533145 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+print 2
+basis sto-3g
+
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 99
+}
+
+V11 = energy('b88_x')
+compare_values(E11,V11, 3, "RKS  0 1    B88 Energy") #TEST
+
+V15 = energy('b97-d')
+compare_values(E15,V15, 3, "RKS  0 1 B97-D2 Energy") #TEST
+
+V12 = energy('b3lyp')
+compare_values(E12,V12, 3, "RKS  0 1  B3LYP Energy") #TEST
+
+V13 = energy('wB97')  # default omega is 0.4
+compare_values(E13,V13, 3, "RKS  0 1   wB97 Energy") #TEST
+
+set dft_omega 0.3
+V14 = energy('wB97X')
+compare_values(E14,V14, 3, "RKS  0 1  wB97X Energy") #TEST
+
+set reference uhf
+V21 = energy('b88_x')
+compare_values(E21,V21, 3, "UKS  0 1    B88 Energy") #TEST
+
+V25 = energy('b97-d')
+compare_values(E25,V25, 3, "UKS  0 1 B97-D2 Energy") #TEST
+
+V22 = energy('b3lyp')
+compare_values(E22,V22, 3, "UKS  0 1  B3LYP Energy") #TEST
+
+set dft_omega 0.4
+V23 = energy('wB97')
+compare_values(E23,V23, 3, "UKS  0 1   wB97 Energy") #TEST
+
+set dft_omega 0.3
+V24 = energy('wB97X')
+compare_values(E24,V24, 3, "UKS  0 1  wB97X Energy") #TEST
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis sto-3g
+# Must be reset in each new molecule
+V31 = energy('B88_X')
+compare_values(E31,V31, 3, "UKS  1 2    B88 Energy") #TEST
+
+V35 = energy('B97-D')
+compare_values(E35,V35, 3, "UKS  1 2 B97-D2 Energy") #TEST
+
+V32 = energy('B3LYP')
+compare_values(E32,V32, 3, "UKS  1 2  B3LYP Energy") #TEST
+
+set dft_omega 0.4
+V33 = energy('wB97')
+compare_values(E33,V33, 3, "UKS  1 2   wB97 Energy") #TEST
+
+set dft_omega 0.3
+V34 = energy('wB97X')
+compare_values(E34,V34, 3, "UKS  1 2  wB97X Energy") #TEST
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis sto-3g
+V41 = energy('b88_x')
+compare_values(E41,V41, 3, "UKS -1 2    B88 Energy") #TEST
+
+V45 = energy('b97-d')
+print_variables()
+compare_values(E45,V45, 3, "UKS  1 2 B97-D2 Energy") #TEST
+
+V42 = energy('b3lyp')
+compare_values(E42,V42, 3, "UKS -1 2  B3LYP Energy") #TEST
+
+set dft_omega 0.4
+V43 = energy('wB97')
+compare_values(E43,V43, 3, "UKS -1 2   wB97 Energy") #TEST
+
+set dft_omega 0.3
+V44 = energy('wB97X')
+compare_values(E44,V44, 3, "UKS -1 2  wB97X Energy") #TEST

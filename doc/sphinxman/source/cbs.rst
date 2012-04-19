@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    triple: setting; keywords; cbs()
    see: complete_basis_set(); cbs()
@@ -12,6 +14,9 @@ Complete Basis Set
    :hidden:
 
    cbs_eqn
+
+.. codeauthor:: Lori A. Burns
+.. sectionauthor:: Lori A. Burns
 
 .. autofunction:: wrappers.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme])
 

@@ -20,7 +20,7 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     reference_wavefunction_ = reference_wavefunction;
     scfmaxiter_       = options.get_int("SCF_MAXITER");
     lambdamaxiter_    = options.get_int("LAMBDA_MAXITER");
-    maxiter_ = options.get_int("MAXITER");
+    maxiter_          = options.get_int("MAXITER");
     print_            = options.get_int("PRINT");
     maxdiis_          = options.get_int("DIIS_MAX_VECS");
     mindiisvecs_      = options.get_int("DIIS_MIN_VECS");

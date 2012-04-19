@@ -5,7 +5,7 @@
 INIT_PLUGIN
 
 namespace psi{
-  void RunCoupledCluster(Options &options);
+  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction>wfn);
 };
 
 namespace psi{ namespace plugin_ccsd_serial{
@@ -13,25 +13,22 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
-     /*- Memory in mb.  Use this to override global option, 
-         which is limited to <16gb because of dpd in transqt2 -*/
-     options.add_int("CCMEMORY", 256);
-     /*- Wavefunction type !expert -*/
-     options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/
      options.add_double("R_CONVERGENCE", 1.0e-7);
      /*- Maximum number of CC iterations -*/
      options.add_int("MAXITER", 50);
      /*- Desired number of DIIS vectors -*/
      options.add_int("DIIS_MAX_VECS", 8);
-     /*- For GPU code, cap the amount of memory registerred with the GPU -*/
+     /*- For GPU code, cap the amount of memory (mb) registerred with the GPU -*/
      options.add_int("MAX_MAPPED_MEMORY", 1000);
-     /*- Compute triples contribution? */
+     /*- Low memory options for triples contribution -*/
+     options.add_bool("TRIPLES_LOW_MEMORY",false);
+     /*- Compute triples contribution? -*/
      options.add_bool("COMPUTE_TRIPLES", true);
      /*- Use MP2 NOs to truncate virtual space for (T)? -*/
-     options.add_bool("TRIPLES_USE_NOS", false);
+     options.add_bool("NAT_ORBS", false);
      /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
-     options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
+     options.add_double("OCC_TOLERANCE", 1.0e-6);
      /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
      options.add_int("NUM_THREADS", 1);
      /*- Do SCS-MP2? -*/
@@ -46,6 +43,8 @@ read_options(std::string name, Options &options)
      options.add_double("CC_SCALE_OS", 1.27);
      /*- Same-spin scaling factor for SCS-CCSD -*/
      options.add_double("CC_SCALE_SS",1.13);
+     /*- User packed storage for the (ac|bd) diagram? -*/
+     options.add_bool("VABCD_PACKED",true);
   }
   return true;
 }
@@ -53,7 +52,8 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_ccsd_serial(Options &options)
 {  
-  RunCoupledCluster(options);
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  RunCoupledCluster(options,ref);
   return  Success;
 } // end plugin_ccsd
 

@@ -59,6 +59,9 @@ protected:
     double Eold_;
     double E_;
 
+    /// Table of energy components
+    std::map<std::string, double> energies_;
+
     /// The RMS error in the density
     double Drms_;
 
@@ -201,6 +204,9 @@ protected:
 
     /// Prints the orbitals in arbitrary order (works with MOM)
     void print_orbitals();
+
+    /// Prints the energy breakdown from this SCF
+    void print_energies();
 
     /// Prints some opening information
     void print_header();

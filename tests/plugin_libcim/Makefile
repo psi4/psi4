@@ -5,9 +5,9 @@
 #
 
 # Location of your PSI4 source
-top_srcdir = /home/deprince/psi4/
+top_srcdir = /Users/deprince/psi4/
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/deprince/psi4/objdir
+top_objdir = /Users/deprince/psi4/objdir
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -16,13 +16,13 @@ include $(top_objdir)/src/bin/MakeVars
 
 # Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
 # Location of your PSI4 source
-top_srcdir = /home/deprince/psi4/
+top_srcdir = /Users/deprince/psi4/
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/deprince/psi4/objdir
+top_objdir = /Users/deprince/psi4/objdir
 
 PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(top_objdir)/boost/boost_1_48_0 -I$(top_srcdir)/include -I$(top_objdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin /home/deprince/psi4/tests/plugin_localcc/plugin_localcc.so
+PSILIBS = -L$(top_objdir)/lib -lPSI_plugin /Users/deprince/psi4/tests/plugin_ccsd_serial/plugin_ccsd_serial.so /Users/deprince/psi4/tests/plugin_cepa/plugin_cepa.so
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))

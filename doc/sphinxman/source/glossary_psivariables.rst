@@ -1,9 +1,11 @@
 ..  * NOTES (LAB 3-26-2012)
     * Any PSI variable added to the codebase should be added to this list
       (variables in the psi variable by module list will show up black
-      and un-clickable in an entry isn't present here).
+      and un-clickable if an entry isn't present here).
     * INCLUDE UNITS!
     * ALPHABETIZE!
+
+.. include:: autodoc_abbr_options_c.rst
 
 .. _`apdx:psivariables_alpha`:
 
@@ -209,6 +211,37 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the density-fitted MP2 level of theory.
 
+.. psivar:: DFT FUNCTIONAL ENERGY
+
+   The functional energy contribution [H] to the total SCF energy (DFT only).
+   Quantity :math:`E_{xc}` in Eq. :eq:`SCFterms`.
+
+.. psivar:: DFT FUNCTIONAL TOTAL ENERGY
+
+   The total electronic energy [H] for the underlying functional
+   of the requested DFT method, without any dispersion correction,
+   the first four terms in Eq. :eq:`SCFterms`.
+   When the requested method includes a dispersion correction, this 
+   quantity is :math:`E_{\text{DFT}}` in Eq. :eq:`DFTDterms`.
+   Otherwise, quantity equal to :psivar:`DFT TOTAL ENERGY <DFTTOTALENERGY>`
+   and :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>`.
+
+.. psivar:: DFT TOTAL ENERGY
+
+   The total electronic energy [H] for the requested DFT method, 
+   :math:`E_{\text{SCF}}` in Eq. :eq:`SCFterms`.
+   When the method includes a dispersion correction, this quantity
+   is :math:`E_{\text{DFT-D}}` in Eq. :eq:`DFTDterms`.
+
+.. psivar:: DISPERSION CORRECTION ENERGY
+
+   The dispersion correction [H] appended to an underlying functional
+   when a DFT-D method is requested. Quantity :math:`E_{\text{-D}}`
+   in Eqs. :eq:`DFTDterms` and :eq:`SCFterms`.
+
+   .. math:: E_{\text{DFT-D}} = E_{\text{DFT}} + E_{\text{-D}}
+      :label: DFTDterms
+
 .. psivar:: FCI TOTAL ENERGY
    FCI CORRELATION ENERGY
 
@@ -248,6 +281,16 @@ PSI Variables by Alpha
    for the labeled M\ |o_dots|\ ller–Plesset perturbation theory level.
    *n* is MP perturbation order.
 
+.. psivar:: NUCLEAR REPULSION ENERGY
+
+   The nuclear repulsion energy contribution [H] to the total SCF energy.
+   Quantity :math:`E_{NN}` in Eq. :eq:`SCFterms`.
+
+.. psivar:: ONE-ELECTRON ENERGY
+
+   The one-electron energy contribution [H] to the total SCF energy.
+   Quantity :math:`E_{1e^-}` in Eq. :eq:`SCFterms`.
+
 .. psivar:: SAPT DISP ENERGY
    SAPT ELST ENERGY
    SAPT EXCH ENERGY
@@ -277,7 +320,15 @@ PSI Variables by Alpha
    The total electronic energy [H] of the SCF stage of the calculation.
    The :psivar:`CORRELATION ENERGY` variables from subsequent stages of a
    calculation are often the corresponding :psivar:`TOTAL ENERGY` variables
-   less this quantity.
+   less this quantity. Constructed from Eq. :eq:`SCFterms`.
+
+   .. math:: E_{\text{SCF}} = E_{NN} + E_{1e^-} + E_{2e^-} + E_{xc} + E_{\text{-D}}
+      :label: SCFterms
+
+.. psivar:: TWO-ELECTRON ENERGY
+
+   The two-electron energy contribution [H] to the total SCF energy.
+   Quantity :math:`E_{2e^-}` in Eq. :eq:`SCFterms`.
 
 .. psivar:: UNCP-CORRECTED 2-BODY INTERACTION ENERGY
 

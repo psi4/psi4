@@ -11,7 +11,7 @@ from text import *
 from procutil import *
 
 def run_plugin_gpu_ccsd(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
+    r"""Function encoding sequence of PSI module and plugin calls so that
     plugin_gpu_ccsd can be called via :py:func:`driver.energy`.
 
     >>> energy('gpu-ccsd(t)')
@@ -28,6 +28,12 @@ def run_plugin_gpu_ccsd(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'CCSD')
     energy('scf', **kwargs)
+
+    # If the scf type is DF, then the AO integrals were never generated
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
+       mints = PsiMod.MintsHelper()
+       mints.integrals()
+
     PsiMod.transqt2()
     PsiMod.plugin("plugin_gpu_ccsd.so")
 

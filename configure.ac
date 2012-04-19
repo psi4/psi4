@@ -930,6 +930,9 @@ AC_CONFIG_FILES([
           doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
           doc/progman/Makefile doc/userman/Makefile
+          doc/sphinxman/Makefile
+          doc/sphinxman/source/conf.py
+          doc/sphinxman/apply_relpath.py
           doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
@@ -960,6 +963,7 @@ AC_CONFIG_FILES([
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
+          src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
           src/lib/libsmartptr/Makefile
@@ -1090,6 +1094,7 @@ AC_CONFIG_FILES([
           tests/cc17/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
+          tests/cc21/Makefile
           tests/cc22/Makefile
           tests/cc23/Makefile
           tests/cc24/Makefile
@@ -1114,6 +1119,9 @@ AC_CONFIG_FILES([
           tests/cc43/Makefile
           tests/cc44/Makefile
           tests/cc45/Makefile
+          tests/cc46/Makefile
+          tests/cc47/Makefile
+          tests/cc48/Makefile
           tests/cc49/Makefile
           tests/cc50/Makefile
           tests/cc51/Makefile
@@ -1122,6 +1130,11 @@ AC_CONFIG_FILES([
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
           tests/psimrcc-sp1/Makefile
+          tests/psimrcc-ccsd_t-1/Makefile
+          tests/psimrcc-ccsd_t-2/Makefile
+          tests/psimrcc-ccsd_t-3/Makefile
+          tests/psimrcc-ccsd_t-4/Makefile
+          tests/psimrcc-pt2/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
@@ -1132,8 +1145,11 @@ AC_CONFIG_FILES([
           tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile
+          tests/dft1-alt/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
+          tests/docs_psimod/Makefile
+          tests/docs_dft/Makefile
           tests/plugin_aointegrals/Makefile
           tests/plugin_aointegrals/input.dat
           tests/plugin_aointegrals/aointegrals.cc

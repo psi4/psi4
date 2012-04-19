@@ -13,7 +13,7 @@ set {
     reference rhf
     basis 6-31G**
     guess core
-    states_per_irrep [20]
+    roots_per_irrep [20]
 }
 
 energy('adc')

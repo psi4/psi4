@@ -1,7 +1,7 @@
 # Location of your PSI4 source
-psi_top_srcdir = /home/deprince/psi4
+psi_top_srcdir = /Users/deprince/psi4
 # Location of your PSI4 install, by default as listed
-psi_top_objdir = /home/deprince/psi4/objdir
+psi_top_objdir = /Users/deprince/psi4/objdir
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)

@@ -28,7 +28,12 @@ namespace psi{
 
 class CoupledPair{
   public:
-    CoupledPair();
+    /*
+     * wavefunction.  pass explicitly so we can pass weird ones like cim.
+     */
+    boost::shared_ptr<psi::Wavefunction> wfn_;
+
+    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn);
     ~CoupledPair();
 
     /**
@@ -190,6 +195,11 @@ class CoupledPair{
       */
     void SCS_CEPA();
     double ecepa_os,ecepa_ss,ecepa_os_fac,ecepa_ss_fac;
+
+    /**
+      *  the CIM version of SCS_CEPA()
+      */
+    void Local_SCS_CEPA();
 
 };
 };

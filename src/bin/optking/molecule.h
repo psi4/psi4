@@ -183,6 +183,9 @@ class MOLECULE {
 #endif
   }
 
+  // print definition of an internal coordinate from global index 
+  std::string get_intco_definition_from_global_index(int coord_index) const;
+
 #if defined (OPTKING_PACKAGE_QCHEM)
   void update_efp_values(void);
 #endif
@@ -312,6 +315,7 @@ printf("adding %d auxiliary bonds\n", n);
   void H_guess(void) const;
 
   void forces(void);
+  void apply_constraint_forces(bool update_hessian_too = false);
   void project_f_and_H(void);
   void irc_step(void);
   void nr_step(void);
@@ -362,6 +366,12 @@ printf("adding %d auxiliary bonds\n", n);
   double ** compute_constraints(void);
 
   void add_efp_fragments(void);
+
+  // freeze interfragment modes that break symmetry
+  void freeze_interfragment_asymm(void);
+
+  // determine whether a linear combination of intcos breaks symmetry
+  bool intco_combo_is_symmetric(double *intco_combo, int dim);
 
 };
 

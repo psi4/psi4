@@ -67,10 +67,11 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&); }
+    namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace stable     { PsiReturnType stability(Options&); }
+    namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace mrcc       {
         PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -138,6 +139,12 @@ void py_psi_prepare_options_for_module(std::string const & name)
     }
     // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
     Process::environment.options.validate_options();
+}
+
+int py_psi_stability()
+{
+    py_psi_prepare_options_for_module("STABILITY");
+    return stable::stability(Process::environment.options);
 }
 
 int py_psi_optking()
@@ -427,8 +434,11 @@ double py_psi_ccresponse()
 double py_psi_cceom()
 {
     py_psi_prepare_options_for_module("CCEOM");
-    cceom::cceom(Process::environment.options);
-    return 0.0;
+    if (cceom::cceom(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 double py_psi_psimrcc()
@@ -440,9 +450,12 @@ double py_psi_psimrcc()
 
 double py_psi_adc()
 {
-  py_psi_prepare_options_for_module("ADC");
-  adc::adc(Process::environment.options);
-  return 0.0;
+    py_psi_prepare_options_for_module("ADC");
+    if (adc::adc(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 char const* py_psi_version()
@@ -783,6 +796,17 @@ void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
     Process::environment.set_molecule(molecule);
 }
 
+void py_psi_set_parent_symmetry(std::string pg)
+{
+    boost::shared_ptr<PointGroup> group = boost::shared_ptr<PointGroup>();
+    if(pg != ""){
+        group = boost::shared_ptr<PointGroup>(new PointGroup(pg));
+    }
+
+    Process::environment.set_parent_symmetry(group);
+}
+
+
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
@@ -925,6 +949,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // OEProp/GridProp
     export_oeprop();
 
+
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "docstring");
     def("set_active_molecule", py_psi_set_active_molecule, "docstring");
@@ -939,6 +964,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("nproc", &py_psi_get_nproc, "docstring");
     def("me", &py_psi_get_me, "docstring");
 
+    def("set_parent_symmetry", py_psi_set_parent_symmetry, "docstring");
     def("print_options", py_psi_print_options, "docstring");
     def("print_global_options", py_psi_print_global_options, "docstring");
     def("print_out", py_psi_print_out, "docstring");
@@ -1025,6 +1051,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("fd_freq_1", py_psi_fd_freq_1, "docstring");
     def("fd_hessian_0", py_psi_fd_hessian_0, "docstring");
     def("sapt", py_psi_sapt, "docstring");
+    def("stability", py_psi_stability, "docstring");
     def("psimrcc", py_psi_psimrcc, "docstring");
     def("optking", py_psi_optking, "docstring");
     def("transqt", py_psi_transqt, "docstring");
@@ -1145,8 +1172,6 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
             PyRun_SimpleString(s);
-            //s = strdup("help(PsiMod)");
-            //PyRun_SimpleString(s);
 
             // Process the input file
             PyObject *input;

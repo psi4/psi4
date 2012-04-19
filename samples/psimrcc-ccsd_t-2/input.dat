@@ -1,0 +1,41 @@
+#! Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
+#! the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+
+memory 250 mb
+
+
+molecule ch2 {
+  0 1
+  C         0.000000000000    -0.071831139101     0.000000000000
+  H         2.056713670133     0.427640533717     0.000000000000
+  H        -2.056713670133     0.427640533717     0.000000000000
+
+  units au
+}
+
+set {
+  basis cc-pvdz
+  e_convergence 10
+  d_convergence 10
+  r_convergence 10
+}
+
+set mcscf {
+  reference       twocon
+  # The socc and docc needn't be specified; in this case the code will converge correctly without
+  docc            [2,0,1,0]      # Doubly occupied MOs
+  socc            [1,0,0,1]      # Singly occupied MOs
+}
+
+set psimrcc {
+  corr_wfn        ccsd_t         # Do Mk-MRCCSD(T) 
+  frozen_docc     [0,0,0,0]      # Frozen MOs
+  restricted_docc [2,0,1,0]      # Doubly occupied MOs
+  active          [1,0,0,1]      # Active MOs
+  frozen_uocc     [0,0,0,0]      # Frozen virtual MOs
+  corr_multp      1              # Select the Ms = 0 component
+  wfn_sym         A1             # Select the A1 state
+  heff4           false
+}
+
+energy('psimrcc')

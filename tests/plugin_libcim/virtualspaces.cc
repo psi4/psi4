@@ -39,7 +39,7 @@ void CIM::VirtualSpaces(int cluster,int clusternum){
   }
 
   // establish cutoff for frozen virtuals
-  double cutoff = options_.get_double("THRESH3");
+  double cutoff = options_.get_double("OCC_TOLERANCE");
   nvirt_ = 0;
   for (int i=0; i<v; i++) if (eigvalDab[i]>=cutoff) nvirt_++;
 

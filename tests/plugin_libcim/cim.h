@@ -82,12 +82,6 @@ class CIM : public Wavefunction{
     void QuasiCanonicalOrbitals(int cluster);
 
     /*
-     * how many times is an orbital a central orbital?
-     */
-    double*centralfac;
-    SharedMatrix Rii;
-
-    /*
      * df integrals to approximate mp2 opdm
      */
     double**Qov;

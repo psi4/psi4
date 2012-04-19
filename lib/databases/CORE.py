@@ -1,13 +1,9 @@
 """
-**CORE**
-
 Database of Pulay corannulene structures. Subsumed into CFLOW.
 
 - **cp**  ``'off'`` || ``'on'``
 
 - **rlxd** ``'off'``
-
-----
 
 """
 import re
