@@ -20,6 +20,13 @@ def run_plugin_cepa(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
     # what type of cepa?
     if (lowername == 'cepa(0)'):
         PsiMod.set_global_option('cepa_level', 'cepa0')
@@ -43,6 +50,7 @@ def run_plugin_cepa(name, **kwargs):
     if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
        mints = PsiMod.MintsHelper()
        mints.integrals()
+
 
     PsiMod.transqt2()
     PsiMod.plugin("plugin_cepa.so")
