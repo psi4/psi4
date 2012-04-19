@@ -54,6 +54,7 @@ public:
 
     /// Return the sum of constituent dimensions
     int sum() const;
+    int max() const;
 
     void print(FILE* out=outfile) const;
 

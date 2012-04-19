@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    pair: basis set; adding new
 
@@ -10,7 +12,7 @@
 User-Defined Basis Sets
 =======================
 
-There are three routes by which a basis set in G94 format can be introduced to |PSIfour|'s notice.
+There are three routes by which a basis set in G94 format can be introduced to |PSIfours| notice.
 
 
 .. rubric:: (1) Install new basis set file into |PSIfour| basis library.
@@ -40,7 +42,7 @@ Copy the basis set definitions for all elements into a blank file. Exclamation p
 As the first line of the file, add the basis set name in brackets.
 As the second line of the file, add the word ``spherical`` or ``cartesian`` to indicate
 whether the basis set will run in (5D/7F) or (6D/10F).
-The combination of ``[basis name]``, :term:`PUREAM` value, and element basis set specifications
+The combination of ``[basis name]``, |globals__puream| value, and element basis set specifications
 forms a section, like the one shown below.
 Multiple basis sets can be specified in the same file by adding additional sections to the file.
 Specify the location of the new basis set file in a |PSIfour| input file with the command
@@ -74,7 +76,7 @@ Request the new basis set in an input file in the usual manner. ::
 .. rubric:: (3) Include new basis set in input file.
 
 Construct for a basis set a section like the one above that includes 
-``[basis name]``, :term:`PUREAM`
+``[basis name]``, |globals__puream|
 value, and element basis set specifications. Hash signs denote comments.
 Copy the section into a |PSIfour| input file and surround it with the command ``basis {...}``,
 as shown below.
@@ -86,10 +88,10 @@ Multiple basis sets can be specified by adding additional sections within the su
    }
 
 
-comment \subsection{Specifying Basis Sets}
-comment 
-comment The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
-comment for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
-comment \texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
-comment More details are provided in section \ref{sec:PsithonBasisSets}.
+.. comment \subsection{Specifying Basis Sets}
+.. comment 
+.. comment The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
+.. comment for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
+.. comment \texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
+.. comment More details are provided in section \ref{sec:PsithonBasisSets}.
 

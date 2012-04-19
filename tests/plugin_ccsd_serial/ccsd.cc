@@ -26,7 +26,7 @@ using namespace psi;
 using namespace boost;
 
 namespace psi{
-  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options);
 };
 
 // position in a symmetric packed matrix
@@ -39,8 +39,10 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledCluster::CoupledCluster()
-{}
+CoupledCluster::CoupledCluster(boost::shared_ptr<psi::Wavefunction>wfn)
+{
+  wfn_ = wfn;
+}
 CoupledCluster::~CoupledCluster()
 {}
 
@@ -67,18 +69,16 @@ void CoupledCluster::WriteBanner(){
   
 ================================================================*/
 void CoupledCluster::Initialize(Options &options){
- 
-  // grab the reference wave function and its parameters
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
 
-  if (ref.get() !=NULL){
+  options_ = options; 
+  if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-     nirreps = ref->nirrep();
-     sorbs   = ref->nsopi();
-     orbs    = ref->nmopi();
-     docc    = ref->doccpi();
-     fzc     = ref->frzcpi();
-     fzv     = ref->frzvpi();
+     nirreps = wfn_->nirrep();
+     sorbs   = wfn_->nsopi();
+     orbs    = wfn_->nmopi();
+     docc    = wfn_->doccpi();
+     fzc     = wfn_->frzcpi();
+     fzv     = wfn_->frzvpi();
   }
   if (nirreps>1){
      //throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
@@ -107,10 +107,39 @@ void CoupledCluster::Initialize(Options &options){
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
-  if (options["CCMEMORY"].has_changed()){
-     memory  = options.get_int("CCMEMORY");
+  if (options["MEMORY"].has_changed()){
+     memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
+  // check if the triples need to be lowmemory
+  isLowMemory = false;
+
+  nthreads = 1;
+  #ifdef _OPENMP
+      nthreads = omp_get_max_threads();
+  #endif
+  if (options["NUM_THREADS"].has_changed())
+     nthreads = options.get_int("NUM_THREADS");
+
+  long int o=ndoccact;
+  long int v=nvirt;
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  available memory =                        %9.2lf mb\n",memory/1024./1024.);
+  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
+         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
+  if (options.get_bool("COMPUTE_TRIPLES")){
+     double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v);
+     if (tempmem > memory || options.get_bool("TRIPLES_LOW_MEMORY")){
+        isLowMemory = true;
+        tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o);
+     }
+     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",tempmem/1024./1024.);
+     //if (nthreads>1){
+     //   fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
+     //          nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
+     //}
+  }
+  
 
   // SCS MP2 and CCSD
   emp2_os_fac = options.get_double("MP2_SCALE_OS");
@@ -157,7 +186,8 @@ void CoupledCluster::Initialize(Options &options){
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+  // if isCIM() or low-memory, pass true to OutOfCoreSort
+  OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM(),options);
 
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -172,13 +202,13 @@ void CoupledCluster::Initialize(Options &options){
   eps = (double*)malloc(nmo*sizeof(double));
   int count=0;
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = fzc[h]; norb<docc[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
   }
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
@@ -304,7 +334,13 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  SCS_CCSD();
+  if (wfn_->isCIM()){
+     Local_SCS_CCSD();
+     eccsd = eccsd_os + eccsd_ss;
+  }
+  else{
+     SCS_CCSD();
+  }
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
@@ -386,16 +422,17 @@ void CoupledCluster::DefineTilingCPU(){
   ntiles = 1L;
 
   // tiling for vabcd diagram
+  long int fulltile = v*(v+1L)/2L;
+  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
   ntiles=1L;
-  tilesize=v*(v+1L)/2L/1L;
-  if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
-  while(v*(v+1L)/2L*tilesize>ndoubles){
+  tilesize=fulltile/1L;
+  if (ntiles*tilesize<fulltile) tilesize++;
+  while(fulltile*tilesize>ndoubles){
      ntiles++;
-     tilesize = v*(v+1L)/2L/ntiles;
-     if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
+     tilesize = fulltile/ntiles;
+     if (ntiles*tilesize<fulltile) tilesize++;
   }
-  lasttile = v*(v+1L)/2L - (ntiles-1L)*tilesize;
-
+  lasttile = fulltile - (ntiles-1L)*tilesize;
 
   fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
   fflush(outfile);
@@ -445,33 +482,15 @@ void CoupledCluster::AllocateMemory(Options&options){
   long int v=nvirt;
   long int dim;
 
-  nthreads = 1;
-  #ifdef _OPENMP
-      nthreads = omp_get_max_threads();
-  #endif
-  if (options["NUM_THREADS"].has_changed())
-     nthreads = options.get_int("NUM_THREADS");
-
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  available memory =                        %9.2lf mb\n",memory/1024./1024.);
-  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
-         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
-  if (options.get_bool("COMPUTE_TRIPLES")){
-     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",
-            8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v));
-     if (nthreads>1){
-        fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
-               nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
-     }
-  }
-
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
 
   dim = 0;
-  if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
-  if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
-  if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+  int fulltile = v*(v+1)/2;
+  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
+  if (tilesize*fulltile > dim) dim = tilesize*fulltile;
+  if (ovtilesize*v*v > dim)    dim = ovtilesize*v*v;
+  if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
 
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
@@ -482,9 +501,9 @@ void CoupledCluster::AllocateMemory(Options&options){
      t2_on_disk = true;
      DefineTilingCPU();
      dim = 0;
-     if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
-     if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
-     if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+     if (tilesize*fulltile > dim) dim = tilesize*fulltile;
+     if (ovtilesize*v*v > dim)    dim = ovtilesize*v*v;
+     if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
 
      if (dim<o*o*v*v){
         throw PsiException("out of memory: general buffer cannot accomodate T2",__FILE__,__LINE__);
@@ -918,6 +937,97 @@ void CoupledCluster::UpdateT1(long int iter){
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
 }
+void CoupledCluster::Local_SCS_CCSD(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+
+  SharedMatrix Rii = wfn_->CIMTransformationMatrix();
+  double**Rii_pointer = Rii->pointer();
+  // transform E2klcd back from quasi-canonical basis
+  for (i=0; i<o; i++){
+      for (a=0; a<v; a++){
+          for (j=0; j<o; j++){
+              for (b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii_pointer[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  // transform t2 back from quasi-canonical basis
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+
+  SharedVector factor = wfn_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*factor_pointer[i];
+                  ijab++;
+              }
+          }
+      }
+  }
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
+
+  psio.reset();
+}
 void CoupledCluster::SCS_CCSD(){
 
   long int v = nvirt;
@@ -1222,6 +1332,49 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
   psio.reset();
+}
+/**
+ *  Use Vabcd ... this one doesn't use SJS packing:
+ */
+void CoupledCluster::Vabcd(CCTaskParams params){
+  long int id,i,j,a,b,o,v;
+  o = ndoccact;
+  v = nvirt;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio_address addr;
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+  }else{
+     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  }
+  for (a=0,id=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  psio->open(PSIF_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+  addr = PSIO_ZERO;
+  for (j=0; j<ntiles-1; j++){
+      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*v*sizeof(double),addr,&addr);
+      helper_->GPUTiledDGEMM('n','n',o*o,tilesize,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
+  }
+  j=ntiles-1;
+  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*v*sizeof(double),addr,&addr);
+  helper_->GPUTiledDGEMM('n','n',o*o,lasttile,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
+  psio->close(PSIF_ABCD1,1);
+
+  //psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_R2,1);
+  psio.reset();
+
 }
 /**
  *  Use Vabcd1
@@ -1687,11 +1840,16 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmeai;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1pij_I1ia_lessmem;
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd1;
 
-  // this is the last diagram that contributes to doubles residual,
-  // so we can keep it in memory rather than writing and rereading
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
+  if (options_.get_bool("VABCD_PACKED")){
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd1;
+     // this is the last diagram that contributes to doubles residual,
+     // so we can keep it in memory rather than writing and rereading
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
+  }else{
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd;
+  }
+
 }
 
 /*

@@ -318,11 +318,13 @@ void DFTGrid::buildGridFromOptions()
     }
 
     std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
+    std::map<int, int> rev_leb_orders;
     std::vector<int> valid_orders;
 
     for (std::map<int, int>::iterator it = leb_orders.begin(); it != leb_orders.end(); it++) {
         if ((*it).first > 1) // Order 1 is for trial purposes only
             valid_orders.push_back((*it).first);
+        rev_leb_orders[(*it).second] = (*it).first;
     }
 
     std::sort(valid_orders.begin(), valid_orders.end());
@@ -332,21 +334,36 @@ void DFTGrid::buildGridFromOptions()
         // TODO: Named grids
     }
 
+    int num_spherical = options_.get_int("DFT_SPHERICAL_POINTS");
+
+    if (!rev_leb_orders.count(num_spherical)) {
+        fprintf(outfile, "  ==> Valid Values of DFT_SPHERICAL_POINTS <==\n\n"); 
+        fprintf(outfile, "\t%11s %11s\n", "Points", "Order"); 
+        for (int i = 0; i < valid_orders.size(); i++) {
+            fprintf(outfile, "\t%11d %11d\n", leb_orders[valid_orders[i]], valid_orders[i]);
+        }
+        fprintf(outfile, "\n");
+        fflush(outfile);
+        throw PSIEXCEPTION("Invalid number of spherical points (not a Lebedev number)");
+    }
+
+    int order_spherical = rev_leb_orders[num_spherical]; 
+
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
             options_.get_str("DFT_RADIAL_SCHEME"),
-            options_.get_int("DFT_NUM_RADIAL"),
+            options_.get_int("DFT_RADIAL_POINTS"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
         for (int i = 0; i < radial->npoints(); i++) {
             if (options_.get_str("DFT_PRUNING_SCHEME") == "FLAT") {
                 spheres.push_back(SphericalGrid::buildGrid(
                     options_.get_str("DFT_SPHERICAL_SCHEME"),
-                    options_.get_int("DFT_ORDER_SPHERICAL")));
+                    order_spherical)); 
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "P_SLATER") {
 
                 double exponent = 1.0 / (alphap[A]);
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0) / (alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10);
@@ -361,7 +378,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -370,7 +387,7 @@ void DFTGrid::buildGridFromOptions()
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "D_SLATER") {
 
                 double exponent = 2.0 / (alphap[A]);
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(2.0) / (alphap[A] * alphap[A]);
+                double Ap = ((double) order_spherical) * exp(2.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10);
@@ -385,7 +402,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -394,7 +411,7 @@ void DFTGrid::buildGridFromOptions()
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "LOG_SLATER") {
 
                 double exponent = options_.get_double("DFT_PRUNING_ALPHA");
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL"));
+                double Ap = ((double) order_spherical); 
                 double R = log(radial->r()[i] / alphap[A]);
 
                 int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10);
@@ -409,7 +426,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -418,7 +435,7 @@ void DFTGrid::buildGridFromOptions()
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "P_GAUSSIAN") {
 
                 double exponent = 1.0 / (2.0 * alphap[A]);
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0 / 2.0) / (alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0 / 2.0) / (alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10);
@@ -433,7 +450,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -442,7 +459,7 @@ void DFTGrid::buildGridFromOptions()
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "D_GAUSSIAN") {
 
                 double exponent = 1.0 / (alphap[A] * alphap[A]);
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A] * alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10);
@@ -457,7 +474,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -466,7 +483,7 @@ void DFTGrid::buildGridFromOptions()
             } else if (options_.get_str("DFT_PRUNING_SCHEME") == "LOG_GAUSSIAN") {
 
                 double exponent = options_.get_double("DFT_PRUNING_ALPHA");
-                double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL"));
+                double Ap = ((double) order_spherical); 
                 double R = log(radial->r()[i] / alphap[A]);
 
                 int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10);
@@ -481,7 +498,7 @@ void DFTGrid::buildGridFromOptions()
                 }
 
                 if (Lselected == 0)
-                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+                    throw PSIEXCEPTION("DFTGrid: Requested Spherical Order is too high in pruned grid");
 
                 // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
@@ -721,30 +738,47 @@ void PseudospectralGrid::buildGridFromOptions()
     }
 
     std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
+    std::map<int, int> rev_leb_orders;
     std::vector<int> valid_orders;
 
     for (std::map<int, int>::iterator it = leb_orders.begin(); it != leb_orders.end(); it++) {
         if ((*it).first > 1) // Order 1 is for trial purposes only
             valid_orders.push_back((*it).first);
+        rev_leb_orders[(*it).second] = (*it).first;
     }
 
     std::sort(valid_orders.begin(), valid_orders.end());
 
+    int num_spherical = options_.get_int("PS_SPHERICAL_POINTS");
+
+    if (!rev_leb_orders.count(num_spherical)) {
+        fprintf(outfile, "  ==> Valid Values of PS_SPHERICAL_POINTS <==\n\n"); 
+        fprintf(outfile, "\t%11s %11s\n", "Points", "Order"); 
+        for (int i = 0; i < valid_orders.size(); i++) {
+            fprintf(outfile, "\t%11d %11d\n", leb_orders[valid_orders[i]], valid_orders[i]);
+        }
+        fprintf(outfile, "\n");
+        fflush(outfile);
+        throw PSIEXCEPTION("Invalid number of spherical points (not a Lebedev number)");
+    }
+
+    int order_spherical = rev_leb_orders[num_spherical]; 
+
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
             options_.get_str("PS_RADIAL_SCHEME"),
-            options_.get_int("PS_NUM_RADIAL"),
+            options_.get_int("PS_RADIAL_POINTS"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
         for (int i = 0; i < radial->npoints(); i++) {
             if (options_.get_str("PS_PRUNING_SCHEME") == "FLAT") {
                 spheres.push_back(SphericalGrid::buildGrid(
                     options_.get_str("PS_SPHERICAL_SCHEME"),
-                    options_.get_int("PS_ORDER_SPHERICAL")));
+                    order_spherical)); 
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "P_SLATER") {
 
                 double exponent = 1.0 / (alphap[A]);
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0) / (alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10);
@@ -768,7 +802,7 @@ void PseudospectralGrid::buildGridFromOptions()
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "D_SLATER") {
 
                 double exponent = 2.0 / (alphap[A]);
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(2.0) / (alphap[A] * alphap[A]);
+                double Ap = ((double) order_spherical) * exp(2.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10);
@@ -792,7 +826,7 @@ void PseudospectralGrid::buildGridFromOptions()
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "LOG_SLATER") {
 
                 double exponent = options_.get_double("PS_PRUNING_ALPHA");
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
+                double Ap = ((double) order_spherical);
                 double R = log(radial->r()[i] / alphap[A]);
 
                 int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10);
@@ -816,7 +850,7 @@ void PseudospectralGrid::buildGridFromOptions()
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "P_GAUSSIAN") {
 
                 double exponent = 1.0 / (2.0 * alphap[A]);
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0 / 2.0) / (alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0 / 2.0) / (alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10);
@@ -840,7 +874,7 @@ void PseudospectralGrid::buildGridFromOptions()
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "D_GAUSSIAN") {
 
                 double exponent = 1.0 / (alphap[A] * alphap[A]);
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A] * alphap[A]);
+                double Ap = ((double) order_spherical) * exp(1.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
                 int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10);
@@ -864,7 +898,7 @@ void PseudospectralGrid::buildGridFromOptions()
             } else if (options_.get_str("PS_PRUNING_SCHEME") == "LOG_GAUSSIAN") {
 
                 double exponent = options_.get_double("PS_PRUNING_ALPHA");
-                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
+                double Ap = ((double) order_spherical); 
                 double R = log(radial->r()[i] / alphap[A]);
 
                 int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10);
@@ -1563,7 +1597,28 @@ void MolecularGrid::applyStratmannWeights()
 {
     throw FeatureNotImplemented("psi::MolecularGrid","applyStratmannWeights", __FILE__, __LINE__);
 }
-void MolecularGrid::print(FILE* out, int print)
+void MolecularGrid::print(FILE* out, int print) const
+{
+    fprintf(out,"   => Molecular Quadrature <=\n\n");
+
+    boost::shared_ptr<AtomicGrid> atom = atoms_[0];
+    boost::shared_ptr<SphericalGrid> sphere = atom->spherical()[0];
+    boost::shared_ptr<RadialGrid> radial = atom->radial(); 
+
+    fprintf(out,"    Spherical Scheme = %14s\n" ,sphere->scheme().c_str());
+    fprintf(out,"    Radial Scheme    = %14s\n" ,radial->scheme().c_str());
+    fprintf(out,"    Atomic Scheme    = %14s\n", scheme_.c_str());
+    fprintf(out,"\n");
+
+    fprintf(out,"    Spherical Points = %14d\n", sphere->npoints());
+    fprintf(out,"    Radial Points    = %14d\n", radial->npoints()); 
+    fprintf(out,"    Total Points     = %14d\n", npoints_);
+    fprintf(out,"    Total Blocks     = %14d\n", blocks_.size());
+    fprintf(out,"    Max Points       = %14d\n", max_points_);
+    fprintf(out,"    Max Functions    = %14d\n", max_functions_);
+    fprintf(out,"\n");
+}
+void MolecularGrid::print_full(FILE* out, int print)
 {
     fprintf(out, "   => Molecular Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);

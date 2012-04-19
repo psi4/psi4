@@ -1,6 +1,4 @@
 """
-**BAKERJCC93**
-
 | Database of molecules that are challenging to optimize.
 | Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
   in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
@@ -15,8 +13,6 @@
 
   - ``'small'``
   - ``'large'``
-
-----
 
 """
 import re

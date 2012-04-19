@@ -1,0 +1,4007 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+               Git: Rev 1cf931c477e54ec32038dc3cd0c6841725398c4d
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users.
+
+funcdict = {}
+
+for super in superfunctional_list():
+    sfname = super.name()
+
+    if super.dispersion():
+        funcdict[sfname] = {
+            'name'                   : super.name(),
+            'description'            : super.description().strip(),
+            'citation'               : super.citation().strip(),
+            'ansatz'                 : super.ansatz(),
+            'max_points'             : super.max_points(),
+            'deriv'                  : super.deriv(),
+            'x_omega'                : super.x_omega(),
+            'c_omega'                : super.c_omega(),
+            'x_alpha'                : super.x_alpha(),
+            'c_alpha'                : super.c_alpha(),
+            'dispersion'             : super.dispersion(),
+            'dispersion_name'        : super.dispersion().name(),
+            'dispersion_description' : super.dispersion().description().strip(),
+            'dispersion_citation'    : super.dispersion().citation().strip(),
+            'is_gga'                 : super.is_gga(),
+            'is_meta'                : super.is_meta(),
+            'is_x_lrc'               : super.is_x_lrc(),
+            'is_c_lrc'               : super.is_c_lrc(),
+            'is_x_hybrid'            : super.is_x_hybrid(),
+            'is_c_hybrid'            : super.is_c_hybrid(),
+                           }
+
+    else:
+        funcdict[sfname] = {
+            'name'                   : super.name(),
+            'description'            : super.description().strip(),
+            'citation'               : super.citation().strip(),
+            'ansatz'                 : super.ansatz(),
+            'max_points'             : super.max_points(),
+            'deriv'                  : super.deriv(),
+            'x_omega'                : super.x_omega(),
+            'c_omega'                : super.c_omega(),
+            'x_alpha'                : super.x_alpha(),
+            'c_alpha'                : super.c_alpha(),
+            'dispersion'             : super.dispersion(),
+            'is_gga'                 : super.is_gga(),
+            'is_meta'                : super.is_meta(),
+            'is_x_lrc'               : super.is_x_lrc(),
+            'is_c_lrc'               : super.is_c_lrc(),
+            'is_x_hybrid'            : super.is_x_hybrid(),
+            'is_c_hybrid'            : super.is_c_hybrid(),
+                           }
+
+    #print funcdict[sfname]
+    #print '\n\n'
+
+    super.print_detail(3)
+
+
+def tf(rungbool, rungparam=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if rungbool is False:
+        return '   ---    '
+    else:
+        if rungparam == 0.0:
+            return '    Y     '
+        else:
+            return ' %8.6f ' % (rungparam)
+
+
+def header(filep, label, caption):
+    """Function to write reST table header."""
+
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    filep.write('\n.. table:: %s\n\n' % (caption))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-',
+         20 * '-', 60 * '-'))
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' % 
+        ('Name', 'Description', 'GGA?', 'Meta?', 'X_LRC?', 'X_Hybrid?', 'C_LRC?', 'C_Hybrid?',
+         'Dispersion?', 'Dispersion Description'))
+    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%60s=+\n' % 
+        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=',
+         20 * '=', 60 * '='))
+
+
+def body(filep, funcdict, fctl):
+    """Function to write line of reST table."""
+
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s |' % 
+        (funcdict[fctl]['name'], funcdict[fctl]['description'],
+        tf(funcdict[fctl]['is_gga']), tf(funcdict[fctl]['is_meta']),
+        tf(funcdict[fctl]['is_x_lrc'], funcdict[fctl]['x_omega']),
+        tf(funcdict[fctl]['is_x_hybrid'], funcdict[fctl]['x_alpha']),
+        tf(funcdict[fctl]['is_c_lrc'], funcdict[fctl]['c_omega']),
+        tf(funcdict[fctl]['is_c_hybrid'], funcdict[fctl]['c_alpha'])))
+
+    if funcdict[fctl]['dispersion']:
+        filep.write(' %20s | %60s |\n' %
+            (funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+    else:
+        filep.write(' %20s | %60s |\n' %
+            ('   ---    ', '   ---    '))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 
+         20 * '-', 60 * '-'))
+
+
+fall = open('autodoc_dft_all.rst', 'w')
+header(fall, 'all', 'DFT functionals available in |PSIfour|')
+fgga = open('autodoc_dft_gga.rst', 'w')
+header(fgga, 'gga', 'GGA functionals available in |PSIfour|')
+fmeta= open('autodoc_dft_meta.rst', 'w')
+header(fmeta, 'meta', 'Meta functionals available in |PSIfour|')
+flrc= open('autodoc_dft_lrc.rst', 'w')
+header(flrc, 'lrc', 'Long-Range-Corrected functionals available in |PSIfour|')
+fhybrid= open('autodoc_dft_hybrid.rst', 'w')
+header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
+fdisp= open('autodoc_dft_disp.rst', 'w')
+header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+
+fenergy = open('autodoc_dft_energy.rst', 'w')
+fenergy.write('\n.. _`table:energy_dft`:\n\n')
+fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+fenergy.write('| %-27s | %-100s |\n' % ('name', 'calls method'))
+fenergy.write('+=%27s=+=%100s=+\n' % (27 * '=', 100 * '='))
+
+for fctl in sorted(funcdict.iterkeys()):
+
+    body(fall, funcdict, fctl)
+
+    if funcdict[fctl]['is_gga']:
+        body(fgga, funcdict, fctl)
+
+    if funcdict[fctl]['is_meta']:
+        body(fmeta, funcdict, fctl)
+
+    if funcdict[fctl]['is_x_lrc'] or funcdict[fctl]['is_c_lrc']:
+        body(flrc, funcdict, fctl)
+
+    if funcdict[fctl]['is_x_hybrid'] or funcdict[fctl]['is_c_hybrid']:
+        body(fhybrid, funcdict, fctl)
+
+    if funcdict[fctl]['dispersion']:
+        body(fdisp, funcdict, fctl)
+
+    if funcdict[fctl]['dispersion']:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+    else:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+
+    fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+
+
+fall.write('\n')
+fall.close()
+fgga.write('\n')
+fgga.close()
+fmeta.write('\n')
+fmeta.close()
+flrc.write('\n')
+flrc.close()
+fhybrid.write('\n')
+fhybrid.close()
+fdisp.write('\n')
+fdisp.close()
+
+fenergy.write('\n')
+fenergy.close()
+
+--------------------------------------------------------------------------
+   => SVWN Composite Functional <= 
+
+    SVWN3 (RPA) LSDA Functional
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000   S_X
+
+   => Correlation Functionals <=
+
+    1.0000 VWN3RPA_C
+
+   => S_X Functional <=
+
+    Slater LSDA Exchange
+
+    J.C. Slater, Phys. Rev., 81(3):385-390, 1951
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PW91_C Composite Functional <= 
+
+    PW91 Correlation
+
+    J.P. Perdew, et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 PW91_C
+
+   => PW91_C Functional <=
+
+    PW91 Correlation
+
+    J.P. Perdew, et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886999999999999E-02
+            Cc0 =   4.2350000000000000E-03
+            Cc1 =   2.5680000000000001E+00
+            Cc2 =   2.3265999999999998E+01
+            Cc3 =   7.3889999999999997E-03
+            Cc4 =   8.7230000000000008E+00
+            Cc5 =   4.7199999999999998E-01
+            Cc6 =   7.3889999999999997E-02
+             Cx =  -1.6670000000000001E-03
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+           alph =   8.9999999999999997E-02
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6726322680061109E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545000000000000E-02
+            c0p =   3.1091000000000001E-02
+          d2fz0 =   1.7099210000000000E+00
+              k =   3.0936677262801355E+00
+             nu =   1.5755920349483143E+01
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => wSVWN Composite Functional <= 
+
+    LSDA SR-XC Functional
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000  wS_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+    1.0000 VWN3RPA_C
+
+   => wS_X Functional <=
+
+    Slater Short-Range LSDA Exchange
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => BP86 Composite Functional <= 
+
+    BP86 GGA Exchange-Correlation Functional
+
+    Null
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B88_X
+
+   => Correlation Functionals <=
+
+    1.0000 P86_C
+
+   => B88_X Functional <=
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   1.0000000000000000E+00
+          B88_d =   4.1999999999999997E-03
+
+   => P86_C Functional <=
+
+    P86 Correlation (PZ81 LSDA + P86 GGA)
+
+    J.P. Perdew, Phys. Rev. B., 33, 8822-8824, 1986
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Bg =   7.3889999999999999E-06
+           Cg_1 =   2.5680000000000000E-03
+           Cg_2 =   2.3265999999999998E-02
+           Cg_3 =   8.7230000000000008E+00
+           Cg_4 =   4.7199999999999998E-01
+           Cinf =   4.2350000000000000E-03
+             Cx =   1.6670000000000001E-03
+        EcFhd_1 =   1.5550000000000000E-02
+        EcFhd_2 =  -2.6900000000000000E-02
+        EcFhd_3 =   6.9999999999999999E-04
+        EcFhd_4 =  -4.7999999999999996E-03
+        EcFld_1 =  -8.4300000000000000E-02
+        EcFld_2 =   1.3980999999999999E+00
+        EcFld_3 =   2.6110000000000000E-01
+        EcPhd_1 =   3.1099999999999999E-02
+        EcPhd_2 =  -4.8000000000000001E-02
+        EcPhd_3 =   2.0000000000000000E-03
+        EcPhd_4 =  -1.1599999999999999E-02
+        EcPld_1 =  -1.4230000000000001E-01
+        EcPld_2 =   1.0528999999999999E+00
+        EcPld_3 =   3.3339999999999997E-01
+             Fg =   1.1000000000000000E-01
+           Pg_1 =   1.7450000000000001E+00
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => HCTH120 Composite Functional <= 
+
+    HCTH120 Pure-GGA Exchange-Correlation Functional
+
+    A.D. Boese, et. al., J. Chem. Phys., 112(4), 1670-1678, 2000
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 HCTH120_X
+
+   => Correlation Functionals <=
+
+    1.0000 HCTH120_C
+
+   => HCTH120_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   1.0916300000000001E+00
+         B97_a1 =  -7.4721499999999996E-01
+         B97_a2 =   5.0783300000000002E+00
+         B97_a3 =  -4.1074599999999997E+00
+         B97_a4 =   1.1717299999999999E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => HCTH120_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   5.1473000000000002E-01
+      B97_os_a1 =   6.9298200000000003E+00
+      B97_os_a2 =  -2.4707300000000000E+01
+      B97_os_a3 =   2.3109800000000000E+01
+      B97_os_a4 =  -1.1323399999999999E+01
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   4.8950800000000000E-01
+      B97_ss_a1 =  -2.6069900000000001E-01
+      B97_ss_a2 =   4.3291700000000000E-01
+      B97_ss_a3 =  -1.9924700000000000E+00
+      B97_ss_a4 =   2.4853100000000001E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => PW91 Composite Functional <= 
+
+    PW91 GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PW91_X
+
+   => Correlation Functionals <=
+
+    1.0000 PW91_C
+
+   => PW91_X Functional <=
+
+    PW91 Parameterized GGA Exchange
+
+    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+        PW91_a1 =   2.5200261004930145E-02
+        PW91_a2 =   1.0000058777807759E+00
+        PW91_a3 =   4.5136909421634400E-03
+        PW91_a4 =   2.4814604231799004E-03
+        PW91_a5 =   1.6455307846020562E+00
+        PW91_a6 =   1.0831086252292235E-06
+
+   => PW91_C Functional <=
+
+    PW91 Correlation
+
+    J.P. Perdew, et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886999999999999E-02
+            Cc0 =   4.2350000000000000E-03
+            Cc1 =   2.5680000000000001E+00
+            Cc2 =   2.3265999999999998E+01
+            Cc3 =   7.3889999999999997E-03
+            Cc4 =   8.7230000000000008E+00
+            Cc5 =   4.7199999999999998E-01
+            Cc6 =   7.3889999999999997E-02
+             Cx =  -1.6670000000000001E-03
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+           alph =   8.9999999999999997E-02
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6726322680061109E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545000000000000E-02
+            c0p =   3.1091000000000001E-02
+          d2fz0 =   1.7099210000000000E+00
+              k =   3.0936677262801355E+00
+             nu =   1.5755920349483143E+01
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => BLYP-D Composite Functional <= 
+
+    BLYP GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B88_X
+
+   => Correlation Functionals <=
+
+    1.0000 LYP_C
+
+   => B88_X Functional <=
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   1.0000000000000000E+00
+          B88_d =   4.1999999999999997E-03
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6 =   1.200000E+00
+
+   => BP86 Composite Functional <= 
+
+    BP86 GGA Exchange-Correlation Functional
+
+    Null
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B88_X
+
+   => Correlation Functionals <=
+
+    1.0000 P86_C
+
+   => B88_X Functional <=
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   1.0000000000000000E+00
+          B88_d =   4.1999999999999997E-03
+
+   => P86_C Functional <=
+
+    P86 Correlation (PZ81 LSDA + P86 GGA)
+
+    J.P. Perdew, Phys. Rev. B., 33, 8822-8824, 1986
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Bg =   7.3889999999999999E-06
+           Cg_1 =   2.5680000000000000E-03
+           Cg_2 =   2.3265999999999998E-02
+           Cg_3 =   8.7230000000000008E+00
+           Cg_4 =   4.7199999999999998E-01
+           Cinf =   4.2350000000000000E-03
+             Cx =   1.6670000000000001E-03
+        EcFhd_1 =   1.5550000000000000E-02
+        EcFhd_2 =  -2.6900000000000000E-02
+        EcFhd_3 =   6.9999999999999999E-04
+        EcFhd_4 =  -4.7999999999999996E-03
+        EcFld_1 =  -8.4300000000000000E-02
+        EcFld_2 =   1.3980999999999999E+00
+        EcFld_3 =   2.6110000000000000E-01
+        EcPhd_1 =   3.1099999999999999E-02
+        EcPhd_2 =  -4.8000000000000001E-02
+        EcPhd_3 =   2.0000000000000000E-03
+        EcPhd_4 =  -1.1599999999999999E-02
+        EcPld_1 =  -1.4230000000000001E-01
+        EcPld_2 =   1.0528999999999999E+00
+        EcPld_3 =   3.3339999999999997E-01
+             Fg =   1.1000000000000000E-01
+           Pg_1 =   1.7450000000000001E+00
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PW91_X Composite Functional <= 
+
+    PW91 Parameterized GGA Exchange
+
+    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PW91_X
+
+   => Correlation Functionals <=
+
+
+   => PW91_X Functional <=
+
+    PW91 Parameterized GGA Exchange
+
+    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+        PW91_a1 =   2.5200261004930145E-02
+        PW91_a2 =   1.0000058777807759E+00
+        PW91_a3 =   4.5136909421634400E-03
+        PW91_a4 =   2.4814604231799004E-03
+        PW91_a5 =   1.6455307846020562E+00
+        PW91_a6 =   1.0831086252292235E-06
+
+   => B3LYP5-D Composite Functional <= 
+
+    B3LYP5 Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.000000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000  B3_X
+    0.2000    HF 
+
+   => Correlation Functionals <=
+
+    0.8100 LYP_C
+    0.1900 VWN5RPA_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => VWN5RPA_C Functional <=
+
+    VWN5 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+           Ac_1 =  -1.6886863940389629E-02
+           Ac_2 =  -2.2834399999999999E-01
+           Ac_3 =   1.0683499999999999E+00
+           Ac_4 =   1.1481299999999999E+01
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+          d2fz0 =   1.7099209341613653E+00
+         two_13 =   1.2599210498948732E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6 =   1.050000E+00
+
+   => wS_X Composite Functional <= 
+
+    Slater Short-Range LSDA Exchange
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000  wS_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+
+   => wS_X Functional <=
+
+    Slater Short-Range LSDA Exchange
+
+    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+
+   => PBE0 Composite Functional <= 
+
+    PBE0 Hybrid GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.500000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.7500 PBE_X
+    0.2500    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => PBE_X Functional <=
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   2.1951497276451709E-01
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PBE_X Composite Functional <= 
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PBE_X
+
+   => Correlation Functionals <=
+
+
+   => PBE_X Functional <=
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   2.1951497276451709E-01
+
+   => PBE_C Composite Functional <= 
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => HCTH Composite Functional <= 
+
+    HCTH Pure-GGA Exchange-Correlation Functional
+
+    F.A. Hamprecht et. al., J. Chem. Phys., 109(15), 6264-6271
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 HCTH_X
+
+   => Correlation Functionals <=
+
+    1.0000 HCTH_C
+
+   => HCTH_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   1.0931999999999999E+00
+         B97_a1 =  -7.4405600000000005E-01
+         B97_a2 =   5.5991999999999997E+00
+         B97_a3 =  -6.7854900000000002E+00
+         B97_a4 =   4.4935700000000001E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => HCTH_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   7.2997400000000001E-01
+      B97_os_a1 =   3.3528699999999998E+00
+      B97_os_a2 =  -1.1542999999999999E+01
+      B97_os_a3 =   8.0856399999999997E+00
+      B97_os_a4 =  -4.4785700000000004E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   2.2260099999999999E-01
+      B97_ss_a1 =  -3.3862200000000002E-02
+      B97_ss_a2 =  -1.2517000000000000E-02
+      B97_ss_a3 =  -8.0249599999999999E-01
+      B97_ss_a4 =   1.5539600000000000E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => PZ81_C Composite Functional <= 
+
+    PZ81 Correlation
+
+    J.P. Perdew, A. Zunger, Phys. Rev. B., 23, 5048-5079, 1981
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 PZ81_C
+
+   => PZ81_C Functional <=
+
+    PZ81 Correlation
+
+    J.P. Perdew, A. Zunger, Phys. Rev. B., 23, 5048-5079, 1981
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+        EcFhd_1 =   1.5550000000000000E-02
+        EcFhd_2 =  -2.6900000000000000E-02
+        EcFhd_3 =   6.9999999999999999E-04
+        EcFhd_4 =  -4.7999999999999996E-03
+        EcFld_1 =  -8.4300000000000000E-02
+        EcFld_2 =   1.3980999999999999E+00
+        EcFld_3 =   2.6110000000000000E-01
+        EcPhd_1 =   3.1099999999999999E-02
+        EcPhd_2 =  -4.8000000000000001E-02
+        EcPhd_3 =   2.0000000000000000E-03
+        EcPhd_4 =  -1.1599999999999999E-02
+        EcPld_1 =  -1.4230000000000001E-01
+        EcPld_2 =   1.0528999999999999E+00
+        EcPld_3 =   3.3339999999999997E-01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => FT97_C Composite Functional <= 
+
+    FT97 Correlation (Involves Ei functions)
+
+    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 FT97_C
+
+   => FT97_C Functional <=
+
+    FT97 Correlation (Involves Ei functions)
+
+    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             a1 =   1.6221187669999999E+00
+             a2 =   4.8995807600000002E-01
+             a3 =   1.3790219410000000E+00
+             a4 =   4.9462813529999998E+00
+             a5 =   3.6006120589999999E+00
+              c =   6.2035049089939986E-01
+             c0 =   3.1090690869654901E-02
+             k1 =   9.3901599999999996E-01
+             k2 =   1.7331700000000001E+00
+           kaa0 =   1.2008017740000001E+00
+           kaa1 =  -8.1290434499999997E-01
+           kaa2 =   8.5961444499999995E-01
+           kab0 =   1.2915510740000000E+00
+           kab1 =  -3.4906417299999998E-01
+           raa1 =   6.5563882299999998E-01
+           raa2 =   1.0893388479999999E+00
+           rab1 =   8.3275879999999997E-02
+       tspi_m13 =   2.0678349696646670E-01
+
+   => M05 Composite Functional <= 
+
+    Heavily Parameterized Hybrid Meta-GGA XC Functional
+
+    Zhao et. al., J. Chem. Phys., 123, 161103, 2005
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =           TRUE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.800000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.7200 M05_X
+    0.2800    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 M05_C
+
+   => M05_X Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =           TRUE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+        Meta_a0 =   1.0000000000000000E+00
+        Meta_a1 =   8.1509999999999999E-02
+       Meta_a10 =   3.6480199999999998E+00
+       Meta_a11 =   3.4022480000000002E+01
+        Meta_a2 =  -4.3956000000000001E-01
+        Meta_a3 =  -3.2242199999999999E+00
+        Meta_a4 =   2.0181900000000002E+00
+        Meta_a5 =   8.7943099999999994E+00
+        Meta_a6 =  -2.9499999999999999E-03
+        Meta_a7 =   9.8202900000000000E+00
+        Meta_a8 =  -4.8235099999999997E+00
+        Meta_a9 =  -4.8175739999999998E+01
+         PBE_kp =   8.0400042382547532E-01
+         PBE_mu =   2.1951024058061153E-01
+
+   => M05_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =           TRUE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   1.0000000000000000E+00
+      B97_os_a1 =   3.7856900000000002E+00
+      B97_os_a2 =  -1.4152609999999999E+01
+      B97_os_a3 =  -7.4658899999999999E+00
+      B97_os_a4 =   1.7944910000000000E+01
+    B97_os_gamma =   6.1999999999999998E-03
+      B97_ss_a0 =   1.0000000000000000E+00
+      B97_ss_a1 =   3.7734399999999999E+00
+      B97_ss_a2 =  -2.6044630000000002E+01
+      B97_ss_a3 =   3.0699130000000000E+01
+      B97_ss_a4 =  -9.2269500000000004E+00
+    B97_ss_gamma =   5.9999999999999998E-02
+
+   => B88_X Composite Functional <= 
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B88_X
+
+   => Correlation Functionals <=
+
+
+   => B88_X Functional <=
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   1.0000000000000000E+00
+          B88_d =   4.1999999999999997E-03
+
+   => wB88_X Composite Functional <= 
+
+    B88 Short-Range GGA Exchange (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wB88_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+
+   => wB88_X Functional <=
+
+    B88 Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   2.5393300000000001E-02
+            Ha3 =  -6.7307500000000006E-02
+            Ha4 =   8.9147599999999994E-02
+            Ha5 =  -4.5416800000000000E-02
+            Ha6 =  -7.6581000000000002E-03
+            Ha7 =   1.4250600000000000E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =  -2.6505999999999998E+00
+            Hb2 =   3.9110800000000001E+00
+            Hb3 =  -3.3150900000000001E+00
+            Hb4 =   1.5448500000000001E+00
+            Hb5 =  -1.9838600000000001E-01
+            Hb6 =  -1.3611200000000001E-01
+            Hb7 =   6.4786200000000002E-02
+            Hb8 =   1.5958600000000000E-02
+            Hb9 =  -2.4506600000000000E-04
+
+   => FT97B_X Composite Functional <= 
+
+    Filitov and Theil 1997 Exchange
+
+    M. Filatov and W. Theil, Mol. Phys., 91(5), 847-859, 1997.
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 FT97B_X
+
+   => Correlation Functionals <=
+
+
+   => FT97B_X Functional <=
+
+    Filitov and Theil 1997 Exchange
+
+    M. Filatov and W. Theil, Mol. Phys., 91(5), 847-859, 1997.
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              c =  -9.3052573634909974E-01
+             d0 =   2.9136440000000000E-03
+             d1 =   9.4741689999999995E-04
+             d2 =   2.5011489999999999E+03
+
+   => B3LYP5 Composite Functional <= 
+
+    B3LYP5 Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.000000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000  B3_X
+    0.2000    HF 
+
+   => Correlation Functionals <=
+
+    0.8100 LYP_C
+    0.1900 VWN5RPA_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => VWN5RPA_C Functional <=
+
+    VWN5 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+           Ac_1 =  -1.6886863940389629E-02
+           Ac_2 =  -2.2834399999999999E-01
+           Ac_3 =   1.0683499999999999E+00
+           Ac_4 =   1.1481299999999999E+01
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+          d2fz0 =   1.7099209341613653E+00
+         two_13 =   1.2599210498948732E+00
+
+   => PBE Composite Functional <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PBE_X
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => PBE_X Functional <=
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   2.1951497276451709E-01
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PW92_C Composite Functional <= 
+
+
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 PW92_C
+
+   => PW92_C Functional <=
+
+
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
+   => B3LYP Composite Functional <= 
+
+    B3LYP Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.000000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000  B3_X
+    0.2000    HF 
+
+   => Correlation Functionals <=
+
+    0.1900 VWN3RPA_C
+    0.8100 LYP_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => VWN3_C Composite Functional <= 
+
+    VWN3 LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 VWN3_C
+
+   => VWN3_C Functional <=
+
+    VWN3 LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -3.2500000000000001E-01
+          EcF_3 =   7.0604199999999997E+00
+          EcF_4 =   1.8057800000000000E+01
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -1.0498000000000000E-01
+          EcP_3 =   3.7274400000000001E+00
+          EcP_4 =   1.2935200000000000E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => P86_C Composite Functional <= 
+
+    P86 Correlation (PZ81 LSDA + P86 GGA)
+
+    J.P. Perdew, Phys. Rev. B., 33, 8822-8824, 1986
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 P86_C
+
+   => P86_C Functional <=
+
+    P86 Correlation (PZ81 LSDA + P86 GGA)
+
+    J.P. Perdew, Phys. Rev. B., 33, 8822-8824, 1986
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Bg =   7.3889999999999999E-06
+           Cg_1 =   2.5680000000000000E-03
+           Cg_2 =   2.3265999999999998E-02
+           Cg_3 =   8.7230000000000008E+00
+           Cg_4 =   4.7199999999999998E-01
+           Cinf =   4.2350000000000000E-03
+             Cx =   1.6670000000000001E-03
+        EcFhd_1 =   1.5550000000000000E-02
+        EcFhd_2 =  -2.6900000000000000E-02
+        EcFhd_3 =   6.9999999999999999E-04
+        EcFhd_4 =  -4.7999999999999996E-03
+        EcFld_1 =  -8.4300000000000000E-02
+        EcFld_2 =   1.3980999999999999E+00
+        EcFld_3 =   2.6110000000000000E-01
+        EcPhd_1 =   3.1099999999999999E-02
+        EcPhd_2 =  -4.8000000000000001E-02
+        EcPhd_3 =   2.0000000000000000E-03
+        EcPhd_4 =  -1.1599999999999999E-02
+        EcPld_1 =  -1.4230000000000001E-01
+        EcPld_2 =   1.0528999999999999E+00
+        EcPld_3 =   3.3339999999999997E-01
+             Fg =   1.1000000000000000E-01
+           Pg_1 =   1.7450000000000001E+00
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => VWN5_C Composite Functional <= 
+
+    VWN5 LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 VWN5_C
+
+   => VWN5_C Functional <=
+
+    VWN5 LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+           Ac_1 =  -1.6886863940389629E-02
+           Ac_2 =  -4.7584000000000003E-03
+           Ac_3 =   1.1310700000000000E+00
+           Ac_4 =   1.3004500000000000E+01
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -3.2500000000000001E-01
+          EcF_3 =   7.0604199999999997E+00
+          EcF_4 =   1.8057800000000000E+01
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -1.0498000000000000E-01
+          EcP_3 =   3.7274400000000001E+00
+          EcP_4 =   1.2935200000000000E+01
+              c =   6.2035049089939986E-01
+          d2fz0 =   1.7099209341613653E+00
+         two_13 =   1.2599210498948732E+00
+
+   => wBLYP Composite Functional <= 
+
+    BLYP SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wB88_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+    1.0000 LYP_C
+
+   => wB88_X Functional <=
+
+    B88 Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   2.5393300000000001E-02
+            Ha3 =  -6.7307500000000006E-02
+            Ha4 =   8.9147599999999994E-02
+            Ha5 =  -4.5416800000000000E-02
+            Ha6 =  -7.6581000000000002E-03
+            Ha7 =   1.4250600000000000E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =  -2.6505999999999998E+00
+            Hb2 =   3.9110800000000001E+00
+            Hb3 =  -3.3150900000000001E+00
+            Hb4 =   1.5448500000000001E+00
+            Hb5 =  -1.9838600000000001E-01
+            Hb6 =  -1.3611200000000001E-01
+            Hb7 =   6.4786200000000002E-02
+            Hb8 =   1.5958600000000000E-02
+            Hb9 =  -2.4506600000000000E-04
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => B97-0 Composite Functional <= 
+
+    B97-0 Hybrid-GGA Exchange-Correlation Functional
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   1.943000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-0_X
+    0.1943    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 B97-0_C
+
+   => B97-0_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.241157E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   8.0940000000000001E-01
+         B97_a1 =   5.0729999999999997E-01
+         B97_a2 =   7.4809999999999999E-01
+      B97_gamma =   4.0000000000000001E-03
+
+   => B97-0_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   9.4540000000000002E-01
+      B97_os_a1 =   7.4709999999999999E-01
+      B97_os_a2 =  -4.5960999999999999E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   1.7369999999999999E-01
+      B97_ss_a1 =   2.3487000000000000E+00
+      B97_ss_a2 =  -2.4868000000000001E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => B97-1 Composite Functional <= 
+
+    B97-1 Hybrid-GGA Exchange-Correlation Functional
+
+    F.A. Hamprecht et. al., J. Chem. Phys., 109(15), 6264-6271, 1998
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.100000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-1_X
+    0.2100    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 B97-1_C
+
+   => B97-1_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.265823E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   7.8951800000000005E-01
+         B97_a1 =   5.7380500000000001E-01
+         B97_a2 =   6.6097499999999998E-01
+      B97_gamma =   4.0000000000000001E-03
+
+   => B97-1_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   9.5568900000000001E-01
+      B97_os_a1 =   7.8855200000000003E-01
+      B97_os_a2 =  -5.4786900000000003E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   8.2001099999999993E-02
+      B97_ss_a1 =   2.7168100000000002E+00
+      B97_ss_a2 =  -2.8710300000000002E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => B97-2 Composite Functional <= 
+
+    B97-2 Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Wilson et. al., J. Chem. Phys., 115(20), 9233-9242, 2001
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.100000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-2_X
+    0.2100    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 B97-2_C
+
+   => B97-2_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.265823E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   8.2764199999999999E-01
+         B97_a1 =   4.7840000000000001E-02
+         B97_a2 =   1.7612500000000000E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => B97-2_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   9.9984899999999999E-01
+      B97_os_a1 =   1.4062600000000001E+00
+      B97_os_a2 =  -7.4405999999999999E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   5.8580800000000000E-01
+      B97_ss_a1 =  -6.9168200000000002E-01
+      B97_ss_a2 =   3.9479599999999998E-01
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => B3_X Composite Functional <= 
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000  B3_X
+
+   => Correlation Functionals <=
+
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.000000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => wPBE0 Composite Functional <= 
+
+    PBE0 SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.500000E-01
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.7500 wPBE_X [\omega = 0.3000]
+    0.7500 HF,LR [\omega = 0.3000]
+    0.2500    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => wB97X Composite Functional <= 
+
+    Parameterized Hybrid LRC B97 GGA XC Functional
+
+    J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =           TRUE
+    X_Alpha  =   1.577060E-01
+    X_Omega  =   4.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wB97X_X [\omega = 0.4000]
+    0.8423 HF,LR [\omega = 0.4000]
+    0.1577    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 wB97X_C
+
+   => wB97X_X Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.187234E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+         B97_a0 =   8.4229399999999999E-01
+         B97_a1 =   7.2647899999999999E-01
+         B97_a2 =   1.0476000000000001E+00
+         B97_a3 =  -5.7063499999999996E+00
+         B97_a4 =   1.3279400000000001E+01
+      B97_gamma =   4.0000000000000001E-03
+
+   => wB97X_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   1.0000000000000000E+00
+      B97_os_a1 =   2.3703099999999999E+00
+      B97_os_a2 =  -1.1399500000000000E+01
+      B97_os_a3 =   6.5840500000000004E+00
+      B97_os_a4 =  -3.7813200000000000E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   1.0000000000000000E+00
+      B97_ss_a1 =  -4.3387900000000004E+00
+      B97_ss_a2 =   1.8230799999999999E+01
+      B97_ss_a3 =  -3.1742999999999999E+01
+      B97_ss_a4 =   1.7290099999999999E+01
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => S_X Composite Functional <= 
+
+    Slater LSDA Exchange
+
+    J.C. Slater, Phys. Rev., 81(3):385-390, 1951
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000   S_X
+
+   => Correlation Functionals <=
+
+
+   => S_X Functional <=
+
+    Slater LSDA Exchange
+
+    J.C. Slater, Phys. Rev., 81(3):385-390, 1951
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+
+   => VWN5RPA_C Composite Functional <= 
+
+    VWN5 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 VWN5RPA_C
+
+   => VWN5RPA_C Functional <=
+
+    VWN5 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+           Ac_1 =  -1.6886863940389629E-02
+           Ac_2 =  -2.2834399999999999E-01
+           Ac_3 =   1.0683499999999999E+00
+           Ac_4 =   1.1481299999999999E+01
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+          d2fz0 =   1.7099209341613653E+00
+         two_13 =   1.2599210498948732E+00
+
+   => FT97 Composite Functional <= 
+
+   FT97 GGA Exchange-Correlation Functional
+
+    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 FT97B_X
+
+   => Correlation Functionals <=
+
+    1.0000 FT97_C
+
+   => FT97B_X Functional <=
+
+    Filitov and Theil 1997 Exchange
+
+    M. Filatov and W. Theil, Mol. Phys., 91(5), 847-859, 1997.
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              c =  -9.3052573634909974E-01
+             d0 =   2.9136440000000000E-03
+             d1 =   9.4741689999999995E-04
+             d2 =   2.5011489999999999E+03
+
+   => FT97_C Functional <=
+
+    FT97 Correlation (Involves Ei functions)
+
+    M. Filatov and W. Theil, Int. J. Quant. Chem., 62, 603-616, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             a1 =   1.6221187669999999E+00
+             a2 =   4.8995807600000002E-01
+             a3 =   1.3790219410000000E+00
+             a4 =   4.9462813529999998E+00
+             a5 =   3.6006120589999999E+00
+              c =   6.2035049089939986E-01
+             c0 =   3.1090690869654901E-02
+             k1 =   9.3901599999999996E-01
+             k2 =   1.7331700000000001E+00
+           kaa0 =   1.2008017740000001E+00
+           kaa1 =  -8.1290434499999997E-01
+           kaa2 =   8.5961444499999995E-01
+           kab0 =   1.2915510740000000E+00
+           kab1 =  -3.4906417299999998E-01
+           raa1 =   6.5563882299999998E-01
+           raa2 =   1.0893388479999999E+00
+           rab1 =   8.3275879999999997E-02
+       tspi_m13 =   2.0678349696646670E-01
+
+   => wPBE Composite Functional <= 
+
+    PBE SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   4.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wPBE_X [\omega = 0.4000]
+    1.0000 HF,LR [\omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => wB97 Composite Functional <= 
+
+    Parameterized LRC B97 GGA XC Functional
+
+    J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   4.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wB97_X [\omega = 0.4000]
+    1.0000 HF,LR [\omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000 wB97_C
+
+   => wB97_X Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+         B97_a0 =   1.0000000000000000E+00
+         B97_a1 =   1.1311599999999999E+00
+         B97_a2 =  -2.7491500000000002E+00
+         B97_a3 =   1.2090000000000000E+01
+         B97_a4 =  -5.7164200000000003E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => wB97_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   1.0000000000000000E+00
+      B97_os_a1 =   3.9905100000000000E+00
+      B97_os_a2 =  -1.7006599999999999E+01
+      B97_os_a3 =   1.0729200000000001E+00
+      B97_os_a4 =   8.8821100000000008E+00
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   1.0000000000000000E+00
+      B97_ss_a1 =  -2.5535199999999998E+00
+      B97_ss_a2 =   1.1892600000000000E+01
+      B97_ss_a3 =  -2.6945200000000000E+01
+      B97_ss_a4 =   1.7092700000000001E+01
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => HCTH147 Composite Functional <= 
+
+    HCTH147 Pure-GGA Exchange-Correlation Functional
+
+    A.D. Boese, et. al., J. Chem. Phys., 112(4), 1670-1678, 2000
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 HCTH147_X
+
+   => Correlation Functionals <=
+
+    1.0000 HCTH147_C
+
+   => HCTH147_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   1.0902499999999999E+00
+         B97_a1 =  -7.9919399999999996E-01
+         B97_a2 =   5.5721200000000000E+00
+         B97_a3 =  -5.8676000000000004E+00
+         B97_a4 =   3.0454400000000001E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => HCTH147_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   5.4235199999999995E-01
+      B97_os_a1 =   7.0146400000000000E+00
+      B97_os_a2 =  -2.8382200000000001E+01
+      B97_os_a3 =   3.5032899999999998E+01
+      B97_os_a4 =  -2.0428400000000000E+01
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   5.6257599999999996E-01
+      B97_ss_a1 =   1.7143599999999998E-02
+      B97_ss_a2 =  -1.3063600000000000E+00
+      B97_ss_a3 =   1.0574699999999999E+00
+      B97_ss_a4 =   8.8542900000000002E-01
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => B97-D Composite Functional <= 
+
+    B97-D Pure-GGA Exchange-Correlation Functional
+
+    S. Grimme, J. Comput. Chem., 27, 1787-1799, 2006
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B97-D_X
+
+   => Correlation Functionals <=
+
+    1.0000 B97-D_C
+
+   => B97-D_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   1.0866199999999999E+00
+         B97_a1 =  -5.2127000000000001E-01
+         B97_a2 =   3.2542900000000001E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => B97-D_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   6.9040999999999997E-01
+      B97_os_a1 =   6.3026999999999997E+00
+      B97_os_a2 =  -1.4971200000000000E+01
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   2.2339999999999999E-01
+      B97_ss_a1 =  -1.5620799999999999E+00
+      B97_ss_a2 =   3.2542900000000001E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6 =   1.250000E+00
+
+   => BLYP Composite Functional <= 
+
+    BLYP GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 B88_X
+
+   => Correlation Functionals <=
+
+    1.0000 LYP_C
+
+   => B88_X Functional <=
+
+    Becke88 GGA Exchange
+
+    A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   1.0000000000000000E+00
+          B88_d =   4.1999999999999997E-03
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => HCTH407 Composite Functional <= 
+
+    HCTH407 Pure-GGA Exchange-Correlation Functional
+
+    A.D. Boese and N.C. Handy, J. Chem. Phys., 114(13), 5497-5503, 2001
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 HCTH407_X
+
+   => Correlation Functionals <=
+
+    1.0000 HCTH407_C
+
+   => HCTH407_X Functional <=
+
+    B97 Parameterized GGA Exchange
+
+    A.D. Becke, J. Chem. Phys., 107(20), 8554-8560, 1997
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         B97_a0 =   1.0818399999999999E+00
+         B97_a1 =  -5.1833899999999999E-01
+         B97_a2 =   3.4256199999999999E+00
+         B97_a3 =  -2.6290100000000001E+00
+         B97_a4 =   2.2885499999999999E+00
+      B97_gamma =   4.0000000000000001E-03
+
+   => HCTH407_C Functional <=
+
+
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+      B97_os_a0 =   5.8907600000000004E-01
+      B97_os_a1 =   4.4237399999999996E+00
+      B97_os_a2 =  -1.9221800000000002E+01
+      B97_os_a3 =   4.2572099999999999E+01
+      B97_os_a4 =  -4.2005200000000002E+01
+    B97_os_gamma =   6.0000000000000001E-03
+      B97_ss_a0 =   1.1877700000000000E+00
+      B97_ss_a1 =  -2.4029199999999999E+00
+      B97_ss_a2 =   5.6174099999999996E+00
+      B97_ss_a3 =  -9.1792300000000004E+00
+      B97_ss_a4 =   6.2479800000000001E+00
+    B97_ss_gamma =   2.0000000000000001E-01
+
+   => B3LYP-D Composite Functional <= 
+
+    B3LYP Hybrid-GGA Exchange-Correlation Functional
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.000000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.8000  B3_X
+    0.2000    HF 
+
+   => Correlation Functionals <=
+
+    0.1900 VWN3RPA_C
+    0.8100 LYP_C
+
+   => B3_X Functional <=
+
+    Becke88 GGA Exchange (B3LYP weighting)
+
+    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          B88_a =   9.0000000000000002E-01
+          B88_d =   4.1999999999999997E-03
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.900000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   8.100000E-01
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6 =   1.050000E+00
+
+   => VWN3RPA_C Composite Functional <= 
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =          FALSE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 VWN3RPA_C
+
+   => VWN3RPA_C Functional <=
+
+    VWN3 (RPA) LSDA Correlation
+
+    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980
+
+    GGA   =          FALSE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+          EcF_1 =   1.5545349999999999E-02
+          EcF_2 =  -7.4329400000000001E-01
+          EcF_3 =   2.0123100000000001E+01
+          EcF_4 =   1.0157800000000000E+02
+          EcP_1 =   3.1090699999999999E-02
+          EcP_2 =  -4.0928599999999998E-01
+          EcP_3 =   1.3071999999999999E+01
+          EcP_4 =   4.2719799999999999E+01
+              c =   6.2035049089939986E-01
+         two_13 =   1.2599210498948732E+00
+
+   => wPBEsol_X Composite Functional <= 
+
+    PBEsol Short-Range GGA Exchange (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wPBEsol_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+
+   => wPBEsol_X Functional <=
+
+    PBEsol Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   4.7333000000000002E-03
+            Ha3 =   4.0330400000000002E-02
+            Ha4 =  -5.7461499999999999E-02
+            Ha5 =   4.3539500000000002E-02
+            Ha6 =  -2.1625100000000001E-02
+            Ha7 =   6.3721000000000003E-03
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   8.5205599999999997E+00
+            Hb2 =  -1.3988500000000000E+01
+            Hb3 =   9.2858300000000007E+00
+            Hb4 =  -3.2728700000000002E+00
+            Hb5 =   8.4349900000000000E-01
+            Hb6 =  -2.3554300000000000E-01
+            Hb7 =   8.4707400000000002E-02
+            Hb8 =  -1.7156100000000001E-02
+            Hb9 =   5.0552000000000001E-03
+
+   => wPBE_X Composite Functional <= 
+
+    PBE Short-Range GGA Exchange (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wPBE_X [\omega = 0.3000]
+    1.0000 HF,LR [\omega = 0.3000]
+
+   => Correlation Functionals <=
+
+
+   => wPBE_X Functional <=
+
+    PBE Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   1.5994100000000001E-02
+            Ha3 =   8.5299500000000000E-02
+            Ha4 =  -1.6036800000000001E-01
+            Ha5 =   1.5264500000000000E-01
+            Ha6 =  -9.7126299999999999E-02
+            Ha7 =   4.2206100000000003E-02
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   5.3331900000000001E+00
+            Hb2 =  -1.2478000000000000E+01
+            Hb3 =   1.1098800000000001E+01
+            Hb4 =  -5.1101299999999998E+00
+            Hb5 =   1.7146800000000000E+00
+            Hb6 =  -6.1038000000000003E-01
+            Hb7 =   3.0755500000000002E-01
+            Hb8 =  -7.7054700000000004E-02
+            Hb9 =   3.3484000000000000E-02
+
+   => wPBEsol Composite Functional <= 
+
+    PBEsol SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   4.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 wPBEsol_X [\omega = 0.4000]
+    1.0000 HF,LR [\omega = 0.4000]
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => wPBEsol_X Functional <=
+
+    PBEsol Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   4.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   4.7333000000000002E-03
+            Ha3 =   4.0330400000000002E-02
+            Ha4 =  -5.7461499999999999E-02
+            Ha5 =   4.3539500000000002E-02
+            Ha6 =  -2.1625100000000001E-02
+            Ha7 =   6.3721000000000003E-03
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   8.5205599999999997E+00
+            Hb2 =  -1.3988500000000000E+01
+            Hb3 =   9.2858300000000007E+00
+            Hb4 =  -3.2728700000000002E+00
+            Hb5 =   8.4349900000000000E-01
+            Hb6 =  -2.3554300000000000E-01
+            Hb7 =   8.4707400000000002E-02
+            Hb8 =  -1.7156100000000001E-02
+            Hb9 =   5.0552000000000001E-03
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PBESOL_X Composite Functional <= 
+
+    PBEsol GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PBEsol_X
+
+   => Correlation Functionals <=
+
+
+   => PBEsol_X Functional <=
+
+    PBEsol GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   1.2345679012345678E-01
+
+   => LYP_C Composite Functional <= 
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+
+   => Correlation Functionals <=
+
+    1.0000 LYP_C
+
+   => LYP_C Functional <=
+
+    LYP Correlation
+
+    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 (1989)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+              A =   4.9180000000000001E-02
+              B =   1.3200000000000001E-01
+              C =   2.5330000000000003E-01
+          CFext =   3.6462398978764774E+01
+             Dd =   3.4899999999999998E-01
+
+   => wPBEsol0 Composite Functional <= 
+
+    PBEsol0 SR-XC Functional (HJS Model)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =           TRUE
+    X_Hybrid =           TRUE
+    X_Alpha  =   2.500000E-01
+    X_Omega  =   3.000000E-01
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.7500 wPBEsol_X [\omega = 0.3000]
+    0.7500 HF,LR [\omega = 0.3000]
+    0.2500    HF 
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => wPBEsol_X Functional <=
+
+    PBEsol Short-Range GGA Exchange (HJS Formalism)
+
+    Henderson et. al., J. Chem. Phys., 128, 194105, 2008
+    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =           TRUE
+    Alpha =   1.000000E+00
+    Omega =   3.000000E-01
+
+    > Parameters <
+
+              A =   7.5721099999999997E-01
+              B =  -1.0636400000000000E-01
+              C =  -1.1864900000000000E-01
+              D =   6.0965000000000003E-01
+              E =  -4.7796300000000000E-02
+            Ha0 =   0.0000000000000000E+00
+            Ha1 =   0.0000000000000000E+00
+            Ha2 =   4.7333000000000002E-03
+            Ha3 =   4.0330400000000002E-02
+            Ha4 =  -5.7461499999999999E-02
+            Ha5 =   4.3539500000000002E-02
+            Ha6 =  -2.1625100000000001E-02
+            Ha7 =   6.3721000000000003E-03
+            Hb0 =   1.0000000000000000E+00
+            Hb1 =   8.5205599999999997E+00
+            Hb2 =  -1.3988500000000000E+01
+            Hb3 =   9.2858300000000007E+00
+            Hb4 =  -3.2728700000000002E+00
+            Hb5 =   8.4349900000000000E-01
+            Hb6 =  -2.3554300000000000E-01
+            Hb7 =   8.4707400000000002E-02
+            Hb8 =  -1.7156100000000001E-02
+            Hb9 =   5.0552000000000001E-03
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => PBE-D Composite Functional <= 
+
+    PBE GGA Exchange-Correlation Functional
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    Points   =              1
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =          FALSE
+    X_Alpha  =   0.000000E+00
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    1.0000 PBE_X
+
+   => Correlation Functionals <=
+
+    1.0000 PBE_C
+
+   => PBE_X Functional <=
+
+    PBE GGA Exchange Hole (Parameter Free)
+
+    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+         PBE_kp =   8.0400000000000005E-01
+         PBE_mu =   2.1951497276451709E-01
+
+   => PBE_C Functional <=
+
+    PBE Correlation
+
+    J.P. Perdew, K. Burke., and M. Ernzerhof, Phys. Rev. Lett., 77, 3865-3868, 1996
+
+    GGA   =           TRUE
+    Meta  =          FALSE
+    LRC   =          FALSE
+    Alpha =   1.000000E+00
+    Omega =   0.000000E+00
+
+    > Parameters <
+
+             Aa =   1.6886900000000000E-02
+            a1a =   1.1125000000000000E-01
+            a1f =   2.0548000000000000E-01
+            a1p =   2.1370000000000000E-01
+            b1a =   1.0356999999999999E+01
+            b1f =   1.4118900000000000E+01
+            b1p =   7.5956999999999999E+00
+            b2a =   3.6231000000000000E+00
+            b2f =   6.1977000000000002E+00
+            b2p =   3.5876000000000001E+00
+            b3a =   8.8026000000000004E-01
+            b3f =   3.3662000000000001E+00
+            b3p =   1.6382000000000001E+00
+            b4a =   4.9670999999999998E-01
+            b4f =   6.2517000000000000E-01
+            b4p =   4.9293999999999999E-01
+            bet =   6.6724550603149205E-02
+              c =   6.2035049089939986E-01
+            c0f =   1.5545349999999999E-02
+            c0p =   3.1090699999999999E-02
+          d2fz0 =   1.7099209341613653E+00
+         gammas =   3.1090690869654901E-02
+              k =   3.0936677262801355E+00
+         pi_m12 =   5.6418958354775628E-01
+         two_13 =   1.2599210498948732E+00
+
+   => -D2: Empirical Dispersion <=
+
+    Grimme's -D2 Dispersion Correction
+
+    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799
+
+    S6 =   7.500000E-01
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

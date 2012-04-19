@@ -17,11 +17,12 @@ from molutil import *
 from text import *
 from collections import defaultdict
 from procutil import *
+# never import aliases into this file
 
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
-    """Function to make primary function call to energy(), opt(), etc.
+    r"""Function to make primary function call to energy(), opt(), etc.
     with options dictionary *largs*.
     Useful when *funcarg* to call is stored in variable.
 
@@ -424,7 +425,7 @@ nbody = n_body
 ###################
 
 def cp(name, **kwargs):
-    """The cp function computes counterpoise-corrected two-body interaction energies
+    r"""The cp function computes counterpoise-corrected two-body interaction energies
     for complexes composed of arbitrary numbers of monomers.
 
     :aliases: counterpoise_correct(), counterpoise_correction()
@@ -432,9 +433,10 @@ def cp(name, **kwargs):
     :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY <CP-CORRECTED2-BODYINTERACTIONENERGY>`
        * :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY <UNCP-CORRECTED2-BODYINTERACTIONENERGY>`
 
@@ -449,7 +451,7 @@ def cp(name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the molecule. May be any valid argument to
-        :py:func:`driver.energy`; however, SAPT is not appropriate.
+        :py:func:`~driver.energy`; however, SAPT is not appropriate.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
@@ -628,7 +630,7 @@ counterpoise_correction = cp
 #########################
 
 def database(name, db_name, **kwargs):
-    """Function to access the molecule objects and reference energies of
+    r"""Function to access the molecule objects and reference energies of
     popular chemical databases.
 
     :aliases: db()
@@ -636,9 +638,10 @@ def database(name, db_name, **kwargs):
     :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
        * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
        * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
@@ -656,7 +659,7 @@ def database(name, db_name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`driver.energy`.
+        :py:func:`~driver.energy`.
 
     :type db_name: string
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.
@@ -688,7 +691,7 @@ def database(name, db_name, **kwargs):
     :param cp: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether counterpoise correction is employed in computing
-        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
+        interaction energies. Use this option and NOT the :py:func:`~wrappers.cp`
         function for BSSE correction in database().  Option available
         (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes.
 
@@ -697,7 +700,7 @@ def database(name, db_name, **kwargs):
 
         Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option available
-        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes 
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes
         with non-frozen monomers, e.g., HBC6.
 
     :type symm: :ref:`boolean <op_py_boolean>`
@@ -830,14 +833,12 @@ def database(name, db_name, **kwargs):
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
-    symmetry_override = 0
     if re.match(r'^sapt', lowername):
         try:
             database.ACTV_SA
         except AttributeError:
             raise ValidationError('Database %s not suitable for non-supramolecular calculation.' % (db_name))
         else:
-            symmetry_override = 1
             ACTV = database.ACTV_SA
     #   Force open-shell if needed
     openshell_override = 0
@@ -857,6 +858,7 @@ def database(name, db_name, **kwargs):
     if 'symm' in kwargs:
         db_symm = kwargs['symm']
 
+    symmetry_override = 0
     if input.no.match(str(db_symm)):
         symmetry_override = 1
     elif input.yes.match(str(db_symm)):
@@ -1327,18 +1329,8 @@ def database(name, db_name, **kwargs):
     return finalenergy
 
 
-def drop_duplicates(seq):
-    """Function that given an array *seq*, returns an array without any duplicate
-    entries. There is no guarantee of which duplicate entry is dropped.
-
-    """
-    noDupes = []
-    [noDupes.append(i) for i in seq if not noDupes.count(i)]
-    return noDupes
-
-
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
-    """Function that prints the header for the changable-width results tables in db().
+    r"""Function that prints the header for the changable-width results tables in db().
     *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*
     is a string of dashes of the correct length to set off the table. *ttype* is 1 for
     tables comparing the computed values to the reference or 2 for simple tabulation
@@ -1378,7 +1370,7 @@ db = database
 ###################################
 
 def complete_basis_set(name, **kwargs):
-    """Function to define a multistage energy method from combinations of
+    r"""Function to define a multistage energy method from combinations of
     basis set extrapolations and delta corrections and condense the
     components into a minimum number of calculations.
 
@@ -1387,9 +1379,10 @@ def complete_basis_set(name, **kwargs):
     :returns: (*float*) -- Total electronic energy in Hartrees
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
        * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
        * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
@@ -1399,7 +1392,7 @@ def complete_basis_set(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - Methods beyond basic scf, mp2, ccsd, ccsd(t) not yet hooked in through PSI variables, df-mp2 in particular.
+       - Not all methods hooked in through PSI variables, configuration interaction and arbitrary order MP in particular.
 
        - No scheme defaults for given basis zeta number, so scheme must be specified explicitly.
 
@@ -1422,9 +1415,25 @@ def complete_basis_set(name, **kwargs):
         (and check for stage_basis and stage_scheme keywords) and compute
         that stage in defining the CBS energy.
 
-    The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
+        The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
         keywords to be specified for reference-step only jobs and ``name`` and
         ``corl_basis`` keywords for correlated jobs.
+
+        The following energy methods have been set up for cbs().
+
+        .. hlist::
+           :columns: 5
+
+           * scf
+           * df-scf
+           * mp2
+           * df-mp2
+           * cc2
+           * ccsd
+           * bccd
+           * cc3
+           * ccsd(t)
+           * fci
 
     :type name: string
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
@@ -1573,15 +1582,35 @@ def complete_basis_set(name, **kwargs):
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
+    VARH['df-scf'] = {      'scftot': 'SCF TOTAL ENERGY'}
     VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY'}
+    VARH['df-mp2'] = {      'scftot': 'SCF TOTAL ENERGY',
+                        'df-mp2corl': 'DF-MP2 CORRELATION ENERGY'}
+    VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'cc2corl': 'CC2 CORRELATION ENERGY'}
     VARH['ccsd'] = {        'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['bccd'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'bccdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['cc3'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'cc3corl': 'CC3 CORRELATION ENERGY'}
     VARH['ccsd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+    #VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
+    #                      'cisdcorl': 'CISD CORRELATION ENERGY'}
+    #VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
+    #                     'cisdtcorl': 'CISDT CORRELATION ENERGY'}
+    #VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
+    #                    'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
+    VARH['fci'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'fcicorl': 'FCI CORRELATION ENERGY'}
 
     finalenergy = 0.0
     do_scf = 1
@@ -1610,7 +1639,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if 'name' in kwargs:
-        if (lowername == 'scf'):
+        if (lowername == 'scf') or (lowername == 'df-scf'):
             pass
         else:
             do_corl = 1
@@ -1914,13 +1943,13 @@ def complete_basis_set(name, **kwargs):
 
 # Transform and validate basis sets from 'cc-pV[Q5]Z' into [cc-pVQZ, cc-pV5Z] and [4, 5]
 def validate_bracketed_basis(basisstring):
-    """Function to transform and validate basis sets for cbs(). A basis set with no
+    r"""Function to transform and validate basis sets for cbs(). A basis set with no
     paired square brackets is passed through with zeta level 0 (e.g., '6-31+G(d,p)'
     is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is
     checked for sensible sequence and Dunning-ness and returned as separate basis
     sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
     that this function has no communication with the basis set library to check
-    if the basis actually exists. Used by :py:func:`wrappers.complete_basis_set`.
+    if the basis actually exists. Used by :py:func:`~wrappers.complete_basis_set`.
 
     """
     ZETA = ['d', 't', 'q', '5', '6']
@@ -1954,10 +1983,10 @@ def validate_bracketed_basis(basisstring):
 
 # Reform string basis set descriptor from basis set strings, 'cc-pv[q5]z' from [cc-pvqz, cc-pv5z]
 def reconstitute_bracketed_basis(needarray):
-    """Function to reform a bracketed basis set string from a sequential series
+    r"""Function to reform a bracketed basis set string from a sequential series
     of basis sets (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]). The
     basis set array is extracted from the *f_basis* field of a *NEED* dictionary in
-    :py:func:`wrappers.complete_basis_set`. Result is used to print a nicely
+    :py:func:`~wrappers.complete_basis_set`. Result is used to print a nicely
     formatted basis set string in the results table.
 
     """
@@ -1987,7 +2016,7 @@ def reconstitute_bracketed_basis(needarray):
 
 
 def highest_1(**largs):
-    """Scheme for total or correlation energies with a single basis or the highest
+    r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
@@ -2034,10 +2063,10 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
-    """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
+    r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
 
-    .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
+    .. math:: E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}
 
     """
     energypiece = 0.0
@@ -2082,10 +2111,10 @@ def corl_xtpl_helgaker_2(**largs):
 
 
 def scf_xtpl_helgaker_3(**largs):
-    """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
+    r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
 
-    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}
 
     """
     energypiece = 0.0
@@ -2137,10 +2166,10 @@ def scf_xtpl_helgaker_3(**largs):
 
 
 def scf_xtpl_helgaker_2(**largs):
-    """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
+    r"""Extrapolation scheme for reference energies with two adjacent zeta-level bases.
     Used by :py:func:`~wrappers.complete_basis_set`.
 
-    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
+    .. math:: E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63
 
     """
     energypiece = 0.0
@@ -2189,7 +2218,7 @@ def scf_xtpl_helgaker_2(**largs):
 
 
 def validate_scheme_args(functionname, **largs):
-    """Function called by each extrapolation scheme in :py:func:`wrappers.complete_basis_set`.
+    r"""Function called by each extrapolation scheme in :py:func:`~wrappers.complete_basis_set`.
     Checks that all the input arguments are present and suitable so that
     the scheme function can focus on defining the extrapolation.
 
@@ -2240,7 +2269,7 @@ def validate_scheme_args(functionname, **largs):
 
 
 def split_menial(menial):
-    """Function used by :py:func:`wrappers.complete_basis_set` to separate
+    r"""Function used by :py:func:`~wrappers.complete_basis_set` to separate
     *menial* 'scftot' into [scf, tot] and 'mp2corl' into [mp2, corl].
 
     """

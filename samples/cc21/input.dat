@@ -1,0 +1,31 @@
+#! ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
+
+memory 250 mb
+
+molecule h2o {
+  1 2
+  H -0.107055195862289   0.000000000000000  -1.832806614599657
+  O -0.107055195862289   0.000000000000000   0.094714436481352
+  H  1.806098405595803   0.000000000000000   0.329620161376194
+  units bohr
+}
+
+set {
+  reference rohf
+  basis DZ
+  roots_per_irrep [1, 0, 0, 0]
+}
+
+gradient('eom-ccsd')
+analytic_grad = PsiMod.get_gradient()
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+
+set findif points 5
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+

@@ -82,7 +82,8 @@ void opt_intco_dat_remove(void) {
 
 void opt_clean(void) {
   opt_io_remove();        // remove file1
-  opt_intco_dat_remove(); // remove intco.dat
+  if (!Opt_params.keep_intcos)
+    opt_intco_dat_remove(); // remove intco.dat
   printf("\tCleaning optimization helper files.\n");
 }
 

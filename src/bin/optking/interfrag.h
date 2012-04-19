@@ -66,11 +66,9 @@ class INTERFRAG {
   // Constructor for fixed, linear-combination reference points.
   // Memory provided by calling function.
   INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-    double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3);
+    double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3,
+    bool use_principal_axes=false);
 
-  // Constructor for COM, principal axes defined reference points.
-  INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in, 
-    int ndA_in=3, int ndB_in=3);
 
   ~INTERFRAG() { delete inter_frag; }
 
@@ -98,10 +96,19 @@ class INTERFRAG {
   }
 
   // freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
-  void freeze(bool *D_freeze);
+  //void freeze(bool *D_freeze);
+
+  // freeze coordinate i; index is among 'on' (well-defined) coordinates
+  void freeze(int J);
+
+  // freeze all interfragment coordinates in this set
+  void freeze(void);
 
   // is coordinate J frozen?  J runs over only active coordinates.
   bool is_frozen(int J);
+
+  // are all of these interfragment coordinates frozen?
+  bool is_frozen(void);
 
   // compute and return coordinate values - using given fragment geometries
   double *intco_values(GeomType new_geom_A, GeomType new_geom_B);
@@ -134,6 +141,9 @@ class INTERFRAG {
   // print coordinate definitions
   void print_intco_dat(FILE *fp, int atom_offset_A=0, int atom_offset_B=0) const;
 
+  // return string of intco definition
+  std::string get_intco_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;
+
   // get number of atoms in the two fragments
   int g_natom(void) const { return (A->g_natom() + B->g_natom()); }
   int g_natom_A(void) const { return (A->g_natom()); }
@@ -143,14 +153,12 @@ class INTERFRAG {
 
   double ** H_guess(void); // guess Hessian
 
-  bool orient_fragment(double *q_target);
+  // orient fragments and displace by dq; forces are just for printing
+  bool orient_fragment(double *dq, double *f_q=NULL);
 
   double ** compute_constraints(void) const;
 
   void add_coordinates_of_reference_pts(void);
-
-  //void set_principal_axes(bool b) { principal_axes = b; }
-  //bool use_principal_axes(void) { return principal_axes; }
 
 }; // class INTERFRAG
 

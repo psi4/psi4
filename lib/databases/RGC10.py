@@ -1,6 +1,4 @@
 """
-**RGC10**
-
 | Database (Sherrill) of interaction energies for dissociation curves of rare-gas biatomic complexes.
 | Geometries and reference interaction energies from Tang et al. JCP 118 4976 (2003).
 
@@ -23,8 +21,6 @@
   - ``'ArAr'`` 18-point dissociation curve for argon dimer
   - ``'ArKr'`` 18-point dissociation curve for argon-krypton complex
   - ``'KrKr'`` 18-point dissociation curve for krypton dimer
-
-----
 
 """
 import re

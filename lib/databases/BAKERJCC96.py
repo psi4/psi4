@@ -1,6 +1,4 @@
 """
-**BAKERJCC96**
-
 | Geometries from Baker and Chan J. Comput. Chem. 17 888 (1996),
 |   as reported in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002).
 | No reference energies defined.
@@ -8,8 +6,6 @@
 - **cp**  ``'off'``
 
 - **rlxd** ``'off'``
-
-----
 
 """
 import re

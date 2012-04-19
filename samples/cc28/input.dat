@@ -10,11 +10,10 @@ molecule h2o2 {
 }
 
 set {
-  property rotation
   gauge length
   freeze_core true
   omega [589, 355, nm]
   basis cc-pVDZ
 }
 
-response('ccsd')
+property('ccsd', properties=['rotation'])

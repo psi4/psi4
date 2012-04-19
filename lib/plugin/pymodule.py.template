@@ -12,8 +12,8 @@ from procutil import *
 
 
 def run_@plugin@(name, **kwargs):
-    """Function encoding sequence of PSI module an plugin calls so that
-    @plugin@ can be called via :py:func:`driver.energy`.
+    r"""Function encoding sequence of PSI module and plugin calls so that
+    @plugin@ can be called via :py:func:`~driver.energy`.
 
     >>> energy('@plugin@')
 

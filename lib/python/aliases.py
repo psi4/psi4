@@ -23,12 +23,12 @@ from procutil import *
 
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
-    """Function to call the quantum chemical method known as 'Gold Standard'
+    r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
     the following expression. Two-point extrapolation of the correlation energy
     performed according to :py:func:`~wrappers.corl_xtpl_helgaker_2`.
 
-    .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}
+    .. math:: E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}
 
     >>> energy('sherrillgroup_gold_standard')
 
@@ -64,12 +64,13 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
 
 def run_mp2_5(name, **kwargs):
-    """Function that computes MP2.5 energy from results of a DETCI
+    r"""Function that computes MP2.5 energy from results of a DETCI
     MP3 calculation.
 
-    .. math:: E_{total}^{\\text{MP2.5}} = E_{total,\; \\text{SCF}} \; + E_{corl,\; \\text{MP2}} + E_{corl, \; \\text{MP3}}
+    .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}
 
     :PSI variables: 
+
     .. hlist:: 
        :columns: 1 
      
@@ -123,7 +124,7 @@ def run_mp2_5(name, **kwargs):
 #     but is an example of what to do for a more complicated procedure where different options 
 #     are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls, as well
+    r"""Function encoding sequence of PSI module and plugin calls, as well
     as typical options, to access Rob Parrish's omega plugin.
 
     >>> energy('plugin_omega')

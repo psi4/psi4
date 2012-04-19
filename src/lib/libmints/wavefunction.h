@@ -176,6 +176,15 @@ protected:
     /// If frequencies are available, they will be here:
     boost::shared_ptr<Vector> frequencies_;
 
+    /// Flag to tell if this is a CIM calculation
+    bool isCIM_;
+
+    /// Quasicanonical LMO -> LMO transformation matrix (for CIM)
+    SharedMatrix QLMO_to_LMO_;
+
+    /// Factors to scale contributions to the CIM correlation energy
+    SharedVector CIM_orbital_factors_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -206,6 +215,13 @@ public:
     /// Is this a restricted wavefunction?
     virtual bool same_a_b_orbs() const { return true;  }
     virtual bool same_a_b_dens() const { return false; }
+
+    /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
+    void map_irreps(std::vector<int*> &arrays);
+    /// A wrapper to the Vector version of this function
+    void map_irreps(int* &array);
+    /// A wrapper to the Vector version of this function
+    void map_irreps(Dimension &array);
 
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
@@ -405,6 +421,18 @@ public:
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;
+
+    /// Returns the quasicanonical LMO->LMO transformation matrix (for CIM)
+    SharedMatrix CIMTransformationMatrix();
+
+    /// Returns factors to scale contributions to the CIM correlation energy
+    SharedVector CIMOrbitalFactors();
+
+    /// Returns true if this is a CIM computation
+    bool isCIM();
+
+    /// Set if this is a CIM computation
+    void CIMSet(bool value,int nactive_orbitals);
 };
 
 }

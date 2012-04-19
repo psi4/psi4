@@ -21,9 +21,8 @@ molecule smo {
 set {
   basis "STO-3G"
   freeze_core true
-  property rotation
   gauge length
   omega [589, 355, nm]
 }
 
-response('cc2')
+property('cc2',properties=['rotation'])

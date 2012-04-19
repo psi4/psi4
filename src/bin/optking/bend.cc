@@ -188,7 +188,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
       dqdx[a][i] = zeta(a,0,1)*uXw[i]/Lu + zeta(a,2,1)*wXv[i]/Lv;
 
   double cos_q = v3d_dot(u,v);
-  if (1.0-cos_q*cos_q <= 1.0e-12) return dqdx; // leave 2nd derivatives empty - sin 0 = 0 in denominator
+  if (1.0-cos_q*cos_q <= 1.0e-12) return dq2dx2; // leave 2nd derivatives empty - sin 0 = 0 in denominator
   double sin_q = sqrt(1.0 - cos_q*cos_q);
 
   double tval;
@@ -217,13 +217,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
 
 void BEND::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-
-  if (linear_bend)
-    iss << "L(";
-  else
-    iss << "B(";
-
-  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  iss << get_definition_string(off);
 
   double val = value(geom);
   if (!s_frozen)
@@ -231,6 +225,19 @@ void BEND::print(FILE *fp, GeomType geom, int off) const {
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   fflush(fp);
+}
+
+// function to return string of coordinate definition
+std::string BEND::get_definition_string(int off) const { 
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+
+  if (linear_bend)
+    iss << "L(";
+  else
+    iss << "B(";
+
+  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  return iss.str();
 }
 
 void BEND::print_disp(FILE *fp, const double q_old, const double f_q,

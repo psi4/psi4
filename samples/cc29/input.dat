@@ -11,7 +11,6 @@ noreorient
 }
 
 set {
-  property rotation
   gauge both
   freeze_core true
   omega [589, 355, nm]
@@ -19,4 +18,4 @@ set {
   r_convergence 10
 }
 
-response('ccsd')
+property('ccsd',properties=['rotation'])

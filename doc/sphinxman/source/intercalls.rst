@@ -1,10 +1,12 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:intercalls`:
 
 Function Intercalls
 ===================
 
-For many of the PSI4 Python functions described above, it makes scientific
+For many of the |PSIfour| Python functions described above, it makes scientific
 sense that they could be called in combination. For instance, one could
 optimize all the reagents in a database or compute a
 counterpoise-corrected interaction energy with an extrapolated method. The

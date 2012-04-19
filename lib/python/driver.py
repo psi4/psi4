@@ -1,7 +1,7 @@
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
-response properties, and vibrational frequency calculations.
+properties, and vibrational frequency calculations.
 
 """
 import PsiMod
@@ -9,6 +9,8 @@ import input
 from proc import *
 from text import *
 from procutil import *
+from functional import *
+# never import wrappers or aliases into this file
 
 
 # Procedure lookup tables
@@ -17,8 +19,8 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
-            'dfmp2'         : run_dfmp2,
-            'dfcc'          : run_dfcc,
+            'df-mp2'        : run_dfmp2,
+            'df-cc'         : run_dfcc,
             'mp2'           : run_mp2,
             'mp2-drpa'      : run_mp2drpa,
             'sapt0'         : run_sapt,
@@ -43,6 +45,9 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
+            'eom_ccsd'      : run_eom_cc,
+            'eom_cc2'       : run_eom_cc,
+            'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
@@ -60,10 +65,14 @@ procedures = {
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
-            'b3lyp'         : run_dft,  # temporary
-            #'b3lyp-d1'      : run_dft,  # temporary
-            'b3lyp-d2'      : run_dft,  # temporary
-            'b3lyp-d'       : run_dft,  # temporary
+            'hf'            : run_scf,
+            'rhf'           : run_scf,
+            'uhf'           : run_scf,
+            'rohf'          : run_scf,
+            'rscf'          : run_scf,
+            'uscf'          : run_scf,
+            'roscf'         : run_scf,
+            'df-scf'        : run_scf,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -78,25 +87,62 @@ procedures = {
         'hessian' : {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
-        'response' : {
-            'cc2'  : run_cc_response,
-            'ccsd' : run_cc_response
-            # Upon adding a method to this list, add it to the docstring in response() below
+        'property' : {
+            'scf'  : run_scf_property,
+            'cc2'  : run_cc_property,
+            'ccsd' : run_cc_property,
+            'eom-cc2'  : run_cc_property,
+            'eom-ccsd' : run_cc_property,
+            'eom_cc2'  : run_cc_property,
+            'eom_ccsd' : run_cc_property
+            # Upon adding a method to this list, add it to the docstring in property() below
         }}
+
+# Integrate DFT with driver routines
+for ssuper in superfunctional_list():
+    procedures['energy'][ssuper.name().lower()] = run_dft
 
 
 def energy(name, **kwargs):
-    """Function to compute the single-point electronic energy.
+    r"""Function to compute the single-point electronic energy.
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
-    :PSI variables: 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>` 
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>` 
+    :PSI variables:
+
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
+
+    .. comment In this table immediately below, place methods that should only be called by 
+    .. comment developers at present. This table won't show up in the manual.
+    .. comment
+    .. comment    .. _`table:energy_devel`:
+    .. comment 
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | name                    | calls method                                                                          |
+    .. comment    +=========================+=======================================================================================+
+    .. comment    | df-cc                   | coupled cluster with density fitting                                                  |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | mp2c                    | coupled MP2 (MP2C)                                                                    |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | mp2-drpa                | random phase approximation?                                                           |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cis                     | CI singles (CIS)                                                                      |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tdhf                    | time-dependent HF (TDHF)                                                              |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_gen`:
 
@@ -112,12 +158,6 @@ def energy(name, **kwargs):
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mcscf                   | multiconfigurational self consistent field (SCF)                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | dfcc                    | coupled cluster with density fitting                                                  |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2c                    | coupled MP2 (MP2C)                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2-drpa                | random phase approximation?                                                           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -169,18 +209,6 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cis                     | CI singles (CIS)                                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tdhf                    | time-dependent HF (TDHF)                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tddft                   | time-dependent DFT (TDDFT)                                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | adc                     | 2nd-order algebraic diagrammatic construction (ADC)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc2                 | EOM-CC2                                                                               |
@@ -190,15 +218,29 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    .. _`table:energy_dft`:
+    .. _`table:energy_scf`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
+    | name                    | calls method (aliases to *name* = 'scf')                                              |
     +=========================+=======================================================================================+
-    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
+    | hf                      | HF                                                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
+    | rhf                     | HF with restricted reference                                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | uhf                     | HF with unrestricted reference                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rohf                    | HF with restricted open-shell reference                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rscf                    | HF or DFT with restricted reference                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uscf                    | HF or DFT with unrestricted reference                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | roscf                   | HF or DFT with restricted open-shell reference                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-scf                  | HF or DFT with density fitting                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. include:: autodoc_dft_energy.rst
 
     .. _`table:energy_mrcc`:
 
@@ -231,39 +273,39 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | mrccsdtqp(h)_l          |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1a              |                                                                                       |
+    | mrccsdt-1a              | CC through doubles with iterative triples (cheapest terms)                            |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1a             |                                                                                       |
+    | mrccsdtq-1a             | CC through triples with iterative quadruples (cheapest terms)                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1a            |                                                                                       |
+    | mrccsdtqp-1a            | CC through quadruples with iterative quintuples (cheapest terms)                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1a           |                                                                                       |
+    | mrccsdtqph-1a           | CC through quintuples with iterative sextuples (cheapest terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1b              |                                                                                       |
+    | mrccsdt-1b              | CC through doubles with iterative triples (cheaper terms)                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1b             |                                                                                       |
+    | mrccsdtq-1b             | CC through triples with iterative quadruples (cheaper terms)                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1b            |                                                                                       |
+    | mrccsdtqp-1b            | CC through quadruples with iterative quintuples (cheaper terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1b           |                                                                                       |
+    | mrccsdtqph-1b           | CC through quintuples with iterative sextuples (cheaper terms)                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc2                   |                                                                                       |
+    | mrcc2                   | approximate CC through doubles                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc3                   |                                                                                       |
+    | mrcc3                   | approximate CC through triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc4                   |                                                                                       |
+    | mrcc4                   | approximate CC through quadruples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc5                   |                                                                                       |
+    | mrcc5                   | approximate CC through quintuples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc6                   |                                                                                       |
+    | mrcc6                   | approximate CC through sextuples                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-3               |                                                                                       |
+    | mrccsdt-3               | CC through doubles with iterative triples (all but the most expensive terms)          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-3              |                                                                                       |
+    | mrccsdtq-3              | CC through triples with iterative quadruples (all but the most expensive terms)       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-3             |                                                                                       |
+    | mrccsdtqp-3             | CC through quadruples with iterative quintuples (all but the most expensive terms)    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-3            |                                                                                       |
+    | mrccsdtqph-3            | CC through quintuples with iterative sextuples (all but the most expensive terms)     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
@@ -318,7 +360,7 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    """Function complementary to optimize(). Carries out one gradient pass,
+    r"""Function complementary to optimize(). Carries out one gradient pass,
     deciding analytic or finite difference.
 
     """
@@ -411,7 +453,8 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        return PsiMod.reference_wavefunction().energy()
+        PsiMod.reference_wavefunction().energy()
+        return PsiMod.get_variable('CURRENT ENERGY')
     else:
         # If not, perform finite difference of energies
 
@@ -563,23 +606,34 @@ def gradient(name, **kwargs):
         return energies[-1]
 
 
-def response(name, **kwargs):
-    """Function to compute linear response properties.
+def property(name, **kwargs):
+    r"""Function to compute various properties.
+
+    :aliases: prop()
 
     :returns: (*float*) Total electronic energy in Hartrees.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
+       - This function at present handles property functions only for CC methods.
+         Consult the keywords sections for other modules for further property capabilities.
+
        - Check that energy is actually being returned.
 
-       - Check if ther're some PSI variables that ought to be set.
+       - Check if some PSI variables ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | scf                     | Self-consistent field method(s)                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
@@ -588,10 +642,20 @@ def response(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
+    :type properties: array of strings
+    :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
+
+        Indicates which properties should be computed.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
     :examples:
 
-    >>> # [1] CCSD-LR properties calculation
-    >>> response('ccsd')
+    >>> # [1] Optical rotation calculation
+    >>> property('cc2', properties=['rotation'])
 
     """
     lowername = name.lower()
@@ -605,32 +669,37 @@ def response(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
     try:
-        return procedures['response'][lowername](lowername, **kwargs)
+        return procedures['property'][lowername](lowername, **kwargs)
     except KeyError:
-        raise ValidationError('Response method %s not available.' % (lowername))
+        raise ValidationError('Property method %s not available.' % (lowername))
+
+##  Aliases  ##
+prop = property
 
 
 def optimize(name, **kwargs):
-    """Function to perform a geometry optimization.
+    r"""Function to perform a geometry optimization.
 
     :aliases: opt()
 
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
-    :PSI variables: 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
+    :PSI variables:
+
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
         by finite differences.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
     .. _`table:grad_gen`:
 
@@ -702,7 +771,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_local_option('OPTKING','FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 1
@@ -752,7 +821,7 @@ def optimize(name, **kwargs):
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
-              PsiMod.opt_clean()
+                PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file
@@ -778,7 +847,7 @@ opt = optimize
 
 
 def parse_arbitrary_order(name):
-    """Function to parse name string into a method family like CI or MRCC and specific
+    r"""Function to parse name string into a method family like CI or MRCC and specific
     level information like 4 for CISDTQ or MRCCSDTQ.
 
     """
@@ -848,11 +917,14 @@ def parse_arbitrary_order(name):
 
 
 def frequency(name, **kwargs):
-    """Function to compute harmonic vibrational frequencies.
+    r"""Function to compute harmonic vibrational frequencies.
 
     :aliases: frequencies(), freq()
 
     :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -952,6 +1024,8 @@ def frequency(name, **kwargs):
 
         molecule.reinterpret_coordentry(False)
         molecule.fix_orientation(True)
+        # Make a note of the undisplaced molecule's symmetry
+        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
         print ' %d displacements needed.' % ndisp
@@ -967,7 +1041,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -985,6 +1061,9 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_1(gradients, irrep)
 
         print ' Computation complete.'
+        
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
@@ -998,8 +1077,10 @@ def frequency(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
-        PsiMod.get_active_molecule().fix_orientation(True)
-        PsiMod.get_active_molecule().reinterpret_coordentry(False)
+        molecule.fix_orientation(True)
+        molecule.reinterpret_coordentry(False)
+        # Make a note of the undisplaced molecule's symmetry
+        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
 
@@ -1012,11 +1093,13 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
-
+            molecule.set_geometry(displacement)
+   
             # Perform the energy calculation
             E = func(lowername, **kwargs)
 
@@ -1030,6 +1113,9 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_0(energies, irrep)
 
         print ' Computation complete.'
+        
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
@@ -1046,14 +1132,14 @@ freq = frequency
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
-    """Function to compute force constants. Presently identical to frequency()."""
+    r"""Function to compute force constants. Presently identical to frequency()."""
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
 
 def parse_cotton_irreps(irrep):
-    """Function to return validated Cotton ordering index from string or integer
+    r"""Function to return validated Cotton ordering index from string or integer
     irreducible representation *irrep*.
 
     """

@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    pair: method alias; adding new
 
@@ -10,7 +12,7 @@
 Defining a Method Alias
 =======================
 
-Since quantum chemical methods in PSI4 are accessed through Python functions, and
+Since quantum chemical methods in |PSIfour| are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
 :source:`lib/python/aliases.py` file is intended for editing by the user for

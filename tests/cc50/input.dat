@@ -9,8 +9,7 @@ molecule ch {
 }
 
 set {
-  wfn eom_cc3
-  states_per_irrep [3, 0, 0, 0]
+  roots_per_irrep [3, 0, 0, 0]
   reference rohf
   basis Sadlej-pVTZ
   freeze_core true

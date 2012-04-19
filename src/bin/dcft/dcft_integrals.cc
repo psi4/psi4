@@ -396,6 +396,168 @@ DCFTSolver::build_denominators()
     delete [] bVirEvals;
 }
 
+void DCFTSolver::build_gtau()
+{
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    dpdfile2 GT_OO, GT_oo, GT_VV, GT_vv, T_OO, T_oo, T_VV, T_vv;
+    dpdbuf4 I;
+
+    // Compute G * Tau contribution
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+    dpd_file2_init(&GT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+
+    // GT_AB = (AB|CD) Tau_CD
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
+    dpd_contract422(&I, &T_VV, &GT_VV, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    // GT_AB -= <AB|CD> Tau_CD
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
+    dpd_contract422(&I, &T_VV, &GT_VV, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_AB += (AB|cd) Tau_cd
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
+                  ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
+    dpd_contract422(&I, &T_vv, &GT_VV, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
+    // GT_AB = +(AB|IJ) Tau_IJ
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
+                  ID("[V>=V]+"), ID("[O>=O]+"), 0, "MO Ints (VV|OO)");
+    dpd_contract422(&I, &T_OO, &GT_VV, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_AB -= <AB|IJ> Tau_IJ
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
+                  ID("[V,V]"), ID("[O,O]"), 0, "MO Ints <VV|OO>");
+    dpd_contract422(&I, &T_OO, &GT_VV, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_AB += (AB|ij) Tau_ij
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,o]"),
+                  ID("[V>=V]+"), ID("[o>=o]+"), 0, "MO Ints (VV|oo)");
+    dpd_contract422(&I, &T_oo, &GT_VV, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&GT_VV);
+
+    dpd_file2_init(&GT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+
+    // GT_ab = +(ab|cd) Tau_cd
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
+    dpd_contract422(&I, &T_vv, &GT_vv, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    // GT_ab -= <ab|cd> Tau_cd
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
+    dpd_contract422(&I, &T_vv, &GT_vv, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ab += (ab|CD) Tau_CD
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[V,V]"),
+                  ID("[v,v]"), ID("[V,V]"), 0, "MO Ints (vv|VV)");
+    dpd_contract422(&I, &T_VV, &GT_vv, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
+    // GT_ab = +(ab|ij) Tau_ij
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,o]"),
+                  ID("[v>=v]+"), ID("[o>=o]+"), 0, "MO Ints (vv|oo)");
+    dpd_contract422(&I, &T_oo, &GT_vv, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ab -= <ab|ij> Tau_ij
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,o]"),
+                  ID("[v,v]"), ID("[o,o]"), 0, "MO Ints <vv|oo>");
+    dpd_contract422(&I, &T_oo, &GT_vv, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ab += (ab|IJ) Tau_IJ
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[O,O]"),
+                  ID("[v,v]"), ID("[O,O]"), 0, "MO Ints (vv|OO)");
+    dpd_contract422(&I, &T_OO, &GT_vv, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&GT_vv);
+
+    dpd_file2_init(&GT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+    // GT_IJ = +(IJ|AB) Tau_AB
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
+    dpd_contract422(&I, &T_VV, &GT_OO, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+
+    // GT_IJ -= <IJ|AB> Tau_AB
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_contract422(&I, &T_VV, &GT_OO, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_IJ += (IJ|ab) Tau_ab
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,v]"),
+                  ID("[O>=O]+"), ID("[v>=v]+"), 0, "MO Ints (OO|vv)");
+    dpd_contract422(&I, &T_vv, &GT_OO, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_IJ = +(IJ|KL) Tau_KL
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
+    dpd_contract422(&I, &T_OO, &GT_OO, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_IJ -= <IJ|KL> Tau_KL
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
+    dpd_contract422(&I, &T_OO, &GT_OO, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_IJ += (IJ|kl) Tau_kl
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[o,o]"),
+                  ID("[O>=O]+"), ID("[o>=o]+"), 0, "MO Ints (OO|oo)");
+    dpd_contract422(&I, &T_oo, &GT_OO, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&GT_OO);
+
+
+    dpd_file2_init(&GT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+    // GT_ij = +(ij|ab) Tau_ab
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "MO Ints (oo|vv)");
+    dpd_contract422(&I, &T_vv, &GT_oo, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    // GT_ij -= <ij|ab> Tau_ab
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
+    dpd_contract422(&I, &T_vv, &GT_oo, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ij += (ij|AB) Tau_AB
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[V,V]"),
+                  ID("[o,o]"), ID("[V,V]"), 0, "MO Ints (oo|VV)");
+    dpd_contract422(&I, &T_VV, &GT_oo, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ij = +(ij|kl) Tau_kl
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+                  ID("[o>=o]+"), ID("[o>=o]+"), 0, "MO Ints (oo|oo)");
+    dpd_contract422(&I, &T_oo, &GT_oo, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_ij -= <ij|kl> Tau_kl
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo>");
+    dpd_contract422(&I, &T_oo, &GT_oo, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    // GT_IJ += (ij|KL) Tau_KL
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[O,O]"),
+                  ID("[o,o]"), ID("[O,O]"), 0, "MO Ints (oo|OO)");
+    dpd_contract422(&I, &T_OO, &GT_oo, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&GT_oo);
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+}
+
 }} // Namespaces
 
 

@@ -28,8 +28,9 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 void MOLECULE::rfo_step(void) {
   int i, j;
   int dim = g_nintco();
+  int natom = g_natom();
   double tval, tval2;
-  double *f_q = p_Opt_data->g_forces_pointer();
+  double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
 
@@ -40,7 +41,7 @@ void MOLECULE::rfo_step(void) {
       rfo_mat[i][j] = H[i][j];
 
   for (i=0; i<dim; ++i)
-    rfo_mat[dim][i] = - f_q[i];
+    rfo_mat[dim][i] = - fq[i];
 
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"RFO mat\n");
@@ -82,7 +83,25 @@ void MOLECULE::rfo_step(void) {
   // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
   if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
     rfo_root = Opt_params.rfo_root;
-    fprintf(outfile,"\tFollowing RFO solution %d.\n", rfo_root);
+    fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root);
+
+    // Now test RFO eigenvector and make sure that it is totally symmetric.
+    bool symm_rfo_step = false;
+
+    while (!symm_rfo_step) {
+
+      symm_rfo_step = intco_combo_is_symmetric(rfo_mat[rfo_root], dim);
+
+      if (!symm_rfo_step) {
+        fprintf(outfile,"\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
+        fprintf(outfile,"\tIf you are doing an energy minimization, there may exist a lower-energy, ");
+        fprintf(outfile,"structure with less symmetry.\n");
+        ++rfo_root;
+      }
+
+      if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
+        break;
+    }
   }
   else { // do root following
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
@@ -133,7 +152,7 @@ void MOLECULE::rfo_step(void) {
   free_matrix(rfo_mat);
 
   // get gradient and hessian in step direction
-  rfo_g = -1 * array_dot(f_q, rfo_u, dim);
+  rfo_g = -1 * array_dot(fq, rfo_u, dim);
   rfo_h = 0;
   for (i=0; i<dim; ++i)
     rfo_h += rfo_u[i] * array_dot(H[i], rfo_u, dim);
@@ -161,20 +180,17 @@ void MOLECULE::rfo_step(void) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
-  double *q_target;
   for (int I=0; I<interfragments.size(); ++I) {
-
-    q_target = interfragments[I]->intco_values();
-    for (i=0; i<interfragments[I]->g_nintco(); ++i)
-      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
-
-    interfragments[I]->orient_fragment(q_target);
-
-    free_array(q_target);
+    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      continue;
+    }
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                        &(fq[g_interfragment_intco_offset(I)]) );
   }
 
 #if defined(OPTKING_PACKAGE_QCHEM)

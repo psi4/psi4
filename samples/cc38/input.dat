@@ -13,4 +13,4 @@ set {
   basis "cc-pVDZ"
 }
 
-response('cc2')
+property('cc2',properties=['polarizability'])

@@ -7,12 +7,13 @@ Notes on Options
    function name alone. That is, use ``energy('scf')``, not ``driver.energy('scf')``.
 
 .. note:: The Python options referred to in the :ref:`sec:psithonFunc` section below
-   and indexed in :ref:`apdx:options_py` are placed as arguments to a Python
+   are placed as arguments to a Python
    function (like ``energy()``), not in ``set`` blocks or commands.
+.. comment and indexed in :ref:`apdx:options_py` 
 
-.. note:: All Psi4 keyword names and values are insensitive to case, both
+.. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`driver.database` function,
+   The few exceptions are documented for the :py:func:`~driver.database` function,
    where case structure must match the database file.
 
 .. _`op_py_bool`:
@@ -25,12 +26,12 @@ Notes on Options
 
 .. _`op_py_dertype`:
 
-.. note:: The derivative level type for :py:func:`driver.optimize` and :py:func:`driver.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative.
+.. note:: The derivative level type for :py:func:`~driver.optimize` and :py:func:`~driver.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative.
 
 .. _`op_py_function`:
 
 .. note:: Function option for the Psithon function called by the current function;
-   the default is usually :py:func:`driver.energy`. See Sec. :ref:`sec:intercalls`
+   the default is usually :py:func:`~driver.energy`. See Sec. :ref:`sec:intercalls`
    for a fuller description. Note that the value of the keyword is a Python object
    and so is not wrapped in quotes like a string.
 

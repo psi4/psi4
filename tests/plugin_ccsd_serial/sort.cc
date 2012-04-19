@@ -11,24 +11,7 @@ using namespace psi;
 
 namespace psi{
 
-/*void libtransOutOfCoreSort(int nfzc,int nfzv,int norbs,ndoccact,int nvirt){
-    std::vector<shared_ptr<MOSpace> > spaces;
-    spaces.push_back(MOSpace::occ);
-    spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
-    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
-               IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
-    ints.set_dpd_id(0);
-    ints.set_keep_iwl_so_ints(true);
-    ints.set_keep_dpd_so_ints(true);
-    ints.initialize();
-
-    ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
-    libtransSortBlock
-    SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",maxelem);
-}*/
-
-void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
+void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options){
   struct iwlbuf Buf; 
   // initialize buffer
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
@@ -36,20 +19,20 @@ void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
   fprintf(outfile,"\n        Begin CC integral sort\n\n");
 
   //sort
-  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt);
+  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,islocal,options);
 
   iwl_buf_close(&Buf,1);
 }
 /**
   * out-of-core integral sort.  requires 2o^2v^2 doubles +o^2v^2 ULIs storage
   */
-void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
+void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options){
 
   double val;
   ULI o = ndoccact;
   ULI v = nvirt;
   ULI fstact = nfzc;
-  ULI lstact = norbs-nfzc;
+  ULI lstact = norbs-nfzv;
 
   ULI lastbuf;
   Label *lblptr;
@@ -164,6 +147,15 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
 
+      if (islocal){
+         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+         p -= fstact;
+         q -= fstact;
+         r -= fstact;
+         s -= fstact;
+      }
+
       pq   = Position(p,q);
       rs   = Position(r,s);
       pqrs = Position(pq,rs);
@@ -261,21 +253,32 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       }
       else if (nocc==0){
          val = (double)valptr[Buf->idx];
-         abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
-         if (nabcd1>=nelem){
-            psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
-            psio->close(PSIF_ABCD1,1);
-            totalnabcd1+=nabcd1;
-            nabcd1=0;
-         }
-         abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
-         if (nabcd2>=nelem){
-            psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
-            psio->close(PSIF_ABCD2,1);
-            totalnabcd2+=nabcd2;
-            nabcd2=0;
+         if (options.get_bool("VABCD_PACKED")){
+            abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
+            if (nabcd1>=nelem){
+               psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+               psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+               psio->close(PSIF_ABCD1,1);
+               totalnabcd1+=nabcd1;
+               nabcd1=0;
+            }
+            abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
+            if (nabcd2>=nelem){
+               psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
+               psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
+               psio->close(PSIF_ABCD2,1);
+               totalnabcd2+=nabcd2;
+               nabcd2=0;
+            }
+         }else{
+            abcd3_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
+            if (nabcd1>=nelem){
+               psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+               psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+               psio->close(PSIF_ABCD1,1);
+               totalnabcd1+=nabcd1;
+               nabcd1=0;
+            }
          }
       }
   }
@@ -292,6 +295,15 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
+
+          if (islocal){
+             if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+             if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+             p -= fstact;
+             q -= fstact;
+             r -= fstact;
+             s -= fstact;
+          }
 
           pq   = Position(p,q);
           rs   = Position(r,s);
@@ -391,21 +403,32 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           }
           else if (nocc==0){
              val = (double)valptr[Buf->idx];
-             abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
-             if (nabcd1>=nelem){
-                psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
-                psio->close(PSIF_ABCD1,1);
-                totalnabcd1+=nabcd1;
-                nabcd1=0;
-             }
-             abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
-             if (nabcd2>=nelem){
-                psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
-                psio->close(PSIF_ABCD2,1);
-                totalnabcd2+=nabcd2;
-                nabcd2=0;
+             if (options.get_bool("VABCD_PACKED")){
+                abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
+                if (nabcd1>=nelem){
+                   psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+                   psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+                   psio->close(PSIF_ABCD1,1);
+                   totalnabcd1+=nabcd1;
+                   nabcd1=0;
+                }
+                abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
+                if (nabcd2>=nelem){
+                   psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
+                   psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
+                   psio->close(PSIF_ABCD2,1);
+                   totalnabcd2+=nabcd2;
+                   nabcd2=0;
+                }
+             }else{
+                abcd3_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
+                if (nabcd1>=nelem){
+                   psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+                   psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+                   psio->close(PSIF_ABCD1,1);
+                   totalnabcd1+=nabcd1;
+                   nabcd1=0;
+                }
              }
           }
 
@@ -517,12 +540,21 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   fprintf(outfile,"        ABCI block 3/3...");fflush(outfile);
   SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_ABCI2,"E2abci2",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCD block 1/2...");fflush(outfile);
-  SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCD block 2/2...");fflush(outfile);
-  SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",maxelem);
-  fprintf(outfile,"done.\n\n");fflush(outfile);
+
+
+  if (options.get_bool("VABCD_PACKED")){
+     fprintf(outfile,"        ABCD block 1/2...");fflush(outfile);
+     SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
+     fprintf(outfile,"done.\n");fflush(outfile);
+     fprintf(outfile,"        ABCD block 2/2...");fflush(outfile);
+     SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",maxelem);
+     fprintf(outfile,"done.\n");fflush(outfile);
+  }else{
+     fprintf(outfile,"        ABCD block.......");fflush(outfile);
+     SortBlock(totalnabcd1,v*v*v*v,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
+     fprintf(outfile,"done.\n");fflush(outfile);
+  }
+  fprintf(outfile,"\n");
 
   delete integralbuffer;
 
@@ -544,58 +576,75 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   lastbin = o*v*v*v - (nbins-1)*binsize;
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio->open(PSIF_ABCI2,PSIO_OPEN_OLD);
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
+     psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
+  }
+
   abci2_addr = PSIO_ZERO;
   abci3_addr = PSIO_ZERO;
   abci5_addr = PSIO_ZERO;
+  psio_address abci4_addr = PSIO_ZERO;
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
+      // this is for the local triples
+      if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
+         psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
+      }
       F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
       psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
   }
   psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
+     psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
+  }
   F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_ABCI2,1);
   psio->close(PSIF_ABCI3,1);
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
+     psio->close(PSIF_ABCI4,1);
+  }
 
   /**
-    *  Combine ABCD1 and ABCD2 integrals
+    *  Combine ABCD1 and ABCD2 integrals if SJS packing
     */
-  for (ULI i=1; i<=v*(v+1)/2*v*(v+1)/2; i++){
-      if (maxelem>=(double)v*(v+1)/2*v*(v+1)/2/i){
-         binsize = v*(v+1)/2*v*(v+1)/2/i;
-         if (i*binsize < v*(v+1)/2*v*(v+1)/2) binsize++;
-         nbins = i;
-         break;
-      }
+  if (options.get_bool("VABCD_PACKED")){
+     for (ULI i=1; i<=v*(v+1)/2*v*(v+1)/2; i++){
+         if (maxelem>=(double)v*(v+1)/2*v*(v+1)/2/i){
+            binsize = v*(v+1)/2*v*(v+1)/2/i;
+            if (i*binsize < v*(v+1)/2*v*(v+1)/2) binsize++;
+            nbins = i;
+            break;
+         }
+     }
+     lastbin = v*(v+1)/2*v*(v+1)/2 - (nbins-1)*binsize;
+     psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+     psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
+     psio_address abcd1_again = PSIO_ZERO;
+     psio_address abcd1_new = PSIO_ZERO;
+     psio_address abcd2_new = PSIO_ZERO;
+     abcd1_addr = abcd2_addr = PSIO_ZERO;
+     for (ULI i=0; i<nbins-1; i++){
+         psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr,&abcd1_addr);
+         psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr,&abcd2_addr);
+         F_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
+         psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
+         psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
+         F_DAXPY(binsize,1.0,tmp2,1,tmp,1);
+         psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
+     }
+     psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr,&abcd1_addr);
+     psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr,&abcd2_addr);
+     F_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
+     psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
+     psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
+     F_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
+     psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
+     psio->close(PSIF_ABCD1,1);
+     psio->close(PSIF_ABCD2,1);
   }
-  lastbin = v*(v+1)/2*v*(v+1)/2 - (nbins-1)*binsize;
-  psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-  psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-  psio_address abcd1_again = PSIO_ZERO;
-  psio_address abcd1_new = PSIO_ZERO;
-  psio_address abcd2_new = PSIO_ZERO;
-  abcd1_addr = abcd2_addr = PSIO_ZERO;
-  for (ULI i=0; i<nbins-1; i++){
-      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr,&abcd1_addr);
-      psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr,&abcd2_addr);
-      F_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
-      psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
-      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
-      F_DAXPY(binsize,1.0,tmp2,1,tmp,1);
-      psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
-  }
-  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr,&abcd1_addr);
-  psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr,&abcd2_addr);
-  F_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
-  psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
-  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
-  F_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
-  psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
-  psio->close(PSIF_ABCD1,1);
-  psio->close(PSIF_ABCD2,1);
 
   delete tmp;
   delete tmp2;
@@ -901,7 +950,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -937,7 +986,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -973,7 +1022,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1009,7 +1058,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1040,6 +1089,65 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
      }
   }
 }
+void abcd3_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd3,struct integral*abcd3){
+  p -= o;
+  q -= o;
+  r -= o;
+  s -= o;
+  if (p==q){
+     if (r==s){
+        abcd3[nabcd3].ind   = p*v*v*v+r*v*v+q*v+s;
+        abcd3[nabcd3++].val = val;
+        if (pq!=rs){
+           abcd3[nabcd3].ind   = r*v*v*v+p*v*v+s*v+q;
+           abcd3[nabcd3++].val = val;
+        }
+     }else{
+        abcd3[nabcd3].ind   = p*v*v*v+r*v*v+q*v+s;
+        abcd3[nabcd3++].val = val;
+        abcd3[nabcd3].ind   = p*v*v*v+s*v*v+q*v+r;
+        abcd3[nabcd3++].val = val;
+        if (pq!=rs){
+           abcd3[nabcd3].ind   = r*v*v*v+p*v*v+s*v+q;
+           abcd3[nabcd3++].val = val;
+           abcd3[nabcd3].ind   = s*v*v*v+p*v*v+r*v+q;
+           abcd3[nabcd3++].val = val;
+        }
+     }
+  }else{
+     if (r==s){
+        abcd3[nabcd3].ind   = p*v*v*v+r*v*v+q*v+s;
+        abcd3[nabcd3++].val = val;
+        abcd3[nabcd3].ind   = q*v*v*v+r*v*v+p*v+s;
+        abcd3[nabcd3++].val = val;
+        if (pq!=rs){
+           abcd3[nabcd3].ind   = r*v*v*v+p*v*v+s*v+q;
+           abcd3[nabcd3++].val = val;
+           abcd3[nabcd3].ind   = r*v*v*v+q*v*v+s*v+p;
+           abcd3[nabcd3++].val = val;
+        }
+     }else{
+        abcd3[nabcd3].ind   = p*v*v*v+r*v*v+q*v+s;
+        abcd3[nabcd3++].val = val;
+        abcd3[nabcd3].ind   = q*v*v*v+r*v*v+p*v+s;
+        abcd3[nabcd3++].val = val;
+        abcd3[nabcd3].ind   = p*v*v*v+s*v*v+q*v+r;
+        abcd3[nabcd3++].val = val;
+        abcd3[nabcd3].ind   = q*v*v*v+s*v*v+p*v+r;
+        abcd3[nabcd3++].val = val;
+        if (pq!=rs){
+           abcd3[nabcd3].ind   = r*v*v*v+p*v*v+s*v+q;
+           abcd3[nabcd3++].val = val;
+           abcd3[nabcd3].ind   = r*v*v*v+q*v*v+s*v+p;
+           abcd3[nabcd3++].val = val;
+           abcd3[nabcd3].ind   = s*v*v*v+p*v*v+r*v+q;
+           abcd3[nabcd3++].val = val;
+           abcd3[nabcd3].ind   = s*v*v*v+q*v*v+r*v+p;
+           abcd3[nabcd3++].val = val;
+        }
+     }
+  }
+}
 void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1){
   ULI ind3,a,b,c,d,ind1,ind2,index,flag;
   ULI nvals,vals[16];
@@ -1051,7 +1159,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1087,7 +1195,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1123,7 +1231,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1159,7 +1267,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){

@@ -62,7 +62,7 @@ CoordEntry::~CoordEntry()
 
 }
 
-const double& CoordEntry::Z() const 
+const double& CoordEntry::Z() const
 {
     if (ghosted_)
         return dzero;
@@ -184,23 +184,29 @@ ZMatrixEntry::~ZMatrixEntry()
 {
 }
 
+
 void
 ZMatrixEntry::set_coordinates(double x, double y, double z)
 {
-    coordinates_[0] = x;
-    coordinates_[1] = y;
-    coordinates_[2] = z;
+    coordinates_[0] = fabs(x) < CLEANUP_THRESH ? 0.0 : x;
+    coordinates_[1] = fabs(y) < CLEANUP_THRESH ? 0.0 : y;
+    coordinates_[2] = fabs(z) < CLEANUP_THRESH ? 0.0 : z;
 
     if(rto_ != 0){
         if(!rto_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
         rval_->set(r(coordinates_, rto_->compute()));
     }
+
     if(ato_ != 0){
         if(!ato_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
-        aval_->set(180.0*a(coordinates_, rto_->compute(), ato_->compute())/M_PI);
+        double aval = a(coordinates_, rto_->compute(), ato_->compute());
+        // Noise creeps in for linear molecules. Force linearity, if it is close enough.
+        double val = 180.0*aval/M_PI;
+        aval_->set(val);
     }
+
     if(dto_ != 0){
         if(!dto_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
@@ -308,8 +314,9 @@ const Vector3& ZMatrixEntry::compute()
             eY = eX.perp_unit(eCB);
             eX = eY.perp_unit(eCB);
         }
-        for(int xyz = 0; xyz < 3; ++xyz)
+        for(int xyz = 0; xyz < 3; ++xyz) {
            coordinates_[xyz] = B[xyz] + r * (eY[xyz] * sinABC - eCB[xyz] * cosABC );
+        }
     }else{
         /*
          * The fourth, or subsequent, atom
@@ -340,7 +347,14 @@ const Vector3& ZMatrixEntry::compute()
 
         for(int xyz = 0; xyz < 3; ++xyz)
            coordinates_[xyz] = B[xyz] + r * (eX[xyz] * sinABC * cosABCD + eY[xyz] * sinABC * sinABCD - eCB[xyz] * cosABC );
+
+//        fprintf(outfile, "%5s r %20.14lf, a %20.14lf, d %20.14lf\n", label_.c_str(),
+//                r, a, d);
+//        fprintf(outfile, "      B %20.14lf    %20.14lf    %20.14lf\n", B[0], B[1], B[2]);
+//        fprintf(outfile, "      C %20.14lf    %20.14lf    %20.14lf\n", C[0], C[1], C[2]);
+//        fprintf(outfile, "      D %20.14lf    %20.14lf    %20.14lf\n", D[0], D[1], D[2]);
     }
+
     computed_ = true;
     return coordinates_;
 }

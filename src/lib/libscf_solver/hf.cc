@@ -111,12 +111,28 @@ void HF::common_init()
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
-        if(options_["DOCC"].size() != nirreps)
-            throw PSIEXCEPTION("The DOCC array has the wrong dimensions");
-        for (int i=0; i<nirreps; ++i) {
-            doccpi_[i] = options_["DOCC"][i].to_integer();
-            ndocc += 2*doccpi_[i];
+        // Map the symmetry of the input DOCC, to account for displacements
+        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        if(old_pg){
+            // This is one of a series of displacements;  check the dimension against the parent point group
+            int full_nirreps = old_pg->char_table().nirrep();
+            if(options_["DOCC"].size() != full_nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            int *temp_docc = new int[full_nirreps];
+            for(int h = 0; h < full_nirreps; ++h)
+                temp_docc[h] = options_["DOCC"][h].to_integer();
+            map_irreps(temp_docc);
+            doccpi_ = temp_docc;
+            delete[] temp_docc;
+        }else{
+            // This is a normal calculation; check the dimension against the current point group then read
+            if(options_["DOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for(int h = 0; h < nirreps; ++h)
+                doccpi_[h] = options_["DOCC"][h].to_integer();
         }
+        for (int i=0; i<nirreps; ++i)
+            ndocc += 2*doccpi_[i];
     } else {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
@@ -125,12 +141,28 @@ void HF::common_init()
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
-        if(options_["SOCC"].size() != nirreps)
-            throw PSIEXCEPTION("The SOCC array has the wrong dimensions");
-        for (int i=0; i<nirreps; ++i) {
-            soccpi_[i] = options_["SOCC"][i].to_integer();
-            nsocc += soccpi_[i];
+        // Map the symmetry of the input SOCC, to account for displacements
+        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        if(old_pg){
+            // This is one of a series of displacements;  check the dimension against the parent point group
+            int full_nirreps = old_pg->char_table().nirrep();
+            if(options_["SOCC"].size() != full_nirreps)
+                throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            int *temp_socc = new int[full_nirreps];
+            for(int h = 0; h < full_nirreps; ++h)
+                temp_socc[h] = options_["SOCC"][h].to_integer();
+            map_irreps(temp_socc);
+            soccpi_ = temp_socc;
+            delete[] temp_socc;
+        }else{
+            // This is a normal calculation; check the dimension against the current point group then read
+            if(options_["SOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            for(int h = 0; h < nirreps; ++h)
+                soccpi_[h] = options_["SOCC"][h].to_integer();
         }
+        for (int i=0; i<nirreps; ++i)
+            nsocc += soccpi_[i];
     } else {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
@@ -142,6 +174,7 @@ void HF::common_init()
             nbetapi_[h]  = doccpi_[h];
         }
     }
+
 
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
@@ -309,7 +342,7 @@ void HF::integrals()
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 
-    // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
+    // TODO: Relax the if statement. 
     if (scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
@@ -322,21 +355,15 @@ void HF::integrals()
         if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
 
             // Need a temporary functional
-            boost::shared_ptr<psi::functional::SuperFunctional> functional = 
-                psi::functional::SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),1,1);
+            boost::shared_ptr<SuperFunctional> functional = 
+                SuperFunctional::current(options_);
             
             // K matrices
-            jk_->set_do_K(functional->isHybrid());
+            jk_->set_do_K(functional->is_x_hybrid());
             // wK matrices 
-            jk_->set_do_wK(functional->isRangeCorrected());
+            jk_->set_do_wK(functional->is_x_lrc());
             // w Value
-            if (functional->isRangeCorrected()) {
-                double omega = functional->getOmega();
-                if (options_["DFT_OMEGA"].has_changed()) {
-                    omega = options_.get_double("DFT_OMEGA"); 
-                }
-                jk_->set_omega(omega); 
-            }   
+            jk_->set_omega(functional->x_omega());
         }
 
         // Initialize
@@ -1382,12 +1409,13 @@ double HF::compute_energy()
             print_orbitals();
 
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "\n  Energy converged.\n");
-            fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
+            fprintf(outfile, "  Energy converged.\n\n");
+            fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
             }
-            fprintf(outfile, "\n");
+            fprintf(outfile, "\n\n");
+            print_energies();
         }
 
         // Properties
@@ -1408,14 +1436,14 @@ double HF::compute_energy()
             }
 
             if (Communicator::world->me() == 0)
-                fprintf(outfile, "\n  ==> Properties <==\n\n");
+                fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
         }
 
         save_information();
     } else {
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "\n  Failed to converged.\n");
+            fprintf(outfile, "  Failed to converged.\n");
             fprintf(outfile, "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
         }
         E_ = 0.0;
@@ -1436,6 +1464,33 @@ double HF::compute_energy()
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
+}
+
+void HF::print_energies()
+{
+    fprintf(outfile, "   => Energetics <=\n\n");
+    fprintf(outfile, "    Nuclear Repulsion Energy =    %24.16f\n", energies_["Nuclear"]);
+    fprintf(outfile, "    One-Electron Energy =         %24.16f\n", energies_["One-Electron"]);
+    fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
+    fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
+    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + 
+        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
+    fprintf(outfile, "\n");
+    
+    Process::environment.globals["NUCLEAR REPULSION ENERGY"] =      energies_["Nuclear"];
+    Process::environment.globals["ONE-ELECTRON ENERGY"] =           energies_["One-Electron"];
+    Process::environment.globals["TWO-ELECTRON ENERGY"] =           energies_["Two-Electron"];
+    if (fabs(energies_["XC"]) > 1.0e-14) {
+        Process::environment.globals["DFT FUNCTIONAL ENERGY"] =         energies_["XC"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] =   energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
+        Process::environment.globals["DFT TOTAL ENERGY"] =              energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
+    }
+    if (fabs(energies_["-D"]) > 1.0e-14) {
+        Process::environment.globals["DISPERSION CORRECTION ENERGY"] =  energies_["-D"];
+    }
 }
 
 void HF::print_occupation()
@@ -1464,6 +1519,7 @@ void HF::print_occupation()
         }
 
         for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
+        fprintf(outfile,"\n");
     }
 }
 

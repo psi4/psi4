@@ -1,95 +1,98 @@
 #include <boost/python.hpp>
+#include <libmints/vector.h>
 #include <libfunctional/superfunctional.h>
+#include <libfunctional/functional.h>
+#include <libdisp/dispersion.h>
 
 using namespace boost;
 using namespace boost::python;
-using namespace psi::functional;
+using namespace psi;
 
 void export_functional()
 {
-    class_<SuperFunctional, boost::shared_ptr<SuperFunctional> >("SuperFunctional", "docstring").
-        def("create_superfunctional", &SuperFunctional::createSuperFunctional, "docstring").
-        staticmethod("create_superfunctional").
-        def("build_superfunctional", &SuperFunctional::buildSuperFunctional, "docstring").
-        staticmethod("build_superfunctional").
-        def("available_superfunctionals", &SuperFunctional::availableSuperFunctionals, "docstring").
-        staticmethod("available_superfunctionals").
-        def("available_names", &SuperFunctional::availableNames, "docstring").
-        staticmethod("available_names").
-        //def("test_superfunctionals", &SuperFunctional::testSuperFunctionals).
-        //staticmethod("test_superfunctionals").
-        //def("test_superfunctional", &SuperFunctional::testSuperFunctional).
-
-        def("get_name", &SuperFunctional::getName, "docstring").
-        def("get_description", &SuperFunctional::getDescription, "docstring").
-        def("get_citation", &SuperFunctional::getCitation, "docstring").
-        def("get_composition", &SuperFunctional::getComposition, "docstring").
-        def("get_exact_exchange", &SuperFunctional::getExactExchange, "docstring").
-        def("get_pt2", &SuperFunctional::getPT2, "docstring").
-        def("get_omega", &SuperFunctional::getOmega, "docstring").
-        def("get_dash_d", &SuperFunctional::getDashD, "docstring").
-        def("get_npoints", &SuperFunctional::getNPoints, "docstring").
-        def("get_deriv", &SuperFunctional::getDeriv, "docstring").
-        def("get_functional", &SuperFunctional::getFunctional, "docstring").
-        def("get_weight", &SuperFunctional::getWeight, "docstring").
-        def("get_size", &SuperFunctional::size, "docstring").
-
-        def("set_name", &SuperFunctional::setName, "docstring").
-        def("set_description", &SuperFunctional::setDescription, "docstring").
-        def("set_citation", &SuperFunctional::setCitation, "docstring").
-        def("set_parameter", &SuperFunctional::setParameter, "docstring").
-        def("set_exact_exchange", &SuperFunctional::setExactExchange, "docstring").
-        def("set_pt2", &SuperFunctional::setPT2, "docstring").
-        def("set_omega", &SuperFunctional::setOmega, "docstring").
-        def("set_dash_d", &SuperFunctional::setDashD, "docstring").
-        def("set_npoints", &SuperFunctional::setNPoints, "docstring").
-        def("set_deriv", &SuperFunctional::setDeriv, "docstring").
-        def("set_size", &SuperFunctional::size, "docstring").
-
-        def("is_gga", &SuperFunctional::isGGA, "docstring").
-        def("is_meta", &SuperFunctional::isMeta, "docstring").
-        def("is_hybrid", &SuperFunctional::isHybrid, "docstring").
-        def("is_double_hybrid", &SuperFunctional::isDoubleHybrid, "docstring").
-        def("is_range_corrected", &SuperFunctional::isRangeCorrected, "docstring").
-        def("is_dash_d", &SuperFunctional::isDashD, "docstring").
-
-        //def("add_functional", &SuperFunctional::addFunctional).
-
-        def("computeRKSFunctional", &SuperFunctional::computeRKSFunctional, "docstring").
-        def("computeUKSFunctional", &SuperFunctional::computeUKSFunctional, "docstring");
+    class_<SuperFunctional, boost::shared_ptr<SuperFunctional>, boost::noncopyable >("SuperFunctional", "docstring", no_init).
+        def("build", &SuperFunctional::build, "docstring").
+        staticmethod("build").
+        def("blank", &SuperFunctional::blank, "docstring").
+        staticmethod("blank").
+        def("allocate", &SuperFunctional::allocate, "docstring").
+        def("x_functional", &SuperFunctional::x_functional, "docstring").
+        def("c_functional", &SuperFunctional::c_functional, "docstring").
+        def("add_x_functional", &SuperFunctional::add_x_functional, "docstring").
+        def("add_c_functional", &SuperFunctional::add_c_functional, "docstring").
+        def("test_functional", &SuperFunctional::test_functional, "docstring").
+        def("value", &SuperFunctional::value, "docstring").
+        def("name", &SuperFunctional::name, "docstring").
+        def("description", &SuperFunctional::description, "docstring").
+        def("citation", &SuperFunctional::citation, "docstring").
+        def("ansatz", &SuperFunctional::ansatz, "docstring").
+        def("max_points", &SuperFunctional::max_points, "docstring").
+        def("deriv", &SuperFunctional::deriv, "docstring").
+        def("x_omega", &SuperFunctional::x_omega, "docstring").
+        def("c_omega", &SuperFunctional::c_omega, "docstring").
+        def("x_alpha", &SuperFunctional::x_alpha, "docstring").
+        def("c_alpha", &SuperFunctional::c_alpha, "docstring").
+        def("dispersion", &SuperFunctional::dispersion, "docstring").
+        def("is_gga", &SuperFunctional::is_gga, "docstring").
+        def("is_meta", &SuperFunctional::is_meta, "docstring").
+        def("is_x_lrc", &SuperFunctional::is_x_lrc, "docstring").
+        def("is_c_lrc", &SuperFunctional::is_c_lrc, "docstring").
+        def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "docstring").
+        def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "docstring").
+        def("set_name", &SuperFunctional::set_name, "docstring").
+        def("set_description", &SuperFunctional::set_description, "docstring").
+        def("set_citation", &SuperFunctional::set_citation, "docstring").
+        def("set_max_points", &SuperFunctional::set_max_points, "docstring").
+        def("set_deriv", &SuperFunctional::set_deriv, "docstring").
+        def("set_x_omega", &SuperFunctional::set_x_omega, "docstring").
+        def("set_c_omega", &SuperFunctional::set_c_omega, "docstring").
+        def("set_x_alpha", &SuperFunctional::set_x_alpha, "docstring").
+        def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
+        def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
+        def("print_out",&SuperFunctional::py_print, "docstring").
+        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
     class_<Functional, boost::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
-        def("create_functional", &Functional::createFunctional, "docstring").
-        staticmethod("create_functional").
-        def("available_functionals", &Functional::availableFunctionals, "docstring").
-        staticmethod("available_functionals").
-        def("available_names", &Functional::availableNames, "docstring").
-        staticmethod("available_names").
-        //def("test_functionals", &Functional::testFunctionals).
-        //staticmethod("test_functionals").
-        //def("test_functional", &Functional::testFunctional).
+        def("build_base", &Functional::build_base, "docstring").
+        staticmethod("build_base").
+        def("name", &Functional::name, "docstring").
+        def("description", &Functional::description, "docstring").
+        def("citation", &Functional::citation, "docstring").
+        def("alpha", &Functional::alpha, "docstring").
+        def("omega", &Functional::omega, "docstring").
+        def("lsda_cutoff", &Functional::lsda_cutoff, "docstring").
+        def("meta_cutoff", &Functional::meta_cutoff, "docstring").
+        def("is_gga", &Functional::is_gga, "docstring").
+        def("is_meta", &Functional::is_meta, "docstring").
+        def("is_lrc", &Functional::is_lrc, "docstring").
+        def("set_name", &Functional::set_name, "docstring").
+        def("set_description", &Functional::set_description, "docstring").
+        def("set_citation", &Functional::set_citation, "docstring").
+        def("set_gga", &Functional::set_gga, "docstring").
+        def("set_meta", &Functional::set_meta, "docstring").
+        def("set_alpha", &Functional::set_alpha, "docstring").
+        def("set_omega", &Functional::set_omega, "docstring").
+        def("set_lsda_cutoff", &Functional::set_lsda_cutoff, "docstring").
+        def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring").
+        def("set_parameter", &Functional::set_parameter, "docstring").
+        def("print_out", &Functional::py_print, "docstring").
+        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
-        def("get_name", &Functional::getName, "docstring").
-        def("get_description", &Functional::getDescription, "docstring").
-        def("get_citation", &Functional::getCitation, "docstring").
-        def("get_parameters_string", &Functional::getParametersString, "docstring").
-        def("get_parameters", &Functional::getParameters, "docstring").
-        def("get_npoints", &Functional::getNPoints, "docstring").
-        def("get_deriv", &Functional::getDeriv, "docstring").
-        def("get_density_cutoff", &Functional::getDensityCutoff, "docstring").
+    class_<Dispersion, boost::shared_ptr<Dispersion>, boost::noncopyable >("Dispersion", "docstring", no_init).
+        def("build", &Dispersion::build, "docstring").
+        staticmethod("build").
+        def("name", &Dispersion::name, "docstring").
+        def("description", &Dispersion::description, "docstring").
+        def("citation", &Dispersion::citation, "docstring").
+        def("set_name", &Dispersion::set_name, "docstring").
+        def("set_description", &Dispersion::set_description, "docstring").
+        def("set_citation", &Dispersion::set_citation, "docstring").
+        def("print_energy", &Dispersion::print_energy, "docstring").
+        def("print_gradient", &Dispersion::print_gradient, "docstring").
+        def("print_hessian", &Dispersion::print_hessian, "docstring").
+        //def("compute_energy", &Dispersion::compute_energy, "docstring").
+        //def("compute_gradient", &Dispersion::compute_gradient, "docstring").
+        //def("compute_hessian", &Dispersion::compute_hessian, "docstring").
+        def("print_out",&Dispersion::py_print, "docstring");
 
-        def("set_name", &Functional::setName, "docstring").
-        def("set_description", &Functional::setDescription, "docstring").
-        def("set_citation", &Functional::setCitation, "docstring").
-        def("set_parameter", &Functional::setParameter, "docstring").
-        def("set_parameters", &Functional::setParameters, "docstring").
-        def("set_npoints", &Functional::setNPoints, "docstring").
-        def("set_deriv", &Functional::setDeriv, "docstring").
-        def("set_density_cutoff", &Functional::setDensityCutoff, "docstring").
-
-        def("is_gga", &Functional::isGGA, "docstring").
-        def("is_meta", &Functional::isMeta, "docstring").
-
-        def("computeRKSFunctional", &Functional::computeRKSFunctional, "docstring").
-        def("computeUKSFunctional", &Functional::computeUKSFunctional, "docstring");
 }

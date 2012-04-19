@@ -21,6 +21,10 @@
 #include "EFP.h"
 #endif
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <libmints/molecule.h>
+#endif
+
 namespace opt {
 
 using namespace std;
@@ -65,9 +69,9 @@ void MOLECULE::forces(void) {
   array_scm(f_x, -1, Ncart); // switch gradient -> forces
 
   // u f_x
-  double *u = g_u_vector();
-  for (int i=0; i<Ncart; ++i)
-    f_x[i] *= u[i];
+  //double *u = g_u_vector();
+  //for (int i=0; i<Ncart; ++i)
+    //f_x[i] *= u[i];
 
   // B (u f_x)
   B = compute_B();
@@ -84,7 +88,7 @@ void MOLECULE::forces(void) {
   for (int i=0; i<Nintco; ++i)
     for (int k=0; k<Ncart; ++k)
       for (int j=0; j<Nintco; ++j)
-        G[i][j] += B[i][k] * u[k] * B[j][k];
+        G[i][j] += B[i][k] * /* u[k] * */ B[j][k];
   free_matrix(B);
 
   G_inv = symm_matrix_inv(G, Nintco, 1);
@@ -125,6 +129,32 @@ void MOLECULE::forces(void) {
 
   fflush(outfile);
   return ;
+}
+
+// Apply extra forces for internal coordinates with user-defined
+// equilibrium values.
+void MOLECULE::apply_constraint_forces(bool update_hessian_too) {
+  double * f_q = p_Opt_data->g_forces_pointer();
+  double **H = p_Opt_data->g_H_pointer();
+
+  int cnt = -1;
+  for (int f=0; f<fragments.size(); ++f) {
+    for (int i=0; i<fragments[f]->g_nintco(); ++i) {
+      ++cnt;
+      if (fragments[f]->intco_has_fixed_eq_val(i)) {
+        double eq_val = fragments[f]->intco_fixed_eq_val(i);
+        double val = fragments[f]->intco_value(i);
+        double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
+        fprintf(outfile,"\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
+        fprintf(outfile,"\tValue is %8.4e; Eq. value is %8.4e; Force added is %8.4e.\n", val, eq_val, force);
+        f_q[cnt] += force;
+
+        if (update_hessian_too)
+          H[cnt][cnt] += 0.5 * Opt_params.fixed_eq_val_force_constant;
+      }
+    }
+  }
+  return;
 }
 
 // project redundancies (and constraints) out of forces and Hessian matrix
@@ -614,6 +644,93 @@ double ** MOLECULE::compute_constraints(void) {
   }
   fflush(outfile);
   return C;
+}
+
+// Test a linear combination of internal coordinate displacements to see if it
+// breaks the molecular point group.
+bool MOLECULE::intco_combo_is_symmetric(double *intco_combo, int dim) {
+  int natom = g_natom();
+  double norm = array_norm(intco_combo, dim);
+
+  double **B = compute_B();
+  double **orig_geom = g_geom_2D();
+
+  double **displaced_geom = matrix_return_copy(orig_geom, natom, 3);
+  for (int xyz=0; xyz<3; ++xyz)
+    for (int atom=0; atom<natom; ++atom)
+      for (int intco=0; intco<dim; ++intco)
+        displaced_geom[atom][xyz] += 0.1/norm * intco_combo[intco] * B[intco][3*atom+xyz];
+
+  //fprintf(outfile,"Displaced geometry\n");
+  //print_matrix(outfile, displaced_geom, natom, 3);
+
+  bool symm_rfo_step = false;
+#if defined(OPTKING_PACKAGE_PSI)
+  psi::Process::environment.molecule()->set_geometry(displaced_geom);
+  symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map();
+  psi::Process::environment.molecule()->set_geometry(orig_geom);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // TODO QCHEM
+  symm_rfo_step = true;
+#endif
+  free_matrix(displaced_geom);
+
+  if (symm_rfo_step)
+    return true;
+  else
+    return false;
+}
+
+// Fetches the string definition of an internal coordinate from global index
+std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
+  std::string s;
+  int f_for_index, f;
+  int Nintra = g_nintco_intrafragment();
+  int Ninter = g_nintco_interfragment();
+  int Nefp = 0;
+#if defined (OPTKING_PACKAGE_QCHEM)
+  Nefp = g_nintco_efp_fragment();
+#endif
+
+  if ( index < 0 || index >= (Nintra + Ninter + Nefp) ) {
+    fprintf(outfile, "get_intco_definition(): index %d out of range", index);
+    throw(INTCO_EXCEPT("get_intco_definition(): index out of range"));
+  }
+
+  // coordinate is an intrafragment coordinate
+  if (index < Nintra) {
+
+    // go to last fragment or first that isn't past the desired index
+    for (f=0; f<fragments.size(); ++f)
+      if (index < g_intco_offset(f))
+        break;
+    --f;
+
+    s = fragments[f]->get_intco_definition(index - g_intco_offset(f), g_atom_offset(f));
+    return s;
+  }
+
+  // coordinate is an interfragment coordinate
+  if (index < Nintra + Ninter) {
+
+    for (f=0; f<interfragments.size(); ++f)
+      if (index < g_interfragment_intco_offset(f))
+        break;
+    --f;
+
+    s = interfragments[f]->get_intco_definition(index - g_interfragment_intco_offset(f));
+    return s;
+  }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+  for (f=0; f<efp_fragments.size(); ++f)
+    if (index < g_efp_fragment_intco_offset(f))
+      break;
+  --f;
+
+  s = efp_fragments[f]->get_intco_definition(index - Nintra - Nefp);
+#endif
+  return s;
 }
 
 #if defined (OPTKING_PACKAGE_QCHEM)

@@ -18,6 +18,10 @@
 #define EXTERN
 #include "globals.h"
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <libmints/molecule.h>
+#endif
+
 namespace opt {
 
 using namespace v3d;
@@ -161,8 +165,11 @@ void MOLECULE::fragmentize(void) {
   
         FRAG * one_frag = new FRAG(frag_natom[ifrag], Z_frag, geom_frag);
         one_frag->set_grad(grad_frag);
-        fragments.push_back(one_frag);
         free_matrix(grad_frag);
+
+        // update connectivity and add to list
+        one_frag->update_connectivity_by_distances();
+        fragments.push_back(one_frag);
   
       }
   
@@ -192,7 +199,7 @@ void MOLECULE::add_interfragment(void) {
   double tval, min;
   int ndA, ndB; // num of reference atoms on each fragment
   char error_msg[100];
-  double **weight_A, **weight_B;
+  double **weight_A=NULL, **weight_B=NULL;
   FRAG *Afrag, *Bfrag;
 
   if (fragments.size() == 1) return;
@@ -200,15 +207,13 @@ void MOLECULE::add_interfragment(void) {
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
     fprintf(outfile,"\tInterfragment coordinate reference points to be selected from closest atoms and neighbors.\n");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-    fprintf(outfile,"\tPrincipal axes not yet working\n");
-    //fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
+    fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
 
   for (int frag_i=0; frag_i<(fragments.size()-1); ++frag_i) {
 
     Afrag = fragments[frag_i];
     Bfrag = fragments[frag_i+1];
 
-    // A1 and B1 will be closest atoms between fragments
     A  = Afrag->g_geom_const_pointer();
     nA = Afrag->g_natom();
     cA = Afrag->g_connectivity_pointer();
@@ -219,6 +224,7 @@ void MOLECULE::add_interfragment(void) {
 
     if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED) {
 
+      // A1 and B1 will be closest atoms between fragments
       min = 1e9;
       for (int iA=0; iA < nA; ++iA) {
         for (int iB=0; iB < nB; ++iB) {
@@ -232,7 +238,8 @@ void MOLECULE::add_interfragment(void) {
       }
       ndA = ndB = 1;
 
-      fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
+      fprintf(outfile,"\tNearest atoms on two fragments are %d and %d.\n",
+        g_atom_offset(frag_i)+A1+1, g_atom_offset(frag_i+1)+B1+1);
 
       // A2 is bonded to A1, but A2-A1-B1 must not be collinear
       for (int iA=0; iA < nA; ++iA) {
@@ -345,39 +352,95 @@ void MOLECULE::add_interfragment(void) {
         print_matrix(outfile, weight_B, 3, nB);
       }
 
+      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+      interfragments.push_back(one_IF);
+
     } // fixed interfragment coordinates
-    /*else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES) {
+    else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES) {
 
-      double **A_u = init_matrix(3,3);
-      double *A_lambda = init_array(3);
-      nA_lambda = Afrag->principal_axes(A, A_u, A_lambda);
+      // ref point A[0] and B[0] will be the centers of mass
+      // ref points A[1/2] and B[1/2] will on on principal axes
+      // nothing to compute now
+      if (nA == 1)
+        ndA = 1;
+      else if (nA == 2) // TODO check linearity
+        ndA = 2;
+      else 
+        ndA = 3;
 
-      double **B_u = init_matrix(3,3);
-      double *B_lambda = init_array(3);
-      nB_lambda = Bfrag->principal_axes(B, B_u, B_lambda);
+      if (nB == 1)
+        ndB = 1;
+      else if (nB == 2)
+        ndB = 2;
+      else
+         ndA = 3;
 
-      if (Opt_params.print_lvl >= 3) {
-        fprintf(outfile, "\tPrincipal axes on A\n");
-        print_matrix(outfile, A_u, ndA, 3);
-        fprintf(outfile, "\tPrincipal axes on B\n");
-        print_matrix(outfile, B_u, ndB, 3);
-      }
-      
-      free_matrix(A_u);
-      free_matrix(B_u);
-      free_array(A_lambda);
-      free_array(B_lambda);
-    }*/
+      weight_A = weight_B = NULL;
 
-    INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, NULL, NULL, ndA, ndB, true);
+      interfragments.push_back(one_IF);
 
-    //if (use_principal_axes)
-    //  one_IF->set_principal_axes(true);
-
-    interfragments.push_back(one_IF);
+    }
   }
 
   fflush(outfile);
+}
+
+// Check to see if displacement along any of the interfragment modes breakes
+// the symmetry of the molecule.  If so, freeze it.  This is a hack for now.
+// will it work?  RAK 3-2012
+void MOLECULE::freeze_interfragment_asymm(void) {
+  double **coord_orig = g_geom_2D();
+  double disp_size = 0.1;
+
+  fprintf(outfile,"\tChecking interfragment coordinates for ones that break symmetry.\n");
+  fflush(outfile);
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    double **B = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
+
+    int iA = interfragments[I]->g_A_index();
+    int iB = interfragments[I]->g_B_index();
+    int nA = interfragments[I]->g_natom_A();
+    int nB = interfragments[I]->g_natom_B();
+
+    for (int i=0; i<interfragments[I]->g_nintco(); ++i) {
+      bool symmetric_intco = true;
+
+      double **coord = matrix_return_copy(coord_orig, g_natom(), 3);
+
+      for (int atom_a=0; atom_a<nA; ++atom_a)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iA)+atom_a][xyz] += disp_size * B[i][3*atom_a+xyz];
+
+      for (int atom_b=0; atom_b<nB; ++atom_b)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iB)+atom_b][xyz] += disp_size * B[i][3*atom_b+xyz];
+
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord);
+      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map();
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // not implemented yet
+#endif
+      if (symmetric_intco)
+        fprintf(outfile,"\tInterfragment coordinate %d, %d is symmetric.\n", I+1, i+1);
+      else {
+        fprintf(outfile,"\tInterfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
+        fflush(outfile);
+        interfragments[I]->freeze(i);
+      }
+      free(coord);
+    }
+    free_matrix(B);
+  }
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord_orig);
+#endif
+
+  return;
 }
 
 } // namespace opt

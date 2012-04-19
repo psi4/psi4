@@ -2,6 +2,7 @@
 #include <libqt/qt.h>
 #include <psi4-dec.h>
 #include <boost/tuple/tuple_comparison.hpp>
+#include "points.h"
 #include "hamiltonian.h"
 #include "jk.h"
 #include "v.h"

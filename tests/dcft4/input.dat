@@ -1,37 +1,55 @@
-#! DCFT calculation for the Ne atom, with the K06 functional. This performs both
+#! DCFT calculation for the HF+ using DCFT-06 functional. This performs both
 #! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
-#! Four-virtual integrals are handled in the MO Basis.
-#! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
+#! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
+#! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
+#! four-virtual case is avoided. 
 
 memory 250 mb
 
-refscf      = -128.48877555174076 #TEST
-refmp2      = -128.67634273661755 #TEST
-refdcftscf  = -128.29060244088066 #TEST
-refdcft     = -128.680342024 #TEST
+refscf      = -98.190834079292387  #TEST
+refmp2      = -98.202705508819363  #TEST
+refdcftscf  = -98.164839047679820  #TEST
+refdcft     = -98.2078192401319967 #TEST
 
-molecule ne {
-    Ne
+molecule HF {
+1 2
+H
+F 1 R
+
+R = 1.000
 }
 
 set globals {
-    r_convergence 11
-    d_convergence 10
+    r_convergence 12
+    d_convergence 12
     reference   uhf
     ao_basis    none
     algorithm   twostep
-    basis       cc-pvdz
+    basis       sto-3g
 }
 
 energy('dcft')
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                       #TEST
-compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                              #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (two-step)");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (two-step)");     #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, get_variable("MP2 ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, ao_basis=none)");                #TEST
 
-#set algorithm simultaneous
-#energy('dcft')
+set algorithm simultaneous
+energy('dcft')
 
-#compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (simultaneous)");                #TEST
-#compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (simultaneous)");     #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, ao_basis=none)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, ao_basis=none)");            #TEST
+
+set ao_basis disk
+set algorithm twostep
+energy('dcft')
+
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, ao_basis=disk)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, ao_basis=disk)");                #TEST
+
+set algorithm simultaneous
+energy('dcft')
+
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, ao_basis=disk)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, ao_basis=disk)");            #TEST

@@ -22,7 +22,7 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 void MOLECULE::prfo_step(void) {
   double **Horig = p_Opt_data->g_H_pointer();
-  double *f_q = p_Opt_data->g_forces_pointer();
+  double *fq = p_Opt_data->g_forces_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
   int Nintco = g_nintco();
   int rfo_root; // ultimately, should be array of roots to maximize
@@ -78,7 +78,7 @@ void MOLECULE::prfo_step(void) {
 
   // transform gradient
   double *f_q_Hevect_basis = init_array(Nintco);
-  opt_matrix_mult(H_evects, 0, &f_q, 1, &f_q_Hevect_basis, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(H_evects, 0, &fq, 1, &f_q_Hevect_basis, 1, Nintco, Nintco, 1, 0);
 
   // Build RFO-max.
   double **rfo_max = init_matrix(mu+1, mu+1);
@@ -188,7 +188,7 @@ void MOLECULE::prfo_step(void) {
   // try to get but with a single extrapolated energy change
  
   double rfo_dqnorm = sqrt( array_dot(dq, dq, Nintco) );
-  double rfo_g = -1 * array_dot(f_q, dq, Nintco);
+  double rfo_g = -1 * array_dot(fq, dq, Nintco);
 
   double rfo_h = 0;
   for (int i=0; i<Nintco; ++i)
@@ -210,7 +210,7 @@ double rfo_dqnorm_min;
 
 //get gradient and hessian in step direction for min and max
   rfo_dqnorm_max = sqrt( array_dot(dq_max, dq_max, Nintco) );
-  rfo_g_max = -1 * array_dot(f_q, dq_max, Nintco);
+  rfo_g_max = -1 * array_dot(fq, dq_max, Nintco);
   rfo_h_max = 0;
   for (i=0; i<Nintco; ++i) {
     rfo_h_max += dq_max[i] * array_dot(H[i], dq_max, Nintco); 
@@ -218,7 +218,7 @@ double rfo_dqnorm_min;
   DE_projected_max = DE_rfo_energy(rfo_dqnorm_max, rfo_g_max, rfo_h_max);
 
   rfo_dqnorm_min = sqrt( array_dot(dq_min, dq_min, Nintco) );
-  rfo_g_min = -1 * array_dot(f_q, dq_min, Nintco);
+  rfo_g_min = -1 * array_dot(fq, dq_min, Nintco);
   rfo_h_min = 0;
   for (i=0; i<Nintco; ++i) {
     rfo_h_min += dq_min[i] * array_dot(H[i], dq_min, Nintco);
@@ -236,19 +236,16 @@ double rfo_dqnorm_min;
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
   }
 
-  double *q_target;
   for (int I=0; I<interfragments.size(); ++I) {
-
-    q_target = interfragments[I]->intco_values();
-    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-      q_target[i] += dq[g_interfragment_intco_offset(I) + i];  
-
-    interfragments[I]->orient_fragment(q_target);
-
-    free_array(q_target);
+    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      continue;
+    }
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                        &(fq[g_interfragment_intco_offset(I)]) );
   }
 
   symmetrize_geom(); // now symmetrize the geometry for next step

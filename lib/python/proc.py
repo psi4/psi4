@@ -13,6 +13,8 @@ import input
 import physconst
 from molutil import *
 from text import *
+from procutil import *
+# never import driver, wrappers, or aliases into this file
 
 
 def run_dcft(name, **kwargs):
@@ -29,6 +31,8 @@ def run_dcft_gradient(name, **kwargs):
     DCFT gradient calculation.
 
     """
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+
     run_dcft(name, **kwargs)
     PsiMod.deriv()
 
@@ -38,8 +42,59 @@ def run_scf(name, **kwargs):
     a self-consistent-field theory (HF & DFT) calculation.
 
     """
+    lowername = name.lower()
 
-    return scf_helper(name, **kwargs)
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+    user_scftype = PsiMod.get_local_option('SCF', 'SCF_TYPE')
+    b_user_scftype = PsiMod.has_option_changed('SCF_TYPE')
+
+    if lowername == 'df-scf':
+        PsiMod.set_global_option('SCF_TYPE', 'DF')
+    elif lowername == 'hf':
+        if PsiMod.get_local_option('SCF', 'REFERENCE') == 'RKS':
+            PsiMod.set_global_option('REFERENCE', 'RHF')
+        elif PsiMod.get_local_option('SCF', 'REFERENCE') == 'UKS':
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+        else:
+            pass
+    elif lowername == 'rhf':
+        PsiMod.set_global_option('REFERENCE', 'RHF')
+    elif lowername == 'uhf':
+        PsiMod.set_global_option('REFERENCE', 'UHF')
+    elif lowername == 'rohf':
+        PsiMod.set_global_option('REFERENCE', 'ROHF')
+    elif lowername == 'rscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            PsiMod.set_global_option('REFERENCE', 'RKS')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'RHF')
+    elif lowername == 'uscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            PsiMod.set_global_option('REFERENCE', 'UKS')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+    elif lowername == 'roscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            raise ValidationError('ROHF reference for DFT is not available.')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'ROHF')
+
+    returnvalue = scf_helper(name, **kwargs)
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
+    PsiMod.set_global_option('SCF_TYPE', user_scftype)
+    if not b_user_scftype:
+        PsiMod.revoke_global_option_changed('SCF_TYPE')
+
+    return returnvalue
 
 
 def run_scf_gradient(name, **kwargs):
@@ -181,6 +236,11 @@ def run_mp2(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
     PsiMod.transqt2()
     PsiMod.ccsort()
     returnvalue = PsiMod.mp2()
@@ -222,6 +282,8 @@ def run_ccenergy(name, **kwargs):
         PsiMod.set_global_option('WFN', 'CC2')
     elif (name.lower() == 'cc3'):
         PsiMod.set_global_option('WFN', 'CC3')
+    elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
     elif (name.lower() == 'eom-ccsd'):
         PsiMod.set_global_option('WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options,
@@ -232,6 +294,11 @@ def run_ccenergy(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
+
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
 
     PsiMod.transqt2()
     PsiMod.ccsort()
@@ -282,6 +349,11 @@ def run_bccd(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
     PsiMod.set_global_option('DELETE_TEI', 'false')
 
     while True:
@@ -306,12 +378,65 @@ def run_bccd_t(name, **kwargs):
     return PsiMod.cctriples()
 
 
-def run_cc_response(name, **kwargs):
+def run_scf_property(name, **kwargs):
+
+    run_scf(name, **kwargs)
+
+
+def run_cc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a CC2 and CCSD calculation.
+    all CC property calculations.
 
     """
-    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+    oneel_properties = ['dipole', 'quadrupole']
+    twoel_properties = []
+    response_properties = ['polarizability', 'rotation', 'roa']
+    excited_properties = ['oscillator_strength', 'rotational_strength']
+
+    one = []
+    two = []
+    response = []
+    excited = []
+    invalid = []
+
+    if 'properties' in kwargs:
+        properties = kwargs.pop('properties')
+        properties = drop_duplicates(properties)
+
+        for prop in properties:
+            if prop in oneel_properties:
+                one.append(prop)
+            elif prop in twoel_properties:
+                two.append(prop)
+            elif prop in response_properties:
+                response.append(prop)
+            elif prop in excited_properties:
+                excited.append(prop)
+            else:
+                invalid.append(prop)
+    else:
+        print "The \"properties\" keyword is required with the property() function."
+        exit(1)
+
+    n_one = len(one)
+    n_two = len(two)
+    n_response = len(response)
+    n_excited = len(excited)
+    n_invalid = len(invalid)
+
+    if (n_invalid > 0):
+        print "The following properties are not currently supported: %s" % invalid
+
+    if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
+        print "Excited state CC properties require EOM-CC2 or EOM-CCSD."
+        exit(1)
+
+    if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
+        print "Cannot compute response properties for excited states."
+        exit(1)
+
+    if (n_one > 0 or n_two > 0) and (n_response > 0):
+        print "Computing both density- and response-based properties."
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
@@ -321,10 +446,47 @@ def run_cc_response(name, **kwargs):
         PsiMod.set_global_option('WFN', 'CC2')
         run_ccenergy('cc2', **kwargs)
         PsiMod.set_global_option('WFN', 'CC2')
+    elif (name.lower() == 'eom-ccsd'):
+        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        run_ccenergy('eom-ccsd', **kwargs)
+        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
+        run_ccenergy('eom-cc2', **kwargs)
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
 
+    # Need cchbar for everything
     PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccresponse()
+
+    # Need ccdensity at this point only for density-based props
+    if ((n_one > 0 or n_two > 0) and not n_excited):
+        PsiMod.set_global_option('DERTYPE', 'NONE')
+        PsiMod.set_global_option('ONEPDM', 'TRUE')
+        PsiMod.cclambda()
+        PsiMod.ccdensity()
+
+    # Need ccresponse only for response-type props
+    if (n_response > 0):
+        PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+        PsiMod.cclambda()
+        for prop in response:
+            PsiMod.set_global_option('PROPERTY', prop)
+            PsiMod.ccresponse()
+
+    # Excited-state transition properties
+    if (n_excited > 0):
+        if (name.lower() == 'eom-ccsd'):
+            PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        elif (name.lower() == 'eom-cc2'):
+            PsiMod.set_global_option('WFN', 'EOM_CC2')
+        else:
+            print "Unknown excited-state CC wave function."
+            exit(1)
+        PsiMod.set_global_option('DERTYPE', 'NONE')
+        PsiMod.set_global_option('ONEPDM', 'TRUE')
+        PsiMod.cceom()
+        PsiMod.cclambda()
+        PsiMod.ccdensity()
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
@@ -414,36 +576,31 @@ def run_dft(name, **kwargs):
     """
     lowername = name.lower()
 
-    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_global_option('REFERENCE')
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
 
-    if lowername.startswith('b3lyp'):
-        if lowername.endswith('b3lyp'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP')
-        #elif lowername.endswith('-d1'):
-        #    PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D1')
-        elif lowername.endswith('-d2'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
-        elif lowername.endswith('-d'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
-        else:
-            raise ValidationError('Requested B3LYP variant \'%s\' is not available.' % (lowername))
-    else:
-        raise ValidationError('How did you even get here? Edit the procedures dictionary.')
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
 
     if (user_ref == 'RHF'):
         PsiMod.set_global_option('REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
         PsiMod.set_global_option('REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
-        raise ValidationError('RO reference for DFT is not available.')
+        raise ValidationError('ROHF reference for DFT is not available.')
+    elif (user_ref == 'CUHF'):
+        raise ValidationError('CUHF reference for DFT is not available.')
 
     returnvalue = scf_helper(name, **kwargs)
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
     PsiMod.set_global_option('REFERENCE', user_ref)
-    PsiMod.revoke_global_option_changed('REFERENCE')
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
 
     return returnvalue
 
@@ -498,6 +655,11 @@ def run_detci(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
     PsiMod.transqt2()
     returnvalue = PsiMod.detci()
 
@@ -547,7 +709,7 @@ def run_dfmp2(name, **kwargs):
     e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
     if (name.upper() == 'SCS-DFMP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2'):
         return e_dfmp2
 
 
@@ -699,6 +861,10 @@ def run_sapt(name, **kwargs):
     """
 
     molecule = PsiMod.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
+    molecule.update_geometry()
 
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
@@ -776,6 +942,10 @@ def run_sapt(name, **kwargs):
     banner(name.upper())
     PsiMod.print_out('\n')
     e_sapt = PsiMod.sapt()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
     return e_sapt
 
 
@@ -785,7 +955,11 @@ def run_sapt_ct(name, **kwargs):
 
     """
     molecule = PsiMod.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
     molecule.update_geometry()
+
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
     monomerB = molecule.extract_subsets(2, 1)
@@ -892,6 +1066,9 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
     PsiMod.set_variable('SAPT CT ENERGY', CT)
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
 
     return e_sapt
 
@@ -1030,3 +1207,10 @@ def run_mrcc(name, **kwargs):
     PsiMod.print_out(iface_contents)
 
     return e
+
+
+# General wrapper for property computations
+def run_property(name, **kwargs):
+
+    junk = 1
+    return junk

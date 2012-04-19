@@ -17,6 +17,7 @@ Appendices
    bibliography
    testsuite
    basissets_byelement
+   dft_byfunctional
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
    autodoc_glossary_options_c
