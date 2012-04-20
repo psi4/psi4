@@ -1,5 +1,4 @@
 #include<libplugin/plugin.h>
-
 #include "ccsd.h" 
 
 INIT_PLUGIN
