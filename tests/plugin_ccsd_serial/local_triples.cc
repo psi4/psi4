@@ -1,5 +1,7 @@
 #include"ccsd.h"
 #include<libmints/wavefunction.h>
+#include<libmints/matrix.h>
+#include<libmints/vector.h>
 #include"blas.h"
 #ifdef _OPENMP
    #include<omp.h>

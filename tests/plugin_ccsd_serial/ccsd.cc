@@ -1,18 +1,7 @@
 #include"psi4-dec.h"
-#include<psifiles.h>
-#include<libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
+#include<libmints/vector.h>
 #include<libmints/matrix.h>
 #include<libmints/wavefunction.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include<libpsio/psio.hpp>
-#include<libciomr/libciomr.h>
 #include<sys/times.h>
 #ifdef _OPENMP
     #include<omp.h>
