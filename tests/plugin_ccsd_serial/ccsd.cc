@@ -107,8 +107,8 @@ void CoupledCluster::Initialize(Options &options){
   #ifdef _OPENMP
       nthreads = omp_get_max_threads();
   #endif
-  if (options["NUM_THREADS"].has_changed())
-     nthreads = options.get_int("NUM_THREADS");
+  if (options["CC_NUM_THREADS"].has_changed())
+     nthreads = options.get_int("CC_NUM_THREADS");
 
   long int o=ndoccact;
   long int v=nvirt;

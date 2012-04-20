@@ -129,8 +129,8 @@ void CoupledPair::Initialize(Options &options){
   // SCS MP2 and CEPA
   emp2_os_fac = options.get_double("MP2_SCALE_OS");
   emp2_ss_fac = options.get_double("MP2_SCALE_SS");
-  ecepa_os_fac = options.get_double("CC_SCALE_OS");
-  ecepa_ss_fac = options.get_double("CC_SCALE_SS");
+  ecepa_os_fac = options.get_double("CEPA_SCALE_OS");
+  ecepa_ss_fac = options.get_double("CEPA_SCALE_SS");
 
   // which cepa level? 0,1,2,3
   // also, -1 = cisd
@@ -346,11 +346,25 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
   fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
   if (cepa_level>=0){
+     if (options.get_bool("SCS_CEPA")){
+        fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_os);
+        fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_ss);
+        fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
+        fprintf(outfile,"      * SCS-%s total energy:          %20.12lf\n",cepa_type,ecepa_os+ecepa_ss+escf);
+        fprintf(outfile,"\n");
+     }
      fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
      fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
      fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,ecepa);
      fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,ecepa+escf);
   }else{
+     if (options.get_bool("SCS_CEPA")){
+        fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os);
+        fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_ss);
+        fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
+        fprintf(outfile,"      * SCS-%s total energy:             %20.12lf\n",cepa_type,ecepa_os+ecepa_ss+escf);
+        fprintf(outfile,"\n");
+     }
      fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
      fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
      fprintf(outfile,"        %s correlation energy:           %20.12lf\n",cepa_type,ecepa);
