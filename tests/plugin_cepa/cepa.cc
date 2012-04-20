@@ -26,9 +26,10 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn)
+CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options)
 {
   wfn_ = wfn;
+  options_ = options;
 }
 CoupledPair::~CoupledPair()
 {}
@@ -121,10 +122,6 @@ void CoupledPair::Initialize(Options &options){
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
-  if (options["MEMORY"].has_changed()){
-     memory  = options.get_int("MEMORY");
-     memory *= (long int)1024*1024;
-  }
 
   // SCS MP2 and CEPA
   emp2_os_fac = options.get_double("MP2_SCALE_OS");
@@ -284,7 +281,9 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
       // update the amplitudes and check the energy
       Eold = ecepa;
       PairEnergy();
-      UpdateT1(iter);
+      if (!options.get_bool("CEPA_NO_SINGLES")){
+         UpdateT1(iter);
+      }
       UpdateT2(iter);
 
       // add vector to list for diis
@@ -298,6 +297,10 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
          if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,arraysize+o*v);
          else                   DIIS(diisvec,maxdiis,arraysize+o*v);
          DIISNewAmplitudes(diis_iter);
+         // if cepa_no_singles, zero t1 just to be safe after extrapolation
+         if (options.get_bool("CEPA_NO_SINGLES")){
+            memset((void*)t1,'\0',o*v*sizeof(double));
+         }
       }
       ecepa = CheckEnergy();
 
@@ -1587,10 +1590,13 @@ void CoupledPair::DefineTasks(){
   CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iajb;
   CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2ijkl;
   CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2piajk;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeni;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmaef;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeai;
+  // these diagrams are necessary only if we have single excitations
+  if (!options_.get_bool("CEPA_NO_SINGLES")){
+     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeni;
+     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmaef;
+     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
+     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeai;
+  }
   CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::Vabcd1;
 
   // this is the last diagram that contributes to doubles residual,

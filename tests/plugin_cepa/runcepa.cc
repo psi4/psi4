@@ -14,7 +14,7 @@ namespace psi{
 
 void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
-  boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn));
+  boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn,options));
   PsiReturnType status;
 
   tstart();
