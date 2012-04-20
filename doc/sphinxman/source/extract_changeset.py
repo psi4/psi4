@@ -43,7 +43,7 @@ while ichgst >= (-1 * Nhist):
     
     fhist.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (datestamp, changeset, author, comment))
     if ichgst == -1:
-        flast.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (datestampshort, changeset, author, commentshort))
+        flast.write('<title>%s by %s:<br/>%s<br/></title>\n\n' % (datestampshort, author, commentshort))
 
     ichgst -= 1
 
