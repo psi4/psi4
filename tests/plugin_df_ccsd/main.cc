@@ -28,7 +28,7 @@ read_options(std::string name, Options &options)
      /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
      options.add_double("OCC_TOLERANCE", 1.0e-6);
      /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
-     options.add_int("NUM_THREADS", 1);
+     options.add_int("CC_NUM_THREADS", 1);
      /*- Do SCS-MP2? -*/
      options.add_bool("SCS_MP2", false);
      /*- Do SCS-CCSD? -*/
