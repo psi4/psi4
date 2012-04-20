@@ -1,8 +1,6 @@
 #include <libplugin/plugin.h>
 #include <libmints/wavefunction.h>
 
-#include "cepa.h" 
-
 INIT_PLUGIN
 
 // gpu ccsd class
@@ -15,44 +13,37 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_CEPA"|| options.read_globals()) {
-      /*- The amount of information printed
-             to the output file.  not used -*/
-      options.add_int("PRINT", 1);
-      /*- The amount of information printed
-             to the output file. not used -*/
-      options.add_int("DEBUG", 0);
-      /*- default convergence of amplitudes-*/
+      /*- Desired convergence for the t1 and t2 amplitudes, defined as
+      the norm of the change in the amplitudes between iterations.-*/
       options.add_double("R_CONVERGENCE", 1.0e-7);
-      /*- default maximum iterations -*/
+      /*- Maximum number of iterations to converge the t1 and t2
+      amplitudes. -*/
       options.add_int("MAXITER", 100);
-      /*- default memory available (mb) -*/
-      options.add_int("MEMORY", 2000);
-      /*- default number of DIIS iterations -*/
+      /*- Number of vectors to store for DIIS extrapolation. -*/
       options.add_int("DIIS_MAX_VECS", 8);
-      /*- for GPU code, cap the amount of memory registerred with the GPU -*/
-      options.add_int("MAX_MAPPED_MEMORY", 1000);
-      /*- number of threads for triples, not set by default -*/
-      options.add_int("NUM_THREADS", 1);
-      /*- generate density-fitted integrals so we can skip
-          transqt2() and OutOfCoreSort(). default false -*/
-      options.add_bool("DF_INTEGRALS",false);
-      /*- SCS MP2, default true -*/
-      options.add_bool("SCS_MP2", true);
-      /*- SCS CEPA, default true -*/
-      options.add_bool("SCS_CEPA", true);
-      /*- opposite-spin scaling factor -*/
+      /*- Opposite-spin scaling factor for SCS-MP2. -*/
       options.add_double("MP2_SCALE_OS",1.20);
-      /*- same-spin scaling factor -*/
+      /*- Same-spin scaling factor for SCS-MP2-*/
       options.add_double("MP2_SCALE_SS",1.0/3.0);
-      /*- oppposite-spin scaling factor -*/
-      options.add_double("CC_SCALE_OS", 1.27);
-      /*- same-spin scaling factor -*/
-      options.add_double("CC_SCALE_SS",1.13);
-      /*- which cepa, default cepa(0) -*/
+      /*- Perform SCS-CEPA? If true, note that the
+      default values for the spin component scaling factors
+      are optimized for the CCSD method. -*/
+      options.add_bool("SCS_CEPA", false);
+      /*- Oppposite-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_OS", 1.27);
+      /*- Same-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_SS",1.13);
+      /*- Which coupled-pair method is called?  This parameter is
+      used internally by the python driver.  Changing its value 
+      won't have any effect on the procedure. -*/
       options.add_str("CEPA_LEVEL","CEPA0");
-      /*- compute dipole moment? default false-*/
+      /*- Compute the dipole moment? Note that quadrapole moments
+      will also be computed if PRINT >= 2. -*/
       options.add_bool("DIPMOM",false);
-
+      /*- Flag to exclude singly excited configurations from the
+      computation. Note that this algorithm is not optimized for
+      doubles-only computations. -*/
+      options.add_bool("CEPA_NO_SINGLES",false);
   }
   return true;
 }

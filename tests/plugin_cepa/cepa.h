@@ -33,7 +33,12 @@ class CoupledPair{
      */
     boost::shared_ptr<psi::Wavefunction> wfn_;
 
-    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn);
+    /*
+     * options
+     */
+    Options options_;
+
+    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
     ~CoupledPair();
 
     /**
