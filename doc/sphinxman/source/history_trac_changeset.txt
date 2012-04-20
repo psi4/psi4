@@ -1,3 +1,9 @@
+<title>18:09 04/19/2012 [0f58a5] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
+
+<title>18:07 04/19/2012 [116da0] by Lori Burns:<br/>(amend): Latest version of script to export changesets for psicode<br/></title>
+
+<title>18:07 04/19/2012 [458df5] by Lori Burns:<br/>Latest version of script to sync changesets btwn siriux and psicode<br/></title>
+
 <title>03:46 04/19/2012 [3c8132] by Lori Burns:<br/>sapt = exch + elst + ind + disp for >=sapt2+ w/NO now, too<br/></title>
 
 <title>00:16 04/19/2012 [9c8843] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
@@ -191,10 +197,4 @@
 <title>14:44 03/09/2012 [b442ea] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
 
 <title>14:42 03/09/2012 [4ff570] by Lori Burns:<br/>Avoid mixed dft/scf gradient calculation when calling dft gradient<br/></title>
-
-<title>12:54 03/08/2012 [e473e1] by Lori Burns:<br/>(merge): Merge branch 'master' of sirius.chem.vt.edu:psi4<br/></title>
-
-<title>12:42 03/08/2012 [d6d3fb] by Lori Burns:<br/>Few python/optking interface fixes. Specifically,<br/></title>
-
-<title>15:49 03/06/2012 [dfa2ab] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
 

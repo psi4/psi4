@@ -34,14 +34,16 @@ while ichgst >= (-1 * Nhist):
     
     changeset = '[' + str(fields[1][0:6]) + ']'  # abbreviated git id
     email = fields[indx]  # don't want to post e-mail addresses
-    humantime = datetime.datetime.fromtimestamp(int(fields[indx + 1])).strftime('%H:%M %m/%d/%Y')
+    datestamp = datetime.datetime.fromtimestamp(int(fields[indx + 1]))
+    datestampshort = datestamp.strftime('%m/%d/%Y')
+    datestamp = datestamp.strftime('%H:%M %m/%d/%Y')
     author = ' '.join(fields[2:indx])
     comment = ' '.join(fields[indx+4:])
     commentshort = comment[0:125]  # truncate comment string to fit in Trac Feed box
     
-    fhist.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (humantime, changeset, author, comment))
+    fhist.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (datestamp, changeset, author, comment))
     if ichgst == -1:
-        flast.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (humantime, changeset, author, commentshort))
+        flast.write('<title>%s %s by %s:<br/>%s<br/></title>\n\n' % (datestampshort, changeset, author, commentshort))
 
     ichgst -= 1
 
