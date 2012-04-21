@@ -69,6 +69,19 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
      OPDM(cepa,options);
   }
 
+  // free memory
+  free(cepa->integrals);
+  free(cepa->tempt);
+  free(cepa->tempv);
+  if (!cepa->t2_on_disk){
+     free(cepa->tb);
+  }
+  free(cepa->w1);
+  free(cepa->t1);
+  free(cepa->I1);
+  free(cepa->I1p);
+  free(cepa->diisvec);
+
   free(cepatype);
   cepa.reset();
 }

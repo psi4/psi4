@@ -575,7 +575,7 @@ SharedMatrix RV::compute_gradient()
 
     // Set Hessian derivative level in properties
     int old_deriv = properties_->deriv(); 
-    properties_->set_deriv((functional_->is_gga() ? 2 : 1));
+    properties_->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
@@ -1060,7 +1060,7 @@ SharedMatrix UV::compute_gradient()
 
     // Set Hessian derivative level in properties
     int old_deriv = properties_->deriv(); 
-    properties_->set_deriv((functional_->is_gga() ? 2 : 1));
+    properties_->set_deriv((functional_->is_gga() || functional_->is_meta() ? 2 : 1));
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];

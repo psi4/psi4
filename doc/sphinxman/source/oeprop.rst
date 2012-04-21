@@ -1,0 +1,389 @@
+
+.. _`sec:oeprop`:
+
+Evaluation of One-Electron Properties
+=====================================
+
+|PSIfour| is capable of computing a number of
+one-electron properties summarized in the table below. This section
+describes details of how to have |PSIfour| compute desired one-electron properties
+
+.. table:: Current one-electron property capabilities of |PSIfour|
+
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Feature                          | On by default?  | Notes                                                   |
+   +==================================+=================+=========================================================+
+   | Electric dipole moment           | Y               |                                                         |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electric quadrupole moment       | ---             | Set \keyword{MPMAX} to 2 or 3.                          |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electric octupole moment         | ---             | Set \keyword{MPMAX} to 3.                               |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electrostatic potential          | Y               | At the nuclei; on 2-D grid set {\tt GRID=2}.            |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electric field                   | Y               | At the nuclei.                                          |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electric field gradient          | Y               | At the nuclei.                                          |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Hyperfine coupling constant      | ---             | Set {\tt SPIN\_PROP=true}.                              |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Relativistic (MVD) corrections   | ---             | Set \keyword{MPMAX} to 2.                               |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electron density                 | Y               | At the nuclei; on 2-D grid set {\tt GRID=2};            |
+   |                                  |                 | on 3-D grid set {\tt GRID=6}.                           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Spin density                     | ---             | Set {\tt SPIN\_PROP=true}; at the nuclei;               |
+   |                                  |                 | on 3-D grid set {\tt GRID=6}.                           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electron density gradient        | ---             | on 2-D grid set {\tt GRID=3}.                           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Spin density gradient            | ---             | on 2-D grid set {\tt GRID=3} and {\tt SPIN\_PROP=true}. |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Electron density Laplacian       | ---             | on 2-D grid set {\tt GRID=4}.                           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Spin density Laplacian           | ---             | on 2-D grid set {\tt GRID=4} and {\tt SPIN\_PROP=true}. |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Molecular Orbitals (MO)          | ---             | on 3-D grid set {\tt GRID=5}.                           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | Natural Orbitals (NO)            | ---             | Set \keyword{WRTNOS} to true; written to \chkptfile.    |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+   | MO/NO spatial extents            | ---             | Set \keyword{MPMAX} to 2 or 3;                          |
+   |                                  |                 | MOs are used if {\tt WFN=SCF}, otherwise NOs.           |
+   +----------------------------------+-----------------+---------------------------------------------------------+
+
+
+Basic Keywords
+--------------
+
+To compute one-electron properties at a fixed geometry,
+the following keywords are common:
+
+JOBTYPE = string]\mbox{}\\
+This keyword should be set to {\tt oeprop} for |PSIfour|
+to compute electron properties. There is no default.
+For CI wavefunctions, limited properties such as dipole and 
+transition moments may be evaluated directly
+in {\tt detci} without having to specify {\tt JOBTYPE = oeprop}.
+
+WFN = string]\mbox{}\\
+Acceptable values are {\tt scf} for HF, {\tt mp2} for MP2,
+{\tt detci} for CI, {\tt detcas} for CASSCF, and {\tt ccsd}
+for CCSD. There is no default.
+
+REFERENCE = string]\mbox{}\\
+Acceptable value are {\tt rhf} and {\tt rohf}. There is no default.
+
+FREEZE\_CORE = boolean]\mbox{}\\
+Specifies whether core orbitals (which are determined automatically) are to
+be excluded from the correlated calculations.  Default is {\tt false}.
+
+PRINT = integer]\mbox{}\\
+The desired print level for detailed output. Defaults to 1.
+
+MPMAX = integer]\mbox{}\\
+This integer specifies the highest-order electric multipole moment
+to be computed. Valid values are 1 (dipole), 2 (up to quadrupole), or
+3 (up to octupole). Default is 1.
+
+MP\_REF = integer]\mbox{}\\
+This integer specifies the reference point for the evaluation of
+electric multipole moments. Valid values are 1 (center of mass),
+2 (origin), 3 (center of electronic change) and
+4 (center of the nuclear charge). For charge-neutral systems the
+choice of \keyword{MP\_REF} is irrelevant. Default is 1.
+
+GRID = integer]\mbox{}\\
+This integer specifies the type of one-electron property and the
+type of grid on which to evaluate it. The valid choices are
+\begin{itemize}
+\item {\tt 0} -- compute nothing
+\item {\tt 1} -- electrostatic potential on a 2-D grid
+\item {\tt 2} -- electron density on a 2-D grid (spin density, if {\tt SPIN\_PROP=true})
+\item {\tt 3} -- projection of electron density gradient on a 2-D grid (spin density
+gradient, if {\tt SPIN\_PROP=true})
+\item {\tt 4} -- Laplacian of electron density on a 2-D grid (Laplacian of
+spin density, if {\tt SPIN\_PROP=true})
+\item {\tt 5} -- values of molecular orbitals on a 3-D grid
+\item {\tt 6} -- electron density on a 3-D grid (spin density if {\tt SPIN\_PROP=true})
+\end{itemize}
+Default is {\tt 0}.
+
+NIX = integer]\mbox{}\\
+The number of grid points along the x direction. This parameter has be greater than 1.
+Default is 20.
+
+NIY = integer]\mbox{}\\
+The number of grid points along the y direction. This parameter has be greater than 1.
+Default is 20.
+
+NIZ = integer]\mbox{}\\
+The number of grid points along the z direction (if a 3-D grid is chosen).
+This parameter has be greater than 1. Default is 20.
+
+GRID\_FORMAT = string]\mbox{}\\
+This keyword specifies in which format to produce grid data. The only valid choice
+for 2-D grids is {\tt plotmtv} (format of plotting software program {\tt PlotMTV}).
+For 3-D grids, valid choices are {\tt gausscube} ({\tt Gaussian 94} cube format)
+and {\tt megapovplus} (format of 3D rendering software {\tt MegaPOV+}).
+The defaults are {\tt plotmtv} and {\tt gausscube} for 2-d and 3-d grids,
+respectively.
+
+MO\_TO\_PLOT = vector]\mbox{}\\
+Specifies indices of the molecular orbitals to be computed on the 3-d grid. Indices can be specified
+as:
+
+unsigned integer - index in Pitzer ordering (ordered accoring to irreps, not eigenvalues).
+Ranges from 1 to the number of MOs.
+
+signed integer - index with respect to Fermi level. +1 means LUMO, +2 means
+second lowest virtual orbital, -1 means HOMO, etc.
+
+All indices have to be either unsigned or signed, you can't mix and match,
+or you will get unpredictable results.
+Default is to compute HOMO and LUMO.
+
+SPIN\_PROP = boolean]\mbox{}\\
+Whether to compute spin-dependent properties.
+Default is {\tt false}.
+
+WRTNOS = boolean]\mbox{}\\
+If set to {\tt true},
+natural orbitals will be written to the checkpoint file.
+Default is {\tt false}.
+
+
+Evaluation of properties on rectalinear grids
+---------------------------------------------
+
+|PSIfour| can evaluate a number of one-electron properties
+on {\em rectalinear} 2-D and 3-D grids. In most cases,
+3-D grids are utilized. In such cases you only need
+to specify the appropriate value for \keyword{GRID}
+and |PSIfour| will automatically construct a rectalinear
+3-D grid that covers the entire molecular system.
+However, there's no default way to construct a useful 2-D
+grid in general. Even in the 3-D case you may want to
+"zoom in" on a particular part of the molecule.
+Hence one needs to be able to specify general 2-D
+and 3-D grids. In the absence of graphical user interface,
+|PSIfour| has a very flexible system for specifying
+arbitrary rectalinear grids.
+
+The following keywords may be used in construction of
+the grid:
+
+
+GRID\_ORIGIN = real\_vector]\mbox{}\\
+A vector of 3 real numbers, this keyword specifies
+the origin of the grid coordinate system.
+A rectangular grid box which envelops the entire molecule
+will be computed automatically if \keyword{GRID\_ORIGIN} is missing, however,
+there is no default for 2-D grids.
+
+GRID\_UNIT\_X = real\_vector]\mbox{}\\
+A vector of 3 real numbers, this keyword specifies
+the direction of the first (x) side of the grid.
+It doesn't have have to be of unit length.
+There is no default for 2-D grids.
+
+GRID\_UNIT\_Y = real\_vector]\mbox{}\\
+A vector of 3 real numbers, this keyword specifies
+the direction of the second (y) side.
+It doesn't have to be of unit length
+or even orthogonal to \keyword{GRID\_UNIT\_X}.
+There is no default for 2-D grids.
+
+GRID\_UNIT\_XY0 = real\_vector]\mbox{}\\
+A vector of 2 real numbers, this keyword specifies
+the coordinates of the lower left corner of a 2-D grid in 
+the 2-D coordinate system defined by \keyword{GRID\_ORIGIN}, \keyword{GRID\_UNIT\_X},
+and \keyword{GRID\_UNIT\_Y}. This keyword is only used
+to specify a 2-D grid.
+There is no default.
+
+GRID\_UNIT\_XY1 = real\_vector]\mbox{}\\
+A vector of 2 real numbers, this keyword specifies
+the coordinates of the upper right corner of a 2-D grid in 
+the 2-D coordinate system defined by \keyword{GRID\_ORIGIN}, \keyword{GRID\_UNIT\_X},
+and \keyword{GRID\_UNIT\_Y}. This keyword is only used
+to specify a 2-D grid.
+There is no default.
+
+GRID\_UNIT\_XYZ0 = real\_vector]\mbox{}\\
+A vector of 3 real numbers, this keyword specifies
+the coordinates of the far lower left corner of a 3-D grid in 
+the 3-D coordinate system defined by \keyword{GRID\_ORIGIN}, \keyword{GRID\_UNIT\_X},
+and \keyword{GRID\_UNIT\_Y}. This keyword is only used
+to specify a 3-D grid.
+There is no default.
+
+GRID\_UNIT\_XYZ1 = real\_vector]\mbox{}\\
+A vector of 3 real numbers, this keyword specifies
+the coordinates of the near upper right corner of a 3-D grid in 
+the 3-D coordinate system defined by \keyword{GRID\_ORIGIN}, \keyword{GRID\_UNIT\_X},
+and \keyword{GRID\_UNIT\_Y}. This keyword is only used
+to specify a 3-D grid.
+There is no default.
+
+In addition, the following keywords are useful for evaluation of certain
+properties on 2-D grids:
+
+GRID\_ZMIN = real]\mbox{}\\
+This keyword specifies the lower limit on displayed
+z-values for contour plots of electron density and 
+its Laplacian. Only useful when {\tt GRID=2} or {\tt GRID=4}.
+Default is 0.0
+
+GRID\_ZMAX = real]\mbox{}\\
+This keyword specifies the upper limit on displayed
+z-values for contour plots of electron density and 
+its Laplacian. Only useful when {\tt GRID=2} or {\tt GRID=4}.
+Default is 3.0
+
+EDGRAD\_LOGSCALE = integer]\mbox{}\\
+This keyword controls the logarithmic scaling of the produced electron density gradient 
+plot. Turns the scaling off if set to zero, otherwise the higher value - 
+the stronger the gradient field will be scaled.
+Recommended value (default) is 5. This keyword is only useful when
+{\tt GRID=3}.
+
+
+Grid specification mini-tutorial
+--------------------------------
+
+Let's look at how to set up input for spin density evaluation on a
+two-dimensional grid.  The relevant input section of |PSIfour| might look like
+this::
+
+  jobtype = oeprop
+
+  grid = 2
+  spin_prop = true
+  grid_origin = (0.0 -5.0 -5.0)
+  grid_unit_x = (0.0 1.0 0.0)
+  grid_unit_y = (0.0 0.0 1.0)
+  grid_xy0 = (0.0 0.0)
+  grid_xy1 = (10.0 10.0)
+  nix = 30
+  niy = 30
+
+\keyword{grid} specifies the type of a property and the type of a grid
+\PSIoeprop\ needs to compute.
+Since \keyword{spin\_prop}\ is set and {\tt grid=2}, the spin density will be
+evaluated on a grid.
+
+Grid specification is a little bit tricky but very
+flexible. \keyword{grid\_origin}\ specifies the origin of the
+rectangular coordinate system associated with the grid in the
+reference frame. \keyword{grid\_unit\_x}\ specifies a reference frame
+vector which designates the direction of the x-axis of the grid
+coordinate system.  \keyword{grid\_unit\_y}\ is analogously a
+reference frame vector which, along with the \keyword{grid\_unit\_x},
+completely specifies the grid coordinate system.
+\keyword{grid\_unit\_x}\ and \keyword{grid\_unit\_y}\ do not have to
+be normalized, neither they need to be orthogonal to either other -
+orthogonalization is done automatically to ensure that unit vectors of
+the grid coordinate system are normalized in the reference frame too.
+\keyword{grid\_xy0}\ is a vector in the grid coordinate system that
+specifies a vertex of the grid rectangle with the most negative
+coordinates. Similarly, \keyword{grid\_xy1}\ specifies a vertex of the
+the grid rectangle diagonally opposite to \keyword{grid\_xy0}.
+Finally, \keyword{nix}\ and \keyword{niy}\ specify the number of
+intervals into which the *x* and *y* sides of the grid rectangle are
+subdivided.  To summarize, the above input specifies a rectangular (in
+fact, square) 30 by 30 grid of dimensions 10.0 by 10.0 lying in the
+*yz* plane and centered at origin of molecular frame.
+
+Running |PSIfour| on such input will create a file called
+\file{sdens.dat} (for file names refer to man page on \PSIoeprop),
+which can be fed directly to {\tt PlotMTV} to plot the 2-D data.
+
+Specification of a three-dimensional grid for plotting MOs
+({\tt grid = 5}) or densities ({\tt grid = 6}) is just slightly
+more complicated.
+For example, let's look at producing data for plotting a HOMO and
+a LUMO. The indices of the
+MOs which needs to be plotted will be specified by keyword
+\keyword{mo\_to\_plot}.
+The reference frame is
+specified by keywords \keyword{grid\_origin}, \keyword{grid\_unit\_x}\
+and \keyword{grid\_origin\_y}\ (the third axis of the grid coordinate
+system is specified by by the vector product of
+\keyword{grid\_unit\_x}\ and \keyword{grid\_unit\_y}).  Since in this
+case we are dealing with the three-dimensional grid coordinate system,
+one needs to specify two diagonally opposite vertices of the grid box
+via \keyword{grid\_xyz0}\ and \keyword{grid\_xyz1}.  The number of
+intervals along *z* is specified via \keyword{niz}.  The relevant section of
+input file may look like this::
+
+  jobtype = oeprop
+
+  grid = 5
+  mo_to_plot = (-1 +1)
+  grid_origin = (-5.0 -5.0 -5.0)
+  grid_unit_x = (1.0 0.0 0.0)
+  grid_unit_y = (0.0 1.0 0.0)
+  grid_xyz0 = (0.0 0.0 0.0)
+  grid_xyz1 = (10.0 10.0 10.0)
+  nix = 30
+  niy = 30
+  niz = 30
+
+
+Running |PSIfour| on input like this will produce a {\tt Gaussian Cube}
+file called {\tt mo.cube}, which can be used to render images of HOMO
+and LUMO using
+an external visualization software.
+
+Plotting grid data
+------------------
+
+2-D grids should be plotted by an interactive visualization
+code {\tt PlotMTV}. {\tt PlotMTV} is a freeware code
+developed by Kenny Toh. It can be downloaded off many web sites in
+source or binary form.
+
+3-D grids can be produced in two formats: {\tt megapovplus}  and {\tt gausscube}
+(see \keyword{GRID\_FORMAT}).
+First is used to render high-quality images with a program {\tt MegaPov} (version
+0.5).  {\tt MegaPov} is an unofficial patch for a ray-tracing code
+{\tt POV-Ray}. Information on {\tt MegaPov} can be found at
+\htmladdnormallink{{http://nathan.kopp.com/patched.htm}}{http://nathan.kopp.com/patched.htm}.
+{\tt Gaussian Cube} files can be processed by a number of programs. We cannot recommend
+any particular program for that purpose here.
+
+Visualizing Molecular Obitals with gOpenMol
+-------------------------------------------
+
+The {\tt Gaussian Cube} files generated by oeprop can be converted and viewed with gOpenMol. 
+gOpenMol offers good looking plots in a graphical user interface. Information on 
+downloading gOpenMol and samples of gOpenMol output may be found at 
+\url{http://www.csc.fi/gopenmol/}.
+
+Installation instructions are included with the gOpenMol download. Once installed, the first 
+step to viewing molecular orbitals is to convert the \keyword{mo.cube} into a format that 
+gOpenMol recognizes. Under the Run menu, select \keyword{gCube2plt/g94cub2pl (cube) ... }, 
+this will bring up a window with the heading \keyword{Run gCube2plt/g94cub2pl}. In the 
+input file name field, select the \keyword{mo.cube} file you want to convert. Likewise, in 
+the output file name field type the name of the output file you want. Click the Apply button 
+to perform the conversion. This procedure will create a \keyword{.plt} and a 
+\keyword{.crd} file. Once converted, click Dismiss to close the window. The 
+{\tt Gaussian Cube} file is now converted and in a form that gOpenMol can recognize.
+
+In order to view the molecular orbital, the first step is to import the coordinate file 
+(\keyword{.crd}). This is done under the File menu :math:`\rightarrow` Import :math:`\rightarrow` Coords ... . 
+Again, a window will pop up. In the Import file name field chose the \keyword{.crd} you just 
+created from the conversion procedure. Click apply, then Dismiss to close the window. Now
+we have to import the \keyword{.plt} file to view the molecular orbital. Under the the 
+Plot menu selct Contour$\dots$, this will bring up a window. In the File name field, 
+either type the full path of the file name or use browse to select the \keyword{.plt} 
+file you just created in the conversion, then click Import. In the Define contour levels 
+we have to define the contour cutoffs for the positive and negative parts of the wave 
+function seperately. I recommend trying 0.1 in the first box and -0.1 in the second. Click 
+Apply to view the molecular orbital. You can change the colors of the positive and negative 
+sections independently by clicking on the Colour button next to the respective cutoffs. Also, 
+in the Details$\dots$ section, you can fine tune the properties of the molecular orbital, 
+such as, the opacity, solid vs. mesh, smoothness, and cullface state. You can play around 
+with various settings to get the surface to look exactly how you want it to. There is more 
+information in the Help$\rightarrow$Tutorials menu on this subject as well as many other abilities 
+of gOpenMol.

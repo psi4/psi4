@@ -20,6 +20,13 @@ def run_plugin_gpu_ccsd(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
     # triples?
     if (lowername == 'gpu-ccsd'):
         PsiMod.set_global_option('compute_triples', False)
