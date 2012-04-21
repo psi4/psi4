@@ -226,13 +226,6 @@ double RKS::compute_E()
 }
 void RKS::finalize()
 {
-    if (KS::options_.get_bool("XC_GRADIENT")) {
-        std::vector<SharedMatrix> & C = potential_->C();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        SharedMatrix grad = potential_->compute_gradient();
-        grad->print();
-    }
     RHF::finalize();
 }
 UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
@@ -428,14 +421,6 @@ double UKS::compute_E()
 }
 void UKS::finalize()
 {
-    if (KS::options_.get_bool("XC_GRADIENT")) {
-        std::vector<SharedMatrix> & C = potential_->C();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        SharedMatrix grad = potential_->compute_gradient();
-        grad->print();
-    }
     UHF::finalize();
 }
 
