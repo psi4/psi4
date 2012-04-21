@@ -50,14 +50,14 @@ ESAPT2 = PsiMod.get_variable("SAPT SAPT2 ENERGY")
 ESAPT2p = PsiMod.get_variable("SAPT SAPT2+ ENERGY")
 ESAPT2pp3 = PsiMod.get_variable("SAPT SAPT2+(3) ENERGY")
 
-Eref = [ -0.04075771354,  #TEST
-          0.04625881504,  #TEST
-         -0.01803567198,  #TEST
-         -0.01182463511,  #TEST
-         -0.02947493735,  #TEST
-         -0.02287493023,  #TEST
-         -0.02441553030,  #TEST
-         -0.02416038837 ] #TEST
+Eref = [ -0.040757702991,  #TEST
+          0.046258791045,  #TEST
+         -0.018035667760,  #TEST
+         -0.011824632354,  #TEST
+         -0.029474943370,  #TEST
+         -0.022874936113,  #TEST
+         -0.024614353195,  #TEST
+         -0.024359212060 ] #TEST
 
 compare_values(Eref[0], Eelst, 6, "SAPT Elst")           #TEST
 compare_values(Eref[1], Eexch, 6, "SAPT Exch")           #TEST
