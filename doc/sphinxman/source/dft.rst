@@ -362,7 +362,7 @@ to the complete listing of all functionals of each class are presented below:
     will definitely NaN on you if you try to use it. 
 
 :ref:`Meta Functionals <table:dft_meta>`
-    We have recently implemented the M05 and M06 classes of meta functionals in
+    We have recently implemented the M05 classes of meta functionals in
     PSI4. Note that these functionals are not appropriate for modeling
     dispersion interactions, as they lack dispersion physics. A -D functional (Such
     as the much cheaper B97-D) should be used instead.
@@ -661,7 +661,8 @@ The "best-practice" input file for KS-DFT is::
     memory 1 GB # As much as you've got, the DF algorithm can use
 
     molecule {
-    He
+    H
+    H 1 0.7
     }
 
     set {
