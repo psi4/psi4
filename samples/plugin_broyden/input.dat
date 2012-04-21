@@ -23,6 +23,3 @@ d_convergence 11
 
 set scf_step broyden
 plugin('./plugin_broyden.so')
-set scf_step bfgs
-plugin('./plugin_broyden.so')
-energy('scf')

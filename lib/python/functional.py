@@ -1844,14 +1844,16 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n')
 
     # Add member functionals
+    alpha = 2.22036E-1;
+    omega = 0.2;
     X = build_functional('wB97_X')
     X.set_name('wB97X_X')
-    X.set_alpha(1.0 / (1.0 - 0.157706))
+    X.set_alpha(1.0 / (1.0 - alpha))
 
     X.set_parameter('B97_gamma', 0.004)
     X.set_parameter('B97_a0', 7.77964E-1)    # Table 1: c_{x\sigma,0}
     X.set_parameter('B97_a1', 6.61160E-1)    # Table 1: c_{x\sigma,1}
-    X.set_parameter('B97_a2', 5.74541E-1)     # Table 1: c_{x\sigma,2}
+    X.set_parameter('B97_a2', 5.74541E-1)    # Table 1: c_{x\sigma,2}
     X.set_parameter('B97_a3', -5.25671E0)    # Table 1: c_{x\sigma,3}
     X.set_parameter('B97_a4', 1.16386E1)     # Table 1: c_{x\sigma,4}
 
@@ -1876,12 +1878,12 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
-    sup.set_x_omega(0.2)        # Table 1: omega
+    sup.set_x_omega(omega)   # Table 1: omega
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(2.22036E-1)   # Table 1: c_x
+    sup.set_x_alpha(alpha)   # Table 1: c_x
     sup.set_c_alpha(0.0)
 
-    # => -D2 <= #
+    # => -D2 (CHG Damping Function) <= #
     sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 6.0, 0.0, 0.0, 0.0))
 
     # => End User-Customization <= #

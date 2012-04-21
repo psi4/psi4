@@ -1,5 +1,3 @@
-<title>21:54 04/19/2012 [666991] by Lori Burns:<br/>Format testing for website<br/></title>
-
 <title>18:09 04/19/2012 [0f58a5] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
 
 <title>18:07 04/19/2012 [116da0] by Lori Burns:<br/>(amend): Latest version of script to export changesets for psicode<br/></title>
@@ -197,4 +195,6 @@
 <title>17:38 03/11/2012 [da3baa] by Lori Burns:<br/>origin master: Fast-forward<br/></title>
 
 <title>14:44 03/09/2012 [b442ea] by Lori Burns:<br/>origin master: Merge made by recursive.<br/></title>
+
+<title>14:42 03/09/2012 [4ff570] by Lori Burns:<br/>Avoid mixed dft/scf gradient calculation when calling dft gradient<br/></title>
 
