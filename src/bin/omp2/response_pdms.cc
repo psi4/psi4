@@ -16,6 +16,7 @@
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
+#include <libdpd/dpd.h>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libtrans/mospace.h>
@@ -178,7 +179,10 @@ void OMP2Wave::G_int()
 	GvvA->zero();
 	GvvB->zero();
 
-	dpdbuf4 TAA, TAB, TBB, TAA2, TAB2, TBB2;
+	dpdbuf4 TAA, TAB, TBB;
+   dpdbuf4 TAA2, TBB2;
+   dpdbuf4 TAB2_;
+	//dpdbuf4 TAA, TAB, TBB, TAA2, TAB2_, TBB2;
 	dpdfile2 G;
 	
 	psio_->open(PSIF_OMP2_DPD, PSIO_OPEN_OLD);  
@@ -195,7 +199,7 @@ void OMP2Wave::G_int()
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
 	dpd_buf4_init(&TBB2, PSIF_OMP2_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-	dpd_buf4_init(&TAB2, PSIF_OMP2_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+	dpd_buf4_init(&TAB2_, PSIF_OMP2_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
 	
 	// Occupied-Occupied block
@@ -205,7 +209,7 @@ void OMP2Wave::G_int()
 	dpd_contract442(&TAA, &TAA2, &G, 0, 0, 0.5, 0.0);
 	
 	// G_IM += \sum{n,E,f} t_In^Ef * l_Ef^Mn = \sum{N,E,F} t_In^Ef * t_Mn^Ef
-	dpd_contract442(&TAB, &TAB2, &G, 0, 0, 1.0, 1.0);
+	dpd_contract442(&TAB, &TAB2_, &G, 0, 0, 1.0, 1.0);
 	dpd_file2_close(&G);
 	
 	
@@ -215,7 +219,7 @@ void OMP2Wave::G_int()
 	dpd_contract442(&TBB, &TBB2, &G, 0, 0, 0.5, 0.0);
 	
 	// G_im  += \sum{N,e,F} t_Ni^Fe * l_Fe^Nm = \sum{N,e,F} t_Ni^Fe * t_Nm^Fe
-	dpd_contract442(&TAB, &TAB2, &G, 1, 1, 1.0, 1.0);
+	dpd_contract442(&TAB, &TAB2_, &G, 1, 1, 1.0, 1.0);
 	dpd_file2_close(&G);
 	
 	
@@ -227,7 +231,7 @@ void OMP2Wave::G_int()
 	dpd_contract442(&TAA, &TAA2, &G, 2, 2, -0.5, 0.0); 
 	
 	// G_EA += - \sum{M,n,f} t_Mn^Af * l_Ef^Mn = - \sum{M,n,f} t_Mn^Af * t_Mn^Ef
-	dpd_contract442(&TAB, &TAB2, &G, 2, 2, -1.0, 1.0); 
+	dpd_contract442(&TAB, &TAB2_, &G, 2, 2, -1.0, 1.0); 
 	dpd_file2_close(&G);
 	
 	// Beta-Beta spin case
@@ -236,7 +240,7 @@ void OMP2Wave::G_int()
 	dpd_contract442(&TBB, &TBB2, &G, 2, 2, -0.5, 0.0); 
 	
 	// G_ea += - \sum{M,n,F} t_Mn^Fa * l_Fe^Mn = - \sum{M,n,F} t_Mn^Fa * t_Mn^Fe
-	dpd_contract442(&TAB, &TAB2, &G, 3, 3, -1.0, 1.0); 
+	dpd_contract442(&TAB, &TAB2_, &G, 3, 3, -1.0, 1.0); 
 	dpd_file2_close(&G);
 	
 	
@@ -246,7 +250,7 @@ void OMP2Wave::G_int()
 	dpd_buf4_close(&TAB);
 	dpd_buf4_close(&TAA2);
 	dpd_buf4_close(&TBB2);
-	dpd_buf4_close(&TAB2);
+	dpd_buf4_close(&TAB2_);
 	
 	
 	
