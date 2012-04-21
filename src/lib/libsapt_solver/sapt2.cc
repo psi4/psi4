@@ -1,4 +1,5 @@
 #include "sapt2.h"
+#include <physconst.h>
 
 namespace psi { namespace sapt {
 
@@ -205,46 +206,46 @@ void SAPT2::print_results()
   fprintf(outfile,"\n    SAPT Results  \n");
   fprintf(outfile,"  -----------------------------------------------------------------------\n");
   fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_elst*1000.0,tot_elst*627.5095);
+    tot_elst*1000.0,tot_elst*_hartree2kcalmol);
   fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst10_*1000.0,e_elst10_*627.5095);
+    e_elst10_*1000.0,e_elst10_*_hartree2kcalmol);
   fprintf(outfile,"      Elst12,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_elst12_*1000.0,e_elst12_*627.5095);
+    e_elst12_*1000.0,e_elst12_*_hartree2kcalmol);
   fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_exch*1000.0,tot_exch*627.5095);
+    tot_exch*1000.0,tot_exch*_hartree2kcalmol);
   fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_*1000.0,e_exch10_*627.5095);
+    e_exch10_*1000.0,e_exch10_*_hartree2kcalmol);
   fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
+    e_exch10_s2_*1000.0,e_exch10_s2_*_hartree2kcalmol);
   fprintf(outfile,"      Exch11(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch11_*1000.0,e_exch11_*627.5095);
+    e_exch11_*1000.0,e_exch11_*_hartree2kcalmol);
   fprintf(outfile,"      Exch12(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch12_*1000.0,e_exch12_*627.5095);
+    e_exch12_*1000.0,e_exch12_*_hartree2kcalmol);
   fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_ind*1000.0,tot_ind*627.5095);
+    tot_ind*1000.0,tot_ind*_hartree2kcalmol);
   fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind20_*1000.0,e_ind20_*627.5095);
+    e_ind20_*1000.0,e_ind20_*_hartree2kcalmol);
   fprintf(outfile,"      Ind22            %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind22_*1000.0,e_ind22_*627.5095);
+    e_ind22_*1000.0,e_ind22_*_hartree2kcalmol);
   fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+    e_exch_ind20_*1000.0,e_exch_ind20_*_hartree2kcalmol);
   fprintf(outfile,"      Exch-Ind22       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind22_*1000.0,e_exch_ind22_*627.5095);
+    e_exch_ind22_*1000.0,e_exch_ind22_*_hartree2kcalmol);
   fprintf(outfile,"      delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    dHF*1000.0,dHF*627.5095);
+    dHF*1000.0,dHF*_hartree2kcalmol);
   fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_disp*1000.0,tot_disp*627.5095);
+    tot_disp*1000.0,tot_disp*_hartree2kcalmol);
   fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_*1000.0,e_disp20_*627.5095);
+    e_disp20_*1000.0,e_disp20_*_hartree2kcalmol);
   fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
+    e_exch_disp20_*1000.0,e_exch_disp20_*_hartree2kcalmol);
 
   fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
-    eHF_*1000.0,eHF_*627.5095);
+    eHF_*1000.0,eHF_*_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_*1000.0,e_sapt0_*627.5095);
+    e_sapt0_*1000.0,e_sapt0_*_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT2        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2_*1000.0,e_sapt2_*627.5095);
+    e_sapt2_*1000.0,e_sapt2_*_hartree2kcalmol);
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;

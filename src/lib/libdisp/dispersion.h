@@ -42,7 +42,7 @@ class Dispersion {
     public:
 
         Dispersion();
-        ~Dispersion();
+        virtual ~Dispersion();
 
         static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0, double s8 = 0.0, \
             double sr6 = 0.0, double sr8 = 0.0);
@@ -80,8 +80,8 @@ class Dispersion {
         std::string print_gradient(boost::shared_ptr<Molecule> m);
         std::string print_hessian(boost::shared_ptr<Molecule> m);
 
-        virtual double compute_energy(boost::shared_ptr<Molecule> m); 
-        virtual SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m); 
+        virtual double compute_energy(boost::shared_ptr<Molecule> m);
+        virtual SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
         virtual SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
 
         virtual void print(FILE* out = outfile, int level = 1) const;
@@ -92,7 +92,7 @@ class D1 : public Dispersion {
     protected:
     public:
         D1(double s6 = 1.0);
-        ~D1();
+        virtual ~D1();
         double compute_energy(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
@@ -101,7 +101,7 @@ class D2 : public Dispersion {
     protected:
     public:
         D2(double s6 = 1.0);
-        ~D2();
+        virtual ~D2();
         double compute_energy(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
@@ -111,12 +111,21 @@ class D3 : public Dispersion {
     protected:
     public:
         D3(double s6 = 1.0, double s8 = 1.0, double sr6 = 1.0, double sr8 = 1.0);
-        ~D3();
+        virtual ~D3();
         double compute_energy(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
         SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
 };
 
+class CHG : public Dispersion {
+    double a_;
+public:
+    CHG(double a = 1.0);
+    virtual ~CHG();
+    double compute_energy(boost::shared_ptr<Molecule> m);
+    SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m);
+    SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
+};
 }
 
 #endif

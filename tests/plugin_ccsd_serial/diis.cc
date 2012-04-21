@@ -1,10 +1,4 @@
-#include"psi4-dec.h"
-#include<psifiles.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
-
 #include"ccsd.h"
-#include"sort.h"
 #include"blas.h"
 
 using namespace psi;
