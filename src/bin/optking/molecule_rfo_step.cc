@@ -83,7 +83,7 @@ void MOLECULE::rfo_step(void) {
   // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
   if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
     rfo_root = Opt_params.rfo_root;
-    fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root);
+    fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root+1);
 
     // Now test RFO eigenvector and make sure that it is totally symmetric.
     bool symm_rfo_step = false;
