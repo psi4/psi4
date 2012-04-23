@@ -451,6 +451,9 @@ scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric
 scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
 
+scf6:         Tests RHF/ROHF/UHF SCF gradients
+
+
 tu1-h2o-energy:  Sample HF/cc-pVDZ H2O computation
 
 

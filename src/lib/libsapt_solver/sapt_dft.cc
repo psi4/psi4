@@ -1,5 +1,6 @@
 //#include "sapt_dft.h"
 //#include <libutil/quad.h>
+//#include <physconst.h>
 //
 //namespace psi { namespace sapt {
 //
@@ -63,15 +64,15 @@
 //
 //    fprintf(outfile, "  ------------------------------------------------------------------------------\n");       
 //    fprintf(outfile, "   @ UCHF Dispersion Energy:  %18.12f [mH] %18.12f [kcal]\n", E_UCHF*1000.0, \
-//        E_UCHF*627.509);   
+//        E_UCHF*_hartree2kcalmol);   
 //    fprintf(outfile, "   @ TDDFT Dispersion Energy: %18.12f [mH] %18.12f [kcal]\n", E_TDDFT*1000.0, \
-//        E_TDDFT*627.509);   
+//        E_TDDFT*_hartree2kcalmol);   
 //    fprintf(outfile, "   @ Delta MP2C Energy:       %18.12f [mH] %18.12f [kcal]\n", E_DeltaMP2C*1000.0, \
-//        E_DeltaMP2C*627.509);   
+//        E_DeltaMP2C*_hartree2kcalmol);   
 //    fprintf(outfile, "   @ MP20 Interaction Energy: %18.12f [mH] %18.12f [kcal]\n", E_MP2_int*1000.0, \
-//        E_MP2_int*627.509);   
+//        E_MP2_int*_hartree2kcalmol);   
 //    fprintf(outfile, "   @ MP2C Interaction Energy: %18.12f [mH] %18.12f [kcal]\n", E_MP2C_int*1000.0, \
-//        E_MP2C_int*627.509);   
+//        E_MP2C_int*_hartree2kcalmol);   
 //    fprintf(outfile, "  ------------------------------------------------------------------------------\n\n");       
 //
 //    fprintf(outfile, "  --\"We're looking for a bug no one's ever seen before...some kinda smart bug.\"\n");
