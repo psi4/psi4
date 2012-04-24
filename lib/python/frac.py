@@ -5,6 +5,7 @@ import math
 from molutil import * 
 from driver import * 
 from procutil import *
+from util import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(mol, **kwargs):
@@ -423,6 +424,13 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     if (kwargs.has_key('maxiter')):  
         maxiter = kwargs['maxiter']
 
+    # By default, do not read previous 180 orbitals file
+    read = False;
+    read180 = ''
+    if (kwargs.has_key('read')):
+        read = True;
+        read180 = kwargs['read']
+
     # The molecule is required, and should be the neutral species
     mol.update_geometry()
     activate(mol)
@@ -442,6 +450,9 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     PsiMod.IO.set_default_namespace("ot")
 
     # Burn in to determine orbital eigenvalues
+    if (read):
+        PsiMod.set_global_option("GUESS", "READ")
+        copy_file_to_scratch(read180, 'psi', 'ot', 180)
     old_guess = PsiMod.get_global_option("GUESS")
     PsiMod.set_global_option("DF_INTS_IO", "SAVE")
     PsiMod.print_out('\n\t==> IP Fitting SCF: Burn-in <==\n')
@@ -485,6 +496,10 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     PsiMod.set_global_option('DFT_OMEGA',omega_r)
 
     # Neutral
+    if (read):
+        PsiMod.set_global_option("GUESS", "READ")
+        copy_file_to_scratch(read180, 'psi', 'ot', 180)
+
     mol.set_molecular_charge(charge0)
     mol.set_multiplicity(mult0)
     PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n')
@@ -506,6 +521,10 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     PsiMod.IO.change_file_namespace(180,"ot","neutral")
     
     # Cation
+    if (read):
+        PsiMod.set_global_option("GUESS", "READ")
+        copy_file_to_scratch(read180, 'psi', 'ot', 180)
+
     mol.set_molecular_charge(charge1)
     mol.set_multiplicity(mult1)
     PsiMod.print_out('\n\t==> IP Fitting SCF: Cation, Right Endpoint <==\n')
