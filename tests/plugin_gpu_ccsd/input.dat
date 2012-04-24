@@ -1,0 +1,33 @@
+#! cc-pvdz H2O Test CCSD energies
+
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, '/home/deprince/psi4/tests')
+import plugin_gpu_ccsd
+
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+
+memory 500 mb
+set {
+  r_convergence 1e-7
+  basis cc-pvdz
+  freeze_core true
+}
+energy('gpu-ccsd(t)')
+
+clean()
+
+refnuc  = 8.80146552997      # TEST
+refscf  = -76.02141844515495 # TEST
+refccsd = -0.214295329587    # TEST
+refccsdt   = -0.217539266264 # TEST
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")          #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                      #TEST
+compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy") #TEST 
+compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"), 8, "CCSD(T) correlation energy") #TEST
