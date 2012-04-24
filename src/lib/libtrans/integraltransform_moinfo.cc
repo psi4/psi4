@@ -482,7 +482,10 @@ IntegralTransform::process_eigenvectors()
         }else if(moSpace->label() == MOSPACE_VIR){
             // This is the virtual space
             if(transformationType_ == Restricted){
-                View Vavir(Ca_, sopi_, avir, zero, clsdpi_);
+                // This is a slightly strange one, but we actually take the beta
+                // orbitals here, so that the singly occupied orbitals are included.
+                // Makes no difference for closed shell cases, of course.
+                View Vavir(Ca_, sopi_, bvir, zero, clsdpi_);
                 Ca = Vavir();
                 Ca->set_name("Alpha virtual orbitals");
             }else{
