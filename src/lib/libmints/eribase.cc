@@ -404,47 +404,6 @@ void TwoElectronInt::free_shell_pairs12()
 
 void TwoElectronInt::free_shell_pairs34()
 {
-    int i, si, sj;
-    ShellPair *sp;
-    int np_i;
-
-    // If stack34_ is NULL then we only used pairs12.
-    if (stack34_ == NULL)
-        return;
-
-    // Code is commented out above that allocates stack34_
-#if 0
-    free(stack34_);
-    for (si=0; si<basis3()->nprimitive(); ++si) {
-        for (sj=0; sj<basis4()->nprimitive(); ++sj) {
-            np_i = basis3()->shell(si).nprimitive();
-            sp = &(pairs34_[si][sj]);
-
-            delete[] sp->gamma;
-            delete[] sp->overlap;
-
-            if (sp->P != NULL) {
-                for (i=0; i<np_i; ++i)
-                    delete[] sp->P[i];
-                delete[] sp->P;
-            }
-            if (sp->PA != NULL) {
-                for (i=0; i<np_i; ++i)
-                    delete[] sp->PA[i];
-                delete[] sp->PA;
-            }
-            if (sp->PB != NULL) {
-                for (i=0; i<np_i; ++i)
-                    delete[] sp->PB[i];
-                delete[] sp->PB;
-            }
-        }
-    }
-
-    for (si=0; si<basis3()->nprimitive(); ++si)
-        delete[] pairs34_[si];
-    delete[] pairs34_;
-#endif
 }
 
 size_t TwoElectronInt::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const shared_ptr<BasisSet> &bs2)
