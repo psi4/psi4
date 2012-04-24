@@ -2520,7 +2520,7 @@ void Molecule::set_orientation_fixed(bool _fix) {
 }
 
 // RAK, 4-2012, return true if all atoms correctly map onto other atoms
-bool Molecule::valid_atom_map(void) const {
+bool Molecule::valid_atom_map(double tol) const {
     double np[3];
     SymmetryOperation so;
     CharacterTable ct = point_group()->char_table();
@@ -2540,7 +2540,7 @@ bool Molecule::valid_atom_map(void) const {
                     np[ii] += so(ii,jj) * ac[jj];
             }
 
-            if (atom_at_position1(np, 0.05) < 0)
+            if (atom_at_position1(np, tol) < 0)
               return false;
         }
     }

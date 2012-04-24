@@ -82,7 +82,6 @@ def auto_fragments(name, **kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
-    molecule.update_geometry()
    
     geom = molecule.save_string_xyz()
 
