@@ -84,6 +84,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gaa.params->rowtot[h]; ++ab){
             size_t a = Gaa.params->roworb[h][ab][0];
             int Ga = Gaa.params->psym[a];
@@ -119,6 +120,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gab.params->rowtot[h]; ++ab){
             size_t a = Gab.params->roworb[h][ab][0];
             int Ga = Gab.params->psym[a];
@@ -153,6 +155,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gbb.params->rowtot[h]; ++ab){
             size_t a = Gbb.params->roworb[h][ab][0];
             int Ga = Gbb.params->psym[a];
@@ -191,6 +194,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < Gaa.params->rowtot[h]; ++ij){
             size_t i = Gaa.params->roworb[h][ij][0];
             int Gi = Gaa.params->psym[i];
@@ -227,6 +231,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < Gab.params->rowtot[h]; ++ij){
             size_t i = Gab.params->roworb[h][ij][0];
             int Gi = Gab.params->psym[i];
@@ -261,6 +266,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < Gbb.params->rowtot[h]; ++ij){
             size_t i = Gbb.params->roworb[h][ij][0];
             int Gi = Gbb.params->psym[i];
@@ -354,6 +360,7 @@ DCFTSolver::dump_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_rd(&Gaa, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
             size_t i = Gaa.params->roworb[h][ia][0];
             int Gi = Gaa.params->psym[i];
@@ -397,6 +404,7 @@ DCFTSolver::dump_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_rd(&Gab, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gab.params->rowtot[h]; ++ia){
             size_t i = Gab.params->roworb[h][ia][0];
             int Gi = Gab.params->psym[i];
@@ -425,6 +433,7 @@ DCFTSolver::dump_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gba, h);
         dpd_buf4_mat_irrep_rd(&Gba, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gba.params->rowtot[h]; ++ia){
             size_t i = Gba.params->roworb[h][ia][0];
             int Gi = Gba.params->psym[i];
@@ -498,6 +507,7 @@ DCFTSolver::dump_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_rd(&Gbb, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
             size_t i = Gbb.params->roworb[h][ia][0];
             int Gi = Gbb.params->psym[i];
@@ -790,6 +800,7 @@ DCFTSolver::check_n_representability()
         double **TPDMaa = block_matrix(dim*dim, dim*dim);
         double **TPDMab = block_matrix(dim*dim, dim*dim);
         // The OOVV and VVOO elements of the TPDM
+        #pragma omp parallel for
         for(int ij = 0; ij < Laa.params->rowtot[h]; ++ij){
             int i = Laa.params->roworb[h][ij][0];
             int j = Laa.params->roworb[h][ij][1];
@@ -802,6 +813,7 @@ DCFTSolver::check_n_representability()
             }
         }
         // The OOOO elements of the TPDM
+        #pragma omp parallel for
         for(int ij = 0; ij < Laa.params->rowtot[h]; ++ij){
             int i = Laa.params->roworb[h][ij][0];
             int j = Laa.params->roworb[h][ij][1];
@@ -821,6 +833,7 @@ DCFTSolver::check_n_representability()
             }
         }
         // The VVVV elements of the TPDM
+        #pragma omp parallel for
         for(int ab = 0; ab < Laa.params->coltot[h]; ++ab){
             int a = Laa.params->colorb[h][ab][0] + nOcc;
             int b = Laa.params->colorb[h][ab][1] + nOcc;

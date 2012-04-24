@@ -794,6 +794,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to force the occupation to be that of the SCF guess.
       For practical applications only the default must be used -*/
       options.add_bool("LOCK_OCC", true);
+      /*- Whether to read the orbitals from a previous computation, or to compute
+          an MP2 guess !expert -*/
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
