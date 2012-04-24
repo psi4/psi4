@@ -51,6 +51,8 @@ DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
         dpd_buf4_mat_irrep_init(B, h);
         dpd_buf4_mat_irrep_rd(A, h);
         dpd_buf4_mat_irrep_rd(B, h);
+
+        #pragma omp parallel for
         for(int row = 0; row < A->params->rowtot[h]; ++row){
             for(int col = 0; col < A->params->coltot[h]; ++col){
                 A->matrix[h][row][col] += alpha * B->matrix[h][row][col];
