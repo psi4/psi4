@@ -1059,6 +1059,10 @@ void Molecule::update_geometry()
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
+    // Idempotence condition
+    if (lock_frame_) 
+        return;
+
 //    fprintf(outfile, "beginning update_geometry:\n"); print_full();
 
     if (reinterpret_coordentries_)
@@ -1072,7 +1076,7 @@ void Molecule::update_geometry()
     }
 
     // If the no_reorient command was given, don't reorient
-    if (fix_orientation_ == false && lock_frame_ == false) {
+    if (fix_orientation_ == false) {
         // Now we need to rotate the geometry to its symmetry frame
         // to align the axes correctly for the point group
         // symmetry_frame looks for the highest point group so that we can align
@@ -1080,7 +1084,6 @@ void Molecule::update_geometry()
         // the the user might have provided.
         SharedMatrix frame = symmetry_frame();
         rotate_full(*frame.get());
-        lock_frame_ = true;
 //        fprintf(outfile, "after rotate:\n"); print_full();
     }
 
@@ -1093,6 +1096,7 @@ void Molecule::update_geometry()
     //if (!fix_orientation_)
     symmetrize(); // Symmetrize the molecule to remove any noise.
 //    fprintf(outfile, "after symmetry:\n"); print_full();
+    lock_frame_ = true;
 }
 
 void Molecule::activate_all_fragments()
