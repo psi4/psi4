@@ -1140,6 +1140,9 @@ def hessian(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
+def molden(filename):
+    m = PsiMod.MoldenWriter(PsiMod.reference_wavefunction())
+    m.write(filename)
 
 def parse_cotton_irreps(irrep):
     r"""Function to return validated Cotton ordering index from string or integer

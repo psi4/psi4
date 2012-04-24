@@ -20,6 +20,13 @@ def run_plugin_df_ccsd(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
     # override symmetry:
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
