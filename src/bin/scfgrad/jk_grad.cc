@@ -925,7 +925,7 @@ void DFJKGrad::build_AB_x_terms()
                 }
 
                 if (do_wK_) {
-                    double Wval = 0.5 * perm * Wp[p + oP][q + oQ];
+                    double Wval = 0.5 * perm * (0.5 * (Wp[p + oP][q + oQ] + Wp[q + oQ][p + oP]));
                     grad_wKp[aP][0] -= Wval * (*Px);
                     grad_wKp[aP][1] -= Wval * (*Py);
                     grad_wKp[aP][2] -= Wval * (*Pz);
