@@ -126,6 +126,8 @@ protected:
     /// Reinterpret the coord entries or not
     /// Default is true, except for findif
     bool reinterpret_coordentries_;
+    /// Nilpotence boolean (flagged upon first determination of symmetry frame, reset each time a substantiative change is made)
+    bool lock_frame_;
 
 public:
     Molecule();

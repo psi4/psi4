@@ -160,7 +160,8 @@ Molecule::Molecule():
     charge_specified_(false),
     atom_to_unique_(0),
     //old_symmetry_frame_(0)
-    reinterpret_coordentries_(true)
+    reinterpret_coordentries_(true),
+    lock_frame_(false)
 {
 }
 
@@ -195,6 +196,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     charge_specified_        = other.charge_specified_;
     multiplicity_specified_  = other.multiplicity_specified_;
     reinterpret_coordentries_= other.reinterpret_coordentries_;
+    lock_frame_              = other.lock_frame_;
 
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = boost::shared_ptr<PointGroup>();
@@ -242,11 +244,12 @@ void Molecule::set_reinterpret_coordentry(bool rc)
 /// Plus equals
 void Molecule::operator+=(const Molecule& other)
 {
-
+    throw PSIEXCEPTION("Empty method?");
 }
 
 void Molecule::clear()
 {
+    lock_frame_ = false;
     atoms_.empty();
     full_atoms_.empty();
 }
@@ -254,6 +257,7 @@ void Molecule::clear()
 void Molecule::add_atom(int Z, double x, double y, double z,
                         const char *label, double mass, double charge, int lineno)
 {
+    lock_frame_ = false;
     Vector3 temp(x, y, z);
     std::string l(label);
 
@@ -486,6 +490,7 @@ Matrix Molecule::full_geometry() const
 
 void Molecule::set_geometry(double** geom)
 {
+    lock_frame_ = false;
     for (int i=0; i<natom(); ++i) {
         atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
                                    geom[i][1] / input_units_to_au_,
@@ -495,6 +500,7 @@ void Molecule::set_geometry(double** geom)
 
 void Molecule::set_full_geometry(double** geom)
 {
+    lock_frame_ = false;
     for (int i=0; i<nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
                                         geom[i][1] / input_units_to_au_,
@@ -504,6 +510,7 @@ void Molecule::set_full_geometry(double** geom)
 
 void Molecule::set_geometry(const Matrix& geom)
 {
+    lock_frame_ = false;
     for (int i=0; i<natom(); ++i) {
         atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
                                    geom.get(i,1) / input_units_to_au_,
@@ -513,6 +520,7 @@ void Molecule::set_geometry(const Matrix& geom)
 
 void Molecule::set_full_geometry(const Matrix& geom)
 {
+    lock_frame_ = false;
     for (int i=0; i<nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
                                         geom.get(i,1) / input_units_to_au_,
@@ -585,6 +593,7 @@ void Molecule::init_with_psio(boost::shared_ptr<PSIO> psio)
 
 void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
+    lock_frame_ = false;
     int natoms = 0;
     double *zvals, **geom;
     molecular_charge_       = 0;
@@ -611,6 +620,7 @@ void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 
 void Molecule::init_with_xyz(const std::string& xyzfilename)
 {
+    lock_frame_ = false;
     Element_to_Z Z;
     Z.load_values();
 
@@ -1062,7 +1072,7 @@ void Molecule::update_geometry()
     }
 
     // If the no_reorient command was given, don't reorient
-    if (fix_orientation_ == false) {
+    if (fix_orientation_ == false && lock_frame_ == false) {
         // Now we need to rotate the geometry to its symmetry frame
         // to align the axes correctly for the point group
         // symmetry_frame looks for the highest point group so that we can align
@@ -1070,6 +1080,7 @@ void Molecule::update_geometry()
         // the the user might have provided.
         SharedMatrix frame = symmetry_frame();
         rotate_full(*frame.get());
+        lock_frame_ = true;
 //        fprintf(outfile, "after rotate:\n"); print_full();
     }
 
@@ -1086,6 +1097,7 @@ void Molecule::update_geometry()
 
 void Molecule::activate_all_fragments()
 {
+    lock_frame_ = false;
     for(int i = 0; i < fragment_types_.size(); ++i){
         fragment_types_[i] = Real;
     }
@@ -1093,6 +1105,7 @@ void Molecule::activate_all_fragments()
 
 void Molecule::deactivate_all_fragments()
 {
+    lock_frame_ = false;
     for(int i = 0; i < fragment_types_.size(); ++i){
         fragment_types_[i] = Absent;
     }
@@ -1100,6 +1113,7 @@ void Molecule::deactivate_all_fragments()
 
 void Molecule::set_active_fragments(boost::python::list reals)
 {
+    lock_frame_ = false;
     for(int i = 0; i < boost::python::len(reals); ++i){
         int fragment = boost::python::extract<int>(reals[i]);
         fragment_types_[fragment - 1] = Real;
@@ -1108,11 +1122,13 @@ void Molecule::set_active_fragments(boost::python::list reals)
 
 void Molecule::set_active_fragment(int fragment)
 {
+    lock_frame_ = false;
     fragment_types_[fragment - 1] = Real;
 }
 
 void Molecule::set_ghost_fragments(boost::python::list ghosts)
 {
+    lock_frame_ = false;
     for(int i = 0; i < boost::python::len(ghosts); ++i){
         int fragment = boost::python::extract<int>(ghosts[i]);
         fragment_types_[fragment - 1] = Ghost;
@@ -1121,6 +1137,7 @@ void Molecule::set_ghost_fragments(boost::python::list ghosts)
 
 void Molecule::set_ghost_fragment(int fragment)
 {
+    lock_frame_ = false;
     fragment_types_[fragment - 1] = Ghost;
 }
 
@@ -2442,6 +2459,7 @@ int Molecule::get_anchor_atom(const std::string &str, const std::string &line)
 
 void Molecule::set_variable(const std::string &str, double val)
 {
+    lock_frame_ = false;
     geometry_variables_[str] = val;
     if (Communicator::world->me() == 0)
         fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
