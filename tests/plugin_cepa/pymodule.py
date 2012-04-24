@@ -20,6 +20,13 @@ def run_plugin_cepa(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
     # what type of cepa?
     if (lowername == 'cepa(0)'):
         PsiMod.set_global_option('cepa_level', 'cepa0')
@@ -31,6 +38,10 @@ def run_plugin_cepa(name, **kwargs):
         PsiMod.set_global_option('cepa_level', 'cepa3')
     if (lowername == 'sdci'):
         PsiMod.set_global_option('cepa_level', 'cisd')
+    if (lowername == 'dci'):
+        PsiMod.set_global_option('cepa_level', 'cisd')
+        user_no_singles = PsiMod.get_global_option('cepa_no_singles')
+        PsiMod.set_global_option('cepa_no_singles', 1)
     if (lowername == 'acpf'):
         PsiMod.set_global_option('cepa_level', 'acpf')
     if (lowername == 'aqcc'):
@@ -44,13 +55,20 @@ def run_plugin_cepa(name, **kwargs):
        mints = PsiMod.MintsHelper()
        mints.integrals()
 
+
     PsiMod.transqt2()
     PsiMod.plugin("plugin_cepa.so")
 
+    # if dci, make sure we didn't overwrite the cepa_no_singles options
+    if (lowername == 'dci'):
+       PsiMod.set_global_option('cepa_no_singles', user_no_singles)
+       PsiMod.revoke_global_option_changed('cepa_no_singles')
+       
     return PsiMod.get_variable("CURRENT ENERGY")
 
 # Integration with driver routines
 procedures['energy']['sdci'] = run_plugin_cepa
+procedures['energy']['dci'] = run_plugin_cepa
 procedures['energy']['acpf'] = run_plugin_cepa
 procedures['energy']['aqcc'] = run_plugin_cepa
 procedures['energy']['cepa(0)'] = run_plugin_cepa

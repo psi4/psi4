@@ -32,8 +32,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   #ifdef _OPENMP
       nthreads = omp_get_max_threads();
   #endif
-  if (options["num_threads"].has_changed()){
-     nthreads = options.get_int("num_threads");
+  if (options["CC_NUM_THREADS"].has_changed()){
+     nthreads = options.get_int("CC_NUM_THREADS");
   }
 
   // TODO: should put an exception here if not enough memory.

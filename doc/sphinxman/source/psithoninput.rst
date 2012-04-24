@@ -732,7 +732,7 @@ function. For example, in the following potential energy surface scan for water 
         h2o.R = R
         for A in Avals:
             h2o.A = A
-            energy('dfmp2')
+            energy('df-mp2')
             escf = get_variable('SCF TOTAL ENERGY')
             edfmp2 = get_variable('DF-MP2 TOTAL ENERGY')
             escsmp2 = get_variable('SCS-DF-MP2 TOTAL ENERGY')
