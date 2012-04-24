@@ -801,15 +801,6 @@ void CoupledPair::Local_SCS_CEPA(){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
                   double dum = 0.0;
                   for (int ip=0; ip<o; ip++){
                       dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
@@ -819,16 +810,6 @@ void CoupledPair::Local_SCS_CEPA(){
           }
       }
   }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-
 
   SharedVector factor = wfn_->CIMOrbitalFactors();
   double*factor_pointer = factor->pointer();
