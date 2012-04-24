@@ -900,6 +900,10 @@ def run_sapt(name, **kwargs):
     molecule.fix_orientation(True)
     molecule.update_geometry()
 
+    nfrag = molecule.nfragments() 
+    if nfrag != 2: 
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
+
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
         sapt_basis = kwargs.pop('sapt_basis')
@@ -993,6 +997,10 @@ def run_sapt_ct(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+
+    nfrag = molecule.nfragments() 
+    if nfrag != 2: 
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
 
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
