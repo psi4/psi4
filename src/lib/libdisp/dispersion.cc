@@ -252,7 +252,7 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
                 throw PSIEXCEPTION("Unrecognized Damping Function");
             }
 
-            double E_R = C6_R * Rm6 * f + C6 * Rm6_R + C6 * Rm6 * f_R;
+            double E_R = C6_R * Rm6 * f + C6 * Rm6_R * f + C6 * Rm6 * f_R;
 
             Gp[i][0] += E_R * R_xi; 
             Gp[i][1] += E_R * R_yi; 
