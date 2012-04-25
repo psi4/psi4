@@ -96,21 +96,6 @@ Methods whose shifts (:math:`\Delta_{ij}` and :math:`\Delta_i`) do not explicitl
 have solutions that render the energy stationary with respect variations in the amplitudes.  This convenient property allows
 density matrices and 1-electron properties to be evaluated without any additional effort.  
 
-Example input
-^^^^^^^^^^^^^
-
-The following is a minimal input that will perform a CEPA(1) computation on a 
-water molecule described by the cc-pVDZ basis. ::
-
-	molecule water_cluster {
-		0 1
-                O
-                H 1 1.0
-                H 1 1.0 2 104.5
-	}
-	set basis cc-pVDZ
-	energy('cepa(1)')
-
 The coupled-pair methods currently supported in |Psifour| are outlined in Table :ref:`CEPA Methods <table:cepa_calls>`.
 
     .. _`table:cepa_calls`:
