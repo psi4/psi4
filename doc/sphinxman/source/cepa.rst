@@ -37,7 +37,7 @@ For a closed-shell reference, the CISD correlation energy is given by
 .. math::
     :label: CIenergy
     
-    E_c = \frac{1}{4}\sum_{ijab}\langle \Psi_{ij}^{ab} | \hat{H} - E_0 | \Psi \rangle,
+    E_c = \langle \Psi_0 | \hat{H} - E_0 | \Psi \rangle,
 
 and the amplitudes can be determined by the solution to the coupled set of eqations:
 
