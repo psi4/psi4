@@ -10,6 +10,7 @@
  */
 
 
+#include <vector>
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>
@@ -196,6 +197,8 @@ protected:
 
     /// Check the stability of the wavefunction, and correct (if requested)
     virtual void stability_analysis();
+    void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
+
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
