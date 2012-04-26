@@ -14,7 +14,7 @@ Coupled-Pair Methods
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
 
-*Module:* :ref:`Keywords <apdx:cepa>`, :ref:`PSI Variables <apdx:cepa>`, :source:`CEPA <src/bin/cepa>`
+*Module:* :ref:`Keywords <apdx:cepa>`, :ref:`PSI Variables <apdx:cepa_psivar>`, :source:`CEPA <src/bin/cepa>`
 
 Coupled-pair methods can be viewed as approximations to coupled-cluster (CC) theory or as size-extensive modifications
 of truncated configuration interaction (CI) theory.  The methods have the same complexity as CI
