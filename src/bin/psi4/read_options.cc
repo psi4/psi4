@@ -1053,7 +1053,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Auxiliary basis for SCF 
      -*/
-    options.add_str("RI_BASIS_SCF", ""); 
+    options.add_str("DF_BASIS_SCF", ""); 
     /*- Solver maximum iterations
      -*/
     options.add_int("SOLVER_MAXITER",100);
