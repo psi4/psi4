@@ -18,6 +18,7 @@
 typedef long int integer;
 typedef double doublereal;
 
+namespace psi{ namespace cepa{
 
 /**
  * fortran-ordered dgemv
@@ -154,5 +155,7 @@ extern "C" {
 inline void DSPEV(char&JOBZ,char&UPLO,integer&N,doublereal*AP,doublereal*W,doublereal*Z,integer&LDZ,doublereal*WORK,integer&INFO){
     F77NAME(dspev)(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
 }
+
+}}
 
 #endif

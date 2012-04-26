@@ -8,23 +8,16 @@
 #endif
 
 #include"blas.h"
-#include"cepa.h"
+#include"coupledpair.h"
 
 using namespace psi;
 
-namespace psi{
+namespace psi{namespace cepa{
   void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
-};
+  long int Position(long int i,long int j);
+}}
 
-// position in a symmetric packed matrix
-long int Position(long int i,long int j){
-  if (i<j){
-    return ((j*(j+1))>>1)+i;
-  }
-  return ((i*(i+1))>>1)+j;
-}
-
-namespace psi{
+namespace psi{ namespace cepa{
 
 CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options)
 {
@@ -96,7 +89,7 @@ void CoupledPair::Initialize(Options &options){
      fzv     = wfn_->frzvpi();
   }
   if (nirreps>1){
-     //throw PsiException("plugin_cepa requires symmetry c1",__FILE__,__LINE__);
+     //throw PsiException("cepa requires symmetry c1",__FILE__,__LINE__);
   }
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
   long int full=0;
@@ -933,7 +926,6 @@ void CoupledPair::PairEnergy(){
           energy=0.0;
           for (a=o; a<rs; a++){
               for (b=o; b<rs; b++){
-
                   ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   energy += integrals[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
@@ -1567,23 +1559,22 @@ void CoupledPair::DefineTasks(){
 
   ncepatasks=0;
 
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iabj;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iajb;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2ijkl;
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2piajk;
+  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::I2iabj;
+  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::I2iajb;
+  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::I2ijkl;
+  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::I2piajk;
   // these diagrams are necessary only if we have single excitations
   if (!options_.get_bool("CEPA_NO_SINGLES")){
-     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeni;
-     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmaef;
-     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
-     CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeai;
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_t1_vmeni;
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_t1_vmaef;
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_I2p_abci_refactored_term1;
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_t1_vmeai;
   }
-  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::Vabcd1;
+  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::Vabcd1;
 
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  CepaTasklist[ncepatasks++].func        = &psi::CoupledPair::Vabcd2;
+  CepaTasklist[ncepatasks++].func        = &psi::cepa::CoupledPair::Vabcd2;
 }
 
-
-} // end of namespace psi
+}} // end of namespace psi

@@ -3,13 +3,16 @@
 #include<libiwl/iwl.h>
 #include<libpsio/psio.hpp>
 
-#include"cepa.h"
+#include"coupledpair.h"
 #include"sort.h"
 #include"blas.h"
 
 using namespace psi;
+namespace psi{ namespace cepa{
+  long int Position(long int i,long int j);
+}}
 
-namespace psi{
+namespace psi{ namespace cepa{
 
 void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal){
   struct iwlbuf Buf; 
@@ -1180,5 +1183,5 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
   }
 }
 
-} // end of namespace
+}} // end of namespace
   

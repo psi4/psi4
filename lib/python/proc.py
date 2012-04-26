@@ -1250,6 +1250,64 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_cepa(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cepa-like calculation.
+
+    >>> energy('cepa(1)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
+    # what type of cepa?
+    if (lowername == 'cepa(0)'):
+        PsiMod.set_global_option('cepa_level', 'cepa0')
+    if (lowername == 'cepa(1)'):
+        PsiMod.set_global_option('cepa_level', 'cepa1')
+    if (lowername == 'cepa(2)'):
+        #PsiMod.set_global_option('cepa_level', 'cepa2')
+        # throw an exception for cepa(2)
+        PsiMod.print_out("\n")
+        PsiMod.print_out("Error: %s not implemented\n" % lowername )
+        PsiMod.print_out("\n")
+    if (lowername == 'cepa(3)'):
+        PsiMod.set_global_option('cepa_level', 'cepa3')
+    if (lowername == 'sdci'):
+        PsiMod.set_global_option('cepa_level', 'cisd')
+    if (lowername == 'dci'):
+        PsiMod.set_global_option('cepa_level', 'cisd')
+        user_no_singles = PsiMod.get_global_option('cepa_no_singles')
+        PsiMod.set_global_option('cepa_no_singles', 1)
+    if (lowername == 'acpf'):
+        PsiMod.set_global_option('cepa_level', 'acpf')
+    if (lowername == 'aqcc'):
+        PsiMod.set_global_option('cepa_level', 'aqcc')
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+    run_scf('scf', **kwargs)
+
+    # If the scf type is DF, then the AO integrals were never generated
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
+       mints = PsiMod.MintsHelper()
+       mints.integrals()
+
+    PsiMod.transqt2()
+    PsiMod.cepa()
+
+    # if dci, make sure we didn't overwrite the cepa_no_singles options
+    if (lowername == 'dci'):
+       PsiMod.set_global_option('cepa_no_singles', user_no_singles)
+       PsiMod.revoke_global_option_changed('cepa_no_singles')
+
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 # General wrapper for property computations
 def run_property(name, **kwargs):
