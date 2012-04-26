@@ -32,7 +32,7 @@ coupled-pair methods implemented in |Psifour|.  We begin with the CISD wave func
     | \Psi \rangle = | \Psi_0 \rangle + \sum_i^{occ} \sum_a^{vir} t_i^a | \Psi_i^a\rangle + \frac{1}{4}\sum_{ij}^{occ} \sum_{ab}^{vir} t_{ij}^{ab} | \Psi_{ij}^{ab}\rangle,
 
 where we have chosen the intermediate normalization, :math:`\langle \Psi_0 | \Psi \rangle = 1`.
-For a closed-shell reference, the CISD correlation energy is given by
+The CISD correlation energy is given by
 
 .. math::
     :label: CIenergy
@@ -57,8 +57,7 @@ the doubles and singles equations, :math:`\Delta_{ij}` and :math:`\Delta_i`:
     0   &= \langle \Psi_{ij}^{ab} | \hat{H} - E_0 - \Delta_{ij} | \Psi \rangle, \\
     0   &= \langle \Psi_{i}^{a} | \hat{H} - E_0 - \Delta_i | \Psi \rangle.
 
-The shifts, :math:`\Delta_{ij}` and :math:`\Delta_i`, are
-chosen to approximate (with varying degrees of accuracy) the effects of triple and quadruple excitations.  
+These shifts approximate the effects of triple and quadruple excitations.  
 The values for :math:`\Delta_{ij}` and :math:`\Delta_i`  used in several coupled-pair methods are given in Table 
 :ref:`CEPA Shifts <table:cepa_shifts>`.  Note that these shifts are defined in a spin-free formalism 
 for closed-shell references only.  
