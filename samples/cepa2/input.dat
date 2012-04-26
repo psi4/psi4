@@ -1,0 +1,27 @@
+#! cc-pvdz H2O Test ACPF Energy/Properties
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+
+set {
+  e_convergence 1e-10
+  d_convergence 1e-10
+  r_convergence 1e-10
+  basis cc-pvdz
+  freeze_core true
+  dipmom true
+  print 2
+}
+energy('acpf')
+
+refnuc     = 8.80146552997      # TEST
+refscf     = -76.02141844515494 # TEST
+refacpf    = -0.214525653223    # TEST
+refDipACPF = 1.94427077135      # TEST
+refQdpACPF = -5.78358853279     # TEST
+
+
+clean()
