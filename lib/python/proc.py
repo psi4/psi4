@@ -272,7 +272,15 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
+def run_dfmp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DFMP2 gradient calculation.
 
+    """
+
+    run_dfmp2(name, **kwargs)
+    PsiMod.dfmp2grad()
+    
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a CCSD, CC2, and CC3 calculation.
