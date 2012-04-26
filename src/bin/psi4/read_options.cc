@@ -868,6 +868,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_OCC", new ArrayType());
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
+    /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
+        performed. CHECK will print out the analysis of the wavefunction stability at the end of
+        the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
+        is found, will attemp to follow the eigenvector and re-run the computations to find a stable
+        solution. -*/
+    options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
+    /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
+        by !expert -*/
+    options.add_double("FOLLOW_STEP_SCALE", 0.5);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
