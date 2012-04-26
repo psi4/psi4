@@ -1,15 +1,15 @@
 #include<libmints/mints.h>
 #include"blas.h"
-#include"cepa.h"
+#include"coupledpair.h"
 
 using namespace psi;
 
-namespace psi{
-void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options);
+namespace psi{ namespace cepa{
+void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options);
 double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level);
 void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*ta,double*tb,double c0,double*D1);
 
-void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
+void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options){
 
   long int o = cepa->ndoccact;
   long int v = cepa->nvirt;
@@ -117,78 +117,180 @@ void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
   char*line = (char*)malloc(100*sizeof(char));
 
   std::stringstream ss2;
-  if (cepa->cepa_level == -1)      sprintf(line,"CISD DIPOLE X");
-  else if (cepa->cepa_level == -2) sprintf(line,"ACPF DIPOLE X");
-  else if (cepa->cepa_level == -3) sprintf(line,"AQCC DIPOLE X");
   ss2 << oeprop_label.str() << " DIPOLE X";
-  Process::environment.globals[line] =
-    Process::environment.globals[ss2.str()];
+  if (cepa->cepa_level == 0){
+     Process::environment.globals["CEPA(0) DIPOLE X"] =
+       Process::environment.globals[ss2.str()];
+  }
+  if (cepa->cepa_level == -1){
+     Process::environment.globals["CISD DIPOLE X"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -2){
+     Process::environment.globals["ACPF DIPOLE X"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -3){
+     Process::environment.globals["AQCC DIPOLE X"] =
+       Process::environment.globals[ss2.str()];
+  }
 
-  if (cepa->cepa_level == -1)      sprintf(line,"CISD DIPOLE Y");
-  else if (cepa->cepa_level == -2) sprintf(line,"ACPF DIPOLE Y");
-  else if (cepa->cepa_level == -3) sprintf(line,"AQCC DIPOLE Y");
   ss2.str(std::string());
   ss2 << oeprop_label.str() << " DIPOLE Y";
-  Process::environment.globals[line] =
-    Process::environment.globals[ss2.str()];
+  if (cepa->cepa_level == 0){
+     Process::environment.globals["CEPA(0) DIPOLE Y"] =
+       Process::environment.globals[ss2.str()];
+  }
+  if (cepa->cepa_level == -1){
+     Process::environment.globals["CISD DIPOLE Y"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -2){
+     Process::environment.globals["ACPF DIPOLE Y"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -3){
+     Process::environment.globals["AQCC DIPOLE Y"] =
+       Process::environment.globals[ss2.str()];
+  }
 
-  if (cepa->cepa_level == -1)      sprintf(line,"CISD DIPOLE Z");
-  else if (cepa->cepa_level == -2) sprintf(line,"ACPF DIPOLE Z");
-  else if (cepa->cepa_level == -3) sprintf(line,"AQCC DIPOLE Z");
   ss2.str(std::string());
   ss2 << oeprop_label.str() << " DIPOLE Z";
-  Process::environment.globals[line] =
-    Process::environment.globals[ss2.str()];
+  if (cepa->cepa_level == 0){
+     Process::environment.globals["CEPA(0) DIPOLE Z"] =
+       Process::environment.globals[ss2.str()];
+  }
+  if (cepa->cepa_level == -1){
+     Process::environment.globals["CISD DIPOLE Z"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -2){
+     Process::environment.globals["ACPF DIPOLE Z"] =
+       Process::environment.globals[ss2.str()];
+  }
+  else if (cepa->cepa_level == -3){
+     Process::environment.globals["AQCC DIPOLE Z"] =
+       Process::environment.globals[ss2.str()];
+  }
 
   if (options.get_int("PRINT")>1){
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE XX");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE XX");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE XX");
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE XX";
-     Process::environment.globals["line"] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE XX"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE XX"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE XX"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE XX"] =
+          Process::environment.globals[ss2.str()];
+     }
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE YY");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE YY");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE YY");
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE YY";
-     Process::environment.globals[line] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE YY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE YY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE YY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE YY"] =
+          Process::environment.globals[ss2.str()];
+     }
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE ZZ");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE ZZ");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE ZZ");
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE ZZ";
-     Process::environment.globals[line] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE ZZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE ZZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE ZZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE ZZ"] =
+          Process::environment.globals[ss2.str()];
+     }
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE XY");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE XY");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE XY");
+
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE XY";
-     Process::environment.globals[line] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE XY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE XY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE XY"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE XY"] =
+          Process::environment.globals[ss2.str()];
+     }
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE XZ");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE XZ");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE XZ");
+
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE XZ";
-     Process::environment.globals[line] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE XZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE XZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE XZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE XZ"] =
+          Process::environment.globals[ss2.str()];
+     }
 
-     if (cepa->cepa_level == -1)      sprintf(line,"CISD QUADRUPOLE YZ");
-     else if (cepa->cepa_level == -2) sprintf(line,"ACPF QUADRUPOLE YZ");
-     else if (cepa->cepa_level == -3) sprintf(line,"AQCC QUADRUPOLE YZ");
      ss2.str(std::string());
      ss2 << oeprop_label.str() << " QUADRUPOLE YZ";
-     Process::environment.globals[line] =
-       Process::environment.globals[ss2.str()];
+     if (cepa->cepa_level == 0){
+        Process::environment.globals["CEPA(0) QUADRUPOLE YZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     if (cepa->cepa_level == -1){
+        Process::environment.globals["CISD QUADRUPOLE YZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -2){
+        Process::environment.globals["ACPF QUADRUPOLE YZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+     else if (cepa->cepa_level == -3){
+        Process::environment.globals["AQCC QUADRUPOLE YZ"] =
+          Process::environment.globals[ss2.str()];
+     }
+
   }
 
   free(D1);
@@ -294,5 +396,5 @@ double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level){
 }
 
 
-}// end of namespace psi
+}}// end of namespace psi
 

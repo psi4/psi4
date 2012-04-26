@@ -1,0 +1,20 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS) -lpthread
+
+PSITARGET = $(top_objdir)/lib/libPSI_cepa.a
+
+CXXSRC = blas.cc cepa.cc coupledpair.cc sort.cc opdm.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

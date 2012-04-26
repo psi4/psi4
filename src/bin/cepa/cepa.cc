@@ -1,16 +1,24 @@
 #include"psi4-dec.h"
 #include<libciomr/libciomr.h>
 
-#include"cepa.h"
+#include"coupledpair.h"
 
 using namespace psi;
 using namespace boost;
 
-namespace psi{
-  void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options);
-}
+namespace psi{ namespace cepa{
+  void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options);
+  void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
+  PsiReturnType cepa(Options &options);
+}}
 
-namespace psi{
+namespace psi{ namespace cepa{
+
+PsiReturnType cepa(Options&options){
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  RunCoupledPair(options,ref);
+  return Success;
+}
 
 void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
@@ -65,7 +73,7 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   // dipole moments for CISD, ACPF, or AQCC
   if (options.get_bool("DIPMOM")){
      if (cepa->cepa_level>0) 
-        throw PsiException("dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
+        throw PsiException("coupled-pair dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
      OPDM(cepa,options);
   }
 
@@ -86,6 +94,6 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   cepa.reset();
 }
 
-}
+}}
 
 
