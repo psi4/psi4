@@ -1461,6 +1461,10 @@ double HF::compute_energy()
     // Clean memory off, handle diis closeout, etc
     finalize();
 
+    // Perform wavefunction stability analysis
+    if(options_.get_str("STABILITY_ANALYSIS") != "NONE");
+        stability_analysis();
+
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
@@ -1619,4 +1623,8 @@ SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
     return XPX;
 }
 
+void HF::stability_analysis()
+{
+    throw PSIEXCEPTION("Stability analysis hasn't been implemented yet for this wfn type.");
+}
 }}

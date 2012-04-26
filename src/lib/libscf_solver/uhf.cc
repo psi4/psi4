@@ -274,4 +274,14 @@ bool UHF::diis()
     return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
+void UHF::stability_analysis()
+{
+    if(scf_type_ == "DF"){
+        throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
+    }else{
+
+    }
+}
+
+
 }}

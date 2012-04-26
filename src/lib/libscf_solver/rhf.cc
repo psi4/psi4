@@ -636,4 +636,14 @@ void RHF::save_sapt_info()
     free(body_type);
     free(key_buffer);
 }
+
+void RHF::stability_analysis()
+{
+    if(scf_type_ == "DF"){
+        throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
+    }else{
+
+    }
+}
+
 }}
