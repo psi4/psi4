@@ -55,6 +55,7 @@ namespace psi {
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
+    namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace dfcc       { PsiReturnType dfcc(Options &);     }
     namespace sapt       { PsiReturnType sapt(Options &);     }
     namespace dcft       { PsiReturnType dcft(Options &);     }
@@ -311,6 +312,16 @@ double py_psi_dfmp2()
 {
     py_psi_prepare_options_for_module("DFMP2");
     if (dfmp2::dfmp2(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_dfmp2grad()
+{
+    py_psi_prepare_options_for_module("DFMP2");
+    if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -1042,6 +1053,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dcft", py_psi_dcft, "docstring");
     def("libfock", py_psi_libfock, "docstring");
     def("dfmp2", py_psi_dfmp2, "docstring");
+    def("dfmp2grad", py_psi_dfmp2grad, "docstring");
     def("dfcc", py_psi_dfcc, "docstring");
 //    def("lmp2", py_psi_lmp2, "docstring");
     def("mp2", py_psi_mp2, "docstring");
