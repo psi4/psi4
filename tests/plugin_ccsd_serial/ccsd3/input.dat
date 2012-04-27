@@ -22,7 +22,9 @@ set {
   r_convergence 1e-7
   basis aug-cc-pvdz
   freeze_core true
-  nat_orbs true
+  nat_orbs true 
+  occ_tolerance 1e-6
+  triples_low_memory true
 }
 
 activate(dimer)
@@ -30,9 +32,9 @@ monoA = dimer.extract_subsets(1,2)
 
 energy("_ccsd(t)")
 
-refscf     = -76.0412702882  # TEST
-refccsd    = -0.227694028575 # TEST
-refccsdt   = -0.232978044518 # TEST
+refscf     = -76.0412702882  #TEST
+refccsd    = -0.227694028575 #TEST
+refccsdt   = -0.232978044518 #TEST
 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST
 compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")        #TEST 
