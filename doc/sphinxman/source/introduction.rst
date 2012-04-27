@@ -265,11 +265,11 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
     | SAPT                    | Y         | ---       | RHF             | threaded                    |               |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
-    | MP2                     | Y         | Y [#f2]_  | RHF/ROHF/UHF    |                             | UNVERIFIED    |
+    | MP2                     | Y         | Y [#f2]_  | RHF/ROHF/UHF    | threaded [#f3]_             |               |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
     | DF-MP2                  | Y         | ---       | RHF             | threaded                    | UNVERIFIED    |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
-    | ADC(2)                  | Y         | ---       | RHF/ROHF        |                             | UNVERIFIED    |
+    | ADC(2)                  | Y         | ---       | RHF/ROHF        | threaded [#f3]_             |               |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
     | CI(n)                   | Y         | ---       | RHF/ROHF        | threaded (pthreads)         |               |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
@@ -334,7 +334,7 @@ this user's manual may be sent to
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
-.. [#f2] RHF reference only
+.. [#f2] RHF reference only.  DF-MP2 is recommended as a faster alternative.
 .. [#f3] threading through BLAS routines only
 
 
