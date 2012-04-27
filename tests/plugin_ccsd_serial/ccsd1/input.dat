@@ -2,7 +2,7 @@
 
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
-sys.path.insert(0, '/home/deprince/psi4/tests')
+sys.path.insert(0, '/Users/deprince/psi4/tests')
 import plugin_ccsd_serial
 
 molecule h2o {
@@ -19,10 +19,10 @@ set {
 }
 energy("_ccsd(t)")
 
-refnuc     = 8.80146552997   # TEST
-refscf     = -76.0214184452  # TEST
-refccsd    = -0.214295329669 # TEST
-refccsdt   = -0.217539266337 # TEST
+refnuc     = 8.80146552997   #TEST
+refscf     = -76.0214184452  #TEST
+refccsd    = -0.214295329669 #TEST
+refccsdt   = -0.217539266337 #TEST
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST

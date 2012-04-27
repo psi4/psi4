@@ -17,11 +17,11 @@ set {
 }
 energy('acpf')
 
-refnuc     = 8.80146552997      # TEST
-refscf     = -76.02141844515494 # TEST
-refacpf    = -0.214525653223    # TEST
-refDipACPF = 1.94427077135      # TEST
-refQdpACPF = -5.78358853279     # TEST
+refnuc     = 8.80146552997      #TEST
+refscf     = -76.02141844515494 #TEST
+refacpf    = -0.214525653223    #TEST
+refDipACPF = 1.94427077135      #TEST
+refQdpACPF = -5.78358853279     #TEST
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
