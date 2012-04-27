@@ -22,8 +22,4 @@ energy('gpu-ccsd(t)')
 
 clean()
 
-refnuc  = 8.80146552997      # TEST
-refscf  = -76.02141844515495 # TEST
-refccsd = -0.214295329587    # TEST
-refccsdt   = -0.217539266264 # TEST
 

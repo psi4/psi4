@@ -22,9 +22,6 @@ set {
 }
 energy('df-ccsd(t)')
 
-refscf =  -76.03566968373900 # TEST
-refccsd =  -0.230819852022   # TEST
-refccsdt = -0.236360387427   # TEST
 
 
 clean()
