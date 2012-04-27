@@ -1,7 +1,9 @@
 """
 | Database (Hobza) of interaction energies for bimolecular complexes.
 | Geometries from Jurecka et al. PCCP 8 1985 (2006).
-| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+| First revision to interaction energies (S22A) from Takatani et al. JCP
+132 144104 (2010).
+| Second revision to interaction energies (S22B) from Marshall et al. JCP 135 194102 (2011).
 
 - **cp**  ``'off'`` || ``'on'``
 
