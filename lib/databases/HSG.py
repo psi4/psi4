@@ -1,7 +1,7 @@
 """
 | Database (Merz) of interaction energies for bimolecular complexes from protein-indinavir reaction site.
-| Geometries from Faver et al. JCTC 7 790 (2011).
-| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+| Geometries from and original reference energies from Faver et al. JCTC 7 790 (2011).
+| Revised reference interaction energies (HSGA) from Marshall et al. JCP 135 194102 (2011).
 
 - **cp**  ``'off'`` || ``'on'``
 
