@@ -5,7 +5,7 @@ subdirs = libciomr libchkpt libqt libpsio libiwl libdpd \
           libint libderiv libutil liboptions libmatrix libdist_matrix \
           libmints libtrans libparallel lib3index libfunctional libdisp libfock libscf_solver \
           libdiis libsapt_solver libplugin \
-          libdfcc_solver libmoinfo libsmartptr libyeti
+          libmoinfo libsmartptr libyeti
 
 all: default
 

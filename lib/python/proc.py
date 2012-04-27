@@ -755,51 +755,6 @@ def run_dfmp2(name, **kwargs):
         return e_dfmp2
 
 
-def run_mp2drpa(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2-DRPA calculation.
-
-    """
-    e_scf = run_scf('RHF', **kwargs)
-
-    PsiMod.print_out('\n')
-    banner('DFMP2')
-    PsiMod.print_out('\n')
-    e_dfmp2 = PsiMod.dfmp2()
-
-    PsiMod.print_out('\n')
-    banner('dRPA')
-    PsiMod.print_out('\n')
-    PsiMod.dfcc()
-    e_delta = PsiMod.get_variable('RPA SCALED DELTA ENERGY')
-
-    PsiMod.print_out('\n')
-    banner('MP2/dRPA Analysis')
-    PsiMod.print_out('\n')
-
-    PsiMod.print_out('  Reference Energy               %20.14f\n' % (e_scf))
-    PsiMod.print_out('  MP2 Correlation Energy         %20.14f\n' % (e_dfmp2 - e_scf))
-    PsiMod.print_out('  MP2 Total Energy               %20.14f\n' % (e_dfmp2))
-    PsiMod.print_out('  Scaled dRPA/MP2J Delta Energy  %20.14f\n' % (e_delta))
-    PsiMod.print_out('  Total MP2/dRPA Energy          %20.14f\n\n' % (e_dfmp2 + e_delta))
-
-    return e_dfmp2 + e_delta
-
-
-def run_dfcc(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-fitted coupled-cluster calculation.
-
-    """
-    run_scf('RHF', **kwargs)
-
-    PsiMod.print_out('\n')
-    banner('DF-CC')
-    PsiMod.print_out('\n')
-    e_dfcc = PsiMod.dfcc()
-    return e_dfcc
-
-
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the MCSCF module
