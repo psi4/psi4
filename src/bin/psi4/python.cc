@@ -72,6 +72,7 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace cepa { PsiReturnType cepa(Options&);}
     namespace stable     { PsiReturnType stability(Options&); }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
@@ -411,6 +412,15 @@ double py_psi_cctriples()
         return 0.0;
 }
 
+double py_psi_cepa()
+{
+    py_psi_prepare_options_for_module("CEPA");
+    if (cepa::cepa(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
@@ -1080,6 +1090,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccenergy", py_psi_ccenergy, "docstring");
     def("cctriples", py_psi_cctriples, "docstring");
     def("detci", py_psi_detci, "docstring");
+    def("cepa", py_psi_cepa, "docstring");
     def("cchbar", py_psi_cchbar, "docstring");
     def("cclambda", py_psi_cclambda, "docstring");
     def("ccdensity", py_psi_ccdensity, "docstring");

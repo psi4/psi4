@@ -982,6 +982,7 @@ AC_CONFIG_FILES([
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
+          src/bin/cepa/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -1072,6 +1073,9 @@ AC_CONFIG_FILES([
           tests/rasci-ne/Makefile
           tests/zaptn-nh2/Makefile
           tests/mpn-bh/Makefile
+          tests/cepa1/Makefile
+          tests/cepa2/Makefile
+          tests/cepa3/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc3/Makefile

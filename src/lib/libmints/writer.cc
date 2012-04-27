@@ -135,7 +135,12 @@ void MoldenWriter::write(const std::string &filename)
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
     Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
+    aotoso->print();
+    Ca_ao_mo->print();
+    Cb_ao_mo->print();
+
     // The order Molden expects
+    //     P: x, y, z
     //    5D: D 0, D+1, D-1, D+2, D-2
     //    6D: xx, yy, zz, xy, xz, yz
     //
@@ -147,6 +152,7 @@ void MoldenWriter::write(const std::string &filename)
     //        xxyy xxzz yyzz xxyz yyxz zzxy
     // Since Molden doesn't handle higher than g we'll just leave them be.
     int molden_cartesian_order[][15] = {
+        { 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // p
         { 0, 3, 4, 1, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // d
         { 0, 4, 5, 3, 9, 6, 1, 8, 7, 2, 0, 0, 0, 0, 0 },    // f
         { 0, 3, 4, 9, 12, 10, 5, 13, 14, 7, 1, 6, 11, 8, 2} // g
@@ -161,7 +167,7 @@ void MoldenWriter::write(const std::string &filename)
         int am = basisset.shell(i).am();
 
         int ncart = basisset.shell(i).nfunction();
-        if(am > 1 && am < 5 && basisset.shell(i).is_cartesian()) {
+        if(am == 1 || (am > 0 && am < 5 && basisset.shell(i).is_cartesian())) {
             for (int h=0; h<nirrep; ++h)
                 ncartpi[h] = ncart;
 
@@ -174,8 +180,9 @@ void MoldenWriter::write(const std::string &filename)
             for( int j =0; j < ncart; j++) {
                 for (int h=0; h < Ca_ao_mo->nirrep(); ++h) {
                     for (int k=0; k<Ca_ao_mo->coldim(h); ++k) {
-                        Ca_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-2][j], k, temp_a->get(h, j, k));
-                        Cb_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-2][j], k, temp_b->get(h, j, k));
+                        fprintf(outfile, "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
+                        Ca_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_a->get(h, j, k));
+                        Cb_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_b->get(h, j, k));
                     }
                 }
             }

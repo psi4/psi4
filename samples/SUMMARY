@@ -178,6 +178,15 @@ cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state 
 cc9a:         ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical,  with Z-matrix input.
 
 
+cepa1:        cc-pvdz H2O Test CEPA(1) Energy
+
+
+cepa2:        cc-pvdz H2O Test ACPF Energy/Properties
+
+
+cepa3:        cc-pvdz H2O Test coupled-pair CISD against DETCI CISD
+
+
 cisd-h2o+-0:  6-31G** H2O+ Test CISD Energy Point
 
 
@@ -341,9 +350,6 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
 
 opt5:         6-31G** UHF CH2 3B1 optimization
-
-
-plugin_cepa:  cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
 
 
 plugin_df_ccsd:  Test DF-CCSD(T) energy for H2O/aug-cc-pVDZ

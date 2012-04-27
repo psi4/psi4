@@ -22,7 +22,7 @@ top_objdir = /Users/deprince/psi4/objdir
 
 PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(top_objdir)/boost/boost_1_48_0 -I$(top_srcdir)/include -I$(top_objdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin /Users/deprince/psi4/tests/plugin_ccsd_serial/plugin_ccsd_serial.so /Users/deprince/psi4/tests/plugin_cepa/plugin_cepa.so
+PSILIBS = -L$(top_objdir)/lib -lPSI_plugin /Users/deprince/psi4/tests/plugin_ccsd_serial/plugin_ccsd_serial.so
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))

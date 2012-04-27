@@ -5,7 +5,7 @@ typedef unsigned long int ULI;
 namespace boost{
 template<class T>class shared_ptr;
 }
-namespace psi{
+namespace psi{namespace cepa{
   struct integral{
     ULI ind;
     double val;
@@ -22,7 +22,6 @@ namespace psi{
   void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd2,struct integral*abcd2);
 
   void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim);
-};
-
+}}
 
 #endif
