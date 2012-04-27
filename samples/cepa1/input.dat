@@ -14,9 +14,6 @@ set {
 }
 energy('cepa(1)')
 
-refnuc     = 8.80146552997       # TEST
-refscf     = -76.02141844515494  # TEST
-refcepa1   = -0.214363572651     # TEST
 
 
 clean()
