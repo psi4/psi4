@@ -1,6 +1,16 @@
 #include"blas.h"
 #include<stdlib.h>
 
+namespace psi { namespace cepa{
+
+// position in a symmetric packed matrix
+long int Position(long int i,long int j){
+  if (i<j){
+    return ((j*(j+1))>>1)+i;
+  }
+  return ((i*(i+1))>>1)+j;
+}
+
 /**
  * fortran-ordered dgemv
  */
@@ -64,4 +74,4 @@ void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z){
   DSPEV(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
 }
 
-
+}}

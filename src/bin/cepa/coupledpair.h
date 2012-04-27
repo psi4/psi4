@@ -21,10 +21,9 @@ namespace boost {
 template<class T> class shared_ptr;
 }
 
-long int Position(long int i,long int j);
+//long int Position(long int i,long int j);
 
-// gpu cepa class
-namespace psi{
+namespace psi{ namespace cepa{
 
 class CoupledPair{
   public:
@@ -71,7 +70,7 @@ class CoupledPair{
       * like how many flops the task will take.
      */
     struct CepaTask{
-        void(psi::CoupledPair::*func)(CepaTaskParams);
+        void(psi::cepa::CoupledPair::*func)(CepaTaskParams);
         double flopcount;
     };
     CepaTask*CepaTasklist,*CCSubTasklist1,*CCSubTasklist2;
@@ -205,8 +204,8 @@ class CoupledPair{
       *  the CIM version of SCS_CEPA()
       */
     void Local_SCS_CEPA();
+};
 
-};
-};
+}}
 
 #endif

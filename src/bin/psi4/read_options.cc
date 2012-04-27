@@ -868,6 +868,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_OCC", new ArrayType());
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
+    /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
+        performed. CHECK will print out the analysis of the wavefunction stability at the end of
+        the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
+        is found, will attemp to follow the eigenvector and re-run the computations to find a stable
+        solution. -*/
+    options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
+    /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
+        by !expert -*/
+    options.add_double("FOLLOW_STEP_SCALE", 0.5);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1053,7 +1062,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Auxiliary basis for SCF 
      -*/
-    options.add_str("RI_BASIS_SCF", ""); 
+    options.add_str("DF_BASIS_SCF", ""); 
     /*- Solver maximum iterations
      -*/
     options.add_int("SOLVER_MAXITER",100);
@@ -2444,6 +2453,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             !expert
           -*/
       options.add_int("MRCC_METHOD", 1);
+  }
+  if (name == "CEPA"|| options.read_globals()) {
+      /*- Desired convergence for the t1 and t2 amplitudes, defined as
+      the norm of the change in the amplitudes between iterations.-*/
+      options.add_double("R_CONVERGENCE", 1.0e-7);
+      /*- Maximum number of iterations to converge the t1 and t2
+      amplitudes. -*/
+      options.add_int("MAXITER", 100);
+      /*- Number of vectors to store for DIIS extrapolation. -*/
+      options.add_int("DIIS_MAX_VECS", 8);
+      /*- Opposite-spin scaling factor for SCS-MP2. -*/
+      options.add_double("MP2_SCALE_OS",1.20);
+      /*- Same-spin scaling factor for SCS-MP2-*/
+      options.add_double("MP2_SCALE_SS",1.0/3.0);
+      /*- Perform SCS-CEPA? If true, note that the
+      default values for the spin component scaling factors
+      are optimized for the CCSD method. -*/
+      options.add_bool("SCS_CEPA", false);
+      /*- Oppposite-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_OS", 1.27);
+      /*- Same-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_SS",1.13);
+      /*- Which coupled-pair method is called?  This parameter is
+      used internally by the python driver.  Changing its value 
+      won't have any effect on the procedure. -*/
+      options.add_str("CEPA_LEVEL","CEPA0");
+      /*- Compute the dipole moment? Note that quadrupole moments
+      will also be computed if PRINT >= 2. -*/
+      options.add_bool("DIPMOM",false);
+      /*- Flag to exclude singly excited configurations from the
+      computation. Note that this algorithm is not optimized for
+      doubles-only computations. -*/
+      options.add_bool("CEPA_NO_SINGLES",false);
   }
   return true;
 }

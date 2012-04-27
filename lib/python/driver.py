@@ -73,6 +73,13 @@ procedures = {
             'uscf'          : run_scf,
             'roscf'         : run_scf,
             'df-scf'        : run_scf,
+            'cepa(0)'       : run_cepa,
+            'cepa(1)'       : run_cepa,
+            'cepa(3)'       : run_cepa,
+            'acpf'          : run_cepa,
+            'aqcc'          : run_cepa,
+            'sdci'          : run_cepa,
+            'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -220,6 +227,12 @@ def energy(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc3                 | EOM-CC3                                                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cepa(n)                 | coupled electron pair approximation, variants 0, 1, and 3                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | acpf                    | averaged coupled-pair functional                                                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | aqcc                    | averaged quadratic coupled cluster                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:

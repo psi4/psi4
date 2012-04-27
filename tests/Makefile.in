@@ -13,6 +13,8 @@ cc12 cc13 cc13a cc14 cc15 cc16 cc17 cc18 cc19 cc21 cc22 cc23 cc24 cc25 cc26 cc27
 cc29 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 \
 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc50 cc51 cc52 # cc5 these should be restored when fixed
 
+cepa_subdirs = cepa1 cepa2 cepa3
+
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh
 
 dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5
@@ -49,6 +51,7 @@ $(df_subdirs) \
 $(mp2_subdirs) \
 $(ci_subdirs) \
 $(cc_subdirs) \
+$(cepa_subdirs) \
 $(python_test_subdirs) \
 ${mcscf_subdirs} \
 $(psimrcc_subdirs) \
@@ -90,6 +93,9 @@ opttests:
 
 quicktests:
 	$(call runtests, $(quicktestdirs))
+
+cepa_tests:
+	$(call runtests, $(cepa_subdirs))
 
 cc_tests:
 	$(call runtests, $(cc_subdirs))
