@@ -1240,7 +1240,7 @@ def build_b97d_superfunctional(name, npoints, deriv):
     sup.add_c_functional(C)
 
     # => -D2 (s = 1.25) <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.25, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.25))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -1505,7 +1505,7 @@ def build_blypd_superfunctional(name, npoints, deriv):
     sup.set_name('BLYP-D')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.20, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.20))
 
     return sup
 
@@ -1516,7 +1516,7 @@ def build_b3lypd_superfunctional(name, npoints, deriv):
     sup.set_name('B3LYP-D')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
 
     return sup
 
@@ -1527,7 +1527,7 @@ def build_b3lyp5d_superfunctional(name, npoints, deriv):
     sup.set_name('B3LYP5-D')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
 
     return sup
 
@@ -1538,7 +1538,7 @@ def build_bp86d_superfunctional(name, npoints, deriv):
     sup.set_name('BP86-D')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
 
     return sup
 
@@ -1549,7 +1549,7 @@ def build_pbed_superfunctional(name, npoints, deriv):
     sup.set_name('PBE-D')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.75, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.75))
 
     return sup
 
@@ -1884,7 +1884,7 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.set_c_alpha(0.0)
 
     # => -D2 (CHG Damping Function) <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 6.0, 0.0, 0.0, 0.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.0))
 
     # => End User-Customization <= #
 

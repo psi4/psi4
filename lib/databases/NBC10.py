@@ -7,7 +7,7 @@
 |   Methane Dimer from Takatani et al. PCCP 9 6106 (2007).
 |   Pyridine Dimers from Hohenstein et al. JPCA 113 878 (2009).
 |   Collection into NBC10 from Burns et al. JCP 134 084107 (2011).
-|   Reference from Marshall et al. JCP 135 194102 (2011).
+|   Revised reference interaction energies (NBC10A) from Marshall et al. JCP 135 194102 (2011).
 
 - **cp**  ``'off'`` || ``'on'``
 

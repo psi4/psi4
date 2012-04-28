@@ -610,6 +610,8 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_init(&Zaa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Zaa, h);
+
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gaa.params->rowtot[h]; ++ab){
             size_t a = Gaa.params->roworb[h][ab][0];
             int Ga = Gaa.params->psym[a];
@@ -655,6 +657,8 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_init(&Zab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Zab, h);
+
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gab.params->rowtot[h]; ++ab){
             size_t a = Gab.params->roworb[h][ab][0];
             int Ga = Gab.params->psym[a];
@@ -697,6 +701,7 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_rd(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Zbb, h);
 
+        #pragma omp parallel for
         for(size_t ab = 0; ab < Gbb.params->rowtot[h]; ++ab){
             size_t a = Gbb.params->roworb[h][ab][0];
             int Ga = Gbb.params->psym[a];
@@ -744,7 +749,9 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_init(&Zaa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Zaa, h);
-                for(size_t ij = 0; ij < Gaa.params->rowtot[h]; ++ij){
+
+        #pragma omp parallel for
+        for(size_t ij = 0; ij < Gaa.params->rowtot[h]; ++ij){
             size_t i = Gaa.params->roworb[h][ij][0];
             int Gi = Gaa.params->psym[i];
             i -= Gaa.params->poff[Gi];
@@ -794,6 +801,8 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_init(&Zab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Zab, h);
+
+        #pragma omp parallel for
         for(size_t ij = 0; ij < Gab.params->rowtot[h]; ++ij){
             size_t i = Gab.params->roworb[h][ij][0];
             int Gi = Gab.params->psym[i];
@@ -838,6 +847,8 @@ DCFTSolver::compute_density()
         dpd_buf4_mat_irrep_init(&Zbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Zbb, h);
+
+        #pragma omp parallel for
         for(size_t ij = 0; ij < Gbb.params->rowtot[h]; ++ij){
             size_t i = Gbb.params->roworb[h][ij][0];
             int Gi = Gbb.params->psym[i];
@@ -989,6 +1000,8 @@ DCFTSolver::compute_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_rd(&Gaa, h);
+
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
             size_t i = Gaa.params->roworb[h][ia][0];
             int Gi = Gaa.params->psym[i];
@@ -1045,6 +1058,8 @@ DCFTSolver::compute_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_rd(&Gab, h);
+
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gab.params->rowtot[h]; ++ia){
             size_t i = Gab.params->roworb[h][ia][0];
             int Gi = Gab.params->psym[i];
@@ -1076,6 +1091,8 @@ DCFTSolver::compute_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gba, h);
         dpd_buf4_mat_irrep_rd(&Gba, h);
+
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gba.params->rowtot[h]; ++ia){
             size_t i = Gba.params->roworb[h][ia][0];
             int Gi = Gba.params->psym[i];
@@ -1175,6 +1192,8 @@ DCFTSolver::compute_density()
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_rd(&Gbb, h);
+
+        #pragma omp parallel for
         for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
             size_t i = Gbb.params->roworb[h][ia][0];
             int Gi = Gbb.params->psym[i];
@@ -1449,6 +1468,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_file2_mat_rd(&H);
     dpd_file2_mat_rd(&pT);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int a = 0 ; a < navirpi_[h]; ++a){
                 double value = 0.0;
@@ -1474,6 +1494,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_file2_mat_rd(&H);
     dpd_file2_mat_rd(&pT);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 double value = 0.0;
@@ -1767,6 +1788,7 @@ DCFTSolver::orbital_response_guess()
     dpd_file2_mat_rd(&Xia);
     dpd_file2_mat_rd(&Xai);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int a = 0 ; a < navirpi_[h]; ++a){
                 double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -1789,6 +1811,7 @@ DCFTSolver::orbital_response_guess()
     dpd_file2_mat_rd(&Xia);
     dpd_file2_mat_rd(&Xai);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -1890,6 +1913,7 @@ DCFTSolver::compute_orbital_response_intermediates()
     dpd_file2_mat_init(&zI_ov);
     dpd_file2_mat_rd(&zI_vo);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 zI_ov.matrix[h][i][a] = zI_vo.matrix[h][a][i];
@@ -1969,6 +1993,7 @@ DCFTSolver::update_orbital_response()
     dpd_file2_mat_rd(&z_ia);
 
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int a = 0 ; a < navirpi_[h]; ++a){
                 double value = 0.0;
@@ -2017,6 +2042,7 @@ DCFTSolver::update_orbital_response()
     dpd_file2_mat_rd(&z_ia);
 
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 double value = 0.0;
@@ -2201,6 +2227,7 @@ DCFTSolver::compute_response_coupling()
     dpd_file2_mat_init(&zIsym);
     dpd_file2_mat_rd(&zI);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 zIsym.matrix[h][i][j] = zIsym.matrix[h][j][i] = zI.matrix[h][i][j] + zI.matrix[h][j][i];
@@ -2218,6 +2245,7 @@ DCFTSolver::compute_response_coupling()
     dpd_file2_mat_init(&zIsym);
     dpd_file2_mat_rd(&zI);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 zIsym.matrix[h][i][j] = zIsym.matrix[h][j][i] = zI.matrix[h][i][j] + zI.matrix[h][j][i];
@@ -2235,6 +2263,7 @@ DCFTSolver::compute_response_coupling()
     dpd_file2_mat_init(&zIsym);
     dpd_file2_mat_rd(&zI);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < navirpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 zIsym.matrix[h][i][j] = zIsym.matrix[h][j][i] = zI.matrix[h][i][j] + zI.matrix[h][j][i];
@@ -2252,6 +2281,7 @@ DCFTSolver::compute_response_coupling()
     dpd_file2_mat_init(&zIsym);
     dpd_file2_mat_rd(&zI);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nbvirpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 zIsym.matrix[h][i][j] = zIsym.matrix[h][j][i] = zI.matrix[h][i][j] + zI.matrix[h][j][i];
@@ -3714,6 +3744,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_file2_mat_rd(&H);
     dpd_file2_mat_rd(&pT);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int k = 0 ; k < naoccpi_[h]; ++k){
                 double value = 0.0;
@@ -3739,6 +3770,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_file2_mat_rd(&H);
     dpd_file2_mat_rd(&pT);
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int k = 0 ; k < nboccpi_[h]; ++k){
                 double value = 0.0;
@@ -4223,6 +4255,7 @@ DCFTSolver::compute_ewdm()
 
     for(int h = 0; h < nirrep_; ++h){
         // O-V and V-O
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int a = 0 ; a < navirpi_[h]; ++a){
                 double value = 0.0;
@@ -4240,6 +4273,7 @@ DCFTSolver::compute_ewdm()
             }
         }
         // O-O
+        #pragma omp parallel for
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 double value = 0.0;
@@ -4255,6 +4289,7 @@ DCFTSolver::compute_ewdm()
             }
         }
         // V-V
+        #pragma omp parallel for
         for(int a = 0 ; a < navirpi_[h]; ++a){
             for(int b = 0 ; b <= a; ++b){
                 double value = 0.0;
@@ -4313,6 +4348,7 @@ DCFTSolver::compute_ewdm()
 
     for(int h = 0; h < nirrep_; ++h){
         // O-V and V-O
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 double value = 0.0;
@@ -4331,6 +4367,7 @@ DCFTSolver::compute_ewdm()
             }
         }
         // O-O
+        #pragma omp parallel for
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int j = 0 ; j <= i; ++j){
                 double value = 0.0;
@@ -4346,6 +4383,7 @@ DCFTSolver::compute_ewdm()
             }
         }
         // V-V
+        #pragma omp parallel for
         for(int a = 0 ; a < nbvirpi_[h]; ++a){
             for(int b = 0 ; b <= a; ++b){
                 double value = 0.0;
@@ -4488,6 +4526,7 @@ DCFTSolver::compute_ewdm()
                   ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             size_t i = G.params->roworb[h][ij][0];
             int Gi = G.params->psym[i];
@@ -4515,6 +4554,7 @@ DCFTSolver::compute_ewdm()
                   ID("[O,o]"), ID("[O,v]"), 0, "Gamma <Oo|Ov>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             size_t i = G.params->roworb[h][ij][0];
             int Gi = G.params->psym[i];
@@ -4541,6 +4581,7 @@ DCFTSolver::compute_ewdm()
                   ID("[o,O]"), ID("[o,V]"), 0, "Gamma <oO|oV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             size_t i = G.params->roworb[h][ij][0];
             int Gi = G.params->psym[i];
@@ -4567,6 +4608,7 @@ DCFTSolver::compute_ewdm()
                   ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
             size_t i = G.params->roworb[h][ij][0];
             int Gi = G.params->psym[i];
@@ -4595,6 +4637,7 @@ DCFTSolver::compute_ewdm()
                   ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             size_t i = G.params->roworb[h][ia][0];
             int Gi = G.params->psym[i];
@@ -4622,6 +4665,7 @@ DCFTSolver::compute_ewdm()
                   ID("[O,v]"), ID("[V,v]"), 0, "Gamma <Ov|Vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             size_t i = G.params->roworb[h][ia][0];
             int Gi = G.params->psym[i];
@@ -4648,6 +4692,7 @@ DCFTSolver::compute_ewdm()
                   ID("[o,V]"), ID("[v,V]"), 0, "Gamma <oV|vV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             size_t i = G.params->roworb[h][ia][0];
             int Gi = G.params->psym[i];
@@ -4675,6 +4720,7 @@ DCFTSolver::compute_ewdm()
                   ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
+        #pragma omp parallel for
         for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
             size_t i = G.params->roworb[h][ia][0];
             int Gi = G.params->psym[i];

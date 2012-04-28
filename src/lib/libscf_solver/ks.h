@@ -73,6 +73,7 @@ protected:
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();
+    virtual void stability_analysis();
     virtual void integrals();
     virtual void finalize();
 
@@ -98,6 +99,7 @@ protected:
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();
+    virtual void stability_analysis();
     virtual void integrals();
     virtual void finalize();
 

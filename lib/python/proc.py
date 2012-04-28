@@ -272,7 +272,15 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
+def run_dfmp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DFMP2 gradient calculation.
 
+    """
+
+    run_dfmp2(name, **kwargs)
+    PsiMod.dfmp2grad()
+    
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a CCSD, CC2, and CC3 calculation.
@@ -747,51 +755,6 @@ def run_dfmp2(name, **kwargs):
         return e_dfmp2
 
 
-def run_mp2drpa(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2-DRPA calculation.
-
-    """
-    e_scf = run_scf('RHF', **kwargs)
-
-    PsiMod.print_out('\n')
-    banner('DFMP2')
-    PsiMod.print_out('\n')
-    e_dfmp2 = PsiMod.dfmp2()
-
-    PsiMod.print_out('\n')
-    banner('dRPA')
-    PsiMod.print_out('\n')
-    PsiMod.dfcc()
-    e_delta = PsiMod.get_variable('RPA SCALED DELTA ENERGY')
-
-    PsiMod.print_out('\n')
-    banner('MP2/dRPA Analysis')
-    PsiMod.print_out('\n')
-
-    PsiMod.print_out('  Reference Energy               %20.14f\n' % (e_scf))
-    PsiMod.print_out('  MP2 Correlation Energy         %20.14f\n' % (e_dfmp2 - e_scf))
-    PsiMod.print_out('  MP2 Total Energy               %20.14f\n' % (e_dfmp2))
-    PsiMod.print_out('  Scaled dRPA/MP2J Delta Energy  %20.14f\n' % (e_delta))
-    PsiMod.print_out('  Total MP2/dRPA Energy          %20.14f\n\n' % (e_dfmp2 + e_delta))
-
-    return e_dfmp2 + e_delta
-
-
-def run_dfcc(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a density-fitted coupled-cluster calculation.
-
-    """
-    run_scf('RHF', **kwargs)
-
-    PsiMod.print_out('\n')
-    banner('DF-CC')
-    PsiMod.print_out('\n')
-    e_dfcc = PsiMod.dfcc()
-    return e_dfcc
-
-
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the MCSCF module
@@ -900,6 +863,10 @@ def run_sapt(name, **kwargs):
     molecule.fix_orientation(True)
     molecule.update_geometry()
 
+    nfrag = molecule.nfragments() 
+    if nfrag != 2: 
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
+
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
         sapt_basis = kwargs.pop('sapt_basis')
@@ -993,6 +960,10 @@ def run_sapt_ct(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+
+    nfrag = molecule.nfragments() 
+    if nfrag != 2: 
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
 
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
@@ -1242,6 +1213,64 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_cepa(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a cepa-like calculation.
+
+    >>> energy('cepa(1)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_global_option('reference') != 'RHF' ):
+       PsiMod.print_out("\n")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+       PsiMod.print_out("\n")
+       sys.exit(1)
+
+    # what type of cepa?
+    if (lowername == 'cepa(0)'):
+        PsiMod.set_global_option('cepa_level', 'cepa0')
+    if (lowername == 'cepa(1)'):
+        PsiMod.set_global_option('cepa_level', 'cepa1')
+    if (lowername == 'cepa(2)'):
+        #PsiMod.set_global_option('cepa_level', 'cepa2')
+        # throw an exception for cepa(2)
+        PsiMod.print_out("\n")
+        PsiMod.print_out("Error: %s not implemented\n" % lowername )
+        PsiMod.print_out("\n")
+    if (lowername == 'cepa(3)'):
+        PsiMod.set_global_option('cepa_level', 'cepa3')
+    if (lowername == 'sdci'):
+        PsiMod.set_global_option('cepa_level', 'cisd')
+    if (lowername == 'dci'):
+        PsiMod.set_global_option('cepa_level', 'cisd')
+        user_no_singles = PsiMod.get_global_option('cepa_no_singles')
+        PsiMod.set_global_option('cepa_no_singles', 1)
+    if (lowername == 'acpf'):
+        PsiMod.set_global_option('cepa_level', 'acpf')
+    if (lowername == 'aqcc'):
+        PsiMod.set_global_option('cepa_level', 'aqcc')
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+    run_scf('scf', **kwargs)
+
+    # If the scf type is DF, then the AO integrals were never generated
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
+       mints = PsiMod.MintsHelper()
+       mints.integrals()
+
+    PsiMod.transqt2()
+    PsiMod.cepa()
+
+    # if dci, make sure we didn't overwrite the cepa_no_singles options
+    if (lowername == 'dci'):
+       PsiMod.set_global_option('cepa_no_singles', user_no_singles)
+       PsiMod.revoke_global_option_changed('cepa_no_singles')
+
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 # General wrapper for property computations
 def run_property(name, **kwargs):
