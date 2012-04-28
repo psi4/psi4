@@ -18,6 +18,7 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::build_tau()
 {
+    dcft_timer_on("DCFTSolver::build_tau()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
@@ -98,11 +99,15 @@ DCFTSolver::build_tau()
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
+
+    dcft_timer_off("DCFTSolver::build_tau()");
 }
 
 void
 DCFTSolver::transform_tau()
 {
+    dcft_timer_on("DCFTSolver::transform_tau()");
+
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
     dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
@@ -178,11 +183,14 @@ DCFTSolver::transform_tau()
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
+
+    dcft_timer_off("DCFTSolver::transform_tau()");
 }
 
 void
 DCFTSolver::compute_tau_squared()
 {
+    dcft_timer_on("DCFTSolver::compute_tau_squared()");
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
@@ -297,6 +305,7 @@ DCFTSolver::compute_tau_squared()
     a_tautau_->back_transform(a_tau_evecs);
     b_tautau_->back_transform(b_tau_evecs);
 
+    dcft_timer_off("DCFTSolver::compute_tau_squared()");
 }
 
 /**
