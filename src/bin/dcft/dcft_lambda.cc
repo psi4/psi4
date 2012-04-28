@@ -17,6 +17,8 @@ namespace psi{ namespace dcft{
 double
 DCFTSolver::compute_lambda_residual()
 {
+    dcft_timer_on("DCFTSolver::compute_lambda_residual()");
+
     dpdbuf4 R, G, F;
     double sumSQ = 0.0;
     size_t nElements = 0;
@@ -85,6 +87,8 @@ DCFTSolver::compute_lambda_residual()
     sumSQ += dpd_buf4_dot_self(&R);
     dpd_buf4_close(&R);
 
+    dcft_timer_off("DCFTSolver::compute_lambda_residual()");
+
     return sqrt(sumSQ / nElements);
 }
 
@@ -95,6 +99,8 @@ DCFTSolver::compute_lambda_residual()
 void
 DCFTSolver::update_lambda_from_residual()
 {
+    dcft_timer_on("DCFTSolver::update_lambda_from_residual()");
+
     dpdbuf4 L, D, R;
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -142,6 +148,8 @@ DCFTSolver::update_lambda_from_residual()
     dpd_buf4_close(&L);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::update_lambda_from_residual()");
 }
 
 }} // Namespaces

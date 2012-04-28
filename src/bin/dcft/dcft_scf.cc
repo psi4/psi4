@@ -39,6 +39,8 @@ namespace psi{ namespace dcft{
   bool
   DCFTSolver::correct_mo_phases(bool dieOnError)
   {
+      dcft_timer_on("DCFTSolver::correct_mo_phases()");
+
 #if 1
       Matrix temp("temp", nirrep_, nsopi_, nsopi_);
       Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
@@ -72,6 +74,7 @@ namespace psi{ namespace dcft{
                   }else{
                       // Copy Ca back from temp
                       Ca_->copy(temp);
+                      dcft_timer_off("DCFTSolver::correct_mo_phases()");
                       return false;
                   }
               }
@@ -111,6 +114,7 @@ namespace psi{ namespace dcft{
                   }else{
                       // Copy Cb back from temp
                       Cb_->copy(temp);
+                      dcft_timer_off("DCFTSolver::correct_mo_phases()");
                       return false;
                   }
               }
@@ -120,7 +124,6 @@ namespace psi{ namespace dcft{
           }
           offset += nsopi_[h];
       }
-      return true;
 #else
       Matrix temp("temp", nirrep_, nsopi_, nsopi_);
       Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
@@ -150,6 +153,7 @@ namespace psi{ namespace dcft{
                   }else{
                       // Copy Ca back from temp
                       Ca_->copy(temp);
+                      dcft_timer_off("DCFTSolver::correct_mo_phases()");
                       return false;
                   }
               }
@@ -189,6 +193,7 @@ namespace psi{ namespace dcft{
                   }else{
                       // Copy Cb back from temp
                       Cb_->copy(temp);
+                      dcft_timer_off("DCFTSolver::correct_mo_phases()");
                       return false;
                   }
               }
@@ -198,8 +203,9 @@ namespace psi{ namespace dcft{
           }
           offset += nsopi_[h];
       }
-      return true;
 #endif
+      dcft_timer_off("DCFTSolver::correct_mo_phases()");
+      return true;
   }
 
   /**
@@ -289,6 +295,7 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::scf_guess()
   {
+      dcft_timer_on("DCFTSolver::scf_guess");
       SharedMatrix T = SharedMatrix(new Matrix("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_));
       SharedMatrix V = SharedMatrix(new Matrix("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_));
       double *ints = init_array(ntriso_);
@@ -313,6 +320,7 @@ namespace psi{ namespace dcft{
       // Find occupation. It shouldn't be called, at least in the current implementation
       if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
       update_scf_density();
+      dcft_timer_off("DCFTSolver::scf_guess");
   }
 
 
@@ -322,6 +330,7 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::compute_scf_energy()
   {
+      dcft_timer_on("DCFTSolver::compute_scf_energy");
 
       // Escf = eNuc + 0.5 * (H + F) * (kappa + tau)
 
@@ -335,11 +344,14 @@ namespace psi{ namespace dcft{
       scf_energy_ += 0.5 * b_tau_->vector_dot(so_h_);
       scf_energy_ += 0.5 * a_tau_->vector_dot(Fa_);
       scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
+
+      dcft_timer_off("DCFTSolver::compute_scf_energy");
   }
 
   void
   DCFTSolver::compute_energy_tau_squared()
   {
+      dcft_timer_on("DCFTSolver::compute_energy_tau_squared");
 
       SharedMatrix moHa(new Matrix("Core Hamiltonian in the MO basis (Alpha spin)", nirrep_, nmopi_, nmopi_));
       SharedMatrix moHb(new Matrix("Core Hamiltonian in the MO basis (Beta spin)", nirrep_, nmopi_, nmopi_));
@@ -358,6 +370,7 @@ namespace psi{ namespace dcft{
       energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moFa_);
       energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moFb_);
 
+      dcft_timer_off("DCFTSolver::compute_energy_tau_squared");
   }
 
   /**
@@ -368,6 +381,8 @@ namespace psi{ namespace dcft{
   double
   DCFTSolver::compute_scf_error_vector()
   {
+      dcft_timer_on("DCFTSolver::compute_scf_error_vector");
+
       size_t nElements = 0;
       double sumOfSquares = 0.0;
       SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
@@ -401,6 +416,7 @@ namespace psi{ namespace dcft{
               }
           }
       }
+      dcft_timer_off("DCFTSolver::compute_scf_error_vector");
       return sqrt(sumOfSquares / nElements);
   }
 
@@ -413,6 +429,8 @@ namespace psi{ namespace dcft{
   double
   DCFTSolver::update_scf_density(bool damp)
   {
+      dcft_timer_on("DCFTSolver::update_scf_density");
+
       double dampingFactor = options_.get_double("DAMPING_PERCENTAGE");
       double newFraction = damp ? 1.0 : 1.0 - dampingFactor/100.0;
       size_t nElements = 0;
@@ -445,6 +463,8 @@ namespace psi{ namespace dcft{
       }
       // We're not converged until the RMS error vector *and* the RMS density
       // changes are below the threshold
+      dcft_timer_off("DCFTSolver::update_scf_density");
+
       return sqrt(sumOfSquares / nElements);
   }
 
@@ -458,6 +478,7 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::process_so_ints()
   {
+      dcft_timer_on("DCFTSolver::process_so_ints");
 
       IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
 
@@ -1021,6 +1042,8 @@ namespace psi{ namespace dcft{
     delete [] Db;
     delete [] Ga;
     delete [] Gb;
+
+    dcft_timer_off("DCFTSolver::process_so_ints");
 }
 
   /*
@@ -1029,6 +1052,8 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::update_fock()
   {
+      dcft_timer_on("DCFTSolver::update_fock");
+
       dpdfile2 Gtau, F;
 
       moFa_->copy(F0a_);
@@ -1154,6 +1179,7 @@ namespace psi{ namespace dcft{
 
       psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
+      dcft_timer_off("DCFTSolver::update_fock");
   }
 
 
@@ -1163,6 +1189,7 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::build_tensors()
   {
+      dcft_timer_on("DCFTSolver::build_tensors");
 
       IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
 
@@ -1472,6 +1499,7 @@ namespace psi{ namespace dcft{
       free_int_matrix(cd_row_start);
       free_int_matrix(Cd_row_start);
 
+      dcft_timer_off("DCFTSolver::build_tensors");
   }
 
 
@@ -1484,6 +1512,7 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::build_G()
   {
+      dcft_timer_on("DCFTSolver::build_G");
 
       IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
 
@@ -1827,6 +1856,8 @@ namespace psi{ namespace dcft{
       delete [] Db;
       delete [] Ga;
       delete [] Gb;
+
+      dcft_timer_off("DCFTSolver::build_G");
   }
 
   /**
