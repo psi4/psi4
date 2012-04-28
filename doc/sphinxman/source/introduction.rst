@@ -255,9 +255,9 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
     | Method                  | Energy    | Gradient  | Reference       | Parallelism                 |
     +=========================+===========+===========+=================+=============================+
-    | SCF                     | Y         | Y         | RHF/ROHF/UHF    | threaded                    |
+    | SCF                     | Y         | Y [#f4]_  | RHF/ROHF/UHF    | threaded                    |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
-    | DF-SCF                  | Y         | ---       | RHF/ROHF/UHF    | threaded                    |
+    | DF-SCF                  | Y         | Y [#f4]_  | RHF/ROHF/UHF    | threaded                    |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
     | CIS/RPA/TDHF            | Y         | ---       |                 |                             |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
@@ -336,5 +336,6 @@ this user's manual may be sent to
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
 .. [#f2] RHF reference only.  DF-MP2 is recommended as a faster alternative.
 .. [#f3] threading through BLAS routines only
+.. [#f4] DFT gradients only implemented for SCF type DF. LRC-DFT gradients not implemented yet. 
 
 
