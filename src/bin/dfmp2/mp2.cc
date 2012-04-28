@@ -127,6 +127,14 @@ SharedMatrix DFMP2::compute_gradient()
     form_L();
     timer_off("DFMP2 L");
 
+    timer_on("DFMP2 P");
+    form_P();
+    timer_off("DFMP2 P");
+
+    timer_on("DFMP2 W");
+    form_W();
+    timer_off("DFMP2 W");
+
     // More stuff...
 
     print_energies();
@@ -631,11 +639,15 @@ RDFMP2::~RDFMP2()
 }
 void RDFMP2::common_init()
 {
+    Cfocc_ = Ca_subset("AO","FROZEN_OCC");
     Caocc_ = Ca_subset("AO","ACTIVE_OCC");
     Cavir_ = Ca_subset("AO","ACTIVE_VIR");
+    Cfvir_ = Ca_subset("AO","FROZEN_VIR");
 
+    eps_focc_ = epsilon_a_subset("AO","FROZEN_OCC");
     eps_aocc_ = epsilon_a_subset("AO","ACTIVE_OCC");
     eps_avir_ = epsilon_a_subset("AO","ACTIVE_VIR");
+    eps_fvir_ = epsilon_a_subset("AO","FROZEN_VIR");
 }
 void RDFMP2::print_header()
 {
@@ -1138,7 +1150,7 @@ void RDFMP2::form_Pab()
 
     // Save the ab block of P
     psio_->write_entry(PSIF_DFMP2_AIA, "Pab", (char*) Pabp[0], sizeof(double) * navir * navir);
-    Pab->print();
+    //Pab->print();
 
     psio_->close(PSIF_DFMP2_AIA,1);
 
@@ -1301,8 +1313,8 @@ void RDFMP2::form_Pij()
     }
 
     // Save the ab block of P
-    psio_->write_entry(PSIF_DFMP2_AIA, "Pab", (char*) Pijp[0], sizeof(double) * navir * navir);
-    Pij->print();
+    psio_->write_entry(PSIF_DFMP2_AIA, "Pij", (char*) Pijp[0], sizeof(double) * naocc * naocc);
+    //Pij->print();
 
     psio_->close(PSIF_DFMP2_AIA,1);
 }
@@ -1806,13 +1818,212 @@ void RDFMP2::form_L()
 
     delete[] temp;
 
-    Lmi->print();
-    Lma->print();
+    //Lmi->print();
+    //Lma->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA, "Lmi", (char*) Lmip[0], sizeof(double) * nso * naocc);
     psio_->write_entry(PSIF_DFMP2_AIA, "Lma", (char*) Lmap[0], sizeof(double) * nso * navir);
 
     psio_->close(PSIF_DFMP2_AIA, 1);
+}
+void RDFMP2::form_P()
+{
+    // => Sizing <= //
+
+    int nso = basisset_->nbf();
+    int nfocc = Cfocc_->colspi()[0];
+    int navir = Cavir_->colspi()[0];
+    int naocc = Caocc_->colspi()[0];
+    int nfvir = Cfvir_->colspi()[0];
+    int nmo = nfocc + naocc + navir + nfocc; 
+    
+    // => Tensors <= //
+
+    SharedMatrix Pij(new Matrix("Pij", naocc, naocc));
+    SharedMatrix Pab(new Matrix("Pab", navir, navir));
+    SharedMatrix PIj(new Matrix("PIj", nfocc, naocc));
+    SharedMatrix PAb(new Matrix("PAb", nfvir, navir));
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+
+    double** Pijp = Pij->pointer();
+    double** Pabp = Pab->pointer();
+    double** PIjp = PIj->pointer();
+    double** PAbp = PAb->pointer();
+    double** Ppqp = Ppq->pointer();
+    
+    SharedMatrix Lmi(new Matrix("Lmi", nso, naocc));
+    SharedMatrix Lma(new Matrix("Lma", nso, navir));
+
+    double** Lmip = Lmi->pointer();
+    double** Lmap = Lma->pointer();
+
+    // => Read-in <= //
+
+    psio_->open(PSIF_DFMP2_AIA, 1);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Pij", (char*) Pijp[0], sizeof(double) * naocc * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Pab", (char*) Pabp[0], sizeof(double) * navir * navir);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Lmi", (char*) Lmip[0], sizeof(double) * nso * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Lma", (char*) Lmap[0], sizeof(double) * nso * navir);
+
+
+    // => Occ-Occ/Virt-Virt <= //
+    
+    for (int i = 0; i < naocc; i++) {
+        ::memcpy((void*) &Ppqp[nfocc + i][nfocc], (void*) Pijp[i], sizeof(double) * naocc);
+    }
+    
+    for (int a = 0; a < navir; a++) {
+        ::memcpy((void*) &Ppqp[nfocc + naocc + a][nfocc + naocc], (void*) Pabp[a], sizeof(double) * navir);
+    }
+
+    // => Frozen-Core/Virt <= //
+
+    if (nfocc) {
+        double** Cfoccp = Cfocc_->pointer();
+        double*  eps_foccp = eps_focc_->pointer();
+        double*  eps_aoccp = eps_aocc_->pointer();
+
+        C_DGEMM('T','N',nfocc,naocc,nso,1.0,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,PIjp[0],naocc);
+        for (int i = 0; i < naocc; i++) {
+            for (int J = 0; J < nfocc; J++) {
+                PIjp[J][i] /= (eps_aoccp[i] - eps_foccp[J]); 
+            }
+        }
+
+        for (int J = 0; J < nfocc; J++) {
+            C_DCOPY(naocc, PIjp[J], 1, &Ppqp[J][nfocc], 1);
+            C_DCOPY(naocc, PIjp[J], 1, &Ppqp[nfocc][J], nmo);
+        }
+    }
+
+    if (nfvir) {
+        double** Cfvirp = Cfvir_->pointer();
+        double*  eps_fvirp = eps_fvir_->pointer();
+        double*  eps_avirp = eps_avir_->pointer();
+
+        C_DGEMM('T','N',nfvir,navir,nso,1.0,Cfvirp[0],nfvir,Lmap[0],navir,0.0,PAbp[0],navir);
+        for (int b = 0; b < navir; b++) {
+            for (int A = 0; A < nfvir; A++) {
+                PAbp[A][b] /= -(eps_avirp[b] - eps_fvirp[A]); 
+            }
+        }
+
+        for (int B = 0; B < nfocc; B++) {
+            C_DCOPY(navir, PAbp[B], 1, &Ppqp[nfocc + naocc + navir + B][nfocc + naocc], 1);
+            C_DCOPY(navir, PAbp[B], 1, &Ppqp[nfocc + naocc][nfocc + naocc + navir + B], nmo);
+        }
+    }
+
+    //Pij->print();
+    //Pab->print();
+    //PIj->print();
+    //PAb->print();
+    Ppq->print();
+
+    // => Write out <= //
+
+    psio_->write_entry(PSIF_DFMP2_AIA, "P", (char*) Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->close(PSIF_DFMP2_AIA, 1);
+}
+void RDFMP2::form_W()
+{
+    // => Sizing <= //
+
+    int nso = basisset_->nbf();
+    int nfocc = Cfocc_->colspi()[0];
+    int navir = Cavir_->colspi()[0];
+    int naocc = Caocc_->colspi()[0];
+    int nfvir = Cfvir_->colspi()[0];
+    int nmo = nfocc + naocc + navir + nfocc; 
+    
+    // => Tensors <= //
+
+    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo)); 
+    double** Wpq1p = Wpq1->pointer();
+    
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+    double** Ppqp = Ppq->pointer();
+
+    SharedMatrix Lmi(new Matrix("Lmi", nso, naocc));
+    SharedMatrix Lma(new Matrix("Lma", nso, navir));
+    SharedMatrix Lia(new Matrix("Lia", naocc + nfocc, navir + nfvir));
+
+    double** Lmip = Lmi->pointer();
+    double** Lmap = Lma->pointer();
+    double** Liap = Lia->pointer();
+
+    double** Cfoccp = Cfocc_->pointer();
+    double** Caoccp = Caocc_->pointer();
+    double** Cavirp = Cavir_->pointer();
+    double** Cfvirp = Cfvir_->pointer();
+
+    // => Read-in <= //
+
+    psio_->open(PSIF_DFMP2_AIA, 1);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P", (char*) Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Lmi", (char*) Lmip[0], sizeof(double) * nso * naocc);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Lma", (char*) Lmap[0], sizeof(double) * nso * navir);
+
+    // => Term 1 <= //
+
+    // > Occ-Occ < //
+    C_DGEMM('T','N',naocc,naocc,nso,-0.5,Caoccp[0],naocc,Lmip[0],naocc,0.0,&Wpq1p[nfocc][nfocc],nmo);
+    if (nfocc) {
+        C_DGEMM('T','N',nfocc,naocc,nso,-1.0,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
+    }   
+ 
+    // > Vir-Vir (RMP: +?) < //
+    C_DGEMM('T','N',navir,navir,nso,-0.5,Cavirp[0],navir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc][nfocc + naocc],nmo);
+    if (nfocc) {
+        C_DGEMM('T','N',nfvir,navir,nso,-1.0,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + navir],nmo);
+    }   
+
+    // > Occ-Vir (RMP: +?) < //
+    C_DGEMM('T','N',naocc,navir,nso,-0.5,Caoccp[0],naocc,Lmap[0],navir,0.0,&Wpq1p[nfocc][nfocc + naocc], nmo);
+    if (nfocc) {
+        C_DGEMM('T','N',nfocc,navir,nso,-0.5,Cfoccp[0],nfocc,Lmap[0],navir,0.0,&Wpq1p[0][nfocc + naocc], nmo);
+    }   
+
+    // > Vir-Occ (RMP: +?) (RMP: Remove to obtain an MHG variant?) < //
+    C_DGEMM('T','N',navir,naocc,nso,-0.5,Cavirp[0],navir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc][nfocc], nmo);
+    if (nfocc) {
+        C_DGEMM('T','N',nfvir,naocc,nso,-0.5,Cfvirp[0],nfvir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc + navir][nfocc], nmo);
+    }   
+
+    // => Lia (L contributions) <= //
+    
+    // Multiply by 2 to remove factor of 0.5 applied above
+    for (int i = 0; i < (nfocc + naocc); i++) {
+        for (int a = 0; a < (nfvir + navir); a++) {
+            Liap[i][a] = 2.0 * (Wpq1p[i][a + naocc + nfocc] - Wpq1p[a + naocc + nfocc][i]);
+        }
+    }
+
+    // > Symmetrize the result < //
+    Wpq1->hermitivitize();
+    Wpq1->scale(2.0); // Spin Integration
+     
+    // => Write-out <= //
+
+    Lia->print();
+    Wpq1->print();    
+
+    psio_->write_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
+    psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
+    psio_->close(PSIF_DFMP2_AIA, 1);
+}
+void RDFMP2::form_Z()
+{
+    // => Lia += 1/2 A_pqia P_pq (unrelaxed) <= //
+
+    // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
+
+    // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
+
+    // => W Term 2 <= //
+}
+void RDFMP2::form_gradient()
+{
 }
 
 UDFMP2::UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
@@ -2475,6 +2686,22 @@ void UDFMP2::form_Amn_x_terms()
     throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
 }
 void UDFMP2::form_L()
+{
+    throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
+}
+void UDFMP2::form_P()
+{
+    throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
+}
+void UDFMP2::form_W()
+{
+    throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
+}
+void UDFMP2::form_Z()
+{
+    throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
+}
+void UDFMP2::form_gradient()
 {
     throw PSIEXCEPTION("UDFMP2: Gradients not yet implemented");
 }
