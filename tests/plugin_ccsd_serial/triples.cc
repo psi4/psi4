@@ -32,8 +32,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
       nthreads = omp_get_max_threads();
   #endif
 
-  if (options["NUM_THREADS"].has_changed())
-     nthreads = options.get_int("NUM_THREADS");
+  if (options["CC_NUM_THREADS"].has_changed())
+     nthreads = options.get_int("CC_NUM_THREADS");
 
   long int memory = Process::environment.get_memory();
   if (options["MEMORY"].has_changed()){

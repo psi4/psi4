@@ -1081,6 +1081,10 @@ void DFJKGrad::build_Amn_x_terms()
         }    
     } 
 
+    // => R/U doubling factor <= //
+
+    double factor = (restricted ? 2.0 : 1.0);
+
     // => Master Loop <= //
     
     for (int block = 0; block < Pstarts.size() - 1; block++) {
@@ -1110,7 +1114,7 @@ void DFJKGrad::build_Amn_x_terms()
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, 1.0, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
         }
 
         // > Beta < //
@@ -1127,8 +1131,6 @@ void DFJKGrad::build_Amn_x_terms()
 
             // > (A|mj) C_nj -> (A|mn) < //
             C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        } else if (do_K_ || do_wK_) {
-            Jmn->scale(2.0);
         }
 
         // => K_mn^A <= // 
@@ -1146,7 +1148,7 @@ void DFJKGrad::build_Amn_x_terms()
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, 1.0, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
+            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Kmnp[0], nso);
         }
 
         // > Beta < //
@@ -1163,8 +1165,6 @@ void DFJKGrad::build_Amn_x_terms()
 
             // > (A|mj) C_nj -> (A|mn) < //
             C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Kmnp[0], nso);
-        } else if (do_wK_) {
-            Kmn->scale(2.0);
         }
 
         // > Integrals < //
@@ -1386,6 +1386,10 @@ void DFJKGrad::build_Amn_x_lr_terms()
          wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
     } 
 
+    // => R/U doubling factor <= //
+
+    double factor = (restricted ? 2.0 : 1.0);
+
     // => Master Loop <= //
     
     for (int block = 0; block < Pstarts.size() - 1; block++) {
@@ -1415,7 +1419,7 @@ void DFJKGrad::build_Amn_x_lr_terms()
             }
 
             // > (A|mj) C_nj -> (A|mn) < //
-            C_DGEMM('N','T',np * (ULI) nso, nso, na, 1.0, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
+            C_DGEMM('N','T',np * (ULI) nso, nso, na, factor, Amip[0], na, Cap[0], na, 0.0, Jmnp[0], nso);
         }
 
         // > Beta < //
@@ -1432,8 +1436,6 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
             // > (A|mj) C_nj -> (A|mn) < //
             C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
-        } else { 
-            Jmn->scale(2.0);
         }
 
         // > Integrals < //
