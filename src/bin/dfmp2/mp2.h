@@ -62,6 +62,14 @@ protected:
     virtual void form_Amn_x_terms() = 0;
     // Form the Lma and Lmi matrices
     virtual void form_L() = 0;
+    // Form the unrelaxed OPDM
+    virtual void form_P() = 0;
+    // Form the unrelaxed energy-weighted OPDM
+    virtual void form_W() = 0;
+    // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
+    virtual void form_Z() = 0;
+    // Manage the formation of W and P contributions to the gradient
+    virtual void form_gradient() = 0;
 
     // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
     virtual void form_singles();
@@ -91,11 +99,15 @@ class RDFMP2 : public DFMP2 {
 
 protected:
 
+    SharedMatrix Cfocc_;
     SharedMatrix Caocc_;
     SharedMatrix Cavir_;
+    SharedMatrix Cfvir_;
     
+    SharedVector eps_focc_;
     SharedVector eps_aocc_;
     SharedVector eps_avir_;
+    SharedVector eps_fvir_;
 
     void common_init();
 
@@ -125,6 +137,14 @@ protected:
     virtual void form_Amn_x_terms();
     // Form the Lma and Lmi matrices
     virtual void form_L();
+    // Form the unrelaxed OPDM
+    virtual void form_P();
+    // Form the unrelaxed energy-weighted OPDM
+    virtual void form_W();
+    // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
+    virtual void form_Z();
+    // Manage the formation of W and P contributions to the gradient
+    virtual void form_gradient();
 
 public:
     RDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
@@ -176,6 +196,14 @@ protected:
     virtual void form_Amn_x_terms();
     // Form the Lma and Lmi matrices
     virtual void form_L();
+    // Form the unrelaxed OPDM
+    virtual void form_P();
+    // Form the unrelaxed energy-weighted OPDM
+    virtual void form_W();
+    // Form the full Lagrangian, solve the Z-vector equations, and apply final corrections to W and P
+    virtual void form_Z();
+    // Manage the formation of W and P contributions to the gradient
+    virtual void form_gradient();
 
 public:
     UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
