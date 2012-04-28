@@ -122,9 +122,9 @@ header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
-fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
-fenergy.write('| %-27s | %-100s |\n' % ('name', 'calls method'))
-fenergy.write('+=%27s=+=%100s=+\n' % (27 * '=', 100 * '='))
+fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
 for fctl in sorted(funcdict.iterkeys()):
 
@@ -146,13 +146,13 @@ for fctl in sorted(funcdict.iterkeys()):
         body(fdisp, funcdict, fctl)
 
     if funcdict[fctl]['dispersion']:
-        fenergy.write('| %-27s | %-100s |\n' % 
+        fenergy.write('| %-27s | %-140s |\n' % 
             (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
     else:
-        fenergy.write('| %-27s | %-100s |\n' % 
+        fenergy.write('| %-27s | %-140s |\n' % 
             (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
 
-    fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+    fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 
 
 fall.write('\n')

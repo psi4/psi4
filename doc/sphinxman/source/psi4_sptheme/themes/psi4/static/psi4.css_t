@@ -380,7 +380,7 @@ div.body p2.rubric
      -moz-border-radius: 10px;
      -webkit-border-radius: 10px;
      
-     font-size: 110%;
+     font-size: 125%;
      color: {{ theme_sectiontextcolor2 }};
 }
 
@@ -389,9 +389,9 @@ div.body p2.rubric
      background: {{ theme_rubricbgcolor }}; 
 }
 
-div.body h3 { font-size: 140%; }
-div.body h4 { font-size: 120%; }
-div.body h5 { font-size: 110%; }
+div.body h3 { font-size: 120%; }
+div.body h4 { font-size: 110%; }
+div.body h5 { font-size: 105%; }
 div.body h6 { font-size: 100%; }
 
 a.headerlink

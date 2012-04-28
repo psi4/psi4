@@ -43,6 +43,7 @@ protected:
     virtual void damp_update();
     double compute_initial_E();
     virtual double compute_E();
+    virtual void stability_analysis();
 
     //Some stuff for Ed Hohenstein's SAPT code
     // TODO: This must be removed for a conforming SCF module

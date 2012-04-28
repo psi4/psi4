@@ -57,6 +57,7 @@ protected:
     void form_C();
     void form_D();
     double compute_initial_E();
+    virtual void stability_analysis();
     virtual double compute_E();
 
     virtual void form_G();

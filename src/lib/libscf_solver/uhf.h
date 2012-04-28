@@ -23,6 +23,7 @@ protected:
     void form_D();
     double compute_initial_E();
     virtual double compute_E();
+    virtual void stability_analysis();
 
     virtual void form_G();
     virtual void form_F();

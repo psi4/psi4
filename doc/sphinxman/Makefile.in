@@ -90,12 +90,12 @@ autodepend2 = \
 @top_srcdir@/tests/plugin_*/doc.rst \
 @srcdir@/document_plugins.py
 
-autotarget2 = \
-$(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
-$(SOURCEDIR)/autodoc_available_plugins.rst \
-$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
-$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
-$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
+autotarget2 = 
+#$(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
+#$(SOURCEDIR)/autodoc_available_plugins.rst \
+#$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
+#$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
+#$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
 
 $(autotarget2): %: $(autodepend2) | $(subdirs)
 	@srcdir@/document_plugins.py @srcdir@
@@ -242,7 +242,7 @@ interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
 opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
-dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst
+dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

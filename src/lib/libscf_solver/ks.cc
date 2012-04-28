@@ -228,6 +228,11 @@ void RKS::finalize()
 {
     RHF::finalize();
 }
+void RKS::stability_analysis()
+{
+    throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
+}
+
 UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     UHF(options, psio, chkpt), KS(options,psio)
 {
@@ -422,6 +427,10 @@ double UKS::compute_E()
 void UKS::finalize()
 {
     UHF::finalize();
+}
+void UKS::stability_analysis()
+{
+    throw PSIEXCEPTION("DFT stabilty analysis has not been implemented yet.  Sorry :(");
 }
 
 }}

@@ -2,6 +2,8 @@
 #include <libmints/vector.h>
 #include <libfunctional/superfunctional.h>
 #include <libfunctional/functional.h>
+#include <libmints/molecule.h>
+#include <libmints/matrix.h>
 #include <libdisp/dispersion.h>
 
 using namespace boost;
@@ -90,9 +92,9 @@ void export_functional()
         def("print_energy", &Dispersion::print_energy, "docstring").
         def("print_gradient", &Dispersion::print_gradient, "docstring").
         def("print_hessian", &Dispersion::print_hessian, "docstring").
-        //def("compute_energy", &Dispersion::compute_energy, "docstring").
-        //def("compute_gradient", &Dispersion::compute_gradient, "docstring").
-        //def("compute_hessian", &Dispersion::compute_hessian, "docstring").
+        def("compute_energy", &Dispersion::compute_energy, "docstring").
+        def("compute_gradient", &Dispersion::compute_gradient, "docstring").
+        def("compute_hessian", &Dispersion::compute_hessian, "docstring").
         def("print_out",&Dispersion::py_print, "docstring");
 
 }
