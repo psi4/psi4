@@ -455,7 +455,7 @@ void UHF::stability_analysis()
             delete [] evals;
         }
 
-        fprintf(outfile, "Lowest (UHF->UHF) stability eigenvalues:-\n");
+        fprintf(outfile, "\tLowest UHF->UHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);

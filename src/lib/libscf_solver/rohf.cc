@@ -614,9 +614,6 @@ void ROHF::stability_analysis()
         }
         dpd_buf4_close(&Abb);
 
-        int nsocc = soccpi_.sum();
-        int ndocc = doccpi_.sum();
-
         dpd_buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "ROHF Hessian (IA|jb)");
         for(int h = 0; h < Aab.params->nirreps; ++h){
@@ -637,11 +634,11 @@ void ROHF::stability_analysis()
                     int jrel = jabs - Aab.params->roff[jsym];
                     int brel = babs - Aab.params->soff[bsym];
                     // A_IA_jb += 0.5 delta_Ib F(beta)_jA
-                    // Don't forget to account for the 0-based numbering of a
-                    if((iabs == (babs + ndocc)) && (jsym == asym))
-                        Aab.matrix[h][ia][jb] += 0.5 * bMoF->get(jsym, jrel, arel + doccpi_[bsym]);
+                    // Don't forget to account for the 0-based numbering of b
+                    if((irel == (brel + doccpi_[bsym])) && (jsym == asym))
+                        Aab.matrix[h][ia][jb] += 0.5 * bMoF->get(jsym, jrel, arel + doccpi_[asym]);
                     // Zero out any socc-socc terms
-                    if(irel >= (doccpi_[isym]) || brel < (soccpi_[bsym]))
+                    if(jrel >= (doccpi_[jsym]) || arel < (soccpi_[asym]))
                         Aab.matrix[h][ia][jb] = 0.0;
                 }
             }
@@ -735,7 +732,7 @@ void ROHF::stability_analysis()
             free_block(evecs);
             delete [] evals;
         }
-        fprintf(outfile, "Lowest singlet ROHF->ROHF stability eigenvalues:-\n");
+        fprintf(outfile, "\tLowest ROHF->ROHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
