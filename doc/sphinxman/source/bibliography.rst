@@ -128,19 +128,38 @@ Bibliography
    *Phys. Rev. A* **24**, 1668 (1981).
 
 .. [Raghavachari:1989]
+   K. Raghavachari, G. W. Trucks, J. A. Pople, and M. Head-Gordon,
+   *Chem. Phys. Lett.* **157**, 479-483 (1989).
 
 .. [Purvis:1982]
+   G. D. Purvis and R. J. Bartlett,
+   *J. Chem. Phys.* **76**, 1910-1918 (1982).
 
 .. [Roos:1980]
+   B. O. Roos,
+   *Chem. Phys.* **48**, 157-173 (1980).
 
 .. [Chaban:1997:88]
+   G. Chaban, M. W. Schmidt, and M. S. Gordon,
+   *Theor. Chem. Acc.* **97**, 88-95 (1997).
 
 .. [Pulay:1980]
+   P. Pulay,
+   *Chem. Phys. Lett.* **73**, 393-398 (1980).
 
 .. [Malmqvist:1990:RASSCF]
+   P.-A. Malmqvist, A. Rendell, and B. O. Roos,
+   *J. Phys. Chem.* **94**, 5477-5482 (1990).
 
 .. [Docken:1972:4928]
+   K. K. Docken and J. Hinze,
+   *J. Chem. Phys.* **57**, 4928-4936 (1972).
 
 .. [Ruedenberg:1979:1069]
+   K. Ruedenberg, L. M. Cheung, and S. T. Elbert,
+   *Int. J. Quantum Chem.* **16**, 1069-1101 (1979).
 
 .. [Evangelista:2010:074107]
+   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+   *J. Chem. Phys.* **132**, 074107 (2010).
+
