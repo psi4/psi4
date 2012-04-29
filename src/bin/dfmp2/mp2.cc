@@ -2,6 +2,8 @@
 #include <lib3index/3index.h>
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
+#include <libfock/jk.h>
+#include <libfock/apps.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
@@ -134,6 +136,14 @@ SharedMatrix DFMP2::compute_gradient()
     timer_on("DFMP2 W");
     form_W();
     timer_off("DFMP2 W");
+
+    timer_on("DFMP2 Z");
+    form_Z();
+    timer_off("DFMP2 Z");
+
+    timer_on("DFMP2 grad");
+    form_gradient();
+    timer_off("DFMP2 grad");
 
     // More stuff...
 
@@ -2014,13 +2024,277 @@ void RDFMP2::form_W()
 }
 void RDFMP2::form_Z()
 {
+    // => Sizing <= //
+
+    int nso = basisset_->nbf();
+    int nfocc = Cfocc_->colspi()[0];
+    int navir = Cavir_->colspi()[0];
+    int naocc = Caocc_->colspi()[0];
+    int nfvir = Cfvir_->colspi()[0];
+    int nmo = nfocc + naocc + navir + nfocc; 
+    int nocc = nfocc + naocc;    
+    int nvir = nfvir + navir;    
+
+    // => Tensors <= //
+
+    SharedMatrix Wpq1(new Matrix("Wpq1", nmo, nmo)); 
+    double** Wpq1p = Wpq1->pointer();
+    SharedMatrix Wpq2(new Matrix("Wpq2", nmo, nmo)); 
+    double** Wpq2p = Wpq2->pointer();
+    SharedMatrix Wpq3(new Matrix("Wpq3", nmo, nmo)); 
+    double** Wpq3p = Wpq3->pointer();
+    
+    SharedMatrix Ppq(new Matrix("Ppq", nmo, nmo)); 
+    double** Ppqp = Ppq->pointer();
+
+    SharedMatrix Lia(new Matrix("Lia", naocc + nfocc, navir + nfvir));
+    double** Liap = Lia->pointer();
+
+    SharedMatrix Cocc = Ca_subset("AO", "OCC");
+    SharedMatrix Cvir = Ca_subset("AO", "VIR");
+    SharedMatrix C    = Ca_subset("AO", "ALL");
+
+    double** Cfoccp = Cfocc_->pointer();
+    double** Caoccp = Caocc_->pointer();
+    double** Cavirp = Cavir_->pointer();
+    double** Cfvirp = Cfvir_->pointer();
+    
+    double** Coccp = Cocc->pointer();
+    double** Cvirp = Cvir->pointer();
+    double** Cp    = C->pointer();
+
+    SharedVector eps_occ = epsilon_a_subset("AO", "OCC");
+    SharedVector eps_vir = epsilon_a_subset("AO", "VIR");
+    SharedVector eps     = epsilon_a_subset("AO", "ALL");
+    double* epsp = eps->pointer();
+
+    // => CPHF/JK Object <= //
+
+    boost::shared_ptr<RCPHF> cphf(new RCPHF());
+    cphf->set_C(C);
+    cphf->set_Caocc(Cocc);
+    cphf->set_Cavir(Cvir);
+    cphf->set_eps_aocc(eps_occ);
+    cphf->set_eps_avir(eps_vir);
+    cphf->preiterations();
+
+    boost::shared_ptr<JK> jk = cphf->jk();
+    std::vector<SharedMatrix> & Cl = jk->C_left();
+    std::vector<SharedMatrix> & Cr = jk->C_right();
+    const std::vector<SharedMatrix> &J = jk->J();
+    const std::vector<SharedMatrix> &K = jk->K();
+
+    // => Read-in <= //
+
+    psio_->open(PSIF_DFMP2_AIA, 1);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P", (char*) Ppqp[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
+
     // => Lia += 1/2 A_pqia P_pq (unrelaxed) <= //
+
+    // > Factor the unrelaxed P^(2) (hopefully low rank) < //
+    std::pair<SharedMatrix, SharedMatrix> factor1 = Ppq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
+    SharedMatrix P1 = factor1.first;
+    SharedMatrix N1 = factor1.second;
+    double** P1p = P1->pointer();
+    double** N1p = N1->pointer();
+    Ppq->print();
+    P1->print();
+    N1->print();
+
+    // > Back-transform the transition orbitals < //
+    SharedMatrix P1AO(new Matrix("P AO", nso, P1->colspi()[0]));
+    SharedMatrix N1AO(new Matrix("N AO", nso, N1->colspi()[0])); 
+    double** P1AOp = P1AO->pointer();
+    double** N1AOp = N1AO->pointer();
+
+    if (P1->colspi()[0]) {
+        C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
+    }
+
+    if (N1->colspi()[0]) {
+        C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
+    }
+    
+    // > Form the J/K-like matrices (P,N contributions are separable) < //
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(P1AO);
+    Cl.push_back(N1AO);
+    
+    jk->compute();
+    
+    SharedMatrix J1 = J[0]; 
+    SharedMatrix K1 = K[0]; 
+    J1->subtract(J[1]);
+    K1->subtract(K[1]);
+    double** J1p = J1->pointer();
+    double** K1p = K1->pointer();
+
+    J1->print();
+    K1->print();
+
+    SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
+    double** APp = AP->pointer();
+
+    J1->scale(2.0);
+    K1->scale(1.0);
+    //K1->scale(2.0); (RMP I think this should be 2.0)
+    AP->add(J1);
+    AP->subtract(K1);
+
+    AP->print();
+
+    // > Form the contribution to Lia from the J/K-like matrices < //
+
+    SharedMatrix T(new Matrix("T", nocc, nso));
+    double** Tp = T->pointer();
+
+    // L_ia += -1.0 (spin) C_mi { [ 2(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_na
+    // (RMP) Need a - here? Everyone says -
+    C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
+    C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
+
+    Lia->print();
 
     // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
 
+    std::map<std::string, SharedMatrix>&b = cphf->b();
+    std::map<std::string, SharedMatrix>&x = cphf->x();
+
+    b["Lia"] = Lia;
+    cphf->compute_energy();
+    SharedMatrix Zia = x["Lia"];
+    // (RMP) The plugin is backwards, uses (e_i - e_a) as the diagonal operator. This should not be needed?
+    Zia->scale(-1.0);
+
+    // > Add Pia and Pai into the OPDM < // 
+    SharedMatrix dPpq(new Matrix("dP", nmo, nmo));
+    double** dPpqp = dPpq->pointer();
+    double** Ziap = Zia->pointer();
+    for (int i = 0; i < nocc; i++) {
+        for (int a = 0; a < nvir; a++) {
+            dPpqp[i][a + nocc] = dPpqp[a + nocc][i] = Ziap[i][a];
+        }
+    }
+
+    Ppq->add(dPpq);
+
+    Zia->print();
+ 
     // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
 
+    // > Factor the relaxation contribution dP^(2) (hopefully low rank) < //
+    std::pair<SharedMatrix, SharedMatrix> factor2 = dPpq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
+    SharedMatrix P2 = factor2.first;
+    SharedMatrix N2 = factor2.second;
+    double** P2p = P2->pointer();
+    double** N2p = N2->pointer();
+    dPpq->print();
+    P2->print();
+    N2->print();
+
+    // > Back-transform the transition orbitals < //
+    SharedMatrix P2AO(new Matrix("P AO", nso, P2->colspi()[0]));
+    SharedMatrix N2AO(new Matrix("N AO", nso, N2->colspi()[0])); 
+    double** P2AOp = P2AO->pointer();
+    double** N2AOp = N2AO->pointer();
+
+    if (P2->colspi()[0]) {
+        C_DGEMM('N','N',nso,P2->colspi()[0],nmo,1.0,Cp[0],nmo,P2p[0],P2->colspi()[0],0.0,P2AOp[0],P2->colspi()[0]);
+    }
+
+    if (N2->colspi()[0]) {
+        C_DGEMM('N','N',nso,N2->colspi()[0],nmo,1.0,Cp[0],nmo,N2p[0],N2->colspi()[0],0.0,N2AOp[0],N2->colspi()[0]);
+    }
+    
+    // > Form the J/K-like matrices (P,N contributions are separable) < //
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(P2AO);
+    Cl.push_back(N2AO);
+    
+    jk->compute();
+    
+    SharedMatrix J2 = J[0]; 
+    SharedMatrix K2 = K[0]; 
+    J2->subtract(J[1]);
+    K2->subtract(K[1]);
+    double** J2p = J2->pointer();
+    double** K2p = K2->pointer();
+
+    J2->print();
+    K2->print();
+
+    J2->scale(2.0);
+    K2->scale(1.0);
+    //K2->scale(2.0); (RMP I think this should be 2.0)
+    AP->add(J2);
+    AP->subtract(K2);
+
+    // > Form the contribution to Lia from the J/K-like matrices < //
+
+    // W_ik += +1.0 (spin) C_mi { [ 2(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_nk
+    C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
+
+    // occ-aocc term
+    C_DGEMM('N','N',nocc,naocc,nso,-1.0,Tp[0],nso,Caoccp[0],naocc,0.0,&Wpq3p[0][nfocc],nmo);
+    // (RMP) why is there a - in there?
+    C_DGEMM('T','T',naocc,nocc,nso,-1.0,Caoccp[0],naocc,Tp[0],nso,0.0,&Wpq3p[nfocc][0],nmo);
+
+    // (RMP) what the frak is this interloper term doing in the plugin? Are the indices correct? why does this get 0.5, and the above get 1.0?
+    C_DGEMM('N','N',nocc,nvir,nso,-0.5,Tp[0],nso,Cvirp[0],nvir,0.0,&Wpq3p[0][nocc],nmo);
+    C_DGEMM('T','T',nvir,nocc,nso,-0.5,Cvirp[0],nvir,Tp[0],nso,0.0,&Wpq3p[nocc][0],nmo);
+
     // => W Term 2 <= //
+
+    for (int i = 0; i < naocc; i++) {
+        for (int j = 0; j < nocc; j++) {
+            Wpq2p[i + nfocc][j] = Wpq2p[j][i + nfocc] = 
+                -0.5 * Ppqp[i + nfocc][j] * (epsp[i + nfocc] + epsp[j]);
+        }
+    }
+
+    for (int a = 0; a < navir; a++) {
+        for (int b = 0; b < nvir; b++) {
+            Wpq2p[a + nocc][b + nocc] = Wpq2p[b + nocc][a + nocc] = 
+                -0.5 * Ppqp[a + nocc][b + nocc] * (epsp[a + nocc] + epsp[b + nocc]);
+        }
+    }
+    
+    // (RMP) Using Weigend's formula, it just makes sense 
+    for (int i = 0; i < nocc; i++) {
+        for (int a = 0; a < nvir; a++) {
+            Wpq2p[i][a + nocc] = Wpq2p[a + nocc][i] = 
+                -0.5 * Ppqp[i][a + nocc] * (epsp[i] + epsp[a + nocc]);
+                // (RMP) MHG: -1.0 * Ppqp[i][a + nocc] * (epsp[i]);
+        }
+    }
+
+    // => Final W <= //
+
+    Wpq1->print();
+    Wpq2->print();
+    Wpq3->print();
+
+    Wpq1->add(Wpq2);
+    Wpq1->add(Wpq3);
+    Wpq1->set_name("Wpq");
+        
+    Wpq1->print();
+        
+    psio_->write_entry(PSIF_DFMP2_AIA,"W",(char*) Wpq1p[0], sizeof(double) * nmo * nmo);
+
+    // => Final P <= //
+    
+    Ppq->print();
+
+    psio_->write_entry(PSIF_DFMP2_AIA,"P",(char*) Ppqp[0], sizeof(double) * nmo * nmo);
+
+    // => Finalize <= //
+
+    cphf->postiterations();
 }
 void RDFMP2::form_gradient()
 {
