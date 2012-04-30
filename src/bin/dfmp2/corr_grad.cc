@@ -237,9 +237,6 @@ void DFCorrGrad::build_Amn_terms()
     double** Rap = Ra_->pointer();
     double** Rbp = Rb_->pointer();
     
-    Ca_->print();
-    La_->print();
-
     // => Prestripe <= //
 
     psio_address next_Aila = PSIO_ZERO;
@@ -706,16 +703,16 @@ void DFCorrGrad::build_AB_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
-    gradients_["Coulomb"]->zero();
-    gradients_["Exchange"]->zero();
+    //gradients_["Coulomb"]->zero();
+    //gradients_["Exchange"]->zero();
 
     for (int t = 0; t < df_ints_num_threads_; t++) {
         gradients_["Coulomb"]->add(Jtemps[t]);
         gradients_["Exchange"]->add(Ktemps[t]);
     }
 
-    gradients_["Coulomb"]->print();
-    gradients_["Exchange"]->print();
+    //gradients_["Coulomb"]->print();
+    //gradients_["Exchange"]->print();
 }
 void DFCorrGrad::build_Amn_x_terms()
 {
@@ -863,20 +860,11 @@ void DFCorrGrad::build_Amn_x_terms()
                 // > Stripe < //
                 psio_->read(unit_a_, "(A|il)", (char*) Aijp[0], sizeof(double) * np * na * la, next_Aila, &next_Aila);
     
-        Aij->print();
-
                 // > (A|ij) C_mi -> (A|mj) < //
                 #pragma omp parallel for num_threads(omp_num_threads_)
                 for (int P = 0; P < np; P++) {
-                    for (int m = 0; m < nso; m++) {
-                    for (int i = 0; i < na; i++) {
-                    for (int l = 0; l < la; l++) {
-                        Amip[P][m * na + i] += Lap[m][l] * Aijp[0][P * (ULI) na * la + l * na + i];
-                    }}}
-    
-                    //C_DGEMM('N','T',nso,na,la,1.0,Lap[0],la,&Aijp[0][P * (ULI) na * la],la,1.0,Amip[P],na);
+                    C_DGEMM('N','T',nso,na,la,1.0,Lap[0],la,&Aijp[0][P * (ULI) na * la],la,1.0,Amip[P],na);
                 }
-        Ami->print();
             }
 
             if (ra) {
@@ -930,8 +918,6 @@ void DFCorrGrad::build_Amn_x_terms()
             // > (A|mj) C_nj -> (A|mn) < //
             C_DGEMM('N','T',np * (ULI) nso, nso, nb, factor, Amip[0], na, Cbp[0], nb, 0.0, Jmnp[0], nso);
         }
-
-        Jmn->print();
 
         // > Integrals < //
         #pragma omp parallel for schedule(dynamic) num_threads(df_ints_num_threads_)
@@ -1004,7 +990,7 @@ void DFCorrGrad::build_Amn_x_terms()
                         
                         double Jval = 1.0 * perm * (0.5 * (
                             Jmnp[p + oP][(m + oM) * nso + (n + oN)] + 
-                            Jmnp[p + oP][(n + oN) * nso + (n + oM)]));
+                            Jmnp[p + oP][(n + oN) * nso + (m + oM)]));
                         grad_Kp[aP][0] += Jval * (*Px);
                         grad_Kp[aP][1] += Jval * (*Py);
                         grad_Kp[aP][2] += Jval * (*Pz);
@@ -1032,16 +1018,16 @@ void DFCorrGrad::build_Amn_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
-    gradients_["Coulomb"]->zero();
-    gradients_["Exchange"]->zero();
+    //gradients_["Coulomb"]->zero();
+    //gradients_["Exchange"]->zero();
 
     for (int t = 0; t < df_ints_num_threads_; t++) {
         gradients_["Coulomb"]->add(Jtemps[t]);
         gradients_["Exchange"]->add(Ktemps[t]);
     }
 
-    gradients_["Coulomb"]->print();
-    gradients_["Exchange"]->print();
+    //gradients_["Coulomb"]->print();
+    //gradients_["Exchange"]->print();
 }
 
 }} // Namespaces
