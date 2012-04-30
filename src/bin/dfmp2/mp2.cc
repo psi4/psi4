@@ -1934,7 +1934,7 @@ void RDFMP2::form_P()
     //Pab->print();
     //PIj->print();
     //PAb->print();
-    Ppq->print();
+    //Ppq->print();
 
     // => Write out <= //
 
@@ -2021,8 +2021,8 @@ void RDFMP2::form_W()
      
     // => Write-out <= //
 
-    Lia->print();
-    Wpq1->print();    
+    //Lia->print();
+    //Wpq1->print();    
 
     psio_->write_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2105,9 +2105,9 @@ void RDFMP2::form_Z()
     SharedMatrix N1 = factor1.second;
     double** P1p = P1->pointer();
     double** N1p = N1->pointer();
-    Ppq->print();
-    P1->print();
-    N1->print();
+    //Ppq->print();
+    //P1->print();
+    //N1->print();
 
     // > Back-transform the transition orbitals < //
     SharedMatrix P1AO(new Matrix("P AO", nso, P1->colspi()[0]));
@@ -2138,8 +2138,8 @@ void RDFMP2::form_Z()
     double** J1p = J1->pointer();
     double** K1p = K1->pointer();
 
-    J1->print();
-    K1->print();
+    //J1->print();
+    //K1->print();
 
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
@@ -2150,7 +2150,7 @@ void RDFMP2::form_Z()
     AP->add(J1);
     AP->subtract(K1);
 
-    AP->print();
+    //AP->print();
 
     // > Form the contribution to Lia from the J/K-like matrices < //
 
@@ -2162,7 +2162,7 @@ void RDFMP2::form_Z()
     C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
     C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
 
-    Lia->print();
+    //Lia->print();
 
     // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
 
@@ -2187,7 +2187,7 @@ void RDFMP2::form_Z()
 
     Ppq->add(dPpq);
 
-    Zia->print();
+    //Zia->print();
  
     // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
 
@@ -2197,9 +2197,9 @@ void RDFMP2::form_Z()
     SharedMatrix N2 = factor2.second;
     double** P2p = P2->pointer();
     double** N2p = N2->pointer();
-    dPpq->print();
-    P2->print();
-    N2->print();
+    //dPpq->print();
+    //P2->print();
+    //N2->print();
 
     // > Back-transform the transition orbitals < //
     SharedMatrix P2AO(new Matrix("P AO", nso, P2->colspi()[0]));
@@ -2229,9 +2229,6 @@ void RDFMP2::form_Z()
     K2->subtract(K[1]);
     double** J2p = J2->pointer();
     double** K2p = K2->pointer();
-
-    J2->print();
-    K2->print();
 
     J2->scale(2.0);
     K2->scale(1.0);
@@ -2280,21 +2277,21 @@ void RDFMP2::form_Z()
 
     // => Final W <= //
 
-    Wpq1->print();
-    Wpq2->print();
-    Wpq3->print();
+    //Wpq1->print();
+    //Wpq2->print();
+    //Wpq3->print();
 
     Wpq1->add(Wpq2);
     Wpq1->add(Wpq3);
     Wpq1->set_name("Wpq");
         
-    Wpq1->print();
+    //Wpq1->print();
         
     psio_->write_entry(PSIF_DFMP2_AIA,"W",(char*) Wpq1p[0], sizeof(double) * nmo * nmo);
 
     // => Final P <= //
     
-    Ppq->print();
+    //Ppq->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA,"P",(char*) Ppqp[0], sizeof(double) * nmo * nmo);
 
@@ -2346,8 +2343,8 @@ void RDFMP2::form_gradient()
         P2p[i][i] += 2.0;
     }
     
-    P2->print();
-    W->print();
+    //P2->print();
+    //W->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA, "P", (char*) P2p[0], sizeof(double) * nmo * nmo);
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wp[0], sizeof(double) * nmo * nmo);
