@@ -1,4 +1,5 @@
 #include "mp2.h"
+#include "corr_grad.h"
 #include <lib3index/3index.h>
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
@@ -2352,8 +2353,11 @@ void RDFMP2::form_gradient()
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wp[0], sizeof(double) * nmo * nmo);
 
     // => Factorize the P matrix <= //
-    
+
+    P2->scale(0.5);
     std::pair<SharedMatrix, SharedMatrix> factor = P2->partial_square_root(options_.get_double("DFMP2_P_TOLERANCE"));
+    P2->scale(2.0);
+
     SharedMatrix P1 = factor.first;
     SharedMatrix N1 = factor.second;
     double** P1p = P1->pointer();
@@ -2386,6 +2390,18 @@ void RDFMP2::form_gradient()
     if (N1->colspi()[0]) {
         C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
     }
+
+    // => Random extra drivers for the JK gradients <= //
+
+    SharedMatrix D(PAO->clone()); 
+    double** Dp = D->pointer();
+    C_DGEMM('N','T',nso,nso,nocc,2.0,Coccp[0],nocc,Coccp[0],nocc,0.0,Dp[0],nso);    
+
+    SharedMatrix Ds(D->clone());
+    Ds->scale(0.5);
+
+    SharedMatrix PAOs(PAO->clone());
+    PAOs->scale(0.5);
 
     // => Gogo Gradients <= //
 
@@ -2633,56 +2649,32 @@ void RDFMP2::form_gradient()
     timer_off("Grad: S");
 
     // => Two-Electron Gradient <= //
+    
     timer_on("Grad: JK");
+    
+    boost::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad();
+    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
-    // TODO
+    jk->set_Ca(Cocc);
+    jk->set_Cb(Cocc);
+    jk->set_La(P1AO);
+    jk->set_Lb(P1AO);
+    jk->set_Ra(N1AO);
+    jk->set_Rb(N1AO);
+    jk->set_Da(Ds);
+    jk->set_Db(Ds);
+    jk->set_Dt(D);
+    jk->set_Pa(PAOs);
+    jk->set_Pb(PAOs);
+    jk->set_Pt(PAO);
 
-    //boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad();
-    //jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
-    //
-    //jk->set_Ca(Ca);
-    //jk->set_Cb(Cb);
-    //jk->set_Da(Da);
-    //jk->set_Db(Db);
-    //jk->set_Dt(Dt);
-    //if (functional) {
-    //    jk->set_do_J(true); 
-    //    if (functional->is_x_hybrid()) {
-    //        jk->set_do_K(true);
-    //    } else { 
-    //        jk->set_do_K(false);
-    //    }
-    //    if (functional->is_x_lrc()) {
-    //        jk->set_do_wK(true);
-    //        jk->set_omega(functional->x_omega());
-    //    } else { 
-    //        jk->set_do_wK(false);
-    //    }
-    //} else {
-    //    jk->set_do_J(true); 
-    //    jk->set_do_K(true);
-    //    jk->set_do_wK(false);
-    //}
+    jk->print_header();
+    jk->compute_gradient();    
 
-    //jk->print_header();
-    //jk->compute_gradient();    
+    std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
+    gradients_["Coulomb"] = jk_gradients["Coulomb"];
+    gradients_["Exchange"] = jk_gradients["Exchange"];
 
-    //std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
-    //if (functional) {
-    //    gradients_["Coulomb"] = jk_gradients["Coulomb"];
-    //    if (functional->is_x_hybrid()) {
-    //        gradients_["Exchange"] = jk_gradients["Exchange"];
-    //        gradients_["Exchange"]->scale(-(functional->x_alpha()));
-    //    } 
-    //    if (functional->is_x_lrc()) {
-    //        gradients_["Exchange,LR"] = jk_gradients["Exchange,LR"];
-    //        gradients_["Exchange,LR"]->scale(-(1.0 - functional->x_alpha()));
-    //    }
-    //} else {
-    //    gradients_["Coulomb"] = jk_gradients["Coulomb"];
-    //    gradients_["Exchange"] = jk_gradients["Exchange"];
-    //    gradients_["Exchange"]->scale(-1.0);
-    //}
     timer_off("Grad: JK");
 
     // => Correlation Gradient (Previously computed) <= //
@@ -2707,17 +2699,6 @@ void RDFMP2::form_gradient()
     gradients_["Total"] = total; 
     gradients_["Total"]->set_name("Total Gradient");
 
-    // => Final Printing <= //
-    //if (print_ > 1) {
-    //    for (int i = 0; i < gradient_terms.size(); i++) {
-    //        if (gradients_.count(gradient_terms[i])) {
-    //            gradients_[gradient_terms[i]]->print_atom_vector(); 
-    //        }
-    //    }
-    //} else {
-    //    gradients_["Total"]->print();
-    //}
-    
     // => Finalize <= //
 
     psio_->close(PSIF_DFMP2_AIA,1);
