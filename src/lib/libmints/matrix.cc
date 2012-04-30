@@ -1933,6 +1933,62 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     return L;
 }
 
+std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::partial_square_root: Matrix is non-totally symmetric.");
+    }
+
+    SharedMatrix V(new Matrix("V", colspi_, colspi_));
+    SharedVector d(new Vector("d", colspi_));         
+    
+    diagonalize(V,d);
+
+    Dimension Ppi(d->nirrep());
+    Dimension Npi(d->nirrep());
+    for (int h = 0; h < d->nirrep(); h++) {
+        for (int i = 0; i < d->dimpi()[h]; i++) {
+            if (fabs(d->get(h,i)) >= delta) {
+                if (d->get(h,i) >= 0) {
+                    Ppi[h]++;
+                } else {
+                    Npi[h]++;
+                }
+            }
+        }
+    }
+
+    SharedMatrix P(new Matrix("P", colspi_, Ppi));
+    SharedMatrix N(new Matrix("N", colspi_, Npi));
+
+    for (int h = 0; h < d->nirrep(); h++) {
+        double** Vp = V->pointer(h);
+        double** Pp = P->pointer(h);
+        double** Np = N->pointer(h);
+        double*  dp = d->pointer(h); 
+
+        int Pcounter = 0;
+        int Ncounter = 0;
+        for (int i = 0; i < colspi_[h]; i++) {
+            if (fabs(d->get(h,i)) >= delta) {
+                if (d->get(h,i) >= 0.0) {
+                    // +
+                    double val = sqrt(fabs(d->get(h,i))); 
+                    C_DAXPY(colspi_[h], val, &Vp[0][i], colspi_[h], &Pp[0][Pcounter], Ppi[h]);
+                    Pcounter++;
+                } else {
+                    // -
+                    double val = sqrt(fabs(d->get(h,i))); 
+                    C_DAXPY(colspi_[h],-val, &Vp[0][i], colspi_[h], &Np[0][Ncounter], Npi[h]);
+                    Ncounter++;
+                }
+            }
+        }
+    }
+
+    return std::pair<SharedMatrix, SharedMatrix>(P, N);
+}
+
 void Matrix::invert()
 {
     if (symmetry_) {

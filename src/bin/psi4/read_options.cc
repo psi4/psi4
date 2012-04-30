@@ -1935,6 +1935,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P(2) matrix for corrections to Lia and P. -*/
+    options.add_double("DFMP2_P2_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P matrix for skeleton-core Fock matrix derivatives. -*/
+    options.add_double("DFMP2_P_TOLERANCE", 0.0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- IO caching for CP corrections, etc !expert -*/
