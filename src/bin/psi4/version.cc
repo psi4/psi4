@@ -31,6 +31,8 @@ void print_version(FILE *myout)
   fprintf(myout, "                         Additional Contributions by\n");
   fprintf(myout, "    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov\n");
   fprintf(myout, "    -----------------------------------------------------------------------\n\n");
+  pid_t pid = getpid();
+  fprintf(myout, "    Process ID: %6d\n",pid);
   Communicator::world->print(myout);
 }
 

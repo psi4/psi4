@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta1])
+define([psi_version],[4.0.0-beta2+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
