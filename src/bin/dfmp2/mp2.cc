@@ -1,4 +1,5 @@
 #include "mp2.h"
+#include "corr_grad.h"
 #include <lib3index/3index.h>
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
@@ -623,8 +624,13 @@ void DFMP2::print_energies()
 void DFMP2::print_gradients()
 {
     std::vector<std::string> gradient_terms;
-    gradient_terms.push_back("(A|B)^x");
-    gradient_terms.push_back("(A|mn)^x");
+    gradient_terms.push_back("Nuclear");
+    gradient_terms.push_back("Kinetic");
+    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Overlap");
+    gradient_terms.push_back("Coulomb");
+    gradient_terms.push_back("Exchange");
+    gradient_terms.push_back("Correlation");
     gradient_terms.push_back("Total");
 
     if (print_ > 1) {
@@ -1928,7 +1934,7 @@ void RDFMP2::form_P()
     //Pab->print();
     //PIj->print();
     //PAb->print();
-    Ppq->print();
+    //Ppq->print();
 
     // => Write out <= //
 
@@ -2015,8 +2021,8 @@ void RDFMP2::form_W()
      
     // => Write-out <= //
 
-    Lia->print();
-    Wpq1->print();    
+    //Lia->print();
+    //Wpq1->print();    
 
     psio_->write_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
     psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2099,9 +2105,9 @@ void RDFMP2::form_Z()
     SharedMatrix N1 = factor1.second;
     double** P1p = P1->pointer();
     double** N1p = N1->pointer();
-    Ppq->print();
-    P1->print();
-    N1->print();
+    //Ppq->print();
+    //P1->print();
+    //N1->print();
 
     // > Back-transform the transition orbitals < //
     SharedMatrix P1AO(new Matrix("P AO", nso, P1->colspi()[0]));
@@ -2132,8 +2138,8 @@ void RDFMP2::form_Z()
     double** J1p = J1->pointer();
     double** K1p = K1->pointer();
 
-    J1->print();
-    K1->print();
+    //J1->print();
+    //K1->print();
 
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
@@ -2144,7 +2150,7 @@ void RDFMP2::form_Z()
     AP->add(J1);
     AP->subtract(K1);
 
-    AP->print();
+    //AP->print();
 
     // > Form the contribution to Lia from the J/K-like matrices < //
 
@@ -2156,7 +2162,7 @@ void RDFMP2::form_Z()
     C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
     C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
 
-    Lia->print();
+    //Lia->print();
 
     // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
 
@@ -2181,7 +2187,7 @@ void RDFMP2::form_Z()
 
     Ppq->add(dPpq);
 
-    Zia->print();
+    //Zia->print();
  
     // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
 
@@ -2191,9 +2197,9 @@ void RDFMP2::form_Z()
     SharedMatrix N2 = factor2.second;
     double** P2p = P2->pointer();
     double** N2p = N2->pointer();
-    dPpq->print();
-    P2->print();
-    N2->print();
+    //dPpq->print();
+    //P2->print();
+    //N2->print();
 
     // > Back-transform the transition orbitals < //
     SharedMatrix P2AO(new Matrix("P AO", nso, P2->colspi()[0]));
@@ -2223,9 +2229,6 @@ void RDFMP2::form_Z()
     K2->subtract(K[1]);
     double** J2p = J2->pointer();
     double** K2p = K2->pointer();
-
-    J2->print();
-    K2->print();
 
     J2->scale(2.0);
     K2->scale(1.0);
@@ -2274,30 +2277,428 @@ void RDFMP2::form_Z()
 
     // => Final W <= //
 
-    Wpq1->print();
-    Wpq2->print();
-    Wpq3->print();
+    //Wpq1->print();
+    //Wpq2->print();
+    //Wpq3->print();
 
     Wpq1->add(Wpq2);
     Wpq1->add(Wpq3);
     Wpq1->set_name("Wpq");
         
-    Wpq1->print();
+    //Wpq1->print();
         
     psio_->write_entry(PSIF_DFMP2_AIA,"W",(char*) Wpq1p[0], sizeof(double) * nmo * nmo);
 
     // => Final P <= //
     
-    Ppq->print();
+    //Ppq->print();
 
     psio_->write_entry(PSIF_DFMP2_AIA,"P",(char*) Ppqp[0], sizeof(double) * nmo * nmo);
 
     // => Finalize <= //
 
+    psio_->close(PSIF_DFMP2_AIA,1);
     cphf->postiterations();
 }
 void RDFMP2::form_gradient()
 {
+    // => Sizing <= //
+
+    int nso = basisset_->nbf();
+    int nfocc = Cfocc_->colspi()[0];
+    int navir = Cavir_->colspi()[0];
+    int naocc = Caocc_->colspi()[0];
+    int nfvir = Cfvir_->colspi()[0];
+    int nmo = nfocc + naocc + navir + nfocc; 
+    int nocc = nfocc + naocc;    
+    int nvir = nfvir + navir;    
+
+    // => Tensors <= //
+
+    SharedMatrix W(new Matrix("W", nmo, nmo)); 
+    double** Wp = W->pointer();
+    
+    SharedMatrix P2(new Matrix("P", nmo, nmo)); 
+    double** P2p = P2->pointer();
+
+    SharedMatrix Cocc = Ca_subset("AO", "OCC");
+    SharedMatrix C    = Ca_subset("AO", "ALL");
+
+    double** Coccp = Cocc->pointer();
+    double** Cp    = C->pointer();
+
+    SharedVector eps = epsilon_a_subset("AO", "ALL");
+    double* epsp = eps->pointer();
+
+    // => Read-in <= //
+
+    psio_->open(PSIF_DFMP2_AIA, 1);
+    psio_->read_entry(PSIF_DFMP2_AIA, "P", (char*) P2p[0], sizeof(double) * nmo * nmo);
+    psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wp[0], sizeof(double) * nmo * nmo);
+
+    // => Dress for SCF <= //
+    
+    for (int i = 0; i < nocc; i++) {
+        Wp[i][i] += 2.0 * epsp[i];
+        P2p[i][i] += 2.0;
+    }
+    
+    //P2->print();
+    //W->print();
+
+    psio_->write_entry(PSIF_DFMP2_AIA, "P", (char*) P2p[0], sizeof(double) * nmo * nmo);
+    psio_->write_entry(PSIF_DFMP2_AIA, "W", (char*) Wp[0], sizeof(double) * nmo * nmo);
+
+    // => Factorize the P matrix <= //
+
+    P2->scale(0.5);
+    std::pair<SharedMatrix, SharedMatrix> factor = P2->partial_square_root(options_.get_double("DFMP2_P_TOLERANCE"));
+    P2->scale(2.0);
+
+    SharedMatrix P1 = factor.first;
+    SharedMatrix N1 = factor.second;
+    double** P1p = P1->pointer();
+    double** N1p = N1->pointer();
+
+    // => Back-transform <= //
+    
+    SharedMatrix T1(new Matrix("T", nmo, nso));
+    SharedMatrix PAO(new Matrix("P AO", nso, nso));
+    SharedMatrix WAO(new Matrix("W AO", nso, nso));
+    SharedMatrix P1AO(new Matrix("P1 AO", nso, P1->colspi()[0]));
+    SharedMatrix N1AO(new Matrix("N1 AO", nso, N1->colspi()[0]));
+
+    double** T1p = T1->pointer();
+    double** PAOp = PAO->pointer();
+    double** WAOp = WAO->pointer();
+    double** P1AOp = P1AO->pointer();
+    double** N1AOp = N1AO->pointer();
+
+    C_DGEMM('N','T',nmo,nso,nmo,1.0,P2p[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,PAOp[0],nso);
+    
+    C_DGEMM('N','T',nmo,nso,nmo,1.0,Wp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,WAOp[0],nso);
+    
+    if (P1->colspi()[0]) {
+        C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
+    }
+    
+    if (N1->colspi()[0]) {
+        C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
+    }
+
+    // => Random extra drivers for the JK gradients <= //
+
+    SharedMatrix D(PAO->clone()); 
+    double** Dp = D->pointer();
+    C_DGEMM('N','T',nso,nso,nocc,2.0,Coccp[0],nocc,Coccp[0],nocc,0.0,Dp[0],nso);    
+
+    SharedMatrix Ds(D->clone());
+    Ds->scale(0.5);
+
+    SharedMatrix PAOs(PAO->clone());
+    PAOs->scale(0.5);
+
+    // => Gogo Gradients <= //
+
+    std::vector<std::string> gradient_terms;
+    gradient_terms.push_back("Nuclear");
+    gradient_terms.push_back("Kinetic");
+    gradient_terms.push_back("Potential");
+    gradient_terms.push_back("Overlap");
+    gradient_terms.push_back("Coulomb");
+    gradient_terms.push_back("Exchange");
+    gradient_terms.push_back("Correlation");
+    gradient_terms.push_back("Total");
+
+    // => Sizings <= //
+    int natom = molecule_->natom();
+     
+    // => Nuclear Gradient <= //
+    gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
+    gradients_["Nuclear"]->set_name("Nuclear Gradient");
+
+    // => Kinetic Gradient <= //
+    timer_on("Grad: T");
+    {
+        gradients_["Kinetic"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Kinetic"]->set_name("Kinetic Gradient");
+        gradients_["Kinetic"]->zero();
+        double** Tp = gradients_["Kinetic"]->pointer();
+
+        // Kinetic derivatives
+        boost::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
+        const double* buffer = Tint->buffer();   
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            for (int Q = 0; Q <= P; Q++) {
+
+                Tint->compute_shell_deriv1(P,Q);
+                                
+                int nP = basisset_->shell(P).nfunction();
+                int oP = basisset_->shell(P).function_index();
+                int aP = basisset_->shell(P).ncenter();
+ 
+                int nQ = basisset_->shell(Q).nfunction();
+                int oQ = basisset_->shell(Q).function_index();
+                int aQ = basisset_->shell(Q).ncenter();
+
+                int offset = nP * nQ;
+                const double* ref = buffer;
+                double perm = (P == Q ? 1.0 : 2.0);
+               
+                // Px 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aP][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Py 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aP][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Pz 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aP][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qx 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aQ][0] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Qy 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aQ][1] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Qz 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Tp[aQ][2] += perm * PAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            }
+        } 
+    }
+    timer_off("Grad: T");
+
+    // => Potential Gradient <= //
+    timer_on("Grad: V");
+    {
+        gradients_["Potential"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Potential"]->set_name("Potential Gradient");
+        gradients_["Potential"]->zero();
+
+        // Thread count
+        int threads = 1;
+        #ifdef _OPENMP
+            threads = omp_get_max_threads();
+        #endif
+
+        // Potential derivatives
+        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+        std::vector<SharedMatrix> Vtemps;
+        for (int t = 0; t < threads; t++) { 
+            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+            Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
+        }
+       
+        // Lower Triangle
+        std::vector<std::pair<int,int> > PQ_pairs;
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            for (int Q = 0; Q <= P; Q++) {
+                PQ_pairs.push_back(std::pair<int,int>(P,Q));
+            }
+        }
+
+        #pragma omp parallel for schedule(dynamic) num_threads(threads)
+        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+
+            int P = PQ_pairs[PQ].first;
+            int Q = PQ_pairs[PQ].second;
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            Vint[thread]->compute_shell_deriv1(P,Q);
+            const double* buffer = Vint[thread]->buffer();
+                            
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
+ 
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
+
+            double perm = (P == Q ? 1.0 : 2.0);
+                
+            double** Vp = Vtemps[thread]->pointer();
+            
+            for (int A = 0; A < natom; A++) {
+                const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
+                const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
+                const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        double Vval = perm * PAOp[p + oP][q + oQ];
+                        Vp[A][0] += Vval * (*ref0++);
+                        Vp[A][1] += Vval * (*ref1++);
+                        Vp[A][2] += Vval * (*ref2++);
+                    }
+                }
+            }
+        } 
+    
+        for (int t = 0; t < threads; t++) { 
+            gradients_["Potential"]->add(Vtemps[t]);
+        }
+    }
+    timer_off("Grad: V");
+
+    // => Overlap Gradient <= //
+    timer_on("Grad: S");
+    {
+        gradients_["Overlap"] = SharedMatrix(gradients_["Nuclear"]->clone());
+        gradients_["Overlap"]->set_name("Overlap Gradient");
+        gradients_["Overlap"]->zero();
+        double** Sp = gradients_["Overlap"]->pointer();
+
+        // Overlap derivatives
+        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        const double* buffer = Sint->buffer();   
+
+        for (int P = 0; P < basisset_->nshell(); P++) {
+            for (int Q = 0; Q <= P; Q++) {
+
+                Sint->compute_shell_deriv1(P,Q);
+                                
+                int nP = basisset_->shell(P).nfunction();
+                int oP = basisset_->shell(P).function_index();
+                int aP = basisset_->shell(P).ncenter();
+ 
+                int nQ = basisset_->shell(Q).nfunction();
+                int oQ = basisset_->shell(Q).function_index();
+                int aQ = basisset_->shell(Q).ncenter();
+
+                int offset = nP * nQ;
+                const double* ref = buffer;
+                double perm = (P == Q ? 1.0 : 2.0);
+               
+                // Px 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aP][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Py 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aP][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Pz 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aP][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+
+                // Qx 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aQ][0] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Qy 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aQ][1] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+               
+                // Qz 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Sp[aQ][2] -= perm * WAOp[p + oP][q + oQ] * (*ref++);
+                    }
+                }
+            }
+        } 
+    }
+    timer_off("Grad: S");
+
+    // => Two-Electron Gradient <= //
+    
+    timer_on("Grad: JK");
+    
+    boost::shared_ptr<CorrGrad> jk = CorrGrad::build_CorrGrad();
+    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+
+    jk->set_Ca(Cocc);
+    jk->set_Cb(Cocc);
+    jk->set_La(P1AO);
+    jk->set_Lb(P1AO);
+    jk->set_Ra(N1AO);
+    jk->set_Rb(N1AO);
+    jk->set_Da(Ds);
+    jk->set_Db(Ds);
+    jk->set_Dt(D);
+    jk->set_Pa(PAOs);
+    jk->set_Pb(PAOs);
+    jk->set_Pt(PAO);
+
+    jk->print_header();
+    jk->compute_gradient();    
+
+    std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
+    gradients_["Coulomb"] = jk_gradients["Coulomb"];
+    gradients_["Exchange"] = jk_gradients["Exchange"];
+
+    timer_off("Grad: JK");
+
+    // => Correlation Gradient (Previously computed) <= //
+
+    SharedMatrix correlation = SharedMatrix(gradients_["Nuclear"]->clone());
+    correlation->zero();
+    correlation->add(gradients_["(A|mn)^x"]); 
+    correlation->add(gradients_["(A|B)^x"]); 
+    gradients_["Correlation"] = correlation;
+    gradients_["Correlation"]->set_name("Correlation Gradient");
+
+    // => Total Gradient <= //
+    SharedMatrix total = SharedMatrix(gradients_["Nuclear"]->clone());
+    total->zero();
+
+    for (int i = 0; i < gradient_terms.size(); i++) {
+        if (gradients_.count(gradient_terms[i])) {
+            total->add(gradients_[gradient_terms[i]]); 
+        }
+    }
+
+    gradients_["Total"] = total; 
+    gradients_["Total"]->set_name("Total Gradient");
+
+    // => Finalize <= //
+
+    psio_->close(PSIF_DFMP2_AIA,1);
 }
 
 UDFMP2::UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
