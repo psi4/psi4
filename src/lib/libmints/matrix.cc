@@ -3162,3 +3162,18 @@ void Matrix::set_by_python_list(const boost::python::list& data)
         }
     }
 }
+
+void Matrix::rotate_columns(int h, int i, int j, double theta)
+{
+    if(h > nirrep_)
+        throw PSIEXCEPTION("In rotate columns: Invalid Irrep");
+    if(!colspi_[h] || !rowspi_[h]) continue;
+    if(i > colspi_[h])
+        throw PSIEXCEPTION("In rotate columns: Invalid column number for i");
+    if(j > colspi_[h])
+        throw PSIEXCEPTION("In rotate columns: Invalid column number for j");
+    double costheta = cos(theta);
+    double sintheta = sin(theta);
+    C_DROT(rowspi_[h], matrix_[h][i], colspi_[h], matrix_[h][j], colspi_[h], costheta, sintheta);
+}
+

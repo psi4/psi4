@@ -984,6 +984,14 @@ public:
      */
     void set_by_python_list(const boost::python::list& data);
 
+    /**
+     * Rotates columns i and j in irrep h, by an angle theta
+     * @param h - the irrep in which the rotation will be applied
+     * @param i - the zero-based (within irrep) column number for i
+     * @param j - the zero-based (within irrep) column number for j
+     * @param theta - the angle (in radians) about which to rotate
+     */
+    void rotate_columns(int h, int i, int j, double theta);
     friend class Vector;
 };
 
