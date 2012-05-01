@@ -2338,6 +2338,9 @@ void RDFMP2::form_gradient()
 
     // => Dress for SCF <= //
     
+    W->zero();
+    //P2->zero();
+    W->scale(-1.0);
     for (int i = 0; i < nocc; i++) {
         Wp[i][i] += 2.0 * epsp[i];
         P2p[i][i] += 2.0;
@@ -2380,6 +2383,8 @@ void RDFMP2::form_gradient()
     C_DGEMM('N','T',nmo,nso,nmo,1.0,Wp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,WAOp[0],nso);
     
+    PAO->print();
+
     if (P1->colspi()[0]) {
         C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
     }
@@ -2418,6 +2423,8 @@ void RDFMP2::form_gradient()
     // => Nuclear Gradient <= //
     gradients_["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1().clone());
     gradients_["Nuclear"]->set_name("Nuclear Gradient");
+
+    PAO->print();
 
     // => Kinetic Gradient <= //
     timer_on("Grad: T");
@@ -2570,6 +2577,13 @@ void RDFMP2::form_gradient()
     }
     timer_off("Grad: V");
 
+    gradients_["One-Electron"] = SharedMatrix(gradients_["Nuclear"]->clone());
+    gradients_["One-Electron"]->set_name("One-Electron Gradient");
+    gradients_["One-Electron"]->zero();
+    gradients_["One-Electron"]->add(gradients_["Kinetic"]);
+    gradients_["One-Electron"]->add(gradients_["Potential"]);
+    gradients_["One-Electron"]->print();
+
     // => Overlap Gradient <= //
     timer_on("Grad: S");
     {
@@ -2671,6 +2685,15 @@ void RDFMP2::form_gradient()
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
     gradients_["Exchange"] = jk_gradients["Exchange"];
+    gradients_["Exchange"]->scale(-1.0);
+
+    gradients_["Separable TPDM"] = SharedMatrix(gradients_["Nuclear"]->clone());
+    gradients_["Separable TPDM"]->set_name("Separable TPDM Gradient");
+    gradients_["Separable TPDM"]->zero();
+    gradients_["Separable TPDM"]->add(gradients_["Coulomb"]);
+    gradients_["Separable TPDM"]->add(gradients_["Exchange"]);
+    gradients_["Separable TPDM"]->print();
+
 
     timer_off("Grad: JK");
 
