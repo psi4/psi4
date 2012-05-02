@@ -1849,7 +1849,7 @@ void RDFMP2::form_P()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     
     // => Tensors <= //
 
@@ -1948,7 +1948,7 @@ void RDFMP2::form_W()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     
     // => Tensors <= //
 
@@ -1980,16 +1980,18 @@ void RDFMP2::form_W()
 
     // => Term 1 <= //
 
+    // RMP scales?
+
     // > Occ-Occ < //
     C_DGEMM('T','N',naocc,naocc,nso,-0.5,Caoccp[0],naocc,Lmip[0],naocc,0.0,&Wpq1p[nfocc][nfocc],nmo);
     if (nfocc) {
-        C_DGEMM('T','N',nfocc,naocc,nso,-1.0,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
+        C_DGEMM('T','N',nfocc,naocc,nso,-0.5,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
     }   
  
     // > Vir-Vir < //
     C_DGEMM('T','N',navir,navir,nso,-0.5,Cavirp[0],navir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc][nfocc + naocc],nmo);
-    if (nfocc) {
-        C_DGEMM('T','N',nfvir,navir,nso,-1.0,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + navir],nmo);
+    if (nfvir) {
+        C_DGEMM('T','N',nfvir,navir,nso,-0.5,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + navir],nmo);
     }   
 
     // > Occ-Vir < //
@@ -2000,7 +2002,7 @@ void RDFMP2::form_W()
 
     // > Vir-Occ < //
     C_DGEMM('T','N',navir,naocc,nso,-0.5,Cavirp[0],navir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc][nfocc], nmo);
-    if (nfocc) {
+    if (nfvir) {
         C_DGEMM('T','N',nfvir,naocc,nso,-0.5,Cfvirp[0],nfvir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc + navir][nfocc], nmo);
     }   
 
@@ -2035,7 +2037,7 @@ void RDFMP2::form_Z()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     int nocc = nfocc + naocc;    
     int nvir = nfvir + navir;    
 
@@ -2284,7 +2286,7 @@ void RDFMP2::form_gradient()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     int nocc = nfocc + naocc;    
     int nvir = nfvir + navir;    
 
