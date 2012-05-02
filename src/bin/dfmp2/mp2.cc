@@ -1200,7 +1200,7 @@ void RDFMP2::form_Pij()
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
     max_a = (max_a <= 0 ? 1 : max_a);
-    max_a = (max_a > naocc ? naocc : max_a);    
+    max_a = (max_a > navir ? navir : max_a);    
 
     // Blocks
     std::vector<ULI> a_starts;
