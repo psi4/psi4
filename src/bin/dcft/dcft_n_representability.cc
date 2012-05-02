@@ -12,6 +12,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::dump_density()
 {
+    dcft_timer_on("DCFTSolver::dump_density()");
+
     psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -736,6 +738,8 @@ DCFTSolver::dump_density()
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::dump_density()");
 }
 
 
