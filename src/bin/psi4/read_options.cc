@@ -875,7 +875,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         solution. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by !expert -*/
+        by. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
