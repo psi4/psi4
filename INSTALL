@@ -175,17 +175,20 @@ text given in the psi4/do-configure file (all on one long line). Replace the
 text after prefix with whatever directory you want to use for your
 installation directory.
 
+* Intel compiler with MKL math library [highly recommended; if you don't use
+this, then at least make sure you have a threaded BLAS (see BLAS
+recommendations below)]
+
+   ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
+
+Note: it's -mkl, not -lmkl.
+
 * g++, optimized
    ../configure --prefix=/usr/local/psi4
 
 * g++, for debugging
    ../configure --prefix=/usr/local/psi4 --without-opt --with-debug
 
-* Intel compiler with MKL math library
-
-   ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
-
-Note: it's -mkl, not -lmkl.
 
 * Compiling for Mac
 To get the compilers needed, it's easiest to install XCode. However, XCode
@@ -220,8 +223,9 @@ adding the following tag to your configure may help:
 
 B. List of Specific Configuration Options
 
-You may need to make use of one or more of the following options to
-the configure script:
+The example configuration options in the previous subsection are usually
+sufficient.  However, if not, you may need to make use of one or more
+of the following options to the configure script:
 
    * --prefix=directory --- Use this option if you wish to install the
    PSI4 package somewhere other than the default directory, /usr/local/psi.
