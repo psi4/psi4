@@ -946,6 +946,10 @@ void DFJKGrad::build_AB_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
+    //gradients_["Coulomb"]->zero();
+    //gradients_["Exchange"]->zero();
+    //gradients_["Exchange,LR"]->zero();
+
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
             gradients_["Coulomb"]->add(Jtemps[t]);
@@ -961,6 +965,10 @@ void DFJKGrad::build_AB_x_terms()
             gradients_["Exchange,LR"]->add(wKtemps[t]);
         }
     }
+
+    //gradients_["Coulomb"]->print();
+    //gradients_["Exchange"]->print();
+    //gradients_["Exchange,LR"]->print();
 }
 void DFJKGrad::build_Amn_x_terms()
 {
@@ -1287,6 +1295,10 @@ void DFJKGrad::build_Amn_x_terms()
 
     // => Temporary Gradient Reduction <= //
 
+    //gradients_["Coulomb"]->zero();
+    //gradients_["Exchange"]->zero();
+    //gradients_["Exchange,LR"]->zero();
+
     if (do_J_) {
         for (int t = 0; t < df_ints_num_threads_; t++) {
             gradients_["Coulomb"]->add(Jtemps[t]);
@@ -1302,6 +1314,10 @@ void DFJKGrad::build_Amn_x_terms()
             gradients_["Exchange,LR"]->add(wKtemps[t]);
         }
     }
+
+    //gradients_["Coulomb"]->print();
+    //gradients_["Exchange"]->print();
+    //gradients_["Exchange,LR"]->print();
 }
 void DFJKGrad::build_Amn_x_lr_terms()
 {
@@ -1518,9 +1534,13 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     // => Temporary Gradient Reduction <= //
 
+    //gradients_["Exchange,LR"]->zero();
+
     for (int t = 0; t < df_ints_num_threads_; t++) {
         gradients_["Exchange,LR"]->add(wKtemps[t]);
     }
+
+    //gradients_["Exchange,LR"]->print();
 }
 
 }} // Namespaces

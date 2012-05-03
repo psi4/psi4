@@ -599,10 +599,12 @@ void DFCorrGrad::build_AB_x_terms()
     c = SharedVector(new Vector("c", naux));
     cp = c->pointer();
     psio_->read_entry(unit_c_, "c", (char*) cp, sizeof(double) * naux);
+    //c->print();
 
     d = SharedVector(new Vector("d", naux));
     dp = d->pointer();
     psio_->read_entry(unit_c_, "d", (char*) dp, sizeof(double) * naux);
+    //d->print();
 
     V = SharedMatrix(new Matrix("V", naux, naux));
     Vp = V->pointer();

@@ -146,13 +146,11 @@ SharedMatrix DFMP2::compute_gradient()
     form_gradient();
     timer_off("DFMP2 grad");
 
-    // More stuff...
-
     print_energies();
 
     print_gradients();
 
-    return SharedMatrix();
+    return gradients_["Total"]; 
 }
 void DFMP2::form_singles()
 {
@@ -1202,7 +1200,7 @@ void RDFMP2::form_Pij()
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
     max_a = (max_a <= 0 ? 1 : max_a);
-    max_a = (max_a > naocc ? naocc : max_a);    
+    max_a = (max_a > navir ? navir : max_a);    
 
     // Blocks
     std::vector<ULI> a_starts;
@@ -1851,7 +1849,7 @@ void RDFMP2::form_P()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     
     // => Tensors <= //
 
@@ -1950,7 +1948,7 @@ void RDFMP2::form_W()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     
     // => Tensors <= //
 
@@ -1982,27 +1980,29 @@ void RDFMP2::form_W()
 
     // => Term 1 <= //
 
+    // RMP scales?
+
     // > Occ-Occ < //
     C_DGEMM('T','N',naocc,naocc,nso,-0.5,Caoccp[0],naocc,Lmip[0],naocc,0.0,&Wpq1p[nfocc][nfocc],nmo);
     if (nfocc) {
-        C_DGEMM('T','N',nfocc,naocc,nso,-1.0,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
+        C_DGEMM('T','N',nfocc,naocc,nso,-0.5,Cfoccp[0],nfocc,Lmip[0],naocc,0.0,&Wpq1p[0][nfocc],nmo);
     }   
  
-    // > Vir-Vir (RMP: +?) < //
+    // > Vir-Vir < //
     C_DGEMM('T','N',navir,navir,nso,-0.5,Cavirp[0],navir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc][nfocc + naocc],nmo);
-    if (nfocc) {
-        C_DGEMM('T','N',nfvir,navir,nso,-1.0,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + navir],nmo);
+    if (nfvir) {
+        C_DGEMM('T','N',nfvir,navir,nso,-0.5,Cfvirp[0],nfvir,Lmap[0],navir,0.0,&Wpq1p[nfocc + naocc + navir][nfocc + navir],nmo);
     }   
 
-    // > Occ-Vir (RMP: +?) < //
+    // > Occ-Vir < //
     C_DGEMM('T','N',naocc,navir,nso,-0.5,Caoccp[0],naocc,Lmap[0],navir,0.0,&Wpq1p[nfocc][nfocc + naocc], nmo);
     if (nfocc) {
         C_DGEMM('T','N',nfocc,navir,nso,-0.5,Cfoccp[0],nfocc,Lmap[0],navir,0.0,&Wpq1p[0][nfocc + naocc], nmo);
     }   
 
-    // > Vir-Occ (RMP: +?) (RMP: Remove to obtain an MHG variant?) < //
+    // > Vir-Occ < //
     C_DGEMM('T','N',navir,naocc,nso,-0.5,Cavirp[0],navir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc][nfocc], nmo);
-    if (nfocc) {
+    if (nfvir) {
         C_DGEMM('T','N',nfvir,naocc,nso,-0.5,Cfvirp[0],nfvir,Lmip[0],naocc,0.0,&Wpq1p[nfocc + naocc + navir][nfocc], nmo);
     }   
 
@@ -2037,7 +2037,7 @@ void RDFMP2::form_Z()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     int nocc = nfocc + naocc;    
     int nvir = nfvir + navir;    
 
@@ -2146,7 +2146,6 @@ void RDFMP2::form_Z()
 
     J1->scale(2.0);
     K1->scale(1.0);
-    //K1->scale(2.0); (RMP I think this should be 2.0)
     AP->add(J1);
     AP->subtract(K1);
 
@@ -2157,8 +2156,7 @@ void RDFMP2::form_Z()
     SharedMatrix T(new Matrix("T", nocc, nso));
     double** Tp = T->pointer();
 
-    // L_ia += -1.0 (spin) C_mi { [ 2(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_na
-    // (RMP) Need a - here? Everyone says -
+    // L_ia += -1.0 (spin) C_mi { [ 4(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_na
     C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
     C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
 
@@ -2172,7 +2170,6 @@ void RDFMP2::form_Z()
     b["Lia"] = Lia;
     cphf->compute_energy();
     SharedMatrix Zia = x["Lia"];
-    // (RMP) The plugin is backwards, uses (e_i - e_a) as the diagonal operator. This should not be needed?
     Zia->scale(-1.0);
 
     // > Add Pia and Pai into the OPDM < // 
@@ -2232,19 +2229,16 @@ void RDFMP2::form_Z()
 
     J2->scale(2.0);
     K2->scale(1.0);
-    //K2->scale(2.0); (RMP I think this should be 2.0)
     AP->add(J2);
     AP->subtract(K2);
 
     // > Form the contribution to Lia from the J/K-like matrices < //
 
-    // W_ik += +1.0 (spin) C_mi { [ 2(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_nk
+    // W_ik += +1.0 (spin) C_mi { [ 4(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_nk
     C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
 
-    // occ-aocc term
-    C_DGEMM('N','N',nocc,naocc,nso,-1.0,Tp[0],nso,Caoccp[0],naocc,0.0,&Wpq3p[0][nfocc],nmo);
-    // (RMP) why is there a - in there?
-    C_DGEMM('T','T',naocc,nocc,nso,-1.0,Caoccp[0],naocc,Tp[0],nso,0.0,&Wpq3p[nfocc][0],nmo);
+    // occ-occ term
+    C_DGEMM('N','N',nocc,nocc,nso,-1.0,Tp[0],nso,Coccp[0],nocc,0.0,&Wpq3p[0][0],nmo);
 
     // (RMP) what the frak is this interloper term doing in the plugin? Are the indices correct? why does this get 0.5, and the above get 1.0?
     C_DGEMM('N','N',nocc,nvir,nso,-0.5,Tp[0],nso,Cvirp[0],nvir,0.0,&Wpq3p[0][nocc],nmo);
@@ -2252,26 +2246,9 @@ void RDFMP2::form_Z()
 
     // => W Term 2 <= //
 
-    for (int i = 0; i < naocc; i++) {
-        for (int j = 0; j < nocc; j++) {
-            Wpq2p[i + nfocc][j] = Wpq2p[j][i + nfocc] = 
-                -0.5 * Ppqp[i + nfocc][j] * (epsp[i + nfocc] + epsp[j]);
-        }
-    }
-
-    for (int a = 0; a < navir; a++) {
-        for (int b = 0; b < nvir; b++) {
-            Wpq2p[a + nocc][b + nocc] = Wpq2p[b + nocc][a + nocc] = 
-                -0.5 * Ppqp[a + nocc][b + nocc] * (epsp[a + nocc] + epsp[b + nocc]);
-        }
-    }
-    
-    // (RMP) Using Weigend's formula, it just makes sense 
-    for (int i = 0; i < nocc; i++) {
-        for (int a = 0; a < nvir; a++) {
-            Wpq2p[i][a + nocc] = Wpq2p[a + nocc][i] = 
-                -0.5 * Ppqp[i][a + nocc] * (epsp[i] + epsp[a + nocc]);
-                // (RMP) MHG: -1.0 * Ppqp[i][a + nocc] * (epsp[i]);
+    for (int p = 0; p < nmo; p++) {
+        for (int q = 0; q < nmo; q++) {
+            Wpq2p[p][q] = -0.5 * (epsp[p] + epsp[q]) * Ppqp[p][q];
         }
     }
 
@@ -2309,7 +2286,7 @@ void RDFMP2::form_gradient()
     int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
-    int nmo = nfocc + naocc + navir + nfocc; 
+    int nmo = nfocc + naocc + navir + nfvir; 
     int nocc = nfocc + naocc;    
     int nvir = nfvir + navir;    
 
@@ -2337,12 +2314,20 @@ void RDFMP2::form_gradient()
     psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wp[0], sizeof(double) * nmo * nmo);
 
     // => Dress for SCF <= //
-    
+
+    SharedMatrix P2F(P2->clone());
+    double** P2Fp = P2F->pointer();
+    P2F->scale(2.0);
+
+    //W->zero();
+    //P2->zero();
+    W->scale(-1.0);
     for (int i = 0; i < nocc; i++) {
         Wp[i][i] += 2.0 * epsp[i];
         P2p[i][i] += 2.0;
+        P2Fp[i][i] += 2.0;
     }
-    
+
     //P2->print();
     //W->print();
 
@@ -2351,9 +2336,9 @@ void RDFMP2::form_gradient()
 
     // => Factorize the P matrix <= //
 
-    P2->scale(0.5);
-    std::pair<SharedMatrix, SharedMatrix> factor = P2->partial_square_root(options_.get_double("DFMP2_P_TOLERANCE"));
-    P2->scale(2.0);
+    P2F->scale(0.5);
+    std::pair<SharedMatrix, SharedMatrix> factor = P2F->partial_square_root(options_.get_double("DFMP2_P_TOLERANCE"));
+    P2F->scale(2.0);
 
     SharedMatrix P1 = factor.first;
     SharedMatrix N1 = factor.second;
@@ -2364,12 +2349,14 @@ void RDFMP2::form_gradient()
     
     SharedMatrix T1(new Matrix("T", nmo, nso));
     SharedMatrix PAO(new Matrix("P AO", nso, nso));
+    SharedMatrix PFAO(new Matrix("PF AO", nso, nso));
     SharedMatrix WAO(new Matrix("W AO", nso, nso));
     SharedMatrix P1AO(new Matrix("P1 AO", nso, P1->colspi()[0]));
     SharedMatrix N1AO(new Matrix("N1 AO", nso, N1->colspi()[0]));
 
     double** T1p = T1->pointer();
     double** PAOp = PAO->pointer();
+    double** PFAOp = PFAO->pointer();
     double** WAOp = WAO->pointer();
     double** P1AOp = P1AO->pointer();
     double** N1AOp = N1AO->pointer();
@@ -2377,9 +2364,15 @@ void RDFMP2::form_gradient()
     C_DGEMM('N','T',nmo,nso,nmo,1.0,P2p[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,PAOp[0],nso);
     
+    C_DGEMM('N','T',nmo,nso,nmo,1.0,P2Fp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,PFAOp[0],nso);
+    
     C_DGEMM('N','T',nmo,nso,nmo,1.0,Wp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
     C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,WAOp[0],nso);
     
+    //P2->print();
+    //PAO->print();
+
     if (P1->colspi()[0]) {
         C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
     }
@@ -2394,11 +2387,13 @@ void RDFMP2::form_gradient()
     double** Dp = D->pointer();
     C_DGEMM('N','T',nso,nso,nocc,2.0,Coccp[0],nocc,Coccp[0],nocc,0.0,Dp[0],nso);    
 
+    //D->print();
+
     SharedMatrix Ds(D->clone());
     Ds->scale(0.5);
 
-    SharedMatrix PAOs(PAO->clone());
-    PAOs->scale(0.5);
+    SharedMatrix PFAOs(PFAO->clone());
+    PFAOs->scale(0.5);
 
     // => Gogo Gradients <= //
 
@@ -2570,6 +2565,13 @@ void RDFMP2::form_gradient()
     }
     timer_off("Grad: V");
 
+    //gradients_["One-Electron"] = SharedMatrix(gradients_["Nuclear"]->clone());
+    //gradients_["One-Electron"]->set_name("One-Electron Gradient");
+    //gradients_["One-Electron"]->zero();
+    //gradients_["One-Electron"]->add(gradients_["Kinetic"]);
+    //gradients_["One-Electron"]->add(gradients_["Potential"]);
+    //gradients_["One-Electron"]->print();
+
     // => Overlap Gradient <= //
     timer_on("Grad: S");
     {
@@ -2654,16 +2656,16 @@ void RDFMP2::form_gradient()
 
     jk->set_Ca(Cocc);
     jk->set_Cb(Cocc);
-    jk->set_La(P1AO);
-    jk->set_Lb(P1AO);
+    jk->set_La(P1AO); 
+    jk->set_Lb(P1AO); 
     jk->set_Ra(N1AO);
     jk->set_Rb(N1AO);
     jk->set_Da(Ds);
     jk->set_Db(Ds);
     jk->set_Dt(D);
-    jk->set_Pa(PAOs);
-    jk->set_Pb(PAOs);
-    jk->set_Pt(PAO);
+    jk->set_Pa(PFAOs);
+    jk->set_Pb(PFAOs);
+    jk->set_Pt(PFAO); 
 
     jk->print_header();
     jk->compute_gradient();    
@@ -2671,6 +2673,14 @@ void RDFMP2::form_gradient()
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
     gradients_["Exchange"] = jk_gradients["Exchange"];
+    gradients_["Exchange"]->scale(-1.0);
+
+    //gradients_["Separable TPDM"] = SharedMatrix(gradients_["Nuclear"]->clone());
+    //gradients_["Separable TPDM"]->set_name("Separable TPDM Gradient");
+    //gradients_["Separable TPDM"]->zero();
+    //gradients_["Separable TPDM"]->add(gradients_["Coulomb"]);
+    //gradients_["Separable TPDM"]->add(gradients_["Exchange"]);
+    //gradients_["Separable TPDM"]->print();
 
     timer_off("Grad: JK");
 

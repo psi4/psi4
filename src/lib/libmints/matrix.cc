@@ -948,7 +948,7 @@ void Matrix::add(const Matrix * const plus)
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for (size_t ij=0; ij<size; ++ij) {
                 lhs[ij] += rhs[ij];
             }
@@ -974,7 +974,7 @@ void Matrix::subtract(const Matrix* const plus)
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for (size_t ij=0; ij<size; ++ij) {
                 lhs[ij] -= rhs[ij];
             }
