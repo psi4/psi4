@@ -3507,7 +3507,7 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
         C_DGEMM('T','N',nP,nbf,nbf,1.0,&Qp[0][Pstart],npoints,Dp[0],nbf,0.0,Vp[0],nbf);
 
         W_->zero();
-        #pragma omp parallel for num_threads(omp_nthread_)
+        #pragma omp parallel for
         for (int P = 0; P < nP; P++) {
             double* Arp = Amnp[P];
             double* Wrp = Wp[P];
