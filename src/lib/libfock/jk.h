@@ -145,6 +145,8 @@ protected:
     int omp_nthread_;
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;
+    /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
+    bool allow_desymmetrization_;
 
     // => Tasks <= //
     
@@ -250,6 +252,12 @@ public:
 
     // => Knobs <= // 
 
+    /**
+     * Certain codes operate in C1 under the hood, so they backtransform matrices
+     * to C1.  This method allows us to override the desymmetrization, in case it's
+     * already been done elsewhere.
+     */
+    void set_allow_desymmetrization(bool t_f) { allow_desymmetrization_ = t_f; }
     /**
      * Cutoff for individual contributions to the J/K matrices
      * Eventually we hope to use Schwarz/MBIE/Density cutoffs,
@@ -539,7 +547,7 @@ protected:
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return true; }
+    virtual bool C1() const { return allow_desymmetrization_; }
     /// Setup integrals, files, etc
     virtual void preiterations(); 
     /// Compute J/K for current C/D 
