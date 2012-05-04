@@ -64,6 +64,9 @@ HF::~HF()
 
 void HF::common_init()
 {
+
+    attempt_number_ = 1;
+
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
@@ -1266,22 +1269,30 @@ double HF::compute_energy()
     if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile, "  ==> Pre-Iterations <==\n\n");
 
-    timer_on("Form H");
-    form_H(); //Core Hamiltonian
-    timer_off("Form H");
-
-    timer_on("Form S/X");
-    form_Shalf(); //S and X Matrix
-    timer_off("Form S/X");
-
-    timer_on("Guess");
-    guess(); // Guess
-    timer_off("Guess");
-
     if (print_)
         print_preiterations();
 
-    integrals();
+    if(attempt_number_ == 1){
+        timer_on("Form H");
+        form_H(); //Core Hamiltonian
+        timer_off("Form H");
+
+        timer_on("Form S/X");
+        form_Shalf(); //S and X Matrix
+        timer_off("Form S/X");
+
+        timer_on("Guess");
+        guess(); // Guess
+        timer_off("Guess");
+
+        integrals();
+    }else{
+        // We're reading the orbitals from the previous set of iterations.
+        form_D();
+        E_ = compute_initial_E();
+    }
+
+
 
     if (Communicator::world->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
@@ -1458,12 +1469,13 @@ double HF::compute_energy()
 
     Communicator::world->sync();
 
-    // Clean memory off, handle diis closeout, etc
-    finalize();
-
     // Perform wavefunction stability analysis
     if(options_.get_str("STABILITY_ANALYSIS") != "NONE")
         stability_analysis();
+
+    // Clean memory off, handle diis closeout, etc
+    finalize();
+
 
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
