@@ -86,6 +86,10 @@ protected:
     // Form a transposed copy of iaQ
     virtual void apply_B_transpose(unsigned int file, unsigned long int naux, unsigned long int naocc, unsigned long int navir);
 
+    // Debugging-routine: prints block sizing
+    void block_status(std::vector<int> inds, const char* file, int line); 
+    void block_status(std::vector<unsigned long int> inds, const char* file, int line); 
+
 public:
     DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~DFMP2();
