@@ -12,7 +12,6 @@ molecule he2 {
 
 set globals {
     r_convergence 11
-    reference   uhf
     ao_basis    none
     algorithm   simultaneous
     basis       6-31G**

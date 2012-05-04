@@ -22,8 +22,11 @@ def run_dcft(name, **kwargs):
     a density cumulant functional theory calculation.
 
     """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.dcft()
+    PsiMod.set_global_option('REFERENCE', oldref)
 
 
 def run_dcft_gradient(name, **kwargs):
