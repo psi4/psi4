@@ -2133,7 +2133,8 @@ void Matrix::expm(int m, bool scale)
         int n = rowspi_[h];
         double** A = matrix_[h];        
 
-        double L, S;
+        double L; 
+        int S;
         if (scale) {
             // Trace reduction
             L = 0.0;
@@ -2157,7 +2158,7 @@ void Matrix::expm(int m, bool scale)
             double mag = log(norm) / log(2.0);
             mag = (mag < 0.0 ? 0.0 : mag);
             mag = (mag > 4.0 ? 4.0 : mag);
-            int S = (int)(mag);
+            S = (int)(mag);
             C_DSCAL(n*(unsigned long int) n, pow(2.0, -S), A[0], 1);
         }
  
