@@ -81,6 +81,9 @@ namespace psi {
       case PSIO_ERROR_BLKEND:
         fprintf(stderr, "PSIO_ERROR: %d (Incorrect block end address)\n", PSIO_ERROR_BLKEND);
         break;
+      case PSIO_ERROR_WRITE:
+        fprintf(stderr, "PSIO_ERROR: %d (error writing to file)\n", PSIO_ERROR_WRITE);
+        break;
       case PSIO_ERROR_MAXUNIT:
         fprintf(stderr, "PSIO_ERROR: %d (Maximum unit number exceeded)\n", PSIO_ERROR_MAXUNIT);
         fprintf(stderr, "Open failed because unit %d exceeds ", unit);
