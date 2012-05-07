@@ -326,7 +326,7 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI ni
             ia_starts.push_back(ia + max_nia);
         }
     }
-    block_status(ia_starts, __FILE__,__LINE__);
+    //block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Aia(new Matrix("Aia", naux, max_nia));
@@ -390,7 +390,7 @@ void DFMP2::apply_fitting_grad(SharedMatrix Jm12, unsigned int file, ULI naux, U
             ia_starts.push_back(ia + max_nia);
         }
     }
-    block_status(ia_starts, __FILE__,__LINE__);
+    //block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Aia(new Matrix("Aia", max_nia, naux));
@@ -451,7 +451,7 @@ void DFMP2::apply_gamma(unsigned int file, ULI naux, ULI nia)
             ia_starts.push_back(ia + max_nia);
         }
     }
-    block_status(ia_starts, __FILE__,__LINE__);
+    //block_status(ia_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Aia(new Matrix("Aia", max_nia, naux));
@@ -510,7 +510,7 @@ void DFMP2::apply_G_transpose(unsigned int file, ULI naux, ULI nia)
             ia_starts.push_back(ia + max_nia);
         }
     }
-    block_status(ia_starts, __FILE__,__LINE__);
+    //block_status(ia_starts, __FILE__,__LINE__);
 
     // Prestripe
     psio_->open(file, PSIO_OPEN_OLD);
@@ -576,7 +576,7 @@ void DFMP2::apply_B_transpose(unsigned int file, ULI naux, ULI naocc, ULI navir)
             a_starts.push_back(a + max_A);
         }
     }
-    block_status(a_starts, __FILE__,__LINE__);
+    //block_status(a_starts, __FILE__,__LINE__);
 
     // Buffers
     SharedMatrix iaQ(new Matrix("iaQ", max_A * naocc, naux)); 
@@ -781,7 +781,7 @@ void RDFMP2::form_Aia()
         counter += nQ;
     }
     block_Q_starts.push_back(ribasis_->nshell());
-    block_status(block_Q_starts, __FILE__,__LINE__);
+    //block_status(block_Q_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Amn(new Matrix("(A|mn) Block", max_naux, nso * (ULI) nso));
@@ -928,7 +928,7 @@ void RDFMP2::form_energy()
             i_starts.push_back(i + max_i);
         }
     }
-    block_status(i_starts, __FILE__,__LINE__);
+    //block_status(i_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Qia (new Matrix("Qia", max_i * (ULI) navir, naux));
@@ -1057,7 +1057,7 @@ void RDFMP2::form_Pab()
             i_starts.push_back(i + max_i);
         }
     }
-    block_status(i_starts, __FILE__,__LINE__);
+    //block_status(i_starts, __FILE__,__LINE__);
 
     // 2-Index Tensor blocks
     SharedMatrix Pab(new Matrix("Pab", navir, navir));
@@ -1246,7 +1246,7 @@ void RDFMP2::form_Pij()
             a_starts.push_back(a + max_a);
         }
     }
-    block_status(a_starts, __FILE__,__LINE__);
+    //block_status(a_starts, __FILE__,__LINE__);
     
     // 2-Index Tensor blocks
     SharedMatrix Pij(new Matrix("Pij", naocc, naocc));
@@ -1536,7 +1536,7 @@ void RDFMP2::form_Amn_x_terms()
         counter += nP;
     }
     Pstarts.push_back(ribasis_->nshell());
-    block_status(Pstarts, __FILE__,__LINE__);
+    //block_status(Pstarts, __FILE__,__LINE__);
 
     // => Temporary Buffers <= //
 
@@ -1737,7 +1737,7 @@ void RDFMP2::form_L()
         counter += nP;
     }
     Pstarts.push_back(ribasis_->nshell());
-    block_status(Pstarts, __FILE__,__LINE__);
+    //block_status(Pstarts, __FILE__,__LINE__);
 
     // => Temporary Buffers <= //
 
@@ -2867,7 +2867,7 @@ void UDFMP2::form_Aia()
         counter += nQ;
     }
     block_Q_starts.push_back(ribasis_->nshell());
-    block_status(block_Q_starts, __FILE__,__LINE__);
+    //block_status(block_Q_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Amn(new Matrix("(A|mn) Block", max_naux, nso * (ULI) nso));
@@ -3046,7 +3046,7 @@ void UDFMP2::form_energy()
             i_starts.push_back(i + max_i);
         }
     }
-    block_status(i_starts, __FILE__,__LINE__);
+    //block_status(i_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Qia (new Matrix("Qia", max_i * (ULI) navir, naux));
@@ -3167,7 +3167,7 @@ void UDFMP2::form_energy()
             i_starts.push_back(i + max_i);
         }
     }
-    block_status(i_starts, __FILE__,__LINE__);
+    //block_status(i_starts, __FILE__,__LINE__);
 
     // Tensor blocks
     SharedMatrix Qia (new Matrix("Qia", max_i * (ULI) navir, naux));
