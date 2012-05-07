@@ -2320,8 +2320,8 @@ void RDFMP2::form_gradient()
 
     int nso = basisset_->nbf();
     int nfocc = Cfocc_->colspi()[0];
-    int navir = Cavir_->colspi()[0];
     int naocc = Caocc_->colspi()[0];
+    int navir = Cavir_->colspi()[0];
     int nfvir = Cfvir_->colspi()[0];
     int nmo = nfocc + naocc + navir + nfvir; 
     int nocc = nfocc + naocc;    
@@ -2399,13 +2399,13 @@ void RDFMP2::form_gradient()
     double** N1AOp = N1AO->pointer();
 
     C_DGEMM('N','T',nmo,nso,nmo,1.0,P2p[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
-    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,PAOp[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,PAOp[0],nso);
     
     C_DGEMM('N','T',nmo,nso,nmo,1.0,P2Fp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
-    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,PFAOp[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,PFAOp[0],nso);
     
     C_DGEMM('N','T',nmo,nso,nmo,1.0,Wp[0],nmo,Cp[0],nmo,0.0,T1p[0],nso);
-    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nmo,0.0,WAOp[0],nso);
+    C_DGEMM('N','N',nso,nso,nmo,1.0,Cp[0],nmo,T1p[0],nso,0.0,WAOp[0],nso);
     
     //P2->print();
     //PAO->print();
