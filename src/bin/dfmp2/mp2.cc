@@ -2127,6 +2127,9 @@ void RDFMP2::form_Z()
     const std::vector<SharedMatrix> &J = jk->J();
     const std::vector<SharedMatrix> &K = jk->K();
 
+    // Make sure the JK object doesn't try to backtransform our matrices
+    jk->set_allow_desymmetrization(false);
+
     // => Read-in <= //
 
     psio_->open(PSIF_DFMP2_AIA, 1);
@@ -2167,8 +2170,8 @@ void RDFMP2::form_Z()
     Cl.push_back(N1AO);
     
     jk->compute();
-    
-    SharedMatrix J1 = J[0]; 
+
+    SharedMatrix J1 = J[0];
     SharedMatrix K1 = K[0]; 
     J1->subtract(J[1]);
     K1->subtract(K[1]);

@@ -229,6 +229,9 @@ dfmp2_1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid d
 dfmp2_2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 
+dfmp2_3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
+
+
 dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 
 

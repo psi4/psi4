@@ -22,8 +22,11 @@ def run_dcft(name, **kwargs):
     a density cumulant functional theory calculation.
 
     """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.dcft()
+    PsiMod.set_global_option('REFERENCE', oldref)
 
 
 def run_dcft_gradient(name, **kwargs):
@@ -467,7 +470,7 @@ def run_cc_property(name, **kwargs):
         exit(1)
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        print "Cannot compute response properties for excited states."
+        print "Cannot (yet) compute response properties for excited states."
         exit(1)
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
@@ -494,7 +497,17 @@ def run_cc_property(name, **kwargs):
     PsiMod.cchbar()
 
     # Need ccdensity at this point only for density-based props
-    if ((n_one > 0 or n_two > 0) and not n_excited):
+    if (n_one > 0 or n_two > 0):
+        if (name.lower() == 'eom-ccsd'):
+            PsiMod.set_global_option('WFN', 'EOM_CCSD')
+            PsiMod.set_global_option('DERTYPE', 'NONE')
+            PsiMod.set_global_option('ONEPDM', 'TRUE')
+            PsiMod.cceom()
+        elif (name.lower() == 'eom-cc2'):
+            PsiMod.set_global_option('WFN', 'EOM_CC2')
+            PsiMod.set_global_option('DERTYPE', 'NONE')
+            PsiMod.set_global_option('ONEPDM', 'TRUE')
+            PsiMod.cceom()
         PsiMod.set_global_option('DERTYPE', 'NONE')
         PsiMod.set_global_option('ONEPDM', 'TRUE')
         PsiMod.cclambda()
