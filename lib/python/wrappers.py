@@ -1221,8 +1221,6 @@ def database(name, db_name, **kwargs):
             commands += """PsiMod.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
         if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
             commands += """PsiMod.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
-        if not((user_df_basis_cc == "") or (user_df_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('DF_BASIS_CC', '%s')\n""" % (user_df_basis_cc)
         if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
             commands += """PsiMod.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
         if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):

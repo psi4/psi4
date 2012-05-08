@@ -100,6 +100,13 @@ appropriate references for the underlying theory):
   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, 
   *J. Chem. Phys.* **127**, 024102 (2007).
 
+.. rubric:: Mk-MRCCSD(T)
+
+* "Perturbative Triples Corrections in State-Specific Multireference
+  Coupled Cluster Theory,"
+  F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+  *J. Chem. Phys.* **132**, 074107 (2010).
+
 .. rubric:: Mk-MRCCSDT(-n)
 
 * "Triple Excitations in State-Specific Multireference Coupled
@@ -107,6 +114,14 @@ appropriate references for the underlying theory):
   Model Systems," F. A. Evangelista, A. C. Simmonett, W. D. Allen,
   H. F. Schaefer, and J. Gauss, *J. Chem. Phys.* **128**, 124104
   (2008).
+
+.. rubric:: Mk-MRPT2
+
+* "A Companion Perturbation Theory for State-specific
+  Multireference Coupled Cluster Methods,"
+  F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, D. Mukherjee, and
+  W. D. Allen,
+  *Phys. Chem. Chem. Phys.* **11**, 4728-4741 (2009).
 
 .. rubric:: SAPT (General)
 
@@ -289,7 +304,13 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
     | EOM-CCSD                | Y         | Y         | RHF/ROHF/UHF    | threaded [#f3]_             |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
-    | CEPA(N)                 | Y         | N         | RHF             | threaded [#f3]_             |
+    | Mk-MRCCSD               | Y         | N         | RHF/ROHF/TCSCF  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+
+    | Mk-MRCCSD(T)            | Y         | N         | RHF/ROHF/TCSCF  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+
+    | Mk-MRPT2                | Y         | N         | RHF/ROHF/TCSCF  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+
+    | CEPA(n)                 | Y         | N         | RHF             | threaded [#f3]_             |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
     | ACPF/AQCC               | Y         | N         | RHF             | threaded [#f3]_             |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
