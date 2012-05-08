@@ -938,7 +938,6 @@ def database(name, db_name, **kwargs):
     user_basis = PsiMod.get_option('BASIS')
     user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
     user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
-    user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
     user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
     user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
 
