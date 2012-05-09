@@ -39,9 +39,19 @@ Bibliography
    *J. Chem. Theory Comput.* **7**, 10-18 (2011).
 
 .. [Cohen:GreenBook:2008]
+   E. R. Cohen, T. Cvitas, J. G. Frey, B. Holmstr\ |o_dots|\ om,
+   K. Kuchitsu, R. Marquardt, I. Mills, F. Pavese, M. Quack,
+   J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor, 
+   Quantities, Units, and Symbols in Physical chemistry, IUPAC Green
+   Book, 3rd. Ed., IUPAC & RSC Publishing (Cambridge, 2008).
 
 .. [PubChem]
-
+   E. Bolton, Y. Wang, P. A. Thiessen, S. H. Bryant.  PubChem: 
+   Integrated Platform of Small Molecules and Biological Activities,
+   Chapter 12 in *Annual Reports in Computational Chemistry*, Volume
+   4 (American Chemical Society: Washington, DC, 2008).
+   See `pubchem.ncbi.nlm.nih.gov <http://pubchem.ncbi.nlm.nih.gov/>`_.
+   
 .. [Sherrill:1999:CI]
    C. D. Sherrill and H. F. Schaefer,
    *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots|\ wdin

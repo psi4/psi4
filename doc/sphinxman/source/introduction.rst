@@ -158,7 +158,8 @@ available in |PSIfour| are provided below.
   014101 (2010).
 
 * "Wavefunction Methods for Noncovalent Interactions," E. G.
-  Hohenstein and C. D. Sherrill, *WIREs: Comput. Mol. Sci.*, in press.
+  Hohenstein and C. D. Sherrill, *WIREs: Comput. Mol. Sci.* **2**,
+  304-326 (2012).
 
 .. rubric:: Using Natural Orbitals in SAPT
 
