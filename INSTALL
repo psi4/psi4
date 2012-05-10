@@ -30,7 +30,8 @@ I. Compilation Prerequisites:
      seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
       ** make
-      ** autoconf (version 2.52 or higher)
+      ** autoconf (version 2.52 or higher, only needed for special
+                   architectures)
       ** aclocal
       ** fileutils (esp. install)
    * For documentation: (available off http://www.psicode.org)
@@ -60,7 +61,12 @@ installing PSI.  More detail is given below in Section III.
 
 A. Autoconf
 
-1. In the top-level psi4 directory, run autoconf:
+1. For unusual architectures, one needs to first run autoconf to generate
+the file "configure" in the top-level psi4 directory.  For most Linux
+and Mac compilations, this should not be necessary because the configure
+file provided with PSI4 should be sufficient.  To replace the general
+configure file with one specific to your architecture, in the top-level
+psi4 directory, run autoconf:
 
    * autoconf
 
