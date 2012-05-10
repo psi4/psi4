@@ -77,7 +77,6 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    CIvect Dvec;
    CIvect Dvec2;
 
-
    Cvec.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
       CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
       CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
@@ -130,6 +129,21 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Parameters.num_s_tmp_units, Parameters.first_s_tmp_unit,
         CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
      }
+
+   /* open the files: some of these CIvectors are logical vectors that
+      point to the same files ... don't need to repeat the file opens
+      for those
+   */
+   bool open_old; 
+   if (Parameters.restart) open_old = true;
+   else open_old = false;
+   Cvec.init_io_files(open_old);
+   Sigma.init_io_files(open_old);
+ 
+   if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) open_old = true;
+   else open_old = false;
+   Dvec.init_io_files(open_old);
+
 
    /* set up the vector pointers/info */
    if (Cvec.read_new_first_buf() == -1) Cvec.write_new_first_buf();

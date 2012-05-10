@@ -225,7 +225,6 @@ CIvect::CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
    cur_unit = 0;
    cur_size = 0;
 
-
    set(vl, nb, incor, ms0, iac, ibc, ias, ibs, offs, nac, nbc, 
          nirr, cdpirr, mxv, nu, funit, fablk, lablk, dc);
 
@@ -261,7 +260,7 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
    if (nunits) units = init_int_array(nunits);
    first_unit = fu;
    for (i=0; i<nunits; i++) units[i] = fu + i;
-     
+
    Ia_code = init_int_array(nb);
    Ib_code = init_int_array(nb);
    Ia_size = init_int_array(nb);
@@ -423,7 +422,8 @@ void CIvect::set(BIGINT vl, int nb, int incor, int ms0, int *iac,
          } /* end loop over buffers */
      }
                    
-    init_io_files();
+    // do next step separately now to control OPEN_NEW vs OPEN_OLD
+    // init_io_files();  
 
 /*
    fprintf(outfile,"num_blocks = %d\n", num_blocks);
@@ -1708,16 +1708,16 @@ double ** CIvect::blockptr(int blknum)
 ** 
 ** Returns: none
 */
-void CIvect::init_io_files(void)
+void CIvect::init_io_files(bool open_old)
 {
    int i;
 
    for (i=0; i<nunits; i++) {
-     // rfile(units[i]);  // old style
-     if (!psio_open_check((ULI) units[i]))
-       psio_open((ULI) units[i], 1); //  0 is new file, 1 is reopen
+     if (!psio_open_check((ULI) units[i])) {
+       if (open_old) psio_open((ULI) units[i], PSIO_OPEN_OLD); 
+       else psio_open((ULI) units[i], PSIO_OPEN_NEW);
+     }
    }
-
 }
 
 
