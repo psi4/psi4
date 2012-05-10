@@ -81,6 +81,10 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	     CalcInfo.nirreps, AlphaG->subgr_per_irrep, Jnroots, Jnunits,
 	     Jfirstunit, CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
 
+   // Open I/O files for these CIvectors if not already open
+   Ivec.init_io_files(true);
+   Jvec.init_io_files(true);
+
    buffer1 = Ivec.buf_malloc();
    buffer2 = Jvec.buf_malloc();
    Ivec.buf_lock(buffer1);
