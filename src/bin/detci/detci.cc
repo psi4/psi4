@@ -94,6 +94,7 @@ extern void write_energy(int nroots, double *evals, double offset);
 
 void init_io(void);
 void close_io(void);
+void cleanup(void);
 void title(void);
 void quote(void);
 void init_ioff(void);
@@ -222,6 +223,7 @@ PsiReturnType detci(Options &options)
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
+     cleanup();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -260,6 +262,7 @@ PsiReturnType detci(Options &options)
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
    close_io();
+   cleanup();
    return Success;
 }
 
@@ -360,6 +363,14 @@ void close_io(void)
    //errcod = psi_stop(infile,outfile,psi_file_prefix);
 }
 
+
+/*
+** cleanup(): Free any allocated memory that wasn't already freed elsewhere
+*/
+void cleanup(void)
+{
+ 
+}
 
 /*
 ** title(): Function prints a program identification
