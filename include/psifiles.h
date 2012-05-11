@@ -130,6 +130,21 @@
 #define PSIF_3B_SAPT_CC_DF_INTS          229
 #define PSIF_3B_SAPT_AMPS                230
 
+#define PSIF_DCC_IJAK  251 /* CEPA/CC (ij|ak) */
+#define PSIF_DCC_IJAK2 252 /* CEPA/CC (ij|ak) */
+#define PSIF_DCC_ABCI3 253 /* CEPA/CC (ia|bc) */
+#define PSIF_DCC_ABCI5 254 /* CEPA/CC (ia|bc) */
+#define PSIF_DCC_ABCD1 255 /* CEPA/CC (ab|cd)+ */
+#define PSIF_DCC_ABCD2 256 /* CEPA/CC (ab|cd)- */
+#define PSIF_DCC_IJAB  257 /* CEPA/CC (ij|ab) */
+#define PSIF_DCC_IAJB  258 /* CEPA/CC (ia|jb) */
+#define PSIF_DCC_IJKL  259 /* CEPA/CC (ij|kl) */
+#define PSIF_DCC_OVEC  260 /* CEPA/CC old vectors for diis */
+#define PSIF_DCC_EVEC  261 /* CEPA/CC error vectors for diis */
+#define PSIF_DCC_R2    262 /* CEPA/CC residual */
+#define PSIF_DCC_TEMP  263 /* CEPA/CC temporary storage */
+#define PSIF_DCC_T2    264 /* CEPA/CC t2 amplitudes */
+
 #define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
 #define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
 
