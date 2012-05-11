@@ -1,22 +1,6 @@
 #ifndef CEPA_H
 #define CEPA_H
 
-// output files
-#define PSIF_IJAK  251
-#define PSIF_IJAK2 252
-#define PSIF_ABCI3 253
-#define PSIF_ABCI5 254
-#define PSIF_ABCD1 255
-#define PSIF_ABCD2 256
-#define PSIF_AKJC2 257
-#define PSIF_KLCD  258
-#define PSIF_IJKL  259
-#define PSIF_OVEC  260
-#define PSIF_EVEC  261
-#define PSIF_R2    262
-#define PSIF_TEMP  263
-#define PSIF_T2    264
-
 namespace boost {
 template<class T> class shared_ptr;
 }
