@@ -97,24 +97,24 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   psio_address abcd1_addr = PSIO_ZERO;
   psio_address abcd2_addr = PSIO_ZERO;
 
-  psio->open(PSIF_IJKL,PSIO_OPEN_NEW);
-  psio->close(PSIF_IJKL,1);
-  psio->open(PSIF_KLCD,PSIO_OPEN_NEW);
-  psio->close(PSIF_KLCD,1);
-  psio->open(PSIF_IJAK,PSIO_OPEN_NEW);
-  psio->close(PSIF_IJAK,1);
-  psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
-  psio->close(PSIF_IJAK2,1);
-  psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCI3,1);
-  psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCI5,1);
-  psio->open(PSIF_ABCD1,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCD1,1);
-  psio->open(PSIF_ABCD2,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCD2,1);
-  psio->open(PSIF_AKJC2,PSIO_OPEN_NEW);
-  psio->close(PSIF_AKJC2,1);
+  psio->open(PSIF_DCC_IJKL,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_IJKL,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_IAJB,1);
+  psio->open(PSIF_DCC_IJAK,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_IJAK,1);
+  psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_IJAK2,1);
+  psio->open(PSIF_DCC_ABCI3,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_ABCI3,1);
+  psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_ABCI5,1);
+  psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_ABCD1,1);
+  psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_ABCD2,1);
+  psio->open(PSIF_DCC_IJAB,PSIO_OPEN_NEW);
+  psio->close(PSIF_DCC_IJAB,1);
   ULI nijkl=0;
   ULI totalnijkl=0;
   ULI nijak2=0;
@@ -169,9 +169,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
          ijkl_terms(val,pq,rs,p,q,r,s,o,nijkl,ijkl);
 
          if (nijkl>=nelem){
-            psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
-            psio->write(PSIF_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
-            psio->close(PSIF_IJKL,1);
+            psio->open(PSIF_DCC_IJKL,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
+            psio->close(PSIF_DCC_IJKL,1);
             totalnijkl+=nijkl;
             nijkl=0;
          }
@@ -180,17 +180,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
          val = (double)valptr[Buf->idx];
          ijak_terms(val,p,q,r,s,o,v,nijak,ijak);
          if (nijak>=nelem){
-            psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-            psio->write(PSIF_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
-            psio->close(PSIF_IJAK,1);
+            psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
+            psio->close(PSIF_DCC_IJAK,1);
             totalnijak+=nijak;
             nijak=0;
          }
          ijak2_terms(val,p,q,r,s,o,v,nijak2,ijak2);
          if (nijak2>=nelem){
-            psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
-            psio->write(PSIF_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
-            psio->close(PSIF_IJAK2,1);
+            psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
+            psio->close(PSIF_DCC_IJAK2,1);
             totalnijak2+=nijak2;
             nijak2=0;
          }
@@ -202,9 +202,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
             klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
             if (nklcd>=nelem){
-               psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-               psio->write(PSIF_KLCD,"E2klcd",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
-               psio->close(PSIF_KLCD,1);
+               psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+               psio->write(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
+               psio->close(PSIF_DCC_IAJB,1);
                totalnklcd+=nklcd;
                nklcd=0;
             }
@@ -212,9 +212,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
          else{
             akjc_terms(val,p,q,r,s,o,v,nakjc,akjc);
             if (nakjc>=nelem){
-               psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-               psio->write(PSIF_AKJC2,"E2akjc2",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
-               psio->close(PSIF_AKJC2,1);
+               psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
+               psio->write(PSIF_DCC_IJAB,"E2ijab",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
+               psio->close(PSIF_DCC_IJAB,1);
                totalnakjc+=nakjc;
                nakjc=0;
              }
@@ -224,17 +224,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
          val = (double)valptr[Buf->idx];
          abci3_terms(val,p,q,r,s,o,v,nabci3,abci3);
          if (nabci3>=nelem){
-            psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
-            psio->close(PSIF_ABCI3,1);
+            psio->open(PSIF_DCC_ABCI3,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
+            psio->close(PSIF_DCC_ABCI3,1);
             totalnabci3+=nabci3;
             nabci3=0;
          }
          abci5_terms(val,p,q,r,s,o,v,nabci5,abci5);
          if (nabci5>=nelem){
-            psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
-            psio->close(PSIF_ABCI5,1);
+            psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
+            psio->close(PSIF_DCC_ABCI5,1);
             totalnabci5+=nabci5;
             nabci5=0;
          }
@@ -243,17 +243,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
          val = (double)valptr[Buf->idx];
          abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
          if (nabcd1>=nelem){
-            psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
-            psio->close(PSIF_ABCD1,1);
+            psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+            psio->close(PSIF_DCC_ABCD1,1);
             totalnabcd1+=nabcd1;
             nabcd1=0;
          }
          abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
          if (nabcd2>=nelem){
-            psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-            psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
-            psio->close(PSIF_ABCD2,1);
+            psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_OLD);
+            psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
+            psio->close(PSIF_DCC_ABCD2,1);
             totalnabcd2+=nabcd2;
             nabcd2=0;
          }
@@ -299,9 +299,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
              ijkl_terms(val,pq,rs,p,q,r,s,o,nijkl,ijkl);
 
              if (nijkl>=nelem){
-                psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
-                psio->write(PSIF_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
-                psio->close(PSIF_IJKL,1);
+                psio->open(PSIF_DCC_IJKL,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
+                psio->close(PSIF_DCC_IJKL,1);
                 totalnijkl+=nijkl;
                 nijkl=0;
              }
@@ -310,17 +310,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
              val = (double)valptr[Buf->idx];
              ijak_terms(val,p,q,r,s,o,v,nijak,ijak);
              if (nijak>=nelem){
-                psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-                psio->write(PSIF_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
-                psio->close(PSIF_IJAK,1);
+                psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
+                psio->close(PSIF_DCC_IJAK,1);
                 totalnijak+=nijak;
                 nijak=0;
              }
              ijak2_terms(val,p,q,r,s,o,v,nijak2,ijak2);
              if (nijak2>=nelem){
-                psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
-                psio->write(PSIF_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
-                psio->close(PSIF_IJAK2,1);
+                psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
+                psio->close(PSIF_DCC_IJAK2,1);
                 totalnijak2+=nijak2;
                 nijak2=0;
              }
@@ -332,9 +332,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
                 klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
                 if (nklcd>=nelem){
-                   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-                   psio->write(PSIF_KLCD,"E2klcd",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
-                   psio->close(PSIF_KLCD,1);
+                   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+                   psio->write(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
+                   psio->close(PSIF_DCC_IAJB,1);
                    totalnklcd+=nklcd;
                    nklcd=0;
                 }
@@ -343,9 +343,9 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
                 akjc_terms(val,p,q,r,s,o,v,nakjc,akjc);
 
                 if (nakjc>=nelem){
-                   psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-                   psio->write(PSIF_AKJC2,"E2akjc2",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
-                   psio->close(PSIF_AKJC2,1);
+                   psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
+                   psio->write(PSIF_DCC_IJAB,"E2ijab",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
+                   psio->close(PSIF_DCC_IJAB,1);
                    totalnakjc+=nakjc;
                    nakjc=0;
                 }
@@ -355,17 +355,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
              val = (double)valptr[Buf->idx];
              abci3_terms(val,p,q,r,s,o,v,nabci3,abci3);
              if (nabci3>=nelem){
-                psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
-                psio->close(PSIF_ABCI3,1);
+                psio->open(PSIF_DCC_ABCI3,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
+                psio->close(PSIF_DCC_ABCI3,1);
                 totalnabci3+=nabci3;
                 nabci3=0;
              }
              abci5_terms(val,p,q,r,s,o,v,nabci5,abci5);
              if (nabci5>=nelem){
-                psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
-                psio->close(PSIF_ABCI5,1);
+                psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
+                psio->close(PSIF_DCC_ABCI5,1);
                 totalnabci5+=nabci5;
                 nabci5=0;
              }
@@ -374,17 +374,17 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
              val = (double)valptr[Buf->idx];
              abcd1_terms(val,pq,rs,p,q,r,s,o,v,nabcd1,abcd1);
              if (nabcd1>=nelem){
-                psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
-                psio->close(PSIF_ABCD1,1);
+                psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+                psio->close(PSIF_DCC_ABCD1,1);
                 totalnabcd1+=nabcd1;
                 nabcd1=0;
              }
              abcd2_terms(val,pq,rs,p,q,r,s,o,v,nabcd2,abcd2);
              if (nabcd2>=nelem){
-                psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-                psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
-                psio->close(PSIF_ABCD2,1);
+                psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_OLD);
+                psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
+                psio->close(PSIF_DCC_ABCD2,1);
                 totalnabcd2+=nabcd2;
                 nabcd2=0;
              }
@@ -398,65 +398,65 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
     * write any leftover bits that might not have been dumped to disk
     */
   if (nabcd2!=0){
-     psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-     psio->write(PSIF_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
-     psio->close(PSIF_ABCD2,1);
+     psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&abcd2[0],nabcd2*sizeof(struct integral),abcd2_addr,&abcd2_addr);
+     psio->close(PSIF_DCC_ABCD2,1);
      totalnabcd2+=nabcd2;
      nabcd2=0;
   }
   if (nabcd1!=0){
-     psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-     psio->write(PSIF_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
-     psio->close(PSIF_ABCD1,1);
+     psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&abcd1[0],nabcd1*sizeof(struct integral),abcd1_addr,&abcd1_addr);
+     psio->close(PSIF_DCC_ABCD1,1);
      totalnabcd1+=nabcd1;
      nabcd1=0;
   }
   if (nabci5!=0){
-     psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
-     psio->write(PSIF_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
-     psio->close(PSIF_ABCI5,1);
+     psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_ABCI5,"E2abci5",(char*)&abci5[0],nabci5*sizeof(struct integral),abci5_addr,&abci5_addr);
+     psio->close(PSIF_DCC_ABCI5,1);
      totalnabci5+=nabci5;
      nabci5=0;
   }
   if (nabci3!=0){
-     psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
-     psio->write(PSIF_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
-     psio->close(PSIF_ABCI3,1);
+     psio->open(PSIF_DCC_ABCI3,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_ABCI3,"E2abci3",(char*)&abci3[0],nabci3*sizeof(struct integral),abci3_addr,&abci3_addr);
+     psio->close(PSIF_DCC_ABCI3,1);
      totalnabci3+=nabci3;
      nabci3=0;
   }
   if (nakjc!=0){
-     psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-     psio->write(PSIF_AKJC2,"E2akjc2",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
-     psio->close(PSIF_AKJC2,1);
+     psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_IJAB,"E2ijab",(char*)&akjc[0],nakjc*sizeof(struct integral),akjc_addr,&akjc_addr);
+     psio->close(PSIF_DCC_IJAB,1);
      totalnakjc+=nakjc;
      nakjc=0;
   }
   if (nklcd!=0){
-     psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-     psio->write(PSIF_KLCD,"E2klcd",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
-     psio->close(PSIF_KLCD,1);
+     psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_IAJB,"E2iajb",(char*)&klcd[0],nklcd*sizeof(struct integral),klcd_addr,&klcd_addr);
+     psio->close(PSIF_DCC_IAJB,1);
      totalnklcd+=nklcd;
      nklcd=0;
   }
   if (nijkl!=0){
-     psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
-     psio->write(PSIF_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
-     psio->close(PSIF_IJKL,1);
+     psio->open(PSIF_DCC_IJKL,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_IJKL,"E2ijkl",(char*)&ijkl[0],nijkl*sizeof(struct integral),ijkl_addr,&ijkl_addr);
+     psio->close(PSIF_DCC_IJKL,1);
      totalnijkl+=nijkl;
      nijkl=0;
   }
   if (nijak!=0){
-     psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-     psio->write(PSIF_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
-     psio->close(PSIF_IJAK,1);
+     psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_IJAK,"E2ijak",(char*)&ijak[0],nijak*sizeof(struct integral),ijak_addr,&ijak_addr);
+     psio->close(PSIF_DCC_IJAK,1);
      totalnijak+=nijak;
      nijak=0;
   }
   if (nijak2!=0){
-     psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
-     psio->write(PSIF_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
-     psio->close(PSIF_IJAK2,1);
+     psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_OLD);
+     psio->write(PSIF_DCC_IJAK2,"E2ijak2",(char*)&ijak2[0],nijak2*sizeof(struct integral),ijak2_addr,&ijak2_addr);
+     psio->close(PSIF_DCC_IJAK2,1);
      totalnijak2+=nijak2;
      nijak2=0;
   }
@@ -467,32 +467,32 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   double *tmp;
   tmp = new double[maxelem];
 
-  fprintf(outfile,"        IJKL block.......");fflush(outfile);
-  SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",maxelem);
+  fprintf(outfile,"        (IJ|KL) block.......");fflush(outfile);
+  SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_DCC_IJKL,"E2ijkl",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        IJAK block 1/2...");fflush(outfile);
-  SortBlock(totalnijak,o*o*o*v,integralbuffer,tmp,PSIF_IJAK,"E2ijak",maxelem);
+  fprintf(outfile,"        (IJ|AK) block 1/2...");fflush(outfile);
+  SortBlock(totalnijak,o*o*o*v,integralbuffer,tmp,PSIF_DCC_IJAK,"E2ijak",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        IJAK block 2/2...");fflush(outfile);
-  SortBlock(totalnijak2,o*o*o*v,integralbuffer,tmp,PSIF_IJAK2,"E2ijak2",maxelem);
+  fprintf(outfile,"        (IJ|AK) block 2/2...");fflush(outfile);
+  SortBlock(totalnijak2,o*o*o*v,integralbuffer,tmp,PSIF_DCC_IJAK2,"E2ijak2",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        KCLD block.......");fflush(outfile);
-  SortBlock(totalnklcd,o*o*v*v,integralbuffer,tmp,PSIF_KLCD,"E2klcd",maxelem);
+  fprintf(outfile,"        (IA|JB) block.......");fflush(outfile);
+  SortBlock(totalnklcd,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IAJB,"E2iajb",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        KLCD block.......");fflush(outfile);
-  SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_AKJC2,"E2akjc2",maxelem);
+  fprintf(outfile,"        (IJ|AB) block.......");fflush(outfile);
+  SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IJAB,"E2ijab",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCI block 1/2...");fflush(outfile);
-  SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_ABCI3,"E2abci3",maxelem);
+  fprintf(outfile,"        (AB|CI) block 1/2...");fflush(outfile);
+  SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI3,"E2abci3",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCI block 1/2...");fflush(outfile);
-  SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_ABCI5,"E2abci5",maxelem);
+  fprintf(outfile,"        (AB|CI) block 1/2...");fflush(outfile);
+  SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI5,"E2abci5",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCD block 1/2...");fflush(outfile);
-  SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
+  fprintf(outfile,"        (AB|CD) block 1/2...");fflush(outfile);
+  SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_DCC_ABCD1,"E2abcd1",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        ABCD block 2/2...");fflush(outfile);
-  SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",maxelem);
+  fprintf(outfile,"        (AB|CD) block 2/2...");fflush(outfile);
+  SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_DCC_ABCD2,"E2abcd2",maxelem);
   fprintf(outfile,"done.\n\n");fflush(outfile);
 
   delete integralbuffer;
@@ -512,30 +512,30 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
       }
   }
   lastbin = v*(v+1)/2*v*(v+1)/2 - (nbins-1)*binsize;
-  psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-  psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_OLD);
   psio_address abcd1_again = PSIO_ZERO;
   psio_address abcd1_new = PSIO_ZERO;
   psio_address abcd2_new = PSIO_ZERO;
   abcd1_addr = abcd2_addr = PSIO_ZERO;
   for (ULI i=0; i<nbins-1; i++){
-      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr,&abcd1_addr);
-      psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr,&abcd2_addr);
+      psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_addr,&abcd1_addr);
+      psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],binsize*sizeof(double),abcd2_addr,&abcd2_addr);
       F_DAXPY(binsize,-1.0,tmp2,1,tmp,1);
-      psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
-      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
+      psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],binsize*sizeof(double),abcd2_new,&abcd2_new);
+      psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_again,&abcd1_again);
       F_DAXPY(binsize,1.0,tmp2,1,tmp,1);
-      psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
+      psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],binsize*sizeof(double),abcd1_new,&abcd1_new);
   }
-  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr,&abcd1_addr);
-  psio->read(PSIF_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr,&abcd2_addr);
+  psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_addr,&abcd1_addr);
+  psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp2[0],lastbin*sizeof(double),abcd2_addr,&abcd2_addr);
   F_DAXPY(lastbin,-1.0,tmp2,1,tmp,1);
-  psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
-  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
+  psio->write(PSIF_DCC_ABCD2,"E2abcd2",(char*)&tmp[0],lastbin*sizeof(double),abcd2_new,&abcd2_new);
+  psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_again,&abcd1_again);
   F_DAXPY(lastbin,1.0,tmp2,1,tmp,1);
-  psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
-  psio->close(PSIF_ABCD1,1);
-  psio->close(PSIF_ABCD2,1);
+  psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
+  psio->close(PSIF_DCC_ABCD1,1);
+  psio->close(PSIF_DCC_ABCD2,1);
 
   delete tmp;
   delete tmp2;
@@ -1153,7 +1153,7 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      
 
 // new way
-     psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
+     psio->open(PSIF_DCC_TEMP,PSIO_OPEN_NEW);
      addr2=PSIO_ZERO;
      for (ULI k=0; k<nbins; k++){
          addr1=PSIO_ZERO;
@@ -1172,12 +1172,12 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
                  tmp[buffer[j].ind-k*binsize] = buffer[j].val;
              }
          }
-         psio->write(PSIF_TEMP,string,(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
+         psio->write(PSIF_DCC_TEMP,string,(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
      }
      psio->close(PSIFILE,1);
-     psio->close(PSIF_TEMP,1);
+     psio->close(PSIF_DCC_TEMP,1);
 
-     psio->rename_file(PSIF_TEMP,PSIFILE);
+     psio->rename_file(PSIF_DCC_TEMP,PSIFILE);
 
      delete addr;
   }
