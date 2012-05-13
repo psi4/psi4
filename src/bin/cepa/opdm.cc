@@ -1,4 +1,5 @@
 #include<libmints/mints.h>
+#include<psifiles.h>
 #include"blas.h"
 #include"coupledpair.h"
 
@@ -17,9 +18,9 @@ void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options){
   // if t2 was stored on disk, grab it.
   if (cepa->t2_on_disk){
      boost::shared_ptr<PSIO> psio(new PSIO());
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&cepa->tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&cepa->tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      cepa->tb = cepa->tempv;
   }
 
