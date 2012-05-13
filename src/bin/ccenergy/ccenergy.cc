@@ -127,17 +127,19 @@ void CCEnergyWavefunction::init()
     // Destroy it. Otherwise we will see a "file already open" error.
     chkpt_.reset();
 
-    nso_        = reference_wavefunction_->nso();
-    nirrep_     = reference_wavefunction_->nirrep();
-    nmo_        = reference_wavefunction_->nmo();
-    for(int h = 0; h < nirrep_; ++h){
-        soccpi_[h] = reference_wavefunction_->soccpi()[h];
-        doccpi_[h] = reference_wavefunction_->doccpi()[h];
-        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
-        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
-        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
-    }
+    copy(reference_wavefunction_);
+
+//    nso_        = reference_wavefunction_->nso();
+//    nirrep_     = reference_wavefunction_->nirrep();
+//    nmo_        = reference_wavefunction_->nmo();
+//    for(int h = 0; h < nirrep_; ++h){
+//        soccpi_[h] = reference_wavefunction_->soccpi()[h];
+//        doccpi_[h] = reference_wavefunction_->doccpi()[h];
+//        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
+//        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+//        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
+//        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
+//    }
 }
 
 double CCEnergyWavefunction::compute_energy()

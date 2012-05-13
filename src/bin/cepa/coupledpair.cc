@@ -2,6 +2,7 @@
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
 #include<libpsio/psio.hpp>
+#include<psifiles.h>
 #include<sys/times.h>
 #ifdef _OPENMP
     #include<omp.h>
@@ -240,15 +241,15 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
   psio_address addr;
 
   // zero residual
-  psio->open(PSIF_R2,PSIO_OPEN_NEW);
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_NEW);
   memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_NEW);
-     psio->write_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
+     psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }
   pair_energy = (double*)malloc(o*o*sizeof(double));
 
@@ -554,13 +555,13 @@ void CoupledPair::CPU_t1_vmeai(CepaTaskParams params){
   long int v = nvirt;
   long int i,a,m,e,id,one=1;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_AKJC2,1);
+  psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IJAB,"E2ijab",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IJAB,1);
 
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   F_DAXPY(o*o*v*v,-2.0,integrals,1,tempv,1);
   
   for (i=0; i<o; i++){
@@ -581,9 +582,9 @@ void CoupledPair::CPU_t1_vmeni(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
 
@@ -596,9 +597,9 @@ void CoupledPair::CPU_t1_vmeni(CepaTaskParams params){
           }
       }
   }
-  psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempv[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK,1);
+  psio->open(PSIF_DCC_IJAK,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&tempv[0],o*o*o*v*sizeof(double));
+  psio->close(PSIF_DCC_IJAK,1);
   F_DGEMM('t','n',o,v,o*o*v,-1.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o);
   psio.reset();
 }
@@ -611,9 +612,9 @@ void CoupledPair::CPU_t1_vmaef(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
 
@@ -641,18 +642,18 @@ void CoupledPair::CPU_t1_vmaef(CepaTaskParams params){
   }
   lasttile = v - (ntiles-1L)*tilesize;
 
-  psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCI3,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
 
   for (i=0; i<ntiles-1; i++){
-      psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],tilesize*ov2*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&integrals[0],tilesize*ov2*sizeof(double),addr,&addr);
       F_DGEMM('n','n',o,tilesize,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o);
   }
   i=ntiles-1;
-  psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],lasttile*ov2*sizeof(double),addr,&addr);
+  psio->read(PSIF_DCC_ABCI3,"E2abci3",(char*)&integrals[0],lasttile*ov2*sizeof(double),addr,&addr);
   F_DGEMM('n','n',o,lasttile,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o);
-  psio->close(PSIF_ABCI3,1);
+  psio->close(PSIF_DCC_ABCI3,1);
   psio.reset();
 
 }
@@ -666,22 +667,22 @@ void CoupledPair::CPU_I2p_abci_refactored_term1(CepaTaskParams params){
   long int o2v = o*o*v;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCI5,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
 
   for (i=0; i<nov2tiles-1; i++){
-      psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_ABCI5,"E2abci5",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
       F_DGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
   }
   i=nov2tiles-1;
-  psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
+  psio->read(PSIF_DCC_ABCI5,"E2abci5",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
   F_DGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
-  psio->close(PSIF_ABCI5,1);
+  psio->close(PSIF_DCC_ABCI5,1);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   for (a=0; a<v; a++){
   for (b=0; b<v; b++){
       F_DAXPY(o*o,1.0,tempt+b*v*o*o+a*o*o,1,tempv+a*v*o*o+b*o*o,1);
@@ -691,8 +692,8 @@ void CoupledPair::CPU_I2p_abci_refactored_term1(CepaTaskParams params){
   for (i=0; i<o; i++){
       F_DAXPY(o,1.0,tempt+a*v*o*o+b*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
   }}}
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 }
 
@@ -760,13 +761,13 @@ void CoupledPair::Local_SCS_CEPA(){
   double ssenergy = 0.0;
   double osenergy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
 
   SharedMatrix Rii = wfn_->CIMTransformationMatrix();
   double**Rii_pointer = Rii->pointer();
-  // transform E2klcd back from quasi-canonical basis
+  // transform E2iajb back from quasi-canonical basis
   for (i=0; i<o; i++){
       for (a=0; a<v; a++){
           for (j=0; j<o; j++){
@@ -783,9 +784,9 @@ void CoupledPair::Local_SCS_CEPA(){
 
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
 
@@ -835,13 +836,13 @@ void CoupledPair::SCS_CEPA(){
   double ssenergy = 0.0;
   double osenergy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
   for (a=o; a<rs; a++){
@@ -873,13 +874,13 @@ void CoupledPair::SCS_MP2(){
   double ssenergy = 0.0;
   double osenergy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
   for (a=o; a<rs; a++){
@@ -912,13 +913,13 @@ void CoupledPair::PairEnergy(){
   long int iajb,jaib,ijab=0;
   double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempt;
   }
   for (i=0; i<o; i++){
@@ -947,13 +948,13 @@ double CoupledPair::CheckEnergy(){
   long int iajb,jaib,ijab=0;
   double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
   for (a=o; a<rs; a++){
@@ -984,12 +985,12 @@ void CoupledPair::UpdateT2(long int iter){
   long int iajb,jaib,ijab=0;
   //double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   // we still have the residual in memory in tempv
-  //psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  //psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  //psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
 
   double fac = 1.0;
   if (cepa_level == 0)       fac = 0.0;
@@ -1039,17 +1040,17 @@ void CoupledPair::UpdateT2(long int iter){
 
   // error vectors for diis are in tempv:
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempv,1);
   }
   F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->write_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tempt,1,tb,1);
   }
@@ -1077,14 +1078,14 @@ void CoupledPair::DIIS(double*c,long int nvec,long int n){
   char*evector=(char*)malloc(1000*sizeof(char));
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_EVEC,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_EVEC,PSIO_OPEN_OLD);
 
   for (i=0; i<nvec; i++){
       sprintf(evector,"evector%li",i+1);
-      psio->read_entry(PSIF_EVEC,evector,(char*)&tempt[0],n*sizeof(double));
+      psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempt[0],n*sizeof(double));
       for (j=i+1; j<nvec; j++){
           sprintf(evector,"evector%li",j+1);
-          psio->read_entry(PSIF_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
+          psio->read_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
           sum = F_DDOT(n,tempt,1,tempv,1);
           A[j*nvar+i] = sum;
           A[i*nvar+j] = sum;
@@ -1097,7 +1098,7 @@ void CoupledPair::DIIS(double*c,long int nvec,long int n){
       A[i*nvar+j] = -1.0;
   }
   A[nvar*nvar-1] = 0.;
-  psio->close(PSIF_EVEC,1);
+  psio->close(PSIF_DCC_EVEC,1);
   free(evector);
 
   integer nrhs,lda,ldb,info;
@@ -1128,23 +1129,23 @@ void CoupledPair::DIISOldVector(long int iter,int diis_iter,int replace_diis_ite
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   if (diis_iter==0)
-     psio->open(PSIF_OVEC,PSIO_OPEN_NEW);
+     psio->open(PSIF_DCC_OVEC,PSIO_OPEN_NEW);
   else
-     psio->open(PSIF_OVEC,PSIO_OPEN_OLD);
+     psio->open(PSIF_DCC_OVEC,PSIO_OPEN_OLD);
 
   psio_address addr;
   addr = PSIO_ZERO;
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }
 
-  psio->write(PSIF_OVEC,oldvector,(char*)&tb[0],arraysize*sizeof(double),addr,&addr);
-  psio->write(PSIF_OVEC,oldvector,(char*)&t1[0],o*v*sizeof(double),addr,&addr);
-  psio->close(PSIF_OVEC,1);
+  psio->write(PSIF_DCC_OVEC,oldvector,(char*)&tb[0],arraysize*sizeof(double),addr,&addr);
+  psio->write(PSIF_DCC_OVEC,oldvector,(char*)&t1[0],o*v*sizeof(double),addr,&addr);
+  psio->close(PSIF_DCC_OVEC,1);
   psio.reset();
 
   free(oldvector);
@@ -1165,14 +1166,14 @@ double CoupledPair::DIISErrorVector(int diis_iter,int replace_diis_iter,int iter
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   if (diis_iter==0)
-     psio->open(PSIF_EVEC,PSIO_OPEN_NEW);
+     psio->open(PSIF_DCC_EVEC,PSIO_OPEN_NEW);
   else
-     psio->open(PSIF_EVEC,PSIO_OPEN_OLD);
+     psio->open(PSIF_DCC_EVEC,PSIO_OPEN_OLD);
 
   nrm = F_DNRM2(arraysize+o*v,tempv,1);
-  psio->write_entry(PSIF_EVEC,evector,(char*)&tempv[0],(arraysize+o*v)*sizeof(double));
+  psio->write_entry(PSIF_DCC_EVEC,evector,(char*)&tempv[0],(arraysize+o*v)*sizeof(double));
 
-  psio->close(PSIF_EVEC,1);
+  psio->close(PSIF_DCC_EVEC,1);
   psio.reset();
 
   free(evector);
@@ -1189,7 +1190,7 @@ void CoupledPair::DIISNewAmplitudes(int diis_iter){
   oldvector=(char*)malloc(1000*sizeof(char));
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_OVEC,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_OVEC,PSIO_OPEN_OLD);
 
   psio_address addr;
 
@@ -1206,18 +1207,18 @@ void CoupledPair::DIISNewAmplitudes(int diis_iter){
   for (long int j=1; j<=max; j++){
       addr = PSIO_ZERO;
       sprintf(oldvector,"oldvector%li",j);
-      psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],arraysize*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],arraysize*sizeof(double),addr,&addr);
       F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
-      psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
       F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
   }
-  psio->close(PSIF_OVEC,1);
+  psio->close(PSIF_DCC_OVEC,1);
   free(oldvector);
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_NEW);
-     psio->write_entry(PSIF_T2,"t2",(char*)&tb[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
+     psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tb[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }
 
   psio.reset();
@@ -1233,22 +1234,22 @@ void CoupledPair::I2ijkl(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
 
-  psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJKL,"E2ijkl",(char*)&integrals[0],o*o*o*o*sizeof(double));
-  psio->close(PSIF_IJKL,1);
+  psio->open(PSIF_DCC_IJKL,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IJKL,"E2ijkl",(char*)&integrals[0],o*o*o*o*sizeof(double));
+  psio->close(PSIF_DCC_IJKL,1);
 
   F_DGEMM('n','n',o*o,v*v,o*o,0.5,integrals,o*o,tempt,o*o,0.0,tempv,o*o);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
@@ -1257,8 +1258,8 @@ void CoupledPair::I2ijkl(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 
 }
@@ -1272,15 +1273,15 @@ void CoupledPair::I2piajk(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK2,"E2ijak2",(char*)&tempv[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK2,1);
+  psio->open(PSIF_DCC_IJAK2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IJAK2,"E2ijak2",(char*)&tempv[0],o*o*o*v*sizeof(double));
+  psio->close(PSIF_DCC_IJAK2,1);
 
   F_DGEMM('n','n',o*o*v,v,o,-1.0,tempv,o*o*v,t1,o,0.0,tempt,o*o*v);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
@@ -1289,8 +1290,8 @@ void CoupledPair::I2piajk(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 }
 /**
@@ -1303,9 +1304,9 @@ void CoupledPair::Vabcd1(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
@@ -1321,20 +1322,20 @@ void CoupledPair::Vabcd1(CepaTaskParams params){
           }
       }
   }
-  psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
   addr = PSIO_ZERO;
   for (j=0; j<ntiles-1; j++){
-      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
       F_DGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   }
   j=ntiles-1;
-  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
+  psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
   F_DGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
-  psio->close(PSIF_ABCD1,1);
+  psio->close(PSIF_DCC_ABCD1,1);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
@@ -1344,8 +1345,8 @@ void CoupledPair::Vabcd1(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 
 }
@@ -1361,9 +1362,9 @@ void CoupledPair::Vabcd2(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
@@ -1377,20 +1378,20 @@ void CoupledPair::Vabcd2(CepaTaskParams params){
           }
       }
   }
-  psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_ABCD2,PSIO_OPEN_OLD);
   addr = PSIO_ZERO;
   for (j=0; j<ntiles-1; j++){
-      psio->read(PSIF_ABCD2,"E2abcd2",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
+      psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
       F_DGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   }
   j = ntiles-1;
-  psio->read(PSIF_ABCD2,"E2abcd2",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
+  psio->read(PSIF_DCC_ABCD2,"E2abcd2",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
   F_DGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
-  psio->close(PSIF_ABCD2,1);
+  psio->close(PSIF_DCC_ABCD2,1);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
           if (a>b) sg2 = -1;
@@ -1404,8 +1405,8 @@ void CoupledPair::Vabcd2(CepaTaskParams params){
           }
       }
   }
-  //psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  //psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 }
 /**
@@ -1418,16 +1419,16 @@ void CoupledPair::I2iabj(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
   F_DCOPY(o*o*v*v,integrals,1,tempv,1);
 
   // use I2iabj
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }
   for (j=0,id=0; j<o; j++){
@@ -1443,10 +1444,10 @@ void CoupledPair::I2iabj(CepaTaskParams params){
   F_DGEMM('n','n',o*v,o*v,o*v,1.0,tempv,o*v,tempt,o*v,0.0,integrals,o*v);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   // if we KNOW this is the first diagram, we don't need to read in the old
   // residual.
-  //psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
@@ -1456,8 +1457,8 @@ void CoupledPair::I2iabj(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
 
   psio.reset();
 
@@ -1472,15 +1473,15 @@ void CoupledPair::I2iajb(CepaTaskParams params){
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_AKJC2,1);
+  psio->open(PSIF_DCC_IJAB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IJAB,"E2ijab",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IJAB,1);
 
   // use I2iajb
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
 
@@ -1497,8 +1498,8 @@ void CoupledPair::I2iajb(CepaTaskParams params){
   F_DGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,integrals,o*v,0.0,tempv,o*v);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
@@ -1508,14 +1509,14 @@ void CoupledPair::I2iajb(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
 
   // use I2iajb
   if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }
 
@@ -1532,8 +1533,8 @@ void CoupledPair::I2iajb(CepaTaskParams params){
   F_DGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,tempv,o*v,0.0,integrals,o*v);
 
   // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
@@ -1543,8 +1544,8 @@ void CoupledPair::I2iajb(CepaTaskParams params){
           }
       }
   }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
   psio.reset();
 }
 

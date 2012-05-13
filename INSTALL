@@ -19,8 +19,10 @@ I. Compilation Prerequisites:
      convention of and some system routines for the BLAS and LAPACK libraries
      on a few architectures.  It is optional in a few cases (e.g. Mac OS X
      systems).
-   * Optimized BLAS library (see recommendations below)
-   * Optimized LAPACK library (see recommendations below)
+   * Optimized BLAS library (preferably NOT one supplied by a standard
+     Linux distribution; see recommendations below)
+   * Optimized LAPACK library (preferably NOT one supplied by a standard
+     Linux distribution; see recommendations below)
    * POSIX threads (Pthreads) library (optional)
    * Python interpreter (2.4 or higher)
    * Python developer libraries corresponding to your interpreter.
@@ -31,7 +33,8 @@ I. Compilation Prerequisites:
    * GNU utilities: (see http://www.gnu.org)
       ** make
       ** autoconf (version 2.52 or higher, only needed for special
-                   architectures)
+                   architectures, to compile with MADNESS, or to compile the 
+                   development branch)
       ** aclocal
       ** fileutils (esp. install)
    * For documentation: (available off http://www.psicode.org)
@@ -48,10 +51,10 @@ I. Compilation Prerequisites:
    you cannot find the config program the developer libraries will not be
    detected and the PSI4 configure script will fail.  
 
+   For Fedora users, the python development library is called python-devel
+
    For Ubuntu users, you will need the following packages installed:
    gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 
-
-   For Fedora users, the python development library is called python-devel
 
 
 II. Brief Summary of Configruation, Compilation, and Installation
@@ -61,7 +64,8 @@ installing PSI.  More detail is given below in Section III.
 
 A. Autoconf
 
-1. For unusual architectures, one needs to first run autoconf to generate
+1. For unusual architectures (or for developers working in the development
+branch), one needs to first run autoconf to generate
 the file "configure" in the top-level psi4 directory.  For most Linux
 and Mac compilations, this should not be necessary because the configure
 file provided with PSI4 should be sufficient.  To replace the general
@@ -103,7 +107,6 @@ Either
    * make
    * make tests
    * make install [if tests pass]
-   * make doc [optional]
    * [do user configuration, see below]
 
 or, if you want to save your configuration options for a future compilation,
@@ -117,7 +120,6 @@ then in the top-level psi4 directory,
    * make
    * make tests
    * make install [if tests pass]
-   * make doc [optional]
    * [do user configuration, see below]
 
 That's it!  The details about configuration are given below.  If something
@@ -184,6 +186,13 @@ installation directory.
 * Intel compiler with MKL math library [highly recommended; if you don't use
 this, then at least make sure you have a threaded BLAS (see BLAS
 recommendations below)]
+
+   Note: there seems to be a problem with icpc 12.0.2 and possibly earlier
+12.0 versions, giving an error like: 
+
+   error: identifier "__is_trivial" is undefined.
+
+Use at least version 12.0.4.
 
    ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
 
@@ -425,11 +434,12 @@ documentation, basis set data, and various control strctures $prefix/share.
 
 Step 5: Building Documentation
 
-If your system has the appropriate utilities, you may build the
-package documentation from the top-level $objdir by running "make doc".
-The resulting files will appear in the $prefix/doc area.
-This is not yet fully operational, but the documentation is available
-off http://www.psicode.org .
+This is not recommended because all of the documentation should be
+available at www.psicode.org, and it is automatically updated.  However,
+if your system has the appropriate utilities (notably the sphinx package
+and LaTeX), you may build the package documentation from the top-level
+$objdir by running "make doc".  The resulting files will appear in the
+$prefix/doc area.
 
 Step 6: Cleaning
 
