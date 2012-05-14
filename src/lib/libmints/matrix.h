@@ -903,6 +903,12 @@ public:
     /// Back transform this by transformer
     void back_transform(const Matrix& transformer);
 
+    /**
+     * Expands the row dimension by one, and then orthogonalizes vector v against
+     * the current rows, before setting the new row to the orthogonalized copy of v
+     */
+    bool add_and_orthogonalize_row(const SharedVector v);
+
     /*! @{
      * Assume this is a orthogonal matrix.  This function Gram-Schmidt
      * orthogonalizes a new vector v and adds it to matrix A. This must contain
