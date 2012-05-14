@@ -12,6 +12,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::compute_dcft_energy()
 {
+    dcft_timer_on("DCFTSolver::compute_dcft_energy()");
+
     dpdbuf4 L, G, I;
     double eGaa, eGab, eGbb, eIaa, eIab, eIbb;
 
@@ -76,6 +78,8 @@ DCFTSolver::compute_dcft_energy()
 #endif
 
     lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;
+
+    dcft_timer_off("DCFTSolver::compute_dcft_energy()");
 }
 
 }} // Namespaces

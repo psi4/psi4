@@ -20,6 +20,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::mp2_guess()
 {
+    dcft_timer_on("DCFTSolver::mp2_guess()");
+
     // Initialize the integral transformation object
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -147,6 +149,8 @@ DCFTSolver::mp2_guess()
     }
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::mp2_guess()");
 }
 
 

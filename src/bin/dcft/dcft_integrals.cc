@@ -15,6 +15,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::transform_integrals()
 {
+    dcft_timer_on("DCFTSolver::transform_integrals()");
+
     dpdbuf4 I, Irs, Isr;
 
     _ints->update_orbitals();
@@ -205,6 +207,8 @@ DCFTSolver::transform_integrals()
     build_denominators();
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::transform_integrals()");
 }
 
 /**
@@ -214,6 +218,8 @@ DCFTSolver::transform_integrals()
 void
 DCFTSolver::build_denominators()
 {
+    dcft_timer_on("DCFTSolver::build_denominators()");
+
     dpdbuf4 D;
     dpdfile2 F;
 
@@ -394,10 +400,13 @@ DCFTSolver::build_denominators()
     delete [] bOccEvals;
     delete [] aVirEvals;
     delete [] bVirEvals;
+
+    dcft_timer_off("DCFTSolver::build_denominators()");
 }
 
 void DCFTSolver::build_gtau()
 {
+    dcft_timer_on("DCFTSolver::build_gtau()");
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -556,6 +565,7 @@ void DCFTSolver::build_gtau()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
+    dcft_timer_off("DCFTSolver::build_gtau()");
 }
 
 }} // Namespaces

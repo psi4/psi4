@@ -258,8 +258,8 @@ use density fitting techniques, because they introduce minimal errors
 whil providing much faster computations [Hohenstein:2010:184111]_ 
 [Hohenstein:2010:014101]_. Since we're using density fitting for the SAPT,
 we might as well also use it for the Hartree--Fock computations that are
-performed as part of the SAPT.  We can specify that with the option
-and value pair \optionname{scf\_type} \optionval{df}.
+performed as part of the SAPT.  We can specify that with 
+``scf_type DF``.
 
 Density fitting procedures require the use of auxiliary basis sets that
 pair with the primary basis set.  Fortunately, |PSIfour| is usually smart
@@ -271,7 +271,7 @@ auxiliary basis for the Hartree--Fock, and the jun-cc-pVDZ-RI basis set
 for the SAPT procedure.
 
 To speed up the computation a little, we also tell the SAPT procedure to
-freeze the core electrons with the \optionname{freeze\_core} option.  The SAPT
+freeze the core electrons with ``freeze_core True``.  The SAPT
 procedure is invoked with the simple call, ``energy('sapt0')``}.  This
 call knows to automatically run two monomer computations and a dimer
 computation and then use these results to perform the SAPT analysis.  The

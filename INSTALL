@@ -19,8 +19,10 @@ I. Compilation Prerequisites:
      convention of and some system routines for the BLAS and LAPACK libraries
      on a few architectures.  It is optional in a few cases (e.g. Mac OS X
      systems).
-   * Optimized BLAS library (see recommendations below)
-   * Optimized LAPACK library (see recommendations below)
+   * Optimized BLAS library (preferably NOT one supplied by a standard
+     Linux distribution; see recommendations below)
+   * Optimized LAPACK library (preferably NOT one supplied by a standard
+     Linux distribution; see recommendations below)
    * POSIX threads (Pthreads) library (optional)
    * Python interpreter (2.4 or higher)
    * Python developer libraries corresponding to your interpreter.
@@ -30,7 +32,9 @@ I. Compilation Prerequisites:
      seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
       ** make
-      ** autoconf (version 2.52 or higher)
+      ** autoconf (version 2.52 or higher, only needed for special
+                   architectures, to compile with MADNESS, or to compile the 
+                   development branch)
       ** aclocal
       ** fileutils (esp. install)
    * For documentation: (available off http://www.psicode.org)
@@ -47,10 +51,10 @@ I. Compilation Prerequisites:
    you cannot find the config program the developer libraries will not be
    detected and the PSI4 configure script will fail.  
 
+   For Fedora users, the python development library is called python-devel
+
    For Ubuntu users, you will need the following packages installed:
    gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 
-
-   For Fedora users, the python development library is called python-devel
 
 
 II. Brief Summary of Configruation, Compilation, and Installation
@@ -60,7 +64,13 @@ installing PSI.  More detail is given below in Section III.
 
 A. Autoconf
 
-1. In the top-level psi4 directory, run autoconf:
+1. For unusual architectures (or for developers working in the development
+branch), one needs to first run autoconf to generate
+the file "configure" in the top-level psi4 directory.  For most Linux
+and Mac compilations, this should not be necessary because the configure
+file provided with PSI4 should be sufficient.  To replace the general
+configure file with one specific to your architecture, in the top-level
+psi4 directory, run autoconf:
 
    * autoconf
 
@@ -97,7 +107,6 @@ Either
    * make
    * make tests
    * make install [if tests pass]
-   * make doc [optional]
    * [do user configuration, see below]
 
 or, if you want to save your configuration options for a future compilation,
@@ -111,7 +120,6 @@ then in the top-level psi4 directory,
    * make
    * make tests
    * make install [if tests pass]
-   * make doc [optional]
    * [do user configuration, see below]
 
 That's it!  The details about configuration are given below.  If something
@@ -175,17 +183,27 @@ text given in the psi4/do-configure file (all on one long line). Replace the
 text after prefix with whatever directory you want to use for your
 installation directory.
 
+* Intel compiler with MKL math library [highly recommended; if you don't use
+this, then at least make sure you have a threaded BLAS (see BLAS
+recommendations below)]
+
+   Note: there seems to be a problem with icpc 12.0.2 and possibly earlier
+12.0 versions, giving an error like: 
+
+   error: identifier "__is_trivial" is undefined.
+
+Use at least version 12.0.4.
+
+   ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
+
+Note: it's -mkl, not -lmkl.
+
 * g++, optimized
    ../configure --prefix=/usr/local/psi4
 
 * g++, for debugging
    ../configure --prefix=/usr/local/psi4 --without-opt --with-debug
 
-* Intel compiler with MKL math library
-
-   ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
-
-Note: it's -mkl, not -lmkl.
 
 * Compiling for Mac
 To get the compilers needed, it's easiest to install XCode. However, XCode
@@ -220,8 +238,9 @@ adding the following tag to your configure may help:
 
 B. List of Specific Configuration Options
 
-You may need to make use of one or more of the following options to
-the configure script:
+The example configuration options in the previous subsection are usually
+sufficient.  However, if not, you may need to make use of one or more
+of the following options to the configure script:
 
    * --prefix=directory --- Use this option if you wish to install the
    PSI4 package somewhere other than the default directory, /usr/local/psi.
@@ -415,11 +434,12 @@ documentation, basis set data, and various control strctures $prefix/share.
 
 Step 5: Building Documentation
 
-If your system has the appropriate utilities, you may build the
-package documentation from the top-level $objdir by running "make doc".
-The resulting files will appear in the $prefix/doc area.
-This is not yet fully operational, but the documentation is available
-off http://www.psicode.org .
+This is not recommended because all of the documentation should be
+available at www.psicode.org, and it is automatically updated.  However,
+if your system has the appropriate utilities (notably the sphinx package
+and LaTeX), you may build the package documentation from the top-level
+$objdir by running "make doc".  The resulting files will appear in the
+$prefix/doc area.
 
 Step 6: Cleaning
 

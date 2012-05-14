@@ -12,6 +12,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::dump_density()
 {
+    dcft_timer_on("DCFTSolver::dump_density()");
+
     psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -85,7 +87,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
         #pragma omp parallel for
-        for(size_t ab = 0; ab < Gaa.params->rowtot[h]; ++ab){
+        for(long int ab = 0; ab < Gaa.params->rowtot[h]; ++ab){
             size_t a = Gaa.params->roworb[h][ab][0];
             int Ga = Gaa.params->psym[a];
             a -= Gaa.params->poff[Ga];
@@ -121,7 +123,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
         #pragma omp parallel for
-        for(size_t ab = 0; ab < Gab.params->rowtot[h]; ++ab){
+        for(long int ab = 0; ab < Gab.params->rowtot[h]; ++ab){
             size_t a = Gab.params->roworb[h][ab][0];
             int Ga = Gab.params->psym[a];
             a -= Gab.params->poff[Ga];
@@ -156,7 +158,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
         #pragma omp parallel for
-        for(size_t ab = 0; ab < Gbb.params->rowtot[h]; ++ab){
+        for(long int ab = 0; ab < Gbb.params->rowtot[h]; ++ab){
             size_t a = Gbb.params->roworb[h][ab][0];
             int Ga = Gbb.params->psym[a];
             a -= Gbb.params->poff[Ga];
@@ -195,7 +197,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
         #pragma omp parallel for
-        for(size_t ij = 0; ij < Gaa.params->rowtot[h]; ++ij){
+        for(long int ij = 0; ij < Gaa.params->rowtot[h]; ++ij){
             size_t i = Gaa.params->roworb[h][ij][0];
             int Gi = Gaa.params->psym[i];
             i -= Gaa.params->poff[Gi];
@@ -232,7 +234,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
         #pragma omp parallel for
-        for(size_t ij = 0; ij < Gab.params->rowtot[h]; ++ij){
+        for(long int ij = 0; ij < Gab.params->rowtot[h]; ++ij){
             size_t i = Gab.params->roworb[h][ij][0];
             int Gi = Gab.params->psym[i];
             i -= Gab.params->poff[Gi];
@@ -267,7 +269,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
         #pragma omp parallel for
-        for(size_t ij = 0; ij < Gbb.params->rowtot[h]; ++ij){
+        for(long int ij = 0; ij < Gbb.params->rowtot[h]; ++ij){
             size_t i = Gbb.params->roworb[h][ij][0];
             int Gi = Gbb.params->psym[i];
             i -= Gbb.params->poff[Gi];
@@ -361,7 +363,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_rd(&Gaa, h);
         #pragma omp parallel for
-        for(size_t ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
+        for(long int ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
             size_t i = Gaa.params->roworb[h][ia][0];
             int Gi = Gaa.params->psym[i];
             i -= Gaa.params->poff[Gi];
@@ -405,7 +407,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_rd(&Gab, h);
         #pragma omp parallel for
-        for(size_t ia = 0; ia < Gab.params->rowtot[h]; ++ia){
+        for(long int ia = 0; ia < Gab.params->rowtot[h]; ++ia){
             size_t i = Gab.params->roworb[h][ia][0];
             int Gi = Gab.params->psym[i];
             i -= Gab.params->poff[Gi];
@@ -434,7 +436,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gba, h);
         dpd_buf4_mat_irrep_rd(&Gba, h);
         #pragma omp parallel for
-        for(size_t ia = 0; ia < Gba.params->rowtot[h]; ++ia){
+        for(long int ia = 0; ia < Gba.params->rowtot[h]; ++ia){
             size_t i = Gba.params->roworb[h][ia][0];
             int Gi = Gba.params->psym[i];
             i -= Gba.params->poff[Gi];
@@ -508,7 +510,7 @@ DCFTSolver::dump_density()
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_rd(&Gbb, h);
         #pragma omp parallel for
-        for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
+        for(long int ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
             size_t i = Gbb.params->roworb[h][ia][0];
             int Gi = Gbb.params->psym[i];
             i -= Gbb.params->poff[Gi];
@@ -736,6 +738,8 @@ DCFTSolver::dump_density()
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::dump_density()");
 }
 
 

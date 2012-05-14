@@ -30,6 +30,8 @@
 #include <libmints/mints.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
+#include "libtrans/integraltransform.h"
+#include "libdpd/dpd.h"
 
 #include "rhf.h"
 
@@ -636,4 +638,125 @@ void RHF::save_sapt_info()
     free(body_type);
     free(key_buffer);
 }
+
+void RHF::stability_analysis()
+{
+    if(scf_type_ == "DF"){
+        throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
+    }else{
+#define ID(x) ints.DPD_ID(x)
+        // Build the Fock Matrix
+        SharedMatrix moF(new Matrix("MO basis fock matrix", nmopi_, nmopi_));
+        moF->transform(Fa_, Ca_);
+
+        std::vector<boost::shared_ptr<MOSpace> > spaces;
+        spaces.push_back(MOSpace::occ);
+        spaces.push_back(MOSpace::vir);
+        // Ref wfn is really "this"
+        boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+        IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
+                               IntegralTransform::QTOrder, IntegralTransform::None);
+        ints.set_keep_dpd_so_ints(true);
+        ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+        ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
+        dpd_set_default(ints.get_dpd_id());
+        dpdbuf4 Asing, Atrip,I;
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+        // Singlet A_ia_jb = 4 (ia|jb)
+        dpd_buf4_scmcopy(&I, PSIF_LIBTRANS_DPD, "RHF Singlet Hessian (IA|JB)", 4.0);
+        // Triplet A_ia_jb = -(ib|ja)
+        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, psrq,
+                           ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
+        dpd_buf4_close(&I);
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
+        // Triplet A_ia_jb -= (ij|ab)
+        dpd_buf4_sort_axpy(&I, PSIF_LIBTRANS_DPD, prqs,
+                           ID("[O,V]"), ID("[O,V]"), "RHF Triplet Hessian (IA|JB)", -1.0);
+        dpd_buf4_close(&I);
+        dpd_buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
+        for(int h = 0; h < Atrip.params->nirreps; ++h){
+            dpd_buf4_mat_irrep_init(&Atrip, h);
+            dpd_buf4_mat_irrep_rd(&Atrip, h);
+            for(int ia = 0; ia < Atrip.params->rowtot[h]; ++ia){
+                int iabs = Atrip.params->roworb[h][ia][0];
+                int aabs = Atrip.params->roworb[h][ia][1];
+                int isym = Atrip.params->psym[iabs];
+                int asym = Atrip.params->qsym[aabs];
+                int irel = iabs - Atrip.params->poff[isym];
+                int arel = aabs - Atrip.params->qoff[asym] + doccpi_[asym];
+                for(int jb = 0; jb < Atrip.params->coltot[h]; ++jb){
+                    int jabs = Atrip.params->colorb[h][jb][0];
+                    int babs = Atrip.params->colorb[h][jb][1];
+                    int jsym = Atrip.params->rsym[jabs];
+                    int bsym = Atrip.params->ssym[babs];
+                    int jrel = jabs - Atrip.params->roff[jsym];
+                    int brel = babs - Atrip.params->soff[bsym] + doccpi_[bsym];
+                    // Triplet A_ia_jb += delta_ij F_ab - delta_ab F_ij
+                    if((iabs == jabs) && (asym == bsym))
+                        Atrip.matrix[h][ia][jb] += moF->get(asym, arel, brel);
+                    if((aabs == babs) && (isym == jsym))
+                        Atrip.matrix[h][ia][jb] -= moF->get(isym, irel, jrel);
+                }
+            }
+            dpd_buf4_mat_irrep_wrt(&Atrip, h);
+        }
+        // Singlet A += Triplet A
+        dpd_buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
+        dpd_buf4_axpy(&Atrip, &Asing, 1.0);
+        dpd_buf4_close(&Atrip);
+        dpd_buf4_close(&Asing);
+
+        /*
+         *  Perform the stability analysis
+         */
+        std::vector<std::pair<double, int> >singlet_eval_sym;
+        std::vector<std::pair<double, int> >triplet_eval_sym;
+
+        dpd_buf4_init(&Asing, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Singlet Hessian (IA|JB)");
+        dpd_buf4_init(&Atrip, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"), 0, "RHF Triplet Hessian (IA|JB)");
+        for(int h = 0; h < Asing.params->nirreps; ++h) {
+            int dim = Asing.params->rowtot[h];
+            if(dim == 0) continue;
+            double *evals = init_array(dim);
+            double **evecs = block_matrix(dim, dim);
+
+            dpd_buf4_mat_irrep_init(&Asing, h);
+            dpd_buf4_mat_irrep_rd(&Asing, h);
+            sq_rsp(dim, dim, Asing.matrix[h], evals, 1, evecs, 1e-12);
+            dpd_buf4_mat_irrep_close(&Asing, h);
+
+            int mindim = dim < 5 ? dim : 5;
+            for(int i = 0; i < mindim; i++)
+                singlet_eval_sym.push_back(std::make_pair(evals[i], h));
+
+            zero_arr(evals, dim);
+            zero_mat(evecs, dim, dim);
+
+            dpd_buf4_mat_irrep_init(&Atrip, h);
+            dpd_buf4_mat_irrep_rd(&Atrip, h);
+            sq_rsp(dim, dim, Atrip.matrix[h], evals, 1, evecs, 1e-12);
+            dpd_buf4_mat_irrep_close(&Atrip, h);
+
+            for(int i = 0; i < mindim; i++)
+                triplet_eval_sym.push_back(std::make_pair(evals[i], h));
+
+            free_block(evecs);
+            delete [] evals;
+        }
+
+        fprintf(outfile, "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        print_stability_analysis(singlet_eval_sym);
+        fprintf(outfile, "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        print_stability_analysis(triplet_eval_sym);
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+    }
+}
+
 }}

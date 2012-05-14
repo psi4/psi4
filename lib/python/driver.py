@@ -20,9 +20,7 @@ procedures = {
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
             'df-mp2'        : run_dfmp2,
-            'df-cc'         : run_dfcc,
             'mp2'           : run_mp2,
-            'mp2-drpa'      : run_mp2drpa,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -73,6 +71,13 @@ procedures = {
             'uscf'          : run_scf,
             'roscf'         : run_scf,
             'df-scf'        : run_scf,
+            'cepa(0)'       : run_cepa,
+            'cepa(1)'       : run_cepa,
+            'cepa(3)'       : run_cepa,
+            'acpf'          : run_cepa,
+            'aqcc'          : run_cepa,
+            'sdci'          : run_cepa,
+            'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -80,6 +85,7 @@ procedures = {
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
+            'df-mp2'        : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
@@ -219,6 +225,12 @@ def energy(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc3                 | EOM-CC3                                                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cepa(n)                 | coupled electron pair approximation, variants 0, 1, and 3                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | acpf                    | averaged coupled-pair functional                                                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | aqcc                    | averaged quadratic coupled cluster                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -614,16 +626,12 @@ def property(name, **kwargs):
 
     :aliases: prop()
 
-    :returns: (*float*) Total electronic energy in Hartrees.
+    :returns: none.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
        - This function at present handles property functions only for CC methods.
          Consult the keywords sections for other modules for further property capabilities.
-
-       - Check that energy is actually being returned.
-
-       - Check if some PSI variables ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |

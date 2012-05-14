@@ -8,9 +8,16 @@
 #include <libciomr/libciomr.h>
 #include <libmints/dimension.h>
 
-namespace boost {
-template<class T> class shared_ptr;
-}
+// Handy mints timer macros, requires libqt to be included
+#ifdef DCFT_TIMER
+#   include <libqt/qt.h>
+
+#   define dcft_timer_on(a) timer_on((a));
+#   define dcft_timer_off(a) timer_off((a));
+#else
+#   define dcft_timer_on(a)
+#   define dcft_timer_off(a)
+#endif
 
 namespace psi{
 

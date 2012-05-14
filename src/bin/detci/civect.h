@@ -70,7 +70,7 @@ class CIvect {
       int cur_unit;              /* current unit file */
       int cur_size;              /* current size of buffer */
       int first_unit;            /* first file unit number (if > 1) */ 
-
+      
    public:
       CIvect();
       CIvect(BIGINT vl, int nb, int incor, int ms0, int *iac,
@@ -115,7 +115,7 @@ class CIvect {
       void buf_lock(double *a);
       void buf_unlock(void);
       double ** blockptr(int blknum);
-      void init_io_files(void);
+      void init_io_files(bool open_old);
       void close_io_files(int keep);
       int read(int ivect, int ibuf);
       int write(int ivect, int ibuf);

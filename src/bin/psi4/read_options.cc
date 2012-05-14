@@ -868,6 +868,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_OCC", new ArrayType());
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
+    /*- Whether to perform stability analysis after convergence.  NONE prevents analysis being
+        performed. CHECK will print out the analysis of the wavefunction stability at the end of
+        the computation.  FOLLOW will perform the analysis and, if a totally symmetric instability
+        is found, will attemp to follow the eigenvector and re-run the computations to find a stable
+        solution. -*/
+    options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
+    /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
+        by. !expert -*/
+    options.add_double("FOLLOW_STEP_SCALE", 0.5);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1053,7 +1062,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Auxiliary basis for SCF 
      -*/
-    options.add_str("RI_BASIS_SCF", ""); 
+    options.add_str("DF_BASIS_SCF", ""); 
     /*- Solver maximum iterations
      -*/
     options.add_int("SOLVER_MAXITER",100);
@@ -1926,159 +1935,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P(2) matrix for corrections to Lia and P. -*/
+    options.add_double("DFMP2_P2_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P matrix for skeleton-core Fock matrix derivatives. -*/
+    options.add_double("DFMP2_P_TOLERANCE", 0.0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
-  }
-  if(name == "DFCC"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs density-fitted coupled cluster computations. -*/
-
-    /*- Type of wavefunction -*/
-    options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
-    /*- Primary basis set -*/
-    options.add_str("BASIS","NONE");
-    /*- Minimum absolute value below which integrals are neglected. -*/
-    options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Convergence criterion for CC energy. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for cluster amplitudes (RMS change). -*/
-    options.add_double("R_CONVERGENCE", 1e-8);
-    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-    options.add_bool("DIIS",true);
-    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MIN_VECS", 2);
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS", 6);
-    /*- Maximum number iterations -*/
-    options.add_int("MAXITER", 40);
-
-    // => DF <= //
-
-    /*- Auxiliary basis set for density fitting MO integrals. Defaults to BASIS-RI. -*/
-    options.add_str("DF_BASIS_CC","NONE");
-    /*- Fitting metric algorithm -*/
-    options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
-    /*- Desired Fitting condition (inverse of max condition number) -*/
-    options.add_double("FITTING_COND", 1.0E-10);
-
-    // => PS <= //
-
-    /*- Dealias basis for PS integrals -*/
-    options.add_str("DEALIAS_BASIS_CC","");
-    /*- Dealias basis beta parameter -*/
-    options.add_double("DEALIAS_BETA", 3.5);
-    /*- Dealias basis delta parameter -*/
-    options.add_double("DEALIAS_DELTA", 2.0);
-    /*- Dealias basis N core parameter -*/
-    options.add_int("DEALIAS_N_CORE", 1);
-    /*- Dealias basis N intercalater parameter -*/
-    options.add_int("DEALIAS_N_INTERCALATER", 1);
-    /*- Dealias basis N diffuse parameter -*/
-    options.add_int("DEALIAS_N_DIFFUSE", 1);
-    /*- Dealias basis N cap parameter -*/
-    options.add_int("DEALIAS_N_CAP", 1);
-    /*- Dealias basis highest delta l parameter -*/
-    options.add_int("DEALIAS_N_L", 1);
-    /*- Filename to read grid from -*/
-    options.add_str_i("PS_GRID_FILE","");
-    /*- File path to read grids from -*/
-    options.add_str_i("PS_GRID_PATH","");
-    /*- Number of spherical points (A Lebedev number). -*/
-    options.add_int("PS_SPHERICAL_POINTS", 302);
-    /*- Number of radial points. -*/
-    options.add_int("PS_RADIAL_POINTS", 99);
-    /*- Spherical Scheme -*/
-    options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
-    /*- Radial Scheme -*/
-    options.add_str("PS_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
-    /*- Nuclear Scheme -*/
-    options.add_str("PS_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
-    /*- Pruning Scheme -*/
-    options.add_str("PS_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
-    /*- Factor for effective BS radius in radial grid -*/
-    options.add_double("PS_BS_RADIUS_ALPHA",1.0);
-    /*- Spread alpha for logarithmic pruning -*/
-    options.add_double("PS_PRUNING_ALPHA",1.0);
-    /*- PS basis cutoff. -*/
-    options.add_double("PS_BASIS_TOLERANCE", 1.0E-12);
-    /*- The maximum number of grid points per evaluation block. -*/
-    options.add_int("PS_BLOCK_MAX_POINTS",5000);
-    /*- The minimum number of grid points per evaluation block. -*/
-    options.add_int("PS_BLOCK_MIN_POINTS",1000);
-    /*- The maximum radius to terminate subdivision of an octree block [au]. -*/ 
-    options.add_double("PS_BLOCK_MAX_RADIUS", 1.0);
-    /*- Minumum eigenvalue for primary basis -*/
-    options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
-    /*- Minumum eigenvalue for dealias basis -*/
-    options.add_double("PS_MIN_S_DEALIAS",1.0E-7);
-    /*- Fitting algorithm to use for pseudospectral -*/
-    options.add_str("PS_FITTING_ALGORITHM", "CONDITIONED", "DEALIASED RENORMALIZED QUADRATURE");
-    /*- Pseudospectral range-separation parameter -*/
-    options.add_double("PS_OMEGA", 1.0);
-    /*- Pseudospectral partition alpha -*/
-    options.add_double("PS_ALPHA", 1.0);
-    /*- Do use range-separation procedure in PS? -*/
-    options.add_bool("PS_USE_OMEGA", true);
-    /*- Random stuff for LibFock -*/
-    options.add_double("PS_THETA", 0.3);
-    /*- Random stuff for LibFock -*/
-    options.add_str("PS_DEALIASING", "QUADRATURE", "QUADRATURE RENORMALIZED DEALIASED");
-    /*- Random stuff for LibFock -*/
-    options.add_str("DEALIAS_BASIS_SCF", ""); 
-    
-
-    // => DENOMINATOR <= //
-
-    /*- Denominator algorithm for PT methods -*/
-    options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
-    options.add_double("DENOMINATOR_DELTA", 1.0E-6);
-
-    // => MP2 <= //
-
-    /*- MP2 Algorithm:
-            \begin{tabular}{ccc}
-            Algorithm Keyword  &  MP2J        &  MP2K  \\
-             \hline
-                MP2            &   MP2        &  MP2   \\
-                DF             &   DF         &  DF    \\
-                PS             &   PS         &  PS    \\
-                PS1            &   DF         &  PS/DF \\
-                PS2            &   DF         &  PS/PS \\
-                PS3            &   PS         &  PS/DF \\
-                PS4            &   PS         &  PS/PS \\
-                TEST_DENOM     &   Test       &  Test  \\
-                TEST_PS        &   Test       &  Test  \\
-                TEST_PS_OMEGA  &   Test       &  Test  \\
-                TEST_DPS_OMEGA &   Test       &  Test  \\
-                TEST_DF        &   Test       &  Test  \\
-            \end{tabular}
-    -*/
-    options.add_str("MP2_ALGORITHM", "DF", "MP2 DF PS PS1 PS2 PS3 PS4 TEST_DENOM TEST_PS TEST_PS_OMEGA TEST_DPS_OMEGA TEST_DF");
-    /*- OS Scale  -*/
-    options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- SS Scale  -*/
-    options.add_double("MP2_SS_SCALE", 1.0/3.0);
-
-    // => RPA <= //
-
-    /*- RPA algorithm:
-        \begin{tabular}{cc}
-        DF & $\mathcal{O}(N^5)$ \\
-        CD & $\mathcal{O}(N^4)$ \\
-        \end{tabular}
-    -*/
-    options.add_str("RPA_ALGORITHM", "CD", "CD DF");
-    /*- RPA Cholesky delta -*/
-    options.add_double("RPA_DELTA", 1.0E-6);
-    /*- Do continue RPA even if T's are not numerically SPD? -*/
-    options.add_bool("RPA_RISKY",false);
-    /*- Continue RPA numerical SPD Tolerance -*/
-    options.add_double("RPA_PLUS_EPSILON",1.0E-12);
-    /*- RPA alpha parameter -*/
-    options.add_double("RPA_ALPHA", 1.0);
-
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by
@@ -2150,8 +2014,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
     /*- The type of CCSD(T) computation to perform -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
-    /*- Reference wavefunction type used in MRCC computations -*/
-    options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
     /*- The ansatz to use for MRCC computations -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
     /*- The order of coupling terms to include in MRCCSDT computations -*/
@@ -2444,6 +2306,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
             !expert
           -*/
       options.add_int("MRCC_METHOD", 1);
+  }
+  if (name == "CEPA"|| options.read_globals()) {
+      /*- Desired convergence for the t1 and t2 amplitudes, defined as
+      the norm of the change in the amplitudes between iterations.-*/
+      options.add_double("R_CONVERGENCE", 1.0e-7);
+      /*- Maximum number of iterations to converge the t1 and t2
+      amplitudes. -*/
+      options.add_int("MAXITER", 100);
+      /*- Number of vectors to store for DIIS extrapolation. -*/
+      options.add_int("DIIS_MAX_VECS", 8);
+      /*- Opposite-spin scaling factor for SCS-MP2. -*/
+      options.add_double("MP2_SCALE_OS",1.20);
+      /*- Same-spin scaling factor for SCS-MP2-*/
+      options.add_double("MP2_SCALE_SS",1.0/3.0);
+      /*- Perform SCS-CEPA? If true, note that the
+      default values for the spin component scaling factors
+      are optimized for the CCSD method. -*/
+      options.add_bool("SCS_CEPA", false);
+      /*- Oppposite-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_OS", 1.27);
+      /*- Same-spin scaling factor for SCS-CEPA. -*/
+      options.add_double("CEPA_SCALE_SS",1.13);
+      /*- Which coupled-pair method is called?  This parameter is
+      used internally by the python driver.  Changing its value 
+      won't have any effect on the procedure. -*/
+      options.add_str("CEPA_LEVEL","CEPA0");
+      /*- Compute the dipole moment? Note that quadrupole moments
+      will also be computed if PRINT >= 2. -*/
+      options.add_bool("DIPMOM",false);
+      /*- Flag to exclude singly excited configurations from the
+      computation. Note that this algorithm is not optimized for
+      doubles-only computations. -*/
+      options.add_bool("CEPA_NO_SINGLES",false);
   }
   return true;
 }

@@ -55,7 +55,7 @@ namespace psi {
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
-    namespace dfcc       { PsiReturnType dfcc(Options &);     }
+    namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
     namespace dcft       { PsiReturnType dcft(Options &);     }
     namespace mcscf      { PsiReturnType mcscf(Options &);    }
@@ -71,6 +71,7 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace cepa { PsiReturnType cepa(Options&);}
     namespace stable     { PsiReturnType stability(Options&); }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
@@ -317,10 +318,10 @@ double py_psi_dfmp2()
         return 0.0;
 }
 
-double py_psi_dfcc()
+double py_psi_dfmp2grad()
 {
-    py_psi_prepare_options_for_module("DFCC");
-    if (dfcc::dfcc(Process::environment.options) == Success) {
+    py_psi_prepare_options_for_module("DFMP2");
+    if (dfmp2::dfmp2grad(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -400,6 +401,15 @@ double py_psi_cctriples()
         return 0.0;
 }
 
+double py_psi_cepa()
+{
+    py_psi_prepare_options_for_module("CEPA");
+    if (cepa::cepa(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
@@ -1042,7 +1052,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dcft", py_psi_dcft, "docstring");
     def("libfock", py_psi_libfock, "docstring");
     def("dfmp2", py_psi_dfmp2, "docstring");
-    def("dfcc", py_psi_dfcc, "docstring");
+    def("dfmp2grad", py_psi_dfmp2grad, "docstring");
 //    def("lmp2", py_psi_lmp2, "docstring");
     def("mp2", py_psi_mp2, "docstring");
     def("mcscf", py_psi_mcscf, "docstring");
@@ -1068,6 +1078,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccenergy", py_psi_ccenergy, "docstring");
     def("cctriples", py_psi_cctriples, "docstring");
     def("detci", py_psi_detci, "docstring");
+    def("cepa", py_psi_cepa, "docstring");
     def("cchbar", py_psi_cchbar, "docstring");
     def("cclambda", py_psi_cclambda, "docstring");
     def("ccdensity", py_psi_ccdensity, "docstring");
