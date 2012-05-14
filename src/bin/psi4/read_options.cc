@@ -2014,8 +2014,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
     /*- The type of CCSD(T) computation to perform -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
-    /*- Reference wavefunction type used in MRCC computations -*/
-    options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
     /*- The ansatz to use for MRCC computations -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
     /*- The order of coupling terms to include in MRCCSDT computations -*/

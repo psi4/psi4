@@ -102,4 +102,4 @@ D 2 1.00
 ****
 }
 
-property('eom-ccsd',properties=['oscillator_strength'])
+property('eom-ccsd',properties=['dipole'])

@@ -1654,7 +1654,7 @@ void OEProp::compute_no_occupations(int max_num)
     }
     fprintf(outfile, "\n");
 
-    for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
+    //for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
     fflush(outfile);
 }
 
