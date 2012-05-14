@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta1])
+define([psi_version],[4.0.0-beta2+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -968,7 +968,6 @@ AC_CONFIG_FILES([
           src/lib/lib3index/Makefile
           src/lib/libsmartptr/Makefile
           src/lib/libyeti/Makefile
-          src/lib/libdfcc_solver/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
@@ -982,6 +981,7 @@ AC_CONFIG_FILES([
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
+          src/bin/cepa/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -1001,7 +1001,6 @@ AC_CONFIG_FILES([
           src/bin/deriv/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
-          src/bin/dfcc/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/adc/Makefile
@@ -1049,6 +1048,7 @@ AC_CONFIG_FILES([
           tests/sapt5/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
+          tests/dfmp2_3/Makefile
           tests/pywrap_db1/Makefile
           tests/pywrap_db2/Makefile
           tests/pywrap_cbs1/Makefile
@@ -1072,6 +1072,10 @@ AC_CONFIG_FILES([
           tests/rasci-ne/Makefile
           tests/zaptn-nh2/Makefile
           tests/mpn-bh/Makefile
+          tests/ci-multi/Makefile
+          tests/cepa1/Makefile
+          tests/cepa2/Makefile
+          tests/cepa3/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc3/Makefile

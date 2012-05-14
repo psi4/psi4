@@ -14,7 +14,6 @@ R = 1.200
 
 set globals {
     r_convergence            12
-    reference                uhf
     algorithm                twostep
     response_algorithm       twostep
     basis                    cc-pcvdz

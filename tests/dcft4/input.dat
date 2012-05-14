@@ -22,7 +22,6 @@ R = 1.000
 set globals {
     r_convergence 12
     d_convergence 12
-    reference   uhf
     ao_basis    none
     algorithm   twostep
     basis       sto-3g

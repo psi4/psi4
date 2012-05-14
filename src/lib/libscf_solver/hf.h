@@ -1,4 +1,4 @@
-#ifndef HF_H 
+#ifndef HF_H
 #define HF_H
 /*
  *  hf.h
@@ -10,6 +10,7 @@
  */
 
 
+#include <vector>
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>
@@ -194,6 +195,11 @@ protected:
     /// Renormalize orbitals to 1.0 before saving to chkpt
     void frac_renormalize();
 
+    /// Check the stability of the wavefunction, and correct (if requested)
+    virtual void stability_analysis();
+    void print_stability_analysis(std::vector<std::pair<double, int> > &vec);
+
+
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
     void compute_fvpi();
@@ -216,6 +222,10 @@ protected:
 
     /// Do any needed integral setup
     virtual void integrals();
+
+    /// Which set of iterations we're on in this computation, e.g., for stability
+    /// analysis, where we want to retry SCF without going through all of the setup
+    int attempt_number_;
 
     /// The number of electrons
     int nelectron_;

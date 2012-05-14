@@ -152,6 +152,7 @@ void export_mints()
             def("accumulate_product", matrix_two(&Matrix::accumulate_product), "docstring").
             def("scale", &Matrix::scale, "docstring").
             def("sum_of_squares", &Matrix::sum_of_squares, "docstring").
+            def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "docstring").
             def("rms", &Matrix::rms, "docstring").
             def("scale_row", &Matrix::scale_row, "docstring").
             def("scale_column", &Matrix::scale_column, "docstring").
