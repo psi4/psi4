@@ -487,7 +487,7 @@ SharedMatrix SCFGrad::compute_gradient()
             }
         }
     } else {
-        gradients_["Total"]->print();
+        gradients_["Total"]->print_atom_vector();
     }
 
     return gradients_["Total"]; 

@@ -1,6 +1,8 @@
 srcdir = @srcdir@
 dont_compile_boost = @have_boost@
 
+PYTHON = @PYTHON@
+
 all: default
 default: boost.compiled
 
@@ -18,7 +20,7 @@ dclean:
 boost.compiled:
 ifeq ($(dont_compile_boost),0)
 	if [ ! -d boost_1_48_0 ]; then tar zxf $(srcdir)/boost_1_48_0.tar.gz; fi
-	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=$(PYTHON) && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
 	touch boost.compiled
 endif
 

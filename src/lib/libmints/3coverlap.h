@@ -28,11 +28,8 @@ protected:
     /// Buffer to hold the source integrals.
     double *buffer_;
 
-    /// Buffer to hold the target integrals.
-    double *target_;
-
-    /// Buffer used during the spherical transformation.
-    double *tformbuf_;
+    /// Buffer for spherical harmonics
+    double *temp_;
 
     /// Vector of Sphericaltransforms
     std::vector<SphericalTransform> st_;

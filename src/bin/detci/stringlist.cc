@@ -31,7 +31,7 @@ struct level *sbgr_tr_head;
 int sbgr_tr_orbs;
 int **sbgr_tr_out;
 int sbgr_tr_walks;
-int *sbgr_tr_alist=NULL;
+int *sbgr_tr_alist;
 
 int *O, *U, *T ;
 int **Tij, **Toij, *Tcnt;
@@ -76,8 +76,6 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
    ncodes = Graph->subgr_per_irrep;
    nirreps = Graph->nirreps;
 
-   if (sbgr_tr_alist == NULL) 
-      sbgr_tr_alist = init_int_array(Graph->num_orb+1);
    outarr = init_int_matrix(nel_expl, Graph->max_str_per_irrep);
    occs = init_int_array(nel_expl);
 
@@ -133,6 +131,7 @@ void stringlist(struct olsen_graph *Graph, struct stringwr **slist)
 
    free_int_matrix(outarr);
    free(occs);
+   free(sbgr_tr_alist);
 }
 
 
@@ -144,6 +143,7 @@ void subgr_trav_init(struct level *head, int ci_orbs, int **outarr, int
    sbgr_tr_orbs = ci_orbs;
    sbgr_tr_out = outarr;
    sbgr_tr_walks = walks;
+   sbgr_tr_alist = init_int_array(ci_orbs+1);
 }
 
 
