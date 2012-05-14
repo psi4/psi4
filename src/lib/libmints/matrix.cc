@@ -1364,6 +1364,25 @@ Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double *res
     return northog;
 }
 
+bool Matrix::add_and_orthogonalize_row(const SharedVector v)
+{
+    Vector v_copy(*v.get());
+    if(v_copy.nirrep() > 1 || nirrep_ > 1)
+        throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Symmetry not allowed (yet).");
+    if(v_copy.dimpi()[0] != colspi_[0])
+        throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Incompatible dimensions.");
+    double **mat = Matrix::matrix(rowspi_[0]+1, colspi_[0]);
+    size_t n = colspi_[0]*rowspi_[0]*sizeof(double);
+    if(n){
+        ::memcpy(mat[0], matrix_[0][0], n);
+        Matrix::free(matrix_[0]);
+    }
+    matrix_[0] = mat;
+    bool ret = schmidt_add_row(0, rowspi_[0], v_copy);
+    rowspi_[0]++;
+    return ret;
+}
+
 bool Matrix::schmidt_add_row(int h, int rows, Vector& v) throw()
 {
     if (v.nirrep() > 1)
