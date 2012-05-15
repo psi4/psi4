@@ -79,6 +79,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
 
+  /*- PSI4 dies if energy does not converge. !expert -*/
+  options.add_bool("DIE_IF_NOT_CONVERGED", true);
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
