@@ -286,8 +286,10 @@ PsiReturnType ccdensity(Options& options)
     }
 
     // ==> One-Electron Properties <== //
+    /*
     fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
     dipole();
+    */
 
     free_block(moinfo.opdm);
 
