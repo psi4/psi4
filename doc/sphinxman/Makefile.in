@@ -90,12 +90,12 @@ autodepend2 = \
 @top_srcdir@/tests/plugin_*/doc.rst \
 @srcdir@/document_plugins.py
 
-autotarget2 = 
-#$(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
-#$(SOURCEDIR)/autodoc_available_plugins.rst \
-#$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
-#$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
-#$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
+autotarget2 = \
+$(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
+$(SOURCEDIR)/autodoc_available_plugins.rst \
+$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
 
 $(autotarget2): %: $(autodepend2) | $(subdirs)
 	@srcdir@/document_plugins.py @srcdir@
