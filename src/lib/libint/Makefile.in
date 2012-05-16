@@ -61,12 +61,7 @@ dclean:
 
 targetclean:
 
-install: $(PSITARGET) $(TARGET_HEADERS)
-	$(MKDIRS) $(libdir)
-	$(INSTALL_DATA) $< $(libdir)
-	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
-	$(MKDIRS) $(incdir)/libint
-	$(INSTALL_INCLUDE) $(TARGET_HEADERS) $(incdir)/libint
+install: 
 
 #
 # keep the configuration information and makefiles up-to-date
