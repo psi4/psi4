@@ -21,7 +21,7 @@ of truncated configuration interaction (CI) theory.  The methods have the same c
 with single and double excitations (CISD), and solving the CISD or coupled-pair equations requires
 about half the floating point operations required to solve the CC with singles and doubles (CCSD) equations.  CISD,
 CCSD, and the coupled-pair methods discussed below all scale formally with the sixth power of system size.  For a
-detailed discussion of the properties of various coupled-pair methods, see Ref. [Wennmohs:2008]_.
+detailed discussion of the properties of various coupled-pair methods, see Ref. [Wennmohs:2008]_\ .
 
 What follows is a very basic description of the practical differences in the equations that define each of the
 coupled-pair methods implemented in |Psifour|.  We begin with the CISD wave function
