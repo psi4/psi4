@@ -303,39 +303,51 @@ void MOLECULE::H_guess(void) const {
     fprintf(outfile,"\tGenerating empirical Hessian (Schlegel '84) for each fragment.\n");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
     fprintf(outfile,"\tGenerating empirical Hessian (Fischer & Almlof '92) for each fragment.\n");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
+    fprintf(outfile,"\tGenerating simple diagonal Hessian (.5 .2 .1) for each fragment.\n");
 
-  for (int f=0; f<fragments.size(); ++f) {
-    double **H_frag = fragments[f]->H_guess();
-
-    for (int i=0; i<fragments[f]->g_nintco(); ++i)
-      for (int j=0; j<fragments[f]->g_nintco(); ++j)
-        H[g_intco_offset(f) + i][g_intco_offset(f) + j] = H_frag[i][j];
-
-    free_matrix(H_frag);
-  }
-
-  for (int I=0; I<interfragments.size(); ++I) {
-    double **H_interfrag = interfragments[I]->H_guess();
-
-    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-      for (int j=0; j<interfragments[I]->g_nintco(); ++j)
-        H[g_interfragment_intco_offset(I) + i][g_interfragment_intco_offset(I) + j] =
-          H_interfrag[i][j];
-
-    free_matrix(H_interfrag);
-  }
-
+  if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL ||
+      Opt_params.intrafragment_H == OPT_PARAMS::FISCHER  ||
+      Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
+    for (int f=0; f<fragments.size(); ++f) {
+      double **H_frag = fragments[f]->H_guess();
+  
+      for (int i=0; i<fragments[f]->g_nintco(); ++i)
+        for (int j=0; j<fragments[f]->g_nintco(); ++j)
+          H[g_intco_offset(f) + i][g_intco_offset(f) + j] = H_frag[i][j];
+  
+      free_matrix(H_frag);
+    }
+  
+    for (int I=0; I<interfragments.size(); ++I) {
+      double **H_interfrag = interfragments[I]->H_guess();
+  
+      for (int i=0; i<interfragments[I]->g_nintco(); ++i)
+        for (int j=0; j<interfragments[I]->g_nintco(); ++j)
+          H[g_interfragment_intco_offset(I) + i][g_interfragment_intco_offset(I) + j] =
+            H_interfrag[i][j];
+  
+      free_matrix(H_interfrag);
+    }
+  
 #if defined(OPTKING_PACKAGE_QCHEM)
-  for (int I=0; I<efp_fragments.size(); ++I) {
-    double **H_efp_frag = efp_fragments[I]->H_guess();
-
-    for (int i=0; i<efp_fragments[I]->g_nintco(); ++i)
-      for (int j=0; j<efp_fragments[I]->g_nintco(); ++j)
-        H[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + j] = H_efp_frag[i][j];
-
-    free_matrix(H_efp_frag);
-  }
+    for (int I=0; I<efp_fragments.size(); ++I) {
+      double **H_efp_frag = efp_fragments[I]->H_guess();
+  
+      for (int i=0; i<efp_fragments[I]->g_nintco(); ++i)
+        for (int j=0; j<efp_fragments[I]->g_nintco(); ++j)
+          H[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + j] = H_efp_frag[i][j];
+  
+      free_matrix(H_efp_frag);
+    }
 #endif
+  }
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+    double **H_xyz = Lindh_guess();      // generate Lindh cartesian Hessian
+    bool read_H_worked = cartesian_H_to_internals(H_xyz); // transform to internals
+    // if fails, then what?  Fix later.
+    free_matrix(H_xyz);
+  }
 
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Initial Hessian guess\n");
@@ -345,7 +357,7 @@ void MOLECULE::H_guess(void) const {
   return;
 }
 
-bool MOLECULE::cartesian_H_to_internals(void) const {
+bool MOLECULE::cartesian_H_to_internals(double **H_cart) const {
   int Nintco = g_nintco();
   int Ncart = 3*g_natom();
   bool success = true; // to be dynamic later
@@ -372,7 +384,7 @@ bool MOLECULE::cartesian_H_to_internals(void) const {
   free_array(grad_x);
 
   // read in cartesian H
-  double **H_cart = p_Opt_data->read_cartesian_H();
+  //double **H_cart = p_Opt_data->read_cartesian_H();
 
   // transform cartesian H to internals; A^t (H_x - K) A
   // K_ij = sum_q ( grad_q[q] d^2(q)/(dxi dxj) )
@@ -391,7 +403,7 @@ bool MOLECULE::cartesian_H_to_internals(void) const {
 
   double **temp_mat = init_matrix(Ncart, Nintco);
   opt_matrix_mult(H_cart, 0, A, 0, temp_mat, 0, Ncart, Ncart, Nintco, 0);
-  free_matrix(H_cart);
+  //free_matrix(H_cart);
 
   //double **H_int = init_matrix(Nintco, Nintco);
   opt_matrix_mult(A, 1, temp_mat, 0, H_int, 0, Nintco, Ncart, Nintco, 0);
@@ -435,6 +447,17 @@ double *MOLECULE::g_masses(void) const {
     for (int i=0; i<fragments[f]->g_natom(); ++i)
       u[cnt++] = fragments[f]->g_mass(i);
   return u;
+}
+
+double *MOLECULE::g_Z(void) const {
+  double *Zs = init_array(g_natom());
+  int cnt = 0;
+  for (int f=0; f<fragments.size(); ++f) {
+    double *frag_Z = fragments[f]->g_Z_pointer();
+    for (int i=0; i<fragments[f]->g_natom(); ++i)
+      Zs[cnt++] = frag_Z[i];
+  }
+  return Zs;
 }
 
 // compute B matrix - leave rows for EFP coordinates empty
