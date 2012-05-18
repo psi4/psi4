@@ -904,7 +904,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         // Grab the original label the user used. (H1)
         atomLabel = boost::to_upper_copy(splitLine[0]);
 
-        fprintf(outfile, "Trying to match X%sX\n", atomLabel.c_str());
         bool ghostAtom = false;
         // Do a little check for ghost atoms
         if(regex_match(atomLabel, reMatches, ghostAtom_)) {
