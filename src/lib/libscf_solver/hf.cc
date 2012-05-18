@@ -32,6 +32,8 @@
 
 #include "hf.h"
 
+#include <psi4-dec.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -1460,6 +1462,9 @@ double HF::compute_energy()
         E_ = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);
+
+        // Throw if we didn't converge?
+        die_if_not_converged();
     }
 
     // Orbitals are always saved, in case a dual basis is required later

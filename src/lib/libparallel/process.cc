@@ -3,6 +3,8 @@
 #include <libmints/molecule.h>
 #include <libmints/extern.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
+#include <string>
 
 //MKL Header
 #ifdef HAVE_MKL
@@ -15,6 +17,22 @@
 #include <omp.h>
 #endif
 
+#if defined (__APPLE__)
+
+#include <mach-o/dyld.h>
+
+#elif defined (__linux__)
+
+#include <limits.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#elif defined (__FreeBSD__)
+
+#include <sys/sysctl.h>
+
+#endif
+
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -23,13 +41,62 @@ Process::Environment Process::environment;
 Process::Arguments Process::arguments;
 const std::string empty_;
 
+std::string executable_path()
+{
+    std::string path;
+#if defined (__APPLE__)
+    char program_fullpath[PATH_MAX];
+    // If DST is NULL, then return the number of bytes needed.
+    uint32_t len = sizeof(program_fullpath);
+    int err = _NSGetExecutablePath (program_fullpath, &len);
+    if (err == 0)
+        path = program_fullpath;
+    else if (err == -1)
+    {
+        char *large_program_fullpath = (char *)::malloc (len + 1);
+
+        err = _NSGetExecutablePath (large_program_fullpath, &len);
+        if (err == 0)
+            path = program_fullpath;
+
+        ::free (large_program_fullpath);
+    }
+#elif defined (__linux__)
+    char exe_path[PATH_MAX];
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (len > 0) {
+        exe_path[len] = 0;
+        path = exe_path;
+    }
+#elif defined (__FreeBSD__)
+    int exe_path_mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, getpid() };
+    size_t exe_path_size;
+    if (sysctl(exe_path_mib, 4, NULL, &exe_path_size, NULL, 0) == 0)
+    {
+        char *exe_path = new char[exe_path_size];
+        if (sysctl(exe_path_mib, 4, exe_path, &exe_path_size, NULL, 0) == 0)
+            path = exe_path;
+        delete[] exe_path;
+    }
+#else
+
+#warning Unable to automatically determine executable path for your operating system.
+
+    path = INSTALLEDPSIDATADIR + "../bin/psi4";
+#endif
+
+    boost::filesystem::path p(path);
+    return p.parent_path().string() + "/";
+}
+
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::init(char **envp)
 {
     string psi4datadir;
 
     // First set some defaults:
-    environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
+//    environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
+    environment_["PSIDATADIR"] = executable_path() + "../share/psi/";
     environment_["MAD_NUM_THREADS"] = "1";
 
     // Go through user provided environment overwriting defaults if necessary
@@ -187,3 +254,17 @@ void Process::Environment::set_memory(unsigned long int m)  { memory_ = m; }
 int Process::Environment::get_n_threads() const {return nthread_; }
 
 int Process::Arguments::argc() const { return arguments_.size(); }
+
+namespace psi {
+void die_if_not_converged()
+{
+  fprintf(outfile, "Iterations did not converge.");
+
+  if (Process::environment.options.get_bool("DIE_IF_NOT_CONVERGED"))
+    throw PSIEXCEPTION("Iterations did not converge.");
+  else {
+    fprintf(stderr, "Iterations did not converge.");
+  }
+}
+}
+

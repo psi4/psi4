@@ -21,6 +21,7 @@ A complete list of standard keywords is provided in Appendix
    dfmp2
    adc
    sapt
+   cepa
    cc
    psimrcc
    mrcc

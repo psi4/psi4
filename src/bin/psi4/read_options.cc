@@ -79,6 +79,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
 
+  /*- PSI4 dies if energy does not converge. !expert -*/
+  options.add_bool("DIE_IF_NOT_CONVERGED", true);
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -797,6 +800,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
       options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
+      and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only)-*/
+      options.add_bool("RELAX_GUESS_ORBITALS", false);
+
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 

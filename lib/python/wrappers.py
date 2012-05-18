@@ -1547,6 +1547,10 @@ def complete_basis_set(name, **kwargs):
            * bccd
            * cc3
            * ccsd(t)
+           * cisd
+           * cisdt
+           * cisdtq
+           * ci\ *n*
            * fci
 
     :type name: string
@@ -1717,14 +1721,19 @@ def complete_basis_set(name, **kwargs):
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
-    #VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
-    #                      'cisdcorl': 'CISD CORRELATION ENERGY'}
-    #VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
-    #                     'cisdtcorl': 'CISDT CORRELATION ENERGY'}
-    #VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
-    #                    'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
+    VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
+                          'cisdcorl': 'CISD CORRELATION ENERGY'}
+    VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
+                         'cisdtcorl': 'CISDT CORRELATION ENERGY'}
+    VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
+                        'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
     VARH['fci'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'fcicorl': 'FCI CORRELATION ENERGY'}
+
+    for cilevel in range(2, 99):
+        VARH['ci%s' % (str(cilevel))] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+         'ci%scorl' % (str(cilevel)): 'CI CORRELATION ENERGY'}
 
     finalenergy = 0.0
     do_scf = 1

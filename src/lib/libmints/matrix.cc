@@ -1029,7 +1029,7 @@ void Matrix::scale(double a)
     int h;
     size_t size;
     for (h=0; h<nirrep_; ++h) {
-        size = rowspi_[h] * colspi_[h^symmetry_];
+        size = rowspi_[h] * (size_t) colspi_[h^symmetry_];
         if (size)
             C_DSCAL(size, a, &(matrix_[h][0][0]), 1);
     }
