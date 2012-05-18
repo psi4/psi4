@@ -2125,7 +2125,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       default (-1) is to never compute the full Hessian. -*/
       options.add_int("FULL_HESS_EVERY", -1);
       /*- Model Hessian to guess intrafragment force constants -*/
-      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH");
 
       /*- SUBSECTION Fragment/Internal Coordinate Control -*/
 
