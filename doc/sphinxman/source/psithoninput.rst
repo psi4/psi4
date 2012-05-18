@@ -219,8 +219,10 @@ or ::
         @He 1 2.0
     }
 
-will generate a helium dimer, with the second atom ghosted, i.e., possessing
-basis functions but no electrons or nuclear charge.
+will generate a helium dimer, with the second atom ghosted, *i.e.*, possessing
+basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2_1`
+and :srcsample:`ghosts` for a demonstration of both mechanisms for specifying
+ghost atoms.
 
 .. index:: 
    single: PubChem
