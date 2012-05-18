@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sstream>
 #include <psiconfig.h>
+#include <psi4-dec.h>
 
 #include "gitversion.h"
 
@@ -33,6 +34,8 @@ void print_version(FILE *myout)
   fprintf(myout, "    -----------------------------------------------------------------------\n\n");
   pid_t pid = getpid();
   fprintf(myout, "    Process ID: %6d\n",pid);
+  fprintf(myout, "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
+
   Communicator::world->print(myout);
 }
 

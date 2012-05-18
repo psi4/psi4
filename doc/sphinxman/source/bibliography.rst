@@ -173,3 +173,7 @@ Bibliography
    F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
    *J. Chem. Phys.* **132**, 074107 (2010).
 
+.. [Wennmohs:2008]
+   F. Wennmohs and F. Neese,
+   *Chem. Phys.* **343**, 217-230 (2008).
+
