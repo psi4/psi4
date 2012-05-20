@@ -22,12 +22,6 @@ is set internally from the orbital basis.
 * :ref:`Built-in basis sets by element <apdx:basisElement>`
 * :ref:`User-Defined basis sets <sec:basisUserDefined>`
 
-.. comment * Important Keywords
-.. comment   - .. include:: autodir_options_c/mints__basis.rst
-.. comment   - .. include:: autodir_options_c/scf__df_basis_scf.rst
-.. comment   - .. include:: autodir_options_c/dfmp2__df_basis_mp2.rst
-.. comment   - .. include:: autodir_options_c/sapt__df_basis_sapt.rst
-.. comment   - .. include:: autodir_options_c/sapt__df_basis_elst.rst
 
 Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
