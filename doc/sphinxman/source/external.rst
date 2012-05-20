@@ -276,5 +276,22 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`).
+   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
+
+   * Normal Linux shell commands. First line for C shell; second for bash. ::
+
+        setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+        PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
+
+   * Place the path in the |psirc| file so that it is available for 
+     every |PSIfour| instance. ::
+
+        sys.path.insert(0, '/home/user/psiadditions')
+
+   * Place the path in the input file, either absolute or relative. ::
+
+        sys.path.insert(0, '../../psiadditions')
+        sys.path.insert(0, '/home/user/psiadditions')
 

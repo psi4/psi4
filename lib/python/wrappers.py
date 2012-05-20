@@ -771,6 +771,10 @@ def database(name, db_name, **kwargs):
 
        - In sow/reap mode, use only global options (e.g., the local option set by ``set scf scf_type df`` will not be respected).
 
+    .. note:: To access a database that is not embedded in a |PSIfour| 
+        distribution, add the path to the directory containing the database 
+        to the environment variable :envvar:`PYTHONPATH`.
+
     :type name: string
     :param name: ``'scf'`` || ``'sapt0'`` || ``'ccsd(t)'`` || etc.
 
@@ -1113,7 +1117,14 @@ def database(name, db_name, **kwargs):
             try:
                 getattr(database, db_subset)
             except AttributeError:
-                raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+
+                try:
+                    getattr(database, 'HRXN_' + db_subset)
+                except AttributeError:
+                    raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+                else:
+                    HRXN = getattr(database, 'HRXN_' + db_subset)
+
             else:
                 HRXN = getattr(database, db_subset)
     else:
