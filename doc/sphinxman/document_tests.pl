@@ -58,6 +58,7 @@ foreach my $Dir(readdir TESTS){
     my $SampleInput = $SamplesDirectory."/input.dat";
     open(SAMPLE, ">$SampleInput") or die "\nI can't write to $SampleInput\n";
     my $Description;
+    my $TestOnlyNoSample = 0;
     while(<INPUT>){
         # If this line isn't associated with testing, put it in the sample
         print SAMPLE unless /\#TEST/;
@@ -65,9 +66,17 @@ foreach my $Dir(readdir TESTS){
         next unless s/\#\!//;
         $Description .= $_;
         chomp $Description;
+        if ($Description =~ /\!nosample/) {
+            $TestOnlyNoSample = 1;
+        }
     }
     close INPUT;
     close SAMPLE;
+
+    if ($TestOnlyNoSample) {
+        unlink $SampleInput or warn "Could not unlink $SampleInput: $!";
+        rmdir $SamplesDirectory or die "\nI can't remove $SamplesDirectory\n";
+    }
 
     # Process the comment that we grabbed from the input.
     if($Description){
@@ -85,12 +94,14 @@ foreach my $Dir(readdir TESTS){
         $Description_rst =~ s/\$,/`,/g;
         $Description_rst =~ s/\$\)/`\\ \)/g;
         $Description_rst =~ s/\\_/_/g;
-        print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
-        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
-        print TEXSUMMARY "\\end{tabular*}\n";
-        my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
-        printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
-        printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
+        if ($TestOnlyNoSample == 0) {
+            print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
+            print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
+            print TEXSUMMARY "\\end{tabular*}\n";
+            my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+            printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
+            printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
+        }
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
