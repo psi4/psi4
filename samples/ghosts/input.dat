@@ -1,0 +1,72 @@
+#! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
+#! using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample
+#! but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
+
+memory 250 mb
+
+
+molecule formic_dim {
+   0 1
+   C  -1.888896  -0.179692   0.000000
+   O  -1.493280   1.073689   0.000000
+   O  -1.170435  -1.166590   0.000000
+   H  -2.979488  -0.258829   0.000000
+   H  -0.498833   1.107195   0.000000
+   C   1.888896   0.179692   0.000000
+   O   1.493280  -1.073689   0.000000
+   O   1.170435   1.166590   0.000000
+   H   2.979488   0.258829   0.000000
+   H   0.498833  -1.107195   0.000000
+   units angstrom 
+}
+
+set globals {
+   basis cc-pvdz
+   scf_type df
+   guess sad
+   d_convergence 11
+}
+
+e_dim = energy('df-mp2')
+
+
+# The @ symbol represents a ghost atom
+molecule mon_b {
+   0 1
+   @C  -1.888896  -0.179692   0.000000
+   @O  -1.493280   1.073689   0.000000
+   @O  -1.170435  -1.166590   0.000000
+   @H  -2.979488  -0.258829   0.000000
+   @H  -0.498833   1.107195   0.000000
+   C   1.888896   0.179692   0.000000
+   O   1.493280  -1.073689   0.000000
+   O   1.170435   1.166590   0.000000
+   H   2.979488   0.258829   0.000000
+   H   0.498833  -1.107195   0.000000
+}
+
+set basis cc-pvdz
+e_mon_b = energy('df-mp2')
+
+# The Gh(X) notation also represents a ghost atom
+molecule mon_a {
+   0 1
+   C  -1.888896  -0.179692   0.000000
+   O  -1.493280   1.073689   0.000000
+   O  -1.170435  -1.166590   0.000000
+   H  -2.979488  -0.258829   0.000000
+   H  -0.498833   1.107195   0.000000
+   Gh(C)   1.888896   0.179692   0.000000
+   Gh(O)   1.493280  -1.073689   0.000000
+   Gh(O)   1.170435   1.166590   0.000000
+   Gh(H)   2.979488   0.258829   0.000000
+   Gh(H)   0.498833  -1.107195   0.000000
+}
+
+# We have to specify the basis set again, not that the 
+set basis cc-pvdz
+
+e_mon_a = energy('df-mp2')
+
+e_cp = e_dim - e_mon_a - e_mon_b
+
