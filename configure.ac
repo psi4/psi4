@@ -1043,6 +1043,7 @@ AC_CONFIG_FILES([
           tests/sapt3/Makefile
           tests/sapt4/Makefile
           tests/sapt5/Makefile
+          tests/ghosts/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/dfmp2_3/Makefile

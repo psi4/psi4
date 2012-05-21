@@ -41,7 +41,7 @@ all: default
 # do installations
 #
 
-install:: install_inc install_target install_man install_tmpl
+install:: install_inc
 
 install_inc::
 
@@ -50,15 +50,6 @@ $(PSITARGET): $(LIBOBJ)
 	rm -f $(PSITARGET)
 	$(AR) $(ARFLAGS) $(PSITARGET) $^
 	$(RANLIB)  $(PSITARGET)
-
-install_target:: $(PSITARGET)
-	$(MKDIRS) $(DESTDIR)$(libdir)
-	$(INSTALL_DATA) $< $(DESTDIR)$(libdir)
-	$(RANLIB) $(DESTDIR)$(libdir)/`basename $(PSITARGET)`
-
-install_man::
-
-install_tmpl::
 
 #
 # clean up

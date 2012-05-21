@@ -41,11 +41,7 @@ all: default
 # do installations
 #
 
-install:: install_inc install_target install_man
-
-install_inc::
-
-install_man::
+install:: install_target
 
 ifeq ($(MODULE),true)
 $(PSITARGET): $(BINOBJ)
@@ -54,10 +50,8 @@ $(PSITARGET): $(BINOBJ)
 	$(AR) $(ARFLAGS) $(PSITARGET) $^
 	$(RANLIB) $(PSITARGET)
 
-install_target:: $(PSITARGET)
-	$(MKDIRS) $(libdir)
-	$(INSTALL_DATA) $< $(libdir)
-	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
+install_target::
+
 else
 .PHONY: gitversion
 gitversion:
