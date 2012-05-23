@@ -1,20 +1,58 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:config`:
+======================================
+Installation and Runtime Configuration
+======================================
 
-===============================================
-Configuration: Preparing |PSIfours| Environment
-===============================================
+Obtaining |PSIfour|
+===================
 
-.. index:: scratch files, psirc
+The latest version of the |PSIfour| program package may be obtained at
+`www.psicode.org <http://www.psicode.org>`_.  The
+source code is available as a gzipped tar archive (named, for example,
+``psi4.X.tar.gz``, and binaries may be available for certain architectures.
+For detailed installation and testing instructions, please refer to
+:ref:`Compiling and Installing <sec:installFilePage>` (same information as 
+the file :source:`INSTALL` distributed with the package). Additional compilation
+hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
+
+.. comment To avoid dependency problems, a script is provided at
+.. comment :source:`lib/scripts/psi4depend-v2.sh` that will download, configure, and
+.. comment install all dependencies that the Psi4 developers currently recommend.
+.. comment This script simply needs one to edit the top lines to tell it where to
+.. comment install all the files to and for the user to put this into their path. The
+.. comment script will print out the lines that you need to add to your
+.. comment :envvar:`path` and :envvar:`LD_LIBRARY_PATH`. This script will build the
+.. comment following: autoconf-2.68, automake-1.11, gcc-4.1.2, mpich2-1.2.1,
+.. comment Python-2.6.6, Boost-1.48.0 (as well as some dependencies). After running
+.. comment the script, proceed with building |PSIfour| as described in
+.. comment :source:`INSTALL`.
+
+
+.. index:: prerequisites, compiling, installing
+.. _`sec:installFile`:
+
+Compiling and Installing
+========================
+
+* :ref:`I.   Compilation Prerequisites                                     <sec:install_I>`
+* :ref:`II.  Brief Summary of Configuration, Compilation, and Installation <sec:install_II>`
+* :ref:`III. Detailed Installation Instructions                            <sec:install_III>`
+* :ref:`IV.  Recommendations for BLAS and LAPACK libraries                 <sec:install_IV>`
+* :ref:`V.   Miscellaneous architecture-specific notes                     <sec:install_V>`
+* :ref:`VI.  Common Problems with PSI Compilation                          <sec:install_VI>`
+
+
+.. index:: scratch files, psirc, psi4rc
 .. _`sec:psirc`:
 
 Scratch Files and the |psirc| File
 ==================================
 
 One very important part of user configuration at the end of the
-installation process is to tell |PSIfour| where to write its temporary
+installation process (:ref:`details here <sec:install_III_7>`)
+is to tell |PSIfour| where to write its temporary
 ("scratch") files.  Electronic structure packages like |PSIfour| can
 create rather large temporary disk files.  It is very important to 
 ensure that |PSIfour| is writing its temporary files to a disk drive
@@ -25,9 +63,9 @@ directory is often not large enough for typical computations.  Therefore,
 you need to (a) make sure there is a sufficiently large directory on a
 locally attached disk drive (100GB–1TB or more, depending on the size of
 the molecules to be studied) and (b) tell |PSIfour| the path to this
-directory.  The |PSIfour| installation instructions explain how to set up a
-resource file, |psirc| (example :source:`samples/example_psi4rc_file`),
-for each user providing this information.
+directory. Scratch file location can be specified through the 
+:envvar:`PSI_SCRATCH` environment variable or, more flexibly, through 
+a resource file, |psirc| (example :source:`samples/example_psi4rc_file`). 
 
 For convenience, the Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
@@ -44,9 +82,9 @@ unless otherwise instructed by the user.
 A Python callable handle to the |PSIfour| I/O management routines is available,
 and is called ``psi4_io``.  To instruct the I/O manager to send all files to
 another location, say ``/scratch/user``, add the following command to the |psirc|
-file (note the trailing "/")::
+file.::
 
-    psi4_io.set_default_path('/scratch/user/')
+    psi4_io.set_default_path('/scratch/user')
 
 For batch jobs running through a queue, it might be more convenient to use an
 environmental variable (in this case ``$MYSCRATCH``) to set the scratch directory;
@@ -78,7 +116,11 @@ messy) flag will prevent files being deleted at the end of the run::
     psi4 -m
 
 Alternately, the scratch directory can be set through the environment
-variable :envvar:`PSI_SCRATCH` (overrides |psirc| settings).
+variable :envvar:`PSI_SCRATCH` (overrides |psirc| settings). (First line
+for C shell; second line for bash.) ::
+
+     setenv PSI_SCRATCH /scratch/user
+     export PSI_SCRATCH=/scratch/user
 
 The |psirc| file can also be used to define constants that are accessible
 in input files or to place any Python statements that should be executed
@@ -276,5 +318,22 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PYTHONPATH
 
    Path in which the Python interpreter looks for modules to import. For 
-   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`).
+   |PSIfour|, these are generally plugins (see :ref:`sec:plugins`) or databases.
+
+   Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
+
+   * Normal Linux shell commands. First line for C shell; second for bash. ::
+
+        setenv PYTHONPATH /home/user/psiadditions:$PYTHONPATH
+        PYTHONPATH=/home/user/psiadditions:$PYTHONPATH; export PYTHONPATH
+
+   * Place the path in the |psirc| file so that it is available for 
+     every |PSIfour| instance. ::
+
+        sys.path.insert(0, '/home/user/psiadditions')
+
+   * Place the path in the input file, either absolute or relative. ::
+
+        sys.path.insert(0, '../../psiadditions')
+        sys.path.insert(0, '/home/user/psiadditions')
 
