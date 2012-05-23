@@ -165,7 +165,9 @@ public:
 protected:
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
-    void form_H();
+    // Temporarily converting to virtual function for testing embedding
+    // potentials.  TDC, 5/23/12.
+    virtual void form_H();
 
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
