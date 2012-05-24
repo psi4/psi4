@@ -707,7 +707,7 @@ void RDFMP2::print_header()
     fprintf(outfile, "\t              RMP2 Wavefunction, %3d Threads             \n", nthread);
     fprintf(outfile, "\t                                                         \n");
     fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sheriill          \n");
+    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
     fprintf(outfile, "\t --------------------------------------------------------\n");
     fprintf(outfile, "\n");
 
@@ -2784,7 +2784,7 @@ void UDFMP2::print_header()
     fprintf(outfile, "\t              UMP2 Wavefunction, %3d Threads             \n", nthread);
     fprintf(outfile, "\t                                                         \n");
     fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sheriill          \n");
+    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
     fprintf(outfile, "\t --------------------------------------------------------\n");
     fprintf(outfile, "\n");
 
@@ -3458,7 +3458,7 @@ void RODFMP2::print_header()
     fprintf(outfile, "\t          ROHF-MBPT(2) Wavefunction, %3d Threads         \n", nthread);
     fprintf(outfile, "\t                                                         \n");
     fprintf(outfile, "\t        Rob Parrish, Justin Turney, Andy Simmonett,      \n");
-    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sheriill          \n");
+    fprintf(outfile, "\t           Ed Hohenstein, and C. David Sherrill          \n");
     fprintf(outfile, "\t --------------------------------------------------------\n");
     fprintf(outfile, "\n");
 
