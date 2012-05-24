@@ -108,6 +108,9 @@ public:
 
     static Environment get_environment();
 };
+
+void die_if_not_converged();
+
 }
 
 

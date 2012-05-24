@@ -152,6 +152,7 @@ void export_mints()
             def("accumulate_product", matrix_two(&Matrix::accumulate_product), "docstring").
             def("scale", &Matrix::scale, "docstring").
             def("sum_of_squares", &Matrix::sum_of_squares, "docstring").
+            def("add_and_orthogonalize_row", &Matrix::add_and_orthogonalize_row, "docstring").
             def("rms", &Matrix::rms, "docstring").
             def("scale_row", &Matrix::scale_row, "docstring").
             def("scale_column", &Matrix::scale_column, "docstring").
@@ -198,6 +199,9 @@ void export_mints()
             def("print_out", &CdSalcList::print, "docstring").
             def("matrix", &CdSalcList::matrix, "docstring");
 
+    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
+    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
+
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
@@ -222,7 +226,8 @@ void export_mints()
             def("ao_eri", &MintsHelper::ao_eri, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
-            def("petite_list", &MintsHelper::petite_list, "docstring").
+            def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
+            def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
 
     class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring").

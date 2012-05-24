@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <cstdlib>
+#include <exception.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 #include <libparallel/parallel.h>
@@ -84,7 +85,8 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   //Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
   if(errcod != sizeof(ULI)) {
     fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
-    psio_error(unit,PSIO_ERROR_WRITE);
+    fflush(stderr);
+    throw PSIEXCEPTION("PSIO Error");
   }
 }
 

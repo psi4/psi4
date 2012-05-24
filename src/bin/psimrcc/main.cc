@@ -75,7 +75,6 @@ psimrcc(Options &options)
 
   global_timer = new Timer;
   debugging = new Debugging(options);
-
   moinfo = new MOInfo(options);
 
   memory_manager = new MemoryManager(Process::environment.get_memory());
@@ -83,14 +82,33 @@ psimrcc(Options &options)
 
   moinfo->setup_model_space();  // The is a bug here DELETEME
 
+  int nactmo = moinfo->get_nactv();
+  int nactel = moinfo->get_nactive_ael() + moinfo->get_nactive_bel();
+  if(nactel > 2 and nactmo > 2){
+      fprintf(outfile,"\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
+      fprintf(outfile,"\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
+      fprintf(outfile,"\n            but will negled matrix elements of the effective Hamiltonian between");
+      fprintf(outfile,"\n            reference determinats that differ by more than two spin orbitals.");
+      fprintf(outfile,"\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
+      fprintf(outfile,"\n            If you are going to report this number in a publication make sure that you");
+      fprintf(outfile,"\n            understand what is going on and that you document it in your publication.");
+  }
+
   blas   = new CCBLAS(options);
   trans  = new CCTransform();
   if(options.get_str("CORR_WFN")=="PT2"){
     mrpt2(options);
-  }else if(options.get_str("CORR_WFN")=="MP2-CCSD"){
-    mp2_ccsd(options);
   }else{
     mrccsd(options);
+    if(nactel > 2 and nactmo > 2){
+        fprintf(outfile,"\n   WARNING: PSIMRCC detected that you are not using a CAS(2,n) or CAS(m,2) active space");
+        fprintf(outfile,"\n            You requested a CAS(%d,%d) space.  In this case the program will run",nactel,nactmo);
+        fprintf(outfile,"\n            but will negled matrix elements of the effective Hamiltonian between");
+        fprintf(outfile,"\n            reference determinats that differ by more than two spin orbitals.");
+        fprintf(outfile,"\n            The final answer will NOT be the Mk-MRCC energy but only an approximation to it.");
+        fprintf(outfile,"\n            If you are going to report this number in a publication make sure that you");
+        fprintf(outfile,"\n            understand what is going on and that you document it in your publication.");
+    }
   }
 
   delete sorter;
