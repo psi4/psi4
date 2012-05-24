@@ -180,6 +180,12 @@ boost::shared_ptr<PetiteList> MintsHelper::petite_list() const
     return pt;
 }
 
+boost::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const
+{
+    boost::shared_ptr<PetiteList> pt(new PetiteList(basisset_, integral_, val));
+    return pt;
+}
+
 boost::shared_ptr<BasisSet> MintsHelper::basisset() const
 {
     return basisset_;

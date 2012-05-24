@@ -989,4 +989,226 @@ void SAPTCholeskyDenominator::decompose()
     }
 }
 
+TLaplaceDenominator::TLaplaceDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta) :
+    eps_occ_(eps_occ), eps_vir_(eps_vir), delta_(delta)
+{
+    decompose();
+}
+TLaplaceDenominator::~TLaplaceDenominator()
+{
+}
+void TLaplaceDenominator::decompose()
+{
+    int nocc = eps_occ_->dimpi()[0];
+    int nvir = eps_vir_->dimpi()[0];
+
+    double E_LOMO = eps_occ_->get(0, 0);
+    double E_HOMO = eps_occ_->get(0, nocc - 1);
+    double E_LUMO = eps_vir_->get(0, 0);
+    double E_HUMO = eps_vir_->get(0, nvir - 1);
+
+    double A = 3.0*(E_LUMO - E_HOMO);
+    double B = 3.0*(E_HUMO - E_LOMO);
+    double R = B / A;
+
+    // Pick appropriate quadrature file and read contents
+    std::string PSIDATADIR = Process::environment("PSIDATADIR");
+    std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
+    std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
+
+    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);
+    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);
+
+    if (!err_table_file)
+        throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate error property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/error.bin)");
+    if (!R_avail_file)
+        throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate R property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/R_avail.bin)");
+
+    int nk = 53;
+    int nR = 99;
+
+    // Read in the R available
+    double* R_availp = new double[nR];
+    R_avail_file.read((char*) R_availp, nR*sizeof(double));
+
+    SharedMatrix err_table(new Matrix("Error Table (nR x nk)", nR, nk));
+    double** err_tablep = err_table->pointer();
+    err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double));
+
+    R_avail_file.close();
+    err_table_file.close();
+
+    //for (int r2 = 0; r2 < nR; r2++)
+    //    fprintf(outfile, "  R[%4d] = %20.14E\n", r2+1, R_availp[r2]);
+    //err_table->print();
+
+    int indR;
+    for (indR = 0; indR < nR; indR++) {
+        if (R < R_availp[indR])
+            break;
+    }
+    if (indR == nR) {
+        // TODO: Relax this
+        throw PSIEXCEPTION("Laplace Quadrature requested for (E_HUMO - E_LOMO)/(E_LUMO-E_HOMO) > 7.0 * 10^12, quadratures are not designed for this range.");
+    }
+
+    double accuracy;
+    int k, r;
+    bool found = false;
+    for (k = 0; k < nk; k++) {
+        for (r = indR; r < nR; r++) {
+            double err = err_tablep[r][k];
+            if (err != 0.0 && err < delta_) {
+                accuracy = err;
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            break;
+    }
+
+
+    if (!found) {
+        throw PSIEXCEPTION("Laplace Quadrature rule could not be found with specified accuracy for this system");
+    }
+
+    nvector_ = k + 1;
+
+    // A bit hacky, but OK
+    int exponent = (int) floor(log(R_availp[r])/log(10.0));
+    int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
+    if (mantissa == 10) {
+        exponent++;
+        mantissa = 1;
+    }
+
+    std::stringstream st;
+    st << setfill('0');
+    st << "1_xk" <<  setw(2) << nvector_;
+    st << "_" << mantissa;
+    st << "E" << exponent;
+
+    std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
+
+    fprintf(outfile, "\n  ==> (T) Laplace Denominator <==\n\n");
+    fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+    fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
+    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+    fprintf(outfile, "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
+
+    // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
+    double* alpha = new double[nvector_];
+    double* omega = new double[nvector_];
+
+    std::vector<std::string> lines;
+    std::string text;
+    ifstream infile(quadfile.c_str());
+    if (!infile)
+        throw PSIEXCEPTION("LaplaceDenominator: Unable to open quadrature rule file: " + quadfile);
+    while (infile.good()) {
+        getline(infile, text);
+        lines.push_back(text);
+    }
+
+#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+    regex numberline("^\\s*(" NUMBER ").*");
+    smatch what;
+
+    // We'll be rigorous, the files are extremely well defined
+    int lineno = 0;
+    for (int index = 0; index < nvector_; index++) {
+        std::string line  = lines[lineno++];
+        if (!regex_match(line, what, numberline))
+            throw PSIEXCEPTION("LaplaceDenominator: Unable to read grid file line: \n" + line);
+        if (!from_string<double>(omega[index], what[1], std::dec))
+            throw PSIEXCEPTION("LaplaceDenominator: Unable to convert grid file line: \n" + line);
+    }
+    for (int index = 0; index < nvector_; index++) {
+        std::string line  = lines[lineno++];
+        if (!regex_match(line, what, numberline))
+            throw PSIEXCEPTION("LaplaceDenominator: Unable to read grid file line: \n" + line);
+        if (!from_string<double>(alpha[index], what[1], std::dec))
+            throw PSIEXCEPTION("LaplaceDenominator: Unable to convert grid file line: \n" + line);
+    }
+
+    //for (int k = 0; k < nvector_; k++)
+    //    printf("  %24.16E, %24.16E\n", omega[k], alpha[k]);
+
+    // Cast weights back to problem size
+    for (int k = 0; k < nvector_; k++) {
+        alpha[k] /= A;
+        omega[k] /= A;
+    }
+
+    denominator_occ_ = SharedMatrix(new Matrix("Occupied Laplace Delta Tensor", nvector_, nocc));
+    denominator_vir_ = SharedMatrix(new Matrix("Virtual Laplace Delta Tensor", nvector_, nvir));
+
+    double** dop = denominator_occ_->pointer();
+    double** dvp = denominator_vir_->pointer();
+
+    double* e_o = eps_occ_->pointer();
+    double* e_v = eps_vir_->pointer();
+
+    for (int k = 0; k < nvector_; k++) {
+        for (int i = 0; i < nocc; i++) {
+            dop[k][i] = pow(omega[k],1.0/6.0)*exp(alpha[k]*e_o[i]);
+        }
+        for (int a = 0; a < nvir; a++) {
+            dvp[k][a] = pow(omega[k],1.0/6.0)*exp(-alpha[k]*e_v[a]);
+        }
+    }
+
+    delete[] alpha;
+    delete[] omega;
+    delete[] R_availp;
+}
+void TLaplaceDenominator::debug()
+{
+    int nocc = eps_occ_->dimpi()[0];
+    int nvir = eps_vir_->dimpi()[0];
+
+    double* e_o = eps_occ_->pointer();
+    double* e_v = eps_vir_->pointer();
+
+    double** d_o = denominator_occ_->pointer();
+    double** d_v = denominator_vir_->pointer();
+
+    SharedMatrix true_denom(new Matrix("Exact Delta Tensor",      nocc*nocc*nocc,nvir*nvir*nvir));
+    SharedMatrix app_denom(new Matrix("Approximate Delta Tensor", nocc*nocc*nocc,nvir*nvir*nvir));
+    SharedMatrix err_denom(new Matrix("Error in Delta Tensor",    nocc*nocc*nocc,nvir*nvir*nvir));
+
+    double** tp = true_denom->pointer();
+    double** ap = app_denom->pointer();
+    double** ep = err_denom->pointer();
+
+    for (int i = 0; i < nocc; i++)
+    for (int j = 0; j < nocc; j++)
+    for (int k = 0; k < nocc; k++)
+    for (int a = 0; a < nvir; a++)
+    for (int b = 0; b < nvir; b++)
+    for (int c = 0; c < nvir; c++)
+        tp[i*nocc*nocc + j*nocc + k][a*nvir*nvir + b*nvir + c] =  1.0 / (e_v[a] + e_v[b] + e_v[c] - e_o[i] - e_o[j] - e_o[k]);
+
+    for (int alpha = 0; alpha < nvector_; alpha++)
+    for (int i = 0; i < nocc; i++)
+    for (int j = 0; j < nocc; j++)
+    for (int k = 0; k < nocc; k++)
+    for (int a = 0; a < nvir; a++)
+    for (int b = 0; b < nvir; b++)
+    for (int c = 0; c < nvir; c++)
+        ap[i*nocc*nocc + j*nocc + k][a*nvir*nvir + b*nvir + c] += d_o[alpha][i] * d_o[alpha][j] * d_o[alpha][k] *
+                                                                  d_v[alpha][a] * d_v[alpha][b] * d_v[alpha][c]; 
+
+    err_denom->copy(app_denom);
+    err_denom->subtract(true_denom);
+
+    denominator_occ_->print();
+    denominator_vir_->print();
+
+    true_denom->print();
+    app_denom->print();
+    err_denom->print();
+}
+
 } // Namespace psi
