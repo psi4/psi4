@@ -253,6 +253,8 @@ void HF::common_init()
                 perturb_ = dipole_y;
             else if (perturb_with == "DIPOLE_Z")
                 perturb_ = dipole_z;
+            else if (perturb_with == "EMBPOT")
+                perturb_ = embpot;
             else {
                 if (Communicator::world->me() == 0) {
                     fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");

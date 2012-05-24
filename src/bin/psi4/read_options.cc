@@ -907,7 +907,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Size of the perturbation -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
