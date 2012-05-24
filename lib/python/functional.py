@@ -127,6 +127,35 @@ def build_pbe_x_functional(name):
     return fun
 
 
+def build_rpbe_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('RPBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('RPBE_X')
+    # Tab in, trailing newlines
+    fun.set_description('    RPBE GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Hammer et. al. Phys. Rev. B, 59(2), 7413-7421, 1999\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
 def build_pbesol_x_functional(name):
 
     # Call this first
@@ -577,6 +606,7 @@ functionals = {
         'b88_x'       : build_b88_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
+        'rpbe_x'      : build_rpbe_x_functional,
         'pbesol_x'    : build_pbesol_x_functional,
         'pw91_x'      : build_pw91_x_functional,
         'b97_x'       : build_b97_x_functional,
@@ -2063,6 +2093,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
 def build_dldf_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2075,7 +2106,7 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # No spaces, keep it short and according to convention
     sup.set_name('dlDF')
     # Tab in, trailing newlines 
-    sup.set_description('    Dispersionless Meta-GGA XC Functional\n')
+    sup.set_description('    Dispersionless Hybrid Meta-GGA XC Functional\n')
     # Tab in, trailing newlines 
     sup.set_citation('    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n')
 
@@ -2194,6 +2225,7 @@ superfunctionals = {
         'b88_x'     : build_primitive_superfunctional,
         'b3_x'      : build_primitive_superfunctional,
         'pbe_x'     : build_primitive_superfunctional,
+        'rpbe_x'    : build_primitive_superfunctional,
         'pbesol_x'  : build_primitive_superfunctional,
         'pw91_x'    : build_primitive_superfunctional,
         'ws_x'      : build_ws_x_superfunctional,
