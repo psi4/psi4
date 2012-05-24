@@ -210,7 +210,7 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
             }
             case RPBE: {
                 double mus2 = 1.0 + _PBE_mu_ * s * s / (4.0 * _k0_ * _k0_ * _PBE_kp_);
-                Fs = 1.0 + _PBE_kp_ * (1.0 - exp(- _PBE_mu_ * s * s / _PBE_kp_); 
+                Fs = 1.0 + _PBE_kp_ * (1.0 - exp(- _PBE_mu_ * s * s / _PBE_kp_)); 
                 Fs_s = 2.0 * _PBE_mu_ * s * exp(- _PBE_mu_ * s * s / _PBE_kp_); 
                 break;
             }
