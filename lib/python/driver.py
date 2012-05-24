@@ -626,16 +626,12 @@ def property(name, **kwargs):
 
     :aliases: prop()
 
-    :returns: (*float*) Total electronic energy in Hartrees.
+    :returns: none.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
        - This function at present handles property functions only for CC methods.
          Consult the keywords sections for other modules for further property capabilities.
-
-       - Check that energy is actually being returned.
-
-       - Check if some PSI variables ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |

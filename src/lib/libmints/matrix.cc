@@ -948,7 +948,7 @@ void Matrix::add(const Matrix * const plus)
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for (size_t ij=0; ij<size; ++ij) {
                 lhs[ij] += rhs[ij];
             }
@@ -974,7 +974,7 @@ void Matrix::subtract(const Matrix* const plus)
         if (size) {
             lhs = matrix_[h][0];
             rhs = plus->matrix_[h][0];
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for (size_t ij=0; ij<size; ++ij) {
                 lhs[ij] -= rhs[ij];
             }
@@ -1029,7 +1029,7 @@ void Matrix::scale(double a)
     int h;
     size_t size;
     for (h=0; h<nirrep_; ++h) {
-        size = rowspi_[h] * colspi_[h^symmetry_];
+        size = rowspi_[h] * (size_t) colspi_[h^symmetry_];
         if (size)
             C_DSCAL(size, a, &(matrix_[h][0][0]), 1);
     }
@@ -1362,6 +1362,25 @@ Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double *res
     }
 
     return northog;
+}
+
+bool Matrix::add_and_orthogonalize_row(const SharedVector v)
+{
+    Vector v_copy(*v.get());
+    if(v_copy.nirrep() > 1 || nirrep_ > 1)
+        throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Symmetry not allowed (yet).");
+    if(v_copy.dimpi()[0] != colspi_[0])
+        throw PSIEXCEPTION("Matrix::schmidt_add_and_orthogonalize: Incompatible dimensions.");
+    double **mat = Matrix::matrix(rowspi_[0]+1, colspi_[0]);
+    size_t n = colspi_[0]*rowspi_[0]*sizeof(double);
+    if(n){
+        ::memcpy(mat[0], matrix_[0][0], n);
+        Matrix::free(matrix_[0]);
+    }
+    matrix_[0] = mat;
+    bool ret = schmidt_add_row(0, rowspi_[0], v_copy);
+    rowspi_[0]++;
+    return ret;
 }
 
 bool Matrix::schmidt_add_row(int h, int rows, Vector& v) throw()
@@ -1933,6 +1952,62 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
     return L;
 }
 
+std::pair<SharedMatrix, SharedMatrix> Matrix::partial_square_root(double delta)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::partial_square_root: Matrix is non-totally symmetric.");
+    }
+
+    SharedMatrix V(new Matrix("V", colspi_, colspi_));
+    SharedVector d(new Vector("d", colspi_));         
+    
+    diagonalize(V,d);
+
+    Dimension Ppi(d->nirrep());
+    Dimension Npi(d->nirrep());
+    for (int h = 0; h < d->nirrep(); h++) {
+        for (int i = 0; i < d->dimpi()[h]; i++) {
+            if (fabs(d->get(h,i)) >= delta) {
+                if (d->get(h,i) >= 0) {
+                    Ppi[h]++;
+                } else {
+                    Npi[h]++;
+                }
+            }
+        }
+    }
+
+    SharedMatrix P(new Matrix("P", colspi_, Ppi));
+    SharedMatrix N(new Matrix("N", colspi_, Npi));
+
+    for (int h = 0; h < d->nirrep(); h++) {
+        double** Vp = V->pointer(h);
+        double** Pp = P->pointer(h);
+        double** Np = N->pointer(h);
+        double*  dp = d->pointer(h); 
+
+        int Pcounter = 0;
+        int Ncounter = 0;
+        for (int i = 0; i < colspi_[h]; i++) {
+            if (fabs(d->get(h,i)) >= delta) {
+                if (d->get(h,i) >= 0.0) {
+                    // +
+                    double val = sqrt(fabs(d->get(h,i))); 
+                    C_DAXPY(colspi_[h], val, &Vp[0][i], colspi_[h], &Pp[0][Pcounter], Ppi[h]);
+                    Pcounter++;
+                } else {
+                    // -
+                    double val = sqrt(fabs(d->get(h,i))); 
+                    C_DAXPY(colspi_[h],-val, &Vp[0][i], colspi_[h], &Np[0][Ncounter], Npi[h]);
+                    Ncounter++;
+                }
+            }
+        }
+    }
+
+    return std::pair<SharedMatrix, SharedMatrix>(P, N);
+}
+
 void Matrix::invert()
 {
     if (symmetry_) {
@@ -2077,7 +2152,8 @@ void Matrix::expm(int m, bool scale)
         int n = rowspi_[h];
         double** A = matrix_[h];        
 
-        double L, S;
+        double L; 
+        int S;
         if (scale) {
             // Trace reduction
             L = 0.0;
@@ -2101,7 +2177,7 @@ void Matrix::expm(int m, bool scale)
             double mag = log(norm) / log(2.0);
             mag = (mag < 0.0 ? 0.0 : mag);
             mag = (mag > 4.0 ? 4.0 : mag);
-            int S = (int)(mag);
+            S = (int)(mag);
             C_DSCAL(n*(unsigned long int) n, pow(2.0, -S), A[0], 1);
         }
  
@@ -3106,3 +3182,18 @@ void Matrix::set_by_python_list(const boost::python::list& data)
         }
     }
 }
+
+void Matrix::rotate_columns(int h, int i, int j, double theta)
+{
+    if(h > nirrep_)
+        throw PSIEXCEPTION("In rotate columns: Invalid Irrep");
+    if(!colspi_[h] || !rowspi_[h]) return;
+    if(i > colspi_[h])
+        throw PSIEXCEPTION("In rotate columns: Invalid column number for i");
+    if(j > colspi_[h])
+        throw PSIEXCEPTION("In rotate columns: Invalid column number for j");
+    double costheta = cos(theta);
+    double sintheta = sin(theta);
+    C_DROT(rowspi_[h], &matrix_[h][0][i], colspi_[h], &matrix_[h][0][j], colspi_[h], costheta, sintheta);
+}
+

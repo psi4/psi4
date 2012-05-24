@@ -12,6 +12,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::build_intermediates()
 {
+    dcft_timer_on("DCFTSolver::build_intermediates()");
+
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     dpdfile2 F_OO, F_oo, F_VV, F_vv;
@@ -491,8 +493,9 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&T);
     dpd_buf4_close(&F);
 
-
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    dcft_timer_off("DCFTSolver::build_intermediates()");
 }
 
 }} // Namespaces

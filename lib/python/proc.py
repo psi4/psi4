@@ -22,8 +22,11 @@ def run_dcft(name, **kwargs):
     a density cumulant functional theory calculation.
 
     """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.dcft()
+    PsiMod.set_global_option('REFERENCE', oldref)
 
 
 def run_dcft_gradient(name, **kwargs):
@@ -278,8 +281,31 @@ def run_dfmp2_gradient(name, **kwargs):
 
     """
 
-    run_dfmp2(name, **kwargs)
+    if 'restart_file' in kwargs:
+        restartfile = kwargs.pop('restart_file')
+        # Rename the checkpoint file to be consistent with psi4's file system
+        psioh = PsiMod.IOManager.shared_object()
+        psio = PsiMod.IO.shared_object()
+        filepath = psioh.get_file_path(32)
+        namespace = psio.get_default_namespace()
+        pid = str(os.getpid())
+        prefix = 'psi'
+        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
+        if(PsiMod.me() == 0):
+            shutil.copy(restartfile, targetfile)
+    else:
+        run_scf('RHF', **kwargs)
+
+    PsiMod.print_out('\n')
+    banner('DFMP2')
+    PsiMod.print_out('\n')
     PsiMod.dfmp2grad()
+    e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    if (name.upper() == 'SCS-DFMP2'):
+        return e_scs_dfmp2
+    elif (name.upper() == 'DF-MP2'):
+        return e_dfmp2
     
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -444,7 +470,7 @@ def run_cc_property(name, **kwargs):
         exit(1)
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        print "Cannot compute response properties for excited states."
+        print "Cannot (yet) compute response properties for excited states."
         exit(1)
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
@@ -471,7 +497,17 @@ def run_cc_property(name, **kwargs):
     PsiMod.cchbar()
 
     # Need ccdensity at this point only for density-based props
-    if ((n_one > 0 or n_two > 0) and not n_excited):
+    if (n_one > 0 or n_two > 0):
+        if (name.lower() == 'eom-ccsd'):
+            PsiMod.set_global_option('WFN', 'EOM_CCSD')
+            PsiMod.set_global_option('DERTYPE', 'NONE')
+            PsiMod.set_global_option('ONEPDM', 'TRUE')
+            PsiMod.cceom()
+        elif (name.lower() == 'eom-cc2'):
+            PsiMod.set_global_option('WFN', 'EOM_CC2')
+            PsiMod.set_global_option('DERTYPE', 'NONE')
+            PsiMod.set_global_option('ONEPDM', 'TRUE')
+            PsiMod.cceom()
         PsiMod.set_global_option('DERTYPE', 'NONE')
         PsiMod.set_global_option('ONEPDM', 'TRUE')
         PsiMod.cclambda()

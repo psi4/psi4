@@ -32,6 +32,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
         int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
         bool backwards, double alpha, double beta)
 {
+    dcft_timer_on("DCFTSolver::half_transform");
 
     int Gc, Gd, cd, pq, ij;
 
@@ -104,14 +105,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
         dpd_buf4_mat_irrep_close(SO, h);
 
     }
-
-
-
-
-
-
-
-
+    dcft_timer_off("DCFTSolver::half_transform");
 }
 
 
@@ -129,6 +123,8 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
 void
 DCFTSolver::file2_transform(dpdfile2 *SO, dpdfile2 *MO, SharedMatrix C, bool backwards)
 {
+    dcft_timer_on("DCFTSolver::file2_transform");
+
     if(backwards) {
         Matrix MO_mat(MO);
         MO_mat.back_transform(C);
@@ -139,6 +135,7 @@ DCFTSolver::file2_transform(dpdfile2 *SO, dpdfile2 *MO, SharedMatrix C, bool bac
         SO_mat.transform(C);
         SO_mat.write_to_dpdfile2(MO);
     }
+    dcft_timer_off("DCFTSolver::file2_transform");
 }
 
 

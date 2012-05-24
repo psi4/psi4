@@ -296,6 +296,7 @@ void UHF::stability_analysis()
         IntegralTransform ints(wfn, spaces, IntegralTransform::Unrestricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);
+        ints.set_keep_iwl_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
         dpd_set_default(ints.get_dpd_id());
@@ -406,6 +407,8 @@ void UHF::stability_analysis()
          */
         std::vector<std::pair<double, int> >eval_sym;
 
+        std::string status;
+        bool redo = false;
         dpd_buf4_init(&Aaa, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "UHF Hessian (IA|JB)");
         dpd_buf4_init(&Aab, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
@@ -450,15 +453,68 @@ void UHF::stability_analysis()
             for(int i = 0; i < mindim; i++)
                 eval_sym.push_back(std::make_pair(evals[i], h));
 
+            // Perform totally symmetric rotations, if necessary
+            if(h == 0 && options_.get_str("STABILITY_ANALYSIS") == "FOLLOW"){
+                if(evals[0] < 0.0){
+                    redo = true;
+                    status = "\tNegative hessian eigenvalue detected: rotating orbitals.\n";
+                    double scale = _pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
+                    // Rotate the alpha orbitals
+//                    fprintf(outfile, "OLD ORBS");
+//                    Ca_->print();
+                    for(int ia = 0; ia < Aaa.params->rowtot[h]; ++ia){
+                        int iabs = Aaa.params->roworb[h][ia][0];
+                        int aabs = Aaa.params->roworb[h][ia][1];
+                        int isym = Aaa.params->psym[iabs];
+                        int asym = Aaa.params->qsym[aabs];
+                        int irel = iabs - Aaa.params->poff[isym];
+                        int arel = aabs - Aaa.params->qoff[asym] + doccpi_[asym] + soccpi_[asym];
+
+                        Ca_->rotate_columns(isym, irel, arel, scale*evecs[ia][0]);
+                        fprintf(outfile, "Rotating %d and %d in irrep %d by %f\n",
+                                irel, arel, isym, scale*evecs[0][ia]);
+                    }
+//                    fprintf(outfile, "NEW ORBS");
+//                    Ca_->print();
+                    // Rotate the beta orbitals
+                    for(int ia = 0; ia < Abb.params->rowtot[h]; ++ia){
+                        int iabs = Abb.params->roworb[h][ia][0];
+                        int aabs = Abb.params->roworb[h][ia][1];
+                        int isym = Abb.params->psym[iabs];
+                        int asym = Abb.params->qsym[aabs];
+                        int irel = iabs - Abb.params->poff[isym];
+                        int arel = aabs - Abb.params->qoff[asym] + doccpi_[asym];
+                        Cb_->rotate_columns(isym, irel, arel, scale*evecs[0][ia+aDim]);
+                    }
+                }else{
+                    status =  "\tNo totally symmetric instabilities detected: "
+                              "no rotation will be performed.\n";
+                }
+            }
+
             free_block(A);
             free_block(evecs);
             delete [] evals;
         }
 
-        fprintf(outfile, "Lowest (UHF->UHF) stability eigenvalues:-\n");
+        fprintf(outfile, "\tLowest UHF->UHF stability eigenvalues:-\n");
         print_stability_analysis(eval_sym);
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+        fprintf(outfile, "%s", status.c_str());
+
+        if(redo){
+            if(attempt_number_ > 1){
+                // Make sure we don't get stuck in an infinite loop
+                fprintf(outfile, "\tThere's still a negative eigenvalue.  Try increasing FOLLOW_STEP_SCALE");
+                return;
+            }
+            attempt_number_++;
+            fprintf(outfile, "\tRe-running the SCF, using the rotated orbitals\n");
+            compute_energy();
+        }
+
     }
 }
 

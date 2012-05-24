@@ -90,7 +90,7 @@ Multiple basis sets can be specified by adding additional sections within the su
 
 .. comment \subsection{Specifying Basis Sets}
 .. comment 
-.. comment The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
+.. comment The primary basis set is specified with option |basis__mints|, which assigns,
 .. comment for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
 .. comment \texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
 .. comment More details are provided in section \ref{sec:PsithonBasisSets}.

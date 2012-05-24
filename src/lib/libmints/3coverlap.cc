@@ -5,68 +5,6 @@
 
 using namespace psi;
 
-static void transform3c_1(int, SphericalTransformIter&, double*, double*, int);
-static void transform3c_2(int, SphericalTransformIter&, double*, double*, int, int, int);
-static void transform3c_3(int, SphericalTransformIter&, double*, double*, int, int);
-
-static void transform3c_1(int am, SphericalTransformIter& sti, double *s, double *t, int ncb)
-{
-    memset(t, 0, INT_NPURE(am)*ncb*sizeof(double));
-
-    for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex() * ncb;
-        double *tptr = t + sti.pureindex() * ncb;
-        double coef = sti.coef();
-        for (int cb=0; cb<ncb; ++cb)
-            *(tptr++) += coef * *(sptr++);
-    }
-}
-
-static void transform3c_2(int am, SphericalTransformIter &sti, double *s, double *t, int na, int nc, int nb)
-{
-    int sc = INT_NPURE(am);
-    const int scb = nc * nb;
-    const int tcb = sc * nb;
-
-    memset(t, 0, na*tcb*sizeof(double));
-
-    int interval = 0;
-    for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex()*nb;
-        double *tptr = t + sti.pureindex()*nb;
-        double coef = sti.coef();
-        for (int a=0; a<na; ++a,sptr+=scb, tptr+=tcb) {
-            for (int b=0; b<nb; ++b) {
-                tptr[b] += coef * sptr[b];
-            }
-        }
-        interval++;
-    }
-}
-
-static void transform3c_3(int am, SphericalTransformIter &sti, double *s, double *t, int nac, int nb)
-{
-    const int sb = nb;
-    const int tb = INT_NPURE(am);
-
-    // Clear out target memory
-    memset(t, 0, nac*tb*sizeof(double));
-
-    for (sti.first(); !sti.is_done(); sti.next()) {
-        double *sptr = s + sti.cartindex();
-        double *tptr = t + sti.pureindex();
-        double coef = sti.coef();
-
-        for (int ac=0; ac<nac; ++ac) {
-            *(tptr) += coef * *(sptr);
-
-            // skip ahead to the next ijk
-            sptr += sb;
-            tptr += tb;
-        }
-    }
-}
-
 ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st,
                                              boost::shared_ptr<BasisSet> bs1,
                                              boost::shared_ptr<BasisSet> bs2,
@@ -84,32 +22,22 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
         fprintf(stderr, "Error allocating memory for buffer_\n");
         exit(EXIT_FAILURE);
     }
-    memset(buffer_, 0, sizeof(double)*size);
+    ::memset(buffer_, 0, sizeof(double)*size);
 
     try {
-        target_ = new double[size];
+        temp_ = new double[size];
     }
     catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for target_\n");
+        fprintf(stderr, "Error allocating memory for temp_\n");
         exit(EXIT_FAILURE);
     }
-    memset(target_, 0, sizeof(double)*size);
-
-    try {
-        tformbuf_ = new double[size];
-    }
-    catch (std::bad_alloc& e) {
-        fprintf(stderr, "Error allocating memory for tformbuf_");
-        exit(EXIT_FAILURE);
-    }
-    memset(tformbuf_, 0, sizeof(double)*size);
+    ::memset(temp_, 0, sizeof(double)*size);
 }
 
 ThreeCenterOverlapInt::~ThreeCenterOverlapInt()
 {
     delete[] buffer_;
-    delete[] target_;
-    delete[] tformbuf_;
+    delete[] temp_;
 }
 
 boost::shared_ptr<BasisSet> ThreeCenterOverlapInt::basis()
@@ -321,85 +249,62 @@ void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
     int nao2 = s2.ncartesian();
     int nao3 = s3.ncartesian();
 
-    int nbf1 = s1.nfunction();
-    int nbf2 = s2.nfunction();
-    int nbf3 = s3.nfunction();
+    // Get number of Basis functions for each shell
+    int nso1 = s1.nfunction();
+    int nso2 = s2.nfunction();
+    int nso3 = s3.nfunction();
 
     // Get if each shell has pure functions
     bool is_pure1 = s1.is_pure();
     bool is_pure2 = s2.is_pure();
     bool is_pure3 = s3.is_pure();
 
-    double *source1, *target1;
-    double *source2, *target2;
-    double *source3, *target3;
-
-    double *source = buffer_;
-    double *target = target_;
-    double *tmpbuf = tformbuf_;
-
-    int transform_index = 4*is_pure1 + 2*is_pure2 + is_pure3;
-    switch (transform_index) {
-    case 0:  // no transform
-        break;
-
-    case 1:  // (a|b|cT)
-        source3 = source;
-        target3 = target;
-        break;
-
-    case 2:  // (a|bT|c)
-        source2 = source;
-        target2 = target;
-        break;
-
-    case 3:  // (a|bT|cT)
-        source3 = source;
-        target3 = tmpbuf;
-        source2 = tmpbuf;
-        target2 = target;
-        break;
-
-    case 4:  // (aT|b|c)
-        source1 = source;
-        target1 = target;
-        break;
-
-    case 5:  // (aT|b|cT)
-        source3 = source;
-        target3 = tmpbuf;
-        source1 = tmpbuf;
-        target1 = target;
-        break;
-
-    case 6:  // (aT|bT|c)
-        source2 = source;
-        target2 = tmpbuf;
-        source1 = tmpbuf;
-        target1 = target;
-        break;
-
-    case 7: // (aT|bT|cT)
-        source3 = source;
-        target3 = tmpbuf;
-        source2 = tmpbuf;
-        target2 = source;
-        source1 = source;
-        target1 = target;
-        break;
-    }
-
-    size_t size = 1;
+    // ABC -> ABc
     if (is_pure3) {
-        transform3c_3(am3, trans3, source3, target3, nao1*nao2, nao3);
-        size *= nbf3;
+        
+        ::memset(temp_, '\0', sizeof(double) * nao1 * nao2 * nso3);
+
+        for (trans3.first(); !trans3.is_done(); trans3.next()) {
+            double *sptr = buffer_ + trans3.cartindex();
+            double *tptr = temp_   + trans3.pureindex();
+            double coef = trans3.coef();
+            C_DAXPY(nao1 * nao2, coef, sptr, nao3, tptr, nso3);
+        }
+
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nao2 * nso3); 
     }
+
+    // ABc -> Abc
     if (is_pure2) {
-        transform3c_2(am2, trans2, source2, target2, nao1, nao2, nbf3);
-        size *= nbf2;
+        
+        ::memset(temp_, '\0', sizeof(double) * nao1 * nso2 * nso3);
+
+        for (trans2.first(); !trans2.is_done(); trans2.next()) {
+            double coef = trans2.coef();
+            double *sptr = buffer_ + trans2.cartindex() * nso3;
+            double *tptr = temp_   + trans2.pureindex() * nso3;
+            for (int a=0; a<nao1; ++a) {
+                C_DAXPY(nso3,coef,sptr,1,tptr,1); 
+                sptr += nao2 * nso3; 
+                tptr += nso2 * nso3; 
+            } 
+        }
+
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nao1 * nso2 * nso3); 
     }
+
+    // Abc -> abc
     if (is_pure1) {
-        transform3c_1(am1, trans1, source1, target1, nbf2*nbf3);
-        size *= nbf1;
+        
+        ::memset(temp_, '\0', sizeof(double) * nso1 * nso2 * nso3);
+
+        for (trans1.first(); !trans1.is_done(); trans1.next()) {
+            double *sptr = buffer_ + trans1.cartindex() * nso2 * nso3;
+            double *tptr = temp_   + trans1.pureindex() * nso2 * nso3;
+            double coef = trans1.coef();
+            C_DAXPY(nso2 * nso3, coef, sptr, 1, tptr, 1);
+        }
+
+        ::memcpy((void*) buffer_, (void*) temp_, sizeof(double) * nso1 * nso2 * nso3); 
     }
 }
