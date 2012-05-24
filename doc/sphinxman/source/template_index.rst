@@ -15,8 +15,8 @@
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
    introduction
-   tutorial
    external
+   tutorial
    psithoninput
    basissets
    methods

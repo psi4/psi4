@@ -187,13 +187,13 @@ void DealiasBasisSet::form_basis()
     int natom = primary_->molecule()->natom();
     int max_am = primary_->max_am();
     int max_l = max_am + nl_;
-    std::vector<double> weight(1);
+    std::vector<double> weight;
     weight.push_back(1.0);
 
     for (int A = 0; A < natom; A++) {
         for (int l = 0; l <= max_l; l++) {
             for (int i = 0; i < dealias_alpha_[A][l].size(); i++) {
-                std::vector<double> e(1);
+                std::vector<double> e;
                 e.push_back(dealias_alpha_[A][l][i]);
                 Vector3 v = primary_->molecule()->xyz(A);
                 shells.push_back(GaussianShell(l, weight, e, primary_->has_puream() ? Pure : Cartesian, A, v, 0, Unnormalized));
