@@ -25,6 +25,7 @@ class TORS : public SIMPLE {
     ~TORS() { } // also calls ~SIMPLE
 
     double value(GeomType geom) const;
+    //bool fix_tors_value_corrected(GeomType geom) const;
 
     // compute and return array of first derivative (B marix elements)
     double ** DqDx(GeomType geom) const;
