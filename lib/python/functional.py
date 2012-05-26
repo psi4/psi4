@@ -156,6 +156,63 @@ def build_rpbe_x_functional(name):
     return fun
 
 
+def build_sogga_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('SOGGA_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('SOGGA_X')
+    # Tab in, trailing newlines
+    fun.set_description('    Second Order GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.552)
+    fun.set_parameter('PBE_mu', 10.0 / 81.0)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
+def build_sogga_c_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('PBE_C')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('SOGGA_C')
+    # Tab in, trailing newlines
+    fun.set_description('    Reparametrized PBE Correlation for the SOGGA functional\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(False)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('bet', 0.037526)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
 def build_pbesol_x_functional(name):
 
     # Call this first
@@ -607,6 +664,7 @@ functionals = {
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
         'rpbe_x'      : build_rpbe_x_functional,
+        'sogga_x'     : build_sogga_x_functional,
         'pbesol_x'    : build_pbesol_x_functional,
         'pw91_x'      : build_pw91_x_functional,
         'b97_x'       : build_b97_x_functional,
