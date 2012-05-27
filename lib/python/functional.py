@@ -127,6 +127,35 @@ def build_pbe_x_functional(name):
     return fun
 
 
+def build_revpbe_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('PBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('revPBE_X')
+    # Tab in, trailing newlines
+    fun.set_description('    Revised PBE GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Zhang et. al., Phys. Rev. Lett., 80(4), 890, 1998\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 1.245)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
 def build_rpbe_x_functional(name):
 
     # Call this first
@@ -663,6 +692,7 @@ functionals = {
         'b88_x'       : build_b88_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
+        'revpbe_x'    : build_revpbe_x_functional,
         'rpbe_x'      : build_rpbe_x_functional,
         'sogga_x'     : build_sogga_x_functional,
         'pbesol_x'    : build_pbesol_x_functional,
@@ -1017,6 +1047,39 @@ def build_pbe_superfunctional(name, npoints, deriv):
     # Add member functionals
     sup.add_x_functional(build_functional('PBE_X'))
     sup.add_c_functional(build_functional('PBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+
+def build_sogga_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SOGGA')
+    # Tab in, trailing newlines
+    sup.set_description('    Second Order GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('SOGGA_X'))
+    sup.add_c_functional(build_functional('SOGGA_C'))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
