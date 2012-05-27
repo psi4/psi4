@@ -1099,6 +1099,7 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     sup = build_pbe_superfunctional(name, npoints, deriv)
     sup.set_name('PBE0')
     sup.set_description('    PBE0 Hybrid GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    Adama et. al., J. Chem. Phys., 110(13), 6158, 1999\n'     
     sup.set_x_alpha(0.25)
     return sup
 
