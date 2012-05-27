@@ -2399,6 +2399,7 @@ superfunctionals = {
         'm05'       : build_m05_superfunctional,
         'm05-2x'    : build_m05_2x_superfunctional,
         'dldf'      : build_dldf_superfunctional,
+        'sogga'     : build_sogga_superfunctional,
     }
 
 
