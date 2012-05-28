@@ -298,6 +298,8 @@ void set_params(void)
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 
+  Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
+
   // if steepest-descent, then make much larger default
   if (Opt_params.step_type == OPT_PARAMS::SD && !(options["CONSECUTIVE_BACKSTEPS"].has_changed()))
     Opt_params.consecutive_backsteps_allowed = 10;
