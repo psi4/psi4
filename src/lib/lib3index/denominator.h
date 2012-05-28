@@ -150,5 +150,33 @@ public:
     ~SAPTCholeskyDenominator();
 };
 
+class TLaplaceDenominator {
+
+    // Pointer to active occupied orbital eigenvalues
+    boost::shared_ptr<Vector> eps_occ_;
+    // Pointer to active virtual orbital eigenvalues
+    boost::shared_ptr<Vector> eps_vir_;
+    // Maximum error norm allowed in denominator
+    double delta_;
+
+    // Fully split denominator (w in rows i in columns)
+    SharedMatrix denominator_occ_;
+    // Fully split denominator (w in rows i in columns)
+    SharedMatrix denominator_vir_;
+    // Number of vectors required to obtain given accuracy
+    int nvector_;
+
+    virtual void decompose();
+public:
+    TLaplaceDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta);
+    virtual ~TLaplaceDenominator();
+
+    double delta() const { return delta_; }
+    int nvector() const { return nvector_; }
+    virtual void debug();
+    SharedMatrix denominator_occ() const { return denominator_occ_; }
+    SharedMatrix denominator_vir() const { return denominator_vir_; }
+};
+
 } // Namespace psi
 #endif

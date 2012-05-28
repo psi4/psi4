@@ -79,6 +79,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
 
+  /*- PSI4 dies if energy does not converge. !expert -*/
+  options.add_bool("DIE_IF_NOT_CONVERGED", true);
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -797,6 +800,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
       options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
+      and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only)-*/
+      options.add_bool("RELAX_GUESS_ORBITALS", false);
+
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
@@ -875,7 +882,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         solution. -*/
     options.add_str("STABILITY_ANALYSIS", "NONE", "NONE CHECK FOLLOW");
     /*- When using STABILITY_ANALYSIS = FOLLOW, how much to scale the step along the eigenvector
-        by !expert -*/
+        by. !expert -*/
     options.add_double("FOLLOW_STEP_SCALE", 0.5);
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
@@ -1935,6 +1942,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P(2) matrix for corrections to Lia and P. -*/
+    options.add_double("DFMP2_P2_TOLERANCE", 0.0);
+    /*- Minimum error in the 2-norm of the P matrix for skeleton-core Fock matrix derivatives. -*/
+    options.add_double("DFMP2_P_TOLERANCE", 0.0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- IO caching for CP corrections, etc !expert -*/
@@ -2010,8 +2021,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
     /*- The type of CCSD(T) computation to perform -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
-    /*- Reference wavefunction type used in MRCC computations -*/
-    options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
     /*- The ansatz to use for MRCC computations -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
     /*- The order of coupling terms to include in MRCCSDT computations -*/
@@ -2120,7 +2129,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       default (-1) is to never compute the full Hessian. -*/
       options.add_int("FULL_HESS_EVERY", -1);
       /*- Model Hessian to guess intrafragment force constants -*/
-      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE LINDH");
 
       /*- SUBSECTION Fragment/Internal Coordinate Control -*/
 

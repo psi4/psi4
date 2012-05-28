@@ -94,6 +94,7 @@ extern void write_energy(int nroots, double *evals, double offset);
 
 void init_io(void);
 void close_io(void);
+void cleanup(void);
 void title(void);
 void quote(void);
 void init_ioff(void);
@@ -222,6 +223,7 @@ PsiReturnType detci(Options &options)
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
+     cleanup();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
      Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
@@ -260,6 +262,7 @@ PsiReturnType detci(Options &options)
    if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
    close_io();
+   cleanup();
    return Success;
 }
 
@@ -362,6 +365,14 @@ void close_io(void)
 
 
 /*
+** cleanup(): Free any allocated memory that wasn't already freed elsewhere
+*/
+void cleanup(void)
+{
+ 
+}
+
+/*
 ** title(): Function prints a program identification
 */
 void title(void)
@@ -435,6 +446,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
          CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1, 0, 0,
          CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+      // shouldn't need to open I/O files for this fake CIvec, unit=0 
 
       double **H, **rsp_evecs;
       int Iarel, Ialist, Ibrel, Iblist;
@@ -644,6 +656,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    /* RSP test of Davidson/Liu (SEM) diagonalization routine */
    else if (Parameters.diag_method == METHOD_RSPTEST_OF_SEM) {
 
+      // in-core CIvectors, shouldn't need to open files
       CIvect Cvec(CIblks.vectlen, CIblks.num_blocks, 1, Parameters.Ms0,
          CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
          CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
@@ -872,6 +885,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
          Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
          CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+
+      bool open_old = false;
+      if (Parameters.restart) open_old = true;
+      Hd.init_io_files(open_old);
 
       /* get the diagonal elements of H into an array Hd */
       if (!Parameters.restart || (Parameters.restart && Parameters.hd_otf)) {
@@ -1425,6 +1442,8 @@ void mpn(struct stringwr **alplist, struct stringwr **betlist)
          CIblks.num_bet_codes, CalcInfo.nirreps, AlphaG->subgr_per_irrep, 1,
          Parameters.num_hd_tmp_units, Parameters.first_hd_tmp_unit,
          CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+
+  Hd.init_io_files(false);
 
   /* Compute E0 from orbital energies */
   stralp = alplist[CalcInfo.ref_alp_list] + CalcInfo.ref_alp_rel;

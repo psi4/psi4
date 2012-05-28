@@ -223,6 +223,10 @@ protected:
     /// Do any needed integral setup
     virtual void integrals();
 
+    /// Which set of iterations we're on in this computation, e.g., for stability
+    /// analysis, where we want to retry SCF without going through all of the setup
+    int attempt_number_;
+
     /// The number of electrons
     int nelectron_;
 

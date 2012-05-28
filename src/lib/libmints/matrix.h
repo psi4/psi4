@@ -782,13 +782,6 @@ public:
      */
     SharedMatrix canonical_orthogonalization(double delta = 0.0, SharedMatrix eigvec = SharedMatrix());
 
-    /*! Computes the Cholesky factorization of a real symmetric
-     *  positive definite matrix A.
-     *
-     *  This is the block version of the algorithm, calling Level 3 BLAS.
-     */
-    void cholesky_factorize();
-
     /*! Computes the fully pivoted partial Cholesky factorization of a real symmetric
      * positive semidefinite matrix A, to numerical precision \delta.
      *
@@ -816,6 +809,29 @@ public:
      * dimension sigpi
      */
      SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
+    
+     /*! Computes a low-rank factorization <P,N> such that PP'-NN' \approx A in an optimal sense in the 2-norm.
+     * Columns of P,N are truncated after the singular values fall below delta
+     * P contains columns corresponding to positive eigenvalues, N to columns corresponding to negative eigenvalues/ 
+     * This is the real Hermitian-indefinite analog of partial Cholesky factorization.
+     *
+     * This algorithm requires memory equivalent to this matrix plus the equivalent eigendecompositon
+     * call via DSYEV
+     *
+     * \param delta, double,  maximum allowed 2-norm of the error matrix D,
+     * Defaults to 0.0, in which case the numerically
+     * exact square root is returned.
+     * \return P positive part of square root, with only significant columns included
+     * \return N negative part of square root, with only significant columns included
+     */
+    std::pair<SharedMatrix, SharedMatrix> partial_square_root(double delta = 0.0);
+
+    /*! Computes the Cholesky factorization of a real symmetric
+     *  positive definite matrix A.
+     *
+     *  This is the block version of the algorithm, calling Level 3 BLAS.
+     */
+    void cholesky_factorize();
 
     /*! Computes the inverse of a real symmetric positive definite
      *  matrix A using the Cholesky factorization A = L*L**T
@@ -886,6 +902,12 @@ public:
     void back_transform(const Matrix& a, const Matrix& transformer);
     /// Back transform this by transformer
     void back_transform(const Matrix& transformer);
+
+    /**
+     * Expands the row dimension by one, and then orthogonalizes vector v against
+     * the current rows, before setting the new row to the orthogonalized copy of v
+     */
+    bool add_and_orthogonalize_row(const SharedVector v);
 
     /*! @{
      * Assume this is a orthogonal matrix.  This function Gram-Schmidt
@@ -968,6 +990,14 @@ public:
      */
     void set_by_python_list(const boost::python::list& data);
 
+    /**
+     * Rotates columns i and j in irrep h, by an angle theta
+     * @param h - the irrep in which the rotation will be applied
+     * @param i - the zero-based (within irrep) column number for i
+     * @param j - the zero-based (within irrep) column number for j
+     * @param theta - the angle (in radians) about which to rotate
+     */
+    void rotate_columns(int h, int i, int j, double theta);
     friend class Vector;
 };
 

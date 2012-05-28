@@ -771,6 +771,10 @@ def database(name, db_name, **kwargs):
 
        - In sow/reap mode, use only global options (e.g., the local option set by ``set scf scf_type df`` will not be respected).
 
+    .. note:: To access a database that is not embedded in a |PSIfour| 
+        distribution, add the path to the directory containing the database 
+        to the environment variable :envvar:`PYTHONPATH`.
+
     :type name: string
     :param name: ``'scf'`` || ``'sapt0'`` || ``'ccsd(t)'`` || etc.
 
@@ -938,7 +942,6 @@ def database(name, db_name, **kwargs):
     user_basis = PsiMod.get_option('BASIS')
     user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
     user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
-    user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
     user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
     user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
 
@@ -1114,7 +1117,14 @@ def database(name, db_name, **kwargs):
             try:
                 getattr(database, db_subset)
             except AttributeError:
-                raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+
+                try:
+                    getattr(database, 'HRXN_' + db_subset)
+                except AttributeError:
+                    raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+                else:
+                    HRXN = getattr(database, 'HRXN_' + db_subset)
+
             else:
                 HRXN = getattr(database, db_subset)
     else:
@@ -1222,8 +1232,6 @@ def database(name, db_name, **kwargs):
             commands += """PsiMod.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
         if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
             commands += """PsiMod.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
-        if not((user_df_basis_cc == "") or (user_df_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('DF_BASIS_CC', '%s')\n""" % (user_df_basis_cc)
         if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
             commands += """PsiMod.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
         if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):
@@ -1550,6 +1558,10 @@ def complete_basis_set(name, **kwargs):
            * bccd
            * cc3
            * ccsd(t)
+           * cisd
+           * cisdt
+           * cisdtq
+           * ci\ *n*
            * fci
 
     :type name: string
@@ -1720,14 +1732,19 @@ def complete_basis_set(name, **kwargs):
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
-    #VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
-    #                      'cisdcorl': 'CISD CORRELATION ENERGY'}
-    #VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
-    #                     'cisdtcorl': 'CISDT CORRELATION ENERGY'}
-    #VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
-    #                    'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
+    VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
+                          'cisdcorl': 'CISD CORRELATION ENERGY'}
+    VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
+                         'cisdtcorl': 'CISDT CORRELATION ENERGY'}
+    VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
+                        'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
     VARH['fci'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'fcicorl': 'FCI CORRELATION ENERGY'}
+
+    for cilevel in range(2, 99):
+        VARH['ci%s' % (str(cilevel))] = {
+                            'scftot': 'SCF TOTAL ENERGY',
+         'ci%scorl' % (str(cilevel)): 'CI CORRELATION ENERGY'}
 
     finalenergy = 0.0
     do_scf = 1

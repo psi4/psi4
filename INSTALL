@@ -1,469 +1,555 @@
+.. comment Note: This document contains light reStructuredText mark-up. 
+   (Ignore the symbols .. :: ``.) It can be read here as plain-text or viewed in html at 
+   http://sirius.chem.vt.edu/psi4manual/latest/installfile.html .
+
 
 Installation Instructions for PSI4
-----------------------------------
+==================================
 
-  I. Compilation Prerequisites
-  II. Brief Summary of Configruation, Compilation, and Installation
-  III. Detailed Installation Instructions
-  IV. Recommendations for BLAS and LAPACK libraries
-  V. Miscellaneous architecture-specific notes
-  VI. Common Problems with PSI Compilation
+* :ref:`I.   Compilation Prerequisites                                     <sec:install_I>`
+* :ref:`II.  Brief Summary of Configuration, Compilation, and Installation <sec:install_II>`
+* :ref:`III. Detailed Installation Instructions                            <sec:install_III>`
+* :ref:`IV.  Recommendations for BLAS and LAPACK libraries                 <sec:install_IV>`
+* :ref:`V.   Miscellaneous architecture-specific notes                     <sec:install_V>`
+* :ref:`VI.  Common Problems with PSI Compilation                          <sec:install_VI>`
 
-----------------------------------
 
-I. Compilation Prerequisites:
+.. _`sec:install_I`:
 
-   * C++ Compiler
-   * F77 Compiler (the F95 compiler, gfortran, with gcc-4.X will work)
-     --> Note: The F77 compiler is only used to determine the symbol-naming
+I. Compilation Prerequisites
+----------------------------
+
+* C++ Compiler
+
+* F77 Compiler (the F95 compiler, gfortran, with gcc-4.X will work)
+
+  .. note:: The F77 compiler is only used to determine the symbol-naming
      convention of and some system routines for the BLAS and LAPACK libraries
      on a few architectures.  It is optional in a few cases (e.g. Mac OS X
      systems).
-   * Optimized BLAS library (see recommendations below)
-   * Optimized LAPACK library (see recommendations below)
-   * POSIX threads (Pthreads) library (optional)
-   * Python interpreter (2.4 or higher)
-   * Python developer libraries corresponding to your interpreter.
-   * A version of MPI is required to compile distributed-parallel PSI; 
-     MPICH2 is recommended.
-     (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
-     seems to fix it.)
-   * GNU utilities: (see http://www.gnu.org)
-      ** make
-      ** autoconf (version 2.52 or higher)
-      ** aclocal
-      ** fileutils (esp. install)
-   * For documentation: (available off http://www.psicode.org)
-      ** latex
-      ** sphinx (version 1.1 or higher)
-      ** dvipng (for latex math in html)
-   * To make a distributed-parallel version with MADNESS, you may also need:
-      ** libtool (called by autoreconf)
 
-   To check to see if you have the Python developer libraries installed look
-   for the Python config program. If you Python interpreter is named `python'
-   look for the config program `python-config', likewise if your interpreter
-   is named `python2.6' your config program is named `python2.6-config'. If
-   you cannot find the config program the developer libraries will not be
-   detected and the PSI4 configure script will fail.  
+* Optimized BLAS library (preferably NOT one supplied by a standard
+  Linux distribution; see recommendations at :ref:`Section IV <sec:install_IV>` below)
 
-   For Ubuntu users, you will need the following packages installed:
-   gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 
+* Optimized LAPACK library (preferably NOT one supplied by a standard
+  Linux distribution; see recommendations at :ref:`Section IV <sec:install_IV>` below)
 
-   For Fedora users, the python development library is called python-devel
+* POSIX threads (Pthreads) library (optional)
+
+* Python interpreter (2.4 or higher)
+
+* Python developer libraries corresponding to your interpreter.
+
+  .. note:: To check to see if you have the Python developer libraries
+     installed look for the Python config program. If your Python interpreter
+     is named ``python`` look for the config program ``python-config``,
+     likewise if your interpreter is ``python2.6``, the config program is
+     ``python2.6-config``. If you cannot find the config program the
+     developer libraries will not be detected and the PSI4 configure script
+     will fail. The library is called ``python-devel`` for Fedora and
+     ``python-dev`` for Ubuntu.
+
+* A version of MPI is required to compile distributed-parallel PSI; 
+  MPICH2 is recommended.
+  (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
+  seems to fix it.)
+
+* GNU utilities: (see http://www.gnu.org)
+
+  * make
+  * autoconf (version 2.52 or higher)
+
+    .. note:: autoconf is only needed for special
+       architectures, to compile with MADNESS, or to compile the 
+       development branch.
+
+  * aclocal
+  * fileutils (esp. install)
+
+* For documentation: (available pre-built off http://www.psicode.org)
+
+  * latex
+  * sphinx (version 1.1 or higher)
+  * dvipng (for latex math in html)
+
+* To make a distributed-parallel version with MADNESS, you may also need:
+
+  * libtool (called by autoreconf)
+
+For Ubuntu users, you will need the following packages installed:
+gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev 
 
 
-II. Brief Summary of Configruation, Compilation, and Installation
+.. _`sec:install_II`:
+
+II. Brief Summary of Configuration, Compilation, and Installation
+-----------------------------------------------------------------
 
 This section outlines the main steps of configuring, compiling, and
-installing PSI.  More detail is given below in Section III.
+installing PSI.  More detail is given below in :ref:`Section III <sec:install_III>`.
 
 A. Autoconf
 
-1. In the top-level psi4 directory, run autoconf:
+   1. For unusual architectures (or for developers working in the development
+      branch), one needs to first run autoconf to generate
+      the file "configure" in the top-level psi4 directory.  For most Linux
+      and Mac compilations, this should not be necessary because the configure
+      file provided with PSI4 should be sufficient.  To replace the general
+      configure file with one specific to your architecture, in the top-level
+      psi4 directory, run autoconf::
 
-   * autoconf
+         >>> autoconf
 
-2. Distributed-parallel compilation.
+   2. Distributed-parallel compilation.
 
-Not recommended at this time except by developers.  Shared-memory
-parallelization is already enabled by default in the standard
-compilation.
+      Not recommended at this time except for developers.  Shared-memory
+      parallelization is already enabled by default in the standard
+      compilation.
+      
+      Distributed-parallel versions of PSI4 require madness. If you select
+      mpicxx as the compiler, the distributed-parallel version (including
+      madness) will compile. For distributed-parallel compilation, you must
+      run the following command in the madness directory, otherwise the PSI4
+      configure script will fail (autoreconf is provided by package autoconf,
+      but it calls another program provided by libtool, so that package must
+      also be installed)::
 
-Distributed-parallel versions of PSI4 require madness. If you select
-mpicxx as the compiler, the distributed-parallel version (including
-madness) will compile. For distributed-parallel compilation, you must
-run the following command in the madness directory, otherwise the PSI4
-configure script will fail (autoreconf is provided by package autoconf,
-but it calls another program provided by libtool, so that package must
-also be installed):
-
-   * cd madness
-   * autoreconf
-   * cd ..
+         >>> cd madness
+         >>> autoreconf
+         >>> cd ..
 
 B. Configuration and Compilation
 
-Make an object directory in which you can compile the code
+   Make an object directory in which you can compile the code ::
 
-   * mkdir obj
+      >>> mkdir obj
 
-Next, you need to configure the code, make it, and run the tests.
+   Next you need to configure the code. Find a configuration
+   :ref:`option line <sec:install_III_1_configurelines>` or combination of
+   configuration options at :ref:`Section III(1)A <sec:install_III_1_A>`.
 
-Either
+   * Either, use the line directly::
 
-   * cd obj
-   * [run ../configure with one of the options below]
-   * make
-   * make tests
-   * make install [if tests pass]
-   * make doc [optional]
-   * [do user configuration, see below]
+        >>> cd obj
+        >>> ../configure [your compilation configuration options here]
 
-or, if you want to save your configuration options for a future compilation,
-then in the top-level psi4 directory,
+   * or, save your configuration options for a future compilation.
+     In the top-level psi4 directory, create a file like "do-configure" with 
+     the configure command and options on one line. ::
 
-   * [create a file like "do-configure" with your configuration options,
-      e.g., as below]
-   * chmod u+x do-configure
-   * cd obj
-   * ../do-configure
-   * make
-   * make tests
-   * make install [if tests pass]
-   * make doc [optional]
-   * [do user configuration, see below]
+        >>> cat do-configure
+        ../configure [your compilation configuration options here]
+        >>> chmod u+x do-configure
+        >>> cd obj
+        >>> ../do-configure
 
-That's it!  The details about configuration are given below.  If something
-goes wrong, check section VI about common compilation problems.
+   Compile the code, run the tests, and (if tests pass) install it. ::
 
+      >>> make
+      >>> make tests
+      >>> make install
+
+That's it!  The details about final user configuration are given below in 
+:ref:`Section III(7) <sec:install_III_7>`.  If something goes wrong, 
+check :ref:`Section VI <sec:install_VI>` about common compilation problems.
+
+
+.. _`sec:install_III`:
 
 III. Detailed Installation Instructions
+---------------------------------------
 
 This section provides a more detailed explanation of the procedure for
 compiling and installing the PSI4 package.
 
-Step 1: Configuration
+* Step 1: Configuration
 
-A. General Information about Configuration
+  A. General Information about Configuration
 
-First, we recommend that you choose for the top-level psi4 source
-directory something other than /usr/local/psi; $HOME/psi4 or
-/usr/local/src/psi4 are convenient choices.  Next, in the top-level psi4
-source directory you've chosen, first run autoconf to generate the configure
-script from configure.ac.  It is best to keep the source code separate
-from the compilation area, so you must first choose a subdirectory for
-compilation of the codes.  A simple option is $PSI4/objdir, which should
-work for most environments.  However, if you need executables for several
-architectures, you should choose more meaningful subdirectory names.
+     First, we recommend that you choose for the top-level psi4 source
+     directory something other than ``/usr/local/psi``; ``$HOME/psi4`` or
+     ``/usr/local/src/psi4`` are convenient choices.  Next, in the top-level psi4
+     source directory you've chosen, first run autoconf to generate the configure
+     script from configure.ac.  It is best to keep the source code separate
+     from the compilation area, so you must first choose a subdirectory for
+     compilation of the codes.  A simple option is ``psi4/objdir``, which should
+     work for most environments.  However, if you need executables for several
+     architectures, you should choose more meaningful subdirectory names.
 
-   * The compilation directory will be referred to as $objdir for the
-   remainder of these instructions.
+     .. note:: The compilation directory will be referred to as $objdir for the
+        remainder of these instructions.
 
-In $objdir, run the configure script found in the PSI4 top-level source
-directory.  This script will scan your system to locate certain libraries,
-header files, etc. needed for complete compilation.  The script accepts a
-number of options, all of which are listed above.  The most important of
-these is the --prefix option, which selects the installation directory for
-the executables, the libraries, header files, basis set data, and other
-administrative files.  The default --prefix is /usr/local/psi.
+     In $objdir, run the configure script found in the PSI4 top-level source
+     directory.  This script will scan your system to locate certain libraries,
+     header files, etc. needed for complete compilation.  The script accepts a
+     number of options, all of which are listed above.  The most important of
+     these is the ``--prefix`` option, which selects the installation directory for
+     the executables, the libraries, header files, basis set data, and other
+     administrative files.  The default ``--prefix`` is ``/usr/local/psi``.
 
-   * The configure script's --prefix directory will be referred to as
-   $prefix for the remainder of these instructions.
+     .. note:: The configure script's ``--prefix`` directory will be referred to as
+        $prefix for the remainder of these instructions.
 
-Besides --prefix, PSI often needs a few additional options for the
-configure script.  To make it reasy to recompile later (especially if
-you're a developer), it can be convenient (but not necessary) to to put
-the configure options in a small executable file, so you can re-do the
-configuration later very easily. Let us assume that we will be putting
-the configure options in a file named do-configure, in the top-level
-psi4 directory (we'll keep it up there instead of down in the compilation
-directory $objdir, so that if we delete the compilation directory later,
-we'll still have the do-configure file). In the following examples,
-we have sometimes split the configure options over multiple lines
-for readability. However, they should all be on the same line in the
-do-configure script.
+     .. _`sec:install_III_1_A`:
 
-Note: The configure options below are for the most common architectures and
-compilers. The developers would appreciate it if you would share any special
-configuration options that might be needed for less commonly encountered
-situations. 
+     Besides ``--prefix``, PSI often needs a few additional options for the
+     configure script.  To make it easy to recompile later (especially if
+     you're a developer), it can be convenient (but not necessary) to to put
+     the configure options in a small executable file, so you can re-do the
+     configuration later very easily. Let us assume that we will be putting
+     the configure options in a file named do-configure, in the top-level
+     psi4 directory (we'll keep it up there instead of down in the compilation
+     directory $objdir, so that if we delete the compilation directory later,
+     we'll still have the do-configure file). All configure options must be
+     on one line in the do-configure script.
+     
+     .. note:: The configure options below are for the most common architectures and
+        compilers. The developers would appreciate it if you would share any special
+        configuration options that might be needed for less commonly encountered
+        situations. 
+     
+     For g++, if you have BLAS and LAPACK in standard locations (like ``/usr/lib64``),
+     configuration is very easy. Pick one of the following scenarios, and place the
+     text given in the psi4/do-configure file (all on one long line). Replace the
+     text after prefix with whatever directory you want to use for your
+     installation directory.
 
-For g++, if you have BLAS and LAPACK in standard locations (like /usr/lib64),
-configuration is very easy. Pick one of the following scenarios, and place the
-text given in the psi4/do-configure file (all on one long line). Replace the
-text after prefix with whatever directory you want to use for your
-installation directory.
+     .. _`sec:install_III_1_configurelines`:
 
-* g++, optimized
-   ../configure --prefix=/usr/local/psi4
+     * Intel compiler with MKL math library [highly recommended; if you don't use
+       this, then at least make sure you have a threaded BLAS (see BLAS
+       recommendations at :ref:`Section IV <sec:install_IV>` below)] ::
 
-* g++, for debugging
-   ../configure --prefix=/usr/local/psi4 --without-opt --with-debug
+          ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
 
-* Intel compiler with MKL math library
+       .. note:: It's ``-mkl``, not ``-lmkl``.
 
-   ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
+       .. warning:: There seems to be a problem with icpc 12.0.2 and possibly earlier
+          12.0 versions, giving an error like::
 
-Note: it's -mkl, not -lmkl.
+             error: identifier "__is_trivial" is undefined.
 
-* Compiling for Mac
-To get the compilers needed, it's easiest to install XCode. However, XCode
-does not provide a Fortran compiler. Although Fortran compilers are not needed
-to compile Psi, a broken one can prevent Psi from configuring properly. Do not
-download the latest version of GFortran from the HPC website; this is unlikely
-to be compatible with your version of GCC. Instead, you should run
+          Use at least version 12.0.4.
 
-   gcc -v
+     * g++, optimized ::
 
-to find out what version of GCC you're using, and then download the
-corresponding GFortran from  here. If you configure Psi on a Mac without any
-Fortran compiler it will set itself up correctly, so this is only necessary if
-you want a Fortran compiler for other purposes. You can configure Psi by
-adding something like
+         ../configure --prefix=/usr/local/psi4
+      
+     * g++, for debugging ::
 
-   ../configure --with-plugins
+         ../configure --prefix=/usr/local/psi4 --without-opt --with-debug
 
-to the do-configure script. If you want to use the new LLVM compilers that
-ship with XCode 4 (they compile quicker than GCC), use
 
-   ../configure --with-plugins --with-cxx=llvm-g++
+     * Compiling for Mac
 
-If you still happen to encouter an error like:
+       To get the compilers needed, it's easiest to install XCode.
+       However, XCode does not provide a Fortran compiler. Although
+       Fortran compilers are not needed to compile Psi, a broken one can
+       prevent Psi from configuring properly. Do not download the latest
+       version of GFortran from the HPC website; this is unlikely to be
+       compatible with your version of GCC. Instead, you should run ``gcc
+       -v`` to find out what version of GCC you're using, and then
+       download the corresponding GFortran from
+       http://r.research.att.com/tools/.  If you configure Psi on a Mac
+       without any Fortran compiler it will set itself up correctly, so
+       this is only necessary if you want a Fortran compiler for other
+       purposes. You can configure Psi by adding something like ::
 
-checking Fortran symbols... giving up
-configure: error: could not determine fortran symbol names
+          ../configure --with-plugins
 
-adding the following tag to your configure may help:
+       to the do-configure script. If you want to use the new LLVM compilers that
+       ship with XCode 4 (they compile quicker than GCC), use ::
+       
+          ../configure --with-plugins --with-cxx=llvm-g++
 
-   --with-f77symbol=lcu
+       .. warning:: If you still happen to encouter an error like::
 
-B. List of Specific Configuration Options
+             checking Fortran symbols... giving up
+             configure: error: could not determine fortran symbol names
 
-You may need to make use of one or more of the following options to
-the configure script:
+          adding the following tag to your configure may help ::
 
-   * --prefix=directory --- Use this option if you wish to install the
-   PSI4 package somewhere other than the default directory, /usr/local/psi.
+             --with-f77symbol=lcu
 
-   * --with-cxx=compiler --- Use this option to specify a C++ compiler.
-   One should use compilers that generate reentrant code, if possible.
-   The default search order for compilers is: xlC_r (AIX only), g++, c++,
-   icpc, cxx.  For distributed-parallel compilation, MPI is required and 
-   you need to use mpicxx (where this has been added to your PATH).
+  B. List of Specific Configuration Options
 
-   * --with-fc=compiler --- Use this option to specify a Fortran-77 compiler,
-   which is used to determine linking coventions for BLAS and LAPACK libraries
-   and to provide system routines for those libraries.  Note that no fortran
-   compiler is necessary on Mac OS X systems (see below).  The default search
-   order for compilers is: xlf_r (AIX only), gfortran, g77, ifort, f77, f2c.
+     The example configuration options in the previous subsection are usually
+     sufficient.  However, if not, you may need to make use of one or more
+     of the following options to the configure script:
 
-   * --with-f77symbol=value --- This option allows manual assignment of the 
-   FORTRAN77 symbol convention, which is necessary for C programs to link
-   Fortran-interface libraries such as BLAS and LAPACK. This option should
-   only be used by experts and even then should almost never be necessary. 
-   Allowed values are:
-                            lc  : lower-case
-                            lcu : lower-case with underscore (default)
-                            uc  : upper-case
-                            ucu : upper-case with underscore
+     * ``--prefix=directory`` --- Use this option if you wish to install the
+       PSI4 package somewhere other than the default directory, ``/usr/local/psi``.
+  
+     * ``--with-cxx=compiler`` --- Use this option to specify a C++ compiler.
+       One should use compilers that generate reentrant code, if possible.
+       The default search order for compilers is: xlC_r (AIX only), g++, c++,
+       icpc, cxx.  For distributed-parallel compilation, MPI is required and 
+       you need to use mpicxx (where this has been added to your PATH).
+  
+     * ``--with-fc=compiler`` --- Use this option to specify a Fortran-77 compiler,
+       which is used to determine linking coventions for BLAS and LAPACK libraries
+       and to provide system routines for those libraries.  Note that no fortran
+       compiler is necessary on Mac OS X systems (see below).  The default search
+       order for compilers is: xlf_r (AIX only), gfortran, g77, ifort, f77, f2c.
+  
+     * ``--with-f77symbol=value`` --- This option allows manual assignment of the 
+       FORTRAN77 symbol convention, which is necessary for C programs to link
+       Fortran-interface libraries such as BLAS and LAPACK. This option should
+       only be used by experts and even then should almost never be necessary. 
+       Allowed values are:
 
-   * --with-ld=linker --- Use this option to specify a linker.  The
-   default is 'ld'.
+       * lc  : lower-case
+       * lcu : lower-case with underscore (default)
+       * uc  : upper-case
+       * ucu : upper-case with underscore
+  
+     * ``--with-ld=linker`` --- Use this option to specify a linker.  The
+       default is 'ld'.
+  
+     * ``--with-ar=archiver`` --- Use this option to specify an archiver.  The
+       default is to look for 'ar' automatically.
+  
+     * ``--with-ar-flags=flags`` --- Use this option to specify additional archiver 
+       flags. The default is 'r'.
+  
+     * ``--with-incdirs=directories`` --- Use this option to specify extra
+       directories where to look for header files. Directories should be specified
+       prepended by ``-I``, i.e. ``-Idir1 -Idir2``, etc. If several directories are 
+       specified, enclose the list with single right-quotes, e.g., ::
 
-   * --with-ar=archiver --- Use this option to specify an archiver.  The
-   default is to look for 'ar' automatically.
+          --with-incdirs='-I/usr/local/include -I/home/psi4/include'
+  
+     * ``--with-libs=libraries`` --- Use this option to specify extra
+       libraries which should be used during linking. Libraries should be 
+       specified by their full names or in the usual ``-l`` notation, e.g. 
+       ``-lm /usr/lib/libm.a``.  If several libraries are specified, enclose 
+       the list with single right-quotes, e.g., ::
 
-   * --with-ar-flags=flags --- Use this option to specify additional archiver 
-   flags. The default is 'r'.
+          --with-libs='-libm -lgcc_s'
+  
+     * ``--with-libdirs=directories`` --- Use this option to specify extra
+       directories where to look for libraries. Directories should be specified
+       prepended by ``-L``, e.g., ``-Ldir1 -Ldir2``. If several directories are 
+       specified, enclose the list with single right-quotes, e.g., ::
 
-   * --with-incdirs=directories --- Use this option to specify extra
-   directories where to look for header files. Directories should be specified
-   prepended by '-I', i.e. '-Idir1 -Idir2', etc. If several directories are 
-   specified, enclose the list with single right-quotes, e.g.,
-   --with-incdirs='-I/usr/local/include -I/home/psi4/include'.
+          --with-libdirs='-L/usr/local/lib -I/home/psi4/lib'
+  
+     * ``--with-blas=library`` --- Use this option to specify a BLAS library.
+       (Many BLAS libraries can be detected automatically.)
+       If your BLAS library has multiple components, enclose the file list
+       with single right-quotes, e.g., ::
 
-   * --with-libs=libraries --- Use this option to specify extra
-   libraries which should be used during linking. Libraries should be 
-   specified by their full names or in the usual '-l' notation, e.g. 
-   '-lm /usr/lib/libm.a', etc.  If several libraries are specified, enclose 
-   the list with single right-quotes, e.g., --with-libs='-libm -lgcc_s'.
+          --with-blas='-lf77blas -latlas'
+  
+     * ``--with-lapack=library`` --- Use this option to specify a LAPACK library.
+       (Many LAPACK libraries can be detected automatically.)
+       If your LAPACK library has multiple components, enclose the file list
+       with single right-quotes, e.g., ::
 
-   * --with-libdirs=directories --- Use this option to specify extra
-   directories where to look for libraries. Directories should be specified
-   prepended by '-L', i.e. '-Ldir1 -Ldir2', etc. If several directories are 
-   specified, enclose the list with single right-quotes, e.g.,
-   --with-libdirs='-L/usr/local/lib -I/home/psi4/lib'.
+          --with-lapack='-llapack -lcblas -latlas'
+  
+     * ``--with-max-am-eri=integer`` --- Specifies the maximum angular momentum
+       level for the primitive Gaussian basis functions when computing
+       electron repulsion integrals.  This is set to g-type functions (AM=4)
+       by default.
+  
+     * ``--with-max-am-deriv1=integer`` --- Specifies the maximum angular
+       momentum level for first derivatives of the primitive Gaussian
+       basis functions.  This is set to f-type functions (AM=3) by default.
+  
+     * ``--with-max-am-deriv2=integer`` --- Specifies the maximum angular
+       momentum level for second derivatives of the primitive Gaussian
+       basis functions.  This is set to d-type functions (AM=2) by default.
+  
+     * ``--with-max-am-r12=integer`` --- Specifies the maximum angular momentum
+       level for primitive Gaussian basis functions used in r_12 explicitly
+       correlated methods.  This is set to f-type functions (AM=3) by default.
+  
+     * ``--with-debug=yes/no`` --- Turns on debugging flags (-g) if yes.  This is
+       set to no by default.
+  
+     * ``--with-opt=yes/no`` --- Turns off compiler optimizations (-OX) if no.
+       This is set to yes by default.
+  
+     * ``--with-strict=yes`` --- Turns on strict compiler warnings.
 
-   * --with-blas=library --- Use this option to specify a BLAS library.
-   If your BLAS library has multiple components, enclose the file list
-   with single right-quotes, e.g., --with-blas='-lf77blas -latlas'.  Note
-   that many BLAS libraries can be detected automatically.
+  C. Python interpreter
 
-   * --with-lapack=library --- Use this option to specify a LAPACK library.
-   If your LAPACK library has multiple components, enclose the file list
-   with single right-quotes, e.g., --with-lapack='-llapack -lcblas -latlas'.
-   Note that many LAPACK libraries can be detected automatically.
+     Usually Python will be detected automatically.  If this fails, or if
+     you have multiple versions installed and want to specify a particular
+     one, set the PYTHON environmental variable to the full path name
+     of the Python interpreter you want to use.  This defaults to the
+     ``python`` in your path. For example, if you want to use
+     ``python2.6`` located in /usr/bin set the environmental variable to be::
 
-   * --with-max-am-eri=integer --- Specifies the maximum angular momentum
-   level for the primitive Gaussian basis functions when computing
-   electron repulsion integrals.  This is set to g-type functions (AM=4)
-   by default.
+        PYTHON=/usr/bin/python2.6
 
-   * --with-max-am-deriv1=integer --- Specifies the maximum angular
-   momentum level for first derivatives of the primitive Gaussian
-   basis functions.  This is set to f-type functions (AM=3) by default.
+     .. note:: If the variable PYTHON is set, the config program must be 
+        present with a similar name. For instance, in the above example 
+        the following must exist::
 
-   * --with-max-am-deriv2=integer --- Specifies the maximum angular
-   momentum level for second derivatives of the primitive Gaussian
-   basis functions.  This is set to d-type functions (AM=2) by default.
+           /usr/bin/python2.6-config
 
-   * --with-max-am-r12=integer --- Specifies the maximum angular momentum
-   level for primitive Gaussian basis functions used in r_12 explicitly
-   correlated methods.  This is set to f-type functions (AM=3) by default.
+     You either set the environmental variable before you call configure, or
+     tell configure about it::
 
-   * --with-debug=yes/no --- Turns on debugging flags (-g) if yes.  This is
-   set to no by default.
+        ../configure PYTHON=/usr/bin/python2.6
 
-   * --with-opt=yes/no --- Turns off compiler optimizations (-OX) if no.
-   This is set to yes by default.
+  D. Boost Libraries
 
-   * --with-strict=yes -- Turns on strict compiler warnings.
+     PSI4 can use a user-provided boost C++ library, or, alternatively,
+     build the boost version 1.48.0 that comes bundled with the distribution.
+     By default, PSI4 will look in your include/library paths for
+     a compatible and complete boost installation (boost 1.46 or newer). A
+     boost installation in a nonstandard location can be specified by the
+     ``--with-boost=PATH`` and ``--with-boost-libdir=PATH`` configure flags. If a
+     default or user-specified boost installation is found to be incomplete,
+     incompatible, or nonexistent, boost 1.48.0 will be unpacked automatically
+     and built as part of the PSI4 build process.
 
- Python interpreter:
+     Required Compiled Boost Modules (all Boost 1.46.0 or later): 
 
-   Usually Python will be detected automatically.  If this fails, or if
-   you have multiple versions installed and want to specify a particular
-   one, set the PYTHON environmental variable to the full path name
-   of the Python interpreter you want to use.  This defaults to the
-   `python' in your path. For example, if you want to use
-   `python2.6' located in /usr/bin set the environmental variable to be:
+     * Filesystem
+     * Python
+     * Regex
+     * Serialization
+     * System
+     * Thread
 
-      PYTHON=/usr/bin/python2.6
+     Relevant Configure Options:
 
-   Please note if set the variable the config program must be present with
-   a similar name. For instance, in the above example the following must
-   exist:
+     * ``--with-boost[=value]`` --- Use Boost library from a standard location
+       if yes (default), from the specified location if <path>, or disable
+       it if no.
 
-      /usr/bin/python2.6-config
-
-   You either set the environmental variable before you call configure, or
-   tell configure about it:
-
-      ./configure PYTHON=/usr/bin/python2.6
-
- Boost Libraries:
-
-   PSI4 can use a user-provided boost C++ library, or, alternatively,
-   comes bundled with boost 1.48.0, which PSI4 can automatically
-   build. By default, PSI4 will look in your include/library paths for
-   a compatible and complete boost installation (boost 1.46 or newer). A
-   boost installation in a nonstandard location can be specified by the
-   --with-boost=PATH and --with-boost-libdir=PATH configure flags. If a
-   default or user-specified boost installation is found to be incomplete,
-   incompatible, or nonexistent, boost 1.48.0 will be unpacked automatically
-   and built as part of the PSI4 build process.
-
-   Required Compiled Boost Modules (all Boost 1.46.0 or later): 
-
-   * Filesystem
-   * Python
-   * Regex
-   * Serialization
-   * System
-   * Thread
-
-   Relevant Configure Options:
-
-   * --with-boost[=ARG] use Boost library from a standard location
-   (ARG=yes), from the specified location (ARG=<path>), or disable
-   it (ARG=no) [ARG=yes]
-
-   * --with-boost-libdir=LIB_DIR  
-   Force given directory for boost libraries. Note that this will override
-   library path detection, so use this parameter only if default library
-   detection fails and you know exactly where your boost libraries are
-   located. 
+     * ``--with-boost-libdir=directory`` ---
+       Force given directory for boost libraries. Note that this will override
+       library path detection, so use this parameter only if default library
+       detection fails and you know exactly where your boost libraries are
+       located. 
  
-   * --with-boost-filesystem[=special-lib] 
-   use the Filesystem library from boost - it is possible to specify a 
-   certain library for the linker e.g. 
-   --with-boost-filesystem=boost_filesystem-gcc-mt
+     * ``--with-boost-filesystem[=special-lib]`` ---
+       Use the Filesystem library from boost. It is possible to specify a 
+       certain library for the linker e.g., ::
 
-   * --with-boost-python specify the boost python library or suffix to use 
+          --with-boost-filesystem=boost_filesystem-gcc-mt
 
-   * --with-boost-regex[=special-lib] 
-   use the Regex library from boost - it is possible to specify a certain
-   library for the linker e.g. --with-boost-regex=boost_regex-gcc-mt-d-1_33_1 
+     * ``--with-boost-python`` --- Specify the boost python library or suffix to use.
 
-   * --with-boost-serialization[=special-lib] 
-   use the Serialization library from boost - it is possible to specify a
-   certain library for the linker e.g.
-   --with-boost-serialization=boost_serialization-gcc-mt-d-1_33_1 
+     * ``--with-boost-regex[=special-lib]`` ---
+       Use the Regex library from boost. It is possible to specify a certain
+       library for the linker e.g., ::
 
-   * --with-boost-system[=special-lib] 
-   use the System library from boost - it is possible to specify a certain
-   library for the linker e.g. --with-boost-system=boost_system-gcc-mt 
+          --with-boost-regex=boost_regex-gcc-mt-d-1_33_1
 
-   * --with-boost-thread[=special-lib] 
-   use the Thread library from boost - it is possible to specify a certain
-   library for the linker e.g. --with-boost-thread=boost_thread-gcc-mt 
+     * ``--with-boost-serialization[=special-lib]`` ---
+       Use the Serialization library from boost. It is possible to specify a
+       certain library for the linker e.g., ::
+
+          --with-boost-serialization=boost_serialization-gcc-mt-d-1_33_1
+
+     * ``--with-boost-system[=special-lib]`` ---
+       Use the System library from boost. It is possible to specify a certain
+       library for the linker e.g., ::
+
+          --with-boost-system=boost_system-gcc-mt
+
+     * ``--with-boost-thread[=special-lib]`` ---
+       Use the Thread library from boost. It is possible to specify a certain
+       library for the linker e.g., ::
+
+          --with-boost-thread=boost_thread-gcc-mt
 
 
-Step 2: Compilation
+* Step 2: Compilation
 
-Running "make" (which must be GNU's 'make' utility) in $objdir will compile
-the PSI4 libraries and executable modules.
+  Running ``make`` (which must be GNU's 'make' utility) in $objdir will compile
+  the PSI4 libraries and executable modules.
 
-Step 3: Testing
+* Step 3: Testing
 
-To execute automatically the ever-growing number of test cases after
-compilation, simply execute "make tests" in the $objdir directory.
-This will run each (relatively small) test case and report the results.
-Failure of any of the test cases should be reported to the developers.
-By default, any such failure will stop the testing process.  If you desire
-to run the entire testing suit without interruption, execute "make tests
-TESTFLAGS='-u -q'". Note that you must do a "make testsclean" in $objdir
-to run the test suite again.
+  To execute automatically the ever-growing number of test cases after
+  compilation, simply execute ``make tests`` in the $objdir directory.
+  This will run each (relatively small) test case and report the results.
+  Failure of any of the test cases should be reported to the developers.
+  By default, any such failure will stop the testing process.  If you desire
+  to run the entire testing suit without interruption, execute ``make tests
+  TESTFLAGS='-u -q'``. Note that you must do a ``make testsclean`` in $objdir
+  to run the test suite again.
 
-Step 4: Installation
+* Step 4: Installation
 
-Once testing is complete, installation into $prefix is accomplished by
-running "make install" in $objdir.   Executable modules are installed in
-$prefix/bin, include files in $prefix/include, libraries in $prefix/lib, and 
-documentation, basis set data, and various control strctures $prefix/share.
+  Once testing is complete, installation into $prefix is accomplished by
+  running ``make install`` in $objdir. Executable modules are installed in
+  $prefix/bin, include files in $prefix/include, libraries in $prefix/lib, and 
+  basis set data and various control structures in $prefix/share.
 
-Step 5: Building Documentation
+* Step 5: Building Documentation
 
-If your system has the appropriate utilities, you may build the
-package documentation from the top-level $objdir by running "make doc".
-The resulting files will appear in the $prefix/doc area.
-This is not yet fully operational, but the documentation is available
-off http://www.psicode.org .
+  This is not recommended because all of the documentation should be
+  available at http://sirius.chem.vt.edu/psi4manual/latest/index.html
+  (link "docs" off http://www.psicode.org), and it is automatically updated.  However,
+  if your system has the appropriate utilities (notably the sphinx package
+  and LaTeX), you may build the package documentation from the top-level
+  $objdir by running ``make doc``.  The resulting files will appear in the
+  $prefix/doc area.
 
-Step 6: Cleaning
+* Step 6: Cleaning
 
-All object files and libraries can be removed to save disk space by running
-"make clean" in $objdir.
+  All object files and libraries can be removed to save disk space by running
+  ``make clean`` in $objdir.
 
-Step 7: User Configuration
 
-After the PSI4 package has been successfullly installed, the user will need
-to add the installation directory into his/her path.  If the package has
-been installed in the default location /usr/local/psi, then in C shell,
-the user should add something like the following to their .cshrc file:
+.. _`sec:install_III_7`:
 
-  setenv PSI /usr/local/psi
-  set path = ($path $PSI/bin)
+* Step 7: User Configuration
 
-Next, you need to create a file .psi4rc in each user's
-home directory.  A sample file is provided in the PSI4 source
-(psi4/samples/example_psi4rc_file).  This file tells the PSI4 I/O manager
-how to handle scratch files.  
+  After the PSI4 package has been successfully installed, the user will need
+  to add the installation directory into his/her path.  If the package has
+  been installed in the default location ``/usr/local/psi``, then in C shell,
+  the user should add something like the following to their ``.cshrc`` file::
 
-Copy this file to each user's home directory
+     setenv PSI /usr/local/psi
+     set path = ($path $PSI/bin)
 
-  cp psi4/samples/example_psi4rc_file $HOME/.psi4rc
+  Next, the user needs to tell the PSI4 I/O manager how to handle scratch files.
+  Identify the path to a fast scratch disk for which the user has write access.  
+  If the local ``/tmp`` volume is large enough, it might be used.
+  However, a dedicated scratch volume (using RAID0 striping for speed) is
+  recommended.
 
-Now edit this file.  Replace the path in the following line
+  .. warning:: Scratch should NOT be a NFS-mounted volume, as writes to a
+     remote disk over the network can be very slow and can tie up the network
+     and negatively impact other users.
 
-  psioh.set_default_path('/scratch/parrish/')
+  Specify scratch location by editing the ``.cshrc`` file to set the scratch 
+  environment variable :envvar:`PSI_SCRATCH`. If the selected location is 
+  ``/scratch/user``, add something like the following::
 
-with a path to a fast scratch disk for which the user has write access.  Note:
-This should NOT be an NFS-mounted volume, as writes to a remote disk over the
-network can be very slow and can tie up the network and negatively impact
-other users.  If the local /tmp volume is large enough, it might be used.
-However, a dedicated scratch volume (using RAID0 striping for speed) is
-recommended.
+     setenv PSI_SCRATCH /scratch/user
 
-For developers: during compilation and testing, PSI4 finds its basis sets,
-grids, etc., in psi4/lib.  After installation, PSI4 will look in 
-$prefix/share/psi.  If you want to specify a non-standard location for this
-information, you can do this by setting the environmental variable
-$PSI4DATADIR to the directory containg the basis, grids, etc.,
-subdirectories.
+  In a bash shell, the corresponding commands to be added to ``.bashrc`` is
+  the following::
+
+     export PSI=/usr/local/psi
+     PATH=$PSI/bin:$PATH ; export PATH
+     export PSI_SCRATCH=/scratch/user
+
+  More advanced control of scratch files and is handled through a
+  ``.psi4rc`` file, which is discussed at section :ref:`sec:psirc`.
+
+  .. note:: For developers: during compilation and testing, PSI4 finds its basis sets,
+     grids, etc., in ``psi4/lib``.  After installation, PSI4 will look in 
+     $prefix/share/psi.  If you want to specify a non-standard location for this
+     information, you can do this by setting the environmental variable
+     $PSI4DATADIR to the directory containg the basis, grids, etc.,
+     subdirectories.
+
+
+.. _`sec:install_IV`:
 
 IV. Recommendations for BLAS and LAPACK libraries
+-------------------------------------------------
 
 Much of the speed and efficiency of the PSI4 programs depends on the
 corresponding speed and efficiency of the available BLAS and LAPACK libraries
@@ -471,195 +557,204 @@ corresponding speed and efficiency of the available BLAS and LAPACK libraries
 involve these libraries.  Users may therefore wish to consider the following
 BLAS and LAPACK recommendations when building PSI4:
 
-  (1) It is NOT wise to use the stock BLAS library provided with many
-  Linux distributions like RedHat.  This library is usually just the
-  netlib distribution and is completely unoptimized.  PSI4's performance
-  will suffer if you choose this route.  The choice of LAPACK is less
-  critical, and so the unoptimized netlib distribution is acceptable.
-  If you do choose to use the RedHat/Fedora stock BLAS and LAPACK, be
-  aware that some RPM's do not make the correct symbolic links.  
-  For example, you may have /usr/lib/libblas.so.3.1.0 but not
-  /usr/lib/libblas.so.  If this happens, create the link as, e.g.,
-  ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so.  You
-  may need to do similarly for lapack.
+(1) It is NOT wise to use the stock BLAS library provided with many
+    Linux distributions like RedHat.  This library is usually just the
+    netlib distribution and is completely unoptimized.  PSI4's performance
+    will suffer if you choose this route.  The choice of LAPACK is less
+    critical, and so the unoptimized netlib distribution is acceptable.
+    If you do choose to use the RedHat/Fedora stock BLAS and LAPACK, be
+    aware that some RPMs do not make the correct symbolic links.  
+    For example, you may have ``/usr/lib/libblas.so.3.1.0`` but not
+    ``/usr/lib/libblas.so``.  If this happens, create the link as, e.g.,
+    ``ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so``.  You
+    may need to do similarly for lapack.
+  
 
-  (2) Perhaps the best and simplest choice, if you have it available,
-  is Intel's MKL library, which includes BLAS and LAPACK (note: use
-  version 11 or later, we had difficulty with version 10 for very
-  large coupled-cluster computations).  MKL is efficient and works
-  well in threaded mode.  Other alternatives include Kazushige Goto's
-  hand-optimized BLAS (http://www.tacc.utexas.edu/resources/software/)
-  and ATLAS (http://math-atlas.sourceforge.net/).  These work well on
-  nearly every achitecture to which the PSI4 developers have access,
-  though we have identified at least one case in which the Goto libraries
-  yielded faulty DGEMM calls.  On Mac OS X systems, the vecLib package
-  that comes with Xcode works well.
+(2) Perhaps the best and simplest choice, if you have it available,
+    is Intel's MKL library, which includes BLAS and LAPACK (note: use
+    version 11 or later, we had difficulty with version 10 for very
+    large coupled-cluster computations).  MKL is efficient and works
+    well in threaded mode.  Other alternatives include Kazushige Goto's
+    hand-optimized BLAS (http://www.tacc.utexas.edu/resources/software/)
+    and ATLAS (http://math-atlas.sourceforge.net/).  These work well on
+    nearly every achitecture to which the PSI4 developers have access,
+    though we have identified at least one case in which the Goto libraries
+    yielded faulty DGEMM calls.  On Mac OS X systems, the vecLib package
+    that comes with Xcode works well.
 
-  (3) PSI4 does not require a Fortran compiler, unless the resident BLAS
-  and LAPACK libraries require Fortran-based system libraries.  If you see
-  compiler complaints about missing symbols like "do_fio" or "e_wsfe", then
-  your libraries were most likely compiled with g77 or gfortran, which
-  require -lg2c to resolve the Fortran I/O calls.  Use of the same gcc
-  package for PSI4 should normally resolve this problem.
+.. _`sec:install_IV_3`:
 
-  (4) The PSI4 configure script can often identify and use several
-  different BLAS and LAPACK libraries, but its ability to do this
-  automatically depends on a number of factors, including correspondence
-  between the compiler used for PSI4 and the compiler used to build
-  BLAS/LAPACK, placement of the libraries in commonly searched directories,
-  etc. PSI4's configure script will find your BLAS and LAPACK if any of the
-  the following are installed in standard locations (e.g. /usr/local/lib):
+(3) PSI4 does not require a Fortran compiler, unless the resident BLAS
+    and LAPACK libraries require Fortran-based system libraries.  If you see
+    compiler complaints about missing symbols like "do_fio" or "e_wsfe", then
+    your libraries were most likely compiled with g77 or gfortran, which
+    require ``-lg2c`` to resolve the Fortran I/O calls.  Use of the same gcc
+    package for PSI4 should normally resolve this problem.
 
-    (a) ATLAS: libf77blas.a and libatlas.a, plus netlib's liblapack.a
-    (b) MKL 8: libmkl.so and libmkl_lapack64.a (with the corresponding
+(4) The PSI4 configure script can often identify and use several
+    different BLAS and LAPACK libraries, but its ability to do this
+    automatically depends on a number of factors, including correspondence
+    between the compiler used for PSI4 and the compiler used to build
+    BLAS/LAPACK, placement of the libraries in commonly searched directories,
+    etc. PSI4's configure script will find your BLAS and LAPACK if any of the
+    the following are installed in standard locations (e.g. ``/usr/local/lib``):
+
+    (a) ATLAS: ``libf77blas.a`` and ``libatlas.a``, plus netlib's ``liblapack.a``
+    (b) MKL 8: ``libmkl.so`` and ``libmkl_lapack64.a`` (with the corresponding
         Intel compilers)
-    (c) Goto: libgoto.a and netlib's liblapack.a
-    (d) Cray SCSL (e.g. on SGI Altix): libscs.so (NB: No Fortran compiler
-        is necessary in this case, so --with-fc=no should work.)
-    (e) ESSL (e.g. on AIX systems): libessl.a
+    (c) Goto: ``libgoto.a`` and netlib's ``liblapack.a``
+    (d) Cray SCSL (e.g. on SGI Altix): ``libscs.so`` (NB: No Fortran compiler
+        is necessary in this case, so ``--with-fc=no`` should work.)
+    (e) ESSL (e.g. on AIX systems): ``libessl.a``
 
-  (5) If configure cannot identify your BLAS and LAPACK libraries
-  automatically, you can specify them on the command-line using the
-  --with-blas and --with-lapack arguments described above.  Here are a few
-  examples that work on the PSI4 developers' systems:
 
-    (a) Linux with ATLAS:
+(5) If configure cannot identify your BLAS and LAPACK libraries
+    automatically, you can specify them on the command-line using the
+    ``--with-blas`` and ``--with-lapack`` arguments described above.  Here are a few
+    examples that work on the PSI4 developers' systems:
 
-    --with-blas='-lf77blas -latlas' --with-lapack='-llapack -lcblas'
+    (a) Linux with ATLAS::
 
-    (b) Mac OS X with vecLib:
+        --with-blas='-lf77blas -latlas' --with-lapack='-llapack -lcblas'
 
-    --with-blas='-altivec -framework vecLib' --with-lapack=' '
+    (b) Mac OS X with vecLib::
 
-    (c) Linux with MKL 8.1 and icc/icpc/ifort 9.1:
+        --with-blas='-altivec -framework vecLib' --with-lapack=' '
 
-    --with-libdirs=-L/usr/local/opt/intel/mkl/8.0.2/lib/32 --with-blas=-lmkl --with-lapack=-lmkl_lapack32
+    (c) Linux with MKL 8.1 and icc/icpc/ifort 9.1::
 
-    (d) Linux on ia32 with MKL 10.1 and icc/icpc 11.0:
+        --with-libdirs=-L/usr/local/opt/intel/mkl/8.0.2/lib/32 --with-blas=-lmkl --with-lapack=-lmkl_lapack32
 
-    --with-blas='-Wl,--start-group -L/usr/local/opt/intel/mkl/10.1.0.015/lib/32 -l mkl -Wl,--end-group -lguide -lpthread'
+    (d) Linux on ia32 with MKL 10.1 and icc/icpc 11.0::
 
-Compilation notes for ATLAS:
+        --with-blas='-Wl,--start-group -L/usr/local/opt/intel/mkl/10.1.0.015/lib/32 -l mkl -Wl,--end-group -lguide -lpthread'
 
-   These shortcut notes might be helpful if you are using Linux.  However,
-   we recommend reading and following the full ATLAS installation notes.
+* Compilation notes for ATLAS
 
-   You'll need a Fortran compiler installed.   
+  These shortcut notes might be helpful if you are using Linux.  However,
+  we recommend reading and following the full ATLAS installation notes.
 
-   Unpack the source code, then make a compilation directory (could
-   be an obj subdirectory in the source directory, or elsewhere).
+  You'll need a Fortran compiler installed.   
 
-   Turn off CPU throttling so the auto-tuning capabilities have a chance
-   to work.  On Linux, this can be tune using
+  Unpack the source code, then make a compilation directory (could
+  be an obj subdirectory in the source directory, or elsewhere).
+
+  Turn off CPU throttling so the auto-tuning capabilities have a chance
+  to work.  On Linux, this can be tune using ::
 
      /usr/bin/cpufreq-selector -g performance
 
-   cd into the compilation directory and run the source
-   directory configure script there, with any necessary flags, e.g.,
-     
+  cd into the compilation directory and run the source
+  directory configure script there, with any necessary flags, e.g., ::
+    
      /usr/local/src/atlas/configure --prefix=/usr/local/atlas
 
-   where prefix gives the installation directory.
-   It should automatically detect if you're on an x86_64
+  where prefix gives the installation directory.
+  It should automatically detect if you're on an x86_64
 
-   Then make and check using
+  Then make and check using ::
 
      make; make check; make ptcheck
 
-   And install
+  And install ::
 
      make install
    
+* Compilation notes for netlib's LAPACK
 
-Compilation notes for netlib's LAPACK:
+  These shortcut notes might be helpful if you are using Linux.  However,
+  we recommend reading and following the full LAPACK installation notes.
 
-   These shortcut notes might be helpful if you are using Linux.  However,
-   we recommend reading and following the full LAPACK installation notes.
+  You'll need a Fortran compiler installed.
 
-   You'll need a Fortran compiler installed.
-
-   If you decide to compile LAPACK from source, it may be obtained from 
-   http://www.netlib.org/lapack/.  Unpack the source code, and in the
-   top-level source directory, you need to create a make.inc file with
-   the appropriate options for your machine.  For Linux/gfortran,
-   simply 
-  
+  If you decide to compile LAPACK from source, it may be obtained from 
+  http://www.netlib.org/lapack/.  Unpack the source code, and in the
+  top-level source directory, you need to create a make.inc file with
+  the appropriate options for your machine.  For Linux/gfortran,
+  simply ::
+ 
      cp make.inc.example make.inc
 
-   Next, edit BLASLIB in make.inc to point to your BLAS library
-   (full pathnames are recommended):
- 
-     BLASLIB      = /home/david/software/atlas3.9.25/lib/libf77blas.a /home/david/software/atlas3.9.25/lib/libatlas.a
+  Next, edit BLASLIB in make.inc to point to your BLAS library
+  (full pathnames are recommended)::
 
-   Edit Makefile as necessary (probably not needed).
+     BLASLIB = /home/david/software/atlas3.9.25/lib/libf77blas.a /home/david/software/atlas3.9.25/lib/libatlas.a
+
+  Edit Makefile as necessary (probably not needed). ::
 
      make
 
-   Copy the resulting file [lapack_($ARCH).a] where you want it
-   (a standard location like /usr/local/lib is easier for PSI to find).
-   It is probably helpful to rename the file liblapack.a.
-
+  Copy the resulting file [lapack_($ARCH).a] where you want it
+  (a standard location like /usr/local/lib is easier for PSI to find).
+  It is probably helpful to rename the file liblapack.a.
      
-V. Miscellaneous architecture-specific notes
 
- * Linux on x86 and x86_64:
+.. _`sec:install_V`:
 
-   (1) Intel compilers: We had trouble with icpc 12.0.x.  Use 12.1 or
-   later.
+V. Miscellaneous Architecture-Specific Notes
+--------------------------------------------
 
-   (2) Some versions of RedHat/Fedora Core RPM packages for the 
-   BLAS and LAPACK libraries fail to make all the required symlinks.  
-   For example, you may have /usr/lib/libblas.so.3.1.0 but not
-   /usr/lib/libblas.so.  If this happens, create the link as, e.g.,
-   ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so.  You
-   may need to do something similar for LAPACK.
+* Linux on x86 and x86_64
 
+  (1) Intel compilers: We had trouble with icpc 12.0.x.  Use 12.1 or
+      later.
+
+  (2) Some versions of RedHat/Fedora Core RPM packages for the 
+      BLAS and LAPACK libraries fail to make all the required symlinks.  
+      For example, you may have ``/usr/lib/libblas.so.3.1.0`` but not
+      ``/usr/lib/libblas.so``.  If this happens, create the link as, e.g.,
+      ``ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so``.  You
+      may need to do something similar for LAPACK.
+
+
+.. _`sec:install_VI`:
 
 VI. Common Problems with PSI Compilation
+----------------------------------------
 
 * Compilation dies in the integrals code when compiling with the -j flag
 
-You can compile PSI with the -j flag to compile with multiple threads (e.g.,
--j2). The integrals code is not safe for this and will die. This is not a
-problem, just type 'make' again, and compilation will resume. Once the
-integrals are compiled, this shouldn't be a problem again. 
+  You can compile PSI with the -j flag to compile with multiple threads (e.g.,
+  ``-j2``). The integrals code is not safe for this and will die. This is not a
+  problem, just type ``make`` again, and compilation will resume. Once the
+  integrals are compiled, this shouldn't be a problem again. 
 
 * No rule to make target foo.h, needed by bar.d. Stop.
 
-This commonly happens after pulling updates from the repository. It happens
-when a library header file is removed or renamed by the update, but there are
-still old dependency files in the object directory, which think that they
-still need to know about that header. There's a simple remedy, just run 
+  This commonly happens after pulling updates from the repository. It happens
+  when a library header file is removed or renamed by the update, but there are
+  still old dependency files in the object directory, which think that they
+  still need to know about that header. There's a simple remedy, just run ::
 
-  make DODEPEND=no dclean
+     >>> make DODEPEND=no dclean
 
-in the object directory.
+  in the object directory.
 
 * Make gets stuck in an infinite loop
 
-This means that the makefiles have not been properly updated. Running
+  This means that the makefiles have not been properly updated. Running ::
 
-  autoconf
+     >>> autoconf
 
-in the top-level Psi directory, followed by
+  in the top-level Psi directory, followed by ::
 
-  ./config.status --recheck
-  ./config.status
+     >>> ./config.status --recheck
+     >>> ./config.status
 
-in the object directory should fix it. This procedure will need to be run
-whenever an update changes the directory structure. 
+  in the object directory should fix it. This procedure will need to be run
+  whenever an update changes the directory structure. 
 
 * Incompatible g++/icpc
 
-The Intel compilers require an installed set of C++ headers. Unfortunately,
-the GNU compilers tend to be more cutting-edge than the Intel compilers,
-meaning that Intel is always playing catch-up to new features in g++. This
-means the two are often incompatible, leading to trouble if one wants to use
-icpc to compile PSI4 (or anything else...). Your best bet in general is to not
-upgrade Linux too fast, and always keep the very latest Intel compilers
-around.
+  The Intel compilers require an installed set of C++ headers. Unfortunately,
+  the GNU compilers tend to be more cutting-edge than the Intel compilers,
+  meaning that Intel is always playing catch-up to new features in g++. This
+  means the two are often incompatible, leading to trouble if one wants to use
+  icpc to compile PSI4 (or anything else...). Your best bet in general is to not
+  upgrade Linux too fast, and always keep the very latest Intel compilers
+  around.
 
 * Missing symbols like "do_fio" or "e_wsfe"
 
-See section IV(3) above.
+  See :ref:`Section IV(3) <sec:install_IV_3>` above.
 

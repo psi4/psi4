@@ -91,8 +91,8 @@ public:
     void set_Cfvir(SharedMatrix Cfvir) { Cfvir_ = Cfvir; }
     void set_eps_focc(SharedVector eps) { eps_focc_ = eps; }
     void set_eps_aocc(SharedVector eps) { eps_aocc_ = eps; }
-    void set_eps_avir(SharedVector eps) { eps_aocc_ = eps; }
-    void set_eps_fvir(SharedVector eps) { eps_focc_ = eps; }
+    void set_eps_avir(SharedVector eps) { eps_avir_ = eps; }
+    void set_eps_fvir(SharedVector eps) { eps_fvir_ = eps; }
     void set_Eref(double Eref) { Eref_ = Eref; }
 
     /// Update reference info

@@ -85,12 +85,14 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
            CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
            CalcInfo.nirreps, AlphaG->subgr_per_irrep, Inroots, Inunits,
            Ifirstunit, CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+  Ivec.init_io_files(true);
 
   Jvec.set(CIblks.vectlen, CIblks.num_blocks, Parameters.icore, Parameters.Ms0,
            CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
            CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
            CalcInfo.nirreps, AlphaG->subgr_per_irrep, Jnroots, Jnunits,
            Jfirstunit, CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
+  Jvec.init_io_files(true);
 
   populated_orbs = CalcInfo.num_ci_orbs + CalcInfo.num_fzc_orbs;
   for (irrep=0; irrep<CalcInfo.nirreps; irrep++) {

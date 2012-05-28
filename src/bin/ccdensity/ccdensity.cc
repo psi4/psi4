@@ -213,8 +213,6 @@ PsiReturnType ccdensity(Options& options)
     }
 
     sortone(rho_params[i]); /* puts full 1-pdm into moinfo.opdm */
-    /* dipole(); */
-
     if (!params.onepdm) {
       if(!params.aobasis) energy(rho_params[i]);
 
@@ -286,6 +284,13 @@ PsiReturnType ccdensity(Options& options)
       iwl_buf_close(&OutBuf_BB, 1);
       iwl_buf_close(&OutBuf_AB, 1);
     }
+
+    // ==> One-Electron Properties <== //
+    /*
+    fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
+    dipole();
+    */
+
     free_block(moinfo.opdm);
 
     psio_close(CC_TMP,0);   psio_open(CC_TMP,PSIO_OPEN_NEW);

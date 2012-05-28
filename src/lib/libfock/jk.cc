@@ -146,6 +146,7 @@ SharedVector JK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 }
 void JK::common_init()
 {
+    allow_desymmetrization_ = true;
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
@@ -294,13 +295,13 @@ void JK::USO2AO()
     allocate_JK();
 
     // If C1, C_ao and D_ao are equal to C and D
-    if (AO2USO_->nirrep() == 1) {
+    if (AO2USO_->nirrep() == 1 || !allow_desymmetrization_) {
         C_left_ao_ = C_left_;
         C_right_ao_ = C_right_;
         D_ao_ = D_;
         J_ao_ = J_;
         K_ao_ = K_;
-        wK_ao_ = wK_; 
+        wK_ao_ = wK_;
         return;
     }
 
@@ -417,7 +418,7 @@ void JK::USO2AO()
 void JK::AO2USO()
 {
     // If already C1, J/K are J_ao/K_ao, pointers are already aliased
-    if (AO2USO_->nirrep() == 1) {
+    if (AO2USO_->nirrep() == 1 || !allow_desymmetrization_) {
         return;
     }
 
@@ -2909,7 +2910,6 @@ void DFJK::manage_JK_core()
 {
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
-
         if (do_J_) {
             timer_on("JK: J");
             block_J(&Qmn_->pointer()[Q],naux);
@@ -3003,7 +3003,6 @@ void DFJK::block_J(double** Qmnp, int naux)
         double*  J2p  = J_temp_->pointer();
         double*  D2p  = D_temp_->pointer();
         double*  dp   = d_temp_->pointer();
-
         for (unsigned long int mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
@@ -3507,7 +3506,7 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
         C_DGEMM('T','N',nP,nbf,nbf,1.0,&Qp[0][Pstart],npoints,Dp[0],nbf,0.0,Vp[0],nbf);
 
         W_->zero();
-        #pragma omp parallel for num_threads(omp_nthread_)
+        #pragma omp parallel for
         for (int P = 0; P < nP; P++) {
             double* Arp = Amnp[P];
             double* Wrp = Wp[P];

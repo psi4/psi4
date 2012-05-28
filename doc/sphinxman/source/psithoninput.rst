@@ -196,6 +196,35 @@ achieved by adding either ``no_reorient`` or ``noreorient``. By default,
 ``angstrom``, ``a.u.``, ``au``, or ``bohr``.
 
 .. index:: 
+   single: Ghost Atoms
+   single: molecule; ghost
+.. _`sec:ghosts`:
+
+Ghost Atoms
+^^^^^^^^^^^
+
+While many common computations, such as SAPT and counterpoise corrections, can
+be greatly simplified using the notation described in :ref:`sec:fragments`,
+manual specification of ghost atoms is sometimes required.  Either ::
+
+    molecule he2 {
+        He
+        Gh(He) 1 2.0
+    }
+
+or ::
+
+    molecule he2 {
+        He
+        @He 1 2.0
+    }
+
+will generate a helium dimer, with the second atom ghosted, *i.e.*, possessing
+basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2_1`
+and :srcsample:`ghosts` for a demonstration of both mechanisms for specifying
+ghost atoms.
+
+.. index:: 
    single: PubChem
    single: molecule; PubChem
 .. _`sec:pubchem`:

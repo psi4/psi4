@@ -159,7 +159,7 @@ SharedMatrix SCFGrad::compute_gradient()
         const double* buffer = Tint->buffer();   
 
         for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            for (int Q = 0; Q <= P; Q++) {
 
                 Tint->compute_shell_deriv1(P,Q);
                                 
@@ -173,46 +173,47 @@ SharedMatrix SCFGrad::compute_gradient()
 
                 int offset = nP * nQ;
                 const double* ref = buffer;
+                double perm = (P == Q ? 1.0 : 2.0);
                
                 // Px 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aP][0] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aP][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Py 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aP][1] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aP][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Pz 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aP][2] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aP][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
                 // Qx 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][0] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aQ][0] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Qy 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][1] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aQ][1] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Qz 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Tp[aQ][2] += Dp[p + oP][q + oQ] * (*ref++);
+                        Tp[aQ][2] += perm * Dp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
@@ -339,7 +340,7 @@ SharedMatrix SCFGrad::compute_gradient()
         const double* buffer = Sint->buffer();   
 
         for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            for (int Q = 0; Q <= P; Q++) {
 
                 Sint->compute_shell_deriv1(P,Q);
                                 
@@ -353,46 +354,47 @@ SharedMatrix SCFGrad::compute_gradient()
 
                 int offset = nP * nQ;
                 const double* ref = buffer;
+                double perm = (P == Q ? 1.0 : 2.0);
                
                 // Px 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aP][0] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aP][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Py 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aP][1] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aP][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Pz 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aP][2] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aP][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
 
                 // Qx 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][0] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aQ][0] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Qy 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][1] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aQ][1] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
                
                 // Qz 
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        Sp[aQ][2] -= Wp[p + oP][q + oQ] * (*ref++);
+                        Sp[aQ][2] -= perm * Wp[p + oP][q + oQ] * (*ref++);
                     }
                 }
             }
@@ -485,7 +487,7 @@ SharedMatrix SCFGrad::compute_gradient()
             }
         }
     } else {
-        gradients_["Total"]->print();
+        gradients_["Total"]->print_atom_vector();
     }
 
     return gradients_["Total"]; 

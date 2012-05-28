@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta1])
+define([psi_version],[4.0.0-beta2+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -28,7 +28,7 @@ AC_SUBST(abs_top_builddir)
 
 if test "$srcdir" = "."; then
   echo "You are not allowed to compile in the source directory."
-  echo "Create an objdir or something similar as stated in the installation manual."
+  echo "Create an objdir or something similar as stated in INSTALL file."
   exit 1
 fi
 
@@ -927,13 +927,10 @@ AC_CONFIG_FILES([
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           doc/MakeVars doc/MakeRules doc/Makefile
-          doc/macros.tex doc/progman/svn/svn.eps
-          doc/installation/Makefile
-          doc/progman/Makefile doc/userman/Makefile
+          doc/macros.tex
           doc/sphinxman/Makefile
           doc/sphinxman/source/conf.py
           doc/sphinxman/apply_relpath.py
-          doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
 
@@ -1046,8 +1043,10 @@ AC_CONFIG_FILES([
           tests/sapt3/Makefile
           tests/sapt4/Makefile
           tests/sapt5/Makefile
+          tests/ghosts/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
+          tests/dfmp2_3/Makefile
           tests/pywrap_db1/Makefile
           tests/pywrap_db2/Makefile
           tests/pywrap_cbs1/Makefile
@@ -1071,6 +1070,7 @@ AC_CONFIG_FILES([
           tests/rasci-ne/Makefile
           tests/zaptn-nh2/Makefile
           tests/mpn-bh/Makefile
+          tests/ci-multi/Makefile
           tests/cepa1/Makefile
           tests/cepa2/Makefile
           tests/cepa3/Makefile
