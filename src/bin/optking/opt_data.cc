@@ -215,6 +215,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
             (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
             (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
          )
+      || (
+            (Opt_params.opt_type == OPT_PARAMS::IRC) &&
+            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
+            (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
+         )
      ) {
 
     // This environment variable will store the number of iterations required 

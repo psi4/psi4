@@ -56,6 +56,10 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   double DE;
   int dim = mol.g_nintco();
   int blocks = 4;
+  int sign = 1;
+
+  if(Opt_params.IRC_direction == OPT_PARAMS::BACKWARD)
+    sign = -1;
 
 //Printing Energies and Energy Changes for Each Step
   fprintf(outfile,  "\t----------------------------------------------");
@@ -92,26 +96,26 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   {
     fprintf(outfile,"\n\t        |          Distance         |\n");
     fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
-    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       fprintf(outfile,"    Coord %3d", i);
     }
     fprintf(outfile,"\n");
     fprintf(outfile,"\t--------------------------------------");
-    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       fprintf(outfile,"-------------");
     }
     fprintf(outfile,"\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, g_step(i).g_step_dist(), g_step(i).g_arc_dist(), g_step(i).g_line_dist());
-      for(int k = (j*dim/blocks); k < (j*dim/blocks + blocks); k++)
+      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      for(int k = (j*blocks); k < ((j+1)*blocks); k++)
         fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
       fprintf(outfile,"\n");
     }
     fprintf(outfile,"\t--------------------------------------");
-    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    for(int i = (j*blocks); i < ((j+1)* blocks); i++)
     {
       fprintf(outfile,"-------------");
     }
@@ -120,26 +124,26 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   {
     fprintf(outfile,"\n\t        |          Distance         |\n");
     fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
-    for(int i = (dim - dim/blocks); i < dim; i++)
+    for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       fprintf(outfile,"    Coord %3d", i);
     }
     fprintf(outfile,"\n");
     fprintf(outfile,"\t--------------------------------------");
-    for(int i = (dim - dim/blocks); i < dim; i++)
+    for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       fprintf(outfile,"-------------");
     }
     fprintf(outfile,"\n");
     for (int i=0; i<steps.size(); ++i)
     {
-      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, g_step(i).g_step_dist(), g_step(i).g_arc_dist(), g_step(i).g_line_dist());
-      for(int k = (dim - dim/blocks); k < dim; k++)
+      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, sign*g_step(i).g_step_dist(), sign*g_step(i).g_arc_dist(), sign*g_step(i).g_line_dist());
+      for(int k = (dim - (dim % blocks)); k < dim; k++)
         fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
       fprintf(outfile,"\n");
     }
     fprintf(outfile,"\t--------------------------------------");
-    for(int i = (dim - dim/blocks); i < dim; i++)
+    for(int i = (dim - (dim % blocks)); i < dim; i++)
     {
       fprintf(outfile,"-------------");
     }
@@ -148,17 +152,7 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   fprintf(outfile,"\n");
   fprintf(outfile,"\n");
 
-  fprintf(outfile,"\tInformation on final geometry:\n");
   mol.print_intcos(outfile);
-
-  fprintf(outfile, "\tCartesian IRC geometries of each point on the path:\n");
-  for (int i=0; i<steps.size(); ++i) {
-    fprintf(outfile, "\t Step %d  Energy %20.10lf  Arclength %10.5lf\n", i, g_step(i).g_energy(),
-      g_step(i).g_arc_dist());
-
-    print_geom_array(outfile, g_step(i).g_x(), mol.g_natom() );
-  }
-
 }
 
 
@@ -186,6 +180,18 @@ for a first step toward new point on path.\n");
   int Ncart = 3 * Natom;
   bool answer = 1;
 
+  int opt_iter = p_Opt_data->g_iteration() - 1;
+  if(opt_iter > 2 && p_irc_data->in_min_range)
+  {
+cout << "DE01:    " << p_Opt_data->g_energy(opt_iter) - p_Opt_data->g_energy(opt_iter - 2) << "\n";
+cout << "DE02:    " << p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3) << "\n";
+    if(    fabs(p_Opt_data->g_energy(opt_iter)     - p_Opt_data->g_energy(opt_iter - 2)) < 0.01e-03
+        && fabs(p_Opt_data->g_energy(opt_iter - 1) - p_Opt_data->g_energy(opt_iter - 3)) < 0.01e-03 )
+    {
+      p_irc_data->go = 0;
+    }
+  }
+
     if (p_irc_data->sphere_step == 1)
     {
 
@@ -198,31 +204,39 @@ for a first step toward new point on path.\n");
       double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
       fprintf(outfile,"\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
 cout << "u_f_q_dot: " << u_f_q_dot << "\n";
-      if(u_f_q_dot < -0.7)
+cout << "line_dist: " << p_irc_data->g_line_dist(p_irc_data->size()-1);
+
+      if(u_f_q_dot < -0.5)
       {
         p_irc_data->in_min_range = 1;
-cout << "Within range of minimum.\n";
       }
 
-      if(p_irc_data->in_min_range)
+      if(p_irc_data->size() > 3)
       {
-        cout << "\nHouston, we've found a minimum!\n";
+        if (u_f_q_dot < -0.7 ||
+            (
+              fabs(p_irc_data->g_line_dist(p_irc_data->size()-1) - p_irc_data->g_line_dist(p_irc_data->size()-2)) < s*10e-03
+            )
+           )
+        {
+          cout << "\nHouston, we've found a minimum!\n";
 
-        if(Opt_params.IRC_stop == OPT_PARAMS::ASK)
-        {
-          cout << "Would you like to proceed? (1=yes, 0=no):";
-          cin >> answer;
-        }
-        if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer)
-        {
-          p_irc_data->go = 0;
+          if(Opt_params.IRC_stop == OPT_PARAMS::ASK)
+          {
+            cout << "Would you like to proceed? (1=yes, 0=no):";
+            cin >> answer;
+          }
+          if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer)
+          {
+            p_irc_data->go = 0;
+          }
         }
       }
 
       free_array(u_f_q);
       free_array(u_f_q_0);
     }
-    if(!p_irc_data->go)
+/*    if(!p_irc_data->go)
     {
       double *q = intco_values();
       double *q_pivot = init_array(Nintco);
@@ -238,7 +252,7 @@ cout << "Within range of minimum.\n";
 
       return;
     }
-
+*/
 
 
   //The G matrix, its square root, and its inverse square root
@@ -509,15 +523,41 @@ print_array(outfile, g_m, Nintco);
   double *df = init_array(5); //derivatives of lagrangian
   double h_f;
 
-  // lagrange multiplier ; use previous value as first guess at next point
   static double lambda = 1.5 * h[0]; // Make 50% lower than the lowest (negative) eval
 
   int lag_iter=0;
   int iter=0;
+  int coarse_iter=0;
   double temp_lambda;
   double old_lambda = -999;
   double old_lagrangian;
-  static int order = 4;
+  double lb_lagrangian = -100;
+  double ub_lagrangian = 100;
+  double lb_lambda;
+  double ub_lambda;
+  int order = 4;
+
+  old_lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
+  lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
+  while(lagrangian*old_lagrangian > 0 && coarse_iter < 1000)
+  {
+    if(lagrangian < 0 && fabs(lagrangian) < fabs(lb_lagrangian))
+    {
+      lb_lagrangian = lagrangian;
+      lb_lambda = lambda;
+    }
+
+    if(lagrangian > 0 && fabs(lagrangian) < fabs(ub_lagrangian))
+    {
+      ub_lagrangian = lagrangian;
+      ub_lambda = lambda;
+    }
+
+    coarse_iter++;
+    old_lagrangian = lagrangian;
+    lambda -= 1;
+    lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
+  }
 
   fprintf(outfile, "\n\tDetermining lagrangian multiplier for constrained minimization.\n");
   fprintf(outfile, "\t   Iter     Multiplier     Lagrangian\n");
@@ -528,22 +568,39 @@ print_array(outfile, g_m, Nintco);
     lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
     h_f = -df[0] / df[1];
 
+    if(lagrangian < 0 && fabs(lagrangian) < fabs(lb_lagrangian))
+    {
+      lb_lagrangian = lagrangian;
+      lb_lambda = lambda;
+    }
+
+    if(lagrangian > 0 && fabs(lagrangian) < fabs(ub_lagrangian))
+    {
+      ub_lagrangian = lagrangian;
+      ub_lambda = lambda;
+    }
+
     if(lagrangian*old_lagrangian < 0)
     {
       temp_lambda = lambda;
       lambda = (temp_lambda + old_lambda) / 2;
       old_lambda = temp_lambda;
     }
-/*    else if(order == 1)
+    else if(order == 1)
+    {
       old_lambda = lambda;
       lambda += h_f;
+    }
     else if(order == 2)
+    {
       old_lambda = lambda;
       lambda += h_f / (1 + 0.5 * h_f * df[2] / df[1]);
+    }
     else if(order == 3)
+    {
       old_lambda = lambda;
       lambda += h_f * (1 + 0.5 * h_f * df[2] / df[1]) / ( 1 + (df[2]/df[1]) * h_f + (df[3]/(6*df[1])) * h_f * h_f );
-*/
+    }
     else
     {
       old_lambda = lambda;
@@ -552,23 +609,20 @@ print_array(outfile, g_m, Nintco);
                              + 8*df[3] * h_f * h_f + df[4] * h_f * h_f * h_f);
     }
 
-//(df[1] + h_f * df[2] + (1/6) * (h_f*h_f) * df[3]) /
-//                (df[1] + 1.5 * h_f * df[2] + 0.25 * (h_f*h_f) * (df[2]*df[2]) / df[1]
-//                       + (1/3) * (h_f*h_f) * df[3] + (1/24) * (h_f*h_f*h_f) * df[4]);
-
     fprintf(outfile, "\t  %5d%15.3e%15.3e\n", lag_iter, lambda, lagrangian);
 
     ++lag_iter;
 
     if (++iter > 50)
     {
-      iter = 0;
-      lambda -=100;
+      old_lambda = lambda;
+      lambda = (lb_lambda + ub_lambda) / 2;
     }
    
-    if (lag_iter > 400)
+    if (lag_iter > 200)
       throw(INTCO_EXCEPT("Could not converge lagrangian for constrained minimization"));
   }
+
 
 //4. Find dq_m from equation 24 in Gonzalez & Schlegel (1990)
 // dq_m = (H_m - lambda I)^-1 [lambda * p_m - g_m]
@@ -610,10 +664,8 @@ print_array(outfile, g_m, Nintco);
 
   free_array(lhs1);
   free_array(lhs2); */
-//
 
-
-  // Do displacements for each fragment seperately.
+  // Do displacements for each fragment separately.
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
@@ -630,7 +682,6 @@ print_array(outfile, g_m, Nintco);
     interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
                                        &(f_q[g_interfragment_intco_offset(I)]) );
   }
-
 
 //find arclength of step and pass to irc_data to be stored on convergence
   double *new_q = intco_values();
