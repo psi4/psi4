@@ -483,7 +483,7 @@ SharedMatrix Deriv::compute()
     // The current wavefunction's reference wavefunction, NULL for SCF/DFT
     boost::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
-    bool reference_separate = (Da || Db || X) && ref_wfn;
+    bool reference_separate = (X) && ref_wfn;
 
     if (!ref_wfn) {
         // If wavefunction doesn't have a reference wavefunction

@@ -547,13 +547,6 @@ void FRAG::fix_tors_near_180(void) {
   }
 }
 
-/*bool FRAG::check_tors_for_bad_angles(void) {
-  for (int i=0; i<intcos.size(); ++i) {
-    if (intcos[i]->g_type() == tors_type)
-      intcos[i]->check_tors_for_bad_angles(geom);
-  }
-}*/
-
 void FRAG::set_geom_array(double * geom_array_in) {
   int xyz, i, cnt = 0;
   for (i=0; i<natom; ++i)

@@ -187,6 +187,9 @@ cepa2:        cc-pvdz H2O Test ACPF Energy/Properties
 cepa3:        cc-pvdz H2O Test coupled-pair CISD against DETCI CISD
 
 
+ci-multi:     BH single points, checking that program can run multiple instances of  DETCI in a single input, without an intervening clean() call
+
+
 cisd-h2o+-0:  6-31G** H2O+ Test CISD Energy Point
 
 
@@ -227,6 +230,9 @@ dfmp2_1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid d
 
 
 dfmp2_2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
+
+
+dfmp2_3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
 
 
 dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
@@ -281,6 +287,9 @@ fd-gradient:  SCF STO-3G finite-difference tests
 
 
 frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
+
+
+ghosts:       Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
 
 
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.

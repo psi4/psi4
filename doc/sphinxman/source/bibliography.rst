@@ -39,9 +39,19 @@ Bibliography
    *J. Chem. Theory Comput.* **7**, 10-18 (2011).
 
 .. [Cohen:GreenBook:2008]
+   E. R. Cohen, T. Cvitas, J. G. Frey, B. Holmstr\ |o_dots|\ om,
+   K. Kuchitsu, R. Marquardt, I. Mills, F. Pavese, M. Quack,
+   J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor, 
+   Quantities, Units, and Symbols in Physical chemistry, IUPAC Green
+   Book, 3rd. Ed., IUPAC & RSC Publishing (Cambridge, 2008).
 
 .. [PubChem]
-
+   E. Bolton, Y. Wang, P. A. Thiessen, S. H. Bryant.  PubChem: 
+   Integrated Platform of Small Molecules and Biological Activities,
+   Chapter 12 in *Annual Reports in Computational Chemistry*, Volume
+   4 (American Chemical Society: Washington, DC, 2008).
+   See `pubchem.ncbi.nlm.nih.gov <http://pubchem.ncbi.nlm.nih.gov/>`_.
+   
 .. [Sherrill:1999:CI]
    C. D. Sherrill and H. F. Schaefer,
    *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots|\ wdin
@@ -128,19 +138,42 @@ Bibliography
    *Phys. Rev. A* **24**, 1668 (1981).
 
 .. [Raghavachari:1989]
+   K. Raghavachari, G. W. Trucks, J. A. Pople, and M. Head-Gordon,
+   *Chem. Phys. Lett.* **157**, 479-483 (1989).
 
 .. [Purvis:1982]
+   G. D. Purvis and R. J. Bartlett,
+   *J. Chem. Phys.* **76**, 1910-1918 (1982).
 
 .. [Roos:1980]
+   B. O. Roos,
+   *Chem. Phys.* **48**, 157-173 (1980).
 
 .. [Chaban:1997:88]
+   G. Chaban, M. W. Schmidt, and M. S. Gordon,
+   *Theor. Chem. Acc.* **97**, 88-95 (1997).
 
 .. [Pulay:1980]
+   P. Pulay,
+   *Chem. Phys. Lett.* **73**, 393-398 (1980).
 
 .. [Malmqvist:1990:RASSCF]
+   P.-A. Malmqvist, A. Rendell, and B. O. Roos,
+   *J. Phys. Chem.* **94**, 5477-5482 (1990).
 
 .. [Docken:1972:4928]
+   K. K. Docken and J. Hinze,
+   *J. Chem. Phys.* **57**, 4928-4936 (1972).
 
 .. [Ruedenberg:1979:1069]
+   K. Ruedenberg, L. M. Cheung, and S. T. Elbert,
+   *Int. J. Quantum Chem.* **16**, 1069-1101 (1979).
 
 .. [Evangelista:2010:074107]
+   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+   *J. Chem. Phys.* **132**, 074107 (2010).
+
+.. [Wennmohs:2008]
+   F. Wennmohs and F. Neese,
+   *Chem. Phys.* **343**, 217-230 (2008).
+

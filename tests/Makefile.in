@@ -15,13 +15,13 @@ cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc50 cc51 cc52 # cc5 these should be restored
 
 cepa_subdirs = cepa1 cepa2 cepa3
 
-ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh
+ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
 dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 sapt3 sapt5
+df_subdirs = sapt1 sapt3 sapt5 dfmp2_1 dfmp2_2 dfmp2_3 ghosts
 
 psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2
 

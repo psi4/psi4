@@ -751,9 +751,9 @@ void RHF::stability_analysis()
             delete [] evals;
         }
 
-        fprintf(outfile, "Lowest singlet (RHF->RHF) stability eigenvalues:-\n");
+        fprintf(outfile, "\tLowest singlet (RHF->RHF) stability eigenvalues:-\n");
         print_stability_analysis(singlet_eval_sym);
-        fprintf(outfile, "Lowest triplet (RHF->UHF) stability eigenvalues:-\n");
+        fprintf(outfile, "\tLowest triplet (RHF->UHF) stability eigenvalues:-\n");
         print_stability_analysis(triplet_eval_sym);
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
