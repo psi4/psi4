@@ -718,6 +718,7 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
+        'sogga_c'     : build_sogga_c_functional,
     }
 
 
@@ -2240,6 +2241,8 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE
+    kp = 4.8827323 
+    mu = 0.3511128 
     X.set_parameter('PBE_kp', kp);
     X.set_parameter('PBE_mu', mu);
 
