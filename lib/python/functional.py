@@ -1061,6 +1061,16 @@ def build_pbe_superfunctional(name, npoints, deriv):
     return sup
 
 
+def build_pbe0_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE0')
+    sup.set_description('    PBE0 Hybrid GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    Adamo et. al., J. Chem. Phys., 110(13), 6158, 1999\n')
+    sup.set_x_alpha(0.25)
+    return sup
+
+
 def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1091,16 +1101,6 @@ def build_sogga_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
-    return sup
-
-
-def build_pbe0_superfunctional(name, npoints, deriv):
-
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE0')
-    sup.set_description('    PBE0 Hybrid GGA Exchange-Correlation Functional\n')
-    sup.set_citation('    Adama et. al., J. Chem. Phys., 110(13), 6158, 1999\n'     
-    sup.set_x_alpha(0.25)
     return sup
 
 
@@ -2069,8 +2069,8 @@ def build_m05_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3  # Should be reported/implemented to more digits
-    C2 = 4.49267E-3  # Should be reported/implemented to more digits
+    C1 = 3.36116E-3
+    C2 = 4.49267E-3
     K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
     k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
     kp = C1 / (C2 * K0)
@@ -2098,7 +2098,7 @@ def build_m05_superfunctional(name, npoints, deriv):
     # LSDA Correlation type is PW92, no parameters
 
     # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)  # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.0)
     C.set_parameter('B97_os_a1', 3.78569)
     C.set_parameter('B97_os_a2', -14.15261)
@@ -2155,14 +2155,14 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3; # Should be reported/implemented to more digits
-    C2 = 4.49267E-3; # Should be reported/implemented to more digits
+    C1 = 3.36116E-3;
+    C2 = 4.49267E-3;
     K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
     k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
     kp = C1 / (C2 * K0);
     mu = 4.0 * k0 * k0 * kp * C2;
-    X.set_parameter('PBE_kp', kp); # Different effective kp
-    X.set_parameter('PBE_mu', mu); # Different effective mu
+    X.set_parameter('PBE_kp', kp);
+    X.set_parameter('PBE_mu', mu);
 
 # Meta Exchange type is insane mess of w power series expansion
     X.set_parameter('Meta_a0' , 1.0)
@@ -2184,7 +2184,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # LSDA Correlation type is PW92, no parameters
 
     # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0) # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.00000)
     C.set_parameter('B97_os_a1', 1.09297)
     C.set_parameter('B97_os_a2',-3.79171)
@@ -2240,14 +2240,6 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE
-   # C1 = 3.36116E-3; 
-   # C2 = 4.49267E-3;
-   # K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
-   # k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
-   # kp = C1 / (C2 * K0);
-   # mu = 4.0 * k0 * k0 * kp * C2;
-    kp = 4.8827323
-    mu = 0.3511128
     X.set_parameter('PBE_kp', kp);
     X.set_parameter('PBE_mu', mu);
 
