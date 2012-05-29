@@ -272,7 +272,7 @@ for the SAPT procedure.
 
 To speed up the computation a little, we also tell the SAPT procedure to
 freeze the core electrons with ``freeze_core True``.  The SAPT
-procedure is invoked with the simple call, ``energy('sapt0')``}.  This
+procedure is invoked with the simple call, ``energy('sapt0')``.  This
 call knows to automatically run two monomer computations and a dimer
 computation and then use these results to perform the SAPT analysis.  The
 various energy components are printed at the end of the output, in addition
@@ -359,7 +359,7 @@ elements are separated by commas.
 The next lines, ``set basis aug-cc-pVDZ`` and ``set freeze_core True``,
 are familiar from previous test cases.  Next comes a slightly
 unusual-looking line, ``ecp = {}``.  This is Python's way of initializing
-a "dictionary."  We're going to use this dictionary to store the
+a "dictionary".  We're going to use this dictionary to store the
 counterpoise-corrected energies as they become available.  A dictionary is
 like an array, but we can index it using strings or floating-point numbers
 instead of integers if we want.  Here, we will index it using
