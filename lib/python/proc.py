@@ -151,6 +151,15 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
+    user_scftype = PsiMod.get_local_option('SCF', 'SCF_TYPE')
+    b_user_scftype = PsiMod.has_option_changed('SCF_TYPE')
+    user_basis = PsiMod.get_option('BASIS')
+    b_user_basis = PsiMod.has_global_option_changed('BASIS')
+    user_puream = PsiMod.get_option('PUREAM')
+    b_user_puream = PsiMod.has_option_changed('PUREAM')
+    user_dfbasisscf = PsiMod.get_local_option('SCF', 'DF_BASIS_SCF')
+    b_user_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
+
     cast = False
     if 'cast_up' in kwargs:
         cast = kwargs.pop('cast_up')
@@ -174,8 +183,11 @@ def scf_helper(name, **kwargs):
 
         # Hack to ensure cartesian or pure are used throughout
         # This touches the option, as if the user set it
-        puream = PsiMod.get_global_option('PUREAM')
-        PsiMod.set_global_option('PUREAM', puream)
+        # Note that can't query PUREAM option directly, as it only
+        #   reflects user changes to value, so load basis and
+        #   read effective PUREAM setting off of it
+        PsiMod.set_global_option('BASIS', user_basis)
+        PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
         # Switch to the guess namespace
         namespace = PsiMod.IO.get_default_namespace()
@@ -228,6 +240,19 @@ def scf_helper(name, **kwargs):
     else:
 
         e_scf = PsiMod.scf(precallback, postcallback)
+
+    PsiMod.set_global_option('SCF_TYPE', user_scftype)
+    if not b_user_scftype:
+         PsiMod.revoke_global_option_changed('SCF_TYPE')
+    PsiMod.set_global_option('BASIS', user_basis)
+    if not b_user_basis:
+         PsiMod.revoke_global_option_changed('BASIS')
+    PsiMod.set_global_option('PUREAM', user_puream)
+    if not b_user_puream:
+         PsiMod.revoke_global_option_changed('PUREAM')
+    PsiMod.set_global_option('DF_BASIS_SCF', user_dfbasisscf)
+    if not b_user_dfbasisscf:
+         PsiMod.revoke_global_option_changed('DF_BASIS_SCF')
 
     return e_scf
 
