@@ -206,36 +206,8 @@ def build_sogga_x_functional(name):
     fun.set_omega(0.0)
 
     # Custom parameters
-    fun.set_parameter('PBE_kp', 0.552)
+    fun.set_parameter('PBE_kp', 0.55208138)
     fun.set_parameter('PBE_mu', 10.0 / 81.0)
-
-    # => End User-Customization <= #
-
-    return fun
-
-
-def build_sogga_c_functional(name):
-
-    # Call this first
-    fun = PsiMod.Functional.build_base('PBE_C')
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    fun.set_name('SOGGA_C')
-    # Tab in, trailing newlines
-    fun.set_description('    Reparametrized PBE Correlation for the SOGGA functional\n')
-    # Tab in, trailing newlines
-    fun.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
-
-    # These should be set by build_base, but prove that you know what's up
-    fun.set_gga(False)
-    fun.set_meta(False)
-    fun.set_alpha(1.0)
-    fun.set_omega(0.0)
-
-    # Custom parameters
-    fun.set_parameter('bet', 0.037526)
 
     # => End User-Customization <= #
 
@@ -718,7 +690,6 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
-        'sogga_c'     : build_sogga_c_functional,
     }
 
 
@@ -1090,7 +1061,10 @@ def build_sogga_superfunctional(name, npoints, deriv):
 
     # Add member functionals
     sup.add_x_functional(build_functional('SOGGA_X'))
-    sup.add_c_functional(build_functional('SOGGA_C'))
+
+    C = build_functional('PBE_C')
+    C.set_parameter('bet', 0.037526)
+    sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -2343,6 +2317,7 @@ superfunctionals = {
         'b3_x'      : build_primitive_superfunctional,
         'pbe_x'     : build_primitive_superfunctional,
         'rpbe_x'    : build_primitive_superfunctional,
+        'sogga_x'   : build_primitive_superfunctional,
         'pbesol_x'  : build_primitive_superfunctional,
         'pw91_x'    : build_primitive_superfunctional,
         'ws_x'      : build_ws_x_superfunctional,
