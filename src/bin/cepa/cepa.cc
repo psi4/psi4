@@ -25,9 +25,16 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn,options));
   PsiReturnType status;
 
+  // grab options
+  cepa->Initialize(options);
+
+  // integral sort (and maybe transformation)
+  tstart();
+  cepa->SortIntegrals();
+  tstop();
+
   tstart();
   cepa->WriteBanner(options);
-  cepa->Initialize(options);
   cepa->AllocateMemory(options);
   status = cepa->CEPAIterations(options);
   tstop();

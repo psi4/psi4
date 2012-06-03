@@ -70,8 +70,8 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
 
 
   struct integral*integralbuffer;
-  if ((nelem+20)*12>maxelem)
-     integralbuffer= new integral[(nelem+20)*12];
+  if ((nelem+20)*9>maxelem)
+     integralbuffer= new integral[(nelem+20)*9];
   else
      integralbuffer= new integral[maxelem];
 
@@ -79,11 +79,11 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   ijak  = integralbuffer+(nelem+20);
   klcd  = integralbuffer+(nelem+20)*2;
   akjc  = integralbuffer+(nelem+20)*3;
-  abci3 = integralbuffer+(nelem+20)*6;
-  abci5 = integralbuffer+(nelem+20)*8;
-  abcd1 = integralbuffer+(nelem+20)*9;
-  abcd2 = integralbuffer+(nelem+20)*10;
-  ijak2 = integralbuffer+(nelem+20)*11;
+  abci3 = integralbuffer+(nelem+20)*4;
+  abci5 = integralbuffer+(nelem+20)*5;
+  abcd1 = integralbuffer+(nelem+20)*6;
+  abcd2 = integralbuffer+(nelem+20)*7;
+  ijak2 = integralbuffer+(nelem+20)*8;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
@@ -485,7 +485,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   fprintf(outfile,"        (AB|CI) block 1/2...");fflush(outfile);
   SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI3,"E2abci3",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        (AB|CI) block 1/2...");fflush(outfile);
+  fprintf(outfile,"        (AB|CI) block 2/2...");fflush(outfile);
   SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI5,"E2abci5",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        (AB|CD) block 1/2...");fflush(outfile);
