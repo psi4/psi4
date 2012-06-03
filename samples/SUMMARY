@@ -247,12 +247,6 @@ dft1-alt:     DFT Functional Test
 dft2:         DFT Functional Test
 
 
-docs_dft:     This test is used to construct the documentation; it is not suitable for emulation by users.
-
-
-docs_psimod:  This test is used to construct the documentation; it is not suitable for emulation by users.
-
-
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
@@ -359,6 +353,9 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
 
 opt5:         6-31G** UHF CH2 3B1 optimization
+
+
+plugin_ccsd_serial:  cc-pvdz H2O Test CCSD(T) energies
 
 
 plugin_libfock:  LibFock test input
