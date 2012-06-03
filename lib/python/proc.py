@@ -1259,6 +1259,14 @@ def run_cepa(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # override symmetry if integral direct
+    if PsiMod.get_global_option('CEPA_VABCD_DIRECT'):
+       molecule = PsiMod.get_active_molecule()
+       molecule.update_geometry()
+       molecule.reset_point_group('c1')
+       molecule.fix_orientation(1)
+       molecule.update_geometry()
+
     # throw an exception for open-shells
     if (PsiMod.get_global_option('reference') != 'RHF' ):
        PsiMod.print_out("\n")
@@ -1298,7 +1306,10 @@ def run_cepa(name, **kwargs):
        mints = PsiMod.MintsHelper()
        mints.integrals()
 
-    PsiMod.transqt2()
+    # only call transqt2() if (ac|bd) is not integral direct
+    if (PsiMod.get_global_option('cepa_vabcd_direct') == False):
+       PsiMod.transqt2()
+
     PsiMod.cepa()
 
     # if dci, make sure we didn't overwrite the cepa_no_singles options

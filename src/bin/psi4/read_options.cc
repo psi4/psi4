@@ -2346,6 +2346,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       computation. Note that this algorithm is not optimized for
       doubles-only computations. -*/
       options.add_bool("CEPA_NO_SINGLES",false);
+      /*- Use integral-direct implementation of the (ac|bd) t(ij,cd)
+      contraction? AO integrals will be generated on the fly. The 
+      CEPA iterations will be slower, but the AO->MO integral 
+      transform will be faster, and the out-of-core sort of the 
+      (AC|BD) integrals will be avoided. -*/
+      options.add_bool("CEPA_VABCD_DIRECT",false);
   }
   return true;
 }
