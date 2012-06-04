@@ -31,8 +31,8 @@ geometry of our water molecule using a standard Z-matrix.
 For your convenience, this example can be found in 
 :srcsample:`tu1-h2o-energy`.
 You can run it if you wish.
-Once |PSIfour| is in your path (see the User Configuration section of
-the installation instructions), you can run this computation by typing
+Once |PSIfour| is in your path (see the :ref:`User Configuration <sec:install_III_7>` 
+section of the installation instructions), you can run this computation by typing
 
    >>> psi4 input.dat output.dat
 

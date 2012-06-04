@@ -14,6 +14,7 @@ import physconst
 from molutil import *
 from text import *
 from procutil import *
+from basislist import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -159,10 +160,30 @@ def scf_helper(name, **kwargs):
     b_user_puream = PsiMod.has_option_changed('PUREAM')
     user_dfbasisscf = PsiMod.get_local_option('SCF', 'DF_BASIS_SCF')
     b_user_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
+    user_guess = PsiMod.get_option('GUESS')
+    b_user_guess = PsiMod.has_option_changed('GUESS')
+    user_dfintsio = PsiMod.get_option('DF_INTS_IO')
+    b_user_dfintsio = PsiMod.has_option_changed('DF_INTS_IO')
 
     cast = False
     if 'cast_up' in kwargs:
         cast = kwargs.pop('cast_up')
+        if input.yes.match(str(cast)):
+            cast = True
+        elif input.no.match(str(cast)):
+            cast = False
+        
+        if user_scftype == 'DF':
+            castdf = True
+        else:
+            castdf = False
+    
+        if 'cast_up_df' in kwargs:
+            castdf = kwargs.pop('cast_up_df')
+            if input.yes.match(str(castdf)):
+                castdf = True
+            elif input.no.match(str(castdf)):
+                castdf = False
 
     precallback = None
     if 'precallback' in kwargs:
@@ -172,41 +193,40 @@ def scf_helper(name, **kwargs):
     if 'postcallback' in kwargs:
         postcallback = kwargs.pop('postcallback')
 
+    PsiMod.set_global_option('BASIS', user_basis)
+    PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
+
     if (cast):
 
         if input.yes.match(str(cast)):
-            custom = 'Default'
             guessbasis = '3-21G'
         else:
-            custom = 'Custom'
             guessbasis = cast
+
+        if (castdf):
+            if input.yes.match(str(castdf)):
+                guessbasisdf = corresponding_jkfit(guessbasis)
+            else:
+                guessbasisdf = castdf
 
         # Hack to ensure cartesian or pure are used throughout
         # This touches the option, as if the user set it
         # Note that can't query PUREAM option directly, as it only
         #   reflects user changes to value, so load basis and
         #   read effective PUREAM setting off of it
-        PsiMod.set_global_option('BASIS', user_basis)
-        PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
+        #PsiMod.set_global_option('BASIS', user_basis)
+        #PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
         # Switch to the guess namespace
         namespace = PsiMod.IO.get_default_namespace()
         PsiMod.IO.set_default_namespace((namespace + '.guess'))
 
-        # Are we in a DF algorithm here?
-        scf_type = PsiMod.get_option('SCF_TYPE')
-        guess_type = PsiMod.get_option('GUESS')
-        df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
-        df_ints = PsiMod.get_option('DF_INTS_IO')
-
-        # Which basis is the final one
-        basis = PsiMod.get_option('BASIS')
-
         # Setup initial SCF
         PsiMod.set_local_option('SCF', 'BASIS', guessbasis)
-        if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', 'cc-pvdz-ri')
+        if (castdf):
+            PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
             PsiMod.set_global_option('DF_INTS_IO', 'none')
+            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', guessbasisdf)
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -220,12 +240,18 @@ def scf_helper(name, **kwargs):
         PsiMod.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
         PsiMod.IO.set_default_namespace(namespace)
 
-        # Set to read and project, and reset bases
+        # DF-BASIS-SCF keyword could be seeded here from the BasisFamily
+        #   defaults so that more calcs could run w/o fitting basis error.
+        #   However, fitting basis defaults are currently handled in-module
+        #   in several modules in addition to scf, so will wait for std soln.
+
+        # Set to read and project, and reset bases to final ones
+        PsiMod.set_local_option('SCF', 'BASIS', user_basis)
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', user_scftype)
         PsiMod.set_local_option('SCF', 'GUESS', 'READ')
-        PsiMod.set_local_option('SCF', 'BASIS', basis)
-        if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', df_basis_scf)
-            PsiMod.set_global_option('DF_INTS_IO', df_ints)
+        if (user_scftype == 'DF'):
+            PsiMod.set_global_option('DF_INTS_IO', user_dfintsio)
+            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_dfbasisscf)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
@@ -235,7 +261,7 @@ def scf_helper(name, **kwargs):
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
 
-        PsiMod.set_local_option('SCF', 'GUESS', guess_type)
+        PsiMod.set_local_option('SCF', 'GUESS', user_guess)
 
     else:
 
@@ -243,16 +269,22 @@ def scf_helper(name, **kwargs):
 
     PsiMod.set_global_option('SCF_TYPE', user_scftype)
     if not b_user_scftype:
-         PsiMod.revoke_global_option_changed('SCF_TYPE')
+        PsiMod.revoke_global_option_changed('SCF_TYPE')
     PsiMod.set_global_option('BASIS', user_basis)
     if not b_user_basis:
-         PsiMod.revoke_global_option_changed('BASIS')
+        PsiMod.revoke_global_option_changed('BASIS')
     PsiMod.set_global_option('PUREAM', user_puream)
     if not b_user_puream:
-         PsiMod.revoke_global_option_changed('PUREAM')
+        PsiMod.revoke_global_option_changed('PUREAM')
     PsiMod.set_global_option('DF_BASIS_SCF', user_dfbasisscf)
     if not b_user_dfbasisscf:
-         PsiMod.revoke_global_option_changed('DF_BASIS_SCF')
+        PsiMod.revoke_global_option_changed('DF_BASIS_SCF')
+    PsiMod.set_global_option('GUESS', user_guess)
+    if not b_user_guess:
+        PsiMod.revoke_global_option_changed('GUESS')
+    PsiMod.set_global_option('DF_INTS_IO', user_dfintsio)
+    if not b_user_dfintsio:
+        PsiMod.revoke_global_option_changed('DF_INTS_IO')
 
     return e_scf
 
