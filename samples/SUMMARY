@@ -355,9 +355,6 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 opt5:         6-31G** UHF CH2 3B1 optimization
 
 
-plugin_ccsd_serial:  cc-pvdz H2O Test CCSD(T) energies
-
-
 plugin_libfock:  LibFock test input
 
 
