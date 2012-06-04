@@ -31,6 +31,14 @@ class CoupledPair{
     bool t2_on_disk;
 
     /**
+      * Sort integrals.  If CEPA_VABCD_DIRECT is set to true,
+      * the AO-MO integral transformation will be performed
+      * here, and the (vv|vv) integrals will not be sorted
+      * (or transformed).
+     */
+    void SortIntegrals();
+
+    /**
       * Define CEPA Tasks.  most diagrams are designated as
       * independent tasks.  some will be tiled out as 
       * separate tasks either so we can do them with limited
@@ -125,6 +133,7 @@ class CoupledPair{
       */
     void I2ijkl(CepaTaskParams params);
     void I2piajk(CepaTaskParams params);
+    void Vabcd_so(CepaTaskParams params);
     void Vabcd1(CepaTaskParams params);
     void Vabcd2(CepaTaskParams params);
     void I2iabj(CepaTaskParams params);
