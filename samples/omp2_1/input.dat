@@ -1,0 +1,19 @@
+
+memory 250 mb
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  d_convergence 8
+  e_convergence 10
+}
+
+energy('omp2')
+
+

@@ -263,6 +263,10 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\n");
 	fflush(outfile);
 
+    // Set the global variables with the energies
+    Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
+    Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
+    Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
 	chkpt_->wt_etot(Emp2L);
 	chkpt_->wt_emp2(Emp2L);
 	chkpt_->wt_ecorr(Emp2L-Escf);
