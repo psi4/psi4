@@ -39,6 +39,16 @@ def run_dcft_gradient(name, **kwargs):
     run_dcft(name, **kwargs)
     PsiMod.deriv()
 
+def run_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP2 computation
+
+    """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.scf()
+    return PsiMod.omp2()
+    PsiMod.set_global_option('REFERENCE', oldref)
 
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
