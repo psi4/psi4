@@ -268,6 +268,7 @@ printf("adding %d auxiliary bonds\n", n);
   }
 
   double * g_masses(void) const;
+  double * g_Z(void) const;
   double * g_u_vector(void) const; // reciprocal masses in vector
 
   double * g_geom_array(void) {
@@ -313,6 +314,7 @@ printf("adding %d auxiliary bonds\n", n);
   }
 
   void H_guess(void) const;
+  double **Lindh_guess(void) const;
 
   void forces(void);
   void apply_constraint_forces(bool update_hessian_too = false);
@@ -351,7 +353,7 @@ printf("adding %d auxiliary bonds\n", n);
   void test_B(void);
   void test_derivative_B(void);
 
-  bool cartesian_H_to_internals(void) const;
+  bool cartesian_H_to_internals(double **H_cart) const;
 
   void set_masses(void) {
     for (int f=0; f<fragments.size(); ++f)

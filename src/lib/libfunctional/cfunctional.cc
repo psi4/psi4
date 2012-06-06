@@ -46,7 +46,11 @@ void CFunctional::common_init()
     _b2f_ = 6.1977; 
     _b3f_ = 3.3662;
     _b4f_ = 0.62517;
- 
+
+    // PBE
+    _bet_ = 6.6724550603149205E-02; 
+
+    // B97 
     _B97_ss_gamma_ = 0.0380;
     _B97_os_gamma_ = 0.0031;
 }

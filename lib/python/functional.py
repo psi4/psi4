@@ -127,6 +127,93 @@ def build_pbe_x_functional(name):
     return fun
 
 
+def build_revpbe_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('PBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('revPBE_X')
+    # Tab in, trailing newlines
+    fun.set_description('    Revised PBE GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Zhang et. al., Phys. Rev. Lett., 80(4), 890, 1998\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 1.245)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
+def build_rpbe_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('RPBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('RPBE_X')
+    # Tab in, trailing newlines
+    fun.set_description('    RPBE GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Hammer et. al. Phys. Rev. B, 59(2), 7413-7421, 1999\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
+def build_sogga_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('SOGGA_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('SOGGA_X')
+    # Tab in, trailing newlines
+    fun.set_description('    Second Order GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines
+    fun.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
+
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.55208138)
+    fun.set_parameter('PBE_mu', 10.0 / 81.0)
+
+    # => End User-Customization <= #
+
+    return fun
+
+
 def build_pbesol_x_functional(name):
 
     # Call this first
@@ -577,6 +664,9 @@ functionals = {
         'b88_x'       : build_b88_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
+        'revpbe_x'    : build_revpbe_x_functional,
+        'rpbe_x'      : build_rpbe_x_functional,
+        'sogga_x'     : build_sogga_x_functional,
         'pbesol_x'    : build_pbesol_x_functional,
         'pw91_x'      : build_pw91_x_functional,
         'b97_x'       : build_b97_x_functional,
@@ -948,7 +1038,44 @@ def build_pbe0_superfunctional(name, npoints, deriv):
     sup = build_pbe_superfunctional(name, npoints, deriv)
     sup.set_name('PBE0')
     sup.set_description('    PBE0 Hybrid GGA Exchange-Correlation Functional\n')
+    sup.set_citation('    Adamo et. al., J. Chem. Phys., 110(13), 6158, 1999\n')
     sup.set_x_alpha(0.25)
+    return sup
+
+
+def build_sogga_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('SOGGA')
+    # Tab in, trailing newlines
+    sup.set_description('    Second Order GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    Zhao et. al., J. Chem. Phys., 128(18), 184109, 2008\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('SOGGA_X'))
+
+    C = build_functional('PBE_C')
+    C.set_parameter('bet', 0.037526)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
     return sup
 
 
@@ -1917,8 +2044,8 @@ def build_m05_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3  # Should be reported/implemented to more digits
-    C2 = 4.49267E-3  # Should be reported/implemented to more digits
+    C1 = 3.36116E-3
+    C2 = 4.49267E-3
     K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
     k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
     kp = C1 / (C2 * K0)
@@ -1946,7 +2073,7 @@ def build_m05_superfunctional(name, npoints, deriv):
     # LSDA Correlation type is PW92, no parameters
 
     # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)  # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.0)
     C.set_parameter('B97_os_a1', 3.78569)
     C.set_parameter('B97_os_a2', -14.15261)
@@ -2003,14 +2130,14 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3; # Should be reported/implemented to more digits
-    C2 = 4.49267E-3; # Should be reported/implemented to more digits
+    C1 = 3.36116E-3;
+    C2 = 4.49267E-3;
     K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
     k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
     kp = C1 / (C2 * K0);
     mu = 4.0 * k0 * k0 * kp * C2;
-    X.set_parameter('PBE_kp', kp); # Different effective kp
-    X.set_parameter('PBE_mu', mu); # Different effective mu
+    X.set_parameter('PBE_kp', kp);
+    X.set_parameter('PBE_mu', mu);
 
 # Meta Exchange type is insane mess of w power series expansion
     X.set_parameter('Meta_a0' , 1.0)
@@ -2032,7 +2159,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # LSDA Correlation type is PW92, no parameters
 
     # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0) # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.00000)
     C.set_parameter('B97_os_a1', 1.09297)
     C.set_parameter('B97_os_a2',-3.79171)
@@ -2063,6 +2190,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
 def build_dldf_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2075,7 +2203,7 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # No spaces, keep it short and according to convention
     sup.set_name('dlDF')
     # Tab in, trailing newlines 
-    sup.set_description('    Dispersionless Meta-GGA XC Functional\n')
+    sup.set_description('    Dispersionless Hybrid Meta-GGA XC Functional\n')
     # Tab in, trailing newlines 
     sup.set_citation('    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n')
 
@@ -2087,14 +2215,8 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE
-   # C1 = 3.36116E-3; 
-   # C2 = 4.49267E-3;
-   # K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
-   # k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
-   # kp = C1 / (C2 * K0);
-   # mu = 4.0 * k0 * k0 * kp * C2;
-    kp = 4.8827323
-    mu = 0.3511128
+    kp = 4.8827323 
+    mu = 0.3511128 
     X.set_parameter('PBE_kp', kp);
     X.set_parameter('PBE_mu', mu);
 
@@ -2194,6 +2316,8 @@ superfunctionals = {
         'b88_x'     : build_primitive_superfunctional,
         'b3_x'      : build_primitive_superfunctional,
         'pbe_x'     : build_primitive_superfunctional,
+        'rpbe_x'    : build_primitive_superfunctional,
+        'sogga_x'   : build_primitive_superfunctional,
         'pbesol_x'  : build_primitive_superfunctional,
         'pw91_x'    : build_primitive_superfunctional,
         'ws_x'      : build_ws_x_superfunctional,
@@ -2246,6 +2370,7 @@ superfunctionals = {
         'm05'       : build_m05_superfunctional,
         'm05-2x'    : build_m05_2x_superfunctional,
         'dldf'      : build_dldf_superfunctional,
+        'sogga'     : build_sogga_superfunctional,
     }
 
 

@@ -406,6 +406,7 @@ void export_mints()
             def("nprimitive", &BasisSet::nprimitive, "docstring").
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
+            def("has_puream", &BasisSet::has_puream, "docstring").
             def(self + self);
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
