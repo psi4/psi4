@@ -16,6 +16,8 @@ using namespace psi;
 namespace psi{namespace cepa{
   void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
   long int Position(long int i,long int j);
+  void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2,double*temp,int o);
+  void TransformIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options);
 }}
 
 namespace psi{ namespace cepa{
@@ -154,31 +156,6 @@ void CoupledPair::Initialize(Options &options){
      throw PsiException("ndocc must be larger than nvirt",__FILE__,__LINE__);
   }
 
-  // so->mo tei transformation
-  struct tms total_tmstime;
-  const long clk_tck = sysconf(_SC_CLK_TCK);
-
-  long int i;
-
-  double time_start,user_start,sys_start,time_stop,user_stop,sys_stop;
-
-  // sort integrals and write them to disk
-  times(&total_tmstime);
-  time_start = time(NULL);
-  user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-  sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
-
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt,wfn_->isCIM());
-
-  times(&total_tmstime);
-  time_stop = time(NULL);
-  user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-  sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-
-  fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
-  fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
-
   // orbital energies
   eps = (double*)malloc(nmo*sizeof(double));
   int count=0;
@@ -200,6 +177,17 @@ void CoupledPair::Initialize(Options &options){
   t2_on_disk = false;
 
 }
+
+void CoupledPair::SortIntegrals(){
+  if (options_.get_bool("CEPA_VABCD_DIRECT")){
+     // so->mo tei transformation and out-of-core integral sort
+     TransformIntegrals(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM(),options_);
+  }else{
+     // out-of-core integral sort
+     OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM());
+  }
+}
+
 
 /*===================================================================
 
@@ -479,14 +467,17 @@ void CoupledPair::AllocateMemory(Options&options){
   long int i,o=ndoccact;
   long int v=nvirt;
   long int dim;
+  long int vv = v*v;
+  if (options.get_bool("CEPA_VABCD_DIRECT")) vv = nso*nso;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  available memory =                        %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
   fprintf(outfile,"  minimum memory requirements for %s =    %9.2lf mb\n",cepa_type,
-         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
+         8./1024./1024.*(o*o*v*v+2.*(o*o*vv+o*v)+2.*o*v+2.*v*v+o+v));
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
+
 
   dim = 0;
   if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
@@ -517,15 +508,15 @@ void CoupledPair::AllocateMemory(Options&options){
 
   maxelem = dim;
 
-  double total_memory = 1.*dim+2.*(o*o*v*v+o*v)+1.*o*o*v*v+2.*o*v+2.*v*v;
-  if (t2_on_disk) total_memory = 1.*dim+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v;
+  double total_memory = 1.*dim+2.*(o*o*vv+o*v)+1.*o*o*v*v+2.*o*v+2.*v*v;
+  if (t2_on_disk) total_memory = 1.*dim+2.*(o*o*vv+o*v)+2.*o*v+2.*v*v;
   total_memory *= 8./1024./1024.;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Allocate cpu memory (%9.2lf mb).....",total_memory);
   integrals = (double*)malloc(dim*sizeof(double));
-  tempt     = (double*)malloc((o*o*v*v+o*v)*sizeof(double));
-  tempv     = (double*)malloc((o*o*v*v+o*v)*sizeof(double));
+  tempt     = (double*)malloc((o*o*vv+o*v)*sizeof(double));
+  tempv     = (double*)malloc((o*o*vv+o*v)*sizeof(double));
 
   if (!t2_on_disk) tb = (double*)malloc(o*o*v*v*sizeof(double));
   w1        = (double*)malloc(o*v*sizeof(double));
@@ -536,8 +527,8 @@ void CoupledPair::AllocateMemory(Options&options){
 
   fprintf(outfile,"  Initialize cpu memory..................");
   memset((void*)integrals,'\0',dim*sizeof(double));
-  memset((void*)tempv,'\0',(o*o*v*v+o*v)*sizeof(double));
-  memset((void*)tempt,'\0',(o*o*v*v+o*v)*sizeof(double));
+  memset((void*)tempv,'\0',(o*o*vv+o*v)*sizeof(double));
+  memset((void*)tempt,'\0',(o*o*vv+o*v)*sizeof(double));
   if (!t2_on_disk) memset((void*)tb,'\0',o*o*v*v*sizeof(double));
   memset((void*)w1,'\0',o*v*sizeof(double));
   memset((void*)t1,'\0',o*v*sizeof(double));
@@ -1295,6 +1286,77 @@ void CoupledPair::I2piajk(CepaTaskParams params){
   psio.reset();
 }
 /**
+ *  integral-direct version of (ac|bd) contraction
+ */
+void CoupledPair::Vabcd_so(CepaTaskParams params){
+  long int id,i,j,a,b,o,v;
+  o = ndoccact;
+  v = nvirt;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio_address addr;
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+  }else{
+     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  }
+
+  // transform t(ab,ij) to the SO basis:
+  boost::shared_ptr<Matrix> Ca = wfn_->Ca();
+  double**Ca_pointer = Ca->pointer();
+  double*trans = (double*)malloc(nso*v*sizeof(double));
+  for (int i=0; i<nso; i++){
+      for (int j=0; j<v; j++){
+          trans[i*v+j] = Ca_pointer[i][ndocc+j];
+      }
+  }
+  // transform t2(a_mo,b_mo,i,j) -> t2(a_so,b_mo,i,j)
+  F_DGEMM('n','n',o*o*v,nso,v,1.0,tempt,o*o*v,trans,v,0.0,tempv,o*o*v);
+  // sort t2(a_so,b_mo,i,j) -> t2(b_mo,a_so,j,i)
+  // if we go ahead and swap i & j, we won't need to sort again after this
+  for (int a=0; a<nso; a++){
+      for (int b=0; b<v; b++){
+          for (int i=0; i<o; i++){
+              for (int j=0; j<o; j++){
+                  tempt[b*nso*o*o+a*o*o+j*o+i] = tempv[a*v*o*o+b*o*o+i*o+j];
+              }
+          }
+      }
+  }
+  // transform t2(b_mo,a_so,j,i) -> t2(b_so,a_so,j,i)
+  F_DGEMM('n','n',o*o*nso,nso,v,1.0,tempt,o*o*nso,trans,v,0.0,tempv,o*o*nso);
+
+  // integral-direct contraction.  result is in tempt
+  Vabcd_direct(wfn_->basisset(),nso,tempv,tempt,integrals,o);
+
+  // transform result from so to mo basis:
+  // transform t2(a_so,b_so,i,j) -> t2(a_mo,b_so,i,j)
+  F_DGEMM('n','t',o*o*nso,v,nso,1.0,tempt,o*o*nso,trans,v,0.0,tempv,o*o*nso);
+  // sort t2(a_so,b_mo,i,j) -> t2(b_mo,a_so,j,i)
+  // if we go ahead and swap i & j, we won't need to sort again after this
+  for (int a=0; a<v; a++){
+      for (int b=0; b<nso; b++){
+          for (int i=0; i<o; i++){
+              for (int j=0; j<o; j++){
+                  tempt[b*v*o*o+a*o*o+j*o+i] = tempv[a*nso*o*o+b*o*o+i*o+j];
+              }
+          }
+      }
+  }
+  // transform t2(b_mo,a_so,j,i) -> t2(b_so,a_so,j,i)
+
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  F_DGEMM('n','t',o*o*v,v,nso,1.0,tempt,o*o*v,trans,v,1.0,tempv,o*o*v);
+
+  free(trans);
+
+  //psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
+  psio.reset();
+}
+/**
  *  Use Vabcd1
  */
 void CoupledPair::Vabcd1(CepaTaskParams params){
@@ -1571,11 +1633,15 @@ void CoupledPair::DefineTasks(){
      CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_I2p_abci_refactored_term1;
      CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::CPU_t1_vmeai;
   }
-  CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::Vabcd1;
+  if (options_.get_bool("CEPA_VABCD_DIRECT")){
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::Vabcd_so;
+  }else{
+     CepaTasklist[ncepatasks++].func  = &psi::cepa::CoupledPair::Vabcd1;
 
-  // this is the last diagram that contributes to doubles residual,
-  // so we can keep it in memory rather than writing and rereading
-  CepaTasklist[ncepatasks++].func        = &psi::cepa::CoupledPair::Vabcd2;
+     // this is the last diagram that contributes to doubles residual,
+     // so we can keep it in memory rather than writing and rereading
+     CepaTasklist[ncepatasks++].func        = &psi::cepa::CoupledPair::Vabcd2;
+  }
 }
 
 }} // end of namespace psi
