@@ -90,11 +90,12 @@ void set_params(void)
 //  Opt_params.generate_intcos_only;
     Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
 
-// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE}
+// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE, LINDH}
     s = options.get_str("INTRAFRAG_HESS");
     if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
+    else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
     s = options.get_str("INTERFRAG_HESS");
@@ -297,6 +298,8 @@ void set_params(void)
 
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
+
+  Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
 
   // if steepest-descent, then make much larger default
   if (Opt_params.step_type == OPT_PARAMS::SD && !(options["CONSECUTIVE_BACKSTEPS"].has_changed()))

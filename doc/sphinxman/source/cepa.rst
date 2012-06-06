@@ -19,7 +19,7 @@ Coupled-Pair Methods
 Coupled-pair methods can be viewed as approximations to coupled-cluster (CC) theory or as size-extensive modifications
 of truncated configuration interaction (CI) theory.  The methods have the same complexity as CI
 with single and double excitations (CISD), and solving the CISD or coupled-pair equations requires
-about half the floating point operations required to solve the CC with singles and doubles (CCSD) equations.  CISD,
+fewer floating point operations than solving the CC with singles and doubles (CCSD) equations.  CISD,
 CCSD, and the coupled-pair methods discussed below all scale formally with the sixth power of system size.  For a
 detailed discussion of the properties of various coupled-pair methods, see Ref. [Wennmohs:2008]_\ .
 
@@ -130,6 +130,7 @@ Basic Coupled Pair Keywords
 .. include:: /autodir_options_c/cepa__mp2_scale_os.rst
 .. include:: /autodir_options_c/cepa__mp2_scale_ss.rst
 .. include:: /autodir_options_c/cepa__dipmom.rst
+.. include:: /autodir_options_c/cepa__cepa_vabcd_direct.rst
 
 .. index:: CEPA; advanced-keywords
 

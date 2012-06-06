@@ -139,6 +139,10 @@ class IRC_DATA {
     {
       return steps[steps.size()-1]->g_f_x();
     }
+    double g_line_dist(int index) const
+    {
+      return steps[index]->g_line_dist();
+    }
 
     const IRC_POINT &g_step(int index) const { return *(steps[index]); }
 

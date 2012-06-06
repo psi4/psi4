@@ -18,7 +18,7 @@ friend class Functional;
 **/ 
 public:
     enum LSDA_Type { LSDA_None, PW92}; 
-    enum GGA_Type  { GGA_None, B97}; 
+    enum GGA_Type  { GGA_None, B97, PBE}; 
     enum Meta_Type { Meta_None, B95};
 
 protected:
@@ -57,6 +57,9 @@ protected:
     double _b4f_;
 
     void PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z);
+
+    // PBE
+    double _bet_;
 
     // B97
     double _B97_ss_gamma_;

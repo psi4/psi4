@@ -3,11 +3,42 @@
  * ~~~~~~~~~~~
  *
  * stylesheet for "PSI4" theme for Sphinx.
- * This sphinx theme was based heavily upon the cloud theme.
+ * This Sphinx theme was based heavily upon the "Cloud" theme.
  *
  * :copyright: Copyright 2011 by Assurance Technologies
  * :license: BSD
  *
+ *  The "cloud_sptheme" python package and artwork is
+ *  Copyright (c) 2010-2011 by Assurance Technologies, LLC.
+ *  All rights reserved.
+ *  
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions are
+ *  met:
+ *  
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  
+ *  * Neither the name of Assurance Technologies, nor the names of the
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *  
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ *  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  
  *****************************************************/
 
 @import url("basic.css");
@@ -18,12 +49,14 @@
 
 body
 {
-    font-family: {{ theme_bodyfont }};
-    font-size: 100%;
-    background-color: {{ theme_footerbgcolor }};
-    color: #000;
     margin: 1em 1em 0 1em;
     padding: 0;
+    background: {{ theme_footerbgcolor }};
+    background-attachment: fixed;
+    color: #000;
+    font-family: {{ theme_bodyfont }};
+    font-size: 11pt;
+    line-height: 1em;
 }
 
 /*****************************************************
@@ -33,8 +66,8 @@ body
 div.related
 {
     margin: 0 auto;
-    max-width: {{ theme_docwidth }};
-    background-color: {{ theme_relbarbgcolor }};
+    max-width: {{ theme_max_width }};
+    background: {{ theme_relbarbgcolor }};
     line-height: 30px;
     color: {{ theme_relbartextcolor }};
 }
@@ -64,9 +97,11 @@ div.related a
 
 div.document
 {
+    /* note: relative used by div.sidebartoggle */
+    position: relative;
     margin: 0 auto;
-    max-width: {{ theme_docwidth }};
-    background-color: {{ theme_sidebarbgcolor }};
+    max-width: {{ theme_max_width }};
+    background: {{ theme_sidebarbgcolor }};
 }
 
 div.documentwrapper
@@ -77,16 +112,22 @@ div.documentwrapper
 
 div.bodywrapper
 {
-    margin: 0 0 0 230px;
+    margin: 0 0 0 {{ theme_sidebarwidth }};
 }
+
+{% if theme_collapsiblesidebar|tobool %}
+div.document.collapsed-sidebar div.bodywrapper { margin-left: 0; }
+{% endif %}
 
 div.body
 {
-    min-height: {{ theme_docheight }};
+    min-height: {{ theme_min_height }};
     /* note: this ^ is just a hack to prevent body from being shorter than sidebar */
 
     background-color: {{ theme_bgcolor }};
     border-left: 1px solid {{theme_bodytrimcolor}};
+
+    line-height: 140%;
 
     color: {{ theme_textcolor }};
     padding: 0 20px 30px 20px;
@@ -100,7 +141,16 @@ div.sphinxsidebar
 {
     /* it's nasty sometimes, but looks prettier than letting too-long module names break into document body*/
     overflow: hidden;
+
+    width: {{ theme_sidebarwidth }};
+
+    font-size: 90%;
+    line-height: 125%;
 }
+
+{% if theme_collapsiblesidebar|tobool %}
+div.document.collapsed-sidebar div.sphinxsidebar { display: none; }
+{% endif %}
 
 div.sphinxsidebar h3,
 div.sphinxsidebar h4
@@ -159,9 +209,34 @@ div.sphinxsidebar input
     font-size: 1em;
 }
 
+div#searchbox input[type="submit"]
+{
+   border-radius: 0 0 .7em 0;
+   -webkit-border-radius: 0 0 .7em 0;
+   -moz-border-radius: 0 0 .7em 0;
+}
+
+div.sphinxsidebar input[type="submit"]:hover,
+div.sidebartoggle button:hover
+{
+   background: {{ theme_sidebarhighcolor }};
+   box-shadow: 0 1px 2px rgba(0,0,0,.2);
+   -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+   -moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+}
+
+div.sphinxsidebar input[type="submit"]:active,
+div.sidebartoggle button:active
+{
+   box-shadow: none;
+   -webkit-box-shadow: none;
+   -moz-box-shadow: none;
+}
+
+
 div.sphinxsidebar p.logo
 {
-    margin: 8px 0 0 0;
+    margin: 16px 0 0 0;
     text-align: center;
 }
 
@@ -169,6 +244,56 @@ div.sphinxsidebar .searchtip
 {
     color: {{ theme_sidebartrimcolor }};
 }
+
+/*--------------------------------------------------
+ * collapsible sidebar buttons
+ *--------------------------------------------------*/
+{% if theme_collapsiblesidebar|tobool %}
+
+div.sidebartoggle
+{
+   position: absolute;
+   width: {{ theme_sidebarwidth }};
+   top: 0;
+   left: 0;
+}
+
+div.document.collapsed-sidebar div.sidebartoggle
+{
+ width: auto;
+}
+
+div.sidebartoggle button
+{
+   position: absolute;
+   right: -1px;
+   top: 0;
+
+   margin: 0;
+   padding: 0 6px;
+
+   background: {{ theme_sidebarbgcolor }};
+   border: 1px solid {{ theme_sidebartrimcolor }};
+   border-top: 0;
+   color: {{ theme_sidebartextcolor }};
+
+   border-radius: 0 0 0 .7em;
+   -webkit-border-radius: 0 0 0 .7em;
+   -moz-border-radius: 0 0 0 .7em;
+
+   white-space: nowrap;
+}
+
+div.document.collapsed-sidebar div.sidebartoggle button
+{
+  right: auto;
+  left: 0;
+   border-radius: 0 0 .7em 0;
+   -webkit-border-radius: 0 0 .7em 0;
+   -moz-border-radius: 0 0 .7em 0;
+}
+
+{% endif %}
 
 div.sphinxsidebar {
     {%- if theme_stickysidebar|tobool %}
@@ -187,20 +312,6 @@ div.sphinxsidebar {
     {%- endif %}
 }
 
-{%- if theme_stickysidebar|tobool %}
-/* this is nice, but it it leads to hidden headings when jumping
-   to an anchor */
-/*
-div.related {
-    position: fixed;
-}
-
-div.documentwrapper {
-    margin-top: 30px;
-}
-*/
-{%- endif %}
-
 /*****************************************************
  * page layout - footer
  *****************************************************/
@@ -209,23 +320,48 @@ div.footer
 {
     color: {{ theme_footertextcolor }};
     width: 100%;
-    padding: 9px 0 9px 0;
+    padding: 9px 0;
     text-align: center;
-    font-size: 75%;
+    font-size: 85%;
 }
 
-div.footer a
+div.footer button.link
+{
+ margin: 0 -1px;
+ padding: 0;
+ background: none;
+ border: none;
+ font-size: inherit;
+ font-family: inherit;
+}
+
+div.footer a,
+div.footer button.link
 {
     color: {{ theme_footertextcolor }};
     text-decoration: underline;
+}
+
+div.footer a:hover,
+div.footer button.link:hover
+{
+   color: white;
+}
+
+div.footer + div.footer,
+div.footer + script + div.footer
+{
+    margin-top: -12px;
 }
 
 /*****************************************************
  * adaptive page layout - if too small, hide some things
  *****************************************************/
 
-@media only screen and (max-width: {{ theme_smallwidth }}),
-       only screen and (max-device-width: {{ theme_smallwidth }})
+@media only screen and (max-width: {{ theme_compact_width }}),
+       only screen and (max-width: {{ theme_minimal_width }}),
+       only screen and (max-device-width: {{ theme_minimal_width }}),
+       handheld
 {
     body {
         margin: 0;
@@ -239,10 +375,24 @@ div.footer a
         -webkit-border-radius: 0;
     }
 
+    /* hide extra info */
+    div.admonition.floater { display: none; }
+}
+
+@media only screen and (max-width: {{ theme_minimal_width }}),
+       only screen and (max-device-width: {{ theme_minimal_width }}),
+       handheld
+{
+    /* hide the sidebar */
     div.sphinxsidebar
     {
         display: none;
     }
+
+    {% if theme_collapsiblesidebar|tobool %}
+     /* FIXME: would like to make this work some how, hiding it til it works */
+      div.sidebartoggle { display: none; }
+    {% endif %}
 
     div.bodywrapper
     {
@@ -255,6 +405,18 @@ div.footer a
         display: none;
     }
 
+    /* remove spacing on headers and reduce body padding */
+    body div.body h2, body div.body p1.rubric p2.rubric
+    {
+        border-radius: 0;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+    }
+
+    div.body
+    {
+        padding: 0 10px 30px;
+    }
 }
 
 /*****************************************************
@@ -286,11 +448,21 @@ a:hover
     text-decoration: underline;
 }
 
+a.biglink
+{
+    font-size: 130%;
+}
+
 {% if theme_externalrefs|tobool %}
-a.external:before
+a.external:not(.issue):before
 {
     content: {{ theme_externalicon }};
     padding-right: .1em;
+}
+a.issue:before
+{
+    content: {{ theme_issueicon }};
+    padding-right: .2em;
 }
 {% endif %}
 
@@ -303,154 +475,196 @@ dt:target,
 
     border-radius: 4px;
     -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;    
+    -moz-border-radius: 4px;
 }
 
 /*****************************************************
  * document - header styles
  *****************************************************/
 
+div.body p1.rubric,
+div.body p2.rubric,
 div.body h1,
 div.body h2,
 div.body h3,
 div.body h4,
 div.body h5,
-div.body h6,
-div.body p2.rubric
+div.body h6
 {
-    margin: 1em 0 -.25em;
+    margin: 1em 0 -.25em 0;
     padding: 0;
 
     color: {{ theme_headtextcolor }};
-
-    font-family: {{ theme_head2font }};
-    /*font-family: {{ theme_headfont }};*/
-    font-weight: normal;
-    text-shadow: 1px 1px 0 rgba(0,0,0,.1);
-}
-
-div.body p1.rubric
-{
-    margin: 1em 0 -.25em;
-    padding: 0;
-
-    color: {{ theme_headtextcolor }};
+    /*text-shadow: 1px 1px 1px rgba(0,0,0,.1);*/
 
     font-family: {{ theme_headfont }};
     font-weight: normal;
-    text-shadow: 1px 1px 0 rgba(0,0,0,.1);
+    line-height: 1em;
 }
+
+
 
 div.body h1,
 div.body p1.rubric
 {
      margin: 1em -10px 0 -10px;
-     padding: 10px;
-     
+     padding: 14px 10px 12px 15px;
+     text-align: left;
+
      background: {{ theme_sectionbgcolor }};
      border: 1px solid {{ theme_sectiontrimcolor }};
      border-width: 0 1px 1px 0;
-     
+
      border-radius: 10px;
      -moz-border-radius: 10px;
      -webkit-border-radius: 10px;
-     
+
      font-size: 160%;
      color: {{ theme_sectiontextcolor }};
-     text-shadow: 1px 1px 0 rgba(0,0,0,.1);
+     /*text-shadow: 1px 1px 0 rgba(0,0,0,.1);*/
 }
 
 div.body p1.rubric
 {
-     background: {{ theme_rubricbgcolor }}; 
+     background: {{ theme_rubricbgcolor }};
 }
 
-div.body h2,
-div.body p2.rubric
+div.body h1 
 {
-     /*margin: 1em -10px 0 50px;*/
-     margin: 1em -10px 0 -10px;
-     padding: 5px;
-     
-     background: {{ theme_sectionbgcolor2 }};
-     border: 1px solid {{ theme_sectiontrimcolor }};
-     border-width: 0 1px 1px 0;
-     
-     border-radius: 10px;
-     -moz-border-radius: 10px;
-     -webkit-border-radius: 10px;
-     
-     font-size: 125%;
-     color: {{ theme_sectiontextcolor2 }};
+    font-size: 160%;
 }
 
-div.body p2.rubric
-{
-     background: {{ theme_rubricbgcolor }}; 
-}
-
+div.body h2, div.body p2.rubric { font-size: 125%; }
 div.body h3 { font-size: 120%; }
 div.body h4 { font-size: 110%; }
 div.body h5 { font-size: 105%; }
 div.body h6 { font-size: 100%; }
 
+div.body h2,
+div.body p2.rubric,
+div.section.emphasized > h3
+{
+    margin: 1em -10px 0;
+    padding: 8px 5px 6px 15px;
+
+    background: {{ theme_sectionbgcolor2 }};
+    border: 1px solid {{ theme_sectiontrimcolor }};
+    border-width: 0 1px 1px 0;
+
+    border-radius: 10px;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+
+    font-style: normal;
+    color: {{ theme_sectiontextcolor }};
+    text-shadow: 2px 2px 1px rgba(0,0,0,.1);
+}
+
+div.body p2.rubric,
+div.section.emphasized > h3
+{
+     background: {{ theme_rubric2bgcolor }};
+}
+
+div.section.emphasized > h3 { margin-left: 0; margin-right: 0; }
+
 a.headerlink
 {
     color: {{ theme_headlinkcolor }};
     font-size: 0.8em;
-    padding: 0 4px 0 4px;
+    margin: 0 0 0 1px;
+    padding: 0 5px 0 4px;
     text-decoration: none;
+    border-radius: 5px;
 }
 
 a.headerlink:hover
 {
     background-color: {{ theme_headlinkcolor }};
     color: white;
+
+    box-shadow: 2px 2px 2px rgba(0,0,0,.2);
+    -webkit-box-shadow: 2px 2px 2px rgba(0,0,0,.2);
+    -moz-box-shadow: 2px 2px 2px rgba(0,0,0,.2);
 }
 
 /*****************************************************
  * document - toggleable h1/h2 sections
  *****************************************************/
 
+.html-toggle-button
+{
+    position: relative;
+}
+
+.html-toggle-button:hover
+{
+    /* give a little bit of hint that this is clickable */
+    cursor: pointer;
+    box-shadow: 2px 2px 2px {{ theme_headlinkcolor }};
+    -moz-box-shadow: 2px 2px 2px {{ theme_headlinkcolor }};
+    -webkit-box-shadow: 2px 2px 2px {{ theme_headlinkcolor }};
+}
+
+div.body div.section:not(.emphasized) > h3.html-toggle-button:hover,
+div.body h4.html-toggle-button:hover
+{
+    background: {{ theme_rubricbgcolor }};
+    box-shadow: 0 0  2px {{ theme_headlinkcolor }};
+    -moz-box-shadow: 0 0 2px {{ theme_headlinkcolor }};
+    -webkit-box-shadow: 0 0 2px {{ theme_headlinkcolor }};
+}
+
 .html-toggle.collapsed > .html-toggle-button
 {
-    margin-bottom: .5em;
-    cursor: pointer;
+    margin-bottom: 1em;
 }
 
 .html-toggle.collapsed > .html-toggle-button:after
 {
-    content: "[show section]";
-    color: {{ theme_linkcolor }};
-    font-size: 70%;
+    content: "[+ show section]";
+    margin: 0;
+    padding: .15em 0 0 0;
+    text-shadow: none;
+    color: inherit;
+    font-size: 65%;
+    font-style: italic;
+    font-weight: bold;
 }
 
 .html-toggle.expanded > .html-toggle-button:after
 {
-    content: "[hide section]";
-    color: {{ theme_linkcolor }};
-    font-size: 70%;
+    content: "[- hide section]";
+    margin: 0;
+    padding: .15em 0 0 0;
+    text-shadow: none;
+    color: inherit;
+    font-size: 65%;
+    font-style: italic;
+    font-weight: bold;
 }
+
+.html-toggle-button:hover a.headerlink:not(:hover) { opacity: 0; }
 
 /*****************************************************
  * document - admonitions
  *****************************************************/
 
-div.admonition
+div.admonition, p.deprecated
 {
     background: #f2f2f2;
     border: 1px solid rgba(0,0,0,.05);
     border-width: 0 1px 1px 0;
     margin: 1em 0;
     padding: .5em;
-    border-radius: 10px 0 10px 0;
-    -webkit-border-radius: 10px 0 10px 0;
-    -moz-border-radius: 10px 0 10px 0;
+    border-radius: 0 10px 0 10px;
+    -webkit-border-radius: 0 10px 0 10px;
+    -moz-border-radius: 0 10px 0 10px;
 }
 
-div.note, div.seealso, div.warning, div.admonition.todo, div.admonition.caution, div.admonition.nyi
+div.note, div.seealso, div.warning, div.admonition-todo, div.admonition.caution
 {
-    background-position: 8px center;
+    background-position: 8px 8px;
     background-repeat: no-repeat;
     padding-left: 38px;
 }
@@ -461,10 +675,9 @@ div.seealso { background-color: #FFF7E0; background-image: url(icon-seealso.png)
 div.topic { background-color: #eee; }
 div.warning { background-color: #ffe4e4; background-image: url(icon-warning.png); }
 div.admonition.todo { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
-
 div.admonition.caution { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
 
-div.admonition.nyi { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
+p.deprecated { background-color: #fbece0; }
 
 div.admonition p,
 div.admonition pre,
@@ -472,6 +685,12 @@ div.admonition ul,
 div.admonition ol
 {
     margin-bottom: 5px;
+}
+
+div.admonition.floater
+{
+    float: right;
+    max-width: 40%;
 }
 
 /* next 3 rules merge the title into the first paragraph */
@@ -506,26 +725,24 @@ dl div.admonition
  * document - misc body styles
  *****************************************************/
 
+div.body hr {
+    margin: 0 10px;
+    background: none;
+    border: 1px dashed {{theme_sidebartrimcolor}};
+    border-width: 1px 0 0 0;
+}
+
 div.body p,
 div.body dd,
 div.body li
 {
     text-align: justify;
-    line-height: 140%;
+    line-height: 133%;
 }
 
-/*dl.function,
-dl.method,
-dl.attribute,
-dl.class,
-dl.exception,
-dl.data */
-
-dl
-{
-    margin-bottom: 1.5em;
-}
-
+    /*------------------------------------
+     * footnotes
+     *------------------------------------*/
 
 a.footnote-reference
 {
@@ -534,12 +751,16 @@ a.footnote-reference
     top: -.75em;
 }
 
-table.docutils.footnote
-{
-    margin: 1em 0 0 1em;
-}
+table.docutils.footnote {  margin: 1em 0 0 1em; }
 
- /* join separate ULs together */
+    /*------------------------------------
+     * list & definition lists
+     *------------------------------------*/
+
+dl { margin-bottom: 1.5em; }
+li > dl:only-child { margin-bottom: 0; }
+
+/* join separate ULs together */
 ul + ul,
 ul + div > ul:only-child,
 div.toctree-wrapper + ul
@@ -547,71 +768,99 @@ div.toctree-wrapper + ul
  margin-top: -1em;
 }
 
-table.html-plain-table
-{
-    border: 0;
-}
+dd ol {  margin-bottom: 10px; }
 
-table.docutils.html-plain-table td
-{
-    border: 0;
-}
+.field-list p { margin-bottom: 16px; }
 
-h2 + table.docutils
-{
-    margin-top: 1em;
-}
+    /*------------------------------------
+     * table styles
+     *------------------------------------*/
+
+h2 + table.docutils { margin-top: 1em; }
+
+table.docutils th { border: 0; padding: 5px 10px 5px 5px; }
+table.docutils td { border: 0; padding: 5px; }
+table.docutils tr.row-odd th { background: rgba(0,0,0,.1); }
+table.docutils tr.row-odd td { background: rgba(0,0,0,.05); }
+
+table.docutils.html-plain-table tr.row-odd > * { background: none; }
 
 /*****************************************************
  * document - quoted text
  *****************************************************/
 
-div.highlight .c
+div.highlight
 {
-    font-size: 90%;
+    background: none;
 }
 
-pre
+div.highlight pre,
+div.highlight-python pre
 {
-    padding: 5px;
+    padding: 10px;
 
     background-color: {{ theme_codebgcolor }};
-    border: 1px solid #ac9;
-    border-width: 1px 1px 1px 4px;
+    border: 1px solid {{ theme_codetrimcolor }};
+    border-width: 0 4px;
+    border-radius: 8px;
+    -moz-border-radius: 8px;
+    -webkit-border-radius: 8px;
+
+    font-family: {{ theme_codeblockfont }};
+    font-size: 9pt;
+    line-height: 133%;
 
     color: {{ theme_codetextcolor }};
-    line-height: 120%;
+}
+
+table.highlighttable td { padding: 0; }
+table.highlighttable td.code { width: 100%; }
+table.highlighttable div.linenodiv pre
+{
+    background: none;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    padding-right: .5em;
+    opacity: 0.3;
 }
 
 tt
 {
-    font-size: 0.95em;
+    font-family: {{ theme_codeblockfont }};
+    font-size: 90%;
 }
 
 tt.literal
 {
     background-color: {{ theme_quotebgcolor }};
     border: 1px solid {{ theme_quotetrimcolor }};
-    padding: 1px 2px;
-    margin: 0 1px;
+    padding: 0px 4px;
+    margin: 1px;
 
     border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
 }
 
+tt.descname { font-size: 100%; }
+
+p tt.literal { white-space: nowrap; }
+
 tt.samp.literal > em
 {
     font-family: {{ theme_codevarfont }};
-    font-size: .8em;
     padding: 0 1px;
 }
+
+tt.samp.literal > em:before { content: "<"; }
+tt.samp.literal > em:after { content: ">"; }
 
 h1 tt.literal
 {
     background-color: inherit;
     border: 0;
-    font-weight: bold;
+    font-size: 80%;
 }
 
 h1 tt.samp.literal > em
@@ -709,7 +958,7 @@ table.indextable td > dl > dd > dl
 }
 
 /*#################################################################
-    unorganized code
+    unorganized bits
   #################################################################*/
 
 
@@ -746,6 +995,12 @@ td.field-body > p.first
 {
     margin-bottom: 1em;
 }
+
+td.field-body > p.first:only-child
+{
+    margin: 0; /* work around Chrome bug */
+}
+
 
 td.field-body > ul.first.simple > li > em,
 td.field-body > em

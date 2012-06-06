@@ -166,7 +166,8 @@ class FRAG {
   void print_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
   double ** H_guess(void);
-  double Lindh_rho(int A, int B); // function to help with Lindh guess hessian
+  double Lindh_rho(int A, int B, double RAB) const; // function to help with Lindh guess hessian
+  double **Lindh_guess(void);
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;
 
