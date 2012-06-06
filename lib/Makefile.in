@@ -28,7 +28,8 @@ INSTALL_DATA = @INSTALL_DATA@
 install:
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/basis
-	$(INSTALL_DATA) $(srcdir)/basis/* $(DESTDIR)$(pkgdatadir)/basis
+	$(INSTALL_DATA) $(srcdir)/basis/*.gbs $(DESTDIR)$(pkgdatadir)/basis
+	$(INSTALL_DATA) $(srcdir)/basis/NOTES $(DESTDIR)$(pkgdatadir)/basis
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/databases
 	$(INSTALL_DATA) $(srcdir)/databases/* $(DESTDIR)$(pkgdatadir)/databases
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/grids
