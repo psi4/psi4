@@ -40,6 +40,16 @@ def run_dcft_gradient(name, **kwargs):
     run_dcft(name, **kwargs)
     PsiMod.deriv()
 
+def run_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP2 computation
+
+    """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.scf()
+    return PsiMod.omp2()
+    PsiMod.set_global_option('REFERENCE', oldref)
 
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -1320,8 +1330,8 @@ def run_cepa(name, **kwargs):
        molecule = PsiMod.get_active_molecule()
        molecule.update_geometry()
        molecule.reset_point_group('c1')
-       molecule.fix_orientation(1)
-       molecule.update_geometry()
+       #molecule.fix_orientation(1)
+       #molecule.update_geometry()
 
     # throw an exception for open-shells
     if (PsiMod.get_global_option('reference') != 'RHF' ):
