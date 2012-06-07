@@ -44,7 +44,7 @@ enum diagonalize_order {
 
 /*! \ingroup MINTS
  *  \class Matrix
- *  \brief Makes using matrices just a little earlier.
+ *  \brief Makes using matrices just a little easier.
  *
  * Using a matrix factory makes creating these a breeze.
  */
