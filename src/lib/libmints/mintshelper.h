@@ -118,11 +118,11 @@ public:
     SharedMatrix ao_alchemical_potential();
     /// SO Alchemical Potential
     SharedMatrix so_alchemical_potential();
-    /// AO Overlap Integrals
+    /// SO Overlap Integrals
     SharedMatrix so_overlap();
-    /// AO Kinetic Integrals
+    /// SO Kinetic Integrals
     SharedMatrix so_kinetic();
-    /// AO Potential Integrals
+    /// SO Potential Integrals
     SharedMatrix so_potential();
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix > so_dipole();
