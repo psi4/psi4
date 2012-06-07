@@ -247,12 +247,6 @@ dft1-alt:     DFT Functional Test
 dft2:         DFT Functional Test
 
 
-docs_dft:     This test is used to construct the documentation; it is not suitable for emulation by users.
-
-
-docs_psimod:  This test is used to construct the documentation; it is not suitable for emulation by users.
-
-
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
@@ -404,9 +398,6 @@ pywrap_cbs1:  Various basis set extrapolation tests
 
 
 pywrap_db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
-
-
-pywrap_db2:   Database calculation with psi4-generated input. Should not be used as a model input file but as a canary to avoid breaking database/input parser dependencies.
 
 
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
