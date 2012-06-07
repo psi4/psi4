@@ -111,6 +111,8 @@ struct OPT_PARAMS {
   // maximum number of allowed iterations in backtransformation to cartesian coordinates
   double bt_max_iter;
 
+  double geom_maxiter;
+
   // rms and max change in cartesian coordinates in backtransformation
   double bt_dx_conv;
 

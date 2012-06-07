@@ -265,6 +265,10 @@ OptReturnType optking(void) {
   rem_write((int) converged, REM_GEOM_OPT_CONVERGED); // tell QChem if converged (return value ignored for now)
   rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT_CYCLE); // tell QChem current iteration number
 #endif
+
+  if(Opt_params.opt_type == OPT_PARAMS::IRC && p_Opt_data->g_iteration() == Opt_params.geom_maxiter)
+    p_irc_data->progress_report(*mol1);
+
   if ( converged ) {
     if (Opt_params.opt_type == OPT_PARAMS::IRC)
     {
