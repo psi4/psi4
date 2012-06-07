@@ -7,7 +7,7 @@ LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
 PSITARGET = $(top_objdir)/lib/libPSI_cepa.a
 
-CXXSRC = blas.cc cepa.cc coupledpair.cc sort.cc opdm.cc transformintegrals.cc vabcd_direct.cc
+CXXSRC = blas.cc cepa.cc coupledpair.cc sortintegrals.cc opdm.cc transformintegrals.cc vabcd_direct.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
