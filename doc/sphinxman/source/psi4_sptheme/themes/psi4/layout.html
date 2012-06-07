@@ -12,16 +12,22 @@
 
     roottarget - optional target for root link (default to toc)
     logotarget - optional target for logo link (defaults to root target)
+    googleanalytics_id - if set, enabled google analytics snippet & footer
+    googleanalytics_path - optional subpatch for GA cookie
+    collapsiblesidebar - enable collapsible sidebar support
 #}
 
 {% extends "basic/layout.html" %}
  
-{% block extrahead %} 
-    <script type="text/javascript" src="{{ pathto('_static/copybutton.js', 1) }}"></script> 
-{% endblock %} 
- 
-{# add script file to instrument collapsable sections #}
-{% set script_files = script_files + ['_static/toggle_sections.js'] %}
+{% set reldelim2 = reldim2 is not defined and ' &nbsp; &nbsp;' or reldelim2 %}
+
+{# add script file to instrument collapsable sections  and other features #}
+{% set script_files = script_files + ['_static/jquery.cookie.js',
+                                      '_static/toggle_sections.js'] %}
+{% if theme_collapsiblesidebar|tobool %}
+{% set script_files = script_files + ['_static/toggle_sidebar.js'] %}
+{% endif %}
+{% set script_files = script_files + ['_static/toggle_codeprompt.js'] %}
 
 {# add font stylesheets #}
 {% set css_files = css_files + [theme_fontcssurl] %}
@@ -54,3 +60,42 @@
         {{ super() }}
     </div>
 {% endblock %}
+
+{% block extrahead -%}
+        {{ super() }}
+        {%- if theme_googleanalytics_id -%}
+<script type="text/javascript">
+var ga_enabled = !$.cookie('disable-ga');
+if(ga_enabled){
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', '{{ theme_googleanalytics_id }}']);
+  _gaq.push(['_setCookiePath', '{{ theme_googleanalytics_path }}']);
+  _gaq.push(['_setDetectFlash', false]);
+  _gaq.push(['_trackPageview']);
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+}
+</script>
+        {%- endif %}
+{%- endblock %}
+
+{% block footer -%}
+    {{ super() }}
+    {%- if theme_googleanalytics_id -%}
+<script type="text/javascript">
+    if(ga_enabled){
+        document.write("<div class=\"footer\">This page uses <a href=\"http://analytics.google.com\">Google Analytics</a> to collect statistics. ");
+        document.write("Click <button title=\"set cookie to disable analytics for this site\" class=\"link\" onclick=\"$.cookie('disable-ga', 'true', {expires: 3650, path: '{{ theme_googleanalytics_path }}'}); window.location.reload(); return false; \">here</button> to disable analytics for this site.");
+        document.write("</div>");
+    }else{
+        document.write("<div class=\"footer\">Google Analytics has been disabled. ");
+        document.write("Click <button title=\"set cookie to re-enable analytics for this site\" class=\"link\" onclick=\"$.cookie('disable-ga', null, {path: '{{ theme_googleanalytics_path }}'}); window.location.reload(); return false; \">here</button> to re-enable analytics for this site.");
+    };
+</script>
+    {%- endif %}
+    <!-- cloud_sptheme 1.3 -->
+{%- endblock %}
+
