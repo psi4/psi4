@@ -1332,6 +1332,12 @@ def run_cepa(name, **kwargs):
        molecule.reset_point_group('c1')
        #molecule.fix_orientation(1)
        #molecule.update_geometry()
+ 
+    # override symmetry until i figure out the difference between transqt2
+    # and libtrans when using symmetry.
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
 
     # throw an exception for open-shells
     if (PsiMod.get_global_option('reference') != 'RHF' ):
@@ -1371,10 +1377,11 @@ def run_cepa(name, **kwargs):
     if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
        mints = PsiMod.MintsHelper()
        mints.integrals()
-
+   
     # only call transqt2() if (ac|bd) is not integral direct
-    if (PsiMod.get_global_option('cepa_vabcd_direct') == False):
-       PsiMod.transqt2()
+    #if (PsiMod.get_global_option('cepa_vabcd_direct') == False):
+    # never call transqt2 since the switch to libtrans
+    #   PsiMod.transqt2()
 
     PsiMod.cepa()
 
