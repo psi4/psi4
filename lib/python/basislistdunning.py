@@ -1,7 +1,8 @@
 """Module (auto-generated from make_dunning.pl script)
-with commands building :py:class:`BasisFamily` objects that
-encode the Dunning basis set orbital definitions in NOTES
-and fitting bases designed for those orbital bases.
+with commands building :py:class:`~basislist.BasisFamily` objects that
+encode the Dunning basis set orbital definitions in
+:source:`lib/basis/NOTES` and fitting bases designed for those 
+orbital bases.
 
 """
 from basislist import *
