@@ -19,7 +19,7 @@ class CoupledPair{
     /*
      * options
      */
-    Options options_;
+    Options & options_;
 
     CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
     ~CoupledPair();
@@ -29,14 +29,6 @@ class CoupledPair{
       * needs to be read from disk.  Default false.
       */
     bool t2_on_disk;
-
-    /**
-      * Sort integrals.  If CEPA_VABCD_DIRECT is set to true,
-      * the AO-MO integral transformation will be performed
-      * here, and the (vv|vv) integrals will not be sorted
-      * (or transformed).
-     */
-    void SortIntegrals();
 
     /**
       * Define CEPA Tasks.  most diagrams are designated as
@@ -73,11 +65,6 @@ class CoupledPair{
     PsiReturnType CEPAIterations(Options&options);
   
     void WriteBanner(Options&options);
-
-    /**
-      * grab parameters, transform/sort integrals
-     */
-    void Initialize(Options &options);
 
     /**
       * allocate memory, define tiling of gigantic diragrams

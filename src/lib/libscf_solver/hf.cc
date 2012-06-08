@@ -253,6 +253,8 @@ void HF::common_init()
                 perturb_ = dipole_y;
             else if (perturb_with == "DIPOLE_Z")
                 perturb_ = dipole_z;
+            else if (perturb_with == "EMBPOT")
+                perturb_ = embpot;
             else {
                 if (Communicator::world->me() == 0) {
                     fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");
@@ -336,15 +338,19 @@ void HF::integrals()
             pk_integrals_.reset();
         }
     }else if (scf_type_ == "DF"){
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        mints->one_electron_integrals();
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
-        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+//        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
         for (int i=0; i<Communicator::world->nthread(); ++i)
-             aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral->eri()));
-        eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
+             aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
+        eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
     }
 
     // TODO: Relax the if statement. 
@@ -551,16 +557,12 @@ void HF::print_preiterations()
 
 void HF::form_H()
 {
-    T_ = SharedMatrix(factory_->create_matrix("Kinetic Integrals"));
-    V_ = SharedMatrix(factory_->create_matrix("Potential Integrals"));
+    T_ = SharedMatrix(factory_->create_matrix(PSIF_SO_T));
+    V_ = SharedMatrix(factory_->create_matrix(PSIF_SO_V));
 
-    // Integral factory
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    boost::shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
-    boost::shared_ptr<OneBodySOInt>    soV(integral->so_potential());
-
-    soT->compute(T_);
-    soV->compute(V_);
+    // Assumes these have already been created and stored
+    T_->load(psio_, PSIF_OEI);
+    V_->load(psio_, PSIF_OEI);
 
     if (debug_ > 2)
         T_->print(outfile);
@@ -569,11 +571,10 @@ void HF::form_H()
         V_->print(outfile);
 
     if (perturb_h_) {
-        boost::shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        OperatorSymmetry msymm(1, molecule_, ifact, factory_);
+        OperatorSymmetry msymm(1, molecule_, integral_, factory_);
         vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
 
-        OneBodySOInt *so_dipole = ifact->so_dipole();
+        OneBodySOInt *so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
         if (perturb_ == dipole_x && (Communicator::world->me() == 0)) {
@@ -1275,6 +1276,8 @@ double HF::compute_energy()
         print_preiterations();
 
     if(attempt_number_ == 1){
+        integrals();
+
         timer_on("Form H");
         form_H(); //Core Hamiltonian
         timer_off("Form H");
@@ -1287,7 +1290,6 @@ double HF::compute_energy()
         guess(); // Guess
         timer_off("Guess");
 
-        integrals();
     }else{
         // We're reading the orbitals from the previous set of iterations.
         form_D();
