@@ -100,8 +100,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libchkpt
-	$(INSTALL_INCLUDE) $^ $(incdir)/libchkpt
+	$(MKDIRS) $(DESTDIR)$(incdir)/libchkpt
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libchkpt
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
