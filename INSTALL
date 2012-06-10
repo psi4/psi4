@@ -559,15 +559,12 @@ BLAS and LAPACK recommendations when building PSI4:
 
 (1) It is NOT wise to use the stock BLAS library provided with many
     Linux distributions like RedHat.  This library is usually just the
-    netlib distribution and is completely unoptimized.  PSI4's performance
-    will suffer if you choose this route.  The choice of LAPACK is less
-    critical, and so the unoptimized netlib distribution is acceptable.
-    If you do choose to use the RedHat/Fedora stock BLAS and LAPACK, be
-    aware that some RPMs do not make the correct symbolic links.  
-    For example, you may have ``/usr/lib/libblas.so.3.1.0`` but not
-    ``/usr/lib/libblas.so``.  If this happens, create the link as, e.g.,
-    ``ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so``.  You
-    may need to do similarly for lapack.
+    netlib distribution and is completely unoptimized. PSI4's
+    performance will suffer if you choose this route. The choice of
+    LAPACK is less critical, and so the unoptimized netlib
+    distribution is acceptable.  If you do choose to use the
+    RedHat/Fedora stock BLAS and LAPACK, make sure that the blas-devel
+    and lapack-devel packages are installed.
   
 
 (2) Perhaps the best and simplest choice, if you have it available,
