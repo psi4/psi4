@@ -558,26 +558,29 @@ involve these libraries.  Users may therefore wish to consider the following
 BLAS and LAPACK recommendations when building PSI4:
 
 (1) It is NOT wise to use the stock BLAS library provided with many
-    Linux distributions like RedHat.  This library is usually just the
+    Linux distributions like RedHat. This library is usually just the
     netlib distribution and is completely unoptimized. PSI4's
-    performance will suffer if you choose this route. The choice of
-    LAPACK is less critical, and so the unoptimized netlib
-    distribution is acceptable.  If you do choose to use the
+    performance will suffer if you choose this route. 
+
+    The choice of LAPACK is less critical, and so the unoptimized
+    netlib distribution is acceptable.  If you do choose to use the
     RedHat/Fedora stock BLAS and LAPACK, make sure that the blas-devel
     and lapack-devel packages are installed.
-  
 
-(2) Perhaps the best and simplest choice, if you have it available,
-    is Intel's MKL library, which includes BLAS and LAPACK (note: use
+(2) Perhaps the best choice, if you have it available, is
+    Intel's MKL library, which includes BLAS and LAPACK (note: use
     version 11 or later, we had difficulty with version 10 for very
     large coupled-cluster computations).  MKL is efficient and works
-    well in threaded mode.  Other alternatives include Kazushige Goto's
-    hand-optimized BLAS (http://www.tacc.utexas.edu/resources/software/)
-    and ATLAS (http://math-atlas.sourceforge.net/).  These work well on
-    nearly every achitecture to which the PSI4 developers have access,
-    though we have identified at least one case in which the Goto libraries
-    yielded faulty DGEMM calls.  On Mac OS X systems, the vecLib package
-    that comes with Xcode works well.
+    well in threaded mode.
+
+    Otherwise, the simplest choice is to use ATLAS
+    (http://math-atlas.sourceforge.net/), which is readily available
+    on all Linux distributions. Another alternative is OpenBLAS
+    (https://github.com/xianyi/OpenBLAS, formerly GotoBLAS). These
+    work well on nearly every achitecture to which the PSI4 developers
+    have access, though we have identified at least one case in which
+    the Goto libraries yielded faulty DGEMM calls.  On Mac OS X
+    systems, the vecLib package that comes with Xcode works well.
 
 .. _`sec:install_IV_3`:
 
@@ -695,14 +698,6 @@ V. Miscellaneous Architecture-Specific Notes
 
   (1) Intel compilers: We had trouble with icpc 12.0.x.  Use 12.1 or
       later.
-
-  (2) Some versions of RedHat/Fedora Core RPM packages for the 
-      BLAS and LAPACK libraries fail to make all the required symlinks.  
-      For example, you may have ``/usr/lib/libblas.so.3.1.0`` but not
-      ``/usr/lib/libblas.so``.  If this happens, create the link as, e.g.,
-      ``ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so``.  You
-      may need to do something similar for LAPACK.
-
 
 .. _`sec:install_VI`:
 
