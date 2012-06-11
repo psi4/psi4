@@ -704,13 +704,6 @@ V. Miscellaneous Architecture-Specific Notes
 VI. Common Problems with PSI Compilation
 ----------------------------------------
 
-* Compilation dies in the integrals code when compiling with the -j flag
-
-  You can compile PSI with the -j flag to compile with multiple threads (e.g.,
-  ``-j2``). The integrals code is not safe for this and will die. This is not a
-  problem, just type ``make`` again, and compilation will resume. Once the
-  integrals are compiled, this shouldn't be a problem again. 
-
 * No rule to make target foo.h, needed by bar.d. Stop.
 
   This commonly happens after pulling updates from the repository. It happens
