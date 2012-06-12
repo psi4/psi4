@@ -40,7 +40,7 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
   fprintf(outfile,"\n");
   fprintf(outfile, "        **********************************************************\n");
   fprintf(outfile, "        *                                                        *\n");
-  fprintf(outfile, "        *                   CCSD Integral Sort                   *\n");
+  fprintf(outfile, "        *               Coupled Pair Integral Sort               *\n");
   fprintf(outfile, "        *                                                        *\n");
   fprintf(outfile, "        **********************************************************\n");
   fprintf(outfile,"\n");
@@ -856,7 +856,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -892,7 +892,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -928,7 +928,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -964,7 +964,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1006,7 +1006,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1042,7 +1042,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1078,7 +1078,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1114,7 +1114,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if ((b<=a && d<=c) || (a<=b && c<=d)){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){

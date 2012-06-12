@@ -163,7 +163,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
                     int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
                     size_t PQ = INDEX(P,Q);
-                    if( (P < Q) && bra_sym) continue;
+                    // dpd is smart enough to index only unique pairs in the bra
+                    // ( K.params->roworb contains no redundancies ), so there is
+                    // no need to skip any pq pairs when writing IWL
+                    //if( (P < Q) && bra_sym) continue;
                     for(int rs=0; rs < K.params->coltot[h]; rs++) {
                         int R = aIndex3[K.params->colorb[h][rs][0]];
                         int S = aIndex4[K.params->colorb[h][rs][1]];
@@ -281,7 +284,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     if(useIWL_){
                         int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
                         int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        if( (P < Q) && bra_sym) continue;
+                        // dpd is smart enough to index only unique pairs in the bra
+                        // ( K.params->roworb contains no redundancies ), so there is
+                        // no need to skip any pq pairs when writing IWL
+                        //if( (P < Q) && bra_sym) continue;
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
                             int R = bIndex3[K.params->colorb[h][rs][0]];
                             int S = bIndex4[K.params->colorb[h][rs][1]];
@@ -400,7 +406,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     if(useIWL_){
                         int P = bIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
                         int Q = bIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        if( (P < Q) && bra_sym) continue;
+                        // dpd is smart enough to index only unique pairs in the bra
+                        // ( K.params->roworb contains no redundancies ), so there is
+                        // no need to skip any pq pairs when writing IWL
+                        //if( (P < Q) && bra_sym) continue;
                         size_t PQ = INDEX(P,Q);
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
                             int R = bIndex3[K.params->colorb[h][rs][0]];
