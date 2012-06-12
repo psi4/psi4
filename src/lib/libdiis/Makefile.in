@@ -17,8 +17,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libdiis
-	$(INSTALL_INCLUDE) $^ $(incdir)/libdiis
+	$(MKDIRS) $(DESTDIR)$(incdir)/libdiis
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libdiis
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)

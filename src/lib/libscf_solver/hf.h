@@ -99,7 +99,7 @@ protected:
     /// How big of a perturbation
     double lambda_;
     /// With what...
-    enum perturb { nothing, dipole_x, dipole_y, dipole_z, embpot };
+    enum perturb { nothing, dipole_x, dipole_y, dipole_z, embpot, sphere };
     perturb perturb_;
 
     /// The value below which integrals are neglected

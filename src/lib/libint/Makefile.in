@@ -9,6 +9,8 @@ TEMP_DIR = ${SCRATCH}/libint
 
 .PHONY: default install all
 .PHONY: clean oclean iclean dclean target_clean
+.NOTPARALLEL: default install all
+.NOTPARALLEL: clean oclean iclean dclean target_clean
 
 default:: $(PSITARGET) $(TARGET_HEADERS)
 
