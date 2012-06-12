@@ -178,10 +178,14 @@ int py_psi_deriv()
     return deriv::deriv(Process::environment.options);
 }
 
-int py_psi_omp2()
+double py_psi_omp2()
 {
     py_psi_prepare_options_for_module("OMP2");
-    return omp2wave::omp2wave(Process::environment.options);
+    if (omp2wave::omp2wave(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 int py_psi_libfock()

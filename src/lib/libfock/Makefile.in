@@ -13,8 +13,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libfock
-	$(INSTALL_INCLUDE) $^ $(incdir)/libfock
+	$(MKDIRS) $(DESTDIR)$(incdir)/libfock
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libfock
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)

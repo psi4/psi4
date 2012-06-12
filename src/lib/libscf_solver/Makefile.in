@@ -13,8 +13,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libscf_solver
-	$(INSTALL_INCLUDE) $^ $(incdir)/libscf_solver
+	$(MKDIRS) $(DESTDIR)$(incdir)/libscf_solver
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libscf_solver
 
 
 ifneq ($(DODEPEND),no)
