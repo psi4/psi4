@@ -41,7 +41,7 @@ void OMP2Wave::common_init()
  
 	tol_Eod=options_.get_double("E_CONVERGENCE");
 	tol_t2=options_.get_double("R_CONVERGENCE");
-    tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
+        tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
 	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
         cc_maxiter=options_.get_int("CC_MAXITER");
 	mo_maxiter=options_.get_int("MO_MAXITER");
@@ -59,9 +59,10 @@ void OMP2Wave::common_init()
 	sos_scale2=options_.get_double("SOS_SCALE2");
 	
 	//wfn=options_.get_str("WFN");
-    if (options_["LEVEL_SHIFT"].has_changed()) {
+        if (options_["LEVEL_SHIFT"].has_changed()) {
 	  level_shift="TRUE";
-    }
+        }
+        
 	//lineq=options_.get_str("LINEQ");
 	orth_type=options_.get_str("ORTH_TYPE");
 	//stability=options_.get_str("STABILITY");
@@ -126,13 +127,6 @@ void OMP2Wave::common_init()
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
 
-    // Perform MO integral transformation on spaces
-//    ints = new IntegralTransform(chkpt_, spaces, 
-//                           IntegralTransform::Unrestricted,
-//                           IntegralTransform::DPDOnly,
-//                           IntegralTransform::QTOrder,
-//                           IntegralTransform::None,
-//                           false);
     ints = new IntegralTransform(reference_wavefunction_, spaces, 
                            IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
@@ -211,6 +205,7 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
+	Process::environment.globals["MP2 ENERGY"] = Emp2;
 
 	response_pdms();
 	GFockmo();
@@ -263,17 +258,27 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\n");
 	fflush(outfile);
 
+	// Set the global variables with the energies
+	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
+	Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
+	Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
+	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
+	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
+	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
+    
 	chkpt_->wt_etot(Emp2L);
 	chkpt_->wt_emp2(Emp2L);
 	chkpt_->wt_ecorr(Emp2L-Escf);
 	chkpt_->wt_eref(Eref);
 	
 	if (do_scs == "TRUE") {
+	  Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
 	  chkpt_->wt_etot(Escsmp2);
 	  chkpt_->wt_ecorr(Escsmp2-Escf);
 	}
     
 	else if (do_sos == "TRUE") {
+	  Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
 	  chkpt_->wt_etot(Esosmp2);
 	  chkpt_->wt_ecorr(Esosmp2-Escf);
 	}

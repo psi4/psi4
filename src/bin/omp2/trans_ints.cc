@@ -37,13 +37,14 @@ using namespace std;
 
 namespace psi{ namespace omp2wave{
 
-void OMP2Wave::trans_ints()
+void OMP2Wave::trans_ints() 
 {    
     //fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
 /********************************************************************************************/
 /************************** Transform 2-electron int. to MO space ***************************/
 /********************************************************************************************/  
-    ints->update_orbitals();     
+    ints->update_orbitals();    
+    ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
     
     // Trans (OO|OO)
     ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
