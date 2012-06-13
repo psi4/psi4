@@ -15,6 +15,7 @@ from molutil import *
 from text import *
 from procutil import *
 from basislist import *
+from functional import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -1391,3 +1392,20 @@ def run_property(name, **kwargs):
 
     junk = 1
     return junk
+
+def run_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    fun = build_superfunctional('b2plypxc',5000,1)
+    fun.set_name('b2plypxc')
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    e_b2plypxc   = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+    e_b2plyp     = e_b2plypxc + 0.27 * e_dfmp2_corr
+    return e_b2plyp
+
