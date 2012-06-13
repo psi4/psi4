@@ -53,14 +53,13 @@ $(PSITARGET): $(BINOBJ)
 install_target::
 
 else
-version_generated.check:
+.PHONY: gitversion
+gitversion:
 	@$(PYTHON) gitversion.py
 
-$(PSITARGET): version_generated.check $(BINOBJ) $(PSILIBS)
+$(PSITARGET): gitversion $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	rm -f version_generated.check
-	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $(filter-out version_generated.check,$^ ) $(END_EXPORT) $(FILTEREDLDLIBS)
-
+	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $(filter-out gitversion,$^ ) $(END_EXPORT) $(FILTEREDLDLIBS)
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(DESTDIR)$(bindir)
