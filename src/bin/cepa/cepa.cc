@@ -1,5 +1,6 @@
 #include"psi4-dec.h"
 #include<libciomr/libciomr.h>
+#include<libmints/wavefunction.h>
 
 #include"coupledpair.h"
 
@@ -9,7 +10,8 @@ using namespace boost;
 namespace psi{ namespace cepa{
   void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options);
   void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
-  PsiReturnType cepa(Options &options);
+  void TransformIntegrals(boost::shared_ptr<Wavefunction>wfn,Options&options);
+  void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
 }}
 
 namespace psi{ namespace cepa{
@@ -25,14 +27,20 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn,options));
   PsiReturnType status;
 
-  // grab options
-  cepa->Initialize(options);
-
-  // integral sort (and maybe transformation)
+  // integral transformation. note that the transformation was already
+  // done if this is part of a cim computation
   tstart();
-  cepa->SortIntegrals();
+  if ( !wfn->isCIM() ) {
+     TransformIntegrals(wfn,options);
+  }
   tstop();
 
+  // integral sort
+  tstart();
+  SortIntegrals(cepa->nfzc,cepa->nfzv,cepa->nmo+cepa->nfzc+cepa->nfzv,cepa->ndoccact,cepa->nvirt,options);
+  tstop();
+
+  // solve cepa equations
   tstart();
   cepa->WriteBanner(options);
   cepa->AllocateMemory(options);
