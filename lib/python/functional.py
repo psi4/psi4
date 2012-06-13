@@ -2133,7 +2133,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     C1 = 3.36116E-3;
     C2 = 4.49267E-3;
     K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
-    k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
+    k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0)  ;
     kp = C1 / (C2 * K0);
     mu = 4.0 * k0 * k0 * kp * C2;
     X.set_parameter('PBE_kp', kp);
@@ -2286,7 +2286,7 @@ def build_b2plypxc_superfunctional(name, npoints, deriv):
    # Tab in, trailing newlines
    sup.set_description('    B2PLYP Double Hydrid Exchange-Correlation Functional\n')
    # Tab in, trailing newlines
-   sup.set_citation('    Citation\n')
+   sup.set_citation('    S. Grimme, J. Chem. Phys., 124, 034108, 2006\n')
 
    # Add member functionals
    becke = build_functional('B88_X')
