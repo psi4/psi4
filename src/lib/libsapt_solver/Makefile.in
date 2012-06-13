@@ -16,8 +16,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/libsapt_solver
-	$(INSTALL_INCLUDE) $^ $(incdir)/libsapt_solver
+	$(MKDIRS) $(DESTDIR)$(incdir)/libsapt_solver
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libsapt_solver
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)

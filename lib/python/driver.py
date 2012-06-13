@@ -19,8 +19,10 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
+            'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
             'mp2'           : run_mp2,
+            'omp2'          : run_omp2,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -78,6 +80,7 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
+            'b2plyp'        : run_b2plyp,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -86,6 +89,7 @@ procedures = {
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
             'df-mp2'        : run_dfmp2_gradient,
+            'dfmp2'         : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
@@ -231,6 +235,8 @@ def energy(name, **kwargs):
     | acpf                    | averaged coupled-pair functional                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | aqcc                    | averaged quadratic coupled cluster                                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:

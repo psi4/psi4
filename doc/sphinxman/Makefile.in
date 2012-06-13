@@ -48,7 +48,7 @@ autodocclean:
 clean: autodocclean
 	-rm -rf $(addprefix $(SOURCEDIR)/,$(MISCDOC))
 	-rm -rf $(addprefix $(SOURCEDIR)/,$(STATICDOC))
-	-rm -rf $(addprefix $(SOURCEDIR)/,index.rst appendices.rst)
+	-rm -rf $(addprefix $(SOURCEDIR)/,index.rst appendices.rst contents.rst)
 
 realclean: clean
 	-rm -rf $(BUILDDIR)
@@ -258,6 +258,7 @@ writtendoc: $(addprefix $(SOURCEDIR)/,$(MISCDOC) $(STATICDOC))
 
 html: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_html.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
@@ -265,6 +266,7 @@ html: trigger autodoc writtendoc | $(subdirs)
 
 html-user: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_htmluser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_htmluser.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-user
 	@echo
@@ -272,6 +274,7 @@ html-user: trigger autodoc writtendoc | $(subdirs)
 
 html-prog: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_htmlprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_htmlprog.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-prog
 	@echo
