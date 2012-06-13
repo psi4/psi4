@@ -17,7 +17,7 @@ def write_version(version):
         open('gitversion.h', 'w').write(version_str)
         try:
             os.remove("version.o")
-        except OSError, e:
+        except OSError:
             pass
 
 try:
@@ -26,12 +26,12 @@ try:
     
     write_version(sha)
 
-except subprocess.CalledProcessError, e:
+except subprocess.CalledProcessError:
     write_version("")
 
-except IOError, e:
+except IOError:
     write_version("")
 
-except OSError, e:
+except OSError:
     write_version("")
 
