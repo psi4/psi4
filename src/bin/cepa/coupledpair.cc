@@ -4,6 +4,7 @@
 #include<libpsio/psio.hpp>
 #include<psifiles.h>
 #include<sys/times.h>
+#include<libqt/qt.h>
 #ifdef _OPENMP
     #include<omp.h>
 #endif
@@ -14,74 +15,15 @@
 using namespace psi;
 
 namespace psi{namespace cepa{
-  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
   long int Position(long int i,long int j);
   void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2,double*temp,int o);
-  void TransformIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options);
 }}
 
 namespace psi{ namespace cepa{
 
-CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options)
+CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options):
+  options_(options), wfn_(wfn)
 {
-  wfn_ = wfn;
-  options_ = options;
-}
-CoupledPair::~CoupledPair()
-{}
-
-void CoupledPair::WriteBanner(Options&options){
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  if (options.get_str("CEPA_LEVEL")=="CEPA0"){
-     fprintf(outfile, "        *                       CEPA(0)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
-  }
-  else if (options.get_str("CEPA_LEVEL")=="CEPA1"){
-     fprintf(outfile, "        *                       CEPA(1)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
-  }
-  else if (options.get_str("CEPA_LEVEL")=="CEPA2"){
-     fprintf(outfile, "        *                       CEPA(2)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
-  }
-  if (options.get_str("CEPA_LEVEL")=="CEPA3"){
-     fprintf(outfile, "        *                       CEPA(3)                       *\n");
-     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
-  }
-  else if (options.get_str("CEPA_LEVEL")=="ACPF"){
-     fprintf(outfile, "        *                        ACPF                         *\n");
-     fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
-  }
-  else if (options.get_str("CEPA_LEVEL")=="AQCC"){
-     fprintf(outfile, "        *                        AQCC                         *\n");
-     fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
-  }
-  else if (options.get_str("CEPA_LEVEL")=="CISD"){
-     fprintf(outfile, "        *                        CISD                         *\n");
-     fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
-  }
-
-
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                   Eugene DePrince                   *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
-}
-
-/*================================================================
-  
-  Initialize:
-  set basic parameters (ndocc...). integral transformation.
-  integral sort.
-  
-================================================================*/
-void CoupledPair::Initialize(Options &options){
- 
   if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
      nirreps = wfn_->nirrep();
@@ -157,37 +99,91 @@ void CoupledPair::Initialize(Options &options){
   }
 
   // orbital energies
-  eps = (double*)malloc(nmo*sizeof(double));
+  // NOTE: when using libtrans, the Fock matrix will be in Pitzer order, 
+  // regardless of the ordering specified in the constructor.
+  int* aQT = (int*)malloc((ndocc+nvirt+nfzc)*sizeof(int));
+  double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
+  reorder_qt(wfn->doccpi(), wfn->soccpi(), wfn->frzcpi(), wfn->frzvpi(), aQT, wfn->nmopi(), nirreps);
   int count=0;
+  eps_test = wfn_->epsilon_a();
   for (int h=0; h<nirreps; h++){
-      eps_test = wfn_->epsilon_a();
-      for (int norb = fzc[h]; norb<docc[h]; norb++){
-          eps[count++] = eps_test->get(h,norb);
+      for (int norb = 0; norb<orbs[h]; norb++){
+          tmp[aQT[count++]] = eps_test->get(h,norb);
       }
   }
-  for (int h=0; h<nirreps; h++){
-      eps_test = wfn_->epsilon_a();
-      for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
-          eps[count++] = eps_test->get(h,norb);
-      }
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  for (int i = 0; i < ndoccact + nvirt; i++) {
+      eps[i] = tmp[i+nfzc];
   }
+  free(tmp);
+  free(aQT);
+
+  // old way where the orbitals are in QT ordering
+  //eps = (double*)malloc(nmo*sizeof(double));
+  //int count=0;
+  //for (int h=0; h<nirreps; h++){
+  //    eps_test = wfn_->epsilon_a();
+  //    for (int norb = fzc[h]; norb<docc[h]; norb++){
+  //        eps[count++] = eps_test->get(h,norb);
+  //    }
+  //}
+  //for (int h=0; h<nirreps; h++){
+  //    eps_test = wfn_->epsilon_a();
+  //    for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+  //        eps[count++] = eps_test->get(h,norb);
+  //    }
+  //}
   eps_test.reset();
 
   // by default, t2 will be held in core
   t2_on_disk = false;
-
 }
 
-void CoupledPair::SortIntegrals(){
-  if (options_.get_bool("CEPA_VABCD_DIRECT")){
-     // so->mo tei transformation and out-of-core integral sort
-     TransformIntegrals(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM(),options_);
-  }else{
-     // out-of-core integral sort
-     OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM());
+CoupledPair::~CoupledPair()
+{}
+
+void CoupledPair::WriteBanner(Options&options){
+  fflush(outfile);
+  fprintf(outfile,"\n\n");
+  fprintf(outfile, "        *******************************************************\n");
+  fprintf(outfile, "        *                                                     *\n");
+  if (options.get_str("CEPA_LEVEL")=="CEPA0"){
+     fprintf(outfile, "        *                       CEPA(0)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-}
+  else if (options.get_str("CEPA_LEVEL")=="CEPA1"){
+     fprintf(outfile, "        *                       CEPA(1)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="CEPA2"){
+     fprintf(outfile, "        *                       CEPA(2)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  if (options.get_str("CEPA_LEVEL")=="CEPA3"){
+     fprintf(outfile, "        *                       CEPA(3)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="ACPF"){
+     fprintf(outfile, "        *                        ACPF                         *\n");
+     fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="AQCC"){
+     fprintf(outfile, "        *                        AQCC                         *\n");
+     fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="CISD"){
+     fprintf(outfile, "        *                        CISD                         *\n");
+     fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
+  }
 
+
+  fprintf(outfile, "        *                                                     *\n");
+  fprintf(outfile, "        *                   Eugene DePrince                   *\n");
+  fprintf(outfile, "        *                                                     *\n");
+  fprintf(outfile, "        *******************************************************\n");
+  fprintf(outfile,"\n\n");
+  fflush(outfile);
+}
 
 /*===================================================================
 

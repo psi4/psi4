@@ -14,8 +14,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/lib3index
-	$(INSTALL_INCLUDE) $^ $(incdir)/lib3index
+	$(MKDIRS) $(DESTDIR)$(incdir)/lib3index
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/lib3index
 
 
 ifneq ($(DODEPEND),no)
