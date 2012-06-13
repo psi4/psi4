@@ -1,3 +1,6 @@
+// This tells us the Python version number
+#include <boost/python/detail/wrap_python.hpp>
+#include <boost/python/module.hpp>
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
@@ -1171,7 +1174,11 @@ void Python::run(FILE *input)
         PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+#if PY_MAJOR_VERSION == 2
         PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+#else
+        PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+#endif
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);
@@ -1186,7 +1193,11 @@ void Python::run(FILE *input)
         }
 
         try {
+#if PY_MAJOR_VERSION == 2
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
+#else
+            PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod);
+#endif
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
