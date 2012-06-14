@@ -2272,7 +2272,7 @@ def build_dldf_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup
 
-def build_b2plypxc_superfunctional(name, npoints, deriv):
+def build_b2plyp_xc_superfunctional(name, npoints, deriv):
 
     # Call this first
     sup = PsiMod.SuperFunctional.blank()
@@ -2282,7 +2282,7 @@ def build_b2plypxc_superfunctional(name, npoints, deriv):
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    sup.set_name('B2PLYPXC')
+    sup.set_name('B2PLYP_XC')
     # Tab in, trailing newlines
     sup.set_description('    B2PLYP Double Hybrid Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
@@ -2308,6 +2308,45 @@ def build_b2plypxc_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
+
+def build_pbe0_2_xc_superfunctional(name, npoints, deriv):
+
+   # Call this first
+   sup = PsiMod.SuperFunctional.blank()
+   sup.set_max_points(npoints)
+   sup.set_deriv(deriv)
+
+   # => User-Customization <= #
+
+   # No spaces, keep it short and according to convention
+   sup.set_name('PBE0-2_XC')
+   # Tab in, trailing newlines
+   sup.set_description('    PBE0-2 Double Hydrid Exchange-Correlation Functional\n')
+   # Tab in, trailing newlines
+   sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
+
+   # Add member functionals
+   X = build_functional('PBE_X')
+   X.set_alpha(1.0)
+   sup.add_x_functional(X)
+   C = build_functional('PBE_C')
+   C.set_alpha(0.5)
+   sup.add_c_functional(C)
+
+   # Set GKS up after adding functionals
+   sup.set_x_omega(0.0)
+   sup.set_c_omega(0.0)
+   sup.set_x_alpha(0.793701)
+   sup.set_c_alpha(0.0)
+
+   # => End User-Customization <= #
+
+   # Call this last
+   sup.allocate()
+   return sup
+
+
 
 def build_primitive_superfunctional(name, npoints, deriv):
 
@@ -2408,7 +2447,8 @@ superfunctionals = {
         'm05-2x'    : build_m05_2x_superfunctional,
         'dldf'      : build_dldf_superfunctional,
         'sogga'     : build_sogga_superfunctional,
-        'b2plypxc'  : build_b2plypxc_superfunctional,
+        'b2plyp_xc' : build_b2plyp_xc_superfunctional,
+        'pbe0-2_xc' : build_pbe0_2_xc_superfunctional,
     }
 
 

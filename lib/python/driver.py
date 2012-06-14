@@ -81,6 +81,7 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             'b2plyp'        : run_b2plyp,
+            'pbe0-2'        : run_pbe0_2,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
