@@ -1398,8 +1398,71 @@ def run_b2plyp(name, **kwargs):
     a B2PLYP double-hybrid density-functional-theory calculation.
 
     """
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'b2plypxc')
+
+    if (user_ref == 'RHF'):
+        PsiMod.set_global_option('REFERENCE', 'RKS')
+    elif (user_ref == 'UHF'):
+        PsiMod.set_global_option('REFERENCE', 'UKS')
+    elif (user_ref == 'ROHF'):
+        raise ValidationError('ROHF reference for DFT is not available.')
+    elif (user_ref == 'CUHF'):
+        raise ValidationError('CUHF reference for DFT is not available.')
+
+    e_b2plypxc = run_scf(name, **kwargs) 
+    PsiMod.dfmp2()
+    e_b2plyp = e_b2plypxc + 0.27 * PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
+
+    return e_b2plyp
+
+
+def run2_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
     lowername = name.lower()
 
+    # use with c_alpha = 0.27 in functional.py
+    #     and with normalization suppressed @268 in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    fun = build_superfunctional('b2plypxc',5000,1)
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    e_b2plypxc   = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+    e_b2plyp     = e_b2plypxc + fun.c_alpha() * e_dfmp2_corr
+    return e_b2plyp
+
+
+def run3_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
     fun = build_superfunctional('b2plypxc',5000,1)
     fun.set_name('b2plypxc')
     PsiMod.set_global_option_python('dft_custom_functional',fun)

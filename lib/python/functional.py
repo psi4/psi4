@@ -2274,39 +2274,40 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
 def build_b2plypxc_superfunctional(name, npoints, deriv):
 
-   # Call this first
-   sup = PsiMod.SuperFunctional.blank()
-   sup.set_max_points(npoints)
-   sup.set_deriv(deriv)
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
 
-   # => User-Customization <= #
+    # => User-Customization <= #
 
-   # No spaces, keep it short and according to convention
-   sup.set_name('B2PLYPXC')
-   # Tab in, trailing newlines
-   sup.set_description('    B2PLYP Double Hydrid Exchange-Correlation Functional\n')
-   # Tab in, trailing newlines
-   sup.set_citation('    Citation\n')
+    # No spaces, keep it short and according to convention
+    sup.set_name('B2PLYPXC')
+    # Tab in, trailing newlines
+    sup.set_description('    B2PLYP Double Hydrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    Citation\n')
 
-   # Add member functionals
-   becke = build_functional('B88_X')
-   becke.set_alpha(1.0)
-   sup.add_x_functional(becke)
-   lyp = build_functional('LYP_C')
-   lyp.set_alpha(0.73)
-   sup.add_c_functional(lyp)
+    # Add member functionals
+    becke = build_functional('B88_X')
+    becke.set_alpha(1.0)
+    sup.add_x_functional(becke)
+    lyp = build_functional('LYP_C')
+    lyp.set_alpha(0.73)
+    sup.add_c_functional(lyp)
 
-   # Set GKS up after adding functionals
-   sup.set_x_omega(0.0)
-   sup.set_c_omega(0.0)
-   sup.set_x_alpha(0.53)
-   sup.set_c_alpha(0.0)
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.53)
+#    sup.set_c_alpha(0.27)
+    sup.set_c_alpha(0.0)
 
-   # => End User-Customization <= #
+    # => End User-Customization <= #
 
-   # Call this last
-   sup.allocate()
-   return sup
+    # Call this last
+    sup.allocate()
+    return sup
 
 def build_primitive_superfunctional(name, npoints, deriv):
 
