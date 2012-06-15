@@ -206,20 +206,20 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
                 double kk0 = (4 * _k0_ * _k0_);                
                 double mus2 = 1.0 + _PBE_mu_ * s * s / (kk0 * _PBE_kp_);
                 Fs = 1.0 + _PBE_kp_ * (1.0 - 1.0 / mus2); 
-                Fs_s = 2.0 / (mus2 * mus2) * _PBE_mu_ * s / (kk0); 
+                Fs_s = 2.0 / (mus2 * mus2) * _PBE_mu_ * s / kk0; 
                 break;
             }
             case RPBE: {
-                double kk0 = (4 * _k0_ * _k0_);
+                double kk0 = (4.1482496705 * _k0_ * _k0_);
                 Fs = 1.0 + _PBE_kp_ * (1.0 - exp(- _PBE_mu_ * s * s / (_PBE_kp_ * kk0))); 
                 Fs_s = 2.0 * _PBE_mu_ / kk0 * s * exp(- _PBE_mu_ * s * s / (_PBE_kp_ * kk0)); 
                 break;
             }
             case SOGGA: {
-                double kk0 = (4 * _k0_ * _k0_);
+                double kk0 = (4.9155 * _k0_ * _k0_);
                 double mus2 = 1.0 + _PBE_mu_ * s * s / (kk0 * _PBE_kp_);
                 Fs = 1.0 + _PBE_kp_ * (1.0 - 0.5 / mus2 - 0.5 * exp(- _PBE_mu_ * s * s / (_PBE_kp_ * kk0))); 
-                Fs_s = _PBE_mu_ / kk0 * s * exp(- _PBE_mu_ * s * s / (_PBE_kp_ * kk0)) + 1.0 / (mus2 * mus2) * _PBE_mu_ * s / (kk0); 
+                Fs_s = (1.0 * _PBE_mu_ / kk0 * s * exp(- _PBE_mu_ * s * s / (_PBE_kp_ * kk0)) + 1.0 / (mus2 * mus2) * _PBE_mu_ * s / kk0); 
                 break;
             }
             case PW91: {

@@ -4,6 +4,7 @@
 #include<libpsio/psio.hpp>
 #include<psifiles.h>
 #include<sys/times.h>
+#include<libqt/qt.h>
 #ifdef _OPENMP
     #include<omp.h>
 #endif
@@ -98,20 +99,40 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
   }
 
   // orbital energies
-  eps = (double*)malloc(nmo*sizeof(double));
+  // NOTE: when using libtrans, the Fock matrix will be in Pitzer order, 
+  // regardless of the ordering specified in the constructor.
+  int* aQT = (int*)malloc((ndocc+nvirt+nfzc)*sizeof(int));
+  double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
+  reorder_qt(wfn->doccpi(), wfn->soccpi(), wfn->frzcpi(), wfn->frzvpi(), aQT, wfn->nmopi(), nirreps);
   int count=0;
+  eps_test = wfn_->epsilon_a();
   for (int h=0; h<nirreps; h++){
-      eps_test = wfn_->epsilon_a();
-      for (int norb = fzc[h]; norb<docc[h]; norb++){
-          eps[count++] = eps_test->get(h,norb);
+      for (int norb = 0; norb<orbs[h]; norb++){
+          tmp[aQT[count++]] = eps_test->get(h,norb);
       }
   }
-  for (int h=0; h<nirreps; h++){
-      eps_test = wfn_->epsilon_a();
-      for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
-          eps[count++] = eps_test->get(h,norb);
-      }
+  eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+  for (int i = 0; i < ndoccact + nvirt; i++) {
+      eps[i] = tmp[i+nfzc];
   }
+  free(tmp);
+  free(aQT);
+
+  // old way where the orbitals are in QT ordering
+  //eps = (double*)malloc(nmo*sizeof(double));
+  //int count=0;
+  //for (int h=0; h<nirreps; h++){
+  //    eps_test = wfn_->epsilon_a();
+  //    for (int norb = fzc[h]; norb<docc[h]; norb++){
+  //        eps[count++] = eps_test->get(h,norb);
+  //    }
+  //}
+  //for (int h=0; h<nirreps; h++){
+  //    eps_test = wfn_->epsilon_a();
+  //    for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+  //        eps[count++] = eps_test->get(h,norb);
+  //    }
+  //}
   eps_test.reset();
 
   // by default, t2 will be held in core

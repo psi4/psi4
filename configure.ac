@@ -735,43 +735,43 @@ AC_MSG_CHECKING([for architecture/compiler specific optimization flags])
 case $target_cpu in
   rs6000)
     if test "$FC" = xlf_r ; then
-      FOPT="-qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
+      FOPT="$FOPT -qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="$COPT -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="$CXXOPT -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   powerpc)
     if test "$FC" = xlf_r ; then
-      FOPT="-qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
+      FOPT="$FOPT -qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="$COPT -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="$CXXOPT -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   i686)
     if test "$FC" = g77 ; then
-      FOPT=""
+      FOPT="$FOPT -m32"
     fi
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT=""
+      COPT="$COPT -m32"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT=""
+      CXXOPT="$CXXOPT -m32"
     fi
     ;;
   x86_64)
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT="-m64"
+      COPT="$COPT -m64"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT="-m64"
+      CXXOPT="$CXXOPT -m64"
     fi
     ;;
 esac
@@ -826,6 +826,7 @@ case $withval in
   no)
     COPT='-O0'
     CXXOPT='-O0'
+    FOPT='-O0'
     ;;
   *)
     COPT="$withval"
@@ -1151,6 +1152,7 @@ AC_CONFIG_FILES([
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
+	  tests/dft-b2plyp/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs_psimod/Makefile
