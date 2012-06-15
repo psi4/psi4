@@ -1,3 +1,4 @@
+from __future__ import print_function
 """Module with utility classes and functions related
 to data tables and text.
 
@@ -157,9 +158,9 @@ def banner(text, type=1, width=35):
 
 def print_stdout(stuff):
     """Function to print *stuff* to standard output stream."""
-    print >> sys.stdout, stuff
+    print(stuff, file=sys.stdout)
 
 
 def print_stderr(stuff):
     """Function to print *stuff* to standard error stream."""
-    print >> sys.stderr, stuff
+    print(stuff, file=sys.stderr)
