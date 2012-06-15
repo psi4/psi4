@@ -180,6 +180,12 @@ boost::shared_ptr<PetiteList> MintsHelper::petite_list() const
     return pt;
 }
 
+boost::shared_ptr<PetiteList> MintsHelper::petite_list(bool val) const
+{
+    boost::shared_ptr<PetiteList> pt(new PetiteList(basisset_, integral_, val));
+    return pt;
+}
+
 boost::shared_ptr<BasisSet> MintsHelper::basisset() const
 {
     return basisset_;
@@ -594,7 +600,6 @@ SharedMatrix MintsHelper::so_overlap()
     boost::shared_ptr<OneBodySOInt> S(integral_->so_overlap());
     SharedMatrix       overlap_mat(factory_->create_matrix(PSIF_SO_S));
     S->compute(overlap_mat);
-    overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
 
@@ -603,7 +608,6 @@ SharedMatrix MintsHelper::so_kinetic()
     boost::shared_ptr<OneBodySOInt> T(integral_->so_kinetic());
     SharedMatrix       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
     T->compute(kinetic_mat);
-    kinetic_mat->save(psio_, PSIF_OEI);
     return kinetic_mat;
 }
 
@@ -612,7 +616,6 @@ SharedMatrix MintsHelper::so_potential()
     boost::shared_ptr<OneBodySOInt> V(integral_->so_potential());
     SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
     V->compute(potential_mat);
-    potential_mat->save(psio_, PSIF_OEI);
     return potential_mat;
 }
 

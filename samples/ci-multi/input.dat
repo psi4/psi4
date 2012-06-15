@@ -1,0 +1,20 @@
+#! BH single points, checking that program can run multiple instances of 
+#! DETCI in a single input, without an intervening clean() call
+
+molecule bh {
+  B
+  H 1 1.23
+}
+
+
+set globals {
+  basis cc-pVDZ
+  docc [3, 0, 0, 0]
+}
+
+ecisd  = energy('cisd')
+ecisdt = energy('cisdt')
+emp3   = energy('mp3')
+emp4   = energy('mp4')
+
+

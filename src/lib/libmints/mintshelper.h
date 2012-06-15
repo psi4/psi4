@@ -56,8 +56,17 @@ public:
     /// Returns the number of basis functions
     int nbf() const;
 
-    /// Returns petite list that is capable of transforming AO basis functions (nbf) to SO's.
+    /// Returns petite list that is capable of transforming basis functions (nbf) to SO's.
     boost::shared_ptr<PetiteList> petite_list() const;
+
+    enum {
+        kFromCartesianAO = true,
+        kFromBF = false
+    };
+    /** Returns petite list that is capable of transforming AO basis functions (nbf) to SO's.
+     *  \param include_pure_transform Is either kFromCartesianAO or kFromBF.
+     */
+    boost::shared_ptr<PetiteList> petite_list(bool include_pure_transform) const;
     /// Basis set being used.
     boost::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
@@ -109,11 +118,11 @@ public:
     SharedMatrix ao_alchemical_potential();
     /// SO Alchemical Potential
     SharedMatrix so_alchemical_potential();
-    /// AO Overlap Integrals
+    /// SO Overlap Integrals
     SharedMatrix so_overlap();
-    /// AO Kinetic Integrals
+    /// SO Kinetic Integrals
     SharedMatrix so_kinetic();
-    /// AO Potential Integrals
+    /// SO Potential Integrals
     SharedMatrix so_potential();
     /// Vector SO Dipole Integrals
     std::vector<SharedMatrix > so_dipole();

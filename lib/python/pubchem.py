@@ -1,3 +1,4 @@
+from __future__ import print_function
 """Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
    to obtain a molecule string that can be passed to Molecule. ::
 
@@ -13,8 +14,18 @@
                                                         with PSI4's Molecule creation
 
 """
-import urllib2
+try:
+    # Python 2 syntax
+    from urllib2 import urlopen
+    from urllib2 import quote
+    from urllib2 import URLError
+except ImportError:
+    # Python 3 syntax
+    from urllib.request import urlopen
+    from urllib.parse import quote
+    from urllib.error import URLError
 import re
+import sys
 
 
 class PubChemObj(object):
@@ -34,15 +45,15 @@ class PubChemObj(object):
         """Function to return the SDF (structure-data file) of the PubChem object."""
         if (len(self.dataSDF) == 0):
             # When completed uncomment the following:
-            url = self.url + '?cid=' + urllib2.quote(str(self.cid)) + '&disopt=3DDisplaySDF'
+            url = self.url + '?cid=' + quote(str(self.cid)) + '&disopt=3DDisplaySDF'
             try:
-                location = urllib2.urlopen(url)
-            except urllib2.URLError, e:
+                location = urlopen(url)
+            except URLError as e:
                 msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
                 msg += "\tCheck your internet connection, and the above URL, and try again.\n"
                 raise Exception(msg)
-            print "\tRetrieved entry for chemical ID %d\n" % self.cid
-            self.dataSDF = location.read()
+            print("\tRetrieved entry for chemical ID %d\n" % self.cid)
+            self.dataSDF = location.read().decode(sys.getdefaultencoding())
             #f = open("TEST", "w")
             #f.write(self.dataSDF)
         return self.dataSDF
@@ -129,37 +140,42 @@ def getPubChemResults(name):
     input string. Builds a PubChem object if found.
 
     """
-    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (urllib2.quote(name))
-    print "\tSearching PubChem database for %s" % (name)
+    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % quote(name)
+    print("\tSearching PubChem database for %s" % (name))
     try:
-        loc = urllib2.urlopen(url)
-    except urllib2.URLError as e:
+        loc = urlopen(url)
+    except URLError as e:
         msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
         msg += "\tCheck your internet connection, and the above URL, and try again.\n"
         raise Exception(msg)
     data = loc.read()
 
     ans = []
-    l = data.find("<pre>")
-    l = data.find("\n", l)
-    for i in range(1, 21):
-        l = data.find("%s. " % (i), l)
+    l = data.find(b"<pre>")
+    l = data.find(b"\n", l)
+    i = 1
+    while(True):
+        l = data.find(str("%d. " % i).encode(sys.getdefaultencoding()), l)
         if l == -1:
             break
-        l = data.find("MF: ", l) + 4
-        mf = data[l:data.find("\n", l)]
-        l = data.find("IUPAC: ", l) + 7
-        iupac = data[l:data.find("\n", l)]
-        l = data.find("CID: ", l) + 5
+        tag = b"MF: "
+        l = data.find(tag, l) + len(tag)
+        mf = data[l:data.find(b'\n', l)].decode(sys.getdefaultencoding())
+        tag = b"IUPAC name: "
+        l = data.find(tag, l) + len(tag)
+        iupac = data[l:data.find(b'\n', l)].decode(sys.getdefaultencoding())
+        tag = b"CID:"
+        l = data.find(tag, l) + len(tag)
         #if l == 4:
         #    break
-        cid = int(data[l:data.find("\n", l)])
-        l = data.find("\t", l) + 1
+        cid = int(data[l:data.find(b"\n", l)])
+        l = data.find(b'\t', l) + 1
 
         pubobj = PubChemObj(cid, mf, iupac)
         ans.append(pubobj)
+        i += 1
 
-    print "\tFound %d results" % (len(ans))
+    print("\tFound %d results" % (len(ans)))
     return ans
 
 if __name__ == "__main__":
@@ -167,8 +183,8 @@ if __name__ == "__main__":
         obj = getPubChemResults("1-methoxy-4-[(E)-prop-1-enyl]benzene")
         #obj = getPubChemResults("sodium benzenesulfonate")
     except Exception as e:
-        print e.message
+        print(e.message)
 
     for r in obj:
-        print r
-        print r.getMoleculeString()
+        print(r)
+        print(r.getMoleculeString())

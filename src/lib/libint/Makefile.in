@@ -9,6 +9,8 @@ TEMP_DIR = ${SCRATCH}/libint
 
 .PHONY: default install all
 .PHONY: clean oclean iclean dclean target_clean
+.NOTPARALLEL: default install all
+.NOTPARALLEL: clean oclean iclean dclean target_clean
 
 default:: $(PSITARGET) $(TARGET_HEADERS)
 
@@ -61,12 +63,7 @@ dclean:
 
 targetclean:
 
-install: $(PSITARGET) $(TARGET_HEADERS)
-	$(MKDIRS) $(libdir)
-	$(INSTALL_DATA) $< $(libdir)
-	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
-	$(MKDIRS) $(incdir)/libint
-	$(INSTALL_INCLUDE) $(TARGET_HEADERS) $(incdir)/libint
+install: 
 
 #
 # keep the configuration information and makefiles up-to-date

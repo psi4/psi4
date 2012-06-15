@@ -19,7 +19,7 @@ class CoupledPair{
     /*
      * options
      */
-    Options options_;
+    Options & options_;
 
     CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
     ~CoupledPair();
@@ -65,11 +65,6 @@ class CoupledPair{
     PsiReturnType CEPAIterations(Options&options);
   
     void WriteBanner(Options&options);
-
-    /**
-      * grab parameters, transform/sort integrals
-     */
-    void Initialize(Options &options);
 
     /**
       * allocate memory, define tiling of gigantic diragrams
@@ -125,6 +120,7 @@ class CoupledPair{
       */
     void I2ijkl(CepaTaskParams params);
     void I2piajk(CepaTaskParams params);
+    void Vabcd_so(CepaTaskParams params);
     void Vabcd1(CepaTaskParams params);
     void Vabcd2(CepaTaskParams params);
     void I2iabj(CepaTaskParams params);

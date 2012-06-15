@@ -1,5 +1,5 @@
 #! This test is used to construct the documentation;
-#! it is not suitable for emulation by users.
+#! it is not suitable for emulation by users. !nosample
 
 funcdict = {}
 
@@ -117,6 +117,8 @@ flrc= open('autodoc_dft_lrc.rst', 'w')
 header(flrc, 'lrc', 'Long-Range-Corrected functionals available in |PSIfour|')
 fhybrid= open('autodoc_dft_hybrid.rst', 'w')
 header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
+fdhybrid= open('autodoc_dft_dhybrid.rst', 'w')
+header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
 header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
@@ -139,8 +141,11 @@ for fctl in sorted(funcdict.iterkeys()):
     if funcdict[fctl]['is_x_lrc'] or funcdict[fctl]['is_c_lrc']:
         body(flrc, funcdict, fctl)
 
-    if funcdict[fctl]['is_x_hybrid'] or funcdict[fctl]['is_c_hybrid']:
+    if funcdict[fctl]['is_x_hybrid']:
         body(fhybrid, funcdict, fctl)
+
+    if funcdict[fctl]['is_c_hybrid']:
+        body(fdhybrid, funcdict, fctl)
 
     if funcdict[fctl]['dispersion']:
         body(fdisp, funcdict, fctl)
@@ -165,6 +170,8 @@ flrc.write('\n')
 flrc.close()
 fhybrid.write('\n')
 fhybrid.close()
+fdhybrid.write('\n')
+fdhybrid.close()
 fdisp.write('\n')
 fdisp.close()
 

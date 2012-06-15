@@ -28,7 +28,7 @@ AC_SUBST(abs_top_builddir)
 
 if test "$srcdir" = "."; then
   echo "You are not allowed to compile in the source directory."
-  echo "Create an objdir or something similar as stated in the installation manual."
+  echo "Create an objdir or something similar as stated in INSTALL file."
   exit 1
 fi
 
@@ -735,43 +735,43 @@ AC_MSG_CHECKING([for architecture/compiler specific optimization flags])
 case $target_cpu in
   rs6000)
     if test "$FC" = xlf_r ; then
-      FOPT="-qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
+      FOPT="$FOPT -qarch=com -qxflag=xalias -qdpc -qfloat=fold -qfloat=maf -qmaxmem=-1"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="$COPT -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="$CXXOPT -qarch=com -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   powerpc)
     if test "$FC" = xlf_r ; then
-      FOPT="-qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
+      FOPT="$FOPT -qarch=ppc -qxflag=xalias -qdpc -qfloat=fold -qmaxmem=-1 -qfloat=maf"
     fi
     if test "$CC" = xlc_r -o "$CC" = cc_r ; then
-      COPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      COPT="$COPT -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     if test "$CXX" = xlC_r ; then
-      CXXOPT="-qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
+      CXXOPT="$CXXOPT -qarch=ppc -qfloat=maf -qfloat=fold -qmaxmem=-1"
     fi
     ;;
   i686)
     if test "$FC" = g77 ; then
-      FOPT=""
+      FOPT="$FOPT -m32"
     fi
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT=""
+      COPT="$COPT -m32"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT=""
+      CXXOPT="$CXXOPT -m32"
     fi
     ;;
   x86_64)
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT="-m64"
+      COPT="$COPT -m64"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT="-m64"
+      CXXOPT="$CXXOPT -m64"
     fi
     ;;
 esac
@@ -826,6 +826,7 @@ case $withval in
   no)
     COPT='-O0'
     CXXOPT='-O0'
+    FOPT='-O0'
     ;;
   *)
     COPT="$withval"
@@ -927,13 +928,10 @@ AC_CONFIG_FILES([
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
 
           doc/MakeVars doc/MakeRules doc/Makefile
-          doc/macros.tex doc/progman/svn/svn.eps
-          doc/installation/Makefile
-          doc/progman/Makefile doc/userman/Makefile
+          doc/macros.tex
           doc/sphinxman/Makefile
           doc/sphinxman/source/conf.py
           doc/sphinxman/apply_relpath.py
-          doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
 
@@ -1046,6 +1044,7 @@ AC_CONFIG_FILES([
           tests/sapt3/Makefile
           tests/sapt4/Makefile
           tests/sapt5/Makefile
+          tests/ghosts/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/dfmp2_3/Makefile
@@ -1145,6 +1144,7 @@ AC_CONFIG_FILES([
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
+          tests/omp2_1/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
@@ -1152,6 +1152,7 @@ AC_CONFIG_FILES([
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
+	  tests/dft-b2plyp/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs_psimod/Makefile
