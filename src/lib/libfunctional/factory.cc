@@ -38,6 +38,18 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->meta_type_ = XFunctional::Meta_None;
         x->sr_type_   = XFunctional::SR_None;
         fun = static_cast<Functional*>(x);
+    } else if (alias == "RPBE_X") {
+        XFunctional* x = new XFunctional();
+        x->gga_type_  = XFunctional::RPBE;
+        x->meta_type_ = XFunctional::Meta_None;
+        x->sr_type_   = XFunctional::SR_None;
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "SOGGA_X") {
+        XFunctional* x = new XFunctional();
+        x->gga_type_  = XFunctional::SOGGA;
+        x->meta_type_ = XFunctional::Meta_None;
+        x->sr_type_   = XFunctional::SR_None;
+        fun = static_cast<Functional*>(x);
     } else if (alias == "PW91_X") {
         XFunctional* x = new XFunctional();
         x->gga_type_  = XFunctional::PW91;

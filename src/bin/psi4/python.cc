@@ -1,3 +1,6 @@
+// This tells us the Python version number
+#include <boost/python/detail/wrap_python.hpp>
+#include <boost/python/module.hpp>
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
 #include <boost/python/dict.hpp>
@@ -178,10 +181,14 @@ int py_psi_deriv()
     return deriv::deriv(Process::environment.options);
 }
 
-int py_psi_omp2()
+double py_psi_omp2()
 {
     py_psi_prepare_options_for_module("OMP2");
-    return omp2wave::omp2wave(Process::environment.options);
+    if (omp2wave::omp2wave(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 int py_psi_libfock()
@@ -951,7 +958,7 @@ BOOST_PYTHON_MODULE(PsiMod)
             .value("EndLoop", EndLoop)
             .export_values();
 
-    def("version", py_psi_version, "docstring");
+    def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
     // Benchmarks
@@ -968,50 +975,50 @@ BOOST_PYTHON_MODULE(PsiMod)
 
 
     // Options
-    def("prepare_options_for_module", py_psi_prepare_options_for_module, "docstring");
-    def("set_active_molecule", py_psi_set_active_molecule, "docstring");
-    def("get_active_molecule", &py_psi_get_active_molecule, "docstring");
-    def("reference_wavefunction", py_psi_reference_wavefunction, "docstring");
-    def("get_gradient", py_psi_get_gradient, "docstring");
-    def("set_gradient", py_psi_set_gradient, "docstring");
-    def("set_memory", py_psi_set_memory, "docstring");
-    def("get_memory", py_psi_get_memory, "docstring");
-    def("set_nthread", &py_psi_set_n_threads, "docstring");
-    def("nthread", &py_psi_get_n_threads, "docstring");
-    def("nproc", &py_psi_get_nproc, "docstring");
-    def("me", &py_psi_get_me, "docstring");
+    def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
+    def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
+    def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
+    def("reference_wavefunction", py_psi_reference_wavefunction, "Returns the current wavefunction object, from the most recent computation.");
+    def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
+    def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
+    def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
+    def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
+    def("set_nthread", &py_psi_set_n_threads, "Sets the number of threads to use in SMP parallel computations.");
+    def("nthread", &py_psi_get_n_threads, "Returns the number of threads to use in SMP parallel computations.");
+    def("nproc", &py_psi_get_nproc, "Returns the number of processors being used in a MADNESS parallel run.");
+    def("me", &py_psi_get_me, "Returns the current process ID in a MADNESS parallel run.");
 
-    def("set_parent_symmetry", py_psi_set_parent_symmetry, "docstring");
-    def("print_options", py_psi_print_options, "docstring");
-    def("print_global_options", py_psi_print_global_options, "docstring");
-    def("print_out", py_psi_print_out, "docstring");
+    def("set_parent_symmetry", py_psi_set_parent_symmetry, "Sets the symmetry of the 'parent' (undisplaced) geometry, by Schoenflies symbol, at the beginning of a finite difference computation.");
+    def("print_options", py_psi_print_options, "Prints the currently set options (to the output file) for the current module.");
+    def("print_global_options", py_psi_print_global_options, "Prints the currently set global (all modules) options to the output file.");
+    def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_option_string, "docstring");
-    def("set_local_option", py_psi_set_option_double, "docstring");
-    def("set_local_option", py_psi_set_option_int, "docstring");
+    def("set_local_option", py_psi_set_option_string, "Sets a string option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_option_double, "Sets a double option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_option_int, "Sets an integer option scoped only to a specific module.");
     def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
 
     // Set the different global option types
-    def("set_global_option", py_psi_set_global_option_string, "docstring");
-    def("set_global_option", py_psi_set_global_option_double, "docstring");
-    def("set_global_option", py_psi_set_global_option_int, "docstring");
+    def("set_global_option", py_psi_set_global_option_string, "Sets a string option for all modules.");
+    def("set_global_option", py_psi_set_global_option_double, "Sets a double option for all modules.");
+    def("set_global_option", py_psi_set_global_option_int, "Sets an integer option for all modules.");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_global_option_python", py_psi_set_global_option_python, "docstring");
-    def("set_local_option_python", py_psi_set_local_option_python, "docstring");
+    def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
+    def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
 
-    def("get_global_option_list", py_psi_get_global_option_list, "docstring");
+    def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; letting liboptions decide whether to use global or local
-    def("get_option", py_psi_get_option, "docstring");
+    def("get_option", py_psi_get_option, "Given a string, returns the option associated with that keyword, returning the local value if it's been set, else the global one if that's been set, else the local default value.");
 
     // Get the option; specify whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "docstring");
-    def("get_local_option", py_psi_get_local_option, "docstring");
+    def("get_global_option", py_psi_get_global_option, "Given a string, returns the option associated with the keyword from the global options.");
+    def("get_local_option", py_psi_get_local_option, "Given a string, returns the option associated with the keyword scoped to the currently active set of options.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_option_changed", py_psi_has_option_changed, "docstring");
+    def("has_option_changed", py_psi_has_option_changed, "Whether an option has been set by the user.");
     def("has_global_option_changed", py_psi_has_global_option_changed, "docstring");
     def("has_local_option_changed", py_psi_has_local_option_changed, "docstring");
     def("revoke_option_changed", py_psi_revoke_option_changed, "docstring");
@@ -1019,74 +1026,74 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "docstring");
 
     // These return/set variable value found in Process::environment.globals
-    def("get_variable", py_psi_get_variable, "docstring");
-    def("set_variable", py_psi_set_variable, "docstring");
+    def("get_variable", py_psi_get_variable, "Returns one of the global variables set internally by the modules (see manual for full listing of variables available).");
+    def("set_variable", py_psi_set_variable, "Sets a global variable, by name.");
 
     // Print the variables found in Process::environment.globals
-    def("print_variables", py_psi_print_variable_map, "docstring");
+    def("print_variables", py_psi_print_variable_map, "Prints all global variables that have been set internally.");
 
     // Adds a custom user basis set file.
-    def("add_user_basis_file", py_psi_add_user_specified_basis_file, "docstring");
+    def("add_user_basis_file", py_psi_add_user_specified_basis_file, "Adds a custom basis set file, provided by the user.");
 
     // Get the name of the directory where the input file is at
-    def("get_input_directory", py_psi_get_input_directory, "docstring");
+    def("get_input_directory", py_psi_get_input_directory, "Returns the location of the input file.");
 
     // Returns the location where the Psi4 source is located.
-    def("psi_top_srcdir", py_psi_top_srcdir, "docstring");
+    def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
 
-    def("flush_outfile", py_flush_outfile, "docstring");
-    def("close_outfile", py_close_outfile, "docstring");
-    def("reopen_outfile", py_reopen_outfile, "docstring");
-    def("outfile_name", py_get_outfile_name, "docstring");
+    def("flush_outfile", py_flush_outfile, "Flushes the output file.");
+    def("close_outfile", py_close_outfile, "Closes the output file.");
+    def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
+    def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
 
     // modules
-    def("mints", py_psi_mints, "docstring");
-    def("deriv", py_psi_deriv, "docstring");
-    def("scfgrad", py_psi_scfgrad, "docstring");
+    def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
+    def("deriv", py_psi_deriv, "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
+    def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
 
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject*, PyObject*);
 
-    def("scf", py_psi_scf_callbacks, "docstring");
-    def("scf", py_psi_scf, "docstring");
-    def("dcft", py_psi_dcft, "docstring");
-    def("libfock", py_psi_libfock, "docstring");
-    def("dfmp2", py_psi_dfmp2, "docstring");
-    def("dfmp2grad", py_psi_dfmp2grad, "docstring");
+    def("scf", py_psi_scf_callbacks, "Runs the SCF code.");
+    def("scf", py_psi_scf, "Runs the SCF code.");
+    def("dcft", py_psi_dcft, "Runs the density cumulant functional theory code.");
+    def("libfock", py_psi_libfock, "Runs a CPHF calculation, using libfock.");
+    def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
+    def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
 //    def("lmp2", py_psi_lmp2, "docstring");
-    def("mp2", py_psi_mp2, "docstring");
-    def("mcscf", py_psi_mcscf, "docstring");
-    def("mrcc_generate_input", py_psi_mrcc_generate_input, "docstring");
-    def("mrcc_load_densities", py_psi_mrcc_load_densities, "docstring");
-    def("fd_geoms_1_0", py_psi_fd_geoms_1_0, "docstring");
+    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
+    def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
+    def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
+    def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
+    def("fd_geoms_1_0", py_psi_fd_geoms_1_0, "Gets the list of displacements needed for a finite difference gradient computation, from energy points.");
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
-    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0, "docstring");
-    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1, "docstring");
-    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0, "docstring");
-    def("fd_1_0", py_psi_fd_1_0, "docstring");
+    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0, "Gets the list of displacements needed for a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1, "Gets the list of displacements needed fof a finite difference frequency computation, from gradients, for a given irrep");
+    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0, "Gets the list of displacements needed fof a finite difference frequency computation, from energy points.");
+    def("fd_1_0", py_psi_fd_1_0, "Performs a finite difference gradient computation, from energy points.");
     //def("fd_2_0", py_psi_fd_2_0);
-    def("fd_freq_0", py_psi_fd_freq_0, "docstring");
-    def("fd_freq_1", py_psi_fd_freq_1, "docstring");
-    def("fd_hessian_0", py_psi_fd_hessian_0, "docstring");
-    def("sapt", py_psi_sapt, "docstring");
-    def("stability", py_psi_stability, "docstring");
-    def("psimrcc", py_psi_psimrcc, "docstring");
-    def("optking", py_psi_optking, "docstring");
-    def("transqt", py_psi_transqt, "docstring");
-    def("transqt2", py_psi_transqt2, "docstring");
-    def("ccsort", py_psi_ccsort, "docstring");
-    def("ccenergy", py_psi_ccenergy, "docstring");
-    def("cctriples", py_psi_cctriples, "docstring");
-    def("detci", py_psi_detci, "docstring");
-    def("cepa", py_psi_cepa, "docstring");
-    def("cchbar", py_psi_cchbar, "docstring");
-    def("cclambda", py_psi_cclambda, "docstring");
-    def("ccdensity", py_psi_ccdensity, "docstring");
-    def("ccresponse", py_psi_ccresponse, "docstring");
-    def("cceom", py_psi_cceom, "docstring");
-    def("omp2", py_psi_omp2, "docstring");
-    def("adc", py_psi_adc, "docstring");
-    def("opt_clean", py_psi_opt_clean, "docstring");
+    def("fd_freq_0", py_psi_fd_freq_0, "Performs a finite difference frequency computation, from energy points, for a given irrep.");
+    def("fd_freq_1", py_psi_fd_freq_1, "Performs a finite difference frequency computation, from gradients, for a given irrep.");
+    def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
+    def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
+    def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
+    def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
+    def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
+    def("transqt", py_psi_transqt, "Runs the (deprecated) transformation code.");
+    def("transqt2", py_psi_transqt2, "Runs the (deprecated) transformation code.");
+    def("ccsort", py_psi_ccsort, "Runs CCSORT, which reorders integrals for use in the coupled cluster codes.");
+    def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
+    def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
+    def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
+    def("cepa", py_psi_cepa, "Runs the coupled electron pair approximation code");
+    def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
+    def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
+    def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
+    def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
+    def("omp2", py_psi_omp2, "Runs the orbital optimized MP2 code.");
+    def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
+    def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
 
     // Define library classes
     export_psio();
@@ -1171,7 +1178,11 @@ void Python::run(FILE *input)
         PyObject *path, *sysmod, *str;
         PY_TRY(sysmod , PyImport_ImportModule("sys"));
         PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+#if PY_MAJOR_VERSION == 2
         PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+#else
+        PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+#endif
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);
@@ -1186,7 +1197,11 @@ void Python::run(FILE *input)
         }
 
         try {
+#if PY_MAJOR_VERSION == 2
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
+#else
+            PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod);
+#endif
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");

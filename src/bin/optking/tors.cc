@@ -69,12 +69,30 @@ double TORS::value(GeomType geom) const {
   // Extend domain of torsion angles by checking past
   // extend domain of torsions so delta(vals) can be calculated
   if (near_180 == -1 && tau > Opt_params.fix_tors_near_pi)
-    return (-_pi - (_pi - tau));
+    return (tau - 2.0 * _pi);
   else if (near_180 == +1 && tau < -1*Opt_params.fix_tors_near_pi)
-    return (+_pi + (_pi + tau));
+    return (tau + 2.0 * _pi);
   else
     return tau;
 }
+
+/*
+Maybe someday I'll need to know if a torsion is being intepreted as having
+past through 180, but for now it doesn't seem I do.
+// returns 'true' if the torsional value is being corrected due to being past 180 or -180
+// relative to when the torsional values were fixed.
+bool TORS::fix_tors_value_corrected(GeomType geom) const {
+  double tau;
+  v3d_tors(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], tau);
+
+  if (near_180 == -1 && tau > Opt_params.fix_tors_near_pi)
+    return true;
+  else if (near_180 == +1 && tau < -1*Opt_params.fix_tors_near_pi)
+    return true;
+  else
+    return false;
+}
+*/
 
 inline int zeta(const int a, const int m, const int n) {
   if (a == m) return 1;

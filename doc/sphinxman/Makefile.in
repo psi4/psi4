@@ -48,7 +48,7 @@ autodocclean:
 clean: autodocclean
 	-rm -rf $(addprefix $(SOURCEDIR)/,$(MISCDOC))
 	-rm -rf $(addprefix $(SOURCEDIR)/,$(STATICDOC))
-	-rm -rf $(addprefix $(SOURCEDIR)/,index.rst appendices.rst)
+	-rm -rf $(addprefix $(SOURCEDIR)/,index.rst appendices.rst contents.rst)
 
 realclean: clean
 	-rm -rf $(BUILDDIR)
@@ -242,7 +242,8 @@ interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
 opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
-dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst
+dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst \
+installfile.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)
@@ -257,6 +258,7 @@ writtendoc: $(addprefix $(SOURCEDIR)/,$(MISCDOC) $(STATICDOC))
 
 html: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_html.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
@@ -264,6 +266,7 @@ html: trigger autodoc writtendoc | $(subdirs)
 
 html-user: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_htmluser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_htmluser.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-user
 	@echo
@@ -271,6 +274,7 @@ html-user: trigger autodoc writtendoc | $(subdirs)
 
 html-prog: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_htmlprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/index.rst $(SOURCEDIR)/contents.rst
 	cp -p $(SOURCEDIR)/autodoc_appendices_htmlprog.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-prog
 	@echo

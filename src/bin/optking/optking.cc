@@ -207,7 +207,9 @@ OptReturnType optking(void) {
 
   bool read_H_worked = false;
   if (Opt_params.read_cartesian_H) {
-    read_H_worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
+    double **H_cart = p_Opt_data->read_cartesian_H();       // read Cartesian Hessian
+    read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
+    free_matrix(H_cart);                                    // free Cartesian Hessian
     if (read_H_worked) {
       fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
       p_Opt_data->reset_steps_since_last_H();
@@ -217,7 +219,7 @@ OptReturnType optking(void) {
       mol1->H_guess(); // empirical model guess Hessian
     }
   }
-  else if (p_Opt_data->g_iteration() == 1 && !Opt_params.read_cartesian_H) {
+  else if (p_Opt_data->g_iteration() == 1) {
       mol1->H_guess(); // empirical model guess Hessian
   }
   else { // do Hessian update
@@ -263,6 +265,10 @@ OptReturnType optking(void) {
   rem_write((int) converged, REM_GEOM_OPT_CONVERGED); // tell QChem if converged (return value ignored for now)
   rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT_CYCLE); // tell QChem current iteration number
 #endif
+
+  if(Opt_params.opt_type == OPT_PARAMS::IRC && p_Opt_data->g_iteration() == Opt_params.geom_maxiter)
+    p_irc_data->progress_report(*mol1);
+
   if ( converged ) {
     if (Opt_params.opt_type == OPT_PARAMS::IRC)
     {

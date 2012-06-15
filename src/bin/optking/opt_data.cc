@@ -215,6 +215,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
             (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
             (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
          )
+      || (
+            (Opt_params.opt_type == OPT_PARAMS::IRC) &&
+            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
+            (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
+         )
      ) {
 
     // This environment variable will store the number of iterations required 
@@ -322,8 +328,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   mol.set_geom_array(x);
   q = mol.intco_values();
-
-  mol.fix_tors_near_180(); // fix configuration for torsions
+  mol.fix_tors_near_180(); // Fix configurations of torsions.
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
     step_start = 0;
@@ -339,7 +344,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
   fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
 
-  double *f_old, *x_old, *q_old, *dq, *dg;
+  double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
   double gq, qq, qz, zz, phi;
 
   double **H = g_H_pointer();
@@ -358,6 +363,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     q_old = mol.intco_values();
 
     for (i=0;i<Nintco;++i) {
+      // Turns out you don't have to correct for torsional changes through 180 in the forces.
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
     }
@@ -374,8 +380,10 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
     // skip Hessian updates if a dq element is too large ; helps to avoid use of inapplicable data
     // as well as torsional angles that stray too far from one side to the other of 180
-    if ( array_abs_max(dq, Nintco) > Opt_params.H_update_dq_tol ) {
-      fprintf(outfile,"\tChange in internal coordinate exceeds limit.\n");
+    double max_change = array_abs_max(dq, Nintco);
+    if ( max_change > Opt_params.H_update_dq_tol ) {
+      fprintf(outfile,"\tChange in internal coordinate of %5.2e exceeds limit of %5.2e.\n",
+        max_change, Opt_params.H_update_dq_tol );
       fprintf(outfile,"\t Skipping Hessian update for step %d.\n", i_step + 1);
       continue;
     }

@@ -199,6 +199,9 @@ void export_mints()
             def("print_out", &CdSalcList::print, "docstring").
             def("matrix", &CdSalcList::matrix, "docstring");
 
+    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
+    typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
+
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
@@ -223,7 +226,8 @@ void export_mints()
             def("ao_eri", &MintsHelper::ao_eri, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
-            def("petite_list", &MintsHelper::petite_list, "docstring").
+            def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
+            def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
             def("play", &MintsHelper::play, "docstring");
 
     class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric", "docstring").
@@ -402,6 +406,7 @@ void export_mints()
             def("nprimitive", &BasisSet::nprimitive, "docstring").
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
+            def("has_puream", &BasisSet::has_puream, "docstring").
             def(self + self);
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).

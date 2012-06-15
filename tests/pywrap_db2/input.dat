@@ -1,9 +1,9 @@
 #! Database calculation with psi4-generated input. Should not be used as a model
-#! input file but as a canary to avoid breaking database/input parser dependencies.
+#! input file but as a canary to avoid breaking database/input parser dependencies. !nosample
 
 memory 250 mb
  
-refenergy = -40.195693876290                                                                          #TEST
+refenergy = -40.195683412676                                                                          #TEST
 
 # This is a psi4 input file auto-generated from the database() wrapper.
 
@@ -23,7 +23,9 @@ from psiexceptions import *
 from util import *
 from qmmm import *
 from frac import *
+from functional import *
 from pubchem import *
+from basislist import *
 import pickle
 psi4_io = PsiMod.IOManager.shared_object()
 geometry("""
@@ -86,7 +88,7 @@ p10
 cdriver
 optimize
 p11
-s.""")
+s.""").encode(sys.getdefaultencoding())
 
 kwargs = pickle.loads(pickle_kw)
 electronic_energy = optimize(**kwargs)
