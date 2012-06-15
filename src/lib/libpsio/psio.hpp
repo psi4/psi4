@@ -81,6 +81,12 @@ public:
             * \param fileno PSI4 file number
             * \return the appropriate full path
             */
+    bool get_specific_retention(int fileno);
+    /**
+            * Inquire whether a specific file number is set to be retained
+            * \param fileno PSI4 file number
+            * \return keeping or not?
+            */
     std::string get_file_path(int fileno);
 
     /**
