@@ -88,7 +88,7 @@ p10
 cdriver
 optimize
 p11
-s.""")
+s.""").encode(sys.getdefaultencoding())
 
 kwargs = pickle.loads(pickle_kw)
 electronic_energy = optimize(**kwargs)

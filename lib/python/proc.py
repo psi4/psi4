@@ -1,3 +1,4 @@
+from __future__ import print_function
 """Module with functions that encode the sequence of PSI module
 calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
@@ -520,7 +521,7 @@ def run_cc_property(name, **kwargs):
             else:
                 invalid.append(prop)
     else:
-        print "The \"properties\" keyword is required with the property() function."
+        print("The \"properties\" keyword is required with the property() function.")
         exit(1)
 
     n_one = len(one)
@@ -530,18 +531,18 @@ def run_cc_property(name, **kwargs):
     n_invalid = len(invalid)
 
     if (n_invalid > 0):
-        print "The following properties are not currently supported: %s" % invalid
+        print("The following properties are not currently supported: %s" % invalid)
 
     if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
-        print "Excited state CC properties require EOM-CC2 or EOM-CCSD."
+        print("Excited state CC properties require EOM-CC2 or EOM-CCSD.")
         exit(1)
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        print "Cannot (yet) compute response properties for excited states."
+        print("Cannot (yet) compute response properties for excited states.")
         exit(1)
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
-        print "Computing both density- and response-based properties."
+        print("Computing both density- and response-based properties.")
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
@@ -595,7 +596,7 @@ def run_cc_property(name, **kwargs):
         elif (name.lower() == 'eom-cc2'):
             PsiMod.set_global_option('WFN', 'EOM_CC2')
         else:
-            print "Unknown excited-state CC wave function."
+            print("Unknown excited-state CC wave function.")
             exit(1)
         PsiMod.set_global_option('DERTYPE', 'NONE')
         PsiMod.set_global_option('ONEPDM', 'TRUE')
@@ -1258,14 +1259,14 @@ def run_mrcc(name, **kwargs):
             retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + PsiMod.outfile_name(), shell=True)
 
         if retcode < 0:
-            print >>sys.stderr, 'MRCC was terminated by signal', -retcode
+            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
             exit(1)
         elif retcode > 0:
-            print >>sys.stderr, 'MRCC errored', retcode
+            print('MRCC errored %d' % retcode, file=sys.stderr)
             exit(1)
 
-    except OSError, e:
-        print >>sys.stderr, 'Execution failed:', e
+    except OSError as e:
+        print('Execution failed: %s' % e, file=sys.stderr)
         exit(1)
 
     # Restore the OMP_NUM_THREADS that the user set.
@@ -1293,8 +1294,8 @@ def run_mrcc(name, **kwargs):
         # Delete unless we're told not to
         if (keep == False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
-    except OSerror, e:
-        print >>sys.stderr, 'Unable to remove MRCC temporary directory', e
+    except OSerror as e:
+        print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
     # Revert to previous current directory location
