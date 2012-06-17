@@ -1,5 +1,6 @@
 #include"psi4-dec.h"
 #include<libciomr/libciomr.h>
+#include<libmints/wavefunction.h>
 
 #include"coupledpair.h"
 
@@ -26,9 +27,12 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn,options));
   PsiReturnType status;
 
-  // integral transformation
+  // integral transformation. note that the transformation was already
+  // done if this is part of a cim computation
   tstart();
-  TransformIntegrals(wfn,options);
+  if ( !wfn->isCIM() ) {
+     TransformIntegrals(wfn,options);
+  }
   tstop();
 
   // integral sort

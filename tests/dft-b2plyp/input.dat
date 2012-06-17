@@ -1,0 +1,66 @@
+#! Double-hybrid density functional B2PYLP. Reproduces portion of Table I
+#! in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  O
+  H  1 0.960729
+  H  1 0.960729  2 104.92326
+}
+set basis cc-pvqz
+
+molecule h2 {
+  0 1
+  H
+  H  1 0.742904
+}
+set basis cc-pvqz
+
+molecule n2 {
+  0 1
+  N
+  N  1 1.090902
+}
+set basis cc-pvqz
+
+molecule ethene {
+  0 1
+  C
+  C  1 b1
+  H  1 b2  2 a1
+  H  1 b2  2 a1  3 -180.000000
+  H  2 b2  1 a1  4 -180.000000
+  H  2 b2  1 a1  3 -180.000000
+
+  a1 =  121.7305456211
+  b1 =    1.3247888503
+  b2 =    1.0826774761
+}
+set basis cc-pvqz
+
+set reference rks
+set freeze_core false
+
+activate(h2)
+eb2plyp = energy('b2plyp')
+compare_values(-1.1709, eb2plyp, 4, 'H2')       #TEST
+clean()
+
+activate(h2o)
+eb2plyp = energy('b2plyp')
+compare_values(-76.4309, eb2plyp, 4, 'Water')   #TEST
+clean()
+
+activate(n2)
+eb2plyp = energy('b2plyp')
+compare_values(-109.5302, eb2plyp, 4, 'N2')     #TEST
+clean()
+
+# works but too long for test case              #TEST
+#activate(ethene)                                #TEST
+#eb2plyp = energy('b2plyp')                      #TEST
+#compare_values(-78.5666, eb2plyp, 4, 'Ethene')  #TEST
+#clean()                                         #TEST
+

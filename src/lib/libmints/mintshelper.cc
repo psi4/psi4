@@ -77,7 +77,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
         molecule_ = wavefunction->molecule();
     }
     else {
-        psio_ = boost::shared_ptr<PSIO>(new PSIO());
+        psio_ = _default_psio_lib_;
         molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
     }
 
@@ -122,7 +122,7 @@ void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
 {
     basisset_ = basis;
     molecule_ = basis->molecule();
-    psio_ = boost::shared_ptr<PSIO>(new PSIO());
+    psio_ = _default_psio_lib_;
 
     // Make sure molecule is valid.
     molecule_->update_geometry();
@@ -259,8 +259,6 @@ void MintsHelper::integrals()
         m->save(psio_, PSIF_OEI);
     }
 
-    so_alchemical_potential()->save(psio_, PSIF_OEI);
-
     fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
                      "        stored in file %d.\n\n", PSIF_OEI);
 
@@ -329,8 +327,6 @@ void MintsHelper::one_electron_integrals()
     BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
         m->save(psio_, PSIF_OEI);
     }
-
-    so_alchemical_potential()->save(psio_, PSIF_OEI);
 
     fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
                      "        stored in file %d.\n\n", PSIF_OEI);
@@ -682,25 +678,6 @@ std::vector<SharedMatrix > MintsHelper::so_angular_momentum()
     return am;
 }
 
-SharedMatrix MintsHelper::so_alchemical_potential()
-{
-    SharedMatrix alchemical = factory_->create_shared_matrix("SO Alchemical Potential");
-    OneBodySOInt* v_int = integral_->so_potential();
-
-    // Alchemical potentials are potential integrals where Z is set to -1.
-    // This is done by changing the charge field that the potential integrals
-    // Since this a shared matrix from the potential object, any change we
-    // make to it is visible to the integral engine.
-    SharedMatrix charge_field = dynamic_cast<PotentialInt*>(v_int->ob().get())->charge_field();
-    // Modify the Z for each atom to -1
-    for (int i=0; i<charge_field->nrow(); ++i)
-        charge_field->set(i, 0, -1.0);
-    v_int->compute(alchemical);
-    delete v_int;
-
-    return alchemical;
-}
-
 std::vector<SharedMatrix > MintsHelper::ao_angular_momentum()
 {
     // Create a vector of matrices with the proper symmetry
@@ -744,25 +721,6 @@ std::vector<SharedMatrix > MintsHelper::ao_nabla()
     ints->compute(nabla);
 
     return nabla;
-}
-
-SharedMatrix MintsHelper::ao_alchemical_potential()
-{
-    SharedMatrix alchemical(new Matrix("AO Alchemical Potential", nbf(), nbf()));
-    OneBodyAOInt* v_int = integral_->ao_potential();
-
-    // Alchemical potentials are potential integrals where Z is set to -1.
-    // This is done by changing the charge field that the potential integrals
-    // Since this a shared matrix from the potential object, any change we
-    // make to it is visible to the integral engine.
-    SharedMatrix charge_field = dynamic_cast<PotentialInt*>(v_int)->charge_field();
-    // Modify the Z for each atom to -1
-    for (int i=0; i<charge_field->nrow(); ++i)
-        charge_field->set(i, 0, -1.0);
-    v_int->compute(alchemical);
-    delete v_int;
-
-    return alchemical;
 }
 
 boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,

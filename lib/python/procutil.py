@@ -1,5 +1,6 @@
 """Module with utility functions used by several Python functions."""
 import os
+import sys
 import pickle
 import PsiMod
 import input
@@ -13,8 +14,14 @@ def kwargs_lower(kwargs):
 
     """
     caseless_kwargs = {}
-    for key, value in kwargs.iteritems():
-        caseless_kwargs[key.lower()] = value
+    if sys.hexversion < 0x03000000:
+        # Python 2; we have to explicitly use an iterator
+        for key, value in kwargs.iteritems():
+            caseless_kwargs[key.lower()] = value
+    else:
+        # Python 3; an iterator is implicit
+        for key, value in kwargs.items():
+            caseless_kwargs[key.lower()] = value
     return caseless_kwargs
 
 

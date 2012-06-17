@@ -53,9 +53,12 @@ $(PSITARGET): $(BINOBJ)
 install_target::
 
 else
+
 .PHONY: gitversion
 gitversion:
 	@$(PYTHON) gitversion.py
+
+version.o: gitversion
 
 $(PSITARGET): gitversion $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`

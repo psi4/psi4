@@ -99,7 +99,7 @@ protected:
     /// How big of a perturbation
     double lambda_;
     /// With what...
-    enum perturb { nothing, dipole_x, dipole_y, dipole_z, embpot };
+    enum perturb { nothing, dipole_x, dipole_y, dipole_z, embpot, sphere };
     perturb perturb_;
 
     /// The value below which integrals are neglected
@@ -149,6 +149,14 @@ protected:
     bool damping_enabled_;
     /// Whether damping was actually performed this iteration
     bool damping_performed_;
+
+    // parameters for hard-sphere potentials
+    double radius_; // radius of spherical potential
+    double thickness_; // thickness of spherical barrier
+    int r_points_; // number of radial integration points
+    int theta_points_; // number of colatitude integration points
+    int phi_points_; // number of azimuthal integration points
+
 public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;
