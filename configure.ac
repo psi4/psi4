@@ -1038,6 +1038,8 @@ AC_CONFIG_FILES([
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
           tests/castup1/Makefile
+          tests/castup2/Makefile
+          tests/castup3/Makefile
           tests/sapt1/Makefile
           tests/sapt2/Makefile
           tests/sapt3/Makefile

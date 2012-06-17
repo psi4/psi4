@@ -808,7 +808,7 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
-    while n <= PsiMod.get_option('GEOM_MAXITER'):
+    while n <= PsiMod.get_global_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
         # Compute the gradient
@@ -850,7 +850,7 @@ def optimize(name, **kwargs):
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
+            if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
                 PsiMod.opt_clean()
             PsiMod.clean()
 
