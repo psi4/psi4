@@ -33,7 +33,7 @@ opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energ
 
 mp2_subdirs = mp2_1 omp2_1
 
-scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 dft1 dfscf-bz2 pubchem1 dft1-alt
+scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 dft1 dfscf-bz2 pubchem1 dft1-alt castup2 castup3
 
 python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
