@@ -17,21 +17,15 @@ def write_version(version):
         open('gitversion.h', 'w').write(version_str)
         try:
             os.remove("version.o")
-        except OSError, e:
+        except OSError:
             pass
 
-try:
-    head = open(top_srcdir + "/.git/HEAD").read().split(":")[1].strip()
-    sha = open(top_srcdir + "/.git/" + head).read().strip()
-    
-    write_version(sha)
+# Use Git to find the latest version number
+command = "git log -1 --pretty=%H"
+process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+(out, err) = process.communicate()
+out = str(out).rstrip()
+if process.returncode:
+    out = ""
 
-except subprocess.CalledProcessError, e:
-    write_version("")
-
-except IOError, e:
-    write_version("")
-
-except OSError, e:
-    write_version("")
-
+write_version(out)

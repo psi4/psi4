@@ -30,7 +30,7 @@ def success(label):
     Used by :py:func:`util.compare_values` family when functions pass.
 
     """
-    print '\t{0:.<66}PASSED'.format(label)
+    print('\t{0:.<66}PASSED'.format(label))
     sys.stdout.flush()
 
 
@@ -42,7 +42,7 @@ def compare_values(expected, computed, digits, label):
 
     """
     if (abs(expected - computed) > 10 ** (-digits)):
-        print "\t%s: computed value (%f) does not match (%f) to %d digits." % (label, computed, expected, digits)
+        print("\t%s: computed value (%f) does not match (%f) to %d digits." % (label, computed, expected, digits))
         sys.exit(1)
     success(label)
 
@@ -54,7 +54,7 @@ def compare_integers(expected, computed, label):
 
     """
     if (expected != computed):
-        print "\t%s: computed value (%d) does not match (%d)." % (label, computed, expected)
+        print("\t%s: computed value (%d) does not match (%d)." % (label, computed, expected))
         sys.exit(1)
     success(label)
 
@@ -66,7 +66,7 @@ def compare_strings(expected, computed, label):
 
     """
     if(expected != computed):
-        print "\t%s: computed value (%s) does not match (%s)." % (label, computed, expected)
+        print("\t%s: computed value (%s) does not match (%s)." % (label, computed, expected))
         sys.exit(1)
     success(label)
 
@@ -79,19 +79,19 @@ def compare_matrices(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        print "\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep())
+        print("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         sys.exit(1)
     if (expected.symmetry() != computed.symmetry()):
-        print "\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry())
+        print("\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry()))
         sys.exit(1)
     nirreps = expected.nirrep()
     symmetry = expected.symmetry()
     for irrep in range(nirreps):
         if(expected.rows(irrep) != computed.rows(irrep)):
-            print "\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep))
+            print("\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep)))
             sys.exit(1)
         if(expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
-            print "\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep))
+            print("\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep)))
             sys.exit(1)
         rows = expected.rows(irrep)
         cols = expected.cols(irrep ^ symmetry)
@@ -99,7 +99,7 @@ def compare_matrices(expected, computed, digits, label):
         for row in range(rows):
             for col in range(cols):
                 if(abs(expected.get(irrep, row, col) - computed.get(irrep, row, col)) > 10 ** (-digits)):
-                    print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col), computed.get(irrep, row, col))
+                    print("\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, row, col), computed.get(irrep, row, col)))
                     failed = 1
                     break
 
@@ -119,18 +119,18 @@ def compare_vectors(expected, computed, digits, label):
 
     """
     if (expected.nirrep() != computed.nirrep()):
-        print "\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep())
+        print("\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep()))
         sys.exit(1)
     nirreps = expected.nirrep()
     for irrep in range(nirreps):
         if(expected.dim(irrep) != computed.dim(irrep)):
-            print "\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep))
+            print("\tThe reference has %d entries in irrep %d, but the computed vector has %d\n." % (expected.dim(irrep), irrep, computed.dim(irrep)))
             sys.exit(1)
         dim = expected.dim(irrep)
         failed = 0
         for entry in range(dim):
             if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10 ** (-digits)):
-                print "\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry))
+                print("\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry)))
                 failed = 1
                 break
 

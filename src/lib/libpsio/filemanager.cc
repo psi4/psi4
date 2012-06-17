@@ -43,6 +43,17 @@ void PSIOManager::set_specific_retention(int fileno, bool retain)
     mirror_to_disk();
 }
 
+bool PSIOManager::get_specific_retention(int fileno)
+{
+  bool retaining = false;
+
+  for (std::set<int>::iterator it = specific_retains_.begin(); it != specific_retains_.end(); it++) {
+    if (fileno == (*it))
+      retaining = true;
+  }
+  return retaining;
+}
+
 void PSIOManager::write_scratch_file(const std::string & full_path, const std::string &text)
 {
     files_[full_path] = true;

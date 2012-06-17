@@ -327,21 +327,23 @@ void Wavefunction::call_postiteration_callbacks()
 }
 
 SharedMatrix Wavefunction::Ca() const {
-    if (!Ca_)
+    if (!Ca_) {
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
         else
             return reference_wavefunction_->Ca();
+    }
 
     return Ca_;
 }
 
 SharedMatrix Wavefunction::Cb() const {
-    if (!Cb_)
+    if (!Cb_) {
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
         else
             return reference_wavefunction_->Cb();
+    }
 
     return Cb_;
 }
@@ -664,4 +666,9 @@ void Wavefunction::CIMSet(bool value,int nactive_orbitals)
 bool Wavefunction::isCIM()
 {
     return isCIM_;
+}
+
+void Wavefunction::check_integration()
+{
+
 }

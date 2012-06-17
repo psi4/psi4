@@ -780,28 +780,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations -*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
-      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau -*/
+      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert-*/
       options.add_bool("TAU_SQUARED", false);
-      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation -*/
+      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation !expert-*/
       options.add_bool("TPDM", false);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
-      For practical applications only the default must be used -*/
+      For practical applications only the default must be used !expert-*/
       options.add_bool("MO_RELAX", true);
       /*- Controls whether to ignore terms containing non-idempotent contribution to OPDM or not (for debug puproses only).
-      For practical applications only the default must be used -*/
+      For practical applications only the default must be used !expert-*/
       options.add_bool("IGNORE_TAU", false);
-      /*- Controls how to cache quantities within the DPD library -*/
+      /*- Controls how to cache quantities within the DPD library !expert-*/
       options.add_int("CACHELEVEL", 2);
-      /*- Minimum absolute value below which integrals are neglected -*/
+      /*- Minimum absolute value below which integrals are neglected !expert-*/
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- Controls whether to force the occupation to be that of the SCF guess.
-      For practical applications only the default must be used -*/
+      For practical applications only the default must be used !expert-*/
       options.add_bool("LOCK_OCC", true);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
       options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
-      and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only)-*/
+      and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
 
   }
@@ -904,12 +904,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
-    /*- Size of the perturbation -*/
+    /*- Size of the perturbation (applies only to dipole perturbations) -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT");
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
+
+    /*- Radius (bohr) of a hard-sphere external potential -*/
+    options.add_double("RADIUS", 10.0); // bohr
+    /*- Thickness (bohr) of a hard-sphere external potential -*/
+    options.add_double("THICKNESS", 20.0); // bohr
+    /*- Number of radial grid points for sphereical potential integration -*/
+    options.add_int("R_POINTS", 100);
+    /*- Number of colatitude grid points for sphereical potential integration -*/
+    options.add_int("THETA_POINTS", 360);
+    /*- Number of azimuthal grid points for sphereical potential integration -*/
+    options.add_int("PHI_POINTS", 360);
+
 
     /*- SUBSECTION Parallel Runtime -*/
 
