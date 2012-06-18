@@ -686,7 +686,7 @@ def property(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    #PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -829,6 +829,9 @@ def optimize(name, **kwargs):
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
+        elif ((full_hess_every == -1) and (PsiMod.get_global_option('CART_HESS_READ')) and (n == 1)):
+            pass;
+            # Do nothing; user said to read existing hessian once
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
             steps_since_last_hessian += 1
