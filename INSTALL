@@ -36,7 +36,7 @@ I. Compilation Prerequisites
 
 * POSIX threads (Pthreads) library (optional)
 
-* Python interpreter (2.4 or higher)
+* Python interpreter (2.6 or higher; psi4 is Python3 compatible)
 
 * Python developer libraries corresponding to your interpreter.
 
@@ -350,20 +350,21 @@ compiling and installing the PSI4 package.
   
      * ``--with-max-am-eri=integer`` --- Specifies the maximum angular momentum
        level for the primitive Gaussian basis functions when computing
-       electron repulsion integrals.  This is set to g-type functions (AM=4)
+       electron repulsion integrals.  This is set to h-type functions (AM=5)
        by default.
   
      * ``--with-max-am-deriv1=integer`` --- Specifies the maximum angular
        momentum level for first derivatives of the primitive Gaussian
-       basis functions.  This is set to f-type functions (AM=3) by default.
+       basis functions.  This is set to g-type functions (AM=4) by default.
   
      * ``--with-max-am-deriv2=integer`` --- Specifies the maximum angular
        momentum level for second derivatives of the primitive Gaussian
-       basis functions.  This is set to d-type functions (AM=2) by default.
+       basis functions.  This is set to f-type functions (AM=3) by default.
   
      * ``--with-max-am-r12=integer`` --- Specifies the maximum angular momentum
        level for primitive Gaussian basis functions used in r_12 explicitly
        correlated methods.  This is set to f-type functions (AM=3) by default.
+       Not yet active.
   
      * ``--with-debug=yes/no`` --- Turns on debugging flags (-g) if yes.  This is
        set to no by default.
