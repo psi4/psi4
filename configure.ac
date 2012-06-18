@@ -92,8 +92,8 @@ CXXINC='$(CPPFLAGS) $(PSICPPFLAGS) $(PYTHON_INCLUDE)' AC_SUBST(CXXINC)
 ########
 
 # Options for libint
-LIBINT_NEW_AM=8
-LIBINT_OPT_AM=4
+LIBINT_NEW_AM=10
+LIBINT_OPT_AM=5
 AC_ARG_WITH(max-am-eri,[  --with-max-am-eri       maximum AM in ERIs],[
   LIBINT_NEW_AM=$((2*($withval)))
   LIBINT_OPT_AM=$(($withval))
@@ -102,7 +102,7 @@ AC_SUBST(LIBINT_NEW_AM)
 AC_SUBST(LIBINT_OPT_AM)
 
 # Options for libderiv
-LIBDERIV_NEW_AM1=6
+LIBDERIV_NEW_AM1=8
 AC_ARG_WITH(max-am-deriv1,[  --with-max-am-deriv1    maximum AM in ERI first derivatives],[
   LIBDERIV_NEW_AM1=$((2*($withval)))
 ])
