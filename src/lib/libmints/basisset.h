@@ -285,6 +285,9 @@ public:
     //! Returns the vector of sorted shell list.
     std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
+    // Returns the values of the basis functions at a point
+    void compute_phi(double *phi_ao, double x, double y, double z);
+
     // BasisSet friends
     friend class Gaussian94BasisSetParser;
     friend BasisSet operator +(const BasisSet& a, const BasisSet& b);

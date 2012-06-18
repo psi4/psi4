@@ -17,6 +17,7 @@ void export_psio()
         def( "tocprint", &PSIO::tocprint, "docstring" ).
         def( "tocwrite", &PSIO::tocwrite, "docstring" ).
         def( "shared_object", &PSIO::shared_object).
+        def( "set_pid", &PSIO::set_pid, "docstring" ).
         staticmethod("shared_object").
         def( "get_default_namespace", &PSIO::get_default_namespace, "docstring").
         staticmethod("get_default_namespace").

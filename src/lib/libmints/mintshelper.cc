@@ -77,7 +77,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
         molecule_ = wavefunction->molecule();
     }
     else {
-        psio_ = boost::shared_ptr<PSIO>(new PSIO());
+        psio_ = _default_psio_lib_;
         molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
     }
 
@@ -122,7 +122,7 @@ void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
 {
     basisset_ = basis;
     molecule_ = basis->molecule();
-    psio_ = boost::shared_ptr<PSIO>(new PSIO());
+    psio_ = _default_psio_lib_;
 
     // Make sure molecule is valid.
     molecule_->update_geometry();
