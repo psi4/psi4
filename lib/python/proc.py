@@ -155,7 +155,7 @@ def scf_helper(name, **kwargs):
     """
     optstash = OptionsState(
         ['SCF', 'PUREAM'],
-        ['SCF', 'BASIS'],
+        #['SCF', 'BASIS'],
         #['SCF', 'DF_BASIS_SCF'],  # this keyword is addled
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
@@ -169,6 +169,7 @@ def scf_helper(name, **kwargs):
 
     user_scf_dfbasisscf = PsiMod.get_option('SCF', 'DF_BASIS_SCF')
     b_user_scf_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
+    b_user_basis = PsiMod.has_global_option_changed('BASIS')
 
     cast = False
     if 'cast_up' in kwargs:
@@ -250,7 +251,7 @@ def scf_helper(name, **kwargs):
         #   in several modules in addition to scf, so will wait for std soln.
 
         # Set to read and project, and reset bases to final ones
-        PsiMod.set_local_option('SCF', 'BASIS', user_basis)
+        PsiMod.set_global_option('BASIS', user_basis)
         PsiMod.set_local_option('SCF', 'SCF_TYPE', user_scftype)
         PsiMod.set_local_option('SCF', 'GUESS', 'READ')
         if (user_scftype == 'DF'):
@@ -269,6 +270,11 @@ def scf_helper(name, **kwargs):
 
     else:
         e_scf = PsiMod.scf(precallback, postcallback)
+
+    # These two sets to be removed when OptionsState plays nicely w/ basis keywords
+    PsiMod.set_global_option('BASIS', user_basis)
+    if not b_user_basis:
+        PsiMod.revoke_global_option_changed('BASIS')
 
     PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_scf_dfbasisscf)
     if not b_user_scf_dfbasisscf:
@@ -358,21 +364,40 @@ def run_ccenergy(name, **kwargs):
     a CCSD, CC2, and CC3 calculation.
 
     """
-    if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
-    elif (name.lower() == 'ccsd(t)'):
-        PsiMod.set_global_option('WFN', 'CCSD_T')
-    elif (name.lower() == 'cc2'):
-        PsiMod.set_global_option('WFN', 'CC2')
-    elif (name.lower() == 'cc3'):
-        PsiMod.set_global_option('WFN', 'CC3')
-    elif (name.lower() == 'eom-cc2'):
-        PsiMod.set_global_option('WFN', 'EOM_CC2')
-    elif (name.lower() == 'eom-ccsd'):
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    lowername = name.lower()
+
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'])
+
+    if (lowername == 'ccsd'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD')
+    elif (lowername == 'ccsd(t)'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+    elif (lowername == 'cc2'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CC2')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CC2')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CC2')
+    elif (lowername == 'cc3'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CC3')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CC3')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CC3')
+    elif (lowername == 'eom-cc2'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
+    elif (lowername == 'eom-ccsd'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options,
     # incl. wfn
-    elif(name.lower() == 'ccenergy'):
+    elif(lowername == 'ccenergy'):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
@@ -388,10 +413,7 @@ def run_ccenergy(name, **kwargs):
     PsiMod.ccsort()
     returnvalue = PsiMod.ccenergy()
 
-    if (name.lower() != 'ccenergy'):
-        PsiMod.set_global_option('WFN', 'SCF')
-        PsiMod.revoke_global_option_changed('WFN')
-
+    optstash.restore()
     return returnvalue
 
 
@@ -434,7 +456,7 @@ def run_bccd(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('scf', 'scf_type') == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -1351,7 +1373,7 @@ def run_cepa(name, **kwargs):
     run_scf('scf', **kwargs)
 
     # If the scf type is DF, then the AO integrals were never generated
-    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_option('scf','scf_type') == 'DF'):
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_option('SCF','SCF_TYPE') == 'DF'):
        mints = PsiMod.MintsHelper()
        mints.integrals()
    
@@ -1384,10 +1406,10 @@ def run_b2plyp(name, **kwargs):
     # use with c_alpha = 0.0 in functional.py
     #     with Rob's current normalization in superfunctional.cc
 
-    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+    user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('SCF', 'REFERENCE')
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', 'b2plyp_xc')
 
