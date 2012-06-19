@@ -92,8 +92,8 @@ CXXINC='$(CPPFLAGS) $(PSICPPFLAGS) $(PYTHON_INCLUDE)' AC_SUBST(CXXINC)
 ########
 
 # Options for libint
-LIBINT_NEW_AM=8
-LIBINT_OPT_AM=4
+LIBINT_NEW_AM=10
+LIBINT_OPT_AM=5
 AC_ARG_WITH(max-am-eri,[  --with-max-am-eri       maximum AM in ERIs],[
   LIBINT_NEW_AM=$((2*($withval)))
   LIBINT_OPT_AM=$(($withval))
@@ -102,7 +102,7 @@ AC_SUBST(LIBINT_NEW_AM)
 AC_SUBST(LIBINT_OPT_AM)
 
 # Options for libderiv
-LIBDERIV_NEW_AM1=6
+LIBDERIV_NEW_AM1=8
 AC_ARG_WITH(max-am-deriv1,[  --with-max-am-deriv1    maximum AM in ERI first derivatives],[
   LIBDERIV_NEW_AM1=$((2*($withval)))
 ])
@@ -299,8 +299,8 @@ AC_SUBST(LDFLAGS)
 AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 
 # Check for python interpreter and libraries
-#  Version 2.4 is required because we call Py_InitializeEx(0)
-AC_PYTHON([2.4])
+#  Version 2.6 is required because we import Python3 printing from future
+AC_PYTHON([2.6])
 
 
 
@@ -1039,6 +1039,8 @@ AC_CONFIG_FILES([
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
           tests/castup1/Makefile
+          tests/castup2/Makefile
+          tests/castup3/Makefile
           tests/sapt1/Makefile
           tests/sapt2/Makefile
           tests/sapt3/Makefile

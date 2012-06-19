@@ -768,3 +768,37 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     //And ... return
     return bas;
 }
+
+void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
+{
+  zero_arr(phi_ao, nao());
+
+  int ao = 0;
+  for(int ns=0; ns < nshell(); ns++) {
+    const GaussianShell& shell = shells_[ns];
+    int am = shell.am();
+    int nprim = shell.nprimitive();
+    const std::vector<double>& a = shell.exps();
+    const std::vector<double>& c = shell.coefs();
+
+    int atom = shell_to_center(ns);
+    double dx = x - molecule_->xyz(atom, 0);
+    double dy = y - molecule_->xyz(atom, 1);
+    double dz = z - molecule_->xyz(atom, 2);
+    double rr = dx*dx + dy*dy + dz*dz;
+
+    double cexpr = 0;
+    for(int np=0; np < nprim; np++)
+      cexpr += c[np] * exp(-a[np] * rr);
+
+    for(int l=0; l < INT_NCART(am); l++) {
+      Vector3& components = exp_ao[am][l];
+      phi_ao[ao+l] += pow(dx, (double) components[0]) *
+                      pow(dy, (double) components[1]) *
+                      pow(dz, (double) components[2]) *
+                      cexpr;
+    }
+
+      ao += INT_NCART(am);
+  } // nshell
+}

@@ -1,3 +1,7 @@
+## Force Python 3 print syntax, if this is python 2.X
+#if sys.hexversion < 0x03000000:
+from __future__ import print_function
+
 """Module with functions to parse the input file and convert
 Psithon into standard Python. Particularly, forms PsiMod
 module calls that access the C++ side of Psi4.
@@ -9,6 +13,7 @@ import re
 import os
 import sys
 from psiexceptions import *
+
 
 yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
 no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
@@ -31,7 +36,7 @@ def process_word_quotes(matchobj):
         if(re.match(r'^[A-Za-z][\w]*', val)):
             return val
         else:
-            print "Invalid Python variable: %s" % val
+            print("Invalid Python variable: %s" % val)
             sys.exit(1)
     elif(re.match(r'^-?\d+\.?\d*(?:[Ee]-?\d+)?$', val)):
         # This must be a number, don't wrap it in quotes
@@ -239,6 +244,13 @@ def process_basis_file(matchobj):
 
     return command
 
+def process_filename(matchobj):
+    """Function to process match of ``filename ...``."""
+    spacing = str(matchobj.group(1))
+    filename = str(matchobj.group(2)).strip()
+    command = "%sPsiMod.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
+
+    return command
 
 def process_basis_block(matchobj):
     """Function to process match of ``basis name { ... }``."""
@@ -413,9 +425,9 @@ def process_external_command(matchobj):
 
     # 6. If there is anything left, the user messed up
     if (len(lines)):
-        print 'Input parsing for external {}: Extra line(s) present:'
+        print('Input parsing for external {}: Extra line(s) present:')
         for line in lines:
-            print line
+            print(line)
             sys.exit(1)
 
     # Return is actually an ExternalPotential, not a QMMM
@@ -438,8 +450,8 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
     lrmap = {"(":")", "[":"]", "{":"}"}
 
     # derive sets of left and right parentheses
-    lparens = set(lrmap.iterkeys())
-    rparens = set(lrmap.itervalues())
+    lparens = set(lrmap.keys())
+    rparens = set(lrmap.values())
 
     parenstack = collections.deque()
     all_matched = 1
@@ -454,18 +466,18 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
                 # Run out of opening parens
                 all_matched = 0
                 if exit_on_error:
-                    print "Input error: extra %s" % ch
+                    print("Input error: extra %s" % ch)
                     sys.exit(1)
             if lrmap[opench] != ch:
                 # wrong type of parenthesis popped from stack
                 all_matched = 0
                 if exit_on_error:
-                    print "Input error: %s closed with a %s" % (opench, ch)
+                    print("Input error: %s closed with a %s" % (opench, ch))
                     sys.exit(1)
     if(len(parenstack) != 0):
         all_matched = 0
         if exit_on_error:
-            print "Input error: Unmatched %s" % parenstack.pop()
+            print("Input error: Unmatched %s" % parenstack.pop())
             sys.exit(1)
 
     return all_matched
@@ -537,7 +549,7 @@ def process_input(raw_input, print_level=1):
                 break
 
         if (input_start == -1 or input_stop == -1):
-            print 'Cannot extract infile from outfile.'
+            print('Cannot extract infile from outfile.')
             sys.exit(1)
 
         raw_input = '\n'.join(input_lines[input_start:input_stop])
@@ -632,6 +644,11 @@ def process_input(raw_input, print_level=1):
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
+    # Process "basis file ... "
+    file_pid = re.compile(r'(\s*?)filename\s*(\b.*\b)\s*$',
+                            re.MULTILINE | re.IGNORECASE)
+    temp = re.sub(file_pid, process_filename, temp)
+
     # imports
     imports = 'from PsiMod import *\n'
     imports += 'from physconst import *\n'
@@ -647,7 +664,6 @@ def process_input(raw_input, print_level=1):
     imports += 'from frac import *\n'
     imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
-    imports += 'from basislist import *\n'
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
 
@@ -687,5 +703,5 @@ set basis 6-31G**
 
 """)
 
-    print "Result\n=========================="
-    print result
+    print("Result\n==========================")
+    print(result)
