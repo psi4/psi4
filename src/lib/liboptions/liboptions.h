@@ -25,7 +25,7 @@ class IndexException : public PsiException
 public:
     IndexException(const std::string& message) : PSIEXCEPTION(message + " is not a valid option.") { }
     IndexException(const std::string& message, const std::string &module) :
-        PSIEXCEPTION(message + " is not a valid options for module " + module) { }
+        PSIEXCEPTION(message + " is not a valid option for module " + module) { }
 };
 
 class DuplicateKeyException : public PsiException
@@ -393,7 +393,11 @@ public:
 
     Data& get_global(std::string key);
 
+    Data& get_local(std::string& key);
+
     Data& use(std::string& key);
+
+    Data& use_local(std::string& key);
 
     bool get_bool(std::string key);
     int get_int(std::string key);

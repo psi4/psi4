@@ -210,7 +210,8 @@ def n_body(name, **kwargs):
         raise ValidationError('n_body: max_n_body must be <= to the number of fragments in the molecule')
 
     # Set to save RI integrals for repeated full-basis computations
-    ri_ints_io = PsiMod.get_option('DF_INTS_IO')
+    ri_ints_io = PsiMod.get_global_option('DF_INTS_IO')
+    # inquire if above at all applies to dfmp2 or just scf
     PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
@@ -630,7 +631,8 @@ def cp(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    df_ints_io = PsiMod.get_global_option('DF_INTS_IO')
+    # inquire if above at all applies to dfmp2 or just scf
     PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
@@ -939,14 +941,14 @@ def database(name, db_name, **kwargs):
         GEOS = database.GEOS
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
-    user_basis = PsiMod.get_option('BASIS')
-    user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
-    user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
-    user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
-    user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
+    user_basis = PsiMod.get_global_option('BASIS')
+    user_df_basis_scf = PsiMod.get_global_option('DF_BASIS_SCF')
+    user_df_basis_mp2 = PsiMod.get_global_option('DF_BASIS_MP2')
+    user_df_basis_sapt = PsiMod.get_global_option('DF_BASIS_SAPT')
+    user_df_basis_elst = PsiMod.get_global_option('DF_BASIS_ELST')
 
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
-    user_reference = PsiMod.get_option('REFERENCE')
+    user_reference = PsiMod.get_global_option('REFERENCE')
     user_memory = PsiMod.get_memory()
 
     user_molecule = PsiMod.get_active_molecule()
@@ -1215,7 +1217,7 @@ def database(name, db_name, **kwargs):
         commands = ''
         commands += """\nPsiMod.set_memory(%s)\n\n""" % (user_memory)
         for chgdopt in PsiMod.get_global_option_list():
-            if PsiMod.has_option_changed(chgdopt):
+            if PsiMod.has_global_option_changed(chgdopt):
                 chgdoptval = PsiMod.get_global_option(chgdopt)
                 #chgdoptval = PsiMod.get_option(chgdopt)
                 if isinstance(chgdoptval, basestring):
@@ -1754,14 +1756,14 @@ def complete_basis_set(name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
-    user_basis = PsiMod.get_option('BASIS')
+    user_basis = PsiMod.get_global_option('BASIS')
     #user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
     #user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
     #user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
     #user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
     #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
-    user_wfn = PsiMod.get_option('WFN')
+    user_wfn = PsiMod.get_global_option('WFN')
 
     # Make sure the molecule the user provided is the active one
     if 'molecule' in kwargs:
