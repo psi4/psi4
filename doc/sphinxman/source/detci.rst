@@ -7,8 +7,8 @@
 .. index::
    pair: CI; theory
 
-Configuration Interaction
-=========================
+CI: Configuration Interaction
+=============================
 
 .. codeauthor:: C. David Sherrill and Matthew L. Leininger
 .. sectionauthor:: C. David Sherrill
