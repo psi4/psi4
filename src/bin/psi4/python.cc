@@ -540,7 +540,7 @@ bool check_for_basis(std::string const & name, std::string const & type)
     return false;
 }
 
-bool py_psi_set_option_string(std::string const & module, std::string const & key, std::string const & value)
+bool py_psi_set_local_option_string(std::string const & module, std::string const & key, std::string const & value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -561,10 +561,10 @@ bool py_psi_set_option_string(std::string const & module, std::string const & ke
     return true;
 }
 
-bool py_psi_set_option_int(std::string const & module, std::string const & key, int value)
+bool py_psi_set_local_option_int(std::string const & module, std::string const & key, int value)
 {
     string nonconst_key = boost::to_upper_copy(key);
-    Data& data = Process::environment.options.use(nonconst_key);
+    Data& data = Process::environment.options[nonconst_key];
 
     if(data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
@@ -578,7 +578,7 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
 
 }
 
-bool py_psi_set_option_double(std::string const & module, std::string const & key, double value)
+bool py_psi_set_local_option_double(std::string const & module, std::string const & key, double value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_double(module, nonconst_key, value);
@@ -601,7 +601,7 @@ bool is_double(T x)
 bool py_psi_set_global_option_string(std::string const & key, std::string const & value)
 {
     string nonconst_key = boost::to_upper_copy(key);
-    Data& data = Process::environment.options.use(nonconst_key);
+    Data& data = Process::environment.options[nonconst_key];
 
     if (data.type() == "string") {
         Process::environment.options.set_global_str(nonconst_key, value);
@@ -622,7 +622,7 @@ bool py_psi_set_global_option_string(std::string const & key, std::string const 
 bool py_psi_set_global_option_int(std::string const & key, int value)
 {
     string nonconst_key = boost::to_upper_copy(key);
-    Data& data = Process::environment.options.use(nonconst_key);
+    Data& data = Process::environment.options[nonconst_key];
 
     if( data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
@@ -649,7 +649,7 @@ bool py_psi_set_global_option_python(std::string const & key, boost::python::obj
     return true;
 }
 
-bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
+bool py_psi_set_local_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
     // Assign a new head entry on the first time around only
@@ -665,7 +665,7 @@ bool py_psi_set_option_array(std::string const & module, std::string const & key
             python::list l = extract<python::list>(values[n]);
             DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
             // Now we need to recurse, to fill in the data
-            py_psi_set_option_array(module, key, l, newentry);
+            py_psi_set_local_option_array(module, key, l, newentry);
         }else if(sval.check()){
             std::string s = extract<std::string>(values[n]);
             Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
@@ -722,25 +722,12 @@ void py_psi_set_local_option_python(const string& key, boost::python::object& ob
         throw PSIEXCEPTION("Unable to set option to a Python object.");
 }
 
-object py_psi_get_option(const string& key)
+bool py_psi_has_local_option_changed(std::string const & module, std::string const & key)
 {
     string nonconst_key = key;
-    Data& data = Process::environment.options.use(nonconst_key);
-
-    if (data.type() == "string")
-        return str(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "int")
-        return object(data.to_integer());
-    else if (data.type() == "double")
-        return object(data.to_double());
-
-    return object();
-}
-
-bool py_psi_has_option_changed(const string& key)
-{
-    string nonconst_key = key;
-    Data& data = Process::environment.options.use(nonconst_key);
+    Process::environment.options.set_current_module(module);
+    py_psi_prepare_options_for_module(module);
+    Data& data = Process::environment.options.get_local(nonconst_key);
 
     return data.has_changed();
 }
@@ -753,20 +740,14 @@ bool py_psi_has_global_option_changed(std::string const & key)
     return data.has_changed();
 }
 
-bool py_psi_has_local_option_changed(std::string const & module, std::string const & key)
+bool py_psi_has_option_changed(std::string const & module, std::string const & key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
-    Data& data = Process::environment.options.use(nonconst_key);
+    py_psi_prepare_options_for_module(module);
+    Data& data = Process::environment.options.use_local(nonconst_key);
 
     return data.has_changed();
-}
-
-void py_psi_revoke_option_changed(std::string const & key)
-{
-    string nonconst_key = boost::to_upper_copy(key);
-    Data& data = Process::environment.options.use(nonconst_key);
-    data.dechanged();
 }
 
 void py_psi_revoke_global_option_changed(std::string const & key)
@@ -778,10 +759,29 @@ void py_psi_revoke_global_option_changed(std::string const & key)
 
 void py_psi_revoke_local_option_changed(std::string const & module, std::string const & key)
 {
+
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_current_module(module);
-    Data& data = Process::environment.options.use(nonconst_key);
+    py_psi_prepare_options_for_module(module);
+    Data& data = Process::environment.options.get_local(nonconst_key);
     data.dechanged();
+}
+
+object py_psi_get_local_option(std::string const & module, std::string const & key)
+{
+    string nonconst_key = key;
+    Process::environment.options.set_current_module(module);
+    py_psi_prepare_options_for_module(module);
+    Data& data = Process::environment.options.get_local(nonconst_key);
+
+    if (data.type() == "string")
+        return str(data.to_string());
+    else if (data.type() == "boolean" || data.type() == "int")
+        return object(data.to_integer());
+    else if (data.type() == "double")
+        return object(data.to_double());
+
+    return object();
 }
 
 object py_psi_get_global_option(std::string const & key)
@@ -799,11 +799,12 @@ object py_psi_get_global_option(std::string const & key)
     return object();
 }
 
-object py_psi_get_local_option(std::string const & module, std::string const & key)
+object py_psi_get_option(std::string const & module, std::string const & key)
 {
     string nonconst_key = key;
     Process::environment.options.set_current_module(module);
-    Data& data = Process::environment.options.use(nonconst_key);
+    py_psi_prepare_options_for_module(module);
+    Data& data = Process::environment.options.use_local(nonconst_key);
 
     if (data.type() == "string")
         return str(data.to_string());
@@ -945,7 +946,7 @@ std::string py_psi_top_srcdir()
 
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
-BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_option_array, 3, 4)
+BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
@@ -994,43 +995,38 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_option_string, "Sets a string option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_option_double, "Sets a double option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_option_int, "Sets an integer option scoped only to a specific module.");
-    def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
+    def("set_local_option", py_psi_set_local_option_string, "Sets a string option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_local_option_double, "Sets a double option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_local_option_int, "Sets an integer option scoped only to a specific module.");
+    def("set_local_option", py_psi_set_local_option_array, set_local_option_overloads());
+    def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
 
     // Set the different global option types
     def("set_global_option", py_psi_set_global_option_string, "Sets a string option for all modules.");
     def("set_global_option", py_psi_set_global_option_double, "Sets a double option for all modules.");
     def("set_global_option", py_psi_set_global_option_int, "Sets an integer option for all modules.");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
-
     def("set_global_option_python", py_psi_set_global_option_python, "Sets a global option to a Python object type.");
-    def("set_local_option_python", py_psi_set_local_option_python, "Sets an option to a Python object, but scoped only to a single module.");
 
+    // Print options list
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
-    // Get the option; letting liboptions decide whether to use global or local
-    def("get_option", py_psi_get_option, "Given a string, returns the option associated with that keyword, returning the local value if it's been set, else the global one if that's been set, else the local default value.");
-
-    // Get the option; specify whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string, returns the option associated with the keyword from the global options.");
-    def("get_local_option", py_psi_get_local_option, "Given a string, returns the option associated with the keyword scoped to the currently active set of options.");
+    // Get the option; either global or local or let liboptions decide whether to use global or local
+    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
+    def("get_option", py_psi_get_option, "Given a string of a keyword name and a particular module, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_option_changed", py_psi_has_option_changed, "Whether an option has been set by the user.");
-    def("has_global_option_changed", py_psi_has_global_option_changed, "docstring");
-    def("has_local_option_changed", py_psi_has_local_option_changed, "docstring");
-    def("revoke_option_changed", py_psi_revoke_option_changed, "docstring");
-    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "docstring");
-    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "docstring");
+    def("has_global_option_changed", py_psi_has_global_option_changed, "Returns boolean for whether the option has been touched in the global scope, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the global scope by the user.");
+    def("has_local_option_changed", py_psi_has_local_option_changed, "Returns boolean for whether the option has been touched in the scope of the specified module, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched in the module scope by the user.");
+    def("has_option_changed", py_psi_has_option_changed, "Returns boolean for whether the option has been touched either locally to the specified module or globally, by either user or code. Notwithstanding, code is written such that in practice, this returns whether the option has been touched by the user.");
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "Given a string of a keyword name, sets the has_changed attribute in the global options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "Given a string of a keyword name and a particular module, sets the has_changed attribute in the module options scope to false. Used in python driver when a function sets the value of an option. Before the function exits, this command is called on the option so that has_changed reflects whether the user (not the program) has touched the option.");
 
-    // These return/set variable value found in Process::environment.globals
-    def("get_variable", py_psi_get_variable, "Returns one of the global variables set internally by the modules (see manual for full listing of variables available).");
-    def("set_variable", py_psi_set_variable, "Sets a global variable, by name.");
-
-    // Print the variables found in Process::environment.globals
-    def("print_variables", py_psi_print_variable_map, "Prints all global variables that have been set internally.");
+    // These return/set/print PSI variables found in Process::environment.globals
+    def("get_variable", py_psi_get_variable, "Returns one of the PSI variables set internally by the modules or python driver (see manual for full listing of variables available).");
+    def("set_variable", py_psi_set_variable, "Sets a PSI variable, by name.");
+    def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
 
     // Adds a custom user basis set file.
     def("add_user_basis_file", py_psi_add_user_specified_basis_file, "Adds a custom basis set file, provided by the user.");

@@ -114,10 +114,6 @@ public:
     std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals
     std::vector<SharedMatrix > ao_nabla();
-    /// AO Alchemical Potential
-    SharedMatrix ao_alchemical_potential();
-    /// SO Alchemical Potential
-    SharedMatrix so_alchemical_potential();
     /// SO Overlap Integrals
     SharedMatrix so_overlap();
     /// SO Kinetic Integrals

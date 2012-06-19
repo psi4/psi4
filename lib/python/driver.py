@@ -1,3 +1,4 @@
+from __future__ import print_function
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
@@ -341,6 +342,21 @@ def energy(name, **kwargs):
 
         The target molecule, if not the last molecule defined.
 
+    :type cast_up: :ref:`boolean <op_py_boolean>` or string
+    :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
+
+        Indicates whether, to accelerate convergence for the scf portion of 
+        the *name* calculation, a preliminary scf should be performed with a 
+        small basis set (3-21G if a basis name is not supplied as keyword 
+        value) followed by projection into the full target basis.
+
+    :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
+    :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
+
+        Indicates whether, when *cast_up* is active, to run the preliminary
+        scf in density-fitted mode or what fitting basis to employ (when
+        available for all elements, cc-pVDZ-RI is the default).
+
     :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
 
@@ -353,8 +369,9 @@ def energy(name, **kwargs):
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
 
-    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into requested basis
-    >>> energy('sapt0-ct',cast_up=True)
+    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into 
+    >>> #     requested basis, with specified projection fitting basis
+    >>> energy('sapt0-ct', cast_up=True, cast_up_df='jun-cc-pVDZ-JKFIT')
 
     >>> # [3] Arbitrary-order MPn calculation
     >>> energy('mp4')
@@ -485,14 +502,14 @@ def gradient(name, **kwargs):
             opt_iter = kwargs['opt_iter']
 
         if opt_iter == 1:
-            print 'Performing finite difference calculations'
+            print('Performing finite difference calculations')
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_1_0()
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print ' %d displacements needed ...' % (ndisp),
+        print(' %d displacements needed ...' % (ndisp), end="")
         energies = []
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
@@ -550,9 +567,9 @@ def gradient(name, **kwargs):
                 banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
                 # Print information to the screen
-                print ' %d' % (n + 1),
+                print(' %d' % (n + 1), end="")
                 if (n + 1) == ndisp:
-                    print '\n',
+                    print('\n', end="")
 
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
@@ -586,7 +603,7 @@ def gradient(name, **kwargs):
             # S/R: Read energy from each displaced geometry output file and save in energies array
             elif (opt_mode.lower() == 'reap'):
                 E = 0.0
-                exec banners
+                exec(banners)
 
                 try:
                     freagent = open('%s.out' % (rfile), 'r')
@@ -685,7 +702,7 @@ def property(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    #PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -796,7 +813,7 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
-    while n <= PsiMod.get_option('GEOM_MAXITER'):
+    while n <= PsiMod.get_global_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
         # Compute the gradient
@@ -828,6 +845,9 @@ def optimize(name, **kwargs):
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
+        elif ((full_hess_every == -1) and (PsiMod.get_global_option('CART_HESS_READ')) and (n == 1)):
+            pass;
+            # Do nothing; user said to read existing hessian once
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
             steps_since_last_hessian += 1
@@ -835,10 +855,10 @@ def optimize(name, **kwargs):
         # print 'cart_hess_read', PsiMod.get_global_option('CART_HESS_READ')
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
-            print 'Optimizer: Optimization complete!'
+            print('Optimizer: Optimization complete!')
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
+            if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
                 PsiMod.opt_clean()
             PsiMod.clean()
 
@@ -1002,7 +1022,7 @@ def frequency(name, **kwargs):
     if ('dertype' in kwargs):
         dertype = kwargs['dertype']
         if not (lowername in procedures[types[dertype]]):
-            print 'Frequencies: dertype = %d for frequencies is not available, switching to automatic determination.' % dertype
+            print('Frequencies: dertype = %d for frequencies is not available, switching to automatic determination.' % dertype)
             dertype = -1
 
     if 'irrep' in kwargs:
@@ -1033,7 +1053,7 @@ def frequency(name, **kwargs):
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
         info = 'Performing finite difference by gradient calculations'
-        print info
+        print(info)
 
         func = procedures['gradient'][lowername]
 
@@ -1046,7 +1066,7 @@ def frequency(name, **kwargs):
         PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
-        print ' %d displacements needed.' % ndisp
+        print(' %d displacements needed.' % ndisp)
 
         #print displacements to output.dat
         #for n, displacement in enumerate(displacements):
@@ -1059,9 +1079,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print ' %d' % (n + 1),
+            print(' %d' % (n + 1), end="")
             if (n + 1) == ndisp:
-                print '\n',
+                print('\n', end="")
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -1078,7 +1098,7 @@ def frequency(name, **kwargs):
 
         PsiMod.fd_freq_1(gradients, irrep)
 
-        print ' Computation complete.'
+        print(' Computation complete.')
         
         # Clear the "parent" symmetry now
         PsiMod.set_parent_symmetry("")
@@ -1091,7 +1111,7 @@ def frequency(name, **kwargs):
     else:  # Assume energy points
         # If not, perform finite difference of energies
         info = 'Performing finite difference calculations by energies'
-        print info
+        print(info)
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
@@ -1103,7 +1123,7 @@ def frequency(name, **kwargs):
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print ' %d displacements needed.' % ndisp
+        print(' %d displacements needed.' % ndisp)
         energies = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
@@ -1111,9 +1131,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print ' %d' % (n + 1),
+            print(' %d' % (n + 1), end="")
             if (n + 1) == ndisp:
-                print '\n',
+                print('\n', end='')
 
             # Load in displacement into the active molecule
             molecule.set_geometry(displacement)
@@ -1130,7 +1150,7 @@ def frequency(name, **kwargs):
         # Obtain the gradient. This function stores the gradient into the reference wavefunction.
         PsiMod.fd_freq_0(energies, irrep)
 
-        print ' Computation complete.'
+        print(' Computation complete.')
         
         # Clear the "parent" symmetry now
         PsiMod.set_parent_symmetry("")

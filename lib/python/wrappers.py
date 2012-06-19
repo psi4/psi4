@@ -210,7 +210,8 @@ def n_body(name, **kwargs):
         raise ValidationError('n_body: max_n_body must be <= to the number of fragments in the molecule')
 
     # Set to save RI integrals for repeated full-basis computations
-    ri_ints_io = PsiMod.get_option('DF_INTS_IO')
+    ri_ints_io = PsiMod.get_global_option('DF_INTS_IO')
+    # inquire if above at all applies to dfmp2 or just scf
     PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
@@ -630,7 +631,8 @@ def cp(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    df_ints_io = PsiMod.get_global_option('DF_INTS_IO')
+    # inquire if above at all applies to dfmp2 or just scf
     PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
@@ -939,14 +941,14 @@ def database(name, db_name, **kwargs):
         GEOS = database.GEOS
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
-    user_basis = PsiMod.get_option('BASIS')
-    user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
-    user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
-    user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
-    user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
+    user_basis = PsiMod.get_global_option('BASIS')
+    user_df_basis_scf = PsiMod.get_global_option('DF_BASIS_SCF')
+    user_df_basis_mp2 = PsiMod.get_global_option('DF_BASIS_MP2')
+    user_df_basis_sapt = PsiMod.get_global_option('DF_BASIS_SAPT')
+    user_df_basis_elst = PsiMod.get_global_option('DF_BASIS_ELST')
 
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
-    user_reference = PsiMod.get_option('REFERENCE')
+    user_reference = PsiMod.get_global_option('REFERENCE')
     user_memory = PsiMod.get_memory()
 
     user_molecule = PsiMod.get_active_molecule()
@@ -1192,7 +1194,7 @@ def database(name, db_name, **kwargs):
         VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
-        exec GEOS[rgt]
+        exec(GEOS[rgt])
         molecule = PsiMod.get_active_molecule()
 
         # build string of title banner
@@ -1215,7 +1217,7 @@ def database(name, db_name, **kwargs):
         commands = ''
         commands += """\nPsiMod.set_memory(%s)\n\n""" % (user_memory)
         for chgdopt in PsiMod.get_global_option_list():
-            if PsiMod.has_option_changed(chgdopt):
+            if PsiMod.has_global_option_changed(chgdopt):
                 chgdoptval = PsiMod.get_global_option(chgdopt)
                 #chgdoptval = PsiMod.get_option(chgdopt)
                 if isinstance(chgdoptval, basestring):
@@ -1255,16 +1257,16 @@ def database(name, db_name, **kwargs):
         # sow: opens individual reagent input file, writes the necessary commands, and writes energy(method) call
         # reap: opens individual reagent output file, collects results into a dictionary
         if (db_mode.lower() == 'continuous'):
-            exec banners
-            exec GEOS[rgt]
-            exec commands
+            exec(banners)
+            exec(GEOS[rgt])
+            exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             PsiMod.set_variable('NATOM', molecule.natom())
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
-            exec actives
+            exec(actives)
             for envv in db_tabulate:
                 VRGT[rgt][envv] = PsiMod.get_variable(envv)
             PsiMod.set_global_option("REFERENCE", user_reference)
@@ -1297,8 +1299,8 @@ def database(name, db_name, **kwargs):
             ERGT[rgt] = 0.0
             for envv in db_tabulate:
                 VRGT[rgt][envv] = 0.0
-            exec banners
-            exec actives
+            exec(banners)
+            exec(actives)
             try:
                 freagent = open('%s.out' % (rgt), 'r')
             except IOError:
@@ -1423,7 +1425,7 @@ def database(name, db_name, **kwargs):
 
         MSDerror /= float(count_rxn)
         MADerror /= float(count_rxn)
-        RMSDerror = sqrt(RMSDerror / float(count_rxn))
+        RMSDerror = math.sqrt(RMSDerror / float(count_rxn))
 
         tables += """%23s   %19s %8.4f\n""" % ('Minimal Dev', '', minDerror)
         tables += """%23s   %19s %8.4f\n""" % ('Maximal Dev', '', maxDerror)
@@ -1754,14 +1756,14 @@ def complete_basis_set(name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
-    user_basis = PsiMod.get_option('BASIS')
+    user_basis = PsiMod.get_global_option('BASIS')
     #user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
     #user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
     #user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
     #user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
     #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
-    user_wfn = PsiMod.get_option('WFN')
+    user_wfn = PsiMod.get_global_option('WFN')
 
     # Make sure the molecule the user provided is the active one
     if 'molecule' in kwargs:
@@ -1882,7 +1884,7 @@ def complete_basis_set(name, **kwargs):
     cbsbanners += """PsiMod.print_out('\\n')\n"""
     cbsbanners += """banner(' CBS Setup ')\n"""
     cbsbanners += """PsiMod.print_out('\\n')\n\n"""
-    exec cbsbanners
+    exec(cbsbanners)
 
     # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy']
@@ -1919,7 +1921,7 @@ def complete_basis_set(name, **kwargs):
         GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, reconstitute_bracketed_basis(NEED), cbs_delta2_wfn_lesser, NEED, -1, 0.0])))
 
     for stage in GRAND_NEED:
-        for lvl in stage['d_need'].iteritems():
+        for lvl in stage['d_need'].items():
             MODELCHEM.append(lvl[1])
 
     # Apply chemical reasoning to choose the minimum computations to run
@@ -1971,12 +1973,12 @@ def complete_basis_set(name, **kwargs):
         cbsbanners += """PsiMod.print_out('\\n')\n"""
         cbsbanners += """banner(' CBS Computation: %s / %s ')\n""" % (mc['f_wfn'].upper(), mc['f_basis'].upper())
         cbsbanners += """PsiMod.print_out('\\n')\n\n"""
-        exec cbsbanners
+        exec(cbsbanners)
 
         # Build string of molecule and commands that are dependent on the database
         commands = '\n'
         commands += """\nPsiMod.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
-        exec commands
+        exec(commands)
 
         # Make energy() call
         mc['f_energy'] = call_function_in_1st_argument(func, **kwargs)
@@ -1995,11 +1997,11 @@ def complete_basis_set(name, **kwargs):
     cbsbanners += """PsiMod.print_out('\\n')\n"""
     cbsbanners += """banner(' CBS Results ')\n"""
     cbsbanners += """PsiMod.print_out('\\n')\n\n"""
-    exec cbsbanners
+    exec(cbsbanners)
 
     # Insert obtained energies into the array that stores the cbs stages
     for stage in GRAND_NEED:
-        for lvl in stage['d_need'].iteritems():
+        for lvl in stage['d_need'].items():
             MODELCHEM.append(lvl[1])
 
             for job in JOBS_EXT:
@@ -2128,7 +2130,7 @@ def reconstitute_bracketed_basis(needarray):
     ZSET = [''] * len(ZETA)
     BSET = []
 
-    for lvl in needarray.iteritems():
+    for lvl in needarray.items():
         BSET.append(lvl[1]['f_basis'])
 
     if (len(BSET) == 1):
@@ -2415,6 +2417,21 @@ def split_menial(menial):
 
     return [temp_wfn, temp_portion]
 
+# Quickly normalize the types for both python 2 and 3
+try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    str = str
+    unicode = str
+    bytes = bytes
+    basestring = (str,bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    str = str
+    unicode = unicode
+    bytes = str
+    basestring = basestring
 
 ##  Aliases  ##
 cbs = complete_basis_set

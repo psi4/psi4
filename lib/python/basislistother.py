@@ -1,4 +1,4 @@
-"""Module with commands building :py:class:`BasisFamily` objects
+"""Module with commands building :py:class:`~basislist.BasisFamily` objects
 for Pople and other non-Dunning orbital basis sets. Some
 plausible fitting basis sets are supplied as defaults.
 
