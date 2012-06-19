@@ -1012,7 +1012,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
     def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
     def("get_option", py_psi_get_option, "Given a string of a keyword name and a particular module, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 

@@ -7,8 +7,8 @@
 
 .. _`sec:cc`:
 
-Coupled Cluster Methods
-=======================
+CC: Coupled Cluster Methods
+===========================
 
 .. codeauthor:: T. Daniel Crawford
 .. sectionauthor:: T. Daniel Crawford
