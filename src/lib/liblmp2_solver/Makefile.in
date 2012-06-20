@@ -14,8 +14,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(incdir)/liblmp2_solver
-	$(INSTALL_INCLUDE) $^ $(incdir)/liblmp2_solver
+	$(MKDIRS) $(DESTDIR)$(incdir)/liblmp2_solver
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/liblmp2_solver
 
 
 ifneq ($(DODEPEND),no)

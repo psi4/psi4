@@ -104,7 +104,7 @@ def run_mp2_5(name, **kwargs):
     banners += """PsiMod.print_out('\\n')\n"""
     banners += """banner(' MP2.5 ')\n"""
     banners += """PsiMod.print_out('\\n')\n\n"""
-    exec banners
+    exec(banners)
 
     tables = ''
     tables += """  SCF total energy:                        %16.8f\n""" % (e_scf)
