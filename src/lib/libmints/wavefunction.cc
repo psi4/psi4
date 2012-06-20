@@ -104,6 +104,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     CIM_orbital_factors_ = other->CIM_orbital_factors_;
     CIM_orbital_energies_ = other->CIM_orbital_energies_;
     CIM_nactive_occupied_pointer_ = &other->CIM_nactive_occupied_;
+    CIM_nactive_virtual_pointer_ = &other->CIM_nactive_virtual_;
     isCIM_ = other->isCIM_;
 }
 
@@ -665,6 +666,14 @@ SharedVector Wavefunction::CIMOrbitalFactors()
        throw PSIEXCEPTION("This is not a CIM computation!");
     }
     return CIM_orbital_factors_;
+}
+
+int Wavefunction::CIMActiveVirtual()
+{
+    if (!isCIM_){
+       throw PSIEXCEPTION("This is not a CIM computation!");
+    }
+    return CIM_nactive_virtual_;
 }
 
 int Wavefunction::CIMActiveOccupied()
