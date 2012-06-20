@@ -21,12 +21,12 @@ Appendices
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
    autodoc_glossary_options_c
-   glossary_psivariables
 .. #####  LATEX-USER STOP
 .. #####  HTML-USER STOP
    autodoc_options_c_bymodule
 .. #####  LATEX-USER START
 .. #####  HTML-USER START
+   glossary_psivariables
    autodoc_psivariables_bymodule
 
 .. #####  HTML-ALL STOP

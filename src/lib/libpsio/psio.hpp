@@ -310,6 +310,7 @@ private:
     /// Process ID
     std::string pid_;
 
+
     /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
     static std::string default_namespace_;
 
@@ -343,6 +344,9 @@ private:
     void tocread(unsigned int unit);
 
     friend class AIO_Handler;
+
+public:
+    void set_pid(const std::string &pid) { pid_ = pid; }
 };
 
 }

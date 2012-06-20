@@ -6,8 +6,8 @@
    single: DF-MP2
    pair: MP2; density-fitting
 
-Density-Fitted Second-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
-==========================================================================
+DF-MP2: Density-Fitted Second-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
+==================================================================================
 
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
