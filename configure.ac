@@ -1159,39 +1159,21 @@ AC_CONFIG_FILES([
           tests/frac/Makefile
           tests/docs_psimod/Makefile
           tests/docs_dft/Makefile
-          tests/plugin_aointegrals/Makefile
-          tests/plugin_aointegrals/input.dat
-          tests/plugin_aointegrals/aointegrals.cc
-          tests/plugin_sointegrals/Makefile
-          tests/plugin_sointegrals/input.dat
-          tests/plugin_sointegrals/sointegrals.cc
-          tests/plugin_backtrans/Makefile
-          tests/plugin_backtrans/input.dat
-          tests/plugin_backtrans/backtrans.cc
-          tests/plugin_rqchf/main.cc
-          tests/plugin_rqchf/Makefile
-          tests/plugin_rqchf/input.dat
-          tests/plugin_rqchf/rqchf.cc
-          tests/plugin_rqchf/rqchf.h
-          tests/plugin_fqdft/input.dat
-          tests/plugin_fqdft/Makefile
-          tests/plugin_fqdft/main.cc
-          tests/plugin_fqdft/fqdft.cc
-          tests/plugin_fqdft/fqdft.h
-          tests/plugin_mp2/Makefile
-          tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
-          tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
-          tests/plugin_mp2/plugin_mp2_unrestricted.cc
-          tests/plugin_ccsort/Makefile
-          tests/plugin_ccsort/plugin_ccsort.cc
-          tests/plugin_ccsort/input.dat
-          tests/plugin_mointegrals/Makefile
-          tests/plugin_mointegrals/input.dat
-          tests/plugin_mointegrals/mointegrals.cc
-
-          tests/plugin_testparse/Makefile
-          tests/plugin_testparse/input.dat
-          tests/plugin_testparse/plugin_testparse.cc
+          plugins/aointegrals/Makefile
+          plugins/aointegrals/input.dat
+          plugins/aointegrals/aointegrals.cc
+          plugins/sointegrals/Makefile
+          plugins/sointegrals/input.dat
+          plugins/sointegrals/sointegrals.cc
+          plugins/mp2/Makefile
+          plugins/mp2/input.dat 
+          plugins/mp2/globals.h
+          plugins/mp2/plugin_mp2.cc 
+          plugins/mp2/plugin_mp2_restricted.cc
+          plugins/mp2/plugin_mp2_unrestricted.cc
+          plugins/mointegrals/Makefile
+          plugins/mointegrals/input.dat
+          plugins/mointegrals/mointegrals.cc
 
           bin/psi4-config
 ])
