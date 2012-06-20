@@ -192,6 +192,10 @@ protected:
     int CIM_nactive_occupied_;
     int * CIM_nactive_occupied_pointer_;
 
+    /// Number of active virtual orbitals in a CIM computation
+    int CIM_nactive_virtual_;
+    int * CIM_nactive_virtual_pointer_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -440,6 +444,9 @@ public:
 
     /// Returns the number of active occupied orbitals in a CIM computation
     int CIMActiveOccupied();
+
+    /// Returns the number of active occupied virtual in a CIM computation
+    int CIMActiveVirtual();
 
     /// Returns true if this is a CIM computation
     bool isCIM();
