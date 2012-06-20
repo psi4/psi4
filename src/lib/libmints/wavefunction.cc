@@ -99,6 +99,12 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
 
     gradient_ = other->gradient_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
+
+    QLMO_to_LMO_ = other->QLMO_to_LMO_;
+    CIM_orbital_factors_ = other->CIM_orbital_factors_;
+    CIM_orbital_energies_ = other->CIM_orbital_energies_;
+    CIM_nactive_occupied_pointer_ = &other->CIM_nactive_occupied_;
+    isCIM_ = other->isCIM_;
 }
 
 void Wavefunction::common_init()
@@ -645,6 +651,14 @@ SharedMatrix Wavefunction::CIMTransformationMatrix()
     return QLMO_to_LMO_;
 }
 
+SharedVector Wavefunction::CIMOrbitalEnergies()
+{
+    if (!isCIM_){
+       throw PSIEXCEPTION("This is not a CIM computation!");
+    }
+    return CIM_orbital_energies_;
+}
+
 SharedVector Wavefunction::CIMOrbitalFactors()
 {
     if (!isCIM_){
@@ -653,14 +667,29 @@ SharedVector Wavefunction::CIMOrbitalFactors()
     return CIM_orbital_factors_;
 }
 
-void Wavefunction::CIMSet(bool value,int nactive_orbitals)
+int Wavefunction::CIMActiveOccupied()
+{
+    if (!isCIM_){
+       throw PSIEXCEPTION("This is not a CIM computation!");
+    }
+    return CIM_nactive_occupied_;
+}
+
+void Wavefunction::CIMSet(bool value,int nactive_occupied)
 {
     isCIM_ = value;
     if (!value) return;
+
+    QLMO_to_LMO_.reset();
+    CIM_orbital_factors_.reset();
+    CIM_orbital_energies_.reset();
+
     QLMO_to_LMO_ = 
-        SharedMatrix (new Matrix("Rii",nactive_orbitals,nactive_orbitals));
+        SharedMatrix (new Matrix("CIM Rii",nactive_occupied,nactive_occupied));
     CIM_orbital_factors_ = 
-        SharedVector (new Vector("Orbital Factors",nactive_orbitals));
+        SharedVector (new Vector("CIM Orbital Factors",nactive_occupied));
+    CIM_orbital_energies_ = 
+        SharedVector (new Vector("CIM Orbital Energies",nmo_));
 }
 
 bool Wavefunction::isCIM()
