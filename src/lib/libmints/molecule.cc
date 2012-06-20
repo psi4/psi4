@@ -2585,7 +2585,7 @@ bool Molecule::valid_atom_map(double tol) const {
     return true;
 }
 
-/* we may not need this capability
+// we may not need this capability
 void Molecule::set_com_fixed(bool _fix) {
 
     if (_fix) {
@@ -2609,5 +2609,5 @@ void Molecule::set_com_fixed(bool _fix) {
         move_to_com_ = true;
     }
 }
-*/
+
 
