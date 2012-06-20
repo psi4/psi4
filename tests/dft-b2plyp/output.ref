@@ -1,0 +1,1470 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 6afc29848d081181b365dc9a26cbfbfcbb4ad93
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  14245
+    PSI4DATADIR: /theoryfs2/ds/loriab/psi-install/psi4-ds3/bin/../share/psi/
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Double-hybrid density functional B2PYLP. Reproduces portion of Table I
+#! in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
+
+memory 250 mb
+
+molecule h2o {
+0 1
+        O
+        H     1    0.960729
+        H     1    0.960729     2  104.92326
+}
+set basis cc-pvqz
+
+molecule h2 {
+    H
+    H     1    0.742904
+}
+set basis cc-pvqz
+
+molecule n2 {
+    N
+    N     1    1.090902
+}
+set basis cc-pvqz
+
+molecule ethene {
+0 1
+    C
+    C     1 b1
+    H     1 b2     2 a1
+    H     1 b2     2 a1     3 -180.000000
+    H     2 b2     1 a1     4 -180.000000
+    H     2 b2     1 a1     3 -180.000000
+
+    a1        =  121.7305456211
+    b1        =    1.3247888503
+    b2        =    1.0826774761
+}
+set basis cc-pvqz
+
+set reference rks
+set freeze_core false
+
+activate(h2o)
+eb2plyp = energy('b2plyp')
+print_variables()
+print eb2plyp
+compare_values(-76.4309, eb2plyp, 4, 'Water')
+clean()
+
+activate(h2)
+eb2plyp = energy('b2plyp')
+print_variables()
+print eb2plyp
+compare_values(-1.1709, eb2plyp, 4, 'H2')
+clean()
+
+activate(n2)
+eb2plyp = energy('b2plyp')
+print_variables()
+print eb2plyp
+compare_values(-109.5302, eb2plyp, 4, 'N2')
+clean()
+
+activate(ethene)
+eb2plyp = energy('b2plyp')
+print_variables()
+print eb2plyp
+compare_values(-78.5666, eb2plyp, 4, 'Ethene')
+clean()
+
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on ds3
+*** at Wed Jun 13 18:41:50 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.065511056325
+           H          0.000000000000    -0.761805723188     0.519854002043
+           H          0.000000000000     0.761805723188     0.519854002043
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.160245516477424
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: cc-pvqz
+    Number of shells: 35
+    Number of basis function: 115
+    Number of Cartesian functions: 140
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> DFT Potential <==
+
+   => b2plypxc Composite Functional <= 
+
+    B2PLYP Double Hydrid Exchange-Correlation Functional
+
+    Citation
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   5.300000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.4700 B88_X
+    0.5300    HF 
+
+   => Correlation Functionals <=
+
+    0.7300 LYP_C
+
+   => Molecular Quadrature <=
+
+    Spherical Scheme = Lebedev-Laikov
+    Radial Scheme    =       Treutler
+    Atomic Scheme    =       Treutler
+
+    Spherical Points =            302
+    Radial Points    =             99
+    Total Points     =          88280
+    Total Blocks     =            141
+    Max Points       =            997
+    Max Functions    =            115
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        42      42       0       0       0       0
+     A2        17      17       0       0       0       0
+     B1        23      23       0       0       0       0
+     B2        33      33       0       0       0       0
+   -------------------------------------------------------
+    Total     115     115       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              35
+      Number of SO shells:              25
+      Number of primitives:             57
+      Number of atomic orbitals:       140
+      Number of basis functions:       115
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  42   17   23   33 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 5227733 non-zero two-electron integrals.
+        Stored in file 33.
+
+  Minimum eigenvalue in the overlap matrix is 4.2525204562E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -60.32360879850939
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RKS iter   1:   -60.35788650090156   -3.42777e-02   0.00000e+00 
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    0,    2 ]
+
+   @RKS iter   2:   -65.80498399142377   -5.44710e+00   3.13720e-01 DIIS
+    Occupation by irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+   @RKS iter   3:   -72.51723149566531   -6.71225e+00   3.11992e-01 DIIS
+   @RKS iter   4:   -75.51696867168721   -2.99974e+00   8.86465e-03 DIIS
+   @RKS iter   5:   -76.28825024456987   -7.71282e-01   5.24235e-03 DIIS
+   @RKS iter   6:   -76.33116270708152   -4.29125e-02   2.17895e-03 DIIS
+   @RKS iter   7:   -76.33225218105255   -1.08947e-03   2.11063e-04 DIIS
+   @RKS iter   8:   -76.33228509639072   -3.29153e-05   4.58212e-05 DIIS
+   @RKS iter   9:   -76.33228584121272   -7.44822e-07   1.11505e-05 DIIS
+   @RKS iter  10:   -76.33228585381670   -1.26040e-08   2.37025e-06 DIIS
+   @RKS iter  11:   -76.33228585396868   -1.51985e-10   1.85024e-07 DIIS
+   @RKS iter  12:   -76.33228585397079   -2.10321e-12   3.36269e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1A1   -19.724936     2A1    -1.152193     1B2    -0.608934  
+       3A1    -0.470453     1B1    -0.396167  
+
+    Virtual:                                                              
+
+       4A1     0.054626     2B2     0.118344     3B2     0.359032  
+       5A1     0.381946     6A1     0.402147     2B1     0.483666  
+       7A1     0.517067     4B2     0.522627     1A2     0.563656  
+       3B1     0.628399     8A1     0.745345     5B2     0.828296  
+       9A1     0.998284     6B2     1.040001     7B2     1.237608  
+      10A1     1.290494     4B1     1.349964     2A2     1.357068  
+      11A1     1.451697    12A1     1.533504     8B2     1.751861  
+       5B1     1.935684    13A1     2.056775     3A2     2.146109  
+       9B2     2.230232     6B1     2.258781    14A1     2.351392  
+      10B2     2.375130     7B1     2.408402     4A2     2.446812  
+      11B2     2.507312    15A1     2.530343    16A1     2.684301  
+       5A2     2.695656     8B1     2.860789    12B2     2.959077  
+      13B2     3.123310    17A1     3.164391    18A1     3.264032  
+      14B2     3.431429    19A1     3.615250     9B1     3.792364  
+       6A2     3.908057    10B1     3.972379    20A1     4.002837  
+      15B2     4.226635    21A1     4.264234    22A1     4.467916  
+      11B1     4.528499    16B2     4.597901     7A2     4.701086  
+      17B2     5.118654    23A1     5.180717    12B1     5.798778  
+      24A1     5.908855     8A2     6.062278    18B2     6.122206  
+       9A2     6.497656    25A1     6.593027    19B2     6.845374  
+      20B2     7.039609    13B1     7.099384    14B1     7.165957  
+      10A2     7.221545    26A1     7.315882    21B2     7.326921  
+      27A1     7.365790    15B1     7.787175    22B2     7.834497  
+      16B1     7.873279    28A1     7.911529    11A2     7.932841  
+      23B2     8.049589    12A2     8.107360    29A1     8.109298  
+      30A1     8.182326    24B2     8.400329    17B1     8.581352  
+      31A1     8.656611    13A2     8.698106    25B2     8.975097  
+      32A1     9.112134    26B2     9.146874    33A1     9.608347  
+      27B2     9.700886    18B1     9.969084    34A1    10.130458  
+      19B1    10.254642    14A2    10.457346    35A1    10.503667  
+      28B2    10.963940    15A2    11.086551    36A1    11.242352  
+      20B1    11.317971    29B2    11.346262    21B1    11.499474  
+      37A1    11.829660    22B1    11.964782    38A1    12.061922  
+      16A2    12.067237    30B2    12.135220    39A1    13.243331  
+      31B2    13.463306    23B1    13.905103    17A2    14.268515  
+      40A1    14.289989    32B2    14.457803    41A1    16.069766  
+      33B2    16.425776    42A1    43.434240  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -76.33228585397079
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =          9.1602455164774241
+    One-Electron Energy =            -123.0646537819858963
+    Two-Electron Energy =              42.0442697012797097
+    DFT Functional Energy =            -4.4721472897420407
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                    -76.3322858539707880
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9744
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2083
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.7661     Total:     0.7661
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.9473     Total:     1.9473
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds3 at Wed Jun 13 18:43:10 2012
+Module time:
+    user time   =      70.76 seconds =       1.18 minutes
+    system time =       0.52 seconds =       0.01 minutes
+    total time  =         80 seconds =       1.33 minutes
+Total time:
+    user time   =      70.76 seconds =       1.18 minutes
+    system time =       0.52 seconds =       0.01 minutes
+    total time  =         80 seconds =       1.33 minutes
+
+*** tstart() called on ds3
+*** at Wed Jun 13 18:43:10 2012
+
+    No auxiliary basis selected, defaulting to CC-PVQZ-RI
+
+     --------------------------------------------------------
+                              DF-MP2                         
+          2nd-Order Density-Fitted Moller-Plesset Theory     
+                  RMP2 Wavefunction,   1 Threads             
+                                                             
+            Rob Parrish, Justin Turney, Andy Simmonett,      
+               Ed Hohenstein, and C. David Sherrill          
+     --------------------------------------------------------
+
+     --------------------------------------------------------
+                     NBF =   115, NAUX =   242
+     --------------------------------------------------------
+       CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+       PAIRS       0       5       5     110     110       0
+     --------------------------------------------------------
+
+    ----------------------------------------------------------
+     ====================> MP2 Energies <==================== 
+    ----------------------------------------------------------
+     Reference Energy          =     -76.3322858539707880 [H]
+     Singles Energy            =      -0.0000000000000142 [H]
+     Same-Spin Energy          =      -0.0851940135304284 [H]
+     Opposite-Spin Energy      =      -0.2798930827251717 [H]
+     Correlation Energy        =      -0.3650870962556143 [H]
+     Total Energy              =     -76.6973729502264092 [H]
+    ----------------------------------------------------------
+     ==================> SCS-MP2 Energies <================== 
+    ----------------------------------------------------------
+     SCS Same-Spin Scale       =       0.3333333333333333 [-]
+     SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+     SCS Same-Spin Energy      =      -0.0283980045101428 [H]
+     SCS Opposite-Spin Energy  =      -0.3358716992702060 [H]
+     SCS Correlation Energy    =      -0.3642697037803631 [H]
+     SCS Total Energy          =     -76.6965555577511537 [H]
+    ----------------------------------------------------------
+
+
+*** tstop() called on ds3 at Wed Jun 13 18:43:13 2012
+Module time:
+    user time   =       1.47 seconds =       0.02 minutes
+    system time =       0.04 seconds =       0.00 minutes
+    total time  =          3 seconds =       0.05 minutes
+Total time:
+    user time   =      72.23 seconds =       1.20 minutes
+    system time =       0.56 seconds =       0.01 minutes
+    total time  =         83 seconds =       1.38 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT CORRELATION ENERGY"    =>      -0.365087096256
+  "CURRENT ENERGY"                =>     -76.697372950226
+  "CURRENT REFERENCE ENERGY"      =>     -76.332285853971
+  "DF-MP2 CORRELATION ENERGY"     =>      -0.365087096256
+  "DF-MP2 OPPOSITE-SPIN ENERGY"   =>      -0.279893082725
+  "DF-MP2 SAME-SPIN ENERGY"       =>      -0.085194013530
+  "DF-MP2 SINGLES ENERGY"         =>      -0.000000000000
+  "DF-MP2 TOTAL ENERGY"           =>     -76.697372950226
+  "DFT FUNCTIONAL ENERGY"         =>      -4.472147289742
+  "DFT FUNCTIONAL TOTAL ENERGY"   =>     -76.332285853971
+  "DFT TOTAL ENERGY"              =>     -76.332285853971
+  "NUCLEAR REPULSION ENERGY"      =>       9.160245516477
+  "ONE-ELECTRON ENERGY"           =>    -123.064653781986
+  "SCF DIPOLE X"                  =>       0.000000000000
+  "SCF DIPOLE Y"                  =>       0.000000000000
+  "SCF DIPOLE Z"                  =>       1.947276385073
+  "SCF ITERATION ENERGY"          =>     -76.332285853971
+  "SCF TOTAL ENERGY"              =>     -76.332285853971
+  "SCS-DF-MP2 CORRELATION ENERGY" =>      -0.364269703780
+  "SCS-DF-MP2 TOTAL ENERGY"       =>     -76.696555557751
+  "TWO-ELECTRON ENERGY"           =>      42.044269701280
+
+
+-76.43085937
+*** tstart() called on ds3
+*** at Wed Jun 13 18:43:13 2012
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity with the MULTP option in the
+    input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H          0.000000000000     0.000000000000    -0.371452000000
+           H          0.000000000000     0.000000000000     0.371452000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =    0.712309004380108
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 2
+  Nalpha       = 1
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: cc-pvqz
+    Number of shells: 20
+    Number of basis function: 60
+    Number of Cartesian functions: 70
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> DFT Potential <==
+
+   => b2plypxc Composite Functional <= 
+
+    B2PLYP Double Hydrid Exchange-Correlation Functional
+
+    Citation
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   5.300000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.4700 B88_X
+    0.5300    HF 
+
+   => Correlation Functionals <=
+
+    0.7300 LYP_C
+
+   => Molecular Quadrature <=
+
+    Spherical Scheme = Lebedev-Laikov
+    Radial Scheme    =       Treutler
+    Atomic Scheme    =       Treutler
+
+    Spherical Points =            302
+    Radial Points    =             99
+    Total Points     =          59122
+    Total Blocks     =             94
+    Max Points       =            974
+    Max Functions    =             60
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        13      13       0       0       0       0
+     B1g        3       3       0       0       0       0
+     B2g        7       7       0       0       0       0
+     B3g        7       7       0       0       0       0
+     Au         3       3       0       0       0       0
+     B1u       13      13       0       0       0       0
+     B2u        7       7       0       0       0       0
+     B3u        7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      60      60       1       1       1       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              20
+      Number of SO shells:              10
+      Number of primitives:             24
+      Number of atomic orbitals:        70
+      Number of basis functions:        60
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  13    3    7    7    3   13    7    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 180477 non-zero two-electron integrals.
+        Stored in file 33.
+
+  Minimum eigenvalue in the overlap matrix is 3.2704500786E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:    -0.57039289139479
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RKS iter   1:    -1.09987262941412   -5.29480e-01   0.00000e+00 
+   @RKS iter   2:    -1.16019678408275   -6.03242e-02   5.21576e-03 DIIS
+   @RKS iter   3:    -1.16029466827208   -9.78842e-05   2.67326e-04 DIIS
+   @RKS iter   4:    -1.16029573102603   -1.06275e-06   5.35003e-05 DIIS
+   @RKS iter   5:    -1.16029573377011   -2.74409e-09   3.32005e-06 DIIS
+   @RKS iter   6:    -1.16029573377332   -3.20655e-12   1.10780e-07 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag    -0.500627  
+
+    Virtual:                                                              
+
+       1B1u    0.090844     2Ag     0.178186     1B3u    0.418982  
+       1B2u    0.418982     2B1u    0.434621     3Ag     0.714922  
+       1B3g    0.728333     1B2g    0.728333     3B1u    1.030988  
+       4Ag     1.193966     4B1u    1.446836     5Ag     1.807903  
+       1B1g    1.807903     2B3u    2.001402     2B2u    2.001402  
+       6Ag     2.216354     2B2g    2.240639     2B3g    2.240639  
+       3B3u    2.425695     3B2u    2.425695     5B1u    2.425995  
+       1Au     2.425995     6B1u    2.878387     7Ag     3.191652  
+       3B2g    3.463678     3B3g    3.463678     7B1u    3.810946  
+       8Ag     5.385429     4B3u    5.523685     4B2u    5.523685  
+       2B1g    6.038812     9Ag     6.038812     4B3g    6.569490  
+       4B2g    6.569490     5B3u    6.763436     5B2u    6.763436  
+       5B2g    6.916317     5B3g    6.916317    10Ag     7.130247  
+       2Au     7.441820     8B1u    7.441820     9B1u    7.569908  
+       6B3u    7.782054     6B2u    7.782054    11Ag     7.784433  
+       3B1g    7.784433    10B1u    8.042028     6B2g    8.162050  
+       6B3g    8.162050    12Ag     8.313073     7B3u    8.606572  
+       7B2u    8.606572    11B1u    8.980908     3Au     8.980908  
+      12B1u   10.195478     7B2g   12.496793     7B3g   12.496793  
+      13Ag    12.705643    13B1u   15.827555  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     1,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @RKS Final Energy:    -1.16029573377332
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =          0.7123090043801082
+    One-Electron Energy =              -2.5029288201835516
+    Two-Electron Energy =               0.9664595759519317
+    DFT Functional Energy =            -0.3361354939218093
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                     -1.1602957337733211
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds3 at Wed Jun 13 18:43:27 2012
+Module time:
+    user time   =       9.97 seconds =       0.17 minutes
+    system time =       0.03 seconds =       0.00 minutes
+    total time  =         14 seconds =       0.23 minutes
+Total time:
+    user time   =      82.20 seconds =       1.37 minutes
+    system time =       0.63 seconds =       0.01 minutes
+    total time  =         97 seconds =       1.62 minutes
+
+*** tstart() called on ds3
+*** at Wed Jun 13 18:43:27 2012
+
+    No auxiliary basis selected, defaulting to CC-PVQZ-RI
+
+     --------------------------------------------------------
+                              DF-MP2                         
+          2nd-Order Density-Fitted Moller-Plesset Theory     
+                  RMP2 Wavefunction,   1 Threads             
+                                                             
+            Rob Parrish, Justin Turney, Andy Simmonett,      
+               Ed Hohenstein, and C. David Sherrill          
+     --------------------------------------------------------
+
+     --------------------------------------------------------
+                     NBF =    60, NAUX =   110
+     --------------------------------------------------------
+       CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+       PAIRS       0       1       1      59      59       0
+     --------------------------------------------------------
+
+    ----------------------------------------------------------
+     ====================> MP2 Energies <==================== 
+    ----------------------------------------------------------
+     Reference Energy          =      -1.1602957337733211 [H]
+     Singles Energy            =      -0.0000000000000001 [H]
+     Same-Spin Energy          =       0.0000000000000000 [H]
+     Opposite-Spin Energy      =      -0.0391388783475187 [H]
+     Correlation Energy        =      -0.0391388783475188 [H]
+     Total Energy              =      -1.1994346121208399 [H]
+    ----------------------------------------------------------
+     ==================> SCS-MP2 Energies <================== 
+    ----------------------------------------------------------
+     SCS Same-Spin Scale       =       0.3333333333333333 [-]
+     SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+     SCS Same-Spin Energy      =       0.0000000000000000 [H]
+     SCS Opposite-Spin Energy  =      -0.0469666540170224 [H]
+     SCS Correlation Energy    =      -0.0469666540170225 [H]
+     SCS Total Energy          =      -1.2072623877903434 [H]
+    ----------------------------------------------------------
+
+
+*** tstop() called on ds3 at Wed Jun 13 18:43:28 2012
+Module time:
+    user time   =       0.42 seconds =       0.01 minutes
+    system time =       0.01 seconds =       0.00 minutes
+    total time  =          1 seconds =       0.02 minutes
+Total time:
+    user time   =      82.62 seconds =       1.38 minutes
+    system time =       0.64 seconds =       0.01 minutes
+    total time  =         98 seconds =       1.63 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT CORRELATION ENERGY"    =>      -0.039138878348
+  "CURRENT ENERGY"                =>      -1.199434612121
+  "CURRENT REFERENCE ENERGY"      =>      -1.160295733773
+  "DF-MP2 CORRELATION ENERGY"     =>      -0.039138878348
+  "DF-MP2 OPPOSITE-SPIN ENERGY"   =>      -0.039138878348
+  "DF-MP2 SAME-SPIN ENERGY"       =>       0.000000000000
+  "DF-MP2 SINGLES ENERGY"         =>      -0.000000000000
+  "DF-MP2 TOTAL ENERGY"           =>      -1.199434612121
+  "DFT FUNCTIONAL ENERGY"         =>      -0.336135493922
+  "DFT FUNCTIONAL TOTAL ENERGY"   =>      -1.160295733773
+  "DFT TOTAL ENERGY"              =>      -1.160295733773
+  "NUCLEAR REPULSION ENERGY"      =>       0.712309004380
+  "ONE-ELECTRON ENERGY"           =>      -2.502928820184
+  "SCF DIPOLE X"                  =>       0.000000000000
+  "SCF DIPOLE Y"                  =>       0.000000000000
+  "SCF DIPOLE Z"                  =>       0.000000000000
+  "SCF ITERATION ENERGY"          =>      -1.160295733773
+  "SCF TOTAL ENERGY"              =>      -1.160295733773
+  "SCS-DF-MP2 CORRELATION ENERGY" =>      -0.046966654017
+  "SCS-DF-MP2 TOTAL ENERGY"       =>      -1.207262387790
+  "TWO-ELECTRON ENERGY"           =>       0.966459575952
+
+
+-1.17086323093
+*** tstart() called on ds3
+*** at Wed Jun 13 18:43:28 2012
+
+    There are an even number of electrons - assuming singlet.
+    Specify the multiplicity with the MULTP option in the
+    input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N          0.000000000000     0.000000000000    -0.545451000000
+           N          0.000000000000     0.000000000000     0.545451000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =   23.769030784534262
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 14
+  Nalpha       = 7
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: cc-pvqz
+    Number of shells: 30
+    Number of basis function: 110
+    Number of Cartesian functions: 140
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> DFT Potential <==
+
+   => b2plypxc Composite Functional <= 
+
+    B2PLYP Double Hydrid Exchange-Correlation Functional
+
+    Citation
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   5.300000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.4700 B88_X
+    0.5300    HF 
+
+   => Correlation Functionals <=
+
+    0.7300 LYP_C
+
+   => Molecular Quadrature <=
+
+    Spherical Scheme = Lebedev-Laikov
+    Radial Scheme    =       Treutler
+    Atomic Scheme    =       Treutler
+
+    Spherical Points =            302
+    Radial Points    =             99
+    Total Points     =          56418
+    Total Blocks     =             90
+    Max Points       =            965
+    Max Functions    =            110
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        22      22       0       0       0       0
+     B1g        7       7       0       0       0       0
+     B2g       13      13       0       0       0       0
+     B3g       13      13       0       0       0       0
+     Au         7       7       0       0       0       0
+     B1u       22      22       0       0       0       0
+     B2u       13      13       0       0       0       0
+     B3u       13      13       0       0       0       0
+   -------------------------------------------------------
+    Total     110     110       7       7       7       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              30
+      Number of SO shells:              15
+      Number of primitives:             66
+      Number of atomic orbitals:       140
+      Number of basis functions:       110
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  22    7   13   13    7   22   13   13 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 1833432 non-zero two-electron integrals.
+        Stored in file 33.
+
+  Minimum eigenvalue in the overlap matrix is 1.9859201045E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -81.00081105770099
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RKS iter   1:   -92.97306177595976   -1.19723e+01   0.00000e+00 
+   @RKS iter   2:   -98.42047682128985   -5.44742e+00   8.99773e-01 DIIS
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+
+   @RKS iter   3:  -108.32680310499232   -9.90633e+00   8.98777e-01 DIIS
+   @RKS iter   4:  -109.33079724535527   -1.00399e+00   1.45088e-02 DIIS
+   @RKS iter   5:  -109.38192513079517   -5.11279e-02   4.61805e-03 DIIS
+   @RKS iter   6:  -109.38201469283406   -8.95620e-05   3.25468e-04 DIIS
+   @RKS iter   7:  -109.38201499076963   -2.97936e-07   2.18262e-05 DIIS
+   @RKS iter   8:  -109.38201499460581   -3.83618e-09   4.34719e-06 DIIS
+   @RKS iter   9:  -109.38201499473314   -1.27329e-10   8.66251e-07 DIIS
+   @RKS iter  10:  -109.38201499473729   -4.14957e-12   6.86756e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -14.946281     1B1u  -14.943601     2Ag    -1.276021  
+       2B1u   -0.648096     1B3u   -0.533868     1B2u   -0.533868  
+       3Ag    -0.519291  
+
+    Virtual:                                                              
+
+       1B2g    0.048622     1B3g    0.048622     3B1u    0.231243  
+       2B3u    0.333599     2B2u    0.333599     4Ag     0.348791  
+       5Ag     0.352511     2B2g    0.463434     2B3g    0.463434  
+       6Ag     0.670142     1B1g    0.670142     4B1u    0.689124  
+       5B1u    0.778786     3B2u    0.948611     3B3u    0.948611  
+       6B1u    1.027003     1Au     1.027003     7Ag     1.137273  
+       3B3g    1.254298     3B2g    1.254298     7B1u    1.367792  
+       4B2u    1.862192     4B3u    1.862192     8Ag     2.080487  
+       4B3g    2.197969     4B2g    2.197969     5B3u    2.288760  
+       5B2u    2.288760     9Ag     2.298062     8B1u    2.353972  
+       2B1g    2.372548    10Ag     2.372548     6B2u    2.528752  
+       6B3u    2.528752     5B2g    2.785946     5B3g    2.785946  
+      11Ag     2.844823     3B1g    2.844824    12Ag     2.873340  
+       6B3g    2.875823     6B2g    2.875823     9B1u    2.944572  
+       2Au     2.944573    10B1u    3.004877     7B2u    3.436116  
+       7B3u    3.436116    11B1u    3.525329     3Au     3.525329  
+      12B1u    3.526668     7B3g    4.767356     7B2g    4.767356  
+      13Ag     4.785915    13B1u    5.143327     8B3u    6.412752  
+       8B2u    6.412752     4B1g    6.704168    14Ag     6.704177  
+       5B1g    6.801386    15Ag     6.801387     4Au     7.112381  
+      14B1u    7.112391    16Ag     7.129059     9B2u    7.172298  
+       9B3u    7.172298     8B3g    7.363028     8B2g    7.363028  
+      10B2u    7.808014    10B3u    7.808014     9B2g    7.961195  
+       9B3g    7.961195    17Ag     8.221232    10B3g    8.266176  
+      10B2g    8.266176    18Ag     8.390626    11B3u    8.435562  
+      11B2u    8.435562    15B1u    8.488156     5Au     8.488165  
+      16B1u    8.527201    11B2g    8.632251    11B3g    8.632251  
+      19Ag     8.688556     6B1g    8.688557    12B2u    8.819432  
+      12B3u    8.819432    17B1u    8.823473    20Ag     9.024247  
+       7B1g    9.024259    18B1u    9.096573     6Au     9.096575  
+      12B3g   10.004596    12B2g   10.004596    19B1u   10.109413  
+       7Au    10.109416    13B2u   10.369733    13B3u   10.369733  
+      20B1u   10.542934    21Ag    12.415309    13B3g   12.687927  
+      13B2g   12.687927    21B1u   13.015381    22Ag    31.374884  
+      22B1u   31.848935  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:  -109.38201499473729
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =         23.7690307845342623
+    One-Electron Energy =            -194.7729536216803865
+    Two-Electron Energy =              68.1825603310842752
+    DFT Functional Energy =            -6.5606524886754460
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                   -109.3820149947372897
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds3 at Wed Jun 13 18:44:27 2012
+Module time:
+    user time   =      50.65 seconds =       0.84 minutes
+    system time =       0.20 seconds =       0.00 minutes
+    total time  =         59 seconds =       0.98 minutes
+Total time:
+    user time   =     133.27 seconds =       2.22 minutes
+    system time =       0.84 seconds =       0.01 minutes
+    total time  =        157 seconds =       2.62 minutes
+
+*** tstart() called on ds3
+*** at Wed Jun 13 18:44:27 2012
+
+    No auxiliary basis selected, defaulting to CC-PVQZ-RI
+
+     --------------------------------------------------------
+                              DF-MP2                         
+          2nd-Order Density-Fitted Moller-Plesset Theory     
+                  RMP2 Wavefunction,   1 Threads             
+                                                             
+            Rob Parrish, Justin Turney, Andy Simmonett,      
+               Ed Hohenstein, and C. David Sherrill          
+     --------------------------------------------------------
+
+     --------------------------------------------------------
+                     NBF =   110, NAUX =   264
+     --------------------------------------------------------
+       CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+       PAIRS       0       7       7     103     103       0
+     --------------------------------------------------------
+
+    ----------------------------------------------------------
+     ====================> MP2 Energies <==================== 
+    ----------------------------------------------------------
+     Reference Energy          =    -109.3820149947372897 [H]
+     Singles Energy            =      -0.0000000000000004 [H]
+     Same-Spin Energy          =      -0.1326439616226973 [H]
+     Opposite-Spin Energy      =      -0.4160429441566758 [H]
+     Correlation Energy        =      -0.5486869057793735 [H]
+     Total Energy              =    -109.9307019005166666 [H]
+    ----------------------------------------------------------
+     ==================> SCS-MP2 Energies <================== 
+    ----------------------------------------------------------
+     SCS Same-Spin Scale       =       0.3333333333333333 [-]
+     SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+     SCS Same-Spin Energy      =      -0.0442146538742324 [H]
+     SCS Opposite-Spin Energy  =      -0.4992515329880109 [H]
+     SCS Correlation Energy    =      -0.5434661868622438 [H]
+     SCS Total Energy          =    -109.9254811815995367 [H]
+    ----------------------------------------------------------
+
+
+*** tstop() called on ds3 at Wed Jun 13 18:44:30 2012
+Module time:
+    user time   =       1.84 seconds =       0.03 minutes
+    system time =       0.03 seconds =       0.00 minutes
+    total time  =          3 seconds =       0.05 minutes
+Total time:
+    user time   =     135.11 seconds =       2.25 minutes
+    system time =       0.87 seconds =       0.01 minutes
+    total time  =        160 seconds =       2.67 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT CORRELATION ENERGY"    =>      -0.548686905779
+  "CURRENT ENERGY"                =>    -109.930701900517
+  "CURRENT REFERENCE ENERGY"      =>    -109.382014994737
+  "DF-MP2 CORRELATION ENERGY"     =>      -0.548686905779
+  "DF-MP2 OPPOSITE-SPIN ENERGY"   =>      -0.416042944157
+  "DF-MP2 SAME-SPIN ENERGY"       =>      -0.132643961623
+  "DF-MP2 SINGLES ENERGY"         =>      -0.000000000000
+  "DF-MP2 TOTAL ENERGY"           =>    -109.930701900517
+  "DFT FUNCTIONAL ENERGY"         =>      -6.560652488675
+  "DFT FUNCTIONAL TOTAL ENERGY"   =>    -109.382014994737
+  "DFT TOTAL ENERGY"              =>    -109.382014994737
+  "NUCLEAR REPULSION ENERGY"      =>      23.769030784534
+  "ONE-ELECTRON ENERGY"           =>    -194.772953621680
+  "SCF DIPOLE X"                  =>       0.000000000000
+  "SCF DIPOLE Y"                  =>       0.000000000000
+  "SCF DIPOLE Z"                  =>       0.000000000000
+  "SCF ITERATION ENERGY"          =>    -109.382014994737
+  "SCF TOTAL ENERGY"              =>    -109.382014994737
+  "SCS-DF-MP2 CORRELATION ENERGY" =>      -0.543466186862
+  "SCS-DF-MP2 TOTAL ENERGY"       =>    -109.925481181600
+  "TWO-ELECTRON ENERGY"           =>      68.182560331084
+
+
+-109.530160459
+*** tstart() called on ds3
+*** at Wed Jun 13 18:44:30 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RKS Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.662394425150
+           C          0.000000000000     0.000000000000     0.662394425150
+           H          0.000000000000     0.920850592085    -1.231801752386
+           H          0.000000000000    -0.920850592085    -1.231801752386
+           H          0.000000000000     0.920850592085     1.231801752386
+           H          0.000000000000    -0.920850592085     1.231801752386
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =   33.488712355158235
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: cc-pvqz
+    Number of shells: 70
+    Number of basis function: 230
+    Number of Cartesian functions: 280
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> DFT Potential <==
+
+   => b2plypxc Composite Functional <= 
+
+    B2PLYP Double Hydrid Exchange-Correlation Functional
+
+    Citation
+
+    Points   =           5000
+    Deriv    =              1
+    GGA      =           TRUE
+    Meta     =          FALSE
+
+    X_LRC    =          FALSE
+    X_Hybrid =           TRUE
+    X_Alpha  =   5.300000E-01
+    X_Omega  =   0.000000E+00
+    C_LRC    =          FALSE
+    C_Hybrid =          FALSE
+    C_Alpha  =   0.000000E+00
+    C_Omega  =   0.000000E+00
+
+   => Exchange Functionals <=
+
+    0.4700 B88_X
+    0.5300    HF 
+
+   => Correlation Functionals <=
+
+    0.7300 LYP_C
+
+   => Molecular Quadrature <=
+
+    Spherical Scheme = Lebedev-Laikov
+    Radial Scheme    =       Treutler
+    Atomic Scheme    =       Treutler
+
+    Spherical Points =            302
+    Radial Points    =             99
+    Total Points     =         176522
+    Total Blocks     =            276
+    Max Points       =            992
+    Max Functions    =            230
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        42      42       0       0       0       0
+     B1g       17      17       0       0       0       0
+     B2g       23      23       0       0       0       0
+     B3g       33      33       0       0       0       0
+     Au        17      17       0       0       0       0
+     B1u       42      42       0       0       0       0
+     B2u       33      33       0       0       0       0
+     B3u       23      23       0       0       0       0
+   -------------------------------------------------------
+    Total     230     230       8       8       8       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   6
+      Number of AO shells:              70
+      Number of SO shells:              25
+      Number of primitives:            114
+      Number of atomic orbitals:       280
+      Number of basis functions:       230
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  42   17   23   33   17   42   33   23 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 44023009 non-zero two-electron integrals.
+        Stored in file 33.
+
+  Minimum eigenvalue in the overlap matrix is 9.9861254715E-05.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -61.20659830116413
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RKS iter   1:   -55.36096245395908    5.84564e+00   0.00000e+00 
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    3,    1,    0 ]
+
+   @RKS iter   2:   -67.07488443712317   -1.17139e+01   3.70339e+00 DIIS
+    Occupation by irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+   @RKS iter   3:   -75.80433456203090   -8.72945e+00   3.70203e+00 DIIS
+   @RKS iter   4:   -78.21881836960164   -2.41448e+00   9.20720e-03 DIIS
+   @RKS iter   5:   -78.43317430095701   -2.14356e-01   3.36162e-03 DIIS
+   @RKS iter   6:   -78.43431371950072   -1.13942e-03   5.04532e-04 DIIS
+   @RKS iter   7:   -78.43434945410183   -3.57346e-05   5.00958e-05 DIIS
+   @RKS iter   8:   -78.43435276195331   -3.30785e-06   1.67722e-05 DIIS
+   @RKS iter   9:   -78.43435279707077   -3.51175e-08   2.37997e-06 DIIS
+   @RKS iter  10:   -78.43435279726660   -1.95826e-10   2.95959e-07 DIIS
+   @RKS iter  11:   -78.43435279726977   -3.16902e-12   3.90619e-08 DIIS
+
+  ==> Post-Iterations <==
+
+    Orbital Energies (a.u.)
+    -----------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -10.614047     1B1u  -10.612719     2Ag    -0.878223  
+       2B1u   -0.670870     1B2u   -0.545052     3Ag    -0.494837  
+       1B3g   -0.420112     1B3u   -0.322412  
+
+    Virtual:                                                              
+
+       1B2g    0.057300     4Ag     0.078439     3B1u    0.101825  
+       2B2u    0.109067     2B3g    0.157559     5Ag     0.218228  
+       4B1u    0.245129     2B3u    0.257943     3B2u    0.295545  
+       6Ag     0.301177     2B2g    0.349931     4B2u    0.395933  
+       5B1u    0.406460     7Ag     0.411983     1B1g    0.423488  
+       6B1u    0.427294     3B3g    0.480933     7B1u    0.555987  
+       1Au     0.566905     3B3u    0.607016     4B3g    0.632964  
+       8Ag     0.680815     5B2u    0.707420     5B3g    0.759271  
+       9Ag     0.764999     4B3u    0.804621     3B2g    0.822121  
+       2B1g    0.856342     4B2g    0.886229     8B1u    0.913150  
+       6B2u    0.916045     9B1u    1.016581     7B2u    1.022395  
+      10Ag     1.046506    11Ag     1.076793    10B1u    1.081387  
+       6B3g    1.096554    11B1u    1.120592     2Au     1.165170  
+      12Ag     1.262562     5B3u    1.370479     7B3g    1.376333  
+       5B2g    1.530561    12B1u    1.544678     8B2u    1.586130  
+      13Ag     1.606315     9B2u    1.609544     8B3g    1.612126  
+       3B1g    1.703485     6B3u    1.716968    14Ag     1.789914  
+      10B2u    1.838102    13B1u    1.845014     7B3u    1.867546  
+       9B3g    1.890595     3Au     1.896356    15Ag     1.902067  
+       4B1g    1.962795     6B2g    1.964195    10B3g    2.023938  
+      11B2u    2.077894     4Au     2.115475    14B1u    2.130229  
+       7B2g    2.158378    16Ag     2.213425     8B3u    2.220222  
+      15B1u    2.231538     5B1g    2.256012    12B2u    2.406123  
+       9B3u    2.442368    16B1u    2.466583    11B3g    2.488646  
+       5Au     2.497330    17Ag     2.510615     8B2g    2.524835  
+      18Ag     2.536574    12B3g    2.544680    13B2u    2.654209  
+       6B1g    2.665724    17B1u    2.679579    19Ag     2.752957  
+      18B1u    2.812049    13B3g    2.853085     9B2g    2.890831  
+      10B3u    2.925464    14B2u    3.044838    15B2u    3.084294  
+      19B1u    3.096908    10B2g    3.171401    11B3u    3.176034  
+      20Ag     3.205682     6Au     3.260846    14B3g    3.474210  
+       7B1g    3.500184    20B1u    3.557659    16B2u    3.591094  
+      21Ag     3.631203    15B3g    3.637798    22Ag     3.641825  
+       7Au     3.707373    21B1u    3.754245    11B2g    3.862014  
+      23Ag     3.921182    22B1u    3.931580    16B3g    3.946485  
+      23B1u    4.333873    17B2u    4.377365    17B3g    4.425036  
+      24Ag     4.949097    12B3u    4.964728    18B2u    5.017972  
+      12B2g    5.110349     8B1g    5.132236    25Ag     5.160487  
+      13B3u    5.208494     9B1g    5.253509    19B2u    5.493688  
+      24B1u    5.548973     8Au     5.561712    10B1g    5.627562  
+      26Ag     5.630500    18B3g    5.632362    13B2g    5.641569  
+      14B3u    5.784376     9Au     5.815332    15B3u    5.828570  
+      27Ag     5.878281    20B2u    5.900450    25B1u    5.900585  
+      19B3g    5.948386    14B2g    6.004227    21B2u    6.016781  
+      10Au     6.075691    28Ag     6.087432    20B3g    6.098952  
+      22B2u    6.109658    11B1g    6.152996    15B2g    6.156015  
+      26B1u    6.203254    16B3u    6.237035    17B3u    6.309105  
+      21B3g    6.343299    27B1u    6.375946    29Ag     6.401040  
+      23B2u    6.501411    30Ag     6.521488    11Au     6.528421  
+      22B3g    6.574020    16B2g    6.578896    28B1u    6.679696  
+      31Ag     6.683827    24B2u    6.750894    12B1g    6.832093  
+      29B1u    6.914071    18B3u    6.961388    23B3g    7.071734  
+      12Au     7.093849    30B1u    7.123791    17B2g    7.153280  
+      19B3u    7.490128    18B2g    7.520402    25B2u    7.520703  
+      31B1u    7.550715    32Ag     7.552219    13B1g    7.575395  
+      24B3g    7.590152    33Ag     7.638194    13Au     7.647696  
+      20B3u    7.675786    32B1u    7.732015    14B1g    7.743546  
+      19B2g    7.759717    33B1u    7.786686    25B3g    7.846241  
+      26B2u    7.899307    34Ag     7.978401    26B3g    8.155074  
+      14Au     8.177173    27B2u    8.182695    35Ag     8.275092  
+      34B1u    8.320854    21B3u    8.345878    15B1g    8.377064  
+      20B2g    8.384540    27B3g    8.457694    35B1u    8.514038  
+      16B1g    8.546814    36Ag     8.569365    28B2u    8.590306  
+      22B3u    8.714770    15Au     8.725625    29B2u    8.741743  
+      37Ag     8.767485    21B2g    8.803497    28B3g    8.812078  
+      36B1u    9.055499    22B2g    9.089450    29B3g    9.132693  
+      16Au     9.167013    37B1u    9.273947    38Ag     9.312992  
+      30B2u    9.338461    38B1u    9.616836    23B3u    9.877126  
+      17B1g    9.947507    31B2u    9.955212    39Ag    10.008407  
+      30B3g   10.133588    17Au    10.174369    39B1u   10.240773  
+      40Ag    10.327519    23B2g   10.349976    31B3g   10.554793  
+      32B2u   10.907074    32B3g   11.231269    40B1u   11.642994  
+      41Ag    11.663666    41B1u   11.810948    33B2u   12.480946  
+      33B3g   12.951507    42Ag    24.854624    42B1u   24.881042  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     3,    0,    0,    1,    0,    2,    1,    1 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -78.43435279726977
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =         33.4887123551582349
+    One-Electron Energy =            -170.4881745207977701
+    Two-Electron Energy =              64.4579064746150436
+    DFT Functional Energy =            -5.8927971062452880
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                    -78.4343527972697672
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds3 at Wed Jun 13 18:54:18 2012
+Module time:
+    user time   =     566.49 seconds =       9.44 minutes
+    system time =       3.80 seconds =       0.06 minutes
+    total time  =        588 seconds =       9.80 minutes
+Total time:
+    user time   =     701.60 seconds =      11.69 minutes
+    system time =       4.69 seconds =       0.08 minutes
+    total time  =        748 seconds =      12.47 minutes
+
+*** tstart() called on ds3
+*** at Wed Jun 13 18:54:18 2012
+
+    No auxiliary basis selected, defaulting to CC-PVQZ-RI
+
+     --------------------------------------------------------
+                              DF-MP2                         
+          2nd-Order Density-Fitted Moller-Plesset Theory     
+                  RMP2 Wavefunction,   1 Threads             
+                                                             
+            Rob Parrish, Justin Turney, Andy Simmonett,      
+               Ed Hohenstein, and C. David Sherrill          
+     --------------------------------------------------------
+
+     --------------------------------------------------------
+                     NBF =   230, NAUX =   484
+     --------------------------------------------------------
+       CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+       PAIRS       0       8       8     222     222       0
+     --------------------------------------------------------
+
+    ----------------------------------------------------------
+     ====================> MP2 Energies <==================== 
+    ----------------------------------------------------------
+     Reference Energy          =     -78.4343527972697672 [H]
+     Singles Energy            =      -0.0000000000000156 [H]
+     Same-Spin Energy          =      -0.0987100382891603 [H]
+     Opposite-Spin Energy      =      -0.3910855403963960 [H]
+     Correlation Energy        =      -0.4897955786855719 [H]
+     Total Energy              =     -78.9241483759553404 [H]
+    ----------------------------------------------------------
+     ==================> SCS-MP2 Energies <================== 
+    ----------------------------------------------------------
+     SCS Same-Spin Scale       =       0.3333333333333333 [-]
+     SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+     SCS Same-Spin Energy      =      -0.0329033460963868 [H]
+     SCS Opposite-Spin Energy  =      -0.4693026484756752 [H]
+     SCS Correlation Energy    =      -0.5022059945720775 [H]
+     SCS Total Energy          =     -78.9365587918418470 [H]
+    ----------------------------------------------------------
+
+
+*** tstop() called on ds3 at Wed Jun 13 18:54:28 2012
+Module time:
+    user time   =       8.35 seconds =       0.14 minutes
+    system time =       0.30 seconds =       0.00 minutes
+    total time  =         10 seconds =       0.17 minutes
+Total time:
+    user time   =     709.95 seconds =      11.83 minutes
+    system time =       4.99 seconds =       0.08 minutes
+    total time  =        758 seconds =      12.63 minutes
+
+
+  Variable Map:
+  ----------------------------------------------------------------------------
+  "CURRENT CORRELATION ENERGY"    =>      -0.489795578686
+  "CURRENT ENERGY"                =>     -78.924148375955
+  "CURRENT REFERENCE ENERGY"      =>     -78.434352797270
+  "DF-MP2 CORRELATION ENERGY"     =>      -0.489795578686
+  "DF-MP2 OPPOSITE-SPIN ENERGY"   =>      -0.391085540396
+  "DF-MP2 SAME-SPIN ENERGY"       =>      -0.098710038289
+  "DF-MP2 SINGLES ENERGY"         =>      -0.000000000000
+  "DF-MP2 TOTAL ENERGY"           =>     -78.924148375955
+  "DFT FUNCTIONAL ENERGY"         =>      -5.892797106245
+  "DFT FUNCTIONAL TOTAL ENERGY"   =>     -78.434352797270
+  "DFT TOTAL ENERGY"              =>     -78.434352797270
+  "NUCLEAR REPULSION ENERGY"      =>      33.488712355158
+  "ONE-ELECTRON ENERGY"           =>    -170.488174520798
+  "SCF DIPOLE X"                  =>       0.000000000000
+  "SCF DIPOLE Y"                  =>       0.000000000000
+  "SCF DIPOLE Z"                  =>       0.000000000000
+  "SCF ITERATION ENERGY"          =>     -78.434352797270
+  "SCF TOTAL ENERGY"              =>     -78.434352797270
+  "SCS-DF-MP2 CORRELATION ENERGY" =>      -0.502205994572
+  "SCS-DF-MP2 TOTAL ENERGY"       =>     -78.936558791842
+  "TWO-ELECTRON ENERGY"           =>      64.457906474615
+
+
+-78.5665976035
+*** PSI4 exiting successfully. Buy a developer a beer!
+

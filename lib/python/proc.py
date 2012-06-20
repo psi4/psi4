@@ -1,3 +1,4 @@
+from __future__ import print_function
 """Module with functions that encode the sequence of PSI module
 calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
@@ -15,6 +16,7 @@ from molutil import *
 from text import *
 from procutil import *
 from basislist import *
+from functional import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -519,7 +521,7 @@ def run_cc_property(name, **kwargs):
             else:
                 invalid.append(prop)
     else:
-        print "The \"properties\" keyword is required with the property() function."
+        print("The \"properties\" keyword is required with the property() function.")
         exit(1)
 
     n_one = len(one)
@@ -529,18 +531,18 @@ def run_cc_property(name, **kwargs):
     n_invalid = len(invalid)
 
     if (n_invalid > 0):
-        print "The following properties are not currently supported: %s" % invalid
+        print("The following properties are not currently supported: %s" % invalid)
 
     if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
-        print "Excited state CC properties require EOM-CC2 or EOM-CCSD."
+        print("Excited state CC properties require EOM-CC2 or EOM-CCSD.")
         exit(1)
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        print "Cannot (yet) compute response properties for excited states."
+        print("Cannot (yet) compute response properties for excited states.")
         exit(1)
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
-        print "Computing both density- and response-based properties."
+        print("Computing both density- and response-based properties.")
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
@@ -594,7 +596,7 @@ def run_cc_property(name, **kwargs):
         elif (name.lower() == 'eom-cc2'):
             PsiMod.set_global_option('WFN', 'EOM_CC2')
         else:
-            print "Unknown excited-state CC wave function."
+            print("Unknown excited-state CC wave function.")
             exit(1)
         PsiMod.set_global_option('DERTYPE', 'NONE')
         PsiMod.set_global_option('ONEPDM', 'TRUE')
@@ -1257,14 +1259,14 @@ def run_mrcc(name, **kwargs):
             retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + PsiMod.outfile_name(), shell=True)
 
         if retcode < 0:
-            print >>sys.stderr, 'MRCC was terminated by signal', -retcode
+            print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)
             exit(1)
         elif retcode > 0:
-            print >>sys.stderr, 'MRCC errored', retcode
+            print('MRCC errored %d' % retcode, file=sys.stderr)
             exit(1)
 
-    except OSError, e:
-        print >>sys.stderr, 'Execution failed:', e
+    except OSError as e:
+        print('Execution failed: %s' % e, file=sys.stderr)
         exit(1)
 
     # Restore the OMP_NUM_THREADS that the user set.
@@ -1292,8 +1294,8 @@ def run_mrcc(name, **kwargs):
         # Delete unless we're told not to
         if (keep == False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
-    except OSerror, e:
-        print >>sys.stderr, 'Unable to remove MRCC temporary directory', e
+    except OSerror as e:
+        print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
     # Revert to previous current directory location
@@ -1332,12 +1334,6 @@ def run_cepa(name, **kwargs):
        molecule.reset_point_group('c1')
        #molecule.fix_orientation(1)
        #molecule.update_geometry()
- 
-    # override symmetry until i figure out the difference between transqt2
-    # and libtrans when using symmetry.
-    molecule = PsiMod.get_active_molecule()
-    molecule.update_geometry()
-    molecule.reset_point_group('c1')
 
     # throw an exception for open-shells
     if (PsiMod.get_global_option('reference') != 'RHF' ):
@@ -1397,3 +1393,105 @@ def run_property(name, **kwargs):
 
     junk = 1
     return junk
+
+def run_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'b2plyp_xc')
+
+    if (user_ref == 'RHF'):
+        PsiMod.set_global_option('REFERENCE', 'RKS')
+    elif (user_ref == 'UHF'):
+        PsiMod.set_global_option('REFERENCE', 'UKS')
+    elif (user_ref == 'ROHF'):
+        raise ValidationError('ROHF reference for DFT is not available.')
+    elif (user_ref == 'CUHF'):
+        raise ValidationError('CUHF reference for DFT is not available.')
+
+    e_dft    = run_scf(name, **kwargs) 
+    PsiMod.dfmp2()
+    e_dhdft  = e_dft + 0.27 * PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
+
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+
+    return e_dhdft
+
+
+def run2_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.27 in functional.py
+    #     and with normalization suppressed @268 in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    fun = build_superfunctional('b2plyp_xc',5000,1)
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+    e_dhdft      = e_dft + fun.c_alpha() * e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
+def run3_b2plyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    fun = build_superfunctional('b2plyp_xc',5000,1)
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+    e_dhdft      = e_dft + 0.27 * e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
+def run_pbe0_2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a B2PLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'pbe0-2_xc')
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
+    e_dhdft      = e_dft + 0.5 * e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
