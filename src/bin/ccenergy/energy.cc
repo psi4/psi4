@@ -107,6 +107,11 @@ double rohf_energy(void)
   fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
 
+  // Store the same-spin and opposite-spin pair energies
+  // (not including singles here)
+  moinfo.ecc_ss = tauIJAB_energy + tauijab_energy;
+  moinfo.ecc_os = tauIjAb_energy;
+
   return (tIA_energy + tia_energy +
 	  tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
@@ -161,6 +166,11 @@ double uhf_energy(void)
   fprintf(outfile,"\n\tOpposite-spin energy  = %20.15f\n",E2AB);
   fprintf(outfile,"\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
   */
+ 
+  // Store the same-spin and opposite-spin pair energies
+  // (not including singles here)
+  moinfo.ecc_ss = E2AA + E2BB;
+  moinfo.ecc_os = E2AB;
 
   return(T1A + T1B + E2AA + E2BB + E2AB);
 }
