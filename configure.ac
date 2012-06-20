@@ -1001,6 +1001,7 @@ AC_CONFIG_FILES([
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/adc/Makefile
+          src/bin/thermo/Makefile
 
           tests/Makefile
           tests/MakeVars

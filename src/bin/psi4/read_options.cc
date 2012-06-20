@@ -2353,6 +2353,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (AC|BD) integrals will be avoided. -*/
       options.add_bool("CEPA_VABCD_DIRECT",false);
   }
+  if (name == "THERMO"|| options.read_globals()) {
+      /*- Temperature in Kelvin for thermodynamic analysis. -*/
+      options.add_double("T", 298.15);
+      /*- Pressure in Pascal for thermodynamic analysis. -*/
+      options.add_double("P", 101325);
+  }
   return true;
 }
 
