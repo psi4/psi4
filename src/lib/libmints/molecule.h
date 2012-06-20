@@ -22,6 +22,11 @@ namespace python{
 namespace psi {
 extern FILE *outfile;
 
+enum RotorType {ASYMMETRIC_TOP, SYMMETRIC_TOP, SPHERICAL_TOP, LINEAR, ATOM};
+
+const std::string RotorTypeList[] = {"ASYMMETRIC_TOP", "SYMMETRIC_TOP",
+ "SPHERICAL_TOP", "LINEAR", "ATOM"};
+
 /*! \ingroup MINTS
  *  \class Molecule
  *  \brief Molecule information class.
@@ -318,6 +323,12 @@ public:
 
     /// Compute inertia tensor.
     Matrix* inertia_tensor() const;
+
+    /// Compute the rotational constants and return them in wavenumbers
+    Vector rotational_constants() const;
+
+    /// Return the rotor type
+    RotorType rotor_type() const;
 
     /// Print the molecule
     void print() const;

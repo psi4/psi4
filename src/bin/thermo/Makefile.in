@@ -3,11 +3,12 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-LDLIBS += $(LAPACK) $(BLAS)
+LDLIBS += $(BLAS)
 
-PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_thermo.a
 
-CXXSRC = thermo.cc
+CXXSRC = \
+thermo.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
@@ -17,3 +18,4 @@ ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
+
