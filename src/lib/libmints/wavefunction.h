@@ -185,6 +185,17 @@ protected:
     /// Factors to scale contributions to the CIM correlation energy
     SharedVector CIM_orbital_factors_;
 
+    /// Orbital energies for a CIM computation
+    SharedVector CIM_orbital_energies_;
+
+    /// Number of active occupied orbitals in a CIM computation
+    int CIM_nactive_occupied_;
+    int * CIM_nactive_occupied_pointer_;
+
+    /// Number of active virtual orbitals in a CIM computation
+    int CIM_nactive_virtual_;
+    int * CIM_nactive_virtual_pointer_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -428,11 +439,20 @@ public:
     /// Returns factors to scale contributions to the CIM correlation energy
     SharedVector CIMOrbitalFactors();
 
+    /// Returns orbital energies for CIM computation
+    SharedVector CIMOrbitalEnergies();
+
+    /// Returns the number of active occupied orbitals in a CIM computation
+    int CIMActiveOccupied();
+
+    /// Returns the number of active occupied virtual in a CIM computation
+    int CIMActiveVirtual();
+
     /// Returns true if this is a CIM computation
     bool isCIM();
 
     /// Set if this is a CIM computation
-    void CIMSet(bool value,int nactive_orbitals);
+    void CIMSet(bool value,int nactive_occupied);
 
     /// Temporary function for checking numerical integration grid 
     /// (TDC, 6/8/12)

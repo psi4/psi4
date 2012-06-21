@@ -37,8 +37,6 @@ scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 dft1 
 
 python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
-plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
-
 longtest_subdirs = sapt2 sapt4
 
 subdirs = \

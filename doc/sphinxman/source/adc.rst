@@ -9,8 +9,8 @@
 
 .. _`sec:adc`:
 
-Ab Initio Polarization Propagator
-=================================
+ADC: Ab Initio Polarization Propagator
+======================================
 
 .. codeauthor:: Masaaki Saitow
 .. sectionauthor:: Masaaki Saitow
