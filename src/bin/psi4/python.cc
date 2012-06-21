@@ -78,6 +78,7 @@ namespace psi {
     namespace stable     { PsiReturnType stability(Options&); }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
+    namespace thermo     { PsiReturnType thermo(Options&);       }
     namespace mrcc       {
         PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
         PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
@@ -480,6 +481,13 @@ double py_psi_adc()
     }
     else
         return 0.0;
+}
+
+double py_psi_thermo()
+{
+    py_psi_prepare_options_for_module("THERMO");
+    thermo::thermo(Process::environment.options);
+    return 0.0;
 }
 
 char const* py_psi_version()
@@ -1012,7 +1020,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
+    def("get_global_option", py_psi_get_global_option, "Given a string of a keyword name, returns the value associated with the keyword from the global options. Returns error if keyword is not recognized.");
     def("get_local_option", py_psi_get_local_option, "Given a string of a keyword name and a particular module, returns the value associated with the keyword in the module options scope. Returns error if keyword is not recognized for the module.");
     def("get_option", py_psi_get_option, "Given a string of a keyword name and a particular module, returns the local value associated with the keyword if it's been set, else the global value if it's been set, else the local default value. Returns error if keyword is not recognized globally or if keyword is not recognized for the module.");
 
@@ -1089,6 +1097,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("omp2", py_psi_omp2, "Runs the orbital optimized MP2 code.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
+    def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
 
     // Define library classes

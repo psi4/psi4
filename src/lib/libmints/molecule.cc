@@ -58,8 +58,8 @@ bool from_string(T& t,
 }
 
 // TODO: These should probably be moved to psi4-def.h
-#define ZERO_MOMENT_INERTIA 1.0E-10     /*Tolerance for degenerate rotational constants*/
-#define ZERO 1.0E-14
+#define ZERO_MOMENT_INERTIA 1.0E-9      // Tolerance (relative) for degenerate moments of intertia
+#define ZERO 1.0E-14                    // Tolerance for zero moments of intertia
 
 namespace psi {
 
@@ -1508,6 +1508,79 @@ Matrix* Molecule::inertia_tensor() const
     return tensor;
 }
 
+Vector Molecule::rotational_constants() const {
+
+  SharedMatrix pI(inertia_tensor()); 
+  Vector evals(3);
+  SharedMatrix eigenvectors(new Matrix(3, 3));
+  pI->diagonalize(eigenvectors, evals, ascending);
+
+  // Conversion factor from moments to rotational constants.
+  double im2rotconst = _h / (8 * _pi * _pi * _c);
+  // Add factor to put moments into SI units - give result in wavenumbers.
+  im2rotconst /= (_bohr2m * _bohr2m * _amu2kg * 100);
+
+  Vector rot_const(3);
+  for (int i=0; i<3; ++i) {
+    if (evals[i] < ZERO)
+      rot_const[i] = 0.0;
+    else
+      rot_const[i] = im2rotconst/evals[i];
+  }
+
+/*
+  fprintf(outfile,"\n\tRotational constants (cm^-1) :\n");
+  if (rot_const[0] == 0) // linear
+    fprintf(outfile,"\tA = **********  ");
+  else               // non-linear
+    fprintf(outfile,"\tA = %10.5lf  ", rot_const[0]);
+
+  if (rot_const[1] == 0) // atom
+    fprintf(outfile,"  B = **********    C = **********  \n");
+  else               // molecule
+    fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+*/
+  return rot_const;
+}
+
+RotorType Molecule::rotor_type() const {
+
+  Vector rot_const = rotational_constants();
+
+  // Determine degeneracy of rotational constants.
+  double tmp, abs, rel;
+  int degen = 0;
+  for (int i=0;i<2;i++) {
+    for (int j=i+1; j<3 && degen<2; j++) {
+      abs = fabs(rot_const[i] - rot_const[j]);
+      tmp = (rot_const[i] > rot_const[j]) ? rot_const[i] : rot_const[j];
+      if (abs > 1.0E-14)
+        rel = abs/tmp;
+      else
+        rel = 0.0;
+      if (rel < ZERO_MOMENT_INERTIA)
+        degen++;
+    }
+  }
+  //fprintf(outfile, "\tDegeneracy is %d\n", degen);
+
+  // Determine rotor type
+  RotorType rotor_type;
+
+  if (natom() == 1)
+    rotor_type = ATOM;
+  else if (rot_const[2] == 0.0)  // A == 0, B == C
+    rotor_type = LINEAR;
+  else if (degen == 2)           // A == B == C
+    rotor_type = SPHERICAL_TOP;
+  else if (degen == 1)           // A  > B == C
+    rotor_type = SYMMETRIC_TOP;  // A == B > C
+  else
+    rotor_type = ASYMMETRIC_TOP; // A != B != C
+
+  return rotor_type;
+}
+
 //
 // Symmetry
 //
@@ -2585,7 +2658,7 @@ bool Molecule::valid_atom_map(double tol) const {
     return true;
 }
 
-/* we may not need this capability
+// we may not need this capability
 void Molecule::set_com_fixed(bool _fix) {
 
     if (_fix) {
@@ -2609,5 +2682,5 @@ void Molecule::set_com_fixed(bool _fix) {
         move_to_com_ = true;
     }
 }
-*/
+
 

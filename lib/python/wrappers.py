@@ -548,7 +548,7 @@ def cp(name, **kwargs):
 
     :aliases: counterpoise_correct(), counterpoise_correction()
 
-    :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
+    :returns: (*float*) Counterpoise-corrected interaction energy in Hartrees.
 
     :PSI variables:
 
@@ -595,7 +595,7 @@ def cp(name, **kwargs):
     :examples:
 
     >>> # [1] counterpoise-corrected mp2 interaction energy
-    >>> cp('dfmp2')
+    >>> cp('df-mp2')
 
     """
     lowername = name.lower()
