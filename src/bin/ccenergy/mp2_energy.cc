@@ -162,6 +162,11 @@ double uhf_mp2_energy(void)
   dpd_buf4_close(&D);
   dpd_buf4_close(&T2);
 
+  // We define EMP2_SS as the same-spin pair energy, and EMP2_OS as the 
+  // opposite-spin pair energy (singles not included)
+  moinfo.emp2_ss = E2AA + E2BB;
+  moinfo.emp2_os = E2AB;
+
   return(T1A + T1B + E2AA + E2BB + E2AB);
 }
 }} // namespace psi::ccenergy
