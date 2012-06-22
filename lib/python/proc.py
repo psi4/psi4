@@ -1280,12 +1280,16 @@ def run_mrcc(name, **kwargs):
     # Scan iface file and grab the file energy.
     e = 0.0
     for line in file('iface'):
-        if fullname in line:
-            fields = line.split()
+        fields = line.split()
+        m = fields[1]
+        try:
             e = float(fields[5])
+    	    PsiMod.set_variable(m + ' ENERGY', e)
+        except ValueError:
+            continue
 
+    # The last 'e' in iface is the one the user requested.
     PsiMod.set_variable('CURRENT ENERGY', e)
-    PsiMod.set_variable(fullname + ' ENERGY', e)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -1482,7 +1486,7 @@ def run3_b2plyp(name, **kwargs):
 
 def run_pbe0_2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a B2PLYP double-hybrid density-functional-theory calculation.
+    a PBE0-2 double-hybrid density-functional-theory calculation.
 
     """
     lowername = name.lower()
@@ -1498,3 +1502,49 @@ def run_pbe0_2(name, **kwargs):
     e_dhdft      = e_dft + 0.5 * e_dfmp2_corr
     PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
     return e_dhdft
+
+
+def run_dsd_blyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-BLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'dsd-blyp_xc')
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', 0.46)
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', 0.43)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
+def run_dsd_pbep86(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-PBEP86 double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'dsd-pbep86_xc')
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', 0.51)
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', 0.22)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
