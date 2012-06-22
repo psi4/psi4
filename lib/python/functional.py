@@ -2428,6 +2428,49 @@ def build_dsd_pbep86_xc_superfunctional(name, npoints, deriv):
    return sup
 
 
+def build_dsd_test_xc_superfunctional(name, npoints, deriv):
+
+   # Call this first
+   sup = PsiMod.SuperFunctional.blank()
+   sup.set_max_points(npoints)
+   sup.set_deriv(deriv)
+
+   # => User-Customization <= #
+
+   # No spaces, keep it short and according to convention
+   sup.set_name('DSD-TEST_XC')
+   # Tab in, trailing newlines
+   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional\n')
+   # Tab in, trailing newlines
+   sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+
+   # Add member functionals
+   X = build_functional('PBE_X')
+   X.set_alpha(1.0)
+   sup.add_x_functional(X)
+   C = build_functional('P86_C')
+   C.set_alpha(0.45)
+   sup.add_c_functional(C)
+
+   # Set GKS up after adding functionals
+   sup.set_x_omega(0.0)
+   sup.set_c_omega(0.0)
+   sup.set_x_alpha(0.68)
+   sup.set_c_alpha(0.0)
+   sup.set_c_ss_alpha(0.22)
+   sup.set_c_os_alpha(0.51)
+
+   # => -D2 <=
+
+   sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.276))
+
+   # => End User-Customization <= #
+
+   # Call this last
+   sup.allocate()
+   return sup
+
+
 def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2531,6 +2574,7 @@ superfunctionals = {
         'pbe0-2_xc' : build_pbe0_2_xc_superfunctional,
         'dsd-blyp_xc' : build_dsd_blyp_xc_superfunctional,
         'dsd-pbep86_xc' : build_dsd_pbep86_xc_superfunctional,
+        'dsd-test_xc' : build_dsd_test_xc_superfunctional,
     }
 
 
