@@ -84,7 +84,7 @@ PsiReturnType thermo(Options &options) {
       rot_symm_num = 1;
     }
     else if (rot_type == ASYMMETRIC_TOP) {
-      if ( pg == 'cs')                  // Cs
+      if ( pg == "cs")                  // Cs
         rot_symm_num = 1;
       if ( pg[0] == 'c' && pg[1] == 2 ) // C2, C2v, C2h
         rot_symm_num = 2;
