@@ -7,8 +7,8 @@
 
 .. _`sec:dft`:
 
-Density Functional Theory
-=========================
+DFT: Density Functional Theory
+==============================
 
 .. codeauthor:: Robert M. Parrish and Justin M. Turney
 .. sectionauthor:: Robert M. Parrish

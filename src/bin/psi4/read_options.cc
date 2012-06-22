@@ -911,6 +911,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
+    /*- Radius (bohr) of a hard-sphere external potential -*/
+    options.add_double("RADIUS", 10.0); // bohr
+    /*- Thickness (bohr) of a hard-sphere external potential -*/
+    options.add_double("THICKNESS", 20.0); // bohr
+    /*- Number of radial grid points for sphereical potential integration -*/
+    options.add_int("R_POINTS", 100);
+    /*- Number of colatitude grid points for sphereical potential integration -*/
+    options.add_int("THETA_POINTS", 360);
+    /*- Number of azimuthal grid points for sphereical potential integration -*/
+    options.add_int("PHI_POINTS", 360);
+
+
     /*- SUBSECTION Parallel Runtime -*/
 
     /*- The dimension sizes of the processor grid !expert -*/

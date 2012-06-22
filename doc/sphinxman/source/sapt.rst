@@ -7,8 +7,8 @@
 
 .. _`sec:sapt`:
 
-Symmetry-Adapted Perturbation Theory
-====================================
+SAPT: Symmetry-Adapted Perturbation Theory
+==========================================
 
 .. codeauthor:: Edward G. Hohenstein
 .. sectionauthor:: Edward G. Hohenstein

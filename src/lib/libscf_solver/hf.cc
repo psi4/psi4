@@ -18,6 +18,7 @@
 
 #include <libfunctional/superfunctional.h>
 #include <psifiles.h>
+#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.hpp>
@@ -253,10 +254,13 @@ void HF::common_init()
                 perturb_ = dipole_y;
             else if (perturb_with == "DIPOLE_Z")
                 perturb_ = dipole_z;
-            else if (perturb_with == "EMBPOT")
+            else if (perturb_with == "EMBPOT") {
                 perturb_ = embpot;
+                lambda_ = 1.0;
+            }
             else if (perturb_with == "SPHERE") {
                 perturb_ = sphere;
+                lambda_ = 1.0;
             }
             else {
                 if (Communicator::world->me() == 0) {
@@ -574,9 +578,112 @@ void HF::form_H()
         V_->print(outfile);
 
     if (perturb_h_) {
+      if(perturb_ == embpot || perturb_ == sphere) { // embedding potential read from file
+        if(nirrep_ > 1)
+          throw PSIEXCEPTION("RHF_embed: embedding and spherical potentials require 'symmetry c1'.");
+        int nso = 0;
+        for(int h=0; h < nirrep_; h++) nso += nsopi_[h];
+        int nao = basisset_->nao();
+
+        // Set up AO->SO transformation matrix (u)
+        MintsHelper helper(options_, 0);
+        SharedMatrix aotoso = helper.petite_list(true)->aotoso();
+        int *col_offset = new int[nirrep_];
+        col_offset[0] = 0;
+        for(int h=1; h < nirrep_; h++)
+          col_offset[h] = col_offset[h-1] + aotoso->coldim(h-1);
+
+        double **u = block_matrix(nao, nso);
+        for(int h=0; h < nirrep_; h++)
+          for(int j=0; j < aotoso->coldim(h); j++)
+            for(int i=0; i < nao; i++)
+              u[i][j+col_offset[h]] = aotoso->get(h, i, j);
+        delete[] col_offset;
+
+        double *phi_ao, *phi_so, **V_eff;
+        phi_ao = init_array(nao);
+        phi_so = init_array(nso);
+        V_eff = block_matrix(nso, nso);
+
+        if(perturb_ == embpot) {
+
+          FILE* input = fopen("EMBPOT", "r");
+          int npoints;
+          fscanf(input, "%d", &npoints);
+          fprintf(outfile, "  npoints = %d\n", npoints);
+          double x, y, z, w, v;
+          double max = 0;
+          for(int k=0; k < npoints; k++) {
+            fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
+            if(fabs(v) > max) max = fabs(v);
+
+            basisset_->compute_phi(phi_ao, x, y, z);
+            // Transform phi_ao to SO basis
+            C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
+            for(int i=0; i < nso; i++)
+              for(int j=0; j < nso; j++)                
+                V_eff[i][j] += w * v * phi_so[i] * phi_so[j];
+          } // npoints
+
+          fprintf(outfile, "  Max. embpot value = %20.10f\n", max);
+          fclose(input);
+
+        } // embpot
+        else if(perturb_ == sphere) {
+          radius_ = options_.get_double("RADIUS");
+          thickness_ = options_.get_double("THICKNESS");
+          r_points_ = options_.get_int("R_POINTS");
+          theta_points_ = options_.get_int("THETA_POINTS");
+          phi_points_ = options_.get_int("PHI_POINTS");
+          fprintf(outfile, "  Hard spherical potential radius         = %3.2f bohr\n", radius_);
+          fprintf(outfile, "  Spherical potential thickness           = %3.2f bohr\n", thickness_);
+          fprintf(outfile, "  Number of radial integration points     = %d\n", r_points_);
+          fprintf(outfile, "  Number of colatitude integration points = %d\n", theta_points_);
+          fprintf(outfile, "  Number of azimuthal integration points  = %d\n", phi_points_);
+
+          double r_step = thickness_/r_points_; // bohr
+          double theta_step = 2*_pi/theta_points_; // 1 degree in radians
+          double phi_step = 2*_pi/phi_points_; // 1 degree in radians
+          double weight = r_step * theta_step * phi_step;
+          for(double r=radius_; r < radius_+thickness_; r += r_step) {
+            for(double theta=0.0; theta < _pi; theta += theta_step) {  /* colatitude */
+              for(double phi=0.0; phi < 2*_pi; phi += phi_step) { /* azimuthal */
+
+                double x = r * sin(theta) * cos(phi);
+                double y = r * sin(theta) * sin(phi);
+                double z = r * cos(theta);
+
+                double jacobian = weight * r * r * sin(theta);
+
+                basisset_->compute_phi(phi_ao, x, y, z);
+
+                C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1,
+                        0.0, &(phi_so[0]), 1);
+
+                for(int i=0; i < nso; i++)
+                  for(int j=0; j < nso; j++)
+                    V_eff[i][j] += jacobian * 1.0e6 * phi_so[i] * phi_so[j];
+              }
+            }
+          }
+        } // sphere
+
+        if(Communicator::world->me() == 0) {
+          fprintf(outfile, "  Perturbing H by %f V_eff.\n", lambda_);
+          if(options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, outfile);
+        }
+
+        for(int i=0; i < nso; i++)
+          for(int j=0; j < nso; j++)
+            V_->set(i, j, (V_eff[i][j] + V_->get(i,j)));
+
+        free(phi_ao);
+        free(phi_so);
+        free_block(V_eff);
+      }  // embpot or sphere
+      else {
         OperatorSymmetry msymm(1, molecule_, integral_, factory_);
         vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
-
         OneBodySOInt *so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
@@ -613,7 +720,9 @@ void HF::form_H()
                 V_->add(dipoles[2]);
             }
         }
-    }
+
+      } // end dipole perturbations
+    } // end perturb_h_
 
     // If an external field exists, add it to the one-electron Hamiltonian
     boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
@@ -640,7 +749,10 @@ void HF::form_H()
         }
         nuclearrep_ += enuc2;
 
-    }
+    }  // end external
+
+    // Save perturbed V_ for future (e.g. correlated) calcs
+    V_->save(psio_, PSIF_OEI);
 
     H_->copy(T_);
     H_->add(V_);

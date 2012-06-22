@@ -52,6 +52,13 @@ DFT Functionals
 |
 |
 
+.. _`table:dft_dhybrid`:
+
+.. include:: autodoc_dft_dhybrid.rst
+
+|
+|
+
 .. _`table:dft_disp`:
 
 .. include:: autodoc_dft_disp.rst

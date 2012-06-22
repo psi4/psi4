@@ -7,6 +7,12 @@ adc2:         ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 
 castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
 
 
+castup2:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup3) that output file doesn't depend on options (scf_type) being set global or local. This input uses global.
+
+
+castup3:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup2) that output file doesn't depend on options (scf_type) being set global or local. This input uses local.
+
+
 cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
 
@@ -236,6 +242,9 @@ dfmp2_3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF
 
 
 dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
+
+
+dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
 dft1:         DFT Functional Test
