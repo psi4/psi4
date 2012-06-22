@@ -61,31 +61,46 @@ PsiReturnType thermo(Options &options) {
     fprintf(outfile,"\t then so will the values of Cv, S, and G.  The symmetry number may be specified in the \n");
     fprintf(outfile,"\t input file via the ROTATIONAL_SYMMETRY_NUMBER keyword.\n");
 
+    // Point Group    symmetry number
+    // C1,Ci,Cs,Cinfv 1
+    // Cn, Cnv, Cnh   n
+    // Dinfh 	      2
+    // T, Td          12
+    // Oh             24
+    // Dn, Dnh, Dnd   2n
+    // Sn             n/2
+    // Ih             60
+
     // The code below will only work for D2h and subgroups!
     if (rot_type == ATOM)            // atom
       rot_symm_num = 1;
     else if (rot_type == LINEAR) {
       if (pg[0] == 'd')              // D-inf-v
         rot_symm_num = 2;
-      else if (pg[0] == 'c')           // C-inf-v
+      else if (pg[0] == 'c')         // C-inf-v
         rot_symm_num = 1;
-      }
-      else if (rot_type == ASYMMETRIC_TOP) {
-        if ( (pg[0] == 'c') && (pg[1] == 2) )  // C2, C2v
-          rot_symm_num = 1;
-        if ( (pg[0] == 'd') && (pg[1] == 2) )  // D2, D2d, D2h
-          rot_symm_num = 8;
-        else
-          rot_symm_num = 1;
-      }
-      else if (rot_type == SYMMETRIC_TOP) {
-        if (pg[0] == 'c' && pg[1] == 's')       // Guess Cs  -> really C3v ; wrong for C5v, C7v ...!
-          rot_symm_num = 3;
-        else if (pg[0] == 'c' && pg[2] == '2')  // Guess C2v -> really D3h 
-          rot_symm_num = 9;
+    }
+    else if (pg == "c1" || pg == "ci") {
+      rot_symm_num = 1;
+    }
+    else if (rot_type == ASYMMETRIC_TOP) {
+      if ( pg == 'cs')                  // Cs
+        rot_symm_num = 1;
+      if ( pg[0] == 'c' && pg[1] == 2 ) // C2, C2v, C2h
+        rot_symm_num = 2;
+      if ( pg[0] == 'd' && pg[1] == 2 ) // D2, D2d, D2h
+        rot_symm_num = 4;
+      else
+        rot_symm_num = 1;
+    }
+    else if (rot_type == SYMMETRIC_TOP) {
+      if (pg[0] == 'c' && pg[1] == 's')       // Guess Cs  -> really C3v ; wrong for C5v, C7v ...!
+        rot_symm_num = 3;
+      else if (pg[0] == 'c' && pg[2] == '2')  // Guess C2v -> really D3h 
+          rot_symm_num = 6;
      }
      else if (rot_type == SPHERICAL_TOP) {
-       if (pg[0] == 'c')      // Guess Cs  -> really tetrahedral
+       if (pg[0] == 'c')      // Guess Cs  -> really T,Td
          rot_symm_num = 12;
        else if (pg[0] == 'd') // Guess D2h -> really octahedral
          rot_symm_num = 24;
