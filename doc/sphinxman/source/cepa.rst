@@ -8,8 +8,8 @@
    pair: Coupled-Pair Methods; theory
    pair: CEPA; theory
 
-Coupled-Pair Methods
-=====================
+CEPA: Coupled-Pair Methods
+==========================
 
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince

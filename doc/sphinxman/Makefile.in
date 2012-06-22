@@ -155,6 +155,7 @@ $(SOURCEDIR)/autodoc_dft_gga.rst \
 $(SOURCEDIR)/autodoc_dft_meta.rst \
 $(SOURCEDIR)/autodoc_dft_lrc.rst \
 $(SOURCEDIR)/autodoc_dft_hybrid.rst \
+$(SOURCEDIR)/autodoc_dft_dhybrid.rst \
 $(SOURCEDIR)/autodoc_dft_disp.rst
 
 $(autotarget6): %: $(autodepend6)
@@ -243,7 +244,7 @@ opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst \
-installfile.rst
+installfile.rst optionshandling.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

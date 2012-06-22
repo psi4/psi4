@@ -4,8 +4,8 @@
 .. _`sec:scf`:
 .. index:: SCF, HF, Hartree-Fock
 
-Hartree--Fock Theory
-====================
+HF: Hartree--Fock Theory
+========================
 
 .. codeauthor:: Justin M. Turney, Robert M. Parrish, and Andrew C. Simmonett
 .. sectionauthor:: Robert M. Parrish
