@@ -1280,12 +1280,16 @@ def run_mrcc(name, **kwargs):
     # Scan iface file and grab the file energy.
     e = 0.0
     for line in file('iface'):
-        if fullname in line:
-            fields = line.split()
+        fields = line.split()
+        m = fields[1]
+        try:
             e = float(fields[5])
+    	    PsiMod.set_variable(m + ' ENERGY', e)
+        except ValueError:
+            continue
 
+    # The last 'e' in iface is the one the user requested.
     PsiMod.set_variable('CURRENT ENERGY', e)
-    PsiMod.set_variable(fullname + ' ENERGY', e)
 
     # Load the iface file
     iface = open('iface', 'r')
