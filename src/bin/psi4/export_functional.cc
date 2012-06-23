@@ -34,6 +34,8 @@ void export_functional()
         def("c_omega", &SuperFunctional::c_omega, "docstring").
         def("x_alpha", &SuperFunctional::x_alpha, "docstring").
         def("c_alpha", &SuperFunctional::c_alpha, "docstring").
+        def("c_ss_alpha", &SuperFunctional::c_ss_alpha, "docstring").
+        def("c_os_alpha", &SuperFunctional::c_os_alpha, "docstring").
         def("dispersion", &SuperFunctional::dispersion, "docstring").
         def("is_gga", &SuperFunctional::is_gga, "docstring").
         def("is_meta", &SuperFunctional::is_meta, "docstring").
@@ -41,6 +43,7 @@ void export_functional()
         def("is_c_lrc", &SuperFunctional::is_c_lrc, "docstring").
         def("is_x_hybrid", &SuperFunctional::is_x_hybrid, "docstring").
         def("is_c_hybrid", &SuperFunctional::is_c_hybrid, "docstring").
+        def("is_c_scs_hybrid", &SuperFunctional::is_c_scs_hybrid, "docstring").
         def("set_name", &SuperFunctional::set_name, "docstring").
         def("set_description", &SuperFunctional::set_description, "docstring").
         def("set_citation", &SuperFunctional::set_citation, "docstring").
@@ -50,6 +53,8 @@ void export_functional()
         def("set_c_omega", &SuperFunctional::set_c_omega, "docstring").
         def("set_x_alpha", &SuperFunctional::set_x_alpha, "docstring").
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
+        def("set_c_ss_alpha", &SuperFunctional::set_c_ss_alpha, "docstring").
+        def("set_c_os_alpha", &SuperFunctional::set_c_os_alpha, "docstring").
         def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
         def("print_out",&SuperFunctional::py_print, "docstring").
         def("print_detail",&SuperFunctional::py_print_detail, "docstring");

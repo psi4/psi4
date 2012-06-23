@@ -1547,4 +1547,24 @@ def run_dsd_pbep86(name, **kwargs):
     PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
     return e_dhdft
 
+def run_dsd_test(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-PBEP86 double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    fun = build_superfunctional('dsd-test_xc',5000,1)
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', fun.c_os_alpha() )
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', fun.c_ss_alpha() )
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
 
