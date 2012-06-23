@@ -5,7 +5,7 @@
 memory 250 mb
 
 # Example of matrix multiplication
-print '\n  ==> Matrix Multiplication <== \n\n'
+print_out('\n  ==> Matrix Multiplication <== \n\n')
 
 n = 3
 A = PsiMod.Matrix(n, n)
@@ -38,7 +38,7 @@ mmultRef.set(0, 1, 0, 4.0000000); mmultRef.set(0, 1, 1, 0.0000000); mmultRef.set
 mmultRef.set(0, 2, 0, 6.0000000); mmultRef.set(0, 2, 1, 0.0000000); mmultRef.set(0, 2, 2, 0.0000000)   #TEST
 compare_matrices(mmultRef, C, 6, "Matrix multiplication")                                              #TEST
 
-print '\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)
@@ -75,12 +75,12 @@ evalRef.set(0, 0, 0.0000967); evalRef.set(0, 1, 0.0067383)         #TEST
 evalRef.set(0, 2, 0.1691412); evalRef.set(0, 3, 1.5002143)         #TEST
 compare_vectors(evalRef, D, 6, "Eigenvalues")                      #TEST
 
-print '  Eigenvalues'
+print_out('  Eigenvalues')
 D.print_out()
 A.print_out()
 
 
-print '\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)
@@ -112,7 +112,7 @@ A.set_name('Hilbert Matrix Cholesky Decomposition (T)')
 A.print_out()
 
 
-print '\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)
