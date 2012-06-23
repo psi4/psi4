@@ -58,10 +58,112 @@ std::string make_filename(const std::string& name)
 
 namespace psi {
 
-void create_new_plugin(std::string name, const std::string& templ)
+/**
+ * 
+ */
+class PluginFileManager{
+  protected:
+    std::string plugin_name_;
+    std::vector<std::pair<std::string, std::string> > files_;
+  public:
+    PluginFileManager(const std::string &plugin_name):
+       plugin_name_(plugin_name)
+    {
+
+
+    }
+
+    /*
+     * Adds a file to be copied over from the psi4/lib/plugin directory to the target
+     * @param source_name: The name of the file as is appears in the psi4/lib/plugin directory
+     * @param target_name: The name of the file as it will appear in the new directory.  If omitted,
+     * defaults to the same name as provided for source_name.
+     */
+    void add_file(const std::string &source_name, const std::string &target_name = "")
+    {
+        if(target_name == "")
+            files_.push_back(std::make_pair(source_name, source_name));
+        else
+            files_.push_back(std::make_pair(source_name, target_name));
+    }
+
+    void process()
+    {
+        // The location of the plugin templates, in the Psi4 source
+        std::string psiDataDirName = Process::environment("PSIDATADIR");
+        std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
+
+        boost::filesystem::path bf_path;
+        bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
+        if(!boost::filesystem::is_directory(bf_path)) {
+            printf("Unable to read the PSI4 plugin folder - check the PSIDATADIR environmental variable\n"
+                    "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+            exit(1);
+        }
+
+        // Make a faux camel-case of the name
+        string Name = plugin_name_;
+        Name[0] = ::toupper(Name[0]);
+
+        // Formatted strings, to be substituted in later
+        std::string format_top_srcdir(PSI_TOP_SRCDIR);
+        std::string format_top_objdir(PSI_TOP_OBJDIR);
+        std::string format_plugin(plugin_name_);
+        std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name_);
+
+        std::vector<std::pair<std::string, std::string> >::const_iterator iter;
+        for(iter = files_.begin(); iter != files_.end(); ++iter){
+            std::string source_name = psiDataDirWithPlugin + "/" + iter->first;
+            std::string target_name   = plugin_name_ + "/" + iter->second;
+
+            // Load in Makefile.template
+            FILE* fp = fopen(source_name.c_str(), "r");
+            if (fp == NULL) {
+                printf("create_new_plugin: Unable to open Makefile template.\n");
+                exit(1);
+            }
+            // Stupid way to read in entire file.
+            char line[256];
+            std::stringstream file;
+            while(fgets(line, sizeof(line), fp))
+                file << line;
+            std::string filestring = file.str();
+            fclose(fp);
+
+            // Search and replace placeholders in the string
+            boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_top_srcdir);
+            match_format = boost::xpressive::as_xpr("@top_objdir@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_top_objdir);
+            match_format = boost::xpressive::as_xpr("@plugin@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_plugin);
+            match_format = boost::xpressive::as_xpr("@Plugin@");
+            filestring = xpressive::regex_replace(filestring, match_format, Name);
+            match_format = boost::xpressive::as_xpr("@PLUGIN@");
+
+            // Write the new file out
+            fp = fopen(target_name.c_str(), "w");
+            if (fp == 0) {
+                boost::filesystem::remove_all(plugin_name_);
+                printf("Unable to create %s\n", target_name.c_str());
+                exit(1);
+            }
+            fputs(filestring.c_str(), fp);
+            fclose(fp);
+
+            printf("\tCreated: %s\n", iter->second.c_str());
+        }
+
+
+    }
+};
+
+void create_new_plugin(std::string name, const std::string& template_name)
 {
+    std::string template_name_lower(template_name);
     // First make it lower case
     transform(name.begin(), name.end(), name.begin(), ::tolower);
+    transform(template_name_lower.begin(), template_name_lower.end(), template_name_lower.begin(), ::tolower);
 
     // Start == check to make sure the plugin name is valid
     string plugin_name = make_filename(name);
@@ -73,259 +175,36 @@ void create_new_plugin(std::string name, const std::string& templ)
     }
     // End == check to make sure the plugin name is valid
 
-    // Make a faux camel-case of the name
-    string Name = name;
-    Name[0] = ::toupper(Name[0]);
 
-    FILE* fp = 0;
-
-    string template_name = templ;
-    if (template_name.empty())
-        template_name = "plugin";
-
-    std::string psiDataDirName = Process::environment("PSIDATADIR");
-    std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
-    std::string fileMakefile = psiDataDirWithPlugin + "/Makefile.template";
-    std::string fileInput    = psiDataDirWithPlugin + "/input.dat.template";
-    std::string fileSource   = psiDataDirWithPlugin + "/" + template_name + ".cc.template";
-    std::string filePython   = psiDataDirWithPlugin + "/pymodule.py.template";
-    std::string filePyinit   = psiDataDirWithPlugin + "/__init__.py.template";
-    std::string fileInput2   = psiDataDirWithPlugin + "/inputalt.dat.template";
-    std::string fileDoc      = psiDataDirWithPlugin + "/doc.rst.template";
-
-    boost::filesystem::path bf_path;
-    bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
-    if(!boost::filesystem::is_directory(bf_path)) {
-        printf("Unable to read the PSI4 plugin folder - check the PSIDATADIR environmental variable\n"
-                "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
-        exit(1);
-    }
-
-    // Load in Makefile.template
-    fp = fopen(fileMakefile.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open Makefile template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    char line[256];
-    std::stringstream file;
-    while(fgets(line, sizeof(line), fp)) {
-        file << line;
-    }
-    fclose(fp);
-    std::string makefile = file.str();
-
-    // Load in input.dat.template
-    fp = fopen(fileInput.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open input.dat template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file2;
-    while(fgets(line, sizeof(line), fp)) {
-        file2 << line;
-    }
-    fclose(fp);
-    std::string input = file2.str();
-
-    // Load in plugin.cc.template
-    fp = fopen(fileSource.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open %s.cc template.\n", template_name.c_str());
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file3;
-    while(fgets(line, sizeof(line), fp)) {
-        file3 << line;
-    }
-    fclose(fp);
-    std::string source = file3.str();
-
-    // Load in pymodule.py.template
-    fp = fopen(filePython.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open pymodule.py template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file4;
-    while(fgets(line, sizeof(line), fp)) {
-        file4 << line;
-    }
-    fclose(fp);
-    std::string python = file4.str();
-
-    // Load in __init__.py.template
-    fp = fopen(filePyinit.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open __init__.py template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file5;
-    while(fgets(line, sizeof(line), fp)) {
-        file5 << line;
-    }
-    fclose(fp);
-    std::string pyinit = file5.str();
-
-    // Load in inputalt.dat.template
-    fp = fopen(fileInput2.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open inputalt.dat template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file6;
-    while(fgets(line, sizeof(line), fp)) {
-        file6 << line;
-    }
-    fclose(fp);
-    std::string input2 = file6.str();
-
-    // Load in doc.rst.template
-    fp = fopen(fileDoc.c_str(), "r");
-    if (fp == NULL) {
-        printf("create_new_plugin: Unable to open doc.rst template.\n");
-        exit(1);
-    }
-    // Stupid way to read in entire file.
-    std::stringstream file7;
-    while(fgets(line, sizeof(line), fp)) {
-        file7 << line;
-    }
-    fclose(fp);
-    std::string doc = file7.str();
-
-    // Search and replace tags
-
-    std::string format_top_srcdir(PSI_TOP_SRCDIR);
-    std::string format_top_objdir(PSI_TOP_OBJDIR);
-    std::string format_plugin(plugin_name);
-    std::string format_PLUGIN = boost::algorithm::to_upper_copy(plugin_name);
-
-    // Replace all '@top_srcdir@' with the top source directory
-    boost::xpressive::sregex match_format = xpressive::as_xpr("@top_srcdir@");
-    makefile = xpressive::regex_replace(makefile, match_format, format_top_srcdir);
-    input    = xpressive::regex_replace(input,    match_format, format_top_srcdir);
-    source   = xpressive::regex_replace(source,   match_format, format_top_srcdir);
-    python   = xpressive::regex_replace(python,   match_format, format_top_srcdir);
-    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_srcdir);
-    input2   = xpressive::regex_replace(input2,   match_format, format_top_srcdir);
-    doc      = xpressive::regex_replace(doc,      match_format, format_top_srcdir);
-
-    match_format = boost::xpressive::as_xpr("@top_objdir@");
-    makefile = xpressive::regex_replace(makefile, match_format, format_top_objdir);
-    input    = xpressive::regex_replace(input,    match_format, format_top_objdir);
-    source   = xpressive::regex_replace(source,   match_format, format_top_objdir);
-    python   = xpressive::regex_replace(python,   match_format, format_top_objdir);
-    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_objdir);
-    input2   = xpressive::regex_replace(input2,   match_format, format_top_objdir);
-    doc      = xpressive::regex_replace(doc,      match_format, format_top_objdir);
-
-    match_format = boost::xpressive::as_xpr("@plugin@");
-    makefile = xpressive::regex_replace(makefile, match_format, format_plugin);
-    input    = xpressive::regex_replace(input,    match_format, format_plugin);
-    source   = xpressive::regex_replace(source,   match_format, format_plugin);
-    python   = xpressive::regex_replace(python,   match_format, format_plugin);
-    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_plugin);
-    input2   = xpressive::regex_replace(input2,   match_format, format_plugin);
-    doc      = xpressive::regex_replace(doc,      match_format, format_plugin);
-
-    match_format = boost::xpressive::as_xpr("@Plugin@");
-    makefile = xpressive::regex_replace(makefile, match_format, Name);
-    input    = xpressive::regex_replace(input,    match_format, Name);
-    source   = xpressive::regex_replace(source,   match_format, Name);
-    python   = xpressive::regex_replace(python,   match_format, Name);
-    pyinit   = xpressive::regex_replace(pyinit,   match_format, Name);
-    input2   = xpressive::regex_replace(input2,   match_format, Name);
-    doc      = xpressive::regex_replace(doc,      match_format, Name);
-
-    match_format = boost::xpressive::as_xpr("@PLUGIN@");
-    makefile = xpressive::regex_replace(makefile, match_format, format_PLUGIN);
-    input    = xpressive::regex_replace(input,    match_format, format_PLUGIN);
-    source   = xpressive::regex_replace(source,   match_format, format_PLUGIN);
-    python   = xpressive::regex_replace(python,   match_format, format_PLUGIN);
-    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_PLUGIN);
-    input2   = xpressive::regex_replace(input2,   match_format, format_PLUGIN);
-    doc      = xpressive::regex_replace(doc,      match_format, format_PLUGIN);
+    if(template_name_lower.empty())
+        template_name_lower = "plugin";
 
     // Make a directory with the name plugin_name
     if (!boost::filesystem::create_directory(plugin_name)) {
-        printf("Plugin directory already exists.\n");
+        printf("Plugin directory %s already exists.\n", plugin_name.c_str());
         exit(1);
     }
+    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name_lower.c_str());
 
-    fp = fopen((plugin_name + "/Makefile").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new Makefile.\n");
-        exit(1);
+    // Process the files
+    PluginFileManager file_manager(plugin_name);
+    file_manager.add_file("/Makefile.template", "Makefile");
+    file_manager.add_file("/input.dat.template", "input.dat");
+    file_manager.add_file("pymodule.py.template", "pymodule.py");
+    file_manager.add_file("__init__.py.template", "__init__.py");
+    file_manager.add_file("inputalt.dat.template", "inputalt.dat");
+    file_manager.add_file("doc.rst.template", "doc.rst");
+    file_manager.add_file(template_name_lower + ".cc.template", name + ".cc");
+    if(template_name_lower == "scf"){
+        // The SCF file has multiple files
+        file_manager.add_file("scf.scf.h.template", "scf.h");
+        file_manager.add_file("scf.scf.cc.template", "scf.cc");
+        file_manager.add_file("scf.cc.template", name + ".cc");
+        // Overwrite the existing input file with a more appropriate one
+        file_manager.add_file("scf.input.dat.template", "input.dat");
     }
-    fputs(makefile.c_str(), fp);
-    fclose(fp);
+    file_manager.process();
 
-    fp = fopen((plugin_name + "/input.dat").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new input.dat.\n");
-        exit(1);
-    }
-    fputs(input.c_str(), fp);
-    fclose(fp);
-
-    fp = fopen((plugin_name + "/" + plugin_name + ".cc").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new %s.cc\n", plugin_name.c_str());
-        exit(1);
-    }
-    fputs(source.c_str(), fp);
-    fclose(fp);
-
-    fp = fopen((plugin_name + "/pymodule.py").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new pymodule.py.\n");
-        exit(1);
-    }
-    fputs(python.c_str(), fp);
-    fclose(fp);
-
-    fp = fopen((plugin_name + "/__init__.py").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new __init__.py.\n");
-        exit(1);
-    }
-    fputs(pyinit.c_str(), fp);
-    fclose(fp);
-
-    fp = fopen((plugin_name + "/inputalt.dat").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new inputalt.dat.\n");
-        exit(1);
-    }
-    fputs(input2.c_str(), fp);
-    fclose(fp);
-
-    fp = fopen((plugin_name + "/doc.rst").c_str(), "w");
-    if (fp == 0) {
-        boost::filesystem::remove_all(plugin_name);
-        printf("Unable to create new doc.rst.\n");
-        exit(1);
-    }
-    fputs(doc.c_str(), fp);
-    fclose(fp);
-
-    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name.c_str());
-    printf("\tcreated: Makefile\n\tcreated: input.dat\n\tcreated: %s.cc\n"
-           "\tcreated: __init__.py\n\tcreated: pymodule.py\n"
-           "\tcreated: inputalt.dat\n\tcreated: doc.rst\n", plugin_name.c_str());
 }
 
 }
