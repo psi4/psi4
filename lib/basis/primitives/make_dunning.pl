@@ -1,8 +1,7 @@
 #!/usr/bin/perl
 
 $emslmanipulate = "./emsl_manipulate.pl";
-@HORDINAL = ("d", "t", "q", "5", "6");
-#@HORDINAL = ("d");
+@HORDINAL = ("D", "T", "Q", "5", "6");
 
 $excl = "exclusive";
 $hhe  = "insert_hhe";
@@ -114,340 +113,340 @@ foreach $ord (@HORDINAL) {
 
    # ordinary basis sets
 
-   $gbs01 = "cc-pv" . $ord . "z.gbs";
+   $gbs01 = "cc-pV" . $ord . "Z.gbs";
    copygbs($gbs01, $basis, 1);
 
-   $gbs02 = "cc-pv_" . $ord . "pd_z.gbs";
+   $gbs02 = "cc-pV(" . $ord . "+d)Z.gbs";
    copygbs($gbs02, $basis_xpd, 1);
 
-   $gbs03 = "cc-pcv" . $ord . "z.gbs";
+   $gbs03 = "cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs03, $gbs01, $core, $excl, 1);
 
-   $gbs04 = "cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs04 = "cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs04, $gbs02, $core, $excl, 1);
 
-   $gbs05 = "cc-pwcv" . $ord . "z.gbs";
+   $gbs05 = "cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs05, $gbs01, $w_core, $excl, 1);
 
-   $gbs06 = "cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs06 = "cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs06, $gbs02, $w_core, $excl, 1);
 
-   $gbs07 = "aug-cc-pv" . $ord . "z.gbs";
+   $gbs07 = "aug-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs07, $gbs01, $diffuse, $excl, 1);
 
-   $gbs08 = "aug-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs08 = "aug-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs08, $gbs02, $diffuse_xpd, $excl, 1);
 
-   $gbs09 = "aug-cc-pcv" . $ord . "z.gbs";
+   $gbs09 = "aug-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs09, $gbs03, $diffuse, $excl, 1);
   
-   $gbs10 = "aug-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs10 = "aug-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs10, $gbs04, $diffuse_xpd, $excl, 1);
   
-   $gbs11 = "aug-cc-pwcv" . $ord . "z.gbs";
+   $gbs11 = "aug-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs11, $gbs05, $diffuse, $excl, 1);
 
-   $gbs12 = "aug-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs12 = "aug-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs12, $gbs06, $diffuse_xpd, $excl, 1);
 
-   $gbs73 = "heavy-aug-cc-pv" . $ord . "z.gbs";
+   $gbs73 = "heavy-aug-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs73, $gbs07, $gbs01, $hhe, 1);
 
-   $gbs74 = "heavy-aug-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs74 = "heavy-aug-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs74, $gbs08, $gbs01, $hhe, 1);
 
-   $gbs75 = "heavy-aug-cc-pcv" . $ord . "z.gbs";
+   $gbs75 = "heavy-aug-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs75, $gbs09, $gbs01, $hhe, 1);
 
-   $gbs76 = "heavy-aug-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs76 = "heavy-aug-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs76, $gbs10, $gbs01, $hhe, 1);
 
-   $gbs77 = "heavy-aug-cc-pwcv" . $ord . "z.gbs";
+   $gbs77 = "heavy-aug-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs77, $gbs11, $gbs01, $hhe, 1);
 
-   $gbs78 = "heavy-aug-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs78 = "heavy-aug-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs78, $gbs12, $gbs01, $hhe, 1);
 
-   $gbs121 = "jun-cc-pv" . $ord . "z.gbs";
+   $gbs121 = "jun-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs121, $gbs01, $diffuse_jun, $excl, 1);
 
-   $gbs122 = "jun-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs122 = "jun-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs122, $gbs02, $diffuse_jun_xpd, $excl, 1);
 
-   $gbs123 = "jun-cc-pcv" . $ord . "z.gbs";
+   $gbs123 = "jun-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs123, $gbs03, $diffuse_jun, $excl, 1);
   
-   $gbs124 = "jun-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs124 = "jun-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs124, $gbs04, $diffuse_jun_xpd, $excl, 1);
   
-   $gbs125 = "jun-cc-pwcv" . $ord . "z.gbs";
+   $gbs125 = "jun-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs125, $gbs05, $diffuse_jun, $excl, 1);
 
-   $gbs126 = "jun-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs126 = "jun-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs126, $gbs06, $diffuse_jun_xpd, $excl, 1);
 
-   $gbs127 = "may-cc-pv" . $ord . "z.gbs";
+   $gbs127 = "may-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs127, $gbs01, $diffuse_may, $excl, 1);
 
-   $gbs128 = "may-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs128 = "may-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs128, $gbs02, $diffuse_may_xpd, $excl, 1);
 
-   $gbs129 = "may-cc-pcv" . $ord . "z.gbs";
+   $gbs129 = "may-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs129, $gbs03, $diffuse_may, $excl, 1);
   
-   $gbs130 = "may-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs130 = "may-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs130, $gbs04, $diffuse_may_xpd, $excl, 1);
   
-   $gbs131 = "may-cc-pwcv" . $ord . "z.gbs";
+   $gbs131 = "may-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs131, $gbs05, $diffuse_may, $excl, 1);
 
-   $gbs132 = "may-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs132 = "may-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs132, $gbs06, $diffuse_may_xpd, $excl, 1);
 
-   $gbs133 = "apr-cc-pv" . $ord . "z.gbs";
+   $gbs133 = "apr-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs133, $gbs01, $diffuse_apr, $excl, 1);
 
-   $gbs134 = "apr-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs134 = "apr-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs134, $gbs02, $diffuse_apr_xpd, $excl, 1);
 
-   $gbs135 = "apr-cc-pcv" . $ord . "z.gbs";
+   $gbs135 = "apr-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs135, $gbs03, $diffuse_apr, $excl, 1);
   
-   $gbs136 = "apr-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs136 = "apr-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs136, $gbs04, $diffuse_apr_xpd, $excl, 1);
   
-   $gbs137 = "apr-cc-pwcv" . $ord . "z.gbs";
+   $gbs137 = "apr-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs137, $gbs05, $diffuse_apr, $excl, 1);
 
-   $gbs138 = "apr-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs138 = "apr-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs138, $gbs06, $diffuse_apr_xpd, $excl, 1);
 
-   $gbs139 = "mar-cc-pv" . $ord . "z.gbs";
+   $gbs139 = "mar-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs139, $gbs01, $diffuse_mar, $excl, 1);
 
-   $gbs140 = "mar-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs140 = "mar-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs140, $gbs02, $diffuse_mar_xpd, $excl, 1);
 
-   $gbs141 = "mar-cc-pcv" . $ord . "z.gbs";
+   $gbs141 = "mar-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs141, $gbs03, $diffuse_mar, $excl, 1);
   
-   $gbs142 = "mar-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs142 = "mar-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs142, $gbs04, $diffuse_mar_xpd, $excl, 1);
   
-   $gbs143 = "mar-cc-pwcv" . $ord . "z.gbs";
+   $gbs143 = "mar-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs143, $gbs05, $diffuse_mar, $excl, 1);
 
-   $gbs144 = "mar-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs144 = "mar-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs144, $gbs06, $diffuse_mar_xpd, $excl, 1);
 
-   $gbs145 = "feb-cc-pv" . $ord . "z.gbs";
+   $gbs145 = "feb-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs145, $gbs01, $diffuse_feb, $excl, 1);
 
-   $gbs146 = "feb-cc-pv_" . $ord . "pd_z.gbs";
+   $gbs146 = "feb-cc-pV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs146, $gbs02, $diffuse_feb_xpd, $excl, 1);
 
-   $gbs147 = "feb-cc-pcv" . $ord . "z.gbs";
+   $gbs147 = "feb-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs147, $gbs03, $diffuse_feb, $excl, 1);
   
-   $gbs148 = "feb-cc-pcv_" . $ord . "pd_z.gbs";
+   $gbs148 = "feb-cc-pCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs148, $gbs04, $diffuse_feb_xpd, $excl, 1);
   
-   $gbs149 = "feb-cc-pwcv" . $ord . "z.gbs";
+   $gbs149 = "feb-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs149, $gbs05, $diffuse_feb, $excl, 1);
 
-   $gbs150 = "feb-cc-pwcv_" . $ord . "pd_z.gbs";
+   $gbs150 = "feb-cc-pwCV(" . $ord . "+d)Z.gbs";
    mergegbs($gbs150, $gbs06, $diffuse_feb_xpd, $excl, 1);
 
-   $gbs13 = "d-aug-cc-pv" . $ord . "z.gbs";
+   $gbs13 = "d-aug-cc-pV" . $ord . "Z.gbs";
    mergegbs($gbs13, $gbs07, $d_diffuse, $excl, 1);
 
-   $gbs15 = "d-aug-cc-pcv" . $ord . "z.gbs";
+   $gbs15 = "d-aug-cc-pCV" . $ord . "Z.gbs";
    mergegbs($gbs15, $gbs09, $d_diffuse, $excl, 1);
 
-   $gbs17 = "d-aug-cc-pwcv" . $ord . "z.gbs";
+   $gbs17 = "d-aug-cc-pwCV" . $ord . "Z.gbs";
    mergegbs($gbs17, $gbs11, $d_diffuse, $excl, 1);
 
 
 
    # mp2-fitting basis sets
 
-   $gbs19 = "cc-pv" . $ord . "z-ri.gbs";
+   $gbs19 = "cc-pV" . $ord . "Z-RI.gbs";
    copygbs($gbs19, $basis_ri, 1);
    
-   $gbs20 = "cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs20 = "cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs20, $gbs19, 2);
 
-   $gbs23 = "cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs23 = "cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs23, $gbs19, $w_core_ri, $excl, 1);
 
-   $gbs24 = "cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs24 = "cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs24, $gbs23, 2);
 
-   $gbs25 = "aug-cc-pv" . $ord . "z-ri.gbs";
+   $gbs25 = "aug-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs25, $gbs19, $diffuse_ri, $excl, 1);
 
-   $gbs26 = "aug-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs26 = "aug-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs26, $gbs25, 2);
 
-   $gbs29 = "aug-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs29 = "aug-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs29, $gbs23, $diffuse_ri, $excl, 1);
 
-   $gbs30 = "aug-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs30 = "aug-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs30, $gbs29, 2);
 
-   $gbs79 = "heavy-aug-cc-pv" . $ord . "z-ri.gbs";
+   $gbs79 = "heavy-aug-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs79, $gbs25, $gbs19, $hhe, 1);
 
-   $gbs80 = "heavy-aug-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs80 = "heavy-aug-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs80, $gbs79, 2);
 
-   $gbs83 = "heavy-aug-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs83 = "heavy-aug-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs83, $gbs29, $gbs19, $hhe, 1);
 
-   $gbs84 = "heavy-aug-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs84 = "heavy-aug-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs84, $gbs83, 2);
 
-   $gbs151 = "jun-cc-pv" . $ord . "z-ri.gbs";
+   $gbs151 = "jun-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs151, $gbs19, $diffuse_jun_ri, $excl, 1);
 
-   $gbs152 = "jun-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs152 = "jun-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs152, $gbs151, 2);
 
-   $gbs155 = "jun-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs155 = "jun-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs155, $gbs23, $diffuse_jun_ri, $excl, 1);
 
-   $gbs156 = "jun-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs156 = "jun-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs156, $gbs155, 2);
 
-   $gbs157 = "may-cc-pv" . $ord . "z-ri.gbs";
+   $gbs157 = "may-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs157, $gbs19, $diffuse_may_ri, $excl, 1);
 
-   $gbs158 = "may-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs158 = "may-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs158, $gbs157, 2);
 
-   $gbs161 = "may-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs161 = "may-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs161, $gbs23, $diffuse_may_ri, $excl, 1);
 
-   $gbs162 = "may-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs162 = "may-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs162, $gbs161, 2);
 
-   $gbs163 = "apr-cc-pv" . $ord . "z-ri.gbs";
+   $gbs163 = "apr-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs163, $gbs19, $diffuse_apr_ri, $excl, 1);
 
-   $gbs164 = "apr-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs164 = "apr-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs164, $gbs163, 2);
 
-   $gbs167 = "apr-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs167 = "apr-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs167, $gbs23, $diffuse_apr_ri, $excl, 1);
 
-   $gbs168 = "apr-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs168 = "apr-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs168, $gbs167, 2);
 
-   $gbs169 = "mar-cc-pv" . $ord . "z-ri.gbs";
+   $gbs169 = "mar-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs169, $gbs19, $diffuse_mar_ri, $excl, 1);
 
-   $gbs170 = "mar-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs170 = "mar-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs170, $gbs169, 2);
 
-   $gbs173 = "mar-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs173 = "mar-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs173, $gbs23, $diffuse_mar_ri, $excl, 1);
 
-   $gbs174 = "mar-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs174 = "mar-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs174, $gbs173, 2);
 
-   $gbs175 = "feb-cc-pv" . $ord . "z-ri.gbs";
+   $gbs175 = "feb-cc-pV" . $ord . "Z-RI.gbs";
    mergegbs($gbs175, $gbs19, $diffuse_feb_ri, $excl, 1);
 
-   $gbs176 = "feb-cc-pv_" . $ord . "pd_z-ri.gbs";
+   $gbs176 = "feb-cc-pV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs176, $gbs175, 2);
 
-   $gbs179 = "feb-cc-pwcv" . $ord . "z-ri.gbs";
+   $gbs179 = "feb-cc-pwCV" . $ord . "Z-RI.gbs";
    mergegbs($gbs179, $gbs23, $diffuse_feb_ri, $excl, 1);
 
-   $gbs180 = "feb-cc-pwcv_" . $ord . "pd_z-ri.gbs";
+   $gbs180 = "feb-cc-pwCV(" . $ord . "+d)Z-RI.gbs";
    copygbs($gbs180, $gbs179, 2);
 
 
 
    # hf-fitting basis sets
 
-   $gbs37 = "cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs37 = "cc-pV" . $ord . "Z-JKFIT.gbs";
    copygbs($gbs37, $basis_jk, 1);
 
-   $gbs38 = "cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs38 = "cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs38, $gbs37, 2);
 
-   $gbs43 = "aug-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs43 = "aug-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs43, $gbs37, $diffuse_jk, $excl, 1);
 
-   $gbs44 = "aug-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs44 = "aug-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs44, $gbs43, 2);
 
-   $gbs85 = "heavy-aug-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs85 = "heavy-aug-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs85, $gbs43, $gbs37, $hhe, 1);
 
-   $gbs86 = "heavy-aug-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs86 = "heavy-aug-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs86, $gbs85, 2);
 
-   $gbs181 = "jun-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs181 = "jun-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs181, $gbs37, $diffuse_jun_jk, $excl, 1);
 
-   $gbs182 = "jun-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs182 = "jun-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs182, $gbs181, 2);
 
-   $gbs187 = "may-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs187 = "may-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs187, $gbs37, $diffuse_may_jk, $excl, 1);
 
-   $gbs188 = "may-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs188 = "may-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs188, $gbs187, 2);
 
-   $gbs193 = "apr-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs193 = "apr-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs193, $gbs37, $diffuse_apr_jk, $excl, 1);
 
-   $gbs194 = "apr-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs194 = "apr-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs194, $gbs193, 2);
 
-   $gbs199 = "mar-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs199 = "mar-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs199, $gbs37, $diffuse_mar_jk, $excl, 1);
 
-   $gbs200 = "mar-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs200 = "mar-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs200, $gbs199, 2);
 
-   $gbs205 = "feb-cc-pv" . $ord . "z-jkfit.gbs";
+   $gbs205 = "feb-cc-pV" . $ord . "Z-JKFIT.gbs";
    mergegbs($gbs205, $gbs37, $diffuse_feb_jk, $excl, 1);
 
-   $gbs206 = "feb-cc-pv_" . $ord . "pd_z-jkfit.gbs";
+   $gbs206 = "feb-cc-pV(" . $ord . "+d)Z-JKFIT.gbs";
    copygbs($gbs206, $gbs205, 2);
 
 
 
    # Douglas-Kroll basis sets
 
-   $gbs97  = "cc-pv" . $ord . "z-dk.gbs";
+   $gbs97  = "cc-pV" . $ord . "Z-DK.gbs";
    copygbs($gbs97, $basis_dk, 1);
 
-   $gbs99  = "cc-pcv" . $ord . "z-dk.gbs";
+   $gbs99  = "cc-pCV" . $ord . "Z-DK.gbs";
    mergegbs($gbs99, $gbs97, $core, $excl, 1);
 
-   $gbs101 = "cc-pwcv" . $ord . "z-dk.gbs";
+   $gbs101 = "cc-pwCV" . $ord . "Z-DK.gbs";
    copygbs($gbs101, $basis_w_core_dk, 1);
 
-   $gbs103 = "aug-cc-pv" . $ord . "z-dk.gbs";
+   $gbs103 = "aug-cc-pV" . $ord . "Z-DK.gbs";
    mergegbs($gbs103, $gbs97, $diffuse_dk, $excl, 1);
 
-   $gbs105 = "aug-cc-pcv" . $ord . "z-dk.gbs";
+   $gbs105 = "aug-cc-pCV" . $ord . "Z-DK.gbs";
    mergegbs($gbs105, $gbs99, $diffuse_dk, $excl, 1);
 
-   $gbs107 = "aug-cc-pwcv" . $ord . "z-dk.gbs";
+   $gbs107 = "aug-cc-pwCV" . $ord . "Z-DK.gbs";
    mergegbs($gbs107, $gbs101, $diffuse_dk, $excl, 1);
 
-   $gbs109 = "heavy-aug-cc-pv" . $ord . "z-dk.gbs";
+   $gbs109 = "heavy-aug-cc-pV" . $ord . "Z-DK.gbs";
    mergegbs($gbs109, $gbs103, $gbs97, $hhe, 1);
 
-   $gbs111 = "heavy-aug-cc-pcv" . $ord . "z-dk.gbs";
+   $gbs111 = "heavy-aug-cc-pCV" . $ord . "Z-DK.gbs";
    mergegbs($gbs111, $gbs105, $gbs97, $hhe, 1);
 
-   $gbs113 = "heavy-aug-cc-pwcv" . $ord . "z-dk.gbs";
+   $gbs113 = "heavy-aug-cc-pwCV" . $ord . "Z-DK.gbs";
    mergegbs($gbs113, $gbs107, $gbs97, $hhe, 1);
 
 }
@@ -475,25 +474,40 @@ sub mergegbs {
    
    my($dest, $base, $append, $mode, $pywrite) = @_;
 
-   if ( (-e $base) && (-e $append) ) {
+   $plaindest = lc($dest);
+   $plaindest =~ s/\(/_/g;
+   $plaindest =~ s/\)/_/g;
+   $plaindest =~ s/,/_/g;
+   $plaindest =~ s/\+/p/g;
+   $plaindest =~ s/\*/s/g;
 
-      system ("$emslmanipulate $base $append $mode quiet");
+   $plainbase = lc($base);
+   $plainbase =~ s/\(/_/g;
+   $plainbase =~ s/\)/_/g;
+   $plainbase =~ s/,/_/g;
+   $plainbase =~ s/\+/p/g;
+   $plainbase =~ s/\*/s/g;
+
+   $plainappend = lc($append);
+   $plainappend =~ s/\(/_/g;
+   $plainappend =~ s/\)/_/g;
+   $plainappend =~ s/,/_/g;
+   $plainappend =~ s/\+/p/g;
+   $plainappend =~ s/\*/s/g;
+
+   if ( (-e $plainbase) && (-e $plainappend) ) {
+
+      system ("$emslmanipulate $plainbase $plainappend $mode quiet");
 
       if (-e "merged.gbs") {
 
-         system ("mv merged.gbs $dest");
-         printf "formed   %-38s from   %-38s and   %-38s by   $mode\n", $dest, $base, $append, $mode;
-         if ($pywrite == 1) { writepython($dest, $dest); }
+         system ("mv merged.gbs $plaindest");
+         printf "formed   %-38s from   %-38s and   %-38s by   $mode\n", $plaindest, $plainbase, $plainappend, $mode;
+         if ($pywrite == 1) { writepython($plaindest, $dest); }
       }
-      else {
-
-         printf ("FAILED2  %-38s\n", $dest);
-      }
+      else { printf ("FAILED2  %-38s\n", $plaindest); }
    }
-   else {
-
-      printf ("FAILED   %-38s\n", $dest);
-   }
+   else { printf ("FAILED   %-38s\n", $plaindest); }
 }
 
 
@@ -501,17 +515,28 @@ sub copygbs {
 
    my($dest, $origin, $pywrite) = @_;
 
-   if (-e $origin) {
+   $plaindest = $dest;
+   $plaindest =~ s/\(/_/g;
+   $plaindest =~ s/\)/_/g;
+   $plaindest =~ s/,/_/g;
+   $plaindest =~ s/\+/p/g;
+   $plaindest =~ s/\*/s/g;
 
-      system ("cp $origin $dest");
-      printf "copied   %-38s from   %-38s\n", $dest, $origin;
-      if ($pywrite == 1) { writepython($dest, $dest); }
-      if ($pywrite == 2) { writepython($dest, $origin); }
-   }
-   else {
+   $plainorigin = $origin;
+   $plainorigin =~ s/\(/_/g;
+   $plainorigin =~ s/\)/_/g;
+   $plainorigin =~ s/,/_/g;
+   $plainorigin =~ s/\+/p/g;
+   $plainorigin =~ s/\*/s/g;
 
-      printf ("FAILED   %-38s\n", $dest);
+   if (-e $plainorigin) {
+
+      system ("cp $plainorigin $plaindest");
+      printf "copied   %-38s from   %-38s\n", $plaindest, $plainorigin;
+      if ($pywrite == 1) { writepython($plaindest, $dest); }
+      if ($pywrite == 2) { writepython($plaindest, $origin); }
    }
+   else { printf ("FAILED   %-38s\n", $plaindest); }
 }
 
 
@@ -522,20 +547,20 @@ sub writepython {
    $originroot = $origin;
    $originroot =~ s/\.gbs//g;
 
-   $destorbinstance = "basis_" . $dest;
+   $destorbinstance = "basis_" . lc($dest);
    $destorbinstance =~ s/\.gbs//g;
    $destorbinstance =~ s/-//g;
    $destorbinstance =~ s/jkfit$//g;
    $destorbinstance =~ s/ri$//g;
    $destorbinstance =~ s/dual$//g;
 
-   if ($dest =~ /jkfit\.gbs/) {
+   if ($dest =~ /jkfit\.gbs/i) {
       printf FAM_OUT "    %s.add_jkfit('%s')\n", $destorbinstance, $originroot;
    }
-   elsif ($dest =~ /ri\.gbs$/) {
+   elsif ($dest =~ /ri\.gbs$/i) {
       printf FAM_OUT "    %s.add_rifit('%s')\n", $destorbinstance, $originroot;
    }
-   elsif ($dest =~ /dual\.gbs$/) {
+   elsif ($dest =~ /dual\.gbs$/i) {
       printf FAM_OUT "    %s.add_dualfit('%s')\n", $destorbinstance, $originroot;
    }
    else {
