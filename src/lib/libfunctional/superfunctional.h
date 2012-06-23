@@ -24,8 +24,18 @@ class Dispersion;
  * A DFT functional is defined as:
  * 
  * E_XC = E_X + E_C + E(-D)
- * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha E_X^HF + (1-\alpha) E_X^HF,LR
- * E_C  = (1-\alpha_c) E_C^DFA [\omega_c] + \alpha E_C^MP2 + (1-\alpha) E_C^MP2,LR
+ * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha_x E_X^HF + (1-\alpha_x) E_X^HF,LR
+ * E_C  = E_C^DFA [\omega_c] + \alpha_c E_C^MP2
+ *
+ * If SCS-MP2:
+ * E_C  = E_C^DFA [\omega_c] + \alpha_c_ss E_C^SS-MP2 + \alpha_c_os E_C^OS-MP2
+ *
+ * (Note: earlier versions of this code defined --- but did not fully implement --- a
+ * range-separated MP2 correction, like \alpha_c E_C^MP2 + (1-\alpha_c) E_C^MP2,LR.
+ * This is not currently supported given the reworking of how alpha_c works for 
+ * scaling the MP2 correlation (it needs to be independent of the DFT corrleation
+ * in general, not related by \alpha_c and (1-\alpha_c).)
+ *
  * E(-D) is an empirical dispersion correction of some form 
  * 
  **/
@@ -49,6 +59,8 @@ protected:
 
     std::vector<boost::shared_ptr<Functional> > c_functionals_;
     double c_alpha_;
+    double c_ss_alpha_;
+    double c_os_alpha_;
     double c_omega_;
 
     // => Empirical Dispersion Correction <= //
@@ -118,6 +130,8 @@ public:
     void set_c_omega(double omega) { c_omega_ = omega; partition_gks(); }
     void set_x_alpha(double alpha) { x_alpha_ = alpha; partition_gks(); }
     void set_c_alpha(double alpha) { c_alpha_ = alpha; partition_gks(); }
+    void set_c_ss_alpha(double alpha) { c_ss_alpha_ = alpha; partition_gks(); }
+    void set_c_os_alpha(double alpha) { c_os_alpha_ = alpha; partition_gks(); }
 
     void set_dispersion(boost::shared_ptr<Dispersion> disp) { dispersion_ = disp; }
 
@@ -135,6 +149,9 @@ public:
     double c_omega() const { return c_omega_; }
     double x_alpha() const { return x_alpha_; }
     double c_alpha() const { return c_alpha_; }
+    double c_ss_alpha() const { return c_ss_alpha_; }
+    double c_os_alpha() const { return c_os_alpha_; }    
+
 
     boost::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
 
@@ -144,7 +161,8 @@ public:
     bool is_c_lrc() const { return c_omega_ != 0.0; }
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
-    
+    bool is_c_scs_hybrid() const { return c_os_alpha_ != 0.0 || c_ss_alpha_ != 0.0; } 
+  
     // => Utility <= //
 
     void print(FILE* out = outfile, int print = 1) const;

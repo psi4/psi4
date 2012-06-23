@@ -83,6 +83,9 @@ procedures = {
             'dci'           : run_cepa,
             'b2plyp'        : run_b2plyp,
             'pbe0-2'        : run_pbe0_2,
+            'dsd-blyp'      : run_dsd_blyp,
+            'dsd-pbep86'    : run_dsd_pbep86,
+            'dsd-test'      : run_dsd_test,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -342,6 +345,21 @@ def energy(name, **kwargs):
 
         The target molecule, if not the last molecule defined.
 
+    :type cast_up: :ref:`boolean <op_py_boolean>` or string
+    :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
+
+        Indicates whether, to accelerate convergence for the scf portion of 
+        the *name* calculation, a preliminary scf should be performed with a 
+        small basis set (3-21G if a basis name is not supplied as keyword 
+        value) followed by projection into the full target basis.
+
+    :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
+    :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
+
+        Indicates whether, when *cast_up* is active, to run the preliminary
+        scf in density-fitted mode or what fitting basis to employ (when
+        available for all elements, cc-pVDZ-RI is the default).
+
     :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
 
@@ -354,8 +372,9 @@ def energy(name, **kwargs):
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
 
-    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into requested basis
-    >>> energy('sapt0-ct',cast_up=True)
+    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into 
+    >>> #     requested basis, with specified projection fitting basis
+    >>> energy('sapt0-ct', cast_up=True, cast_up_df='jun-cc-pVDZ-JKFIT')
 
     >>> # [3] Arbitrary-order MPn calculation
     >>> energy('mp4')
@@ -686,7 +705,7 @@ def property(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+    #PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -797,7 +816,7 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
-    while n <= PsiMod.get_option('GEOM_MAXITER'):
+    while n <= PsiMod.get_global_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
         # Compute the gradient
@@ -829,6 +848,9 @@ def optimize(name, **kwargs):
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
+        elif ((full_hess_every == -1) and (PsiMod.get_global_option('CART_HESS_READ')) and (n == 1)):
+            pass;
+            # Do nothing; user said to read existing hessian once
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
             steps_since_last_hessian += 1
@@ -839,7 +861,7 @@ def optimize(name, **kwargs):
             print('Optimizer: Optimization complete!')
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
+            if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
                 PsiMod.opt_clean()
             PsiMod.clean()
 

@@ -4,7 +4,6 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
-
 import PsiMod
 import shutil
 import os
@@ -17,6 +16,7 @@ from text import *
 from procutil import *
 from basislist import *
 from functional import *
+from optproc import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -60,19 +60,17 @@ def run_scf(name, **kwargs):
     """
     lowername = name.lower()
 
-    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('REFERENCE')
-    user_scftype = PsiMod.get_local_option('SCF', 'SCF_TYPE')
-    b_user_scftype = PsiMod.has_option_changed('SCF_TYPE')
+    optstash = OptionsState(
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'REFERENCE'])
 
     if lowername == 'df-scf':
-        PsiMod.set_global_option('SCF_TYPE', 'DF')
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
     elif lowername == 'hf':
-        if PsiMod.get_local_option('SCF', 'REFERENCE') == 'RKS':
+        if PsiMod.get_option('SCF', 'REFERENCE') == 'RKS':
             PsiMod.set_global_option('REFERENCE', 'RHF')
-        elif PsiMod.get_local_option('SCF', 'REFERENCE') == 'UKS':
+        elif PsiMod.get_option('SCF', 'REFERENCE') == 'UKS':
             PsiMod.set_global_option('REFERENCE', 'UHF')
         else:
             pass
@@ -83,33 +81,24 @@ def run_scf(name, **kwargs):
     elif lowername == 'rohf':
         PsiMod.set_global_option('REFERENCE', 'ROHF')
     elif lowername == 'rscf':
-        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+        if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
             PsiMod.set_global_option('REFERENCE', 'RKS')
         else:
             PsiMod.set_global_option('REFERENCE', 'RHF')
     elif lowername == 'uscf':
-        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+        if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
             PsiMod.set_global_option('REFERENCE', 'UKS')
         else:
             PsiMod.set_global_option('REFERENCE', 'UHF')
     elif lowername == 'roscf':
-        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+        if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
             PsiMod.set_global_option('REFERENCE', 'ROHF')
 
     returnvalue = scf_helper(name, **kwargs)
 
-    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    if not b_user_fctl:
-        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
-    PsiMod.set_global_option('REFERENCE', user_ref)
-    if not b_user_ref:
-        PsiMod.revoke_global_option_changed('REFERENCE')
-    PsiMod.set_global_option('SCF_TYPE', user_scftype)
-    if not b_user_scftype:
-        PsiMod.revoke_global_option_changed('SCF_TYPE')
-
+    optstash.restore()
     return returnvalue
 
 
@@ -164,18 +153,23 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
-    user_basis = PsiMod.get_global_option('BASIS')
+    optstash = OptionsState(
+        ['SCF', 'PUREAM'],
+        #['SCF', 'BASIS'],
+        #['SCF', 'DF_BASIS_SCF'],  # this keyword is addled
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'GUESS'],
+        ['SCF', 'DF_INTS_IO'])
+    
+    user_basis = PsiMod.get_option('SCF', 'BASIS')
+    user_scftype = PsiMod.get_option('SCF', 'SCF_TYPE')
+    user_guess = PsiMod.get_option('SCF', 'GUESS')
+    user_dfintsio = PsiMod.get_option('SCF', 'DF_INTS_IO')
+    user_dfbasisscf = PsiMod.get_option('SCF', 'DF_BASIS_SCF')
+
+    user_scf_dfbasisscf = PsiMod.get_option('SCF', 'DF_BASIS_SCF')
+    b_user_scf_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
-    user_puream = PsiMod.get_global_option('PUREAM')
-    b_user_puream = PsiMod.has_global_option_changed('PUREAM')
-    user_scftype = PsiMod.get_local_option('SCF', 'SCF_TYPE')
-    b_user_scftype = PsiMod.has_local_option_changed('SCF', 'SCF_TYPE')
-    user_dfbasisscf = PsiMod.get_local_option('SCF', 'DF_BASIS_SCF')
-    b_user_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
-    user_guess = PsiMod.get_local_option('SCF', 'GUESS')
-    b_user_guess = PsiMod.has_local_option_changed('SCF', 'GUESS')
-    user_dfintsio = PsiMod.get_local_option('SCF', 'DF_INTS_IO')
-    b_user_dfintsio = PsiMod.has_local_option_changed('SCF', 'DF_INTS_IO')
 
     cast = False
     if 'cast_up' in kwargs:
@@ -211,7 +205,7 @@ def scf_helper(name, **kwargs):
     #   read effective PUREAM setting off of it
     # This if statement is only to handle generic, unnamed basis cases
     #   (like mints2) that should be departing soon
-    if b_user_basis:
+    if PsiMod.has_option_changed('SCF', 'BASIS'):
         PsiMod.set_global_option('BASIS', user_basis)
         PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
@@ -235,9 +229,9 @@ def scf_helper(name, **kwargs):
         # Setup initial SCF
         PsiMod.set_global_option('BASIS', guessbasis)
         if (castdf):
-            PsiMod.set_global_option('SCF_TYPE', 'DF')
-            PsiMod.set_global_option('DF_INTS_IO', 'none')
-            PsiMod.set_global_option('DF_BASIS_SCF', guessbasisdf)
+            PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+            PsiMod.set_local_option('SCF', 'DF_INTS_IO', 'none')
+            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', guessbasisdf)
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -258,11 +252,11 @@ def scf_helper(name, **kwargs):
 
         # Set to read and project, and reset bases to final ones
         PsiMod.set_global_option('BASIS', user_basis)
-        PsiMod.set_global_option('SCF_TYPE', user_scftype)
-        PsiMod.set_global_option('GUESS', 'READ')
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', user_scftype)
+        PsiMod.set_local_option('SCF', 'GUESS', 'READ')
         if (user_scftype == 'DF'):
-            PsiMod.set_global_option('DF_INTS_IO', user_dfintsio)
-            PsiMod.set_global_option('DF_BASIS_SCF', user_dfbasisscf)
+            PsiMod.set_local_option('SCF', 'DF_INTS_IO', user_dfintsio)
+            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_dfbasisscf)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
@@ -272,31 +266,21 @@ def scf_helper(name, **kwargs):
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
 
-        PsiMod.set_global_option('GUESS', user_guess)
+        PsiMod.set_local_option('SCF', 'GUESS', user_guess)
 
     else:
-
         e_scf = PsiMod.scf(precallback, postcallback)
 
+    # These two sets to be removed when OptionsState plays nicely w/ basis keywords
     PsiMod.set_global_option('BASIS', user_basis)
     if not b_user_basis:
         PsiMod.revoke_global_option_changed('BASIS')
-    PsiMod.set_global_option('PUREAM', user_puream)
-    if not b_user_puream:
-        PsiMod.revoke_global_option_changed('PUREAM')
-    PsiMod.set_global_option('SCF_TYPE', user_scftype)
-    if not b_user_scftype:
-        PsiMod.revoke_global_option_changed('SCF_TYPE')
-    PsiMod.set_global_option('DF_BASIS_SCF', user_dfbasisscf)
-    if not b_user_dfbasisscf:
-        PsiMod.revoke_global_option_changed('DF_BASIS_SCF')
-    PsiMod.set_global_option('GUESS', user_guess)
-    if not b_user_guess:
-        PsiMod.revoke_global_option_changed('GUESS')
-    PsiMod.set_global_option('DF_INTS_IO', user_dfintsio)
-    if not b_user_dfintsio:
-        PsiMod.revoke_global_option_changed('DF_INTS_IO')
 
+    PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_scf_dfbasisscf)
+    if not b_user_scf_dfbasisscf:
+        PsiMod.revoke_local_option_changed('SCF', 'DF_BASIS_SCF')
+
+    optstash.restore()
     return e_scf
 
 
@@ -312,7 +296,7 @@ def run_mp2(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -380,21 +364,40 @@ def run_ccenergy(name, **kwargs):
     a CCSD, CC2, and CC3 calculation.
 
     """
-    if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
-    elif (name.lower() == 'ccsd(t)'):
-        PsiMod.set_global_option('WFN', 'CCSD_T')
-    elif (name.lower() == 'cc2'):
-        PsiMod.set_global_option('WFN', 'CC2')
-    elif (name.lower() == 'cc3'):
-        PsiMod.set_global_option('WFN', 'CC3')
-    elif (name.lower() == 'eom-cc2'):
-        PsiMod.set_global_option('WFN', 'EOM_CC2')
-    elif (name.lower() == 'eom-ccsd'):
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    lowername = name.lower()
+
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'])
+
+    if (lowername == 'ccsd'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD')
+    elif (lowername == 'ccsd(t)'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+    elif (lowername == 'cc2'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CC2')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CC2')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CC2')
+    elif (lowername == 'cc3'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CC3')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'CC3')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'CC3')
+    elif (lowername == 'eom-cc2'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
+    elif (lowername == 'eom-ccsd'):
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options,
     # incl. wfn
-    elif(name.lower() == 'ccenergy'):
+    elif(lowername == 'ccenergy'):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
@@ -402,7 +405,7 @@ def run_ccenergy(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -410,10 +413,7 @@ def run_ccenergy(name, **kwargs):
     PsiMod.ccsort()
     returnvalue = PsiMod.ccenergy()
 
-    if (name.lower() != 'ccenergy'):
-        PsiMod.set_global_option('WFN', 'SCF')
-        PsiMod.revoke_global_option_changed('WFN')
-
+    optstash.restore()
     return returnvalue
 
 
@@ -456,7 +456,7 @@ def run_bccd(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -692,10 +692,10 @@ def run_dft(name, **kwargs):
     """
     lowername = name.lower()
 
-    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+    user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('SCF', 'REFERENCE')
 
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
@@ -802,7 +802,7 @@ def run_detci(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -890,8 +890,9 @@ def run_mp2c(name, **kwargs):
     monomerB = molecule.extract_subsets(2, 1)
     monomerB.set_name('monomerB')
 
-    ri = PsiMod.get_option('SCF_TYPE')
-    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    ri = PsiMod.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
+    # inquire if above at all applies to dfmp2
 
     PsiMod.IO.set_default_namespace('dimer')
     PsiMod.set_local_option('SCF', 'SAPT', '2-dimer')
@@ -989,8 +990,9 @@ def run_sapt(name, **kwargs):
         monomerB = molecule.extract_subsets(2)
         monomerB.set_name('monomerB')
 
-    ri = PsiMod.get_option('SCF_TYPE')
-    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    ri = PsiMod.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
+    # inquire if above at all applies to dfmp2
 
     PsiMod.IO.set_default_namespace('dimer')
     PsiMod.set_local_option('SCF', 'SAPT', '2-dimer')
@@ -1079,8 +1081,9 @@ def run_sapt_ct(name, **kwargs):
     monomerBm = molecule.extract_subsets(2)
     monomerBm.set_name('monomerBm')
 
-    ri = PsiMod.get_option('SCF_TYPE')
-    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    ri = PsiMod.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
+    # inquire if above at all applies to dfmp2
 
     PsiMod.IO.set_default_namespace('dimer')
     PsiMod.set_local_option('SCF', 'SAPT', '2-dimer')
@@ -1248,8 +1251,8 @@ def run_mrcc(name, **kwargs):
         omp_num_threads_user = os.environ['OMP_NUM_THREADS']
 
     # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
-    if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
-        os.environ['OMP_NUM_THREADS'] = str(PsiMod.get_option('MRCC_OMP_NUM_THREADS'))
+    if PsiMod.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
+        os.environ['OMP_NUM_THREADS'] = str(PsiMod.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
     try:
@@ -1271,18 +1274,22 @@ def run_mrcc(name, **kwargs):
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
-        if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
+        if PsiMod.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     # Scan iface file and grab the file energy.
     e = 0.0
     for line in file('iface'):
-        if fullname in line:
-            fields = line.split()
+        fields = line.split()
+        m = fields[1]
+        try:
             e = float(fields[5])
+    	    PsiMod.set_variable(m + ' ENERGY', e)
+        except ValueError:
+            continue
 
+    # The last 'e' in iface is the one the user requested.
     PsiMod.set_variable('CURRENT ENERGY', e)
-    PsiMod.set_variable(fullname + ' ENERGY', e)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -1370,7 +1377,7 @@ def run_cepa(name, **kwargs):
     run_scf('scf', **kwargs)
 
     # If the scf type is DF, then the AO integrals were never generated
-    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_option('SCF','SCF_TYPE') == 'DF'):
        mints = PsiMod.MintsHelper()
        mints.integrals()
    
@@ -1403,10 +1410,10 @@ def run_b2plyp(name, **kwargs):
     # use with c_alpha = 0.0 in functional.py
     #     with Rob's current normalization in superfunctional.cc
 
-    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+    user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('SCF', 'REFERENCE')
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', 'b2plyp_xc')
 
@@ -1479,7 +1486,7 @@ def run3_b2plyp(name, **kwargs):
 
 def run_pbe0_2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a B2PLYP double-hybrid density-functional-theory calculation.
+    a PBE0-2 double-hybrid density-functional-theory calculation.
 
     """
     lowername = name.lower()
@@ -1495,3 +1502,69 @@ def run_pbe0_2(name, **kwargs):
     e_dhdft      = e_dft + 0.5 * e_dfmp2_corr
     PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
     return e_dhdft
+
+
+def run_dsd_blyp(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-BLYP double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'dsd-blyp_xc')
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', 0.46)
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', 0.43)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
+def run_dsd_pbep86(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-PBEP86 double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    # use with c_alpha = 0.0 in functional.py
+    #     with Rob's current normalization in superfunctional.cc
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', 'dsd-pbep86_xc')
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', 0.51)
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', 0.22)
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+def run_dsd_test(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DSD-PBEP86 double-hybrid density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    PsiMod.set_global_option('REFERENCE', 'RKS')
+    fun = build_superfunctional('dsd-test_xc',5000,1)
+    PsiMod.set_global_option_python('dft_custom_functional',fun)
+    PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', fun.c_os_alpha() )
+    PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', fun.c_ss_alpha() )
+    e_dft        = PsiMod.scf()
+    e_dfmp2      = PsiMod.dfmp2()
+    e_dfmp2_corr = PsiMod.get_variable("SCS-DF-MP2 CORRELATION ENERGY")
+    e_dhdft           = e_dft + e_dfmp2_corr
+    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
+    return e_dhdft
+
+
+
