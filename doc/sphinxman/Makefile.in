@@ -224,9 +224,22 @@ $(autotarget11): %: $(autodepend11)
 	@srcdir@/document_physconst.pl @srcdir@
 
 
+# Autodoc basisfamily
+autodepend12 = \
+@top_srcdir@/lib/python/basislist*.py \
+@top_srcdir@/tests/docs_bases/input.dat
+
+autotarget12 = \
+$(SOURCEDIR)/autodoc_basissets_byfamily.rst
+
+$(autotarget12): %: $(autodepend12)
+	cd ../../tests/docs_bases; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs_bases/$(@F) $(SOURCEDIR)/$(@F)
+
+
 autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
          $(autotarget5) $(autotarget6) $(autotarget7) $(autotarget8) \
-         $(autotarget9) $(autotarget10) $(autotarget11)
+         $(autotarget9) $(autotarget10) $(autotarget11) $(autotarget12)
 
 
 #####  static docs  #####
@@ -244,7 +257,7 @@ opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst \
-installfile.rst optionshandling.rst
+installfile.rst optionshandling.rst basissets_byfamily.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)
