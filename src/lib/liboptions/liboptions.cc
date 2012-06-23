@@ -1153,6 +1153,17 @@ Data& Options::get(std::string key)
     return locals_[current_module_][key];
 }
 
+Data& Options::get_local(std::string& key)
+{
+    to_upper(key);
+
+    if (!exists_in_active(key))
+        throw IndexException(key, current_module_);
+    else {
+        return locals_[current_module_][key];
+    }
+}
+
 Data& Options::get(std::map<std::string, Data>& m, std::string& key)
 {
     to_upper(key);
@@ -1167,6 +1178,40 @@ Data& Options::get_global(std::string key)
         throw IndexException(key);
     }
     return globals_[key];
+}
+
+Data& Options::use_local(std::string& key)
+{
+    to_upper(key);
+
+    // edit globals being true overrides everything
+    if (edit_globals_){
+        return get(globals_, key);
+    }
+
+    if (!exists_in_active(key) && !exists_in_global(key))
+        throw IndexException(key);
+    else if (!exists_in_active(key) && exists_in_global(key))
+        throw IndexException(key, current_module_);
+    else if (exists_in_active(key) && exists_in_global(key)) {
+        Data& active = get(locals_[current_module_], key);
+        Data& global = get(globals_, key);
+
+        if (active.has_changed()) {
+            // Pull from keyvals
+            return active;
+        }
+        else if (global.has_changed()){
+            // Pull from globals
+            return global;
+        }
+        else{
+            // No user input - the default should come from local vals
+            return active;
+        }
+    }
+    else
+        return get(locals_[current_module_], key);
 }
 
 Data& Options::use(std::string& key)

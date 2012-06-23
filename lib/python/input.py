@@ -244,6 +244,13 @@ def process_basis_file(matchobj):
 
     return command
 
+def process_filename(matchobj):
+    """Function to process match of ``filename ...``."""
+    spacing = str(matchobj.group(1))
+    filename = str(matchobj.group(2)).strip()
+    command = "%sPsiMod.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
+
+    return command
 
 def process_basis_block(matchobj):
     """Function to process match of ``basis name { ... }``."""
@@ -638,6 +645,11 @@ def process_input(raw_input, print_level=1):
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block, process_basis_block, temp)
 
+    # Process "basis file ... "
+    file_pid = re.compile(r'(\s*?)filename\s*(\b.*\b)\s*$',
+                            re.MULTILINE | re.IGNORECASE)
+    temp = re.sub(file_pid, process_filename, temp)
+
     # imports
     imports = 'from PsiMod import *\n'
     imports += 'from physconst import *\n'
@@ -653,7 +665,6 @@ def process_input(raw_input, print_level=1):
     imports += 'from frac import *\n'
     imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
-    imports += 'from basislist import *\n'
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
 

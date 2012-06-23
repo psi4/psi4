@@ -21,8 +21,8 @@ def write_version(version):
             pass
 
 # Use Git to find the latest version number
-command = "git log -1 --pretty=\%H"
-process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+command = "git log -1 --pretty=%H"
+process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd = top_srcdir)
 (out, err) = process.communicate()
 out = str(out).rstrip()
 if process.returncode:

@@ -21,6 +21,7 @@ is set internally from the orbital basis.
 * Built-in basis sets by family (below)
 * :ref:`Built-in basis sets by element <apdx:basisElement>`
 * :ref:`User-Defined basis sets <sec:basisUserDefined>`
+* :ref:`Auxiliary bases for built-in orbital basis sets <apdx:basisFamily>`
 
 
 Tables :ref:`Pople <table:basisPopleOrbital>`,

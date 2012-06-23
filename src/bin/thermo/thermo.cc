@@ -1,243 +1,179 @@
 /*! \file thermo.cc
     \ingroup thermo
-    \brief Compute thermodynamic quantities
+    \brief Compute thermodynamic quantities.
 */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cmath>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libqt/qt.h>
-#include <libchkpt/chkpt.h>
-#include <psifiles.h>
-#include <physconst.h>
-#include <masses.h>
-#include <psi4-dec.h>
 
-/* thermo: Computes thermodynamic quantities given:
- *
- *  rottype : rotational type
- *  rotconst : rotational constants
- *  rot_symm_num : rotational symmetry number
- *  vib_freqs : vibrational frequencies
+#include <psi4-dec.h>
+#include <libmints/mints.h>
+#include <libmints/molecule.h>
+
+#include <physconst.h>
+
+/* thermo: Computes thermodynamic quantities.
+ *  by Rollin King, 2012
 */
 
 namespace psi { namespace thermo {
-  void init_io(int argc, char *argv[]);
-  void exit_io(void);
   void title(void);
 
-int thermo(int argc, char *argv[])
-{
-  using namespace psi::thermo;
-  double tval;
-  int errcod, a, i, cnt;
-  char *junk;
-
-  init_io(argc,argv);
+PsiReturnType thermo(Options &options) {
   title();
+  fflush(outfile);
 
-  // Read in thermochemical data from checkpoint file
-  chkpt_init(PSIO_OPEN_OLD);
-  int rot_symm_num = chkpt_rd_rot_symm_num();
-  int rottype = chkpt_rd_rottype();
-  double *rotconst = chkpt_rd_rotconst();
-  double *vib_freqs = chkpt_rd_vib_freqs();
-  int natom = chkpt_rd_natom();
-  double *zvals = chkpt_rd_zvals(); // for default masses
-  double chkpt_energy = chkpt_rd_etot();
-  chkpt_close();
-  double *masses;
+  double T = options.get_double("T"); // T in K
+  double P = options.get_double("P"); // P in Pascals
 
-  // Set default T, P
-  double T = 298.15; // T in K
-  double P = 101325; // P in Pascals
-  int multiplicity = 1;
+  // Read in essential data
+  const boost::shared_ptr<Wavefunction> wf = psi::Process::environment.reference_wavefunction();
 
-  // Set number of vibrational frequencies consistent with chkpt file
+  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+
+  // use this one?
+  double E_elec = psi::Process::environment.globals["CURRENT ENERGY"];
+
+  int Natom = mol->natom();
+  int multiplicity = mol->multiplicity();
+  const boost::shared_ptr<Vector> vib_freqs = wf->frequencies();
+
+  Vector rot_const = mol->rotational_constants();
+  RotorType rot_type = mol->rotor_type();
+
+  fprintf(outfile,"\tHighest point group: %s\n", mol->find_highest_point_group()->symbol().c_str());
+
+  std::string pg = mol->schoenflies_symbol();
+  fprintf(outfile,"\tSchoenflies_symbol: %s\n", pg.c_str());
+
+  CharacterTable ct = mol->point_group()->char_table();
+  int order = ct.order();
+  fprintf(outfile,"\tOrder of the group: %d\n", order);
+
+  //const char *pg = pg;
+  //fprintf(outfile,"pg[0]: %c\n", pg[0]);
+  //fprintf(outfile,"pg[1]: %c\n", pg[1]);
+
+  int rot_symm_num;
+  if (options["ROTATIONAL_SYMMETRY_NUMBER"].has_changed()) {
+    rot_symm_num = options.get_int("ROTATIONAL_SYMMETRY_NUMBER");
+  }
+  else {
+    fprintf(outfile,"\tWARNING: The user should check the value of the rotational symmetry number. \n");
+    fprintf(outfile,"\t It may be incorrect, if higher-order rotational axes are present.  If it is incorrect, \n");
+    fprintf(outfile,"\t then so will the values of Cv, S, and G.  The symmetry number may be specified in the \n");
+    fprintf(outfile,"\t input file via the ROTATIONAL_SYMMETRY_NUMBER keyword.\n");
+
+    // Point Group    symmetry number
+    // C1,Ci,Cs,Cinfv 1
+    // Cn, Cnv, Cnh   n
+    // Dinfh 	      2
+    // T, Td          12
+    // Oh             24
+    // Dn, Dnh, Dnd   2n
+    // Sn             n/2
+    // Ih             60
+
+    // The code below will only work for D2h and subgroups!
+    if (rot_type == ATOM)            // atom
+      rot_symm_num = 1;
+    else if (rot_type == LINEAR) {
+      if (pg[0] == 'd')              // D-inf-v
+        rot_symm_num = 2;
+      else if (pg[0] == 'c')         // C-inf-v
+        rot_symm_num = 1;
+    }
+    else if (pg == "c1" || pg == "ci") {
+      rot_symm_num = 1;
+    }
+    else if (rot_type == ASYMMETRIC_TOP) {
+      if ( pg == "cs")                  // Cs
+        rot_symm_num = 1;
+      if ( pg[0] == 'c' && pg[1] == 2 ) // C2, C2v, C2h
+        rot_symm_num = 2;
+      if ( pg[0] == 'd' && pg[1] == 2 ) // D2, D2d, D2h
+        rot_symm_num = 4;
+      else
+        rot_symm_num = 1;
+    }
+    else if (rot_type == SYMMETRIC_TOP) {
+      if (pg[0] == 'c' && pg[1] == 's')       // Guess Cs  -> really C3v ; wrong for C5v, C7v ...!
+        rot_symm_num = 3;
+      else if (pg[0] == 'c' && pg[2] == '2')  // Guess C2v -> really D3h 
+          rot_symm_num = 6;
+     }
+     else if (rot_type == SPHERICAL_TOP) {
+       if (pg[0] == 'c')      // Guess Cs  -> really T,Td
+         rot_symm_num = 12;
+       else if (pg[0] == 'd') // Guess D2h -> really octahedral
+         rot_symm_num = 24;
+     }
+  }
+
+  // Set number of vibrational frequencies.
   int nvib_freqs;
-  if (rottype == 6) nvib_freqs = 0; //atom
-  else if (rottype == 3) nvib_freqs = 3*natom-5; //linear
-  else nvib_freqs = 3*natom-6;
+  if (rot_type == 6) nvib_freqs = 0; //atom
+  else if (rot_type == 3) nvib_freqs = 3*Natom-5; //linear
+  else nvib_freqs = 3*Natom-6;
 
-  try { // Read overrides from input file
-    // Read rotational symmetry type
-    // integers are defined in chkpt_rd_rottype()
-    if (ip_exist("ROT_TYPE",0)) {
-      errcod = ip_string("ROT_TYPE", &(junk),0);
-      if(errcod != IPE_OK) throw("Unable to read ROT_TYPE from input");
-
-      if      (!strcmp(junk,"ASYMMETRIC_TOP")) rottype = 0;
-      else if (!strcmp(junk,"SYMMETRIC_TOP")) rottype = 1;
-      else if (!strcmp(junk,"SPHERICAL_TOP")) rottype = 2;
-      else if (!strcmp(junk,"LINEAR")) rottype = 3;
-      else if (!strcmp(junk,"ATOM")) rottype = 6;
-      else throw("ROT_TYPE string was read but not recognized");
-
-      free(junk);
-    }
-
-    // Update number of vibrations
-    if (rottype == 6) nvib_freqs = 0; //atom
-    else if (rottype == 3) nvib_freqs = 3*natom-5; //linear
-    else nvib_freqs = 3*natom-6;
-
-    // Read rotational symmetry number
-    fprintf(outfile,"\tChecking input file for parameters.\n");
-    if (ip_exist("ROT_SYMM_NUM",0)) {
-      errcod = ip_data("ROT_SYMM_NUM", "%d", &a, 0);
-      if (errcod != IPE_OK) throw("Unable to read ROT_SYMM_NUM");
-      rot_symm_num = a;
-    }
-
-    // Read rotational constants
-    if (ip_exist("ROT_CONST",0)) {
-      errcod = ip_count("ROT_CONST",&a,0);
-      if (errcod != IPE_OK) throw("Unable to count ROT_CONST entries");
-
-      // asymmetric, symmetric and spherical tops
-      if ( rottype < 3 ) {
-        if (a != 3) throw("Expected 3 rotational constants with ROT_CONST in input");
-        for (i=0; i<3; ++i) {
-          errcod = ip_data("ROT_CONST", "%f", &(tval), 1, i);
-          if (errcod != IPE_OK) throw("Unable to read rotational constant with ROT_CONST in input");
-          rotconst[i] = tval;
-        }
-      }
-      else if (rottype == 3) { // linear molecule
-        if (a != 1) throw("Expected only 1 rotational constant with ROT_CONST in input");
-        rotconst[0] = 0; rotconst[1] = rotconst[2] = tval;
-      }
-      else if (rottype == 6) { // atom
-        throw("Don't specify any constants with ROT_CONST for an atom");
-      }
-    }
-
-    // Read vibrational frequencies
-    if (ip_exist("VIB_FREQS",0)) {
-      errcod = ip_count("VIB_FREQS",&a,0);
-      if (errcod != IPE_OK) throw("Unable to count VIB_FREQS entries");
-      if (a != nvib_freqs) throw("Wrong number of entries in VIB_FREQS");
-      for (i=0; i<nvib_freqs; ++i) {
-        errcod = ip_data("VIB_FREQS", "%f", &(tval), 1, i);
-        if (errcod != IPE_OK) throw("Unable to read vibrational frequency with VIB_FREQS in input");
-        vib_freqs[i] = tval;
-      }
-    }
-
-    // default multiplicity is 1 above
-    a=0;
-    if (ip_exist("MULTIPLICITY",0))
-      errcod = ip_data("MULTIPLICITY", "%d", &a, 0);
-    else if (ip_exist("MULTI",0))
-      errcod = ip_data("MULTI", "%d", &a, 0);
-    else if (ip_exist("MULTP",0))
-      errcod = ip_data("MULTP", "%d", &a, 0);
-    else if (ip_exist("SOCC",0)) {
-      int num_ir, open, mguess;
-      ip_count("SOCC",&(num_ir),0);
-      for(i=0;i<num_ir;i++){
-        errcod = ip_data("SOCC","%d",&open,1,i);
-        mguess += open;
-      }
-
-      if(mguess == 1) a = 2;
-      else if(mguess == 0) a = 1;
-      else if(mguess == 2) throw("You must specify the MULTP keyword");
-      else a = mguess + 1;
-    }
-    if (errcod != IPE_OK) throw("Unable to read multiplicity");
-    if (a != 0) multiplicity = a;
-
-    // Read in temperature and pressure
-    if (ip_exist("T",0)) {
-      errcod = ip_data("T", "%d",&(tval),0);
-      if (errcod != IPE_OK) throw("Unable to read temperature in K");
-      T = tval;
-    }
-    if (ip_exist("P",0)) {
-      errcod = ip_data("P", "%d",&(tval),0);
-      if (errcod != IPE_OK) throw("Unable to read pressure in Pa");
-      P = tval;
-    }
-  }
-  catch (const char *message) {
-    printf("\n\t** Error: trouble reading parameters from input\n");
-    fprintf(outfile,"\n\t** Error: trouble reading parameters from input\n");
-    printf("\t\t%s",message);
-    fprintf(outfile,"\t\t%s",message);
-    exit_io();
-    exit(PSI_RETURN_FAILURE);
+  if (vib_freqs->dim() != nvib_freqs) {
+    fprintf(outfile, "\tERROR: Number of vibrational frequencies provided inconsistent with rotor type \
+and number of atoms.\n");
+    throw PsiException("thermo(): Wrong number of vibrational frequencies provided.", __FILE__, __LINE__);
   }
 
-  // later, read this from checkpoint file
-  masses = new double[natom];
-  for (i=0; i<natom; ++i)
-    masses[i] = an2masses[(int) zvals[i]]; 
+  fprintf(outfile,"\n\tData used to determine thermochemical information:\n");
+  fprintf(outfile,  "\tTemperature (K): %15.2lf\n",T);
+  fprintf(outfile,  "\tPressure (Pa)  : %15.2lf\n",P);
+  fprintf(outfile,  "\tMultiplicity   : %15d\n",multiplicity);
 
-  // set rotor string for output
-  char srotor[80];   //string to store rotor type
-  if     (rottype == 0) strcpy(srotor,"ASYMMETRIC_TOP");
-  else if(rottype == 1) strcpy(srotor,"SYMMETRIC_TOP");
-  else if(rottype == 2) strcpy(srotor,"SPHERICAL_TOP");
-  else if(rottype == 3) strcpy(srotor,"LINEAR");
-  else if(rottype == 6) strcpy(srotor,"ATOM");
+  fprintf(outfile,  "\tRotor type     : %15s\n", RotorTypeList[rot_type].c_str());
+  fprintf(outfile,  "\tRotational symmetry number : %3d\n",rot_symm_num);
 
-  fprintf(outfile,"\tData used to determine thermochemical information:\n");
-  fprintf(outfile,"\t\tRotor type: %s\n", srotor);
-  fprintf(outfile,"\t\tRotational symmetry number: %d\n",rot_symm_num);
-fprintf(outfile,"\t ** Check rotational symmetry number - not yet debugged!\n");
-fprintf(outfile,"\t\t set rot_symm_num = 1 heteronuclear diatomics\n");
-fprintf(outfile,"\t\t set rot_symm_num = 2 homonuclear diatomics\n");
-  fprintf(outfile,"\t\tRotational constants:\n");
-  fprintf(outfile,"\t\t\t   wavenumbers,  GHz\n");
-  if (rottype < 4) {
-    fprintf(outfile,"\t\t\tA: %10.6lf , %10.5lf\n",rotconst[0],_c*rotconst[0]/1e7);
-    fprintf(outfile,"\t\t\tB: %10.6lf , %10.5lf\n",rotconst[1],_c*rotconst[1]/1e7);
-    fprintf(outfile,"\t\t\tC: %10.6lf , %10.5lf\n",rotconst[2],_c*rotconst[2]/1e7);
+  fprintf(outfile, "\n\tRotational constants:\n");
+  fprintf(outfile, "\t\t   wavenumbers      GHz\n");
+  if (rot_type < 4) {
+    fprintf(outfile,"\t\tA:  %10.6lf   %10.5lf\n",rot_const[0],_c*rot_const[0]/1e7);
+    fprintf(outfile,"\t\tB:  %10.6lf   %10.5lf\n",rot_const[1],_c*rot_const[1]/1e7);
+    fprintf(outfile,"\t\tC:  %10.6lf   %10.5lf\n",rot_const[2],_c*rot_const[2]/1e7);
   }
-  if (nvib_freqs) fprintf(outfile,"\t\tVibrational frequencies:\n");
-  for (i=0; i<nvib_freqs; ++i)
-    fprintf(outfile,"\t\t\t%10.3f\n", vib_freqs[i]);
-  fprintf(outfile,"\t\tTemperature (K): %10.2lf\n",T);
-  fprintf(outfile,"\t\tPressure (Pa)  : %10.2lf\n",P);
-  fprintf(outfile,"\t\tMultiplicity   : %10d\n",multiplicity);
-  fprintf(outfile,"\t\tNuclear masses:\n");
-  for (i=0; i<natom; ++i)
-    fprintf(outfile,"\t\t\t%10.6f\n", masses[i]);
 
-  for (i=0; i<nvib_freqs; ++i) {
-    if (vib_freqs[i] < 0.0) {
-      fprintf(outfile,"Imaginary vibrational frequencies are not allowed.\n");
-      exit_io();
-      exit(PSI_RETURN_FAILURE);
+  // Can eliminate when debugged - should be printed out in freq. code
+  fprintf(outfile, "\n\tNuclear masses:\n");
+  int cnt=0;
+  for (int i=0; i<Natom; ++i) {
+    if (cnt == 0) fprintf(outfile,"\t\t");
+    fprintf(outfile,"%10.6f", mol->mass(i));
+    ++cnt;
+    if (cnt == 6 || i == (Natom-1)) {
+      cnt = 0;
+      fprintf(outfile,"\n");
     }
   }
 
-  double *vib_temp = init_array(nvib_freqs);
-  double *vib_energy = init_array(nvib_freqs);
-  double *q_vib = init_array(nvib_freqs);
-  double *s_vib = init_array(nvib_freqs);
+  for (int i=0; i<nvib_freqs; ++i)
+    if (vib_freqs->get(i) < 0) {
+      fprintf(outfile, "\tWARNING: At least one vibrational frequency is imaginary!\n");
+    }
 
-  double ZPVE = 0.0;
-  double Etrans=0,  Eelec=0, Evib=0, Erot=0, Etotal;
-  double Cvtrans=0, Cvelec=0, Cvvib=0, Cvrot=0, Cvtotal;
-  double qtrans=0,  qelec=0, qvib=0, qrot=0, qtotal;
-  double Strans=0,  Selec=0, Snuc=0, Svib=0, Srot=0, Stotal;
-  double molecmass = 0.0;
+  Vector vib_temp(nvib_freqs);
+  Vector vib_energy(nvib_freqs);
+  Vector q_vib(nvib_freqs);
+  Vector s_vib(nvib_freqs);
 
-  for(i=0; i < natom; i++)
-    molecmass += masses[i];
+  double ZPVE = 0, molecular_mass = 0;
+  double  Etrans,  Eelec,  Evib, Erot,  Etotal;
+  double Cvtrans, Cvelec, Cvvib, Cvrot, Cvtotal;
+  double  qtrans,  qelec,  qvib, qrot,  qtotal;
+  double  Strans,  Selec,  Svib, Srot,  Stotal;
 
-  double kT = _kb * T;
-  double rT;
+  for(int i=0; i < Natom; i++)
+    molecular_mass += mol->mass(i);
+
+  const double kT = _kb * T;
   double phi_A, phi_B, phi_C;
 
   // variables Etrans, Cvtrans, and Strans are divided by R
   Etrans = 1.5 * T;
   Cvtrans = 1.5;
-  qtrans = pow(_twopi * molecmass * _amu2kg * kT / (_h * _h), 1.5) * _na * kT / P ;
+  qtrans = pow(_twopi * molecular_mass * _amu2kg * kT / (_h * _h), 1.5) * _na * kT / P ;
   Strans = 5.0/2.0 + log(qtrans/_na);
 
   // electronic part
@@ -247,45 +183,43 @@ fprintf(outfile,"\t\t set rot_symm_num = 2 homonuclear diatomics\n");
   Selec = log(qelec);
 
   // rotational part
-  if(rottype == 6) { // atom 
+  if(rot_type == 6) { // atom 
     Erot = Cvrot = Srot = 0;
   }
-  else if(rottype == 3) { // linear molecule
+  else if(rot_type == 3) { // linear molecule
     Erot = T;
     Cvrot = 1.0;
-    qrot = kT / (rot_symm_num * 100 * _c * _h * rotconst[1]); // B goes from cm^-1 to 1/s
+    qrot = kT / (rot_symm_num * 100 * _c * _h * rot_const[1]); // B goes from cm^-1 to 1/s
     Srot = 1.0 + log(qrot);
   }
   else {
     Erot = 1.5 * T; 
     Cvrot = 1.5;
-    phi_A = rotconst[0] * 100 * _h * _c / _kb;
-    phi_B = rotconst[1] * 100 * _h * _c / _kb;
-    phi_C = rotconst[2] * 100 * _h * _c / _kb;
+    phi_A = rot_const[0] * 100 * _h * _c / _kb;
+    phi_B = rot_const[1] * 100 * _h * _c / _kb;
+    phi_C = rot_const[2] * 100 * _h * _c / _kb;
     qrot = sqrt(_pi) * pow(T,1.5) / (rot_symm_num * sqrt(phi_A*phi_B*phi_C));
     Srot = 1.5 + log(qrot);
   }
 
   // vibrational part
-  for(i=0; i < nvib_freqs; i++)
-    vib_temp[i] = 100 * _h * _c * vib_freqs[i] / _kb;
+  for(int i=0; i < nvib_freqs; i++)
+    vib_temp[i] = 100 * _h * _c * vib_freqs->get(i) / _kb;
 
-  fprintf(outfile,"\tVibrational temperatures (K):\n\t");
-  for(i=0, cnt=0; i < nvib_freqs; i++,cnt++) {
-    fprintf(outfile,"%12.3lf",vib_temp[i]);
-    if (cnt == 6) { cnt=-1; fprintf(outfile,"\n\t"); }
-  }
-  fprintf(outfile,"\n");
+  if (nvib_freqs)
+    fprintf(outfile,"\n\tVibrational frequencies (cm^-1)      Temperatures (K):\n");
+  for (int i=0; i<nvib_freqs; ++i)
+    fprintf(outfile, "\t%20.3f           %20.3f\n", vib_freqs->get(i), vib_temp[i]);
 
-  for(i=0; i < nvib_freqs; i++) {
-    rT = vib_temp[i] / T; // reduced T
+  for(int i=0; i < nvib_freqs; i++) {
+    double rT = vib_temp[i] / T; // reduced T
     if (vib_temp[i] < 900)
       fprintf(outfile,"\tWarning: used thermodynamic relations are not appropriate for low frequency modes.");
     Evib += vib_temp[i] * (0.5 + 1.0 / (exp(rT) - 1));
     Svib += rT/(exp(rT) - 1) - log(1 - exp(-rT));
     Cvvib += exp(rT) * pow(rT/(exp(rT)-1), 2);
     // q_vib[i] = (exp(-vib_temp[i] / (2*T))) / (1 - exp(-vib_temp[i] / T));
-    ZPVE += vib_freqs[i] / 2.0; //in cm^-2
+    ZPVE += vib_freqs->get(i) / 2.0; //in cm^-2
   }
 
   // convert quantities in units of R into units of cal/mol
@@ -310,77 +244,39 @@ fprintf(outfile,"\t\t set rot_symm_num = 2 homonuclear diatomics\n");
   Cvtotal = Cvelec + Cvtrans + Cvrot + Cvvib;
 
   fprintf(outfile,"\n");
-  fprintf(outfile,"\tThermodynamic data\n");
-  fprintf(outfile,"\t\t                Thermal Energy            Cv              S \n");
-  fprintf(outfile,"\t\t                   kcal/mol           cal/(mol K)    cal/(mol K) \n");
-  fprintf(outfile,"\t\tElectronic    : %15.3lf%15.3lf%15.3lf\n", Eelec,  Cvelec,  Selec);
-  fprintf(outfile,"\t\tTranslational : %15.3lf%15.3lf%15.3lf\n", Etrans, Cvtrans, Strans);
-  fprintf(outfile,"\t\tRotational    : %15.3lf%15.3lf%15.3lf\n", Erot,   Cvrot,   Srot);
-  fprintf(outfile,"\t\tVibrational   : %15.3lf%15.3lf%15.3lf\n", Evib,   Cvvib,   Svib);
-  fprintf(outfile,"\t\tTotal         : %15.3lf%15.3lf%15.3lf\n", Etotal, Cvtotal, Stotal);
+  fprintf(outfile,"\t                * Thermal Energy *       * Cv *          * S *\n");
+  fprintf(outfile,"\t                        kcal/mol      cal/(mol K)    cal/(mol K) \n");
+  fprintf(outfile,"\tElectronic    : %15.3lf%15.3lf%15.3lf\n", Eelec,  Cvelec,  Selec);
+  fprintf(outfile,"\tTranslational : %15.3lf%15.3lf%15.3lf\n", Etrans, Cvtrans, Strans);
+  fprintf(outfile,"\tRotational    : %15.3lf%15.3lf%15.3lf\n", Erot,   Cvrot,   Srot);
+  fprintf(outfile,"\tVibrational   : %15.3lf%15.3lf%15.3lf\n", Evib,   Cvvib,   Svib);
+  fprintf(outfile,"\tTotal         : %15.3lf%15.3lf%15.3lf\n", Etotal, Cvtotal, Stotal);
 
-  ZPVE *= 100 * _h * _c / _hartree2J ; // cm^-1 -> au/particle
+  double ZPVE_au = ZPVE * 100 * _h * _c / _hartree2J ; // cm^-1 -> au/particle
 
-  double U, H, G;
-  U = chkpt_energy + Etotal * 1000.0 * _cal2J / _na / _hartree2J ;
-  H = U + _kb * T / _hartree2J ;
-  G = H - T * Stotal * _cal2J / _na / _hartree2J ;
+  fprintf(outfile,"\n\t                          cm^(-1)             au         kJ/mol\n");
+  fprintf(outfile,"\tZero-point energy:    %15.10lf%15.10lf%15.10lf\n", ZPVE, ZPVE_au,
+    ZPVE_au * _hartree2J / 1000 * _na);
 
-  fprintf(outfile,"\n\tTotal energies in Hartree/particle\n");
-  fprintf(outfile,"\t\tTotal energy (0 K) = %15.7lf\n", chkpt_energy + ZPVE);
-  fprintf(outfile,"\t\tTotal energy       = %15.7lf\n", U);
-  fprintf(outfile,"\t\tEnthalpy           = %15.7lf\n", H);
-  fprintf(outfile,"\t\tFree Energy        = %15.7lf\n", G);
+  double DU = Etotal * 1000.0 * _cal2J / _na / _hartree2J ;
+  double DH = DU + _kb * T / _hartree2J ;
+  double DG = DH - T * Stotal * _cal2J / _na / _hartree2J ;
 
-  free(vib_freqs);
-  free(vib_temp);
-  free(vib_energy);
-  free(q_vib);
-  free(s_vib);
-  free(rotconst);
-  free(zvals);
+  fprintf(outfile,"\tEnergies in Hartree/particle:       Correction         Total\n");
+  fprintf(outfile,"\t\tEnergy (0 K)         = %15.8lf  %15.8lf\n", ZPVE_au, E_elec+ZPVE_au);
+  fprintf(outfile,"\t\tInternal energy      = %15.8lf  %15.8lf\n",  DU, E_elec + DU);
+  fprintf(outfile,"\t\tEnthalpy             = %15.8lf  %15.8lf\n",  DH, E_elec + DH);
+  fprintf(outfile,"\t\tGibbs Free Energy    = %15.8lf  %15.8lf\n",  DG, E_elec + DG);
 
-  tstop();
-
-}
-
-
-void init_io(int argc, char *argv[]) {
-  int i, num_unparsed;
-  char *progid, *argv_unparsed[100];
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  /* this code shows how to parse and extrace command-line arguments as needed */
-/* X_only = 0;
-  for (i=1, num_unparsed=0; i<argc; ++i) {
-    if (!strcmp(argv[i],"--X_only"))
-      X_only = 1;
-    else
-      argv_unparsed[num_unparsed++] = argv[i];
-  }
-*/
-  for (i=1, num_unparsed=0; i<argc; ++i)
-    argv_unparsed[num_unparsed++] = argv[i];
-
-  ip_cwk_add(progid);
-  free(progid);
-  tstart();
+  return Success;
 }
 
 void title(void)
 {
-  fprintf(outfile, "\t\t\t*********************************\n");
-  fprintf(outfile, "\t\t\t*         THERMO                *\n");
-  fprintf(outfile, "\t\t\t* Taylor Mach & Rollin King '09 *\n");
-  fprintf(outfile, "\t\t\t*********************************\n");
+  fprintf(outfile, "\t\t\t*********************************************\n");
+  fprintf(outfile, "\t\t\t* Thermodynamic Analysis by R.A. King, 2012 *\n");
+  fprintf(outfile, "\t\t\t*********************************************\n");
 }
 
-void exit_io(void) {
-  tstop();
-  psi_stop(infile,outfile,psi_file_prefix);
-}
-
-}} // namespace psi::cphf
+}}
 

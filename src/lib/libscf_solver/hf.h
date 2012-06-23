@@ -149,6 +149,14 @@ protected:
     bool damping_enabled_;
     /// Whether damping was actually performed this iteration
     bool damping_performed_;
+
+    // parameters for hard-sphere potentials
+    double radius_; // radius of spherical potential
+    double thickness_; // thickness of spherical barrier
+    int r_points_; // number of radial integration points
+    int theta_points_; // number of colatitude integration points
+    int phi_points_; // number of azimuthal integration points
+
 public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;

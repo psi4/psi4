@@ -1,0 +1,86 @@
+#! SCF with various combinations of pk/density-fitting, castup/no-castup,
+#! and spherical/cartesian settings. Demonstrates that puream setting is
+#! getting set by orbital basis for all df/castup parts of calc. Demonstrates
+#! that answer doesn't depend on presence/absence of castup. Demonstrates (by
+#! comparison to castup2) that output file doesn't depend on options
+#! (scf_type) being set global or local. This input uses local.
+
+memory 256 mb
+
+molecule zinc {
+   0 1 
+   C
+}
+
+set basis 6-31g*
+set df_basis_scf cc-pvdz-jkfit
+
+
+set scf scf_type pk
+banner('ITEM 1')
+energy('scf')
+clean()
+
+set scf scf_type pk
+banner('ITEM 2')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
+set scf scf_type df
+banner('ITEM 3')
+energy('scf')
+clean()
+
+set scf scf_type df
+banner('ITEM 4')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
+set scf scf_type pk
+set puream true
+banner('ITEM 5')
+energy('scf')
+clean()
+
+set scf scf_type pk
+set puream true
+banner('ITEM 6')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
+set scf scf_type df
+set puream true
+banner('ITEM 7')
+energy('scf')
+clean()
+
+set scf scf_type df
+set puream true
+banner('ITEM 8')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
+set scf scf_type pk
+set puream false
+banner('ITEM 9')
+energy('scf')
+clean()
+
+set scf scf_type pk
+set puream false
+banner('ITEM 10')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
+set scf scf_type df
+set puream false
+banner('ITEM 11')
+energy('scf')
+clean()
+
+set scf scf_type df
+set puream false
+banner('ITEM 12')
+energy('scf', cast_up=True, cast_up_df=True)
+clean()
+
