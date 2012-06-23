@@ -2293,7 +2293,7 @@ def build_b2plyp_xc_superfunctional(name, npoints, deriv):
     becke.set_alpha(1.0)
     sup.add_x_functional(becke)
     lyp = build_functional('LYP_C')
-    lyp.set_alpha(1.0)
+    lyp.set_alpha(0.73)
     sup.add_c_functional(lyp)
 
     # Set GKS up after adding functionals
