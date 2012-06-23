@@ -974,7 +974,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
     options.add_double("DFT_ALPHA", 0.0);
-    /*- Number of spherical points (A Lebedev number). -*/
+    /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
     options.add_int("DFT_RADIAL_POINTS", 99);

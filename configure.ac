@@ -1160,6 +1160,7 @@ AC_CONFIG_FILES([
           tests/frac/Makefile
           tests/docs_psimod/Makefile
           tests/docs_dft/Makefile
+          tests/docs_bases/Makefile
           plugins/aointegrals/Makefile
           plugins/aointegrals/input.dat
           plugins/aointegrals/aointegrals.cc

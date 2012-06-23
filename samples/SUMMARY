@@ -364,12 +364,6 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 opt5:         6-31G** UHF CH2 3B1 optimization
 
 
-plugin_libfock:  LibFock test input
-
-
-plugin_test_matrix:  Plugin_test_matrix test input
-
-
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 

@@ -407,9 +407,11 @@ not yet available, but will be implemented by RC1 (in final debugging). The
 default grid in PSI4 is a Lebedev-Treutler (302,99) grid with a Treutler
 partition of the atomic weights. 
 
-Spherical grids are all of the extremely efficient Levedev-Laikov type.
+Spherical grids are all of the extremely efficient Lebedev-Laikov type.
 Spherical grid resolution is controlled by the |scf__dft_spherical_points|
 option, which may take one of the following values:
+
+.. _`table:lebedevorder`:
 
     +--------+-------+
     | Points | Order |

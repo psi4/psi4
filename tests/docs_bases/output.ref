@@ -1,0 +1,2163 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 280cf10463ccf32ac2e6cd311f16546d0456835e
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  53864
+    PSI4DATADIR: /Users/loriab/linux/psi4/objdir/../lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users. !nosample
+
+def tf(bas):
+    """Function to return reST formatted table cell from basis/None info."""
+
+    if bas is None:
+        return '  ---  '
+    else:
+        return ':srcbasis:`' + bas + '`'
+
+
+fenergy = open('autodoc_basissets_byfamily.rst', 'w')
+fenergy.write('.. table:: Auxiliary basis set defaults in |PSIfour|\n\n')
+fenergy.write('   +-%-27s-+-%-40s-+-%-40s-+-%-40s-+-%-40s-+\n' % 
+    (27 * '-', 40 * '-', 40 * '-', 40 * '-', 40 * '-'))
+fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 
+    ('Basis Family', 'Orbital basis', 'JK auxiliary basis', 'MP2 auxiliary basis', 'DUAL auxiliary basis'))
+fenergy.write('   +=%-27s=+=%-40s=+=%-40s=+=%-40s=+=%-40s=+\n' % 
+    (27 * '=', 40 * '=', 40 * '=', 40 * '=', 40 * '='))
+
+for basis in load_basis_families():
+
+    fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 
+        (basis.ornate, tf(basis.orbital), tf(basis.jkfit), tf(basis.rifit), tf(basis.dualfit)))
+    fenergy.write('   +-%-27s-+-%-40s-+-%-40s-+-%-40s-+-%-40s-+\n' % 
+        (27 * '-', 40 * '-', 40 * '-', 40 * '-', 40 * '-'))
+
+fenergy.write('\n')
+fenergy.close()
+
+# This line is for the output.ref record, not the docs
+print_basis_families()
+
+--------------------------------------------------------------------------
+  ==> cc-pVDZ Family <==
+
+  Orbital basis:        cc-pvdz
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pV(D+d)Z Family <==
+
+  Orbital basis:        cc-pv_dpd_z
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVDZ Family <==
+
+  Orbital basis:        cc-pcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV(D+d)Z Family <==
+
+  Orbital basis:        cc-pcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCVDZ Family <==
+
+  Orbital basis:        cc-pwcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV(D+d)Z Family <==
+
+  Orbital basis:        cc-pwcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVDZ Family <==
+
+  Orbital basis:        aug-cc-pvdz
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: aug-cc-pvdz-dual
+
+  ==> aug-cc-pV(D+d)Z Family <==
+
+  Orbital basis:        aug-cc-pv_dpd_z
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVDZ Family <==
+
+  Orbital basis:        aug-cc-pcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV(D+d)Z Family <==
+
+  Orbital basis:        aug-cc-pcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCVDZ Family <==
+
+  Orbital basis:        aug-cc-pwcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV(D+d)Z Family <==
+
+  Orbital basis:        aug-cc-pwcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVDZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pvdz
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV(D+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv_dpd_z
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVDZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV(D+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCVDZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV(D+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pVDZ Family <==
+
+  Orbital basis:        jun-cc-pvdz
+  JK auxiliary basis:   jun-cc-pvdz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV(D+d)Z Family <==
+
+  Orbital basis:        jun-cc-pv_dpd_z
+  JK auxiliary basis:   jun-cc-pvdz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCVDZ Family <==
+
+  Orbital basis:        jun-cc-pcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV(D+d)Z Family <==
+
+  Orbital basis:        jun-cc-pcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCVDZ Family <==
+
+  Orbital basis:        jun-cc-pwcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCV(D+d)Z Family <==
+
+  Orbital basis:        jun-cc-pwcv_dpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pVDZ Family <==
+
+  Orbital basis:        d-aug-cc-pvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pCVDZ Family <==
+
+  Orbital basis:        d-aug-cc-pcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pwCVDZ Family <==
+
+  Orbital basis:        d-aug-cc-pwcvdz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pVDZ-DK Family <==
+
+  Orbital basis:        cc-pvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVDZ-DK Family <==
+
+  Orbital basis:        cc-pcvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVDZ-DK Family <==
+
+  Orbital basis:        aug-cc-pvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVDZ-DK Family <==
+
+  Orbital basis:        aug-cc-pcvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVDZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVDZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvdz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pVTZ Family <==
+
+  Orbital basis:        cc-pvtz
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: cc-pvtz-dual
+
+  ==> cc-pV(T+d)Z Family <==
+
+  Orbital basis:        cc-pv_tpd_z
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVTZ Family <==
+
+  Orbital basis:        cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV(T+d)Z Family <==
+
+  Orbital basis:        cc-pcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCVTZ Family <==
+
+  Orbital basis:        cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV(T+d)Z Family <==
+
+  Orbital basis:        cc-pwcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVTZ Family <==
+
+  Orbital basis:        aug-cc-pvtz
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: aug-cc-pvtz-dual
+
+  ==> aug-cc-pV(T+d)Z Family <==
+
+  Orbital basis:        aug-cc-pv_tpd_z
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVTZ Family <==
+
+  Orbital basis:        aug-cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV(T+d)Z Family <==
+
+  Orbital basis:        aug-cc-pcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCVTZ Family <==
+
+  Orbital basis:        aug-cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV(T+d)Z Family <==
+
+  Orbital basis:        aug-cc-pwcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVTZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pvtz
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: heavy-aug-cc-pvtz-dual
+
+  ==> heavy-aug-cc-pV(T+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv_tpd_z
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVTZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV(T+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCVTZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV(T+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pVTZ Family <==
+
+  Orbital basis:        jun-cc-pvtz
+  JK auxiliary basis:   jun-cc-pvtz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV(T+d)Z Family <==
+
+  Orbital basis:        jun-cc-pv_tpd_z
+  JK auxiliary basis:   jun-cc-pvtz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCVTZ Family <==
+
+  Orbital basis:        jun-cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV(T+d)Z Family <==
+
+  Orbital basis:        jun-cc-pcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCVTZ Family <==
+
+  Orbital basis:        jun-cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCV(T+d)Z Family <==
+
+  Orbital basis:        jun-cc-pwcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pVTZ Family <==
+
+  Orbital basis:        may-cc-pvtz
+  JK auxiliary basis:   may-cc-pvtz-jkfit
+  MP2 auxiliary basis:  may-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV(T+d)Z Family <==
+
+  Orbital basis:        may-cc-pv_tpd_z
+  JK auxiliary basis:   may-cc-pvtz-jkfit
+  MP2 auxiliary basis:  may-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCVTZ Family <==
+
+  Orbital basis:        may-cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV(T+d)Z Family <==
+
+  Orbital basis:        may-cc-pcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCVTZ Family <==
+
+  Orbital basis:        may-cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCV(T+d)Z Family <==
+
+  Orbital basis:        may-cc-pwcv_tpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pVTZ Family <==
+
+  Orbital basis:        d-aug-cc-pvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pCVTZ Family <==
+
+  Orbital basis:        d-aug-cc-pcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pwCVTZ Family <==
+
+  Orbital basis:        d-aug-cc-pwcvtz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pVTZ-DK Family <==
+
+  Orbital basis:        cc-pvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVTZ-DK Family <==
+
+  Orbital basis:        cc-pcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCVTZ-DK Family <==
+
+  Orbital basis:        cc-pwcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVTZ-DK Family <==
+
+  Orbital basis:        aug-cc-pvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVTZ-DK Family <==
+
+  Orbital basis:        aug-cc-pcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCVTZ-DK Family <==
+
+  Orbital basis:        aug-cc-pwcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVTZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVTZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCVTZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcvtz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pVQZ Family <==
+
+  Orbital basis:        cc-pvqz
+  JK auxiliary basis:   cc-pvqz-jkfit
+  MP2 auxiliary basis:  cc-pvqz-ri
+  DUAL auxiliary basis: cc-pvqz-dual
+
+  ==> cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        cc-pv_qpd_z
+  JK auxiliary basis:   cc-pvqz-jkfit
+  MP2 auxiliary basis:  cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVQZ Family <==
+
+  Orbital basis:        cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCVQZ Family <==
+
+  Orbital basis:        cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVQZ Family <==
+
+  Orbital basis:        aug-cc-pvqz
+  JK auxiliary basis:   aug-cc-pvqz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvqz-ri
+  DUAL auxiliary basis: aug-cc-pvqz-dual
+
+  ==> aug-cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        aug-cc-pv_qpd_z
+  JK auxiliary basis:   aug-cc-pvqz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVQZ Family <==
+
+  Orbital basis:        aug-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        aug-cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCVQZ Family <==
+
+  Orbital basis:        aug-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        aug-cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVQZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pvqz
+  JK auxiliary basis:   heavy-aug-cc-pvqz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvqz-ri
+  DUAL auxiliary basis: heavy-aug-cc-pvqz-dual
+
+  ==> heavy-aug-cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv_qpd_z
+  JK auxiliary basis:   heavy-aug-cc-pvqz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVQZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCVQZ Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pVQZ Family <==
+
+  Orbital basis:        jun-cc-pvqz
+  JK auxiliary basis:   jun-cc-pvqz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        jun-cc-pv_qpd_z
+  JK auxiliary basis:   jun-cc-pvqz-jkfit
+  MP2 auxiliary basis:  jun-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCVQZ Family <==
+
+  Orbital basis:        jun-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        jun-cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCVQZ Family <==
+
+  Orbital basis:        jun-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        jun-cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pVQZ Family <==
+
+  Orbital basis:        may-cc-pvqz
+  JK auxiliary basis:   may-cc-pvqz-jkfit
+  MP2 auxiliary basis:  may-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        may-cc-pv_qpd_z
+  JK auxiliary basis:   may-cc-pvqz-jkfit
+  MP2 auxiliary basis:  may-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCVQZ Family <==
+
+  Orbital basis:        may-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        may-cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCVQZ Family <==
+
+  Orbital basis:        may-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        may-cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pVQZ Family <==
+
+  Orbital basis:        apr-cc-pvqz
+  JK auxiliary basis:   apr-cc-pvqz-jkfit
+  MP2 auxiliary basis:  apr-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pV(Q+d)Z Family <==
+
+  Orbital basis:        apr-cc-pv_qpd_z
+  JK auxiliary basis:   apr-cc-pvqz-jkfit
+  MP2 auxiliary basis:  apr-cc-pvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCVQZ Family <==
+
+  Orbital basis:        apr-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCV(Q+d)Z Family <==
+
+  Orbital basis:        apr-cc-pcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pwCVQZ Family <==
+
+  Orbital basis:        apr-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pwCV(Q+d)Z Family <==
+
+  Orbital basis:        apr-cc-pwcv_qpd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pwcvqz-ri
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pVQZ Family <==
+
+  Orbital basis:        d-aug-cc-pvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pCVQZ Family <==
+
+  Orbital basis:        d-aug-cc-pcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pwCVQZ Family <==
+
+  Orbital basis:        d-aug-cc-pwcvqz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pVQZ-DK Family <==
+
+  Orbital basis:        cc-pvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCVQZ-DK Family <==
+
+  Orbital basis:        cc-pcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCVQZ-DK Family <==
+
+  Orbital basis:        cc-pwcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pVQZ-DK Family <==
+
+  Orbital basis:        aug-cc-pvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCVQZ-DK Family <==
+
+  Orbital basis:        aug-cc-pcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCVQZ-DK Family <==
+
+  Orbital basis:        aug-cc-pwcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pVQZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCVQZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCVQZ-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcvqz-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pV5Z Family <==
+
+  Orbital basis:        cc-pv5z
+  JK auxiliary basis:   cc-pv5z-jkfit
+  MP2 auxiliary basis:  cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pV(5+d)Z Family <==
+
+  Orbital basis:        cc-pv_5pd_z
+  JK auxiliary basis:   cc-pv5z-jkfit
+  MP2 auxiliary basis:  cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV5Z Family <==
+
+  Orbital basis:        cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV5Z Family <==
+
+  Orbital basis:        cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pV5Z Family <==
+
+  Orbital basis:        aug-cc-pv5z
+  JK auxiliary basis:   aug-cc-pv5z-jkfit
+  MP2 auxiliary basis:  aug-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        aug-cc-pv_5pd_z
+  JK auxiliary basis:   aug-cc-pv5z-jkfit
+  MP2 auxiliary basis:  aug-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV5Z Family <==
+
+  Orbital basis:        aug-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        aug-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV5Z Family <==
+
+  Orbital basis:        aug-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        aug-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV5Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv5z
+  JK auxiliary basis:   heavy-aug-cc-pv5z-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv_5pd_z
+  JK auxiliary basis:   heavy-aug-cc-pv5z-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV5Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV5Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV5Z Family <==
+
+  Orbital basis:        jun-cc-pv5z
+  JK auxiliary basis:   jun-cc-pv5z-jkfit
+  MP2 auxiliary basis:  jun-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        jun-cc-pv_5pd_z
+  JK auxiliary basis:   jun-cc-pv5z-jkfit
+  MP2 auxiliary basis:  jun-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV5Z Family <==
+
+  Orbital basis:        jun-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        jun-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCV5Z Family <==
+
+  Orbital basis:        jun-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        jun-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV5Z Family <==
+
+  Orbital basis:        may-cc-pv5z
+  JK auxiliary basis:   may-cc-pv5z-jkfit
+  MP2 auxiliary basis:  may-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        may-cc-pv_5pd_z
+  JK auxiliary basis:   may-cc-pv5z-jkfit
+  MP2 auxiliary basis:  may-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV5Z Family <==
+
+  Orbital basis:        may-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        may-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCV5Z Family <==
+
+  Orbital basis:        may-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        may-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pV5Z Family <==
+
+  Orbital basis:        apr-cc-pv5z
+  JK auxiliary basis:   apr-cc-pv5z-jkfit
+  MP2 auxiliary basis:  apr-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        apr-cc-pv_5pd_z
+  JK auxiliary basis:   apr-cc-pv5z-jkfit
+  MP2 auxiliary basis:  apr-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCV5Z Family <==
+
+  Orbital basis:        apr-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        apr-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pwCV5Z Family <==
+
+  Orbital basis:        apr-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        apr-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pV5Z Family <==
+
+  Orbital basis:        mar-cc-pv5z
+  JK auxiliary basis:   mar-cc-pv5z-jkfit
+  MP2 auxiliary basis:  mar-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pV(5+d)Z Family <==
+
+  Orbital basis:        mar-cc-pv_5pd_z
+  JK auxiliary basis:   mar-cc-pv5z-jkfit
+  MP2 auxiliary basis:  mar-cc-pv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pCV5Z Family <==
+
+  Orbital basis:        mar-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pCV(5+d)Z Family <==
+
+  Orbital basis:        mar-cc-pcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pwCV5Z Family <==
+
+  Orbital basis:        mar-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  mar-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pwCV(5+d)Z Family <==
+
+  Orbital basis:        mar-cc-pwcv_5pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  mar-cc-pwcv5z-ri
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pV5Z Family <==
+
+  Orbital basis:        d-aug-cc-pv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pCV5Z Family <==
+
+  Orbital basis:        d-aug-cc-pcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pwCV5Z Family <==
+
+  Orbital basis:        d-aug-cc-pwcv5z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pV5Z-DK Family <==
+
+  Orbital basis:        cc-pv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV5Z-DK Family <==
+
+  Orbital basis:        cc-pcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pwCV5Z-DK Family <==
+
+  Orbital basis:        cc-pwcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pV5Z-DK Family <==
+
+  Orbital basis:        aug-cc-pv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV5Z-DK Family <==
+
+  Orbital basis:        aug-cc-pcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pwCV5Z-DK Family <==
+
+  Orbital basis:        aug-cc-pwcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV5Z-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV5Z-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pwCV5Z-DK Family <==
+
+  Orbital basis:        heavy-aug-cc-pwcv5z-dk
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pV6Z Family <==
+
+  Orbital basis:        cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pV(6+d)Z Family <==
+
+  Orbital basis:        cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV6Z Family <==
+
+  Orbital basis:        cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pV6Z Family <==
+
+  Orbital basis:        aug-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        aug-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  aug-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV6Z Family <==
+
+  Orbital basis:        aug-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> aug-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        aug-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV6Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  heavy-aug-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV6Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> heavy-aug-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        heavy-aug-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV6Z Family <==
+
+  Orbital basis:        jun-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        jun-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  jun-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV6Z Family <==
+
+  Orbital basis:        jun-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> jun-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        jun-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV6Z Family <==
+
+  Orbital basis:        may-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        may-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  may-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV6Z Family <==
+
+  Orbital basis:        may-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> may-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        may-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pV6Z Family <==
+
+  Orbital basis:        apr-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        apr-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  apr-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCV6Z Family <==
+
+  Orbital basis:        apr-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> apr-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        apr-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pV6Z Family <==
+
+  Orbital basis:        mar-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  mar-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        mar-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  mar-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pCV6Z Family <==
+
+  Orbital basis:        mar-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> mar-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        mar-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> feb-cc-pV6Z Family <==
+
+  Orbital basis:        feb-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  feb-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> feb-cc-pV(6+d)Z Family <==
+
+  Orbital basis:        feb-cc-pv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  feb-cc-pv6z-ri
+  DUAL auxiliary basis: None
+
+  ==> feb-cc-pCV6Z Family <==
+
+  Orbital basis:        feb-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> feb-cc-pCV(6+d)Z Family <==
+
+  Orbital basis:        feb-cc-pcv_6pd_z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pV6Z Family <==
+
+  Orbital basis:        d-aug-cc-pv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> d-aug-cc-pCV6Z Family <==
+
+  Orbital basis:        d-aug-cc-pcv6z
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> STO-3G Family <==
+
+  Orbital basis:        sto-3g
+  JK auxiliary basis:   cc-pvdz-ri
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 3-21G Family <==
+
+  Orbital basis:        3-21g
+  JK auxiliary basis:   cc-pvdz-ri
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31G Family <==
+
+  Orbital basis:        6-31g
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31G(d) Family <==
+
+  Orbital basis:        6-31g_d_
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31G(d,p) Family <==
+
+  Orbital basis:        6-31g_d_p_
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31G* Family <==
+
+  Orbital basis:        6-31g_d_
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31G** Family <==
+
+  Orbital basis:        6-31g_d_p_
+  JK auxiliary basis:   cc-pvdz-jkfit
+  MP2 auxiliary basis:  cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31+G Family <==
+
+  Orbital basis:        6-31pg
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31+G(d) Family <==
+
+  Orbital basis:        6-31pg_d_
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31+G(d,p) Family <==
+
+  Orbital basis:        6-31pg_d_p_
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31+G* Family <==
+
+  Orbital basis:        6-31pg_d_
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31+G** Family <==
+
+  Orbital basis:        6-31pg_d_p_
+  JK auxiliary basis:   heavy-aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31++G Family <==
+
+  Orbital basis:        6-31ppg
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31++G(d) Family <==
+
+  Orbital basis:        6-31ppg_d_
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31++G(d,p) Family <==
+
+  Orbital basis:        6-31ppg_d_p_
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31++G* Family <==
+
+  Orbital basis:        6-31ppg_d_
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-31++G** Family <==
+
+  Orbital basis:        6-31ppg_d_p_
+  JK auxiliary basis:   aug-cc-pvdz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvdz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G Family <==
+
+  Orbital basis:        6-311g
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(d) Family <==
+
+  Orbital basis:        6-311g_d_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(d,p) Family <==
+
+  Orbital basis:        6-311g_d_p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G* Family <==
+
+  Orbital basis:        6-311g_d_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G** Family <==
+
+  Orbital basis:        6-311g_d_p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2d) Family <==
+
+  Orbital basis:        6-311g_2d_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2d,p) Family <==
+
+  Orbital basis:        6-311g_2d_p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2d,2p) Family <==
+
+  Orbital basis:        6-311g_2d_2p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2df) Family <==
+
+  Orbital basis:        6-311g_2df_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2df,p) Family <==
+
+  Orbital basis:        6-311g_2df_p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2df,2p) Family <==
+
+  Orbital basis:        6-311g_2df_2p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(2df,2pd) Family <==
+
+  Orbital basis:        6-311g_2df_2pd_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(3df) Family <==
+
+  Orbital basis:        6-311g_3df_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(3df,p) Family <==
+
+  Orbital basis:        6-311g_3df_p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(3df,2p) Family <==
+
+  Orbital basis:        6-311g_3df_2p_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(3df,2pd) Family <==
+
+  Orbital basis:        6-311g_3df_2pd_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311G(3df,3pd) Family <==
+
+  Orbital basis:        6-311g_3df_3pd_
+  JK auxiliary basis:   cc-pvtz-jkfit
+  MP2 auxiliary basis:  cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G Family <==
+
+  Orbital basis:        6-311pg
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(d) Family <==
+
+  Orbital basis:        6-311pg_d_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(d,p) Family <==
+
+  Orbital basis:        6-311pg_d_p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G* Family <==
+
+  Orbital basis:        6-311pg_d_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G** Family <==
+
+  Orbital basis:        6-311pg_d_p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2d) Family <==
+
+  Orbital basis:        6-311pg_2d_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2d,p) Family <==
+
+  Orbital basis:        6-311pg_2d_p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2d,2p) Family <==
+
+  Orbital basis:        6-311pg_2d_2p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2df) Family <==
+
+  Orbital basis:        6-311pg_2df_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2df,p) Family <==
+
+  Orbital basis:        6-311pg_2df_p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2df,2p) Family <==
+
+  Orbital basis:        6-311pg_2df_2p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(2df,2pd) Family <==
+
+  Orbital basis:        6-311pg_2df_2pd_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(3df) Family <==
+
+  Orbital basis:        6-311pg_3df_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(3df,p) Family <==
+
+  Orbital basis:        6-311pg_3df_p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(3df,2p) Family <==
+
+  Orbital basis:        6-311pg_3df_2p_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(3df,2pd) Family <==
+
+  Orbital basis:        6-311pg_3df_2pd_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311+G(3df,3pd) Family <==
+
+  Orbital basis:        6-311pg_3df_3pd_
+  JK auxiliary basis:   heavy-aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  heavy-aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G Family <==
+
+  Orbital basis:        6-311ppg
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(d) Family <==
+
+  Orbital basis:        6-311ppg_d_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(d,p) Family <==
+
+  Orbital basis:        6-311ppg_d_p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G* Family <==
+
+  Orbital basis:        6-311ppg_d_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G** Family <==
+
+  Orbital basis:        6-311ppg_d_p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2d) Family <==
+
+  Orbital basis:        6-311ppg_2d_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2d,p) Family <==
+
+  Orbital basis:        6-311ppg_2d_p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2d,2p) Family <==
+
+  Orbital basis:        6-311ppg_2d_2p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2df) Family <==
+
+  Orbital basis:        6-311ppg_2df_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2df,p) Family <==
+
+  Orbital basis:        6-311ppg_2df_p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2df,2p) Family <==
+
+  Orbital basis:        6-311ppg_2df_2p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(2df,2pd) Family <==
+
+  Orbital basis:        6-311ppg_2df_2pd_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(3df) Family <==
+
+  Orbital basis:        6-311ppg_3df_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(3df,p) Family <==
+
+  Orbital basis:        6-311ppg_3df_p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(3df,2p) Family <==
+
+  Orbital basis:        6-311ppg_3df_2p_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(3df,2pd) Family <==
+
+  Orbital basis:        6-311ppg_3df_2pd_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> 6-311++G(3df,3pd) Family <==
+
+  Orbital basis:        6-311ppg_3df_3pd_
+  JK auxiliary basis:   aug-cc-pvtz-jkfit
+  MP2 auxiliary basis:  aug-cc-pvtz-ri
+  DUAL auxiliary basis: None
+
+  ==> def2-SV(P) Family <==
+
+  Orbital basis:        def2-sv_p_
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-SVP Family <==
+
+  Orbital basis:        def2-svp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-SVPD Family <==
+
+  Orbital basis:        def2-svpd
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-TZVP Family <==
+
+  Orbital basis:        def2-tzvp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-TZVPD Family <==
+
+  Orbital basis:        def2-tzvpd
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-TZVPP Family <==
+
+  Orbital basis:        def2-tzvpp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-TZVPPD Family <==
+
+  Orbital basis:        def2-tzvppd
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-QZVP Family <==
+
+  Orbital basis:        def2-qzvp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-QZVPD Family <==
+
+  Orbital basis:        def2-qzvpd
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-QZVPP Family <==
+
+  Orbital basis:        def2-qzvpp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> def2-QZVPPD Family <==
+
+  Orbital basis:        def2-qzvppd
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> DZ Family <==
+
+  Orbital basis:        dz
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> DZP Family <==
+
+  Orbital basis:        dzp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> DZVP Family <==
+
+  Orbital basis:        dzvp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> psi3-DZP Family <==
+
+  Orbital basis:        psi3-dzp
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> psi3-TZ2P Family <==
+
+  Orbital basis:        psi3-tz2p
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> psi3-TZ2PF Family <==
+
+  Orbital basis:        psi3-tz2pf
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> sadlej-lpol-dl Family <==
+
+  Orbital basis:        sadlej-lpol-dl
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> sadlej-lpol-ds Family <==
+
+  Orbital basis:        sadlej-lpol-ds
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> sadlej-lpol-fl Family <==
+
+  Orbital basis:        sadlej-lpol-fl
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+  ==> sadlej-lpol-fs Family <==
+
+  Orbital basis:        sadlej-lpol-fs
+  JK auxiliary basis:   None
+  MP2 auxiliary basis:  None
+  DUAL auxiliary basis: None
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!
