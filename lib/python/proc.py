@@ -357,8 +357,11 @@ def run_dfmp2_gradient(name, **kwargs):
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
         dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        if dfbasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
     PsiMod.dfmp2grad()
     e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
@@ -870,8 +873,11 @@ def run_dfmp2(name, **kwargs):
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
         dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        if dfbasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     e_dfmp2 = PsiMod.dfmp2()
     e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
@@ -921,8 +927,11 @@ def run_mp2c(name, **kwargs):
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
         dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        if dfbasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
     ri = PsiMod.get_option('SCF', 'SCF_TYPE')
     df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
@@ -1470,8 +1479,11 @@ def run_b2plyp(name, **kwargs):
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
         dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        if dfbasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
     PsiMod.dfmp2()
     e_dhdft  = e_dft + 0.27 * PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
