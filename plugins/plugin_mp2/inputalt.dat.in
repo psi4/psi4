@@ -1,0 +1,65 @@
+
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, './..')
+import plugin_mp2
+
+molecule n2 {
+  N
+  N 1 R
+
+  R = 1.11
+}
+
+set {
+  basis cc-pVDZ
+  reference rhf
+  d_convergence 10
+  freeze_core true
+  e_convergence 10
+}
+
+set plugin_mp2 {
+  print 1
+}
+
+energy('plugin_mp2')
+eRHFDimer = get_variable("SCF TOTAL ENERGY")
+eMP2Dimer = get_variable("MP2 ENERGY")
+clean()
+
+
+molecule n {
+   0 4
+   N
+}
+
+set reference uhf
+set basis cc-pvdz
+
+energy('plugin_mp2')
+eUHFMonomer = get_variable("SCF TOTAL ENERGY")
+eUMP2Monomer = get_variable("MP2 ENERGY")
+clean()
+
+set reference rohf
+
+energy('plugin_mp2')
+eROHFMonomer = get_variable("SCF TOTAL ENERGY")
+eROMP2Monomer = get_variable("MP2 ENERGY")
+clean()
+
+print "E RHF   = %16.10f\n" % eRHFDimer
+print "E RMP2  = %16.10f\n" % eMP2Dimer
+print "E ROHF  = %16.10f\n" % eROHFMonomer
+print "E ROMP2 = %16.10f\n" % eROMP2Monomer
+print "E UHF   = %16.10f\n" % eUHFMonomer
+print "E UMP2  = %16.10f\n" % eUMP2Monomer
+
+print "ROHF Binding energy  = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eROHFMonomer))
+print "UHF Binding energy   = %7.2f kcal/mol\n" % (627.51*(eRHFDimer - 2.0*eUHFMonomer))
+print "ROMP2 Binding energy = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eROMP2Monomer))
+print "UMP2 Binding energy  = %7.2f kcal/mol\n" % (627.51*(eMP2Dimer - 2.0*eUMP2Monomer))
+
+plugin_mp2.exampleFN()
+

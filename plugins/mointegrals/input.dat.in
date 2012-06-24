@@ -4,11 +4,11 @@ H 1 0.9
 H 1 0.9 2 105.0
 }
 
-plugin_load("plugin_mointegrals.so")
+plugin_load("mointegrals.so")
 
 set basis cc-pvdz
 set mointegrals print 1
 
 scf()
 
-plugin("plugin_mointegrals.so")
+plugin("mointegrals.so")
