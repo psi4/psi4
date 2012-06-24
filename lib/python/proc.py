@@ -332,6 +332,8 @@ def run_dfmp2_gradient(name, **kwargs):
     a DFMP2 gradient calculation.
 
     """
+    optstash = OptionsState(
+        ['DF_BASIS_MP2'])
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
@@ -351,9 +353,19 @@ def run_dfmp2_gradient(name, **kwargs):
     PsiMod.print_out('\n')
     banner('DFMP2')
     PsiMod.print_out('\n')
+
+    # if the df_basis_mp2 basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+
     PsiMod.dfmp2grad()
     e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
     e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+
+    optstash.restore()
+
     if (name.upper() == 'SCS-DFMP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2'):
@@ -833,6 +845,9 @@ def run_dfmp2(name, **kwargs):
     .. caution:: Get rid of madness-era restart file
 
     """
+    optstash = OptionsState(
+        ['DF_BASIS_MP2'])
+
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
         # Rename the checkpoint file to be consistent with psi4's file system
@@ -851,8 +866,18 @@ def run_dfmp2(name, **kwargs):
     PsiMod.print_out('\n')
     banner('DFMP2')
     PsiMod.print_out('\n')
+
+    # if the df_basis_mp2 basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+
     e_dfmp2 = PsiMod.dfmp2()
     e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+
+    optstash.restore()
+
     if (name.upper() == 'SCS-DFMP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2'):
@@ -883,12 +908,21 @@ def run_mp2c(name, **kwargs):
     a coupled MP2 calculation.
 
     """
+    optstash = OptionsState(
+        ['DF_BASIS_MP2'])
+
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
     monomerB = molecule.extract_subsets(2, 1)
     monomerB.set_name('monomerB')
+
+    # if the df_basis_mp2 basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
 
     ri = PsiMod.get_option('SCF', 'SCF_TYPE')
     df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
@@ -953,6 +987,8 @@ def run_mp2c(name, **kwargs):
     PsiMod.set_variable('MP2C MONOMER B MP2 ENERGY', e_monomerB_mp2)
 
     e_sapt = PsiMod.sapt()
+
+    optstash.restore()
     return e_sapt
 
 
@@ -1406,9 +1442,12 @@ def run_b2plyp(name, **kwargs):
     a B2PLYP double-hybrid density-functional-theory calculation.
 
     """
+    optstash = OptionsState(
+        ['DF_BASIS_MP2'])
 
     # use with c_alpha = 0.0 in functional.py
     #     with Rob's current normalization in superfunctional.cc
+
 
     user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
     b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
@@ -1427,6 +1466,13 @@ def run_b2plyp(name, **kwargs):
         raise ValidationError('CUHF reference for DFT is not available.')
 
     e_dft    = run_scf(name, **kwargs) 
+
+    # if the df_basis_mp2 basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
+        PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+
     PsiMod.dfmp2()
     e_dhdft  = e_dft + 0.27 * PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
 
@@ -1439,6 +1485,7 @@ def run_b2plyp(name, **kwargs):
 
     PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
 
+    optstash.restore()
     return e_dhdft
 
 

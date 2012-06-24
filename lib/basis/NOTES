@@ -1,4 +1,3 @@
-In vi, execute   set tabset=8   to view this document correctly.
 
 *******************************************************************************
 *******************************************************************************
@@ -167,35 +166,35 @@ Scripts
 
 Pople-style
 
-plain			heavy_diffuse	full_diffuse	alt_name
+plain           heavy_diffuse   full_diffuse    alt_name
 -------------------------------------------------------------------------------
 sto-3g
 3-21g
 
 
-6-31G			+		++
-6-31G(d)		+		++		duplicated-as-s
-6-31G(d,p)		+		++		duplicated-as-ss
+6-31G           +               ++
+6-31G(d)        +               ++              duplicated-as-s
+6-31G(d,p)      +               ++              duplicated-as-ss
 
 
-6-311G			+		++
-6-311G(d)		+		++		duplicated-as-s
-6-311G(d,p)		+		++		duplicated-as-ss
+6-311G          +               ++
+6-311G(d)       +               ++              duplicated-as-s
+6-311G(d,p)     +               ++              duplicated-as-ss
 
-6-311G(2d)		+		++
-6-311G(2d,p)		+		++
-6-311G(2d,2p)		+		++
+6-311G(2d)      +               ++
+6-311G(2d,p)    +               ++
+6-311G(2d,2p)   +               ++
 
-6-311G(2df)		+		++
-6-311G(2df,p)		+		++
-6-311G(2df,2p)		+		++
-6-311G(2df,2pd)		+		++
+6-311G(2df)     +               ++
+6-311G(2df,p)   +               ++
+6-311G(2df,2p)  +               ++
+6-311G(2df,2pd) +               ++
 
-6-311G(3df)		+		++
-6-311G(3df,p)		+		++
-6-311G(3df,2p)		+		++
-6-311G(3df,2pd)		+		++
-6-311G(3df,3pd)		+		++
+6-311G(3df)     +               ++
+6-311G(3df,p)   +               ++
+6-311G(3df,2p)  +               ++
+6-311G(3df,2pd) +               ++
+6-311G(3df,3pd) +               ++
 
 
 *******************************************************************************
@@ -207,25 +206,25 @@ Dunning-style
 The labels (A) below are shortcuts to EMSL files (B) of a basis set closely matching the file name. In order to form a complete 
 specification, the amendments (D) need to be made. Basis sets are available at zeta levels (C).
 
-(A)		   (B)					(C)	(D)
+(A)                 (B)                                 (C)     (D)
 ---------------------------------------------------------------------------------------------------------------------------------------------
-1		=  basis-cc-pvxz			DTQ56
-2		=  basis-cc-pv_xpd_z			DTQ56	only def. for Al-Ar, other elements appended from basis-cc-pvxz
-19		=  basis-cc-pvxz-ri			DTQ56
-37		=  molpro-basis-cc-pvxz-jkfit		DTQ5
+1               =  basis-cc-pvxz                        DTQ56
+2               =  basis-cc-pv_xpd_z                    DTQ56   only def. for Al-Ar, other elements appended from basis-cc-pvxz
+19              =  basis-cc-pvxz-ri                     DTQ56
+37              =  molpro-basis-cc-pvxz-jkfit           DTQ5
 97              =  basis-cc-pvxz-dk                     DTQ5
 101             =  basis-cc-pwcvxz-dk                    TQ5
 
-diffuse		=  diffuse-aug-cc-pvxz			DTQ56
-diffuse_xpd 	=  diffuse-aug-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-aug-cc-pvxz
-diffuse_ri	=  diffuse-aug-cc-pvxz-ri		DTQ56
-diffuse_jk	=  molpro-diffuse-aug-cc-pvxz-jkfit	DTQ5
+diffuse         =  diffuse-aug-cc-pvxz                  DTQ56
+diffuse_xpd     =  diffuse-aug-cc-pv_xpd_z              DTQ56   only def. for Al-Ar, other elements appended from diffuse-aug-cc-pvxz
+diffuse_ri      =  diffuse-aug-cc-pvxz-ri               DTQ56
+diffuse_jk      =  molpro-diffuse-aug-cc-pvxz-jkfit     DTQ5
 diffuse_dk      =  diffuse-aug-cc-pvxz-dk               DTQ5
 
-d-diffuse	=  diffuse-d-aug-cc-pvxz		DTQ56
-d-diffuse_xpd	=  DNE					-----
-d-diffuse_ri	=  DNE					-----
-d-diffuse_jk	=  DNE					-----
+d-diffuse       =  diffuse-d-aug-cc-pvxz                DTQ56
+d-diffuse_xpd   =  DNE                                  -----
+d-diffuse_ri    =  DNE                                  -----
+d-diffuse_jk    =  DNE                                  -----
 d-diffuse_dk    =  DNE                                  -----
 
 diffuse_jun     =  diffuse-jun-cc-pvxz                  DTQ56
@@ -233,33 +232,33 @@ diffuse_may     =  diffuse-may-cc-pvxz                  -TQ56
 diffuse_apr     =  diffuse-apr-cc-pvxz                  --Q56
 diffuse_mar     =  diffuse-mar-cc-pvxz                  ---56
 diffuse_feb     =  diffuse-feb-cc-pvxz                  ----6
-diffuse_jun_xpd =  diffuse-jun-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-jun-cc-pvxz
-diffuse_may_xpd =  diffuse-may-cc-pv_xpd_z		-TQ56	only def. for Al-Ar, other elements appended from diffuse-may-cc-pvxz
-diffuse_apr_xpd =  diffuse-apr-cc-pv_xpd_z		--Q56	only def. for Al-Ar, other elements appended from diffuse-apr-cc-pvxz
-diffuse_mar_xpd =  diffuse-mar-cc-pv_xpd_z		---56	only def. for Al-Ar, other elements appended from diffuse-mar-cc-pvxz
-diffuse_feb_xpd =  diffuse-feb-cc-pv_xpd_z		----6	only def. for Al-Ar, other elements appended from diffuse-feb-cc-pvxz
-diffuse_jun_ri	=  diffuse-jun-cc-pvxz-ri		DTQ56
-diffuse_may_ri	=  diffuse-may-cc-pvxz-ri		-TQ56
-diffuse_apr_ri	=  diffuse-apr-cc-pvxz-ri		--Q56
-diffuse_mar_ri	=  diffuse-mar-cc-pvxz-ri		---56
-diffuse_feb_ri	=  diffuse-feb-cc-pvxz-ri		----6
-diffuse_jun_jk	=  diffuse-jun-cc-pvxz-jkfit	        DTQ5
-diffuse_may_jk	=  diffuse-may-cc-pvxz-jkfit	        -TQ5
-diffuse_apr_jk	=  diffuse-apr-cc-pvxz-jkfit	        --Q5
-diffuse_mar_jk	=  diffuse-mar-cc-pvxz-jkfit	        ---5
-diffuse_feb_jk	=  diffuse-feb-cc-pvxz-jkfit	        -----
+diffuse_jun_xpd =  diffuse-jun-cc-pv_xpd_z              DTQ56   only def. for Al-Ar, other elements appended from diffuse-jun-cc-pvxz
+diffuse_may_xpd =  diffuse-may-cc-pv_xpd_z              -TQ56   only def. for Al-Ar, other elements appended from diffuse-may-cc-pvxz
+diffuse_apr_xpd =  diffuse-apr-cc-pv_xpd_z              --Q56   only def. for Al-Ar, other elements appended from diffuse-apr-cc-pvxz
+diffuse_mar_xpd =  diffuse-mar-cc-pv_xpd_z              ---56   only def. for Al-Ar, other elements appended from diffuse-mar-cc-pvxz
+diffuse_feb_xpd =  diffuse-feb-cc-pv_xpd_z              ----6   only def. for Al-Ar, other elements appended from diffuse-feb-cc-pvxz
+diffuse_jun_ri  =  diffuse-jun-cc-pvxz-ri               DTQ56
+diffuse_may_ri  =  diffuse-may-cc-pvxz-ri               -TQ56
+diffuse_apr_ri  =  diffuse-apr-cc-pvxz-ri               --Q56
+diffuse_mar_ri  =  diffuse-mar-cc-pvxz-ri               ---56
+diffuse_feb_ri  =  diffuse-feb-cc-pvxz-ri               ----6
+diffuse_jun_jk  =  diffuse-jun-cc-pvxz-jkfit            DTQ5
+diffuse_may_jk  =  diffuse-may-cc-pvxz-jkfit            -TQ5
+diffuse_apr_jk  =  diffuse-apr-cc-pvxz-jkfit            --Q5
+diffuse_mar_jk  =  diffuse-mar-cc-pvxz-jkfit            ---5
+diffuse_feb_jk  =  diffuse-feb-cc-pvxz-jkfit            -----
 diffuse_jun_dk  =  DNE                                  -----   
 diffuse_may_dk  =  DNE                                  -----   
 diffuse_apr_dk  =  DNE                                  -----   
 diffuse_mar_dk  =  DNE                                  -----   
 diffuse_feb_dk  =  DNE                                  -----   
 
-core		=  corevalence-cc-pcvxz			DTQ56	blanks-added-for: H,He
-w-core		=  tight-cc-pwcvxz			DTQ5	blanks-added-for: H,He
-core_ri		=  DNE					-----
-w-core_ri	=  tight-cc-pwcvxz-ri			DTQ5	blanks-added-for: H,He
-core_jk		=  DNE					-----
-w-core_jk	=  DNE					-----
+core            =  corevalence-cc-pcvxz                 DTQ56   blanks-added-for: H,He
+w-core          =  tight-cc-pwcvxz                      DTQ5    blanks-added-for: H,He
+core_ri         =  DNE                                  -----
+w-core_ri       =  tight-cc-pwcvxz-ri                   DTQ5    blanks-added-for: H,He
+core_jk         =  DNE                                  -----
+w-core_jk       =  DNE                                  -----
 core_dk         =  --> corevalence-cc-pcvxz
 w-core_dk       =  DNE
 
@@ -303,33 +302,33 @@ diffuse_mar_jk  =  diffuse-apr-cc-pvxz-jkfit with the highest angmom removed [F 
 diffuse_feb_jk  =  diffuse-mar-cc-pvxz-jkfit with the highest angmom removed [F for 6Z through], for Ga-Kr keep one (larger) when F or G on ax
 
 key
-[elem: label]	=  elements in list elem are taken from basis set label
-DNE		=  basis sets not available
+[elem: label] =  elements in list elem are taken from basis set label
+DNE =  basis sets not available
 
 
 
-basis				label	straightforward_construction	fundamental_construction				available
+basis                           label       straightforward_construction    fundamental_construction                            available
 ---------------------------------------------------------------------------------------------------------------------------------------------
-!  cc-pVXZ			 1	=   1				=   1							DTQ56
-!  cc-pV(X+d)Z			 2	=   2				=   2							DTQ56
-!  cc-pCVXZ			 3	=   1 + core			=   1 + core						DTQ56
-!  cc-pCV(X+d)Z			 4	=   2 + core			=   2 + core						DTQ56
-!  cc-pwCVXZ			 5	=   1 + w-core			=   1 + w-core						DTQ5
-!  cc-pwCV(X+d)Z		 6	=   2 + w-core			=   2 + w-core						DTQ5
+!  cc-pVXZ                       1      =   1                           =   1                                                   DTQ56
+!  cc-pV(X+d)Z                   2      =   2                           =   2                                                   DTQ56
+!  cc-pCVXZ                      3      =   1 + core                    =   1 + core                                            DTQ56
+!  cc-pCV(X+d)Z                  4      =   2 + core                    =   2 + core                                            DTQ56
+!  cc-pwCVXZ                     5      =   1 + w-core                  =   1 + w-core                                          DTQ5
+!  cc-pwCV(X+d)Z                 6      =   2 + w-core                  =   2 + w-core                                          DTQ5
 
-!  aug-cc-pVXZ			 7	=   1 + diffuse			=   1 + diffuse						DTQ56
-!  aug-cc-pV(X+d)Z		 8	=   2 + diffuse_xpd		=   2 + diffuse_xpd					DTQ56
-!  aug-cc-pCVXZ			 9	=   3 + diffuse			=   1 + core + diffuse					DTQ56
-!  aug-cc-pCV(X+d)Z		10	=   4 + diffuse_xpd		=   2 + core + diffuse_xpd				DTQ56
-!  aug-cc-pwCVXZ		11	=   5 + diffuse			=   1 + w-core + diffuse				DTQ5
-!  aug-cc-pwCV(X+d)Z		12	=   6 + diffuse_xpd		=   2 + w-core + diffuse_xpd				DTQ5
+!  aug-cc-pVXZ                   7      =   1 + diffuse                 =   1 + diffuse                                         DTQ56
+!  aug-cc-pV(X+d)Z               8      =   2 + diffuse_xpd             =   2 + diffuse_xpd                                     DTQ56
+!  aug-cc-pCVXZ                  9      =   3 + diffuse                 =   1 + core + diffuse                                  DTQ56
+!  aug-cc-pCV(X+d)Z             10      =   4 + diffuse_xpd             =   2 + core + diffuse_xpd                              DTQ56
+!  aug-cc-pwCVXZ                11      =   5 + diffuse                 =   1 + w-core + diffuse                                DTQ5
+!  aug-cc-pwCV(X+d)Z            12      =   6 + diffuse_xpd             =   2 + w-core + diffuse_xpd                            DTQ5
 
-!  heavy-aug-cc-pVXZ		73	=   7 [H-He:  1]		=   1 + diffuse [H-He:  1]				DTQ56
-!  heavy-aug-cc-pV(X+d)Z	74	=   8 [H-He:  1]		=   2 + diffuse_xpd [H-He:  1]				DTQ56
-!  heavy-aug-cc-pCVXZ		75	=   9 [H-He:  1]		=   1 + core + diffuse [H-He:  1]			DTQ56
-!  heavy-aug-cc-pCV(X+d)Z	76	=  10 [H-He:  1]		=   2 + core + diffuse_xpd [H-He:  1]			DTQ56
-!  heavy-aug-cc-pwCVXZ		77	=  11 [H-He:  1]		=   1 + w-core + diffuse [H-He:  1]			DTQ5
-!  heavy-aug-cc-pwCV(X+d)Z	78	=  12 [H-He:  1]		=   2 + w-core + diffuse_xpd [H-He:  1]			DTQ5
+!  heavy-aug-cc-pVXZ            73      =   7 [H-He:  1]                =   1 + diffuse [H-He:  1]                              DTQ56
+!  heavy-aug-cc-pV(X+d)Z        74      =   8 [H-He:  1]                =   2 + diffuse_xpd [H-He:  1]                          DTQ56
+!  heavy-aug-cc-pCVXZ           75      =   9 [H-He:  1]                =   1 + core + diffuse [H-He:  1]                       DTQ56
+!  heavy-aug-cc-pCV(X+d)Z       76      =  10 [H-He:  1]                =   2 + core + diffuse_xpd [H-He:  1]                   DTQ56
+!  heavy-aug-cc-pwCVXZ          77      =  11 [H-He:  1]                =   1 + w-core + diffuse [H-He:  1]                     DTQ5
+!  heavy-aug-cc-pwCV(X+d)Z      78      =  12 [H-He:  1]                =   2 + w-core + diffuse_xpd [H-He:  1]                 DTQ5
 
 !  jun-cc-pVXZ                 121      =   1 + diffuse_jun             =   1 + diffuse_jun                                     DTQ56
 !  jun-cc-pV(X+d)Z             122      =   2 + diffuse_jun_xpd         =   2 + diffuse_jun_xpd                                 DTQ56
@@ -366,34 +365,34 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  feb-cc-pwCVXZ               149      =   5 + diffuse_feb             =   1 + w-core + diffuse_feb                            -----
 !  feb-cc-pwCV(X+d)Z           150      =   6 + diffuse_feb_xpd         =   2 + w-core + diffuse_feb_xpd                        -----
 
-!  d-aug-cc-pVXZ		13	=   7 + d-diffuse		=   1 + diffuse + d-diffuse				DTQ56
-!  d-aug-cc-pV(X+d)Z		14	=   8 + d-diffuse_xpd		=   2 + diffuse_xpd + d-diffuse_xpd			-----
-!  d-aug-cc-pCVXZ		15	=   9 + d-diffuse		=   1 + core + diffuse + d-diffuse			DTQ56
-!  d-aug-cc-pCV(X+d)Z		16	=  10 + d-diffuse_xpd		=   2 + core + diffuse_xpd + d-diffuse_xpd		-----
-!  d-aug-cc-pwCVXZ		17	=  11 + d-diffuse		=   1 + w-core + diffuse + d-diffuse			DTQ5
-!  d-aug-cc-pwCV(X+d)Z		18	=  12 + d-diffuse_xpd		=   2 + w-core + diffuse_xpd + d-diffuse_xpd		-----
+!  d-aug-cc-pVXZ                13      =   7 + d-diffuse               =   1 + diffuse + d-diffuse                             DTQ56
+!  d-aug-cc-pV(X+d)Z            14      =   8 + d-diffuse_xpd           =   2 + diffuse_xpd + d-diffuse_xpd                     -----
+!  d-aug-cc-pCVXZ               15      =   9 + d-diffuse               =   1 + core + diffuse + d-diffuse                      DTQ56
+!  d-aug-cc-pCV(X+d)Z           16      =  10 + d-diffuse_xpd           =   2 + core + diffuse_xpd + d-diffuse_xpd              -----
+!  d-aug-cc-pwCVXZ              17      =  11 + d-diffuse               =   1 + w-core + diffuse + d-diffuse                    DTQ5
+!  d-aug-cc-pwCV(X+d)Z          18      =  12 + d-diffuse_xpd           =   2 + w-core + diffuse_xpd + d-diffuse_xpd            -----
 
 
-!  cc-pVXZ-RI			19	=  19				=  19							DTQ56
-!  cc-pV(X+d)Z-RI		20	=  19				=  19							DTQ56
-!  cc-pCVXZ-RI			21	=  19 + core_ri			=  19 + core_ri						-----
-!  cc-pCV(X+d)Z-RI		22	=  21				=  19 + core_ri						-----
-!  cc-pwCVXZ-RI			23	=  19 + w-core_ri		=  19 + w-core_ri					DTQ5
-!  cc-pwCV(X+d)Z-RI		24	=  23				=  19 + w-core_ri					DTQ5
+!  cc-pVXZ-RI                   19      =  19                           =  19                                                   DTQ56
+!  cc-pV(X+d)Z-RI               20      =  19                           =  19                                                   DTQ56
+!  cc-pCVXZ-RI                  21      =  19 + core_ri                 =  19 + core_ri                                         -----
+!  cc-pCV(X+d)Z-RI              22      =  21                           =  19 + core_ri                                         -----
+!  cc-pwCVXZ-RI                 23      =  19 + w-core_ri               =  19 + w-core_ri                                       DTQ5
+!  cc-pwCV(X+d)Z-RI             24      =  23                           =  19 + w-core_ri                                       DTQ5
 
-!  aug-cc-pVXZ-RI		25	=  19 + diffuse_ri		=  19 + diffuse_ri					DTQ56
-!  aug-cc-pV(X+d)Z-RI		26	=  25				=  19 + diffuse_ri					DTQ56
-!  aug-cc-pCVXZ-RI		27	=  21 + diffuse_ri		=  19 + core_ri + diffuse_ri				-----
-!  aug-cc-pCV(X+d)Z-RI		28	=  27				=  19 + core_ri + diffuse_ri				-----
-!  aug-cc-pwCVXZ-RI		29	=  23 + diffuse_ri		=  19 + w-core_ri + diffuse_ri				DTQ5
-!  aug-cc-pwCV(X+d)Z-RI		30	=  29				=  19 + w-core_ri + diffuse_ri				DTQ5
+!  aug-cc-pVXZ-RI               25      =  19 + diffuse_ri              =  19 + diffuse_ri                                      DTQ56
+!  aug-cc-pV(X+d)Z-RI           26      =  25                           =  19 + diffuse_ri                                      DTQ56
+!  aug-cc-pCVXZ-RI              27      =  21 + diffuse_ri              =  19 + core_ri + diffuse_ri                            -----
+!  aug-cc-pCV(X+d)Z-RI          28      =  27                           =  19 + core_ri + diffuse_ri                            -----
+!  aug-cc-pwCVXZ-RI             29      =  23 + diffuse_ri              =  19 + w-core_ri + diffuse_ri                          DTQ5
+!  aug-cc-pwCV(X+d)Z-RI         30      =  29                           =  19 + w-core_ri + diffuse_ri                          DTQ5
 
-!  heavy-aug-cc-pVXZ-RI		79	=  25 [H-He: 19]		=  19 + diffuse_ri [H-He: 19]				DTQ56
-!  heavy-aug-cc-pV(X+d)Z-RI	80	=  79				=  19 + diffuse_ri [H-He: 19]				DTQ56
-!  heavy-aug-cc-pCVXZ-RI	81	=  27 [H-He: 19]		=  19 + core_ri + diffuse_ri [H-He: 19]			-----
-!  heavy-aug-cc-pCV(X+d)Z-RI	82	=  81				=  19 + core_ri + diffuse_ri [H-He: 19]			-----
-!  heavy-aug-cc-pwCVXZ-RI	83	=  29 [H-He: 19]		=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
-!  heavy-aug-cc-pwCV(X+d)Z-RI	84	=  83				=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
+!  heavy-aug-cc-pVXZ-RI         79      =  25 [H-He: 19]                =  19 + diffuse_ri [H-He: 19]                           DTQ56
+!  heavy-aug-cc-pV(X+d)Z-RI     80      =  79                           =  19 + diffuse_ri [H-He: 19]                           DTQ56
+!  heavy-aug-cc-pCVXZ-RI        81      =  27 [H-He: 19]                =  19 + core_ri + diffuse_ri [H-He: 19]                 -----
+!  heavy-aug-cc-pCV(X+d)Z-RI    82      =  81                           =  19 + core_ri + diffuse_ri [H-He: 19]                 -----
+!  heavy-aug-cc-pwCVXZ-RI       83      =  29 [H-He: 19]                =  19 + w-core_ri + diffuse_ri [H-He: 19]               DTQ5
+!  heavy-aug-cc-pwCV(X+d)Z-RI   84      =  83                           =  19 + w-core_ri + diffuse_ri [H-He: 19]               DTQ5
 
 !  jun-cc-pVXZ-RI              151      =  19 + diffuse_jun_ri          =  19 + diffuse_jun_ri                                  DTQ56
 !  jun-cc-pV(X+d)Z-RI          152      = 151                           =  19 + diffuse_jun_ri                                  DTQ56
@@ -430,34 +429,34 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  feb-cc-pwCVXZ-RI            179      =  23 + diffuse_feb_ri          =  19 + w-core_ri + diffuse_feb_ri                      -----
 !  feb-cc-pwCV(X+d)Z-RI        180      = 179                           =  19 + w-core_ri + diffuse_feb_ri                      -----
 
-!  d-aug-cc-pVXZ-RI		31	=  25 + d-diffuse_ri		=  19 + diffuse_ri + d-diffuse_ri			-----
-!  d-aug-cc-pV(X+d)Z-RI		32	=  31				=  19 + diffuse_ri + d-diffuse_ri			-----
-!  d-aug-cc-pCVXZ-RI		33	=  27 + d-diffuse_ri		=  19 + core_ri + diffuse_ri + d-diffuse_ri		-----
-!  d-aug-cc-pCV(X+d)Z-RI	34	=  33				=  19 + core_ri + diffuse_ri + d-diffuse_ri		-----
-!  d-aug-cc-pwCVXZ-RI		35	=  29 + d-diffuse_ri		=  19 + w-core_ri + diffuse_ri + d-diffuse_ri		-----
-!  d-aug-cc-pwCV(X+d)Z-RI	36	=  35				=  19 + w-core_ri + diffuse_ri + d-diffuse_ri		-----
+!  d-aug-cc-pVXZ-RI             31      =  25 + d-diffuse_ri            =  19 + diffuse_ri + d-diffuse_ri                       -----
+!  d-aug-cc-pV(X+d)Z-RI         32      =  31                           =  19 + diffuse_ri + d-diffuse_ri                       -----
+!  d-aug-cc-pCVXZ-RI            33      =  27 + d-diffuse_ri            =  19 + core_ri + diffuse_ri + d-diffuse_ri             -----
+!  d-aug-cc-pCV(X+d)Z-RI        34      =  33                           =  19 + core_ri + diffuse_ri + d-diffuse_ri             -----
+!  d-aug-cc-pwCVXZ-RI           35      =  29 + d-diffuse_ri            =  19 + w-core_ri + diffuse_ri + d-diffuse_ri           -----
+!  d-aug-cc-pwCV(X+d)Z-RI       36      =  35                           =  19 + w-core_ri + diffuse_ri + d-diffuse_ri           -----
 
 
-!  cc-pVXZ-JKFIT		37	=  37				=  37							DTQ5
-!  cc-pV(X+d)Z-JKFIT		38	=  37				=  37							DTQ5
-!  cc-pCVXZ-JKFIT		39	=  37 + core_jk			=  37 + core_jk						-----
-!  cc-pCV(X+d)Z-JKFIT		40	=  39				=  37 + core_jk						-----
-!  cc-pwCVXZ-JKFIT		41	=  37 + w-core_jk		=  37 + w-core_jk					-----
-!  cc-pwCV(X+d)Z-JKFIT		42	=  41				=  37 + w-core_jk					-----
+!  cc-pVXZ-JKFIT                37      =  37                           =  37                                                   DTQ5
+!  cc-pV(X+d)Z-JKFIT            38      =  37                           =  37                                                   DTQ5
+!  cc-pCVXZ-JKFIT               39      =  37 + core_jk                 =  37 + core_jk                                         -----
+!  cc-pCV(X+d)Z-JKFIT           40      =  39                           =  37 + core_jk                                         -----
+!  cc-pwCVXZ-JKFIT              41      =  37 + w-core_jk               =  37 + w-core_jk                                       -----
+!  cc-pwCV(X+d)Z-JKFIT          42      =  41                           =  37 + w-core_jk                                       -----
 
-!  aug-cc-pVXZ-JKFIT		43	=  37 + diffuse_jk		=  37 + diffuse_jk					DTQ5
-!  aug-cc-pV(X+d)Z-JKFIT	44	=  43				=  37 + diffuse_jk					DTQ5
-!  aug-cc-pCVXZ-JKFIT		45	=  39 + diffuse_jk		=  37 + core_jk + diffuse_jk				-----
-!  aug-cc-pCV(X+d)Z-JKFIT	46	=  45				=  37 + core_jk + diffuse_jk				-----
-!  aug-cc-pwCVXZ-JKFIT		47	=  41 + diffuse_jk		=  37 + w-core_jk + diffuse_jk				-----
-!  aug-cc-pwCV(X+d)Z-JKFIT	48	=  47				=  37 + w-core_jk + diffuse_jk				-----
+!  aug-cc-pVXZ-JKFIT            43      =  37 + diffuse_jk              =  37 + diffuse_jk                                      DTQ5
+!  aug-cc-pV(X+d)Z-JKFIT        44      =  43                           =  37 + diffuse_jk                                      DTQ5
+!  aug-cc-pCVXZ-JKFIT           45      =  39 + diffuse_jk              =  37 + core_jk + diffuse_jk                            -----
+!  aug-cc-pCV(X+d)Z-JKFIT       46      =  45                           =  37 + core_jk + diffuse_jk                            -----
+!  aug-cc-pwCVXZ-JKFIT          47      =  41 + diffuse_jk              =  37 + w-core_jk + diffuse_jk                          -----
+!  aug-cc-pwCV(X+d)Z-JKFIT      48      =  47                           =  37 + w-core_jk + diffuse_jk                          -----
 
-!  heavy-aug-cc-pVXZ-JKFIT	85	=  43 [H-He: 37]		=  37 + diffuse_jk [H-He: 37]				DTQ5
-!  heavy-aug-cc-pV(X+d)Z-JKFIT	86	=  85				=  37 + diffuse_jk [H-He: 37]				DTQ5
-!  heavy-aug-cc-pCVXZ-JKFIT	87	=  45 [H-He: 37]		=  37 + core_jk + diffuse_jk [H-He: 37]			-----
-!  heavy-aug-cc-pCV(X+d)Z-JKFIT	88	=  87				=  37 + core_jk + diffuse_jk [H-He: 37]			-----
-!  heavy-aug-cc-pwCVXZ-JKFIT	89	=  47 [H-He: 37]		=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
-!  heavy-aug-cc-pwCV(X+d)Z-JKFIT90	=  89				=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
+!  heavy-aug-cc-pVXZ-JKFIT      85      =  43 [H-He: 37]                =  37 + diffuse_jk [H-He: 37]                           DTQ5
+!  heavy-aug-cc-pV(X+d)Z-JKFIT  86      =  85                           =  37 + diffuse_jk [H-He: 37]                           DTQ5
+!  heavy-aug-cc-pCVXZ-JKFIT     87      =  45 [H-He: 37]                =  37 + core_jk + diffuse_jk [H-He: 37]                 -----
+!  heavy-aug-cc-pCV(X+d)Z-JKFIT 88      =  87                           =  37 + core_jk + diffuse_jk [H-He: 37]                 -----
+!  heavy-aug-cc-pwCVXZ-JKFIT    89      =  47 [H-He: 37]                =  37 + w-core_jk + diffuse_jk [H-He: 37]               -----
+!  heavy-aug-cc-pwCV(X+d)Z-JKFIT90      =  89                           =  37 + w-core_jk + diffuse_jk [H-He: 37]               -----
 
 !  jun-cc-pVXZ-JKFIT           181      =  37 + diffuse_jun_jk          =  37 + diffuse_jun_jk                                  DTQ5
 !  jun-cc-pV(X+d)Z-JKFIT       182      = 181                           =  37 + diffuse_jun_jk                                  DTQ5
@@ -494,41 +493,41 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  feb-cc-pwCVXZ-JKFIT         209      =  41 + diffuse_feb_jk          =  37 + w-core_jk + diffuse_feb_jk                      -----
 !  feb-cc-pwCV(X+d)Z-JKFIT     210      = 209                           =  37 + w-core_jk + diffuse_feb_jk                      -----
 
-!  d-aug-cc-pVXZ-JKFIT		49	=  43 + d-diffuse_jk		=  37 + diffuse_jk + d-diffuse_jk			-----
-!  d-aug-cc-pV(X+d)Z-JKFIT	50	=  49				=  37 + diffuse_jk + d-diffuse_jk			-----
-!  d-aug-cc-pCVXZ-JKFIT		51	=  45 + d-diffuse_jk		=  37 + core_jk + diffuse_jk + d-diffuse_jk		-----
-!  d-aug-cc-pCV(X+d)Z-JKFIT	52	=  51				=  37 + core_jk + diffuse_jk + d-diffuse_jk		-----
-!  d-aug-cc-pwCVXZ-JKFIT	53	=  47 + d-diffuse_jk		=  37 + w-core_jk + diffuse_jk + d-diffuse_jk		-----
-!  d-aug-cc-pwCV(X+d)Z-JKFIT	54	=  53				=  37 + w-core_jk + diffuse_jk + d-diffuse_jk		-----
+!  d-aug-cc-pVXZ-JKFIT          49      =  43 + d-diffuse_jk            =  37 + diffuse_jk + d-diffuse_jk                       -----
+!  d-aug-cc-pV(X+d)Z-JKFIT      50      =  49                           =  37 + diffuse_jk + d-diffuse_jk                       -----
+!  d-aug-cc-pCVXZ-JKFIT         51      =  45 + d-diffuse_jk            =  37 + core_jk + diffuse_jk + d-diffuse_jk             -----
+!  d-aug-cc-pCV(X+d)Z-JKFIT     52      =  51                           =  37 + core_jk + diffuse_jk + d-diffuse_jk             -----
+!  d-aug-cc-pwCVXZ-JKFIT        53      =  47 + d-diffuse_jk            =  37 + w-core_jk + diffuse_jk + d-diffuse_jk           -----
+!  d-aug-cc-pwCV(X+d)Z-JKFIT    54      =  53                           =  37 + w-core_jk + diffuse_jk + d-diffuse_jk           -----
 
 
-!  cc-pVXZ-DUAL			55	=   1 - selected									 TQ
-!  cc-pV(X+d)Z-DUAL		56	= 
-!  cc-pCVXZ-DUAL		57	= 
-!  cc-pCV(X+d)Z-DUAL		58	= 
-!  cc-pwCVXZ-DUAL		59	= 
-!  cc-pwCV(X+d)Z-DUAL		60	= 
+!  cc-pVXZ-DUAL                 55      =   1 - selected                                                                         TQ
+!  cc-pV(X+d)Z-DUAL             56      = 
+!  cc-pCVXZ-DUAL                57      = 
+!  cc-pCV(X+d)Z-DUAL            58      = 
+!  cc-pwCVXZ-DUAL               59      = 
+!  cc-pwCV(X+d)Z-DUAL           60      = 
 
-!  aug-cc-pVXZ-DUAL		61	=   7 - selected									DTQ
-!  aug-cc-pV(X+d)Z-DUAL		62	= 
-!  aug-cc-pCVXZ-DUAL		63	= 
-!  aug-cc-pCV(X+d)Z-DUAL	64	= 
-!  aug-cc-pwCVXZ-DUAL		65	= 
-!  aug-cc-pwCV(X+d)Z-DUAL	66	= 
+!  aug-cc-pVXZ-DUAL             61      =   7 - selected                                                                        DTQ
+!  aug-cc-pV(X+d)Z-DUAL         62      = 
+!  aug-cc-pCVXZ-DUAL            63      = 
+!  aug-cc-pCV(X+d)Z-DUAL        64      = 
+!  aug-cc-pwCVXZ-DUAL           65      = 
+!  aug-cc-pwCV(X+d)Z-DUAL       66      = 
 
-!  heavy-aug-cc-pVXZ-DUAL	91	=  61 [H-He: 55]									 TQ
-!  heavy-aug-cc-pV(X+d)Z-DUAL	92	= 
-!  heavy-aug-cc-pCVXZ-DUAL	93	= 
-!  heavy-aug-cc-pCV(X+d)Z-DUAL	94	= 
-!  heavy-aug-cc-pwCVXZ-DUAL	95	= 
-!  heavy-aug-cc-pwCV(X+d)Z-DUAL	96	= 
+!  heavy-aug-cc-pVXZ-DUAL       91      =  61 [H-He: 55]                                                                         TQ
+!  heavy-aug-cc-pV(X+d)Z-DUAL   92      = 
+!  heavy-aug-cc-pCVXZ-DUAL      93      = 
+!  heavy-aug-cc-pCV(X+d)Z-DUAL  94      = 
+!  heavy-aug-cc-pwCVXZ-DUAL     95      = 
+!  heavy-aug-cc-pwCV(X+d)Z-DUAL 96      = 
 
-!  d-aug-cc-pVXZ-DUAL		67	= 
-!  d-aug-cc-pV(X+d)Z-DUAL	68	= 
-!  d-aug-cc-pCVXZ-DUAL		69	= 
-!  d-aug-cc-pCV(X+d)Z-DUAL	70	= 
-!  d-aug-cc-pwCVXZ-DUAL		71	= 
-!  d-aug-cc-pwCV(X+d)Z-DUAL	72	= 
+!  d-aug-cc-pVXZ-DUAL           67      = 
+!  d-aug-cc-pV(X+d)Z-DUAL       68      = 
+!  d-aug-cc-pCVXZ-DUAL          69      = 
+!  d-aug-cc-pCV(X+d)Z-DUAL      70      = 
+!  d-aug-cc-pwCVXZ-DUAL         71      = 
+!  d-aug-cc-pwCV(X+d)Z-DUAL     72      = 
 
 
 !  cc-pVXZ-DK                   97      =  97                           =  97                                                   DTQ5
