@@ -136,15 +136,15 @@ for occ in high_occs:
     energies.append(En)
 
 # Print the results out
-print '\n    ==> Fractional Occupation Traverse Results <==\n\n'
+print_out('\n    ==> Fractional Occupation Traverse Results <==\n\n')
 
-print '\tCation  Energy = %24.16E\n' % Em1
-print '\tNeutral Energy = %24.16E\n' % E0
-print '\tAnion   Energy = %24.16E\n\n' % Ep1
+print_out('\tCation  Energy = %24.16E\n' % Em1)
+print_out('\tNeutral Energy = %24.16E\n' % E0)
+print_out('\tAnion   Energy = %24.16E\n\n' % Ep1)
 
-print '\t%-8s %-24s\n' %('Nelec', 'Energy') 
+print_out('\t%-8s %-24s\n' %('Nelec', 'Energy'))
 for k in range(len(occs)):
-    print '\t%8.3E %24.16E\n' % (occs[k], energies[k])
+    print_out('\t%8.3E %24.16E\n' % (occs[k], energies[k]))
 
 # Test the results 
 for k in range(len(occs)):
