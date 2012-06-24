@@ -288,6 +288,7 @@ def process_basis_block(matchobj):
     # Now look for regular basis set definitions
     basisstring = ""
     for line in leftover_lines:
+        print(line)
         # Ignore blank/empty lines
         if (not line or line.isspace()):
             continue
@@ -626,8 +627,8 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
-    print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
-    temp = re.sub(print_string, process_print_command, temp)
+    #print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
+    #temp = re.sub(print_string, process_print_command, temp)
 
     # Process "memory ... "
     memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
