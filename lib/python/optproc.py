@@ -60,17 +60,19 @@ class OptionState(object):
 
 
 class OptionsState(object):
-    """Class to contain multiple :py:func:`~optproc.OptionsState` objects. ::
+    """Class to contain multiple :py:func:`~optproc.OptionsState` objects.
+    Used in python driver functions to collect several options before altering
+    them, then restoring before function return. ::
 
-           >>> optstash = OptionsState(
-               ['SCF', 'DFT_FUNCTIONAL'],
-               ['DF_BASIS_SCF'],
-               ['SCF', 'SCF_TYPE'],
-               ['SCF', 'REFERENCE'])
+        >>> optstash = OptionsState(
+                ['SCF', 'DFT_FUNCTIONAL'],
+                ['DF_BASIS_SCF'],
+                ['SCF', 'SCF_TYPE'],
+                ['SCF', 'REFERENCE'])
 
-           >>> print(optstash)
+        >>> print(optstash)
 
-           >>> optstash.restore()
+        >>> optstash.restore()
 
     """
     def __init__(self, *largs):

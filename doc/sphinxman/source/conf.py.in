@@ -18,7 +18,7 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/python/'))
 sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/databases/'))
-sys.path.insert(0, os.path.abspath('@top_srcdir@/tests/'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/plugins/'))
 sys.path.insert(0, os.path.abspath('@srcdir@'))
 
 # Import Sphinx themes
@@ -105,7 +105,8 @@ exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst',
                     'abbr_accents.rst',
                     'autodoc_abbr_options_c.rst',
-                    'autodoc_abbr_options_plugins.rst']
+                    'autodoc_abbr_options_plugins.rst',
+                    'contents.rst']
 
 
 # The reST default role (used for this markup: `text`) to use for all documents.
@@ -315,7 +316,7 @@ rst_prolog = """
 extlinks = {'source':    ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
             'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
             'srcbasis':  ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', ''),
-            'srcplugin': ('http://sirius.chem.vt.edu/trac/browser/tests/%s', ''),
+            'srcplugin': ('http://sirius.chem.vt.edu/trac/browser/plugins/%s', ''),
             'srcdb':     ('http://sirius.chem.vt.edu/trac/browser/lib/databases/%s.py', '') }
 
 # Uncomment these lines for named releases
