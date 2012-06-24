@@ -5,14 +5,14 @@ H 1 R
 R = .9
 }
 
-plugin_load("./plugin_aointegrals.so")
+plugin_load("./aointegrals.so")
 
 set globals {
   basis sto-3g
 }
 
-set plugin_aointegrals {
+set aointegrals {
   do_tei True
 }
 
-plugin("plugin_aointegrals.so")
+plugin("aointegrals.so")

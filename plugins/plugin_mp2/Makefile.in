@@ -38,7 +38,7 @@ $(PSITARGET): $(BINOBJ)
 
 # Erase all compiled intermediate files
 clean:
-	rm -f $(BINOBJ) $(PSITARGET) *.d
+	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc
 
 # Dependency handling
 %.d: %.cc
