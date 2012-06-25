@@ -30,6 +30,6 @@ e_trip_uhf  = energy('scf')
 
 vertical_uhf  = psi_hartree2ev * (e_trip_uhf  - e_sing_rhf)
 vertical_rohf = psi_hartree2ev * (e_trip_rohf - e_sing_rhf)
-print "\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf
-print "\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf
+print_out("\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf)
+print_out("\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf)
 
