@@ -13,7 +13,6 @@ molecule zinc {
 }
 
 set basis 6-31g*
-set df_basis_scf cc-pvdz-jkfit
 
 
 set scf_type pk

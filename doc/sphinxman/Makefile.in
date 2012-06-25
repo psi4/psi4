@@ -156,6 +156,7 @@ $(SOURCEDIR)/autodoc_dft_meta.rst \
 $(SOURCEDIR)/autodoc_dft_lrc.rst \
 $(SOURCEDIR)/autodoc_dft_hybrid.rst \
 $(SOURCEDIR)/autodoc_dft_dhybrid.rst \
+$(SOURCEDIR)/autodoc_dft_scsdhybrid.rst \
 $(SOURCEDIR)/autodoc_dft_disp.rst
 
 $(autotarget6): %: $(autodepend6)
