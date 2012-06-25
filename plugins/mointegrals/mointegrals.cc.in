@@ -16,7 +16,7 @@ namespace psi{ namespace mointegrals{
 extern "C" int
 read_options(std::string name, Options &options)
 {
-    if (name == "PLUGIN_MOINTEGRALS"|| options.read_globals()) {
+    if (name == "MOINTEGRALS"|| options.read_globals()) {
         /*- The amount of information printed
             to the output file -*/
         options.add_int("PRINT", 1);
@@ -27,7 +27,7 @@ read_options(std::string name, Options &options)
 
 
 extern "C" PsiReturnType
-plugin_mointegrals(Options &options)
+mointegrals(Options &options)
 {
     /*
      * This plugin shows a simple way of obtaining MO basis integrals, directly from a DPD buffer.  It is also
@@ -46,7 +46,7 @@ plugin_mointegrals(Options &options)
     int nirrep  = wfn->nirrep();
 
     // For now, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
-    // LibTrans object, check out the plugin_mp2 example in the test suite.
+    // LibTrans object, check out the plugin_mp2 example.
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted);

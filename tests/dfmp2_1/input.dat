@@ -28,7 +28,7 @@ set globals {
    basis cc-pvdz
    df_basis_scf cc-pvdz-jkfit
    df_basis_mp2 cc-pvdz-ri
-   # not necessary to specify df_basis* for Dunning basis sets
+   # not necessary to specify df_basis* for most basis sets
    scf_type df
    guess sad
    d_convergence 11

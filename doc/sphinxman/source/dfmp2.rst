@@ -165,7 +165,7 @@ documented in the Appendix :ref:`apdx:dfmp2`). Some basic recommendations are in
 
 * DFMP2 should be run with the :math:`ov`-type RI or MP2FIT auxiliary
   basis sets, *not* the -JKFIT basis sets. The automatic basis selector
-  should work fine for all of the Dunning bases (provided the auxiliary
+  should work fine for all of the Dunning and Pople bases (provided the auxiliary
   basis exists for the atom in question). If it does not, use the
   |dfmp2__df_basis_mp2| keyword to manually specify the basis.
 
