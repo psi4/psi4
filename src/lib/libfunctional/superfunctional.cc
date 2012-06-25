@@ -94,7 +94,7 @@ void SuperFunctional::print(FILE* out, int level) const
     if (c_omega_) {
         fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
     }
-    if (c_alpha_) {
+    if (c_alpha_ != 1.0) {
         fprintf(out, "    %6.4f %5s \n", c_alpha_, "DF-MP2");
     }
     if (c_ss_alpha_) {
