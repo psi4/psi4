@@ -105,8 +105,7 @@ exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst',
                     'abbr_accents.rst',
                     'autodoc_abbr_options_c.rst',
-                    'autodoc_abbr_options_plugins.rst',
-                    'contents.rst']
+                    'autodoc_abbr_options_plugins.rst']
 
 
 # The reST default role (used for this markup: `text`) to use for all documents.

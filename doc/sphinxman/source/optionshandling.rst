@@ -105,7 +105,7 @@ value itself.  A clarification of definition:
 The above items notwithstanding, psi4 code should be written so that
 *has_changed* DOES effectively mean, "Has option been changed by the
 user?". The way to do this is to isolate and nullify any changes to
-options made by the code, the difference between (a) and (c). C-side,
+options made by the code, the difference between [a] and [c]. C-side,
 there is no concern since options are read but essentially never
 written-to within the modules.
 
@@ -130,7 +130,7 @@ C++ modules, usually through manipulation of options.
 .. comment   the user. Analogously, PUREAM is handled in libmints but it is never
 .. comment   reset.
 
-In order to preserve effective definition (a), the strategy for each
+In order to preserve effective definition [a], the strategy for each
 python driver function is to query for the value of any option the
 function may want to change and for the current has_changed status
 (presumably reflecting whether the user has changed the value, as long as
@@ -143,8 +143,8 @@ reflect only whether the user has changed the value).
 
 
 
-options["AO_BASIS"].has_changed()
-will return false if the default value is being used, and true if the user specified this keyword in the input.
+.. comment options["AO_BASIS"].has_changed()
+.. comment will return false if the default value is being used, and true if the user specified this keyword in the input.
 
 
 .. warning:: |globals__puream| is an exception in that its value and
@@ -210,7 +210,7 @@ specified module use?".
 
 There are two primary purposes for interacting with options in the python driver.
 
-- **Preserving User Options** (Enforcing definition (a) of has_changed)
+- **Preserving User Options** (Enforcing definition [a] of has_changed)
 
   The first, less-interesting, use of retrieving user option values has
   been to preserve them so that they may be restored at the end after the
@@ -256,16 +256,21 @@ There are two primary purposes for interacting with options in the python driver
 
     optstash = OptionsState(
         ['SCF', 'SCF_TYPE'],
-        ['MP2', 'WFN'])
+        ['MP2', 'WFN'],
+        ['DF_BASIS_SCF'])
 
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
+    # puream and df_basis_scf are freely changed, GLOBALLY
     # PsiMod.scf() and PsiMod.mp2() are run
 
     optstash.restore()
 
 
-  .. warning:: The OptionsState procedure is not currently compatible with BASIS-type options.
+  .. note:: Some options (BASIS, BASIS-like, and PUREAM) should always
+     be used globally (no module argument) with the OptionsState objects.
+     Similarly, within the body of the function, they should always be
+     queried and set globally.
 
 - **Setting-Up Calculations**
 
@@ -273,7 +278,8 @@ There are two primary purposes for interacting with options in the python driver
   those to query what option value an upcoming c++ module is going to use
   (determined by user and defaults) and (b) those to set options to govern
   the course of a procedure. Finding out the intended option value for a
-  molecule should employ the :py:func:`~PsiMod.get_option` command, which
+  molecule should employ the :py:func:`~PsiMod.get_option` command 
+  (and :py:func:`~PsiMod.has_option_changed` for has_changed), which
   (newly) requires a module for scope. *(Previously, this command used the
   "active module", which isn't well-defined in the context of the python
   driver, and consequently, the command gave variable results, depending
@@ -291,8 +297,6 @@ There are two primary purposes for interacting with options in the python driver
   user option will take precedence against the programmer's intent.
   *(Anyone who has heard advice to "query local, set global" should forget
   that and follow the new scheme outlined here.)*
-
-  .. warning:: Stick with setting BASIS-type options in global scope for now.
 
 
 PsiMod Options Commands
