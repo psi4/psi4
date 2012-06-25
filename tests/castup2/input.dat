@@ -13,7 +13,6 @@ molecule zinc {
 }
 
 set basis 6-31g*
-set df_basis_scf cc-pvdz-jkfit
 
 print_stdout('                                     local    global   used')  #TEST
 print_stdout('                    prelims          %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST

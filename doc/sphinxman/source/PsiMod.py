@@ -98,6 +98,12 @@ class SuperFunctional():
     def set_c_alpha(self, ffloat):
         pass
 
+    def set_c_ss_alpha(self, ffloat):
+        pass
+
+    def set_c_os_alpha(self, ffloat):
+        pass
+
     def set_c_omega(self, ffloat):
         pass
 

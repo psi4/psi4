@@ -81,11 +81,6 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
-            'b2plyp'        : run_b2plyp,
-            'pbe0-2'        : run_pbe0_2,
-            'dsd-blyp'      : run_dsd_blyp,
-            'dsd-pbep86'    : run_dsd_pbep86,
-            'dsd-test'      : run_dsd_test,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {

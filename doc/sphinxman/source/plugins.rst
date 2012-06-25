@@ -64,20 +64,24 @@ one of the following commands that meets your needs::
    >>> psi4 --new-plugin myplugin +wavefunction
 
 Several stable sample plugin directories are available to consult in the
-:source:`tests` directory. Other plugin directories can be used as models
+:source:`plugins` directory. Other plugin directories can be used as models
 but are in active development. For documentation on plugin modules, see
 :ref:`Available Plugins <sec:availablePlugins>`.
 
-* :source:`tests/plugin_aointegrals/aointegrals.cc.in` 
+* :source:`plugins/aointegrals/aointegrals.cc.in` 
   An example that uses the LibMints library to generate and print AO basis (no symmetry) integrals.
-* :source:`tests/plugin_backtrans/backtrans.cc.in` 
-  A test of the one- and two-particle density matrix backtransformation code.
-* :source:`tests/plugin_ccsort/plugin_ccsort.cc.in`
-* :source:`tests/plugin_mointegrals/mointegrals.cc.in` 
+
+.. comment * :source:`tests/plugin_backtrans/backtrans.cc.in` 
+.. comment   A test of the one- and two-particle density matrix backtransformation code.
+.. comment * :source:`tests/plugin_ccsort/plugin_ccsort.cc.in`
+
+* :source:`plugins/mointegrals/mointegrals.cc.in` 
   An example that uses the LibTrans library to generate and print MO basis integrals.
-* :source:`tests/plugin_mp2/plugin_mp2.cc.in` 
+
+* :source:`plugins/plugin_mp2/plugin_mp2.cc.in` 
   A plugin that uses LibTrans to generate open- and closed-shell MP2 energies.
-* :source:`tests/plugin_sointegrals/sointegrals.cc.in` 
+
+* :source:`plugins/sointegrals/sointegrals.cc.in` 
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
 
 Files in a Plugin Directory

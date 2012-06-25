@@ -47,7 +47,7 @@ By default, the energy should be converged to about :math:`1.0 \times 10^{-8}`, 
 is only expected for about the first 8 digits after the decimal.  If the
 computation does not complete, there is probably a problem with the
 compilation or installation of the program (see the installation
-instructions in Sec. :ref:`sec:installation`).
+instructions in Sec. :ref:`sec:installFile`).
 
 This very simple input is sufficient to run the requested information.
 Notice that we didn't tell the program some otherwise useful information

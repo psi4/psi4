@@ -71,12 +71,6 @@ void DFMP2::common_init()
     sss_ = options_.get_double("MP2_SS_SCALE");
     oss_ = options_.get_double("MP2_OS_SCALE");
 
-    if (options_.get_str("DF_BASIS_MP2") == "") {
-        molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
-        fprintf(outfile, "\tNo auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
-        fflush(outfile);
-    }
-
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     ribasis_ = BasisSet::construct(parser, molecule_, "DF_BASIS_MP2");
 }
@@ -717,6 +711,11 @@ void RDFMP2::print_header()
     int avir = Cavir_->colspi()[0];
     int occ = focc + aocc;
     int vir = fvir + avir;
+
+    if (print_ >= 1) {
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        ribasis_->print_by_level(outfile, print_);
+    }
 
     fprintf(outfile, "\t --------------------------------------------------------\n");
     fprintf(outfile, "\t                 NBF = %5d, NAUX = %5d\n", basisset_->nbf(), ribasis_->nbf());
