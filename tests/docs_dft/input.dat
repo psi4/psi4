@@ -18,6 +18,8 @@ for super in superfunctional_list():
             'c_omega'                : super.c_omega(),
             'x_alpha'                : super.x_alpha(),
             'c_alpha'                : super.c_alpha(),
+            'c_ss_alpha'             : super.c_ss_alpha(),
+            'c_os_alpha'             : super.c_os_alpha(),
             'dispersion'             : super.dispersion(),
             'dispersion_name'        : super.dispersion().name(),
             'dispersion_description' : super.dispersion().description().strip(),
@@ -28,6 +30,7 @@ for super in superfunctional_list():
             'is_c_lrc'               : super.is_c_lrc(),
             'is_x_hybrid'            : super.is_x_hybrid(),
             'is_c_hybrid'            : super.is_c_hybrid(),
+            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
                            }
 
     else:
@@ -42,6 +45,8 @@ for super in superfunctional_list():
             'c_omega'                : super.c_omega(),
             'x_alpha'                : super.x_alpha(),
             'c_alpha'                : super.c_alpha(),
+            'c_ss_alpha'             : super.c_ss_alpha(),
+            'c_os_alpha'             : super.c_os_alpha(),
             'dispersion'             : super.dispersion(),
             'is_gga'                 : super.is_gga(),
             'is_meta'                : super.is_meta(),
@@ -49,6 +54,7 @@ for super in superfunctional_list():
             'is_c_lrc'               : super.is_c_lrc(),
             'is_x_hybrid'            : super.is_x_hybrid(),
             'is_c_hybrid'            : super.is_c_hybrid(),
+            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
                            }
 
     #print funcdict[sfname]
@@ -69,32 +75,45 @@ def tf(rungbool, rungparam=0.0):
             return ' %8.6f ' % (rungparam)
 
 
+def tf2(rungbool, rungparam=0.0, rungparam2=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if rungbool is False:
+        return '   ---              '
+    else:
+        if rungparam == 0.0 and rungparam2 == 0.0:
+            return '    Y               '
+        else:
+            return ' %8.6f / %8.6f' % (rungparam, rungparam2)
+
+
 def header(filep, label, caption):
     """Function to write reST table header."""
 
     #filep.write('\n.. _`table:dft_%s`:\n' % (label))
     filep.write('\n.. table:: %s\n\n' % (caption))
-    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
-        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-',
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-',
          20 * '-', 60 * '-'))
-    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' % 
-        ('Name', 'Description', 'GGA?', 'Meta?', 'X_LRC?', 'X_Hybrid?', 'C_LRC?', 'C_Hybrid?',
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %20s | %60s |\n' % 
+        ('Name', 'Description', 'GGA?', 'Meta?', 'X_LRC?', 'X_Hybrid?', 'C_LRC?', 'C_Hybrid?', 'C_SCS? SS/OS',
          'Dispersion?', 'Dispersion Description'))
-    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%60s=+\n' % 
-        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=',
+    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%20s=+=%60s=+\n' % 
+        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 20 * '=',
          20 * '=', 60 * '='))
 
 
 def body(filep, funcdict, fctl):
     """Function to write line of reST table."""
 
-    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s |' % 
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s |' % 
         (funcdict[fctl]['name'], funcdict[fctl]['description'],
         tf(funcdict[fctl]['is_gga']), tf(funcdict[fctl]['is_meta']),
         tf(funcdict[fctl]['is_x_lrc'], funcdict[fctl]['x_omega']),
         tf(funcdict[fctl]['is_x_hybrid'], funcdict[fctl]['x_alpha']),
         tf(funcdict[fctl]['is_c_lrc'], funcdict[fctl]['c_omega']),
-        tf(funcdict[fctl]['is_c_hybrid'], funcdict[fctl]['c_alpha'])))
+        tf(funcdict[fctl]['is_c_hybrid'], funcdict[fctl]['c_alpha']),
+        tf2(funcdict[fctl]['is_c_scs_hybrid'], funcdict[fctl]['c_ss_alpha'], funcdict[fctl]['c_os_alpha'])))
 
     if funcdict[fctl]['dispersion']:
         filep.write(' %20s | %60s |\n' %
@@ -102,8 +121,8 @@ def body(filep, funcdict, fctl):
     else:
         filep.write(' %20s | %60s |\n' %
             ('   ---    ', '   ---    '))
-    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
-        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-',
          20 * '-', 60 * '-'))
 
 
@@ -119,6 +138,8 @@ fhybrid= open('autodoc_dft_hybrid.rst', 'w')
 header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
 fdhybrid= open('autodoc_dft_dhybrid.rst', 'w')
 header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
+fscsdhybrid= open('autodoc_dft_scsdhybrid.rst', 'w')
+header(fscsdhybrid, 'scsdhybrid', 'Spin-Component-Scaled Double-Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
 header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
@@ -147,6 +168,9 @@ for fctl in sorted(funcdict.iterkeys()):
     if funcdict[fctl]['is_c_hybrid']:
         body(fdhybrid, funcdict, fctl)
 
+    if funcdict[fctl]['is_c_scs_hybrid']:
+        body(fscsdhybrid, funcdict, fctl)
+
     if funcdict[fctl]['dispersion']:
         body(fdisp, funcdict, fctl)
 
@@ -172,6 +196,8 @@ fhybrid.write('\n')
 fhybrid.close()
 fdhybrid.write('\n')
 fdhybrid.close()
+fscsdhybrid.write('\n')
+fscsdhybrid.close()
 fdisp.write('\n')
 fdisp.close()
 
