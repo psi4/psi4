@@ -748,7 +748,10 @@ def run_dft(name, **kwargs):
     """
     optstash = OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'])
+        ['SCF', 'REFERENCE'],
+        ['DF_BASIS_MP2'],
+        ['DFMP2', 'MP2_OS_SCALE'],
+        ['DFMP2', 'MP2_SS_SCALE'])
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
@@ -764,8 +767,37 @@ def run_dft(name, **kwargs):
 
     returnvalue = run_scf(name, **kwargs) 
 
+    for ssuper in superfunctional_list():
+        if ssuper.name().lower() == name.lower():
+            dfun = ssuper
+
+    if dfun.is_c_hybrid():
+
+        # if the df_basis_mp2 basis is not set, pick a sensible one.
+        if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+            ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+            if ribasis:
+                PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+                PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            else:
+                raise ValidationError('Keyword DF_BASIS_MP2 is required.')
+ 
+        if dfun.is_c_scs_hybrid():
+            PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
+            PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
+            PsiMod.dfmp2()
+            returnvalue += dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
+
+        else:
+            PsiMod.dfmp2()
+            returnvalue += dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
+
+        PsiMod.set_variable('DFT TOTAL ENERGY', returnvalue)
+        PsiMod.set_variable('CURRENT ENERGY', returnvalue)
+
     optstash.restore()
     return returnvalue
+
 
 def run_dft_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -777,9 +809,6 @@ def run_dft_gradient(name, **kwargs):
         ['SCF', 'REFERENCE'])
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
-
-    #if superfunctionals[name.lower() + '_xc'].is_x_hybrid():
-    #    print('THIS IS DHYB')
 
     user_ref = PsiMod.get_option('SCF', 'REFERENCE')
     if (user_ref == 'RHF'):
@@ -1482,102 +1511,6 @@ def run_property(name, **kwargs):
 
     junk = 1
     return junk
-
-def run_b2plyp(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a B2PLYP double-hybrid density-functional-theory calculation.
-
-    """
-    optstash = OptionsState(
-        ['DF_BASIS_MP2'])
-
-    # use with c_alpha = 0.0 in functional.py
-    #     with Rob's current normalization in superfunctional.cc
-
-
-    user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('SCF', 'REFERENCE')
-
-    PsiMod.set_global_option('DFT_FUNCTIONAL', 'b2plyp_xc')
-
-    if (user_ref == 'RHF'):
-        PsiMod.set_global_option('REFERENCE', 'RKS')
-    elif (user_ref == 'UHF'):
-        PsiMod.set_global_option('REFERENCE', 'UKS')
-    elif (user_ref == 'ROHF'):
-        raise ValidationError('ROHF reference for DFT is not available.')
-    elif (user_ref == 'CUHF'):
-        raise ValidationError('CUHF reference for DFT is not available.')
-
-    e_dft    = run_scf(name, **kwargs) 
-
-    # if the df_basis_mp2 basis is not set, pick a sensible one.
-    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if ribasis:
-            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
-
-    PsiMod.dfmp2()
-    e_dhdft  = e_dft + 0.27 * PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
-
-    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    if not b_user_fctl:
-        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
-    PsiMod.set_global_option('REFERENCE', user_ref)
-    if not b_user_ref:
-        PsiMod.revoke_global_option_changed('REFERENCE')
-
-    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
-
-    optstash.restore()
-    return e_dhdft
-
-
-def run2_b2plyp(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a B2PLYP double-hybrid density-functional-theory calculation.
-
-    """
-    lowername = name.lower()
-
-    # use with c_alpha = 0.27 in functional.py
-    #     and with normalization suppressed @268 in superfunctional.cc
-
-    PsiMod.set_global_option('REFERENCE', 'RKS')
-    fun = build_superfunctional('b2plyp_xc',5000,1)
-    PsiMod.set_global_option_python('dft_custom_functional',fun)
-    e_dft        = PsiMod.scf()
-    e_dfmp2      = PsiMod.dfmp2()
-    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
-    e_dhdft      = e_dft + fun.c_alpha() * e_dfmp2_corr
-    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
-    return e_dhdft
-
-
-def run3_b2plyp(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a B2PLYP double-hybrid density-functional-theory calculation.
-
-    """
-    lowername = name.lower()
-
-    # use with c_alpha = 0.0 in functional.py
-    #     with Rob's current normalization in superfunctional.cc
-
-    PsiMod.set_global_option('REFERENCE', 'RKS')
-    fun = build_superfunctional('b2plyp_xc',5000,1)
-    PsiMod.set_global_option_python('dft_custom_functional',fun)
-    e_dft        = PsiMod.scf()
-    e_dfmp2      = PsiMod.dfmp2()
-    e_dfmp2_corr = PsiMod.get_variable("DF-MP2 CORRELATION ENERGY")
-    e_dhdft      = e_dft + 0.27 * e_dfmp2_corr
-    PsiMod.set_variable('Double Hybrid Energy', e_dhdft)
-    return e_dhdft
 
 
 def run_pbe0_2(name, **kwargs):
