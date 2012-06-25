@@ -32,9 +32,6 @@ boost::shared_ptr<JKGrad> JKGrad::build_JKGrad()
 
     if (options.get_str("SCF_TYPE") == "DF") {
 
-        if (options.get_str("DF_BASIS_SCF") == "") {
-            primary->molecule()->set_basis_all_atoms(options.get_str("BASIS") + "-JKFIT", "DF_BASIS_SCF");
-        }
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
 
         DFJKGrad* jk = new DFJKGrad(primary,auxiliary);

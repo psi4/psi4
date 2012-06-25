@@ -25,11 +25,16 @@ def run_dcft(name, **kwargs):
     a density cumulant functional theory calculation.
 
     """
-    oldref = PsiMod.get_global_option('REFERENCE')
+    optstash = OptionsState(
+        ['REFERENCE'])
+
+    # DCFT module should probably take a REFERENCE keyword with only UHF allowed value
     PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
-    return PsiMod.dcft()
-    PsiMod.set_global_option('REFERENCE', oldref)
+    returnvalue = PsiMod.dcft()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_dcft_gradient(name, **kwargs):
@@ -37,10 +42,16 @@ def run_dcft_gradient(name, **kwargs):
     DCFT gradient calculation.
 
     """
-    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
 
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
     run_dcft(name, **kwargs)
     PsiMod.deriv()
+
+    optstash.restore()
+
 
 def run_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -107,13 +118,29 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
+    optstash = OptionsState(
+        ['DF_BASIS_SCF'])
 
-    run_scf(name, **kwargs)
+    returnvalue = run_scf(name, **kwargs)
 
-    if (PsiMod.get_global_option('SCF_TYPE') == 'DF'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF'):
+
+        # if the df_basis_scf basis is not set, pick a sensible one.
+        if PsiMod.get_global_option('DF_BASIS_SCF') == '':
+            jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
+            if jkbasis:
+                PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
+                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+            else:
+                raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
         PsiMod.scfgrad()
+
     else:
         PsiMod.deriv()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_libfock(name, **kwargs):
@@ -154,23 +181,29 @@ def scf_helper(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['SCF', 'PUREAM'],
-        #['SCF', 'BASIS'],
-        #['SCF', 'DF_BASIS_SCF'],  # this keyword is addled
+        ['PUREAM'],
+        ['BASIS'],
+        ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'])
     
-    user_basis = PsiMod.get_option('SCF', 'BASIS')
-    user_scftype = PsiMod.get_option('SCF', 'SCF_TYPE')
-    user_guess = PsiMod.get_option('SCF', 'GUESS')
-    user_dfintsio = PsiMod.get_option('SCF', 'DF_INTS_IO')
-    user_dfbasisscf = PsiMod.get_option('SCF', 'DF_BASIS_SCF')
+    # if the df_basis_scf basis is not set, pick a sensible one.
+    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        if PsiMod.get_global_option('DF_BASIS_SCF') == '':
+            jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
+            if jkbasis:
+                PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
+                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+            else:
+                raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-    user_scf_dfbasisscf = PsiMod.get_option('SCF', 'DF_BASIS_SCF')
-    b_user_scf_dfbasisscf = PsiMod.has_local_option_changed('SCF', 'DF_BASIS_SCF')
-    b_user_basis = PsiMod.has_global_option_changed('BASIS')
-
+    optstash2 = OptionsState(
+        ['BASIS'],
+        ['DF_BASIS_SCF'],
+        ['SCF', 'SCF_TYPE'],
+        ['SCF', 'DF_INTS_IO'])
+    
     cast = False
     if 'cast_up' in kwargs:
         cast = kwargs.pop('cast_up')
@@ -179,7 +212,7 @@ def scf_helper(name, **kwargs):
         elif input.no.match(str(cast)):
             cast = False
         
-        if user_scftype == 'DF':
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             castdf = True
         else:
             castdf = False
@@ -205,8 +238,8 @@ def scf_helper(name, **kwargs):
     #   read effective PUREAM setting off of it
     # This if statement is only to handle generic, unnamed basis cases
     #   (like mints2) that should be departing soon
-    if PsiMod.has_option_changed('SCF', 'BASIS'):
-        PsiMod.set_global_option('BASIS', user_basis)
+    if PsiMod.has_global_option_changed('BASIS'):
+        PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
         PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
     if (cast):
@@ -231,7 +264,7 @@ def scf_helper(name, **kwargs):
         if (castdf):
             PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
             PsiMod.set_local_option('SCF', 'DF_INTS_IO', 'none')
-            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', guessbasisdf)
+            PsiMod.set_global_option('DF_BASIS_SCF', guessbasisdf)
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -245,18 +278,9 @@ def scf_helper(name, **kwargs):
         PsiMod.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
         PsiMod.IO.set_default_namespace(namespace)
 
-        # DF-BASIS-SCF keyword could be seeded here from the BasisFamily
-        #   defaults so that more calcs could run w/o fitting basis error.
-        #   However, fitting basis defaults are currently handled in-module
-        #   in several modules in addition to scf, so will wait for std soln.
-
         # Set to read and project, and reset bases to final ones
-        PsiMod.set_global_option('BASIS', user_basis)
-        PsiMod.set_local_option('SCF', 'SCF_TYPE', user_scftype)
+        optstash2.restore()
         PsiMod.set_local_option('SCF', 'GUESS', 'READ')
-        if (user_scftype == 'DF'):
-            PsiMod.set_local_option('SCF', 'DF_INTS_IO', user_dfintsio)
-            PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_dfbasisscf)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
@@ -266,19 +290,8 @@ def scf_helper(name, **kwargs):
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
 
-        PsiMod.set_local_option('SCF', 'GUESS', user_guess)
-
     else:
         e_scf = PsiMod.scf(precallback, postcallback)
-
-    # These two sets to be removed when OptionsState plays nicely w/ basis keywords
-    PsiMod.set_global_option('BASIS', user_basis)
-    if not b_user_basis:
-        PsiMod.revoke_global_option_changed('BASIS')
-
-    PsiMod.set_local_option('SCF', 'DF_BASIS_SCF', user_scf_dfbasisscf)
-    if not b_user_scf_dfbasisscf:
-        PsiMod.revoke_local_option_changed('SCF', 'DF_BASIS_SCF')
 
     optstash.restore()
     return e_scf
@@ -333,6 +346,7 @@ def run_dfmp2_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
+        ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'])
 
     if 'restart_file' in kwargs:
@@ -348,6 +362,15 @@ def run_dfmp2_gradient(name, **kwargs):
         if(PsiMod.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
+        # if the df_basis_scf basis is not set, pick a sensible one.
+        if PsiMod.get_global_option('DF_BASIS_SCF') == '':
+            jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
+            if jkbasis:
+                PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
+                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+            else:
+                raise ValidationError('Keyword DF_BASIS_SCF is required.') 
+
         run_scf('RHF', **kwargs)
 
     PsiMod.print_out('\n')
@@ -356,10 +379,10 @@ def run_dfmp2_gradient(name, **kwargs):
 
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
-        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if dfbasis:
-            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
@@ -705,34 +728,25 @@ def run_dft(name, **kwargs):
     a density-functional-theory calculation.
 
     """
-    lowername = name.lower()
+    optstash = OptionsState(
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'REFERENCE'])
 
-    user_fctl = PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')
-    b_user_fctl = PsiMod.has_option_changed('SCF', 'DFT_FUNCTIONAL')
+    PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
+
     user_ref = PsiMod.get_option('SCF', 'REFERENCE')
-    b_user_ref = PsiMod.has_option_changed('SCF', 'REFERENCE')
-
-
-    PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
-
     if (user_ref == 'RHF'):
-        PsiMod.set_global_option('REFERENCE', 'RKS')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
-        PsiMod.set_global_option('REFERENCE', 'UKS')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
         raise ValidationError('ROHF reference for DFT is not available.')
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    returnvalue = run_scf(name,**kwargs) 
+    returnvalue = run_scf(name, **kwargs) 
 
-    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    if not b_user_fctl:
-        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
-    PsiMod.set_global_option('REFERENCE', user_ref)
-    if not b_user_ref:
-        PsiMod.revoke_global_option_changed('REFERENCE')
-
+    optstash.restore()
     return returnvalue
 
 def run_dft_gradient(name, **kwargs):
@@ -740,31 +754,32 @@ def run_dft_gradient(name, **kwargs):
     a density-functional-theory gradient calculation.
 
     """
-    lowername = name.lower()
+    optstash = OptionsState(
+        ['SCF', 'DFT_FUNCTIONAL'],
+        ['SCF', 'REFERENCE'])
 
-    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
-    PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
+    #if superfunctionals[name.lower() + '_xc'].is_x_hybrid():
+    #    print('THIS IS DHYB')
 
+    user_ref = PsiMod.get_option('SCF', 'REFERENCE')
     if (user_ref == 'RHF'):
-        PsiMod.set_global_option('REFERENCE', 'RKS')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'RKS')
     elif (user_ref == 'UHF'):
-        PsiMod.set_global_option('REFERENCE', 'UKS')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
         raise ValidationError('ROHF reference for DFT is not available.')
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    if (PsiMod.get_global_option('SCF_TYPE') != 'DF'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') != 'DF'):
         raise ValidationError('SCF_TYPE must be DF for DFT gradient (for now).')
 
-    run_scf_gradient(name,**kwargs) 
+    returnvalue = run_scf_gradient(name, **kwargs) 
 
-    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
-    PsiMod.set_global_option('REFERENCE', user_ref)
-    PsiMod.revoke_global_option_changed('REFERENCE')
+    optstash.restore()
+    return returnvalue
 
 def run_detci(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -872,10 +887,10 @@ def run_dfmp2(name, **kwargs):
 
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
-        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if dfbasis:
-            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
@@ -926,10 +941,10 @@ def run_mp2c(name, **kwargs):
 
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
-        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if dfbasis:
-            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
@@ -1478,10 +1493,10 @@ def run_b2plyp(name, **kwargs):
 
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_MP2') == '':
-        dfbasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if dfbasis:
-            PsiMod.set_global_option('DF_BASIS_MP2', dfbasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (dfbasis))
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
 
