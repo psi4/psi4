@@ -2335,7 +2335,6 @@ def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1',  1.04772E0)
     X.set_parameter('B97_a2', -2.33506E0)
     X.set_parameter('B97_a3',  3.19909E0)
-    #X.set_parameter('B97_a4',  1.32794E1)
 
     C = build_functional('B_C')
     C.set_name('wB97X_C')
@@ -2345,14 +2344,12 @@ def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_os_a1', -5.85956E-1)
     C.set_parameter('B97_os_a2',  4.27080E0)
     C.set_parameter('B97_os_a3', -6.48897E0)
-    #C.set_parameter('B97_os_a4', -3.78132E0)
 
     C.set_parameter('B97_ss_gamma', 0.2)
     C.set_parameter('B97_ss_a0',  9.08460E-1)
     C.set_parameter('B97_ss_a1', -2.80936E0)
     C.set_parameter('B97_ss_a2',  6.02676E0)
     C.set_parameter('B97_ss_a3', -4.56981E0)
-    #C.set_parameter('B97_ss_a4',  1.72901E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -2398,7 +2395,6 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1',  1.57375E0)
     X.set_parameter('B97_a2', -5.26624E0)
     X.set_parameter('B97_a3',  6.74313E0)
-    #X.set_parameter('B97_a4',  1.32794E1)
 
     C = build_functional('B_C')
     C.set_name('wB97X_C')
@@ -2408,14 +2404,12 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_os_a1', -1.16626E0)
     C.set_parameter('B97_os_a2',  6.84409E0)
     C.set_parameter('B97_os_a3', -8.90640E0)
-    #C.set_parameter('B97_os_a4', -3.78132E0)
 
     C.set_parameter('B97_ss_gamma', 0.2)
     C.set_parameter('B97_ss_a0',  1.15698E0)
     C.set_parameter('B97_ss_a1', -3.31669E0)
     C.set_parameter('B97_ss_a2',  6.27265E0)
     C.set_parameter('B97_ss_a3', -4.51464E0)
-    #C.set_parameter('B97_ss_a4',  1.72901E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -2527,7 +2521,7 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
    # No spaces, keep it short and according to convention
    sup.set_name('DSD-PBEP86')
    # Tab in, trailing newlines
-   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (optimized for -D3BJ, but uses -D2)\n')
+   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (optimized for -D2)\n')
    # Tab in, trailing newlines
    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
@@ -2598,6 +2592,17 @@ def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
    # Call this last
    sup.allocate()
    return sup
+
+
+def build_b2plypd_superfunctional(name, npoints, deriv):
+
+    sup = build_b2plyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B2PLYP-D')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.55))
+
+    return sup
 
 
 def build_primitive_superfunctional(name, npoints, deriv):
@@ -2700,6 +2705,7 @@ superfunctionals = {
         'dldf'       : build_dldf_superfunctional,
         'sogga'      : build_sogga_superfunctional,
         'b2plyp'     : build_b2plyp_superfunctional,
+        'b2plyp-d'   : build_b2plypd_superfunctional,
         'wb97x-2(tqz)' : build_wb97x_2tqz_superfunctional,
         'wb97x-2(lp)'  : build_wb97x_2lp_superfunctional,
         'pbe0-2'     : build_pbe0_2_superfunctional,
