@@ -64,6 +64,7 @@ def run_omp2(name, **kwargs):
     return PsiMod.omp2()
     PsiMod.set_global_option('REFERENCE', oldref)
 
+
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.
@@ -80,32 +81,32 @@ def run_scf(name, **kwargs):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
     elif lowername == 'hf':
         if PsiMod.get_option('SCF', 'REFERENCE') == 'RKS':
-            PsiMod.set_global_option('REFERENCE', 'RHF')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'RHF')
         elif PsiMod.get_option('SCF', 'REFERENCE') == 'UKS':
-            PsiMod.set_global_option('REFERENCE', 'UHF')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'UHF')
         else:
             pass
     elif lowername == 'rhf':
-        PsiMod.set_global_option('REFERENCE', 'RHF')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'RHF')
     elif lowername == 'uhf':
-        PsiMod.set_global_option('REFERENCE', 'UHF')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'UHF')
     elif lowername == 'rohf':
-        PsiMod.set_global_option('REFERENCE', 'ROHF')
+        PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
     elif lowername == 'rscf':
         if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-            PsiMod.set_global_option('REFERENCE', 'RKS')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'RKS')
         else:
-            PsiMod.set_global_option('REFERENCE', 'RHF')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'RHF')
     elif lowername == 'uscf':
         if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
-            PsiMod.set_global_option('REFERENCE', 'UKS')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'UKS')
         else:
-            PsiMod.set_global_option('REFERENCE', 'UHF')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'UHF')
     elif lowername == 'roscf':
         if (len(PsiMod.get_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
-            PsiMod.set_global_option('REFERENCE', 'ROHF')
+            PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
 
     returnvalue = scf_helper(name, **kwargs)
 
@@ -302,7 +303,10 @@ def run_mp2(name, **kwargs):
     a MP2 calculation.
 
     """
-    PsiMod.set_global_option('WFN', 'MP2')
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['MP2', 'WFN'])
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
@@ -313,13 +317,15 @@ def run_mp2(name, **kwargs):
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'MP2')
+    PsiMod.set_local_option('CCSORT', 'WFN', 'MP2')
+    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
+
     PsiMod.transqt2()
     PsiMod.ccsort()
     returnvalue = PsiMod.mp2()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
+    optstash.restore()
     return returnvalue
 
 
@@ -328,17 +334,21 @@ def run_mp2_gradient(name, **kwargs):
     a MP2 gradient calculation.
 
     """
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['MP2', 'WFN'],
+        ['DERTYPE'])
+
+
     PsiMod.set_global_option('DERTYPE', 'FIRST')
-
     run_mp2(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'MP2')
 
+    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
     PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-    PsiMod.set_global_option('DERTYPE', 'NONE')
-    PsiMod.revoke_global_option_changed('DERTYPE')
+    optstash.restore()
+
 
 def run_dfmp2_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -397,6 +407,7 @@ def run_dfmp2_gradient(name, **kwargs):
     elif (name.upper() == 'DF-MP2'):
         return e_dfmp2
     
+
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a CCSD, CC2, and CC3 calculation.
@@ -433,8 +444,7 @@ def run_ccenergy(name, **kwargs):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
         PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
         PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
-    # Call a plain energy('ccenergy') and have full control over options,
-    # incl. wfn
+    # Call a plain energy('ccenergy') and have full control over options, incl. wfn
     elif(lowername == 'ccenergy'):
         pass
 
@@ -680,6 +690,14 @@ def run_eom_cc_gradient(name, **kwargs):
     an EOM-CCSD gradient calculation.
 
     """
+    optstash = OptionsState(
+        ['CCDENSITY', 'XI'],
+        ['CCDENSITY', 'ZETA'],
+        ['CCLAMBDA', 'ZETA'],
+        ['DERTYPE'],
+        ['CCDENSITY', 'WFN'],
+        ['CCLAMBDA', 'WFN'])
+
     PsiMod.set_global_option('DERTYPE', 'FIRST')
 
     if (name.lower() == 'eom-ccsd'):
@@ -687,21 +705,21 @@ def run_eom_cc_gradient(name, **kwargs):
         energy = run_eom_cc(name, **kwargs)
         PsiMod.set_global_option('WFN', 'EOM_CCSD')
 
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
-    PsiMod.set_global_option('ZETA', 'FALSE')
+    PsiMod.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
+    PsiMod.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
+    PsiMod.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
+    PsiMod.set_local_option('CCDENSITY', 'ZETA', 'FALSE')
+    PsiMod.set_local_option('CCDENSITY', 'XI', 'TRUE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('XI', 'TRUE')
     PsiMod.ccdensity()
-    PsiMod.set_global_option('ZETA', 'TRUE')
+    PsiMod.set_local_option('CCLAMBDA', 'ZETA', 'TRUE')
+    PsiMod.set_local_option('CCDENSITY', 'ZETA', 'TRUE')
+    PsiMod.set_local_option('CCDENSITY', 'XI', 'FALSE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('XI', 'FALSE')
     PsiMod.ccdensity()
     PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-    PsiMod.set_global_option('DERTYPE', 'NONE')
-    PsiMod.revoke_global_option_changed('DERTYPE')
+    optstash.restore()
 
 
 def run_adc(name, **kwargs):
@@ -781,48 +799,65 @@ def run_dft_gradient(name, **kwargs):
     optstash.restore()
     return returnvalue
 
+
 def run_detci(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a configuration interaction calculation, namely FCI,
     CIn, MPn, and ZAPTn.
 
     """
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['DETCI', 'WFN'],
+        ['DETCI', 'MAX_NUM_VECS'],
+        ['DETCI', 'MPN_ORDER_SAVE'],
+        ['DETCI', 'MPN'],
+        ['DETCI', 'FCI'],
+        ['DETCI', 'EX_LEVEL'])
+
     if (name.lower() == 'zapt'):
-        PsiMod.set_global_option('WFN', 'ZAPTN')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
+        PsiMod.set_local_option('DETCI', 'WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = (level + 1) / 2 + (level + 1) % 2
-        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
+        PsiMod.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
-            PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
+            PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
-            PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
+            PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'mp'):
-        PsiMod.set_global_option('WFN', 'DETCI')
-        PsiMod.set_global_option('MPN', 'TRUE')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
+        PsiMod.set_local_option('DETCI', 'MPN', 'TRUE')
 
         level = kwargs['level']
         maxnvect = (level + 1) / 2 + (level + 1) % 2
-        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
+        PsiMod.set_local_option('DETCI', 'MAX_NUM_VECS', maxnvect)
         if ((level + 1) % 2):
-            PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
+            PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
-            PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
+            PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-            PsiMod.set_global_option('WFN', 'DETCI')
-            PsiMod.set_global_option('FCI', 'TRUE')
+            PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-            PsiMod.set_global_option('WFN', 'DETCI')
-            PsiMod.set_global_option('EX_LEVEL', 2)
+            PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-            PsiMod.set_global_option('WFN', 'DETCI')
-            PsiMod.set_global_option('EX_LEVEL', 3)
+            PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-            PsiMod.set_global_option('WFN', 'DETCI')
-            PsiMod.set_global_option('EX_LEVEL', 4)
+            PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
+            PsiMod.set_local_option('DETCI', 'EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
-        PsiMod.set_global_option('WFN', 'DETCI')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
+        PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
         level = kwargs['level']
-        PsiMod.set_global_option('EX_LEVEL', level)
+        PsiMod.set_local_option('DETCI', 'EX_LEVEL', level)
     # Call a plain energy('detci') and have full control over options
     elif(name.lower() == 'detci'):
         pass
@@ -833,26 +868,12 @@ def run_detci(name, **kwargs):
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
-            mints = PsiMod.MintsHelper()
-            mints.integrals()
+            PsiMod.MintsHelper().integrals()
 
     PsiMod.transqt2()
     returnvalue = PsiMod.detci()
 
-    if (name.lower() != 'detci'):
-        PsiMod.set_global_option('WFN', 'SCF')
-        PsiMod.revoke_global_option_changed('WFN')
-        PsiMod.set_global_option('MPN', 'FALSE')
-        PsiMod.revoke_global_option_changed('MPN')
-        PsiMod.set_global_option('MAX_NUM_VECS', 12)
-        PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
-        PsiMod.set_global_option('MPN_ORDER_SAVE', 0)
-        PsiMod.revoke_global_option_changed('MPN_ORDER_SAVE')
-        PsiMod.set_global_option('FCI', 'FALSE')
-        PsiMod.revoke_global_option_changed('FCI')
-        PsiMod.set_global_option('EX_LEVEL', 2)
-        PsiMod.revoke_global_option_changed('EX_LEVEL')
-
+    optstash.restore()
     return returnvalue
 
 
@@ -1383,6 +1404,7 @@ def run_mrcc(name, **kwargs):
     PsiMod.print_out(iface_contents)
 
     return e
+
 
 def run_cepa(name, **kwargs):
     """Function encoding sequence of PSI module calls for
