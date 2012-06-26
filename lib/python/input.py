@@ -283,15 +283,14 @@ def process_basis_block(matchobj):
                 basistype = m.group(2).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
         else:
-            leftover_lines.append(line)
+            # Ignore blank lines
+            if (line and not line.isspace()):
+                leftover_lines.append(line)
 
     # Now look for regular basis set definitions
     basisstring = ""
     for line in leftover_lines:
-        print(line)
         # Ignore blank/empty lines
-        if (not line or line.isspace()):
-            continue
         m = re.match(basislabel, line)
         if(m):
             if(basisstring != ""):
