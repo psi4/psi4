@@ -78,10 +78,14 @@ if ( ($isOS ne "true") && ($isOS ne "false") ) { print "\nnot an option- try aga
 gobackC:
 $string2screen = <<END;
 # what is the nature of the systems in your incipient database?
-#    [1]   I have a bunch of plain molecules (no need to act on any subsystems) that I want to be able to act upon in parallel.
-#    [2]   I have a bunch of molecules that I want to form into a database whose reference quantity corresponds to various combinations thereof.
-#    [3]   I have a bunch of dimers that I want to form into a database whose reference quantity is interaction energy.
-#    Your final database (for psi4) may of course resemble any combination of these choices. This is but a humble script to get you started.
+#    [1]   I have a bunch of plain molecules (no need to act on any subsystems) 
+#          that I want to be able to act upon in parallel.
+#    [2]   I have a bunch of molecules that I want to form into a database 
+#          whose reference quantity corresponds to various combinations thereof.
+#    [3]   I have a bunch of dimers (only dimer, no monomer, files should be present) 
+#          that I want to form into a database whose reference quantity is interaction energy.
+#    Your final database (for psi4) may of course resemble any combination of these choices. 
+#    This is but a humble script to get you started.
 #    [SCALAR (required)]
 END
 print "\n$string2screen";
@@ -385,7 +389,7 @@ if ($Nrgt != $count) { print "ERROR: discrepancy in counting systems $Nrgt vs $c
 # perl resource file
 print SPL_OUT ");\n\n";
 print SPL_OUT "   \$numberTT = $Nrgt;\n";
-print SPL_OUT "   \$numberHB = 0;\n   \$numberMX = 0;\n   \$numberDD = 0;\n\n";
+print SPL_OUT "   \$numberHB = 0;\n   \$numberMX = $Nrgt;\n   \$numberDD = 0;\n\n";
 print SPL_OUT "   foreach \$system (\@HSYS) { push(\@setindex,\"\$set-\$system\"); }\n}\n\n\n";
 
 print GPL_OUT "   else {\n\n";
@@ -403,7 +407,8 @@ print GPL_OUT "   \$stat{\"Msyst\"} = \$stat{\"Nsyst\"};\n";
 print GPL_OUT "   \$stat{\"Mmol1\"} = \$stat{\"Nmol1\"};\n";
 print GPL_OUT "   \$stat{\"Mmol2\"} = \$stat{\"Nmol2\"};\n";
 print GPL_OUT "   \$stat{\"param\"} = 0;\n\n";
-print GPL_OUT "   \$texl = \$tagl;\n\n";
+print GPL_OUT "   \$texl = \$tagl;\n";
+print GPL_OUT "   \$EQyy = \$bind;\n\n";
 
 if ($route == 3) {
    print GPL_OUT "   if (\$ABun eq \"yes\") { \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoA-unCP\"); }\n";
@@ -426,6 +431,7 @@ print GPL_OUT "}\n\nreturn 1;\n";
 
 # python database file
 print SPY_OUT "\"\"\"\n";
+print SPY_OUT "**$set**\n\n";
 print SPY_OUT "| Database of <description of members and reference energy type>.\n";
 print SPY_OUT "| Geometries from <Reference>.\n";
 print SPY_OUT "| Reference interaction energies from <Reference>.\n\n";
@@ -601,6 +607,10 @@ if ($route == 2) {
     print "          often +1 or -1) for each reagent to the RXNM of each reaction. See NHTBH.py as an example.\n";
 }
 print "       *  Move $set.py into \$PSIDATADIR/databases/ so that the PSI4 driver can find it.\n";
+if ($dropresource == 0) {
+    print "       *  Move resource_$set.pl into ~cdsgroup/scripts/Lori_SETS_scripts/resources/ .\n";
+    print "          Add two lines to resources/resources_sets.pl to register the database.\n";
+}
 
 print "\n   **  To enhance the functionality/documentation of your database, do the following:\n\n";
 
