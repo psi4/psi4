@@ -5,7 +5,7 @@ molecule n2 {
   R = 1.11
 }
 
-plugin_load("./plugin_mp2.so")
+plugin_load("./mp2.so")
 
 set {
   basis cc-pVDZ
@@ -16,7 +16,7 @@ set {
 }
 
 eRHFDimer = scf()
-plugin("plugin_mp2.so")
+plugin("mp2.so")
 eMP2Dimer = get_variable("MP2 ENERGY")
 clean()
 
@@ -29,14 +29,14 @@ set reference uhf
 set basis cc-pvdz
 
 eUHFMonomer = energy('scf')
-plugin("plugin_mp2.so")
+plugin("mp2.so")
 eUMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
 set reference rohf 
 
 eROHFMonomer = energy('scf')
-plugin("plugin_mp2.so")
+plugin("mp2.so")
 eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
