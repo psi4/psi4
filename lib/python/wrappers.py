@@ -924,9 +924,8 @@ def database(name, db_name, **kwargs):
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
     sys.path.append('%s/lib/databases' % PsiMod.psi_top_srcdir())
-    try:
-        database = __import__(db_name)
-    except ImportError:
+    database = import_ignorecase(db_name)
+    if database is None:
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         PsiMod.print_out('\nSearch path that was tried:\n')
         PsiMod.print_out(", ".join(map(str, sys.path)))
@@ -1076,12 +1075,9 @@ def database(name, db_name, **kwargs):
         if (db_benchmark.lower() == 'default'):
             pass
         else:
-            try:
-                getattr(database, 'BIND_' + db_benchmark)
-            except AttributeError:
+            BIND = getattr_ignorecase(database, 'BIND_' + db_benchmark)
+            if BIND is None:
                 raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
-            else:
-                BIND = getattr(database, 'BIND_' + db_benchmark)
 
     #   Option tabulate- whether tables of variables other than primary energy method are formed
     db_tabulate = []
@@ -1116,19 +1112,11 @@ def database(name, db_name, **kwargs):
             else:
                 HRXN = database.HRXN_EQ
         else:
-            try:
-                getattr(database, db_subset)
-            except AttributeError:
-
-                try:
-                    getattr(database, 'HRXN_' + db_subset)
-                except AttributeError:
+            HRXN = getattr_ignorecase(database, db_subset)
+            if HRXN is None:
+                HRXN = getattr_ignorecase(database, 'HRXN_' + db_subset)
+                if HRXN is None:
                     raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
-                else:
-                    HRXN = getattr(database, 'HRXN_' + db_subset)
-
-            else:
-                HRXN = getattr(database, db_subset)
     else:
         temp = []
         for rxn in db_subset:
@@ -1260,7 +1248,7 @@ def database(name, db_name, **kwargs):
             exec(banners)
             exec(GEOS[rgt])
             exec(commands)
-            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
+            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             PsiMod.set_variable('NATOM', molecule.natom())
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
