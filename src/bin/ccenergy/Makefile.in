@@ -12,8 +12,8 @@ AO_contribute.cc  WmbejT2.cc      cc2_faeT2.cc  denom.cc       local.cc\
 BT2.cc            Wmnij.cc        cc2_fmiT2.cc  diagnostic.cc  new_d1diag.cc\
 BT2_AO.cc         WmnijT2.cc      cc2_t2.cc     diis.cc        pair_energies.cc\
 CT2.cc            Z.cc            cc3.cc        diis_RHF.cc    priority.cc\
-DT2.cc            ZT2.cc          cc3_RHF.cc    diis_ROHF.cc   rotate.cc\
-ET2.cc            amp_write.cc    cc3_UHF.cc    diis_UHF.cc    sort_amps.cc\
+DT2.cc            ZT2.cc          diis_ROHF.cc   rotate.cc\
+ET2.cc            amp_write.cc    diis_UHF.cc    sort_amps.cc\
 FT2.cc            analyze.cc      cc3_Wabei.cc  dijabT2.cc     spinad_amps.cc\
 FT2_cc2.cc        cache.cc        cc3_Wamef.cc  energy.cc      status.cc\
 Fae.cc            cc2_Wabei.cc    cc3_Wmbij.cc  fock_build.cc  t1.cc\
