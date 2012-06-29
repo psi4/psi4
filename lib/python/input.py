@@ -283,14 +283,14 @@ def process_basis_block(matchobj):
                 basistype = m.group(2).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
         else:
-            leftover_lines.append(line)
+            # Ignore blank lines
+            if (line and not line.isspace()):
+                leftover_lines.append(line)
 
     # Now look for regular basis set definitions
     basisstring = ""
     for line in leftover_lines:
         # Ignore blank/empty lines
-        if (not line or line.isspace()):
-            continue
         m = re.match(basislabel, line)
         if(m):
             if(basisstring != ""):
@@ -626,8 +626,8 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
-    print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
-    temp = re.sub(print_string, process_print_command, temp)
+    #print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
+    #temp = re.sub(print_string, process_print_command, temp)
 
     # Process "memory ... "
     memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',

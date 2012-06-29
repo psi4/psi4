@@ -1,0 +1,34 @@
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users. !nosample
+
+def tf(bas):
+    """Function to return reST formatted table cell from basis/None info."""
+
+    if bas is None:
+        return '  ---  '
+    else:
+        return ':srcbasis:`' + bas + '`'
+
+
+fenergy = open('autodoc_basissets_byfamily.rst', 'w')
+fenergy.write('.. table:: Auxiliary basis set defaults in |PSIfour|\n\n')
+fenergy.write('   +-%-27s-+-%-40s-+-%-40s-+-%-40s-+-%-40s-+\n' % 
+    (27 * '-', 40 * '-', 40 * '-', 40 * '-', 40 * '-'))
+fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 
+    ('Basis Family', 'Orbital basis', 'JK auxiliary basis', 'MP2 auxiliary basis', 'DUAL auxiliary basis'))
+fenergy.write('   +=%-27s=+=%-40s=+=%-40s=+=%-40s=+=%-40s=+\n' % 
+    (27 * '=', 40 * '=', 40 * '=', 40 * '=', 40 * '='))
+
+for basis in load_basis_families():
+
+    fenergy.write('   | %-27s | %-40s | %-40s | %-40s | %-40s |\n' % 
+        (basis.ornate, tf(basis.orbital), tf(basis.jkfit), tf(basis.rifit), tf(basis.dualfit)))
+    fenergy.write('   +-%-27s-+-%-40s-+-%-40s-+-%-40s-+-%-40s-+\n' % 
+        (27 * '-', 40 * '-', 40 * '-', 40 * '-', 40 * '-'))
+
+fenergy.write('\n')
+fenergy.close()
+
+# This line is for the output.ref record, not the docs
+print_basis_families()
+

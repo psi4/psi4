@@ -1,0 +1,320 @@
+#include "liboptions/liboptions.h"
+#include "libmints/mints.h"
+#include "scf.h"
+
+namespace psi{ namespace @plugin@{
+
+SCF::SCF(Options &options):
+   options_(options)
+{
+    print_   = options_.get_int("PRINT");
+    maxiter_ = options_.get_int("SCF_MAXITER");
+    e_convergence_ = options_.get_double("E_CONVERGENCE");
+    d_convergence_ = options_.get_double("D_CONVERGENCE");
+
+    init_integrals();
+}
+
+
+SCF::~SCF()
+{
+   free_matrix(tei_, nso_, nso_, nso_, nso_);
+}
+
+
+void SCF::init_matrix(double****& matrix, int size1, int size2, int size3, int size4) {
+    if ((size1 == 0) || (size2 == 0) || (size3 == 0) || (size4 == 0)) {
+        printf("\n\n\tNULL Matrix\n");
+        matrix = NULL;
+    } else {
+        matrix = new double***[size1];
+        for (int i = 0; i < size1; i++) {
+            matrix[i] = new double**[size2];
+        }
+        for (int i = 0; i < size1; i++) {
+            for (int j = 0; j < size2; j++) {
+                matrix[i][j] = new double*[size3];
+            }
+        }
+        for (int i = 0; i < size1; i++) {
+            for (int j = 0; j < size2; j++) {
+                for (int k = 0; k < size3; k++) {
+                    matrix[i][j][k] = new double[size4];
+                    for (int l = 0; l < size4; l++) {
+                        matrix[i][j][k][l] = 0.0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void SCF::free_matrix(double****& matrix, int size1, int size2, int size3, int size4) {
+    if ((size1 == 0) || (size2 == 0) || (size3 == 0) || (size4 == 0)) {
+        printf("\n\n\tNULL Matrix\n");
+    }
+    if (matrix != NULL) {
+        for (int i = 0; i < size1; i++) {
+            for (int j = 0; j < size2; j++) {
+                for (int k = 0; k < size3; k++) {
+                    delete[] matrix[i][j][k];
+                }
+            }
+        }
+        for (int i = 0; i < size1; i++) {
+            for (int j = 0; j < size2; j++) {
+                delete[] matrix[i][j];
+            }
+        }
+        for (int i = 0; i < size1; i++) {
+            delete[] matrix[i];
+        }
+        delete[] matrix;
+    }
+}
+
+
+void SCF::init_integrals()
+{
+    // This grabs the current molecule
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
+
+
+    // Form basis object:
+    // Create a basis set parser object.
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    // Construct a new basis set.
+    boost::shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
+
+    // The integral factory oversees the creation of integral objects
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory
+            (aoBasis, aoBasis, aoBasis, aoBasis));
+    
+    // Determine the number of electrons in the system
+    // N.B. This should be done after the basis has been built, because the geometry has not been
+    // fully initialized until this time.
+    int charge = molecule->molecular_charge();
+    int nelec  = 0;
+    for(int i = 0; i < molecule->natom(); ++i)
+        nelec += (int)molecule->Z(i);
+    nelec -= charge;
+    if(nelec % 2)
+        throw PSIEXCEPTION("This is only an RHF code, but you gave it an odd number of electrons.  Try again!");
+    ndocc_ = nelec / 2;
+
+    fprintf(outfile, "\tThere are %d doubly occupied orbitals\n", ndocc_);
+    molecule->print();
+    if(print_ > 1){ 
+         aoBasis->print_detail();
+         options_.print();
+    }
+
+    nso_ =  aoBasis->nbf();
+
+    e_nuc_ = molecule->nuclear_repulsion_energy();
+    fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", e_nuc_);
+
+    // These don't need to be declared, because they belong to the class
+    S_ = SharedMatrix(new Matrix("Overlap matrix", nso_, nso_));
+    H_ = SharedMatrix(new Matrix("Overlap matrix", nso_, nso_));
+    // These don't belong to the class, so we have to define them as having type SharedMatrix
+    SharedMatrix T = SharedMatrix(new Matrix("Kinetic integrals matrix", nso_, nso_));
+    SharedMatrix V = SharedMatrix(new Matrix("Potential integrals matrix", nso_, nso_));
+
+    // Form the one-electron integral objects from the integral factory
+    boost::shared_ptr<OneBodyAOInt> sOBI(integral->ao_overlap());
+    boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
+    boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
+    // Compute the one electron integrals, telling each object where to store the result
+    sOBI->compute(S_);
+    tOBI->compute(T);
+    vOBI->compute(V);
+
+    // Form h = T + V by first cloning T and then adding V
+    H_->copy(T);
+    H_->add(V);
+
+    if(print_ > 3){
+        S_->print();
+        T->print();
+        V->print();
+        H_->print();
+    }
+
+    fprintf(outfile, "\tForming Two-electron Integrals\n\n");
+    // Allocate some storage for the integrals
+    init_matrix(tei_, nso_, nso_, nso_, nso_);
+
+    // Now, the two-electron integrals
+    boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
+    // The buffer will hold the integrals for each shell, as they're computed
+    const double *buffer = eri->buffer();
+    // The iterator conveniently lets us iterate over functions within shells
+    AOShellCombinationsIterator shellIter = integral->shells_iterator();
+    int count=0;
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
+        // Compute quartet
+        eri->compute_shell(shellIter);
+        // From the quartet get all the integrals
+        AOIntegralsIterator intIter = shellIter.integrals_iterator();
+        for (intIter.first(); intIter.is_done() == false; intIter.next()) {
+            int p = intIter.i();
+            int q = intIter.j();
+            int r = intIter.k();
+            int s = intIter.l();
+            double val = buffer[intIter.index()];
+            if(print_ > 4)
+                fprintf(outfile, "\t(%2d %2d | %2d %2d) = %20.15f\n", p, q, r, s, val);
+            tei_[p][q][r][s] = tei_[p][q][s][r] = tei_[q][p][r][s] = tei_[q][p][s][r] =
+            tei_[r][s][p][q] = tei_[s][r][p][q] = tei_[r][s][q][p] = tei_[s][r][q][p] = val;
+            ++count;
+        }
+    }
+    fprintf(outfile, "\n\tThere are %d unique integrals\n\n", count);
+}
+
+
+double SCF::compute_electronic_energy()
+{
+    Matrix HplusF;
+    HplusF.copy(H_);
+    HplusF.add(F_);
+    return D_->vector_dot(HplusF);    
+}
+
+void SCF::form_density()
+{
+    for(int p = 0; p < nso_; ++p){
+        for(int q = 0; q < nso_; ++q){
+            double val = 0.0;
+            for(int i = 0; i < ndocc_; ++i){
+                val += C_->get(p, i) * C_->get(q, i);
+            }
+            D_->set(p, q, val);
+        }
+    }   
+}
+
+
+double SCF::compute_energy()
+{
+   // Allocate some matrices
+   X_  = SharedMatrix(new Matrix("S^-1/2", nso_, nso_));
+   F_  = SharedMatrix(new Matrix("Fock matrix", nso_, nso_));
+   Ft_ = SharedMatrix(new Matrix("Transformed Fock matrix", nso_, nso_));
+   C_  = SharedMatrix(new Matrix("MO Coefficients_", nso_, nso_));
+   D_  = SharedMatrix(new Matrix("The Density Matrix", nso_, nso_));
+   SharedMatrix Temp1(new Matrix("Temporary Array 1", nso_, nso_));
+   SharedMatrix Temp2(new Matrix("Temporary Array 2", nso_, nso_));
+   SharedMatrix FDS(new Matrix("FDS", nso_, nso_));
+   SharedMatrix SDF(new Matrix("SDF", nso_, nso_));
+   SharedMatrix Evecs(new Matrix("Eigenvectors", nso_, nso_));
+   SharedVector Evals(new Vector("Eigenvalues", nso_));
+
+   // Form the X_ matrix (S^-1/2)
+   S_->diagonalize(Evecs, Evals, ascending);
+   for(int p = 0; p < nso_; ++p){
+       double val = 1.0 / sqrt(Evals->get(p));
+       Evals->set(p, val);
+   }
+   Temp1->set_diagonal(Evals);
+   Temp2->gemm(false, true, 1.0, Temp1, Evecs, 0.0);
+   X_->gemm(false, false, 1.0, Evecs, Temp2, 0.0);
+
+   F_->copy(H_);
+   Ft_->transform(F_, X_);
+   Ft_->diagonalize(Evecs, Evals, ascending);
+
+   C_->gemm(false, false, 1.0, X_, Evecs, 0.0);
+   form_density();
+   if(print_ > 1){
+       fprintf(outfile, "MO Coefficients and density from Core Hamiltonian guess:\n");
+       C_->print();
+       D_->print();
+   }
+
+   int iter = 1;
+   bool converged = false;
+   double e_old;
+   double e_new = e_nuc_ + compute_electronic_energy();
+
+   fprintf(outfile, "\tEnergy from core Hamiltonian guess: %20.16f\n\n", e_new);
+
+   fprintf(outfile, "\t*=======================================================*\n");
+   fprintf(outfile, "\t* Iter       Energy            delta E    ||gradient||  *\n");
+   fprintf(outfile, "\t*-------------------------------------------------------*\n");
+
+   while(!converged && iter < maxiter_){
+       e_old = e_new;
+
+       // Add the core Hamiltonian term to the Fock operator
+       F_->copy(H_);
+       // Add the two electron terms to the Fock operator
+       for(int p = 0; p < nso_; ++p){
+           for(int q = 0; q < nso_; ++q){
+               double J = 0.0;
+               double K = 0.0;
+               for(int r = 0; r < nso_; ++r){
+                   for(int s = 0; s < nso_; ++s){
+                       J += tei_[p][q][r][s] * D_->get(r, s);
+                       K += tei_[p][r][q][s] * D_->get(r, s);
+                   }
+               }
+               F_->add(p, q, 2.0 * J - K);
+           }   
+       }
+
+       // Transform the Fock operator and diagonalize it
+       Ft_->transform(F_, X_);
+       Ft_->diagonalize(Evecs, Evals, ascending);
+
+       // Form the orbitals from the eigenvectors of the transformed Fock matrix 
+       C_->gemm(false, false, 1.0, X_, Evecs, 0.0);
+
+
+       // Rebuild the density using the new orbitals
+       form_density();
+
+       // Compute the energy
+       e_new = e_nuc_ + compute_electronic_energy();
+       double dE = e_new - e_old;
+ 
+       // Compute the orbital gradient, FDS-SDF
+       Temp1->gemm(false, false, 1.0, D_, S_, 0.0);
+       FDS->gemm(false, false, 1.0, F_, Temp1, 0.0);
+       Temp1->gemm(false, false, 1.0, D_, F_, 0.0);
+       SDF->gemm(false, false, 1.0, S_, Temp1, 0.0);
+       Temp1->copy(FDS);
+       Temp1->subtract(SDF);
+       double dRMS = Temp1->rms();
+
+       if(print_ > 1){
+           Ft_->print();
+           Evecs->print();
+           Evals->print();
+           C_->print();
+           D_->print();
+           FDS->print();
+           SDF->print();
+           Temp1->set_name("Orbital gradient");
+           Temp1->print();
+       }
+     
+       converged = (fabs(dE) < e_convergence_) && (dRMS < d_convergence_);
+
+       fprintf(outfile, "\t* %3d %20.14f    %9.2e    %9.2e    *\n", iter, e_new, dE, dRMS);
+       iter++;
+   }
+   fprintf(outfile, "\t*=======================================================*\n");
+
+   if(!converged)
+       throw PSIEXCEPTION("The SCF iterations did not converge.");
+
+   Evals->set_name("Orbital Energies");
+   Evals->print();
+
+   return e_new;
+}
+
+}} // End namespaces
+

@@ -700,12 +700,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- Primary basis set, describes the monomer molecular orbitals -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SAPT density fitting computations. Defaults 
-    to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT density fitting computations.
+    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
     options.add_str("DF_BASIS_SAPT", "");
     /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
-    computations, may be important if heavier elements are involved. Defaults 
-    to BASIS-RI. -*/
+    computations, may be important if heavier elements are involved.
+    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum error allowed (Max error norm in Delta tensor)
     in the approximate energy denominators employed for most of the
@@ -826,7 +826,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
     /*- Auxiliary basis set for SCF density fitting computations. 
-    Defaults to BASIS-JKFIT. -*/
+    :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
@@ -974,7 +974,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
     options.add_double("DFT_ALPHA", 0.0);
-    /*- Number of spherical points (A Lebedev number). -*/
+    /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
     options.add_int("DFT_RADIAL_POINTS", 99);
@@ -1944,7 +1944,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MADMP2_SLEEP", 0);
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
-    /*- Auxiliary basis set for MP2 density fitting computations. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for MP2 density fitting computations.
+    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
     options.add_str("DF_BASIS_MP2","");
     /*- OS Scale -*/
     options.add_double("MP2_OS_SCALE", 6.0/5.0);

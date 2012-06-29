@@ -386,6 +386,10 @@ to the complete listing of all functionals of each class are presented below:
     older HSE exchange-hole model which led to the successful implementation of the
     HJS model. 
     
+:ref:`Double-Hybrid Functionals <table:dft_dhybrid>`
+    Double hybrids are percolating into |PSIfour|. Note that these are
+    only available with density-fitted, not conventional, mp2 algorithms.
+
 :ref:`-D Functionals <table:dft_disp>`
     We have several -D2 functionals implemented, and will shortly be adding many
     more combinations of -D2 and -D3 functionals. For now, the pure-GGA B97-D
@@ -407,9 +411,11 @@ not yet available, but will be implemented by RC1 (in final debugging). The
 default grid in PSI4 is a Lebedev-Treutler (302,99) grid with a Treutler
 partition of the atomic weights. 
 
-Spherical grids are all of the extremely efficient Levedev-Laikov type.
+Spherical grids are all of the extremely efficient Lebedev-Laikov type.
 Spherical grid resolution is controlled by the |scf__dft_spherical_points|
 option, which may take one of the following values:
+
+.. _`table:lebedevorder`:
 
     +--------+-------+
     | Points | Order |

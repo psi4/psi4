@@ -351,6 +351,7 @@ public:
     void print_distances() const;
     void print_bond_angles() const;
     void print_dihedrals() const;
+    void print_out_of_planes() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;

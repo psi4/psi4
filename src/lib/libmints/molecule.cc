@@ -1395,50 +1395,121 @@ void Molecule::print_full() const
 
 void Molecule::print_distances() const
 {
-    fprintf(outfile, "        Interatomic Distances (Bohr)\n\n");
+    fprintf(outfile, "        Interatomic Distances (Angstroms)\n\n");
     for(int i=0;i<natom();i++) {
-        for(int j=i;j<natom();j++) {
-            double xx = x(i) - x(j);
-            double yy = y(i) - y(j);
-            double zz = z(i) - z(j);
-            double distance = sqrt(xx*xx+yy*yy+zz*zz);
-            fprintf(outfile, "        %3d  %3d  %6.3lf\n",i,j,distance);
+        for(int j=i+1;j<natom();j++) {
+            Vector3 eij = xyz(j)-xyz(i);
+            double distance=eij.norm();
+            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance);
         }
     }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::print_bond_angles() const
 {
     fprintf(outfile, "        Bond Angles (degrees)\n\n");
-    for(int i=0;i<natom();i++) {
-        for(int j=i+1;j<natom();j++) {
-            for(int k=j+1;k<natom();k++) {
-                double rijxx = x(i) - x(j);
-                double rijyy = y(i) - y(j);
-                double rijzz = z(i) - z(j);
-                double rij = sqrt(rijxx*rijxx+rijyy*rijyy+rijzz*rijzz);
-
-                double rjkxx = x(j) - x(k);
-                double rjkyy = y(j) - y(k);
-                double rjkzz = z(j) - z(k);
-                double rjk = sqrt(rjkxx*rjkxx+rjkyy*rjkyy+rjkzz*rjkzz);
-
-                double rikxx = x(i) - x(k);
-                double rikyy = y(i) - y(k);
-                double rikzz = z(i) - z(k);
-                double rik = sqrt(rikxx*rikxx+rikyy*rikyy+rikzz*rikzz);
-
-                double invAngle = (rij*rij+rjk*rjk-rik*rik) / (2*rij*rjk);
-                double bondAngle = acos(invAngle);
-                printf("        %3d  %3d  %3d  %6.3lf\n", i, j, k, (bondAngle*180));
+    for(int j=0;j<natom();j++) {
+        for(int i=0;i<natom();i++){
+            if(i==j)
+                continue;
+            for(int k=i+1;k<natom();k++) {
+                if(k==j)
+                    continue;
+                Vector3 eji = xyz(i)-xyz(j);
+                eji.normalize ();
+                Vector3 ejk = xyz(k)-xyz(j);
+                ejk.normalize ();
+                double dotproduct=eji.dot (ejk);
+                double phi = 180*acos(dotproduct)/_pi;
+                fprintf(outfile, "        Angle %d-%d-%d: %8.3lf\n", i+1, j+1, k+1, phi);
             }
         }
     }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::print_dihedrals() const
 {
+    fprintf(outfile, "        Dihedral Angles (Degrees)\n\n");
+    for(int i=0; i<natom(); i++) {
+        for(int j=0; j<natom(); j++) {
+            if(i==j)
+                continue;
+            for(int k=0; k<natom(); k++) {
+                if(i==k || j==k)
+                    continue;
+                for(int l=0; l<natom(); l++) {
+                    if(i==l || j==l || k==l)
+                        continue;
+                    Vector3 eij = xyz(j)-xyz(i);
+                    eij.normalize ();
+                    Vector3 ejk = xyz(k)-xyz(j);
+                    ejk.normalize ();
+                    Vector3 ekl = xyz(l) - xyz(k);
+                    ekl.normalize ();
+                    //Compute angle ijk
+                    double angleijk = acos(-eij.dot (ejk));
+                    //Compute angle jkl
+                    double anglejkl = acos(-ejk.dot (ekl));
+                    //compute term1 (eij x ejk)
+                    Vector3 term1 = eij.cross (ejk);
+                    //compute term2 (ejk x ekl)
+                    Vector3 term2 = ejk.cross (ekl);
+                    double numerator = term1.dot (term2);
+                    double denominator = sin(angleijk)*sin(anglejkl);
+                    double costau = (numerator/denominator);
+                    if( costau>1.00 && costau<1.000001)
+                        costau=1.00;
+                    if(costau<-1.00 && costau>-1.000001)
+                        costau=-1.00;
+                    double tau = 180*acos(costau)/_pi;
+                    fprintf(outfile, "        Dihedral %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, tau);
+                }
+            }
+        }
+    }
+    fprintf(outfile, "\n\n");
+}
 
+void Molecule::print_out_of_planes () const
+{
+    fprintf(outfile, "        Out-Of-Plane Angles (Degrees)\n\n");
+    for(int i=0; i<natom(); i++) {
+        for(int j=0; j<natom(); j++) {
+            if(i==j)
+                continue;
+            for(int k=0; k<natom(); k++) {
+                if(i==k || j==k)
+                    continue;
+                for(int l=0; l<natom(); l++) {
+                    if(i==l || j==l || k==l)
+                        continue;
+                    //Compute vectors we need first
+                    Vector3 elj = xyz(j)-xyz(l);
+                    elj.normalize ();
+                    Vector3 elk = xyz(k)-xyz(l);
+                    elk.normalize ();
+                    Vector3 eli = xyz(i)-xyz(l);
+                    eli.normalize ();
+                    //Denominator
+                    double denominator = sin(acos(elj.dot (elk)));
+                    //Numerator
+                    Vector3 eljxelk = elj.cross(elk);
+                    double numerator = eljxelk.dot (eli);
+                    //compute angle
+                    double sinetheta = numerator/denominator;
+                    if(sinetheta>1.00)
+                        sinetheta=1.000;
+                    if(sinetheta<-1.00)
+                        sinetheta=-1.000;
+                    double theta = 180*asin(sinetheta)/_pi;
+                    fprintf(outfile, "        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, theta);
+                }
+            }
+        }
+    }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::save_xyz(const std::string& filename) const

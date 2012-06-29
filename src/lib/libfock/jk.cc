@@ -42,9 +42,6 @@ boost::shared_ptr<JK> JK::build_JK()
 
     if (options.get_str("SCF_TYPE") == "DF") {
 
-        if (options.get_str("DF_BASIS_SCF") == "") {
-            primary->molecule()->set_basis_all_atoms(options.get_str("BASIS") + "-JKFIT", "DF_BASIS_SCF");
-        }
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
 
         DFJK* jk = new DFJK(primary,auxiliary);

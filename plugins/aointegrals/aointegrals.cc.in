@@ -14,7 +14,7 @@ namespace psi{ namespace aointegrals{
 extern "C" int
 read_options(std::string name, Options &options)
 {
-    if (name == "PLUGIN_AOINTEGRALS"|| options.read_globals()) {
+    if (name == "AOINTEGRALS"|| options.read_globals()) {
         /*- The amount of information printed
             to the output file -*/
         options.add_int("PRINT", 1);
@@ -26,7 +26,7 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-plugin_aointegrals(Options &options)
+aointegrals(Options &options)
 {
     int print = options.get_int("PRINT");
     int doTei = options.get_bool("DO_TEI");
