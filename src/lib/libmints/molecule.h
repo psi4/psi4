@@ -23,6 +23,7 @@ namespace psi {
 extern FILE *outfile;
 
 enum RotorType {ASYMMETRIC_TOP, SYMMETRIC_TOP, SPHERICAL_TOP, LINEAR, ATOM};
+enum FullPointGroup {Aotm, C_inf_v, D_inf_v, C1, Cs, Ci, Cn, Cnv, Cnh, Sn, Dn, Dnd, Dnh, Td, Oh, Ih}
 
 const std::string RotorTypeList[] = {"ASYMMETRIC_TOP", "SYMMETRIC_TOP",
  "SPHERICAL_TOP", "LINEAR", "ATOM"};
@@ -110,6 +111,10 @@ protected:
 
     /// Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
+    /// Full point group.
+    FullPointGroup full_pg_;
+    /// n of the highest rotational axis Cn
+    int full_pg_n_;
 
     /// Number of unique atoms
     int nunique_;
@@ -384,6 +389,8 @@ public:
     bool has_symmetry_element(Vector3& op, double tol=DEFAULT_SYM_TOL) const;
     boost::shared_ptr<PointGroup> point_group() const;
     void set_point_group(boost::shared_ptr<PointGroup> pg);
+    /// Determine and set FULL point group
+    void set_full_point_group(void);
     /// Does the molecule have an inversion center at origin
     bool has_inversion(Vector3& origin, double tol=DEFAULT_SYM_TOL) const;
     /// Is a plane?
@@ -554,7 +561,8 @@ public:
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
     bool valid_atom_map(double tol = 0.01) const;
-
+    /// Determine full point group
+    std::string full_point_group() const;
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values
      * of the variables. The atoms list is cleared, and then rebuilt by this routine.

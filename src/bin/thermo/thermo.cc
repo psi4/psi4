@@ -38,10 +38,12 @@ PsiReturnType thermo(Options &options) {
   Vector rot_const = mol->rotational_constants();
   RotorType rot_type = mol->rotor_type();
 
-  fprintf(outfile,"\tHighest point group: %s\n", mol->find_highest_point_group()->symbol().c_str());
-
   std::string pg = mol->schoenflies_symbol();
   fprintf(outfile,"\tSchoenflies_symbol: %s\n", pg.c_str());
+
+  //FullPointGroup full_pg = mol->full_point_group();
+  //fprintf(outfile,"Full point group: %d\n", (int) full_pg);
+  // Need to print out with string list
 
   CharacterTable ct = mol->point_group()->char_table();
   int order = ct.order();
