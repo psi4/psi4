@@ -162,7 +162,9 @@ Molecule::Molecule():
     atom_to_unique_(0),
     //old_symmetry_frame_(0)
     reinterpret_coordentries_(true),
-    lock_frame_(false)
+    lock_frame_(false),
+    full_pg_(C1),
+    full_pg_n_(1);
 {
 }
 
@@ -199,7 +201,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     reinterpret_coordentries_= other.reinterpret_coordentries_;
     lock_frame_              = other.lock_frame_;
 
-    // These are symmetry related variables, and are filled in by the following funtions
+    // These are symmetry related variables, and are filled in by the following functions
     pg_             = boost::shared_ptr<PointGroup>();
     nunique_        = 0;
     nequiv_         = 0;
@@ -207,6 +209,8 @@ Molecule& Molecule::operator=(const Molecule& other)
     atom_to_unique_ = 0;
     symmetry_from_input_ = other.symmetry_from_input_;
     form_symmetry_information();
+    full_pg_        = other.full_pg_;
+    full_pg_n_      = other.full_pg_n_;
 
     atoms_.clear();
     // Deep copy the map of variables
@@ -1105,6 +1109,7 @@ void Molecule::update_geometry()
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
+    set_full_point_group();
 
     // Disabling symmetrize for now if orientation is fixed, as it is not correct.  We may want
     // to fix this in the future, but in some cases of finite-differences the set geometry is not
@@ -2682,5 +2687,47 @@ void Molecule::set_com_fixed(bool _fix) {
         move_to_com_ = true;
     }
 }
+
+/*
+void Molecule::set_full_point_group(void) const {
+  
+
+  RotorType rotor = rotor_type()
+
+  Vector3 com = center_of_mass();
+  bool op_i = has_inversion(com, tol);
+
+  Matrix geom = geometry();
+
+  if (rotor_type == ATOM) { // atoms
+    full_pg_ = Atom;
+  }
+  else if (rotor_type == LINEAR) { // linear molecules
+    if (op_i)
+      full_pg_ = D_inf_h
+    else
+      full_pg_ = C_inf_v
+  }
+  else if (rotor_type == SPHERICAL_TOP) { // spherical tops
+    if (!op_i) {
+      full_pg_ = Td;  // The only spherical top without inversion is Td.
+    }
+    else (op_i) { // Oh or Ih ?
+      // Determine whether the highest axis is C3 or C5 Cn is 
+
+      if (highest_Cn == 5)
+        full_pg_ = Ih;
+
+    }
+  }
+
+  //SYMMETRIC_TOP;  // A == B > C
+  //ASYMMETRIC_TOP; // A != B != C
+
+  return;
+}
+*/
+
+
 
 
