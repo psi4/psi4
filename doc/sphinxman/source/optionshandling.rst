@@ -6,24 +6,106 @@
 LibOptions: globals, locals, has_changed and all that
 =====================================================
 
+To simplify parsing of options and handling of defaults, the Options class
+was created. It functions in the following way:
 
+- Each module (or plugin) declares which options it will look for in the
+  input: their name, type (string, int, double, array, etc.), and any
+  default value they take.
 
-has_changed
------------
+- The input is parsed for these options, and defaults are assigned for
+  those keywords not specified by the user.
 
-There are times when we need to know if an option was provided by the user
-or if the defaults are being used. For this reason, the Options object
-stores a boolean *has_changed* value, in addition to the option value itself. 
-A clarification of definition:
+- The c-side module or plugin can then query the Options object for the
+  values associated with each keyword.
 
-a. has_changed DOESN'T mean "Has option been changed by the user?"
-b. has_changed DOESN'T mean "Is option now different from the default?"
-c. has_changed DOES mean "Has option value been touched at all, by user or code?"
+- The options will also be accessible py-side to the procedures that drive
+  the modules. Array-type options are not available in python.
+
+Declaring Options
+-----------------
+
+Each module needs to make itself known to the Options object, via a
+read_options function. For plugins, this routine is provided by the user
+in the plugin code. For native |PSIfour| modules, the entries need to
+be appended to the read_options code in :source:`src/bin/psi4/read_options.cc`.
+An example of such a routine is ::
+
+    if (name == "MYMODULE"|| options.read_globals()) {
+        /*- The amount of information printed
+        to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- Do save information to |mymodule__data_file| at the end of the computation? -*/
+        options.add_bool("SAVE_INFO", true);
+        /*- An array containing the number of doubly occupied orbitals per irrep 
+        (in :ref:`Cotton order <table:irrepOrdering>`) -*/
+        options.add("DOCC", new ArrayType());
+        /*- The factor by which the harmonic vibrational frequencies are multiplied to
+        obtain an approximation to the fundamental vibrational frequencies -*/
+        options.add_double("FREQUENCY_SCALE_FACTOR", 1.0);
+        /*- The filename to which data is dumped. !expert -*/
+        options.add_str("DATA_FILE", "data.dat");
+        /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+        options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    }
+
+In the above example, the following options are declared (in order):
+
+- An integer called ``PRINT`` with a default value of 1.
+- A boolean called ``SAVE_INFO`` with a default of true.
+- An array called ``DOCC``, no default is possible for this type.
+- A double called ``FREQUENCY_SCALE_FACTOR`` with a default of 1.0.
+- A string called ``DATA_FILE``, with a default of "data.dat" and any possible value.
+- A string called ``AO_BASIS`` with a default of "NONE", and possible values of "NONE", "DISK", or "DIRECT".
+
+The purpose of the "if" statement in the above read_options function is
+the following. Suppose in an input file the user sets an option through
+the construct ``set mymodule print 1`` or through a ``set mymodule {...}``
+block. The first thing to happen is a call to read_options with name set
+to "MYMODULE". (Note that all user input is converted to upper case.) This
+call to read_options should tell the Options object only about those
+options expected by the module called "mymodule"; this prevents overlap of
+options between different modules.
+
+Notice also that there's a special comment immediately before the
+declaration of each keyword. You must provide these comments for any
+options you add as they will be automatically inserted into the user
+manual Providing a clear description will also help you to remember what
+the keywords do and how they're used. The comments must live between the
+special comment delimiters. For options that most users shouldn't need,
+add an expert flag to the comment. This will place these options in a
+separate section of the user manual. ::
+
+   /*- comment -*/
+   options.add_ ...
+   /*- comment !expert -*/
+   options.add_ ...
+
+As is apparent from the examples above, comments can span multiple lines
+(see ``PRINT``), can refer to other options (through hyperlinks; see
+``SAVE_INFO``), can refer to sections of the manual (through hyperlinks;
+see ``DOCC``), and can contain LaTeX notation (see ``AO_BASIS``). (To get
+the LaTeX subscript command, use "@@" instead of "_".)
+
+See `Best Practices <http://sirius.chem.vt.edu/trac/wiki/BestPractices#point1>`_ 
+for guidelines on naming options.
+
+What is *has_changed* ?
+-----------------------
+
+There are times when we need to know whether an option was provided by the
+user or if the defaults are being used. For this reason, the Options
+object stores a boolean *has_changed* value, in addition to the option
+value itself.  A clarification of definition:
+
+- [a] has_changed DOESN'T answer "Has option been changed by the user?"
+- [b] has_changed DOESN'T answer "Is option now different from the default?"
+- [c] has_changed DOES answer "Has option value been touched at all, by user or code?"
 
 The above items notwithstanding, psi4 code should be written so that
 *has_changed* DOES effectively mean, "Has option been changed by the
 user?". The way to do this is to isolate and nullify any changes to
-options made by the code, the difference between *a.* and *c.*. C-side,
+options made by the code, the difference between [a] and [c]. C-side,
 there is no concern since options are read but essentially never
 written-to within the modules.
 
@@ -48,7 +130,7 @@ C++ modules, usually through manipulation of options.
 .. comment   the user. Analogously, PUREAM is handled in libmints but it is never
 .. comment   reset.
 
-In order to preserve effective definition *a.*, the strategy for each
+In order to preserve effective definition [a], the strategy for each
 python driver function is to query for the value of any option the
 function may want to change and for the current has_changed status
 (presumably reflecting whether the user has changed the value, as long as
@@ -61,8 +143,8 @@ reflect only whether the user has changed the value).
 
 
 
-options["AO_BASIS"].has_changed()
-will return false if the default value is being used, and true if the user specified this keyword in the input.
+.. comment options["AO_BASIS"].has_changed()
+.. comment will return false if the default value is being used, and true if the user specified this keyword in the input.
 
 
 .. warning:: |globals__puream| is an exception in that its value and
@@ -74,10 +156,14 @@ will return false if the default value is being used, and true if the user speci
 
 
 
+Reading Options in Module
+-------------------------
 
 
-Options in the Python Driver
-----------------------------
+
+
+Handling Options in Driver
+--------------------------
 
 This section is about the scopes of options and how best to handle them in
 the python driver. There are four groups of commands available.
@@ -124,7 +210,7 @@ specified module use?".
 
 There are two primary purposes for interacting with options in the python driver.
 
-- **Preserving User Options** (Enforcing definition (a) of has_changed)
+- **Preserving User Options** (Enforcing definition [a] of has_changed)
 
   The first, less-interesting, use of retrieving user option values has
   been to preserve them so that they may be restored at the end after the
@@ -170,16 +256,21 @@ There are two primary purposes for interacting with options in the python driver
 
     optstash = OptionsState(
         ['SCF', 'SCF_TYPE'],
-        ['MP2', 'WFN'])
+        ['MP2', 'WFN'],
+        ['DF_BASIS_SCF'])
 
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
+    # puream and df_basis_scf are freely changed, GLOBALLY
     # PsiMod.scf() and PsiMod.mp2() are run
 
     optstash.restore()
 
 
-  .. warning:: The OptionsState procedure is not currently compatible with BASIS-type options.
+  .. note:: Some options (BASIS, BASIS-like, and PUREAM) should always
+     be used globally (no module argument) with the OptionsState objects.
+     Similarly, within the body of the function, they should always be
+     queried and set globally.
 
 - **Setting-Up Calculations**
 
@@ -187,7 +278,8 @@ There are two primary purposes for interacting with options in the python driver
   those to query what option value an upcoming c++ module is going to use
   (determined by user and defaults) and (b) those to set options to govern
   the course of a procedure. Finding out the intended option value for a
-  molecule should employ the :py:func:`~PsiMod.get_option` command, which
+  molecule should employ the :py:func:`~PsiMod.get_option` command 
+  (and :py:func:`~PsiMod.has_option_changed` for has_changed), which
   (newly) requires a module for scope. *(Previously, this command used the
   "active module", which isn't well-defined in the context of the python
   driver, and consequently, the command gave variable results, depending
@@ -205,8 +297,6 @@ There are two primary purposes for interacting with options in the python driver
   user option will take precedence against the programmer's intent.
   *(Anyone who has heard advice to "query local, set global" should forget
   that and follow the new scheme outlined here.)*
-
-  .. warning:: Stick with setting BASIS-type options in global scope for now.
 
 
 PsiMod Options Commands

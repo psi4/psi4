@@ -262,7 +262,7 @@ def determine_options(cfilename):
 
 
 # Objective #3
-# Plugin directories in psi4/tests/plugin_
+# Plugin directories in psi4/plugin/
 fdriver = open('source/autodoc_available_plugins.rst', 'w')
 fdriver.write('\n.. index:: plugins; available\n')
 fdriver.write('.. _`sec:availablePlugins`:\n\n')
@@ -274,7 +274,7 @@ fdriver.write('.. toctree::\n   :maxdepth: 1\n\n')
 fabbr = open('source/autodoc_abbr_options_plugins.rst', 'w')
 
 # from each plugin directory ...
-for pydir in glob.glob(DriverPath + '../../tests/plugin_*'):
+for pydir in glob.glob(DriverPath + '../../plugins/*'):
     dirname = os.path.split(pydir)[1]
     div = '=' * len(dirname)
 
@@ -300,7 +300,7 @@ for pydir in glob.glob(DriverPath + '../../tests/plugin_*'):
         # ... include doc.rst file
         docfile = '%s/doc.rst' % (pydir)
         if os.path.isfile(docfile):
-            fmodule.write('.. include:: %stests/%s/doc.rst\n\n' % (IncludePath, dirname))
+            fmodule.write('.. include:: %splugins/%s/doc.rst\n\n' % (IncludePath, dirname))
 
         # ... include docstrings from any *.py files
         pyfiles = glob.glob(pydir + '/*.py')

@@ -17,6 +17,7 @@ Appendices
    bibliography
    testsuite
    basissets_byelement
+   basissets_byfamily
    dft_byfunctional
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP

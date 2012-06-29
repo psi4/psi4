@@ -44,19 +44,24 @@ set reference rks
 set freeze_core false
 
 activate(h2)
-eb2plyp = energy('b2plyp')
-compare_values(-1.1709, eb2plyp, 4, 'H2')       #TEST
+eb2plyp = energy('dsd-pbep86')
+compare_values(-1.169933887984, eb2plyp, 4, 'H2 with DSD-PBEP86')       #TEST
 clean()
 
-activate(h2o)
+activate(h2)
 eb2plyp = energy('b2plyp')
-compare_values(-76.4309, eb2plyp, 4, 'Water')   #TEST
+compare_values(-1.1709, eb2plyp, 4, 'H2 with B2PLYP')       #TEST
 clean()
 
-activate(n2)
-eb2plyp = energy('b2plyp')
-compare_values(-109.5302, eb2plyp, 4, 'N2')     #TEST
-clean()
+#activate(h2o)
+#eb2plyp = energy('b2plyp')
+#compare_values(-76.4309, eb2plyp, 4, 'Water')   #TEST
+#clean()
+
+#activate(n2)
+#eb2plyp = energy('b2plyp')
+#compare_values(-109.5302, eb2plyp, 4, 'N2')     #TEST
+#clean()
 
 # works but too long for test case              #TEST
 #activate(ethene)                                #TEST

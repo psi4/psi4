@@ -86,16 +86,16 @@ $(autotarget1): %: $(autodepend1) | $(subdirs)
 
 # Autodoc plugins
 autodepend2 = \
-@top_srcdir@/tests/plugin_*/*.py \
-@top_srcdir@/tests/plugin_*/doc.rst \
+@top_srcdir@/plugins/*/*.py \
+@top_srcdir@/plugins/*/doc.rst \
 @srcdir@/document_plugins.py
 
 autotarget2 = \
 $(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
 $(SOURCEDIR)/autodoc_available_plugins.rst \
-$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
-$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
-$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
+$(SOURCEDIR)/autodir_plugins/glossary__aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/module__aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/aointegrals__print.rst
 
 $(autotarget2): %: $(autodepend2) | $(subdirs)
 	@srcdir@/document_plugins.py @srcdir@
@@ -156,6 +156,7 @@ $(SOURCEDIR)/autodoc_dft_meta.rst \
 $(SOURCEDIR)/autodoc_dft_lrc.rst \
 $(SOURCEDIR)/autodoc_dft_hybrid.rst \
 $(SOURCEDIR)/autodoc_dft_dhybrid.rst \
+$(SOURCEDIR)/autodoc_dft_scsdhybrid.rst \
 $(SOURCEDIR)/autodoc_dft_disp.rst
 
 $(autotarget6): %: $(autodepend6)
@@ -224,9 +225,24 @@ $(autotarget11): %: $(autodepend11)
 	@srcdir@/document_physconst.pl @srcdir@
 
 
-autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
+# Autodoc basisfamily
+autodepend12 = \
+@top_srcdir@/lib/python/basislist*.py \
+@top_srcdir@/tests/docs_bases/input.dat
+
+autotarget12 = \
+$(SOURCEDIR)/autodoc_basissets_byfamily.rst
+
+$(autotarget12): %: $(autodepend12)
+	cd ../../tests/docs_bases; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs_bases/$(@F) $(SOURCEDIR)/$(@F)
+
+
+#autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
+
+autodoc: $(autotarget1) $(autotarget3) $(autotarget4) \
          $(autotarget5) $(autotarget6) $(autotarget7) $(autotarget8) \
-         $(autotarget9) $(autotarget10) $(autotarget11)
+         $(autotarget9) $(autotarget10) $(autotarget11) $(autotarget12)
 
 
 #####  static docs  #####
@@ -244,7 +260,7 @@ opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst \
-installfile.rst optionshandling.rst
+installfile.rst optionshandling.rst basissets_byfamily.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

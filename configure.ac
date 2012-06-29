@@ -1155,11 +1155,12 @@ AC_CONFIG_FILES([
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
-	  tests/dft-b2plyp/Makefile
+	      tests/dft-b2plyp/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs_psimod/Makefile
           tests/docs_dft/Makefile
+          tests/docs_bases/Makefile
           plugins/aointegrals/Makefile
           plugins/aointegrals/input.dat
           plugins/aointegrals/aointegrals.cc
@@ -1167,11 +1168,15 @@ AC_CONFIG_FILES([
           plugins/sointegrals/input.dat
           plugins/sointegrals/sointegrals.cc
           plugins/mp2/Makefile
-          plugins/mp2/input.dat 
+          plugins/mp2/__init__.py
+          plugins/mp2/doc.rst
           plugins/mp2/globals.h
-          plugins/mp2/plugin_mp2.cc 
-          plugins/mp2/plugin_mp2_restricted.cc
-          plugins/mp2/plugin_mp2_unrestricted.cc
+          plugins/mp2/input.dat
+          plugins/mp2/inputalt.dat
+          plugins/mp2/mp2.cc
+          plugins/mp2/mp2_restricted.cc
+          plugins/mp2/mp2_unrestricted.cc
+          plugins/mp2/pymodule.py
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc

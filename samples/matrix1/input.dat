@@ -5,7 +5,7 @@
 memory 250 mb
 
 # Example of matrix multiplication
-print '\n  ==> Matrix Multiplication <== \n\n'
+print_out('\n  ==> Matrix Multiplication <== \n\n')
 
 n = 3
 A = PsiMod.Matrix(n, n)
@@ -32,7 +32,7 @@ PsiMod.DGEMM(0, 'N', 'N', n, n, n, 1.0, A, n, B, n, 0.0, C, n)
 C.print_out()
 
 
-print '\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)
@@ -54,12 +54,12 @@ for i in range(1,n):
     if A.get(i,0) < 0 :
         A.scale_row(0, i, -1)
 
-print '  Eigenvalues'
+print_out('  Eigenvalues')
 D.print_out()
 A.print_out()
 
 
-print '\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)
@@ -80,7 +80,7 @@ A.set_name('Hilbert Matrix Cholesky Decomposition (T)')
 A.print_out()
 
 
-print '\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n'
+print_out('\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n')
 
 n = 4;
 A = PsiMod.Matrix(n,n)

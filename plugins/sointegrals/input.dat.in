@@ -5,14 +5,14 @@ H 1 R
 R = .9
 }
 
-plugin_load("./plugin_sointegrals.so")
+plugin_load("./sointegrals.so")
 
 set globals {
   basis sto-3g
 }
 
-set plugin_sointegrals {
+set sointegrals {
   do_tei True
 }
 
-plugin("plugin_sointegrals.so")
+plugin("sointegrals.so")

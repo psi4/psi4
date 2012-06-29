@@ -24,11 +24,11 @@ for R in Rvals:
   ecp[R] = cp('ccsd(t)')
   compare_values(ecp[R]*627.5095, ecp_ref[R], 4, "CP-CCSD(T) [%3.1f]" % R) #TEST
 
-print "\n"
-print "CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n"
-print "        R (Ang)         E_int (kcal/mol)             \n"
-print "-----------------------------------------------------\n"
+PsiMod.print_out("\n")
+PsiMod.print_out("CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n")
+PsiMod.print_out("        R (Ang)         E_int (kcal/mol)             \n")
+PsiMod.print_out("-----------------------------------------------------\n")
 for R in Rvals:
   e = ecp[R] * 627.5095
-  print "        %3.1f            %10.6f\n" % (R, e)
+  PsiMod.print_out("        %3.1f            %10.6f\n" % (R, e))
 

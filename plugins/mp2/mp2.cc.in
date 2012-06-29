@@ -27,7 +27,7 @@ read_options(std::string name, Options &options){
 
 
 extern "C" PsiReturnType
-plugin_mp2(Options &options)
+mp2(Options &options)
 {
     int print = options.get_int("PRINT");
     // This will print out all of the user-provided options for this module
