@@ -1167,16 +1167,16 @@ AC_CONFIG_FILES([
           plugins/sointegrals/Makefile
           plugins/sointegrals/input.dat
           plugins/sointegrals/sointegrals.cc
-          plugins/plugin_mp2/Makefile
-          plugins/plugin_mp2/__init__.py
-          plugins/plugin_mp2/doc.rst
-          plugins/plugin_mp2/globals.h
-          plugins/plugin_mp2/input.dat
-          plugins/plugin_mp2/inputalt.dat
-          plugins/plugin_mp2/plugin_mp2.cc
-          plugins/plugin_mp2/plugin_mp2_restricted.cc
-          plugins/plugin_mp2/plugin_mp2_unrestricted.cc
-          plugins/plugin_mp2/pymodule.py
+          plugins/mp2/Makefile
+          plugins/mp2/__init__.py
+          plugins/mp2/doc.rst
+          plugins/mp2/globals.h
+          plugins/mp2/input.dat
+          plugins/mp2/inputalt.dat
+          plugins/mp2/mp2.cc
+          plugins/mp2/mp2_restricted.cc
+          plugins/mp2/mp2_unrestricted.cc
+          plugins/mp2/pymodule.py
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc
