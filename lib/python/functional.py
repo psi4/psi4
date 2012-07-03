@@ -2521,7 +2521,7 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
    # No spaces, keep it short and according to convention
    sup.set_name('DSD-PBEP86')
    # Tab in, trailing newlines
-   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (optimized for -D2)\n')
+   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (opt. for -D2)\n')
    # Tab in, trailing newlines
    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 

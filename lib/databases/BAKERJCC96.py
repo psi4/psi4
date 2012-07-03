@@ -128,7 +128,7 @@ H  -1.1931397271  -1.7574844925   0.0000000000
 units bohr
 }
 set { guess gwh }
-""")
+""", 0)
 
 BAKERJCC96_HCCH_to_CCH2 = input.process_input("""
 molecule {
@@ -139,7 +139,7 @@ H  -2.1914826494   0.9243341981   0.0000000000
 H   1.1657551200  -2.7344386158   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_H2CO_to_H2_CO = input.process_input("""
 molecule {
@@ -150,7 +150,7 @@ H  -0.8014735829  -1.2561076240   0.0000000000
 H  -2.3344015139   0.4076006930   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_parent_diels_alder = input.process_input("""
 molecule {
@@ -173,7 +173,7 @@ H  -1.0137937565  -0.6962109120   4.6804210291
 H  -1.0137937565  -0.6962109120  -4.6804210291
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_s_tetrazine_to_2HCN_N2 = input.process_input("""
 molecule {
@@ -188,7 +188,7 @@ H   4.5920341522   0.1227413034   0.0000000000
 H  -4.5920341522   0.1227413034   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_CH3CH3_to_CH2CH2_H2 = input.process_input("""
 molecule {
@@ -203,7 +203,7 @@ H  -1.6346529801  -1.2327446580  -1.8113616294
 H  -0.1773906205   2.0793716527   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_CH3CH2F_to_CH2CH2_HF = input.process_input("""
 molecule {
@@ -218,7 +218,7 @@ H  -2.0848496434   1.2993062499   1.7866606845
 H  -2.0848496434   1.2993062499  -1.7866606845
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_CH2CHOH_to_CH3CHO = input.process_input("""
 molecule {
@@ -232,7 +232,7 @@ H   2.8765713088  -0.2172341086   0.5404787182
 H  -0.6214938148  -1.5895594164  -2.3805310244
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_silylene_insertion = input.process_input("""
 molecule {
@@ -250,7 +250,7 @@ H  -0.2137259723  -0.1257146643  -4.4428207722
 H  -2.4220270929   1.3626505664  -2.5170186506
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_HNCCS_to_HCN_CS = input.process_input("""
 molecule {
@@ -262,7 +262,7 @@ C   2.4597092296   0.8743461413   0.0000000000
 S   5.2948168550   0.0000000000   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_acrolein_rotation = input.process_input("""
 molecule {
@@ -277,7 +277,7 @@ H   0.2424607776  -2.9181815653  -0.8128813887
 H  -1.3797298905   2.6031905771  -1.3536182728
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_HCONHOH_to_HCOHNHO = input.process_input("""
 molecule {
@@ -291,7 +291,7 @@ H  -2.0229706827  -2.0506512675   0.0000000000
 H   4.0656676440  -1.5664011909   0.0000000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_HNC_H2_to_H2CNH = input.process_input("""
 molecule {
@@ -303,7 +303,7 @@ N   0.0000000000   0.0000000000   1.6630059611
 C   0.6040129016   0.0000000000  -0.5227435726
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_H2CNH_to_HCNH2 = input.process_input("""
 molecule {
@@ -315,7 +315,7 @@ N   0.0000000000   0.0000000000   1.2546414423
 C   1.0399181448   0.0000000000  -0.7605267545
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC96_HCNH2_to_HCN_H2 = input.process_input("""
 molecule {
@@ -327,7 +327,7 @@ H  -2.3053050298  -1.2021721464   0.4824091612
 H  -2.3519880735   0.9191936788   0.1829362984
 units bohr
 }
-""")
+""", 0)
 
 
 # <<< Geometry Specification Strings >>>

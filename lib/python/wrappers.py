@@ -788,8 +788,9 @@ def database(name, db_name, **kwargs):
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.
 
         Second argument, usually unlabeled. Indicates the requested database
-        name, matching the name of a python file in ``psi4/lib/databases``.
-        Consult that directory for available databases and literature citations.
+        name, matching (case insensitive) the name of a python file in 
+        ``psi4/lib/databases`` or :envvar:`PYTHONPATH`.  Consult that 
+        directory for available databases and literature citations.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
@@ -868,16 +869,16 @@ def database(name, db_name, **kwargs):
             ``'large'``, the largest of the database members, or
             ``'equilibrium'``, the equilibrium geometries for a database
             composed of dissociation curves.
-        * ``'BzBz_S'`` || ``'FaOOFaON'`` || ``'ArNe'`` || etc.
-            For databases composed of dissociation curves, individual
-            curves can be called by name. Consult the database python
-            files for available molecular systems.  The choices for this
-            keyword are case sensitive and must match the database python file
+        * ``'BzBz_S'`` || ``'FaOOFaON'`` || ``'ArNe'`` ||  ``'HB'`` || etc.
+            For databases composed of dissociation curves, or otherwise
+            divided into subsets, individual curves and subsets can be
+            called by name. Consult the database python files for available
+            molecular systems (case insensitive).
         * ``[1,2,5]`` || ``['1','2','5']`` || ``['BzMe-3.5', 'MeMe-5.0']`` || etc.
             Specify a list of database members to run. Consult the
-            database python files for available molecular systems.  The
-            choices for this keyword are case sensitive and must match the
-            database python file
+            database python files for available molecular systems.  This
+            is the only portion of database input that is case sensitive;
+            choices for this keyword must match the database python file.
 
     :examples:
 
