@@ -4,7 +4,7 @@
 subdirs = \
 transqt2 dcft cepa ccenergy cctriples ccsort scf lmp2 mp2 mcscf\
 dfmp2 sapt cchbar cclambda ccdensity transqt mints deriv scfgrad \
-optking psimrcc findif ccresponse detci cceom omp2 adc thermo mrcc stable \
+optking psimrcc findif ccresponse detci cceom omp2 omp3 adc mrcc stable \
 psi4
 
 all: default

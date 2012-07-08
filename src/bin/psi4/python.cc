@@ -77,6 +77,7 @@ namespace psi {
     namespace cepa { PsiReturnType cepa(Options&);}
     namespace stable     { PsiReturnType stability(Options&); }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
+    namespace omp3wave   { PsiReturnType omp3wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace thermo     { PsiReturnType thermo(Options&);       }
     namespace mrcc       {
@@ -186,6 +187,16 @@ double py_psi_omp2()
 {
     py_psi_prepare_options_for_module("OMP2");
     if (omp2wave::omp2wave(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_omp3()
+{
+    py_psi_prepare_options_for_module("OMP3");
+    if (omp3wave::omp3wave(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -1096,6 +1107,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("omp2", py_psi_omp2, "Runs the orbital optimized MP2 code.");
+    def("omp3", py_psi_omp3, "Runs the orbital optimized MP3 code.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");

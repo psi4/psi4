@@ -64,6 +64,16 @@ def run_omp2(name, **kwargs):
     return PsiMod.omp2()
     PsiMod.set_global_option('REFERENCE', oldref)
 
+def run_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP3 computation
+
+    """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.scf()
+    return PsiMod.omp3()
+    PsiMod.set_global_option('REFERENCE', oldref)    
 
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
