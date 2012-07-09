@@ -74,6 +74,12 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
     Communicator::world->sync();
 
+    // Print a molden file
+    if ( options["MOLDEN_FILE"].has_changed() ) {
+       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
+       molden->write(options.get_str("MOLDEN_FILE"));
+    }
+
     // Set some environment variables
     Process::environment.globals["SCF TOTAL ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
