@@ -8,6 +8,8 @@
 /* gcc 2.7.0 doesn't like #include <cstring> */
 #include "slaterd.h"
 
+#include <psi4-dec.h>
+
 namespace psi { namespace detci {
 
 extern double get_twoel(int i, int j, int k, int l);
@@ -189,8 +191,7 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
    // beta electrons without re-initializing the static arrays
    else {
       if ((nalp != init_nalp) || (nbet != init_nbet)) {
-         fprintf(stderr, "(matrix_element): nalp/nbet != init_nalp/nbet\n");
-         exit(1);
+         throw PsiException("(matrix_element): nalp/nbet != init_nalp/nbet",__FILE__,__LINE__);
          }
       
       }
@@ -289,9 +290,7 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
          } /* end else if for differ by 2 in alpha or beta */
 
       else {
-         fprintf(stderr, "Error (matrix_element): total_diff != alpha_diff ");
-         fprintf(stderr, "+ beta_diff\n");
-         exit(1);
+         throw PsiException("Error (matrix_element): total_diff != alpha_diff + beta_diff",__FILE__,__LINE__);
          }
  
       } /* end else if for differ by 2 spin orbitals */
@@ -339,8 +338,7 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
          } /* end Case 1: 1 in beta */
 
       else {
-         fprintf(stderr, "(matrix_element): impossible case abdiff\n");
-         exit(0);
+         throw PsiException("(matrix_element): impossible case abdiff",__FILE__,__LINE__);
          }
 
       i = I_diff[diffspin][0];
@@ -551,8 +549,7 @@ double matrix_element(SlaterDeterminant* I, SlaterDeterminant* J)
       } /* end total_diff == 0 case */
 
    else {
-      fprintf(stderr, "(matrix_element): Impossible case for total_diff!  \n");
-      exit(1);
+      throw PsiException("(matrix_element): Impossible case for total_diff!",__FILE__,__LINE__);
       }
 
    return(0.0);

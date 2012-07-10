@@ -601,7 +601,272 @@ void NBOWriter::write(const std::string &filename)
 }
 
 
+MOWriter::MOWriter(boost::shared_ptr<Wavefunction> wavefunction,Options&options)
+    : wavefunction_(wavefunction), options_(options)
+{
+}
 
+void MOWriter::write()
+{
+    // what kind of reference?
+    bool isrestricted = true;
+    if (options_.get_str("REFERENCE") == "UHF")  isrestricted = false;
+    if (options_.get_str("REFERENCE") == "UKS")  isrestricted = false;
+    if (options_.get_str("REFERENCE") == "CUHF") isrestricted = false;
 
+    // Get the molecule for ease
+    BasisSet& basisset = *wavefunction_->basisset().get();
+    SOBasisSet& sobasisset = *wavefunction_->sobasisset().get();
+    Molecule & mol = *basisset.molecule().get();
 
+    // Convert Ca & Cb
+    // make copies
+    Matrix Ca(wavefunction_->Ca());
+    Matrix Cb(wavefunction_->Cb());
+    Vector& Ea = *wavefunction_->epsilon_a().get();
+    Vector& Eb = *wavefunction_->epsilon_b().get();
+
+    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
+
+    // get the "aotoso" transformation matrix, ao by so
+    SharedMatrix aotoso = pl->aotoso();
+    // need dimensions
+    const Dimension aos = pl->AO_basisdim();
+    const Dimension sos = pl->SO_basisdim();
+
+    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, sos));
+    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, sos));
+
+    // do the half transform
+    Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
+    Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
+
+    int nirrep = Ca_ao_mo->nirrep();
+
+    // order orbitals in terms of energy:
+    int minorb;
+    nmo = 0;
+    for (int h = 0; h < nirrep; h++) nmo += wavefunction_->nmopi()[h];
+
+    map  = new int[nmo];
+    bool * skip = new bool[nmo];
+    for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
+    for (int orb = 0; orb < nmo; orb++) {
+
+        int count = 0;
+        double minen = 1.0e9;
+        for (int h = 0; h < nirrep; h++) {
+            for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+
+                if ( skip[count] ) {
+                   count++;
+                   continue;
+                }
+                if ( Ea.get(h,n) <= minen ) {
+                   minen = Ea.get(h,n);
+                   minorb = count;
+                }
+
+                count++;
+                
+            }
+        }
+        map[ orb ] = minorb;
+        skip[ minorb ] = true;
+    }
+
+    // reorder orbitals:
+    nso = wavefunction_->nso();
+    eps = new double[nmo];
+    sym = new int[nmo];
+    occ = new int[nmo];
+    Ca_pointer = new double[nmo * nso];
+    for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
+
+    int count = 0;
+    int extra = isrestricted ? 1 : 0;
+    for (int h = 0; h < nirrep; h++) {
+        double ** Ca_old = Ca_ao_mo->pointer(h);
+        for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+            occ[ count ] = n < ( wavefunction_->doccpi()[h] + wavefunction_->soccpi()[h] ) ? 1 : 0;
+            occ[ count ] += n <  wavefunction_->doccpi()[h] ? extra : 0;
+            eps[ count ] = Ea.get(h,n);
+            sym[ count ] = h;
+            for (int mu = 0; mu < nso; mu++) {
+                Ca_pointer[mu*nmo + count] = Ca_old[mu][n];
+            }
+            count++;
+
+        }
+    }
+
+    // dump to output file
+    fprintf(outfile,"\n");
+    if ( isrestricted ) 
+       fprintf(outfile,"  ==> Molecular Orbitals <==\n");
+    else
+       fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
+    fprintf(outfile,"\n");
+
+    write_mos(mol);
+
+    // now for beta spin
+    if ( !isrestricted ) {
+   
+   
+       // order orbitals in terms of energy
+       for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
+       for (int orb = 0; orb < nmo; orb++) {
+   
+           int count = 0;
+           double minen = 1.0e9;
+           for (int h = 0; h < nirrep; h++) {
+               for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+   
+                   if ( skip[count] ) {
+                      count++;
+                      continue;
+                   }
+   
+                   if ( Eb.get(h,n) <= minen ) {
+                      minen = Eb.get(h,n);
+                      minorb = count;
+                   }
+                   count++;
+                   
+               }
+           }
+           map[ orb ] = minorb;
+           skip[ minorb ] = true;
+       }
+   
+   
+       // reorder orbitals:
+       for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
+       count = 0;
+       for (int h = 0; h < nirrep; h++) {
+           double ** Ca_old = Cb_ao_mo->pointer(h);
+           for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
+               occ[ count ] = n < wavefunction_->doccpi()[h] ? 1 : 0;
+               eps[ count ] = Eb.get(h,n);
+               sym[ count ] = h;
+               for (int mu = 0; mu < nso; mu++) {
+                   Ca_pointer[mu*nmo + count] = Ca_old[mu][n];
+               }
+               count++;
+   
+           }
+       }
+   
+       // dump to output file
+       fprintf(outfile,"\n");
+       fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
+       fprintf(outfile,"\n");
+       write_mos(mol);
+    }
+
+    delete skip;
+    delete occ;
+    delete sym;
+    delete eps;
+    delete Ca_pointer;
+}
+
+void MOWriter::write_mos(Molecule & mol){
+
+    CharacterTable ct = mol.point_group()->char_table();
+
+    // print mos (5 columns)
+    int ncols = 5;
+    int ncolsleft = nmo % ncols;
+    int nrows = (nmo - ncolsleft ) / ncols;
+
+    // print the full rows:
+    int count = 0;
+    for (int i = 0; i < nrows; i++) {
+
+        // print blank space
+        fprintf(outfile,"     ");
+        // print mo number
+        for (int j = 0; j < ncols; j++){
+            fprintf(outfile,"%13d",count+j+1);
+        }
+        fprintf(outfile,"\n");
+        fprintf(outfile,"\n");
+        // print orbitals
+        for (int mu = 0; mu < nso; mu++) {
+            // print ao number
+            fprintf(outfile,"%5i",mu+1);
+            for (int j = 0; j < ncols; j++){
+
+                fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
+            }
+            fprintf(outfile,"\n");
+        }
+        fprintf(outfile,"\n");
+        // print energy
+        fprintf(outfile," Ene ");
+        for (int j = 0; j < ncols; j++){
+            fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
+        }
+        fprintf(outfile,"\n");
+        // print symmetry
+        fprintf(outfile," Sym ");
+        for (int j = 0; j < ncols; j++){
+            fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
+        }
+        fprintf(outfile,"\n");
+        // print occupancy
+        fprintf(outfile," Occ ");
+        for (int j = 0; j < ncols; j++){
+            fprintf(outfile,"%13d",occ[map[count+j]]);
+        }
+        fprintf(outfile,"\n");
+        fprintf(outfile,"\n");
+        fprintf(outfile,"\n");
+        count+=ncols;
+    }
+
+    // print the partial rows:
+    if ( ncolsleft > 0 ) {
+    
+        // print blank space
+        fprintf(outfile,"     ");
+        // print mo number
+        for (int j = 0; j < ncolsleft; j++){
+            fprintf(outfile,"%13d",count+j+1);
+        }
+        fprintf(outfile,"\n");
+        fprintf(outfile,"\n");
+        // print orbitals
+        for (int mu = 0; mu < nso; mu++) {
+            // print ao number
+            fprintf(outfile,"%5i",mu+1);
+            for (int j = 0; j < ncolsleft; j++){
+                fprintf(outfile,"%13.7lf",Ca_pointer[ mu*nmo + map[count + j] ]);
+            }
+            fprintf(outfile,"\n");
+        }
+        fprintf(outfile,"\n");
+        // print energy
+        fprintf(outfile," Ene ");
+        for (int j = 0; j < ncolsleft; j++){
+            fprintf(outfile,"%13.7lf",eps[ map[count + j] ]);
+        }
+        fprintf(outfile,"\n");
+        fprintf(outfile," Sym ");
+        for (int j = 0; j < ncolsleft; j++){
+            fprintf(outfile,"%13s",ct.gamma(sym[map[count+j]]).symbol());
+        }
+        fprintf(outfile,"\n");
+        // print occupancy
+        fprintf(outfile," Occ ");
+        for (int j = 0; j < ncolsleft; j++){
+            fprintf(outfile,"%13d",occ[map[count+j]]);
+        }
+        fprintf(outfile,"\n");
+        fprintf(outfile,"\n");
+
+    }
+}
 

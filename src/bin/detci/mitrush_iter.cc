@@ -142,8 +142,7 @@ void mitrush_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (Parameters.restart) {
      fprintf(outfile,"\nAttempting Restart with 1 vector\n");
      if ((i=Cvec.read_num_vecs())< 1) {
-       fprintf(outfile, "CI vector file contains %d vectors, need 1.\n", i);
-       exit(0);
+       throw PsiException("CI vector file should contain only 1 vector.",__FILE__,__LINE__);
      }
      fflush(outfile);
      Cvec.buf_lock(buffer1);
