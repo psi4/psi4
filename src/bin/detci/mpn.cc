@@ -299,9 +299,16 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,cvec_coeff[k-1],
            (&cvec_norm[k-1]),&max_overlap)) did_vec = 1;
        else {
-           fprintf(outfile," %d vector norm = %20.15f < %20.15f\n",
-                   k-1, cvec_norm[k-1], MPn_NORM_TOL);
-           exit(0);
+           std::string str = static_cast<std::ostringstream*>( &(std::ostringstream() << 13) )->str();
+           str += " vector norm = "; 
+           char*str2 = new char[25];
+           sprintf(str2,"%20.15lf",cvec_norm[k-1]);
+           str += str2;
+           str += " < ";
+           sprintf(str2,"%20.15lf",MPn_NORM_TOL);
+           str += str2;
+           delete str2;
+           throw PsiException(str,__FILE__,__LINE__);
            } 
        while (max_overlap > MPn_ZERO) {
          fprintf(outfile,"Second Schmidt-Orthogonalization performed.\n");
@@ -318,9 +325,16 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
          if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,tmp_coeff,
             &tmp_norm,&max_overlap)) did_vec = 1;
          else {
-           fprintf(outfile," %d vector norm = %20.15f < %20.15f\n",
-                  k-1, cvec_norm[k-1], MPn_NORM_TOL);
-           exit(0);
+           std::string str = static_cast<std::ostringstream*>( &(std::ostringstream() << 13) )->str();
+           str += " vector norm = "; 
+           char*str2 = new char[25];
+           sprintf(str2,"%20.15lf",cvec_norm[k-1]);
+           str += str2;
+           str += " < ";
+           sprintf(str2,"%20.15lf",MPn_NORM_TOL);
+           str += str2;
+           delete str2;
+           throw PsiException(str,__FILE__,__LINE__);
            }
          for (i=0; i<k-1; i++) { 
             fprintf(outfile, "second coeff[%d] = %20.15f\n",i,tmp_coeff[i]);

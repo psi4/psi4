@@ -389,6 +389,42 @@ public:
     double get(const int& m, const int& n) const { return matrix_[0][m][n]; }
 
     /**
+     * Returns a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    SharedVector get_row(int h, int m);
+
+    /**
+     * Returns a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    SharedVector get_column(int h, int m);
+
+    /**
+     * Set a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    void set_row(int h, int m, SharedVector vec);
+
+    /**
+     * Set a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    void set_column(int h, int m, SharedVector vec);
+
+    /**
      * Python wrapper for get
      */
     double pyget(const boost::python::tuple& key);
@@ -904,6 +940,10 @@ public:
     void zero_lower();
     /*! Zero upper triangle */
     void zero_upper();
+    /*! Zero row */
+    void zero_row(int h, int i);
+    /*! Zero column */
+    void zero_column(int h, int i);
 
     // Reference versions of the above functions
     /// Transform a by transformer save result to this
