@@ -357,9 +357,12 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
       fprintf(outfile," Number of b vectors = %d\n", L);
 
       if (L > maxnvect) {
-         fprintf(outfile, "(test_sem): L(%2d) > maxnvect(%2d)!",L,maxnvect);
-         fprintf(outfile, " Aborting!\n");
-         exit(0);
+         std::string str = "(test_sem): L(";
+         str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+         str += ") > maxnvect(";
+         str += static_cast<std::ostringstream*>( &(std::ostringstream() << maxnvect) )->str();
+         str += ")! Aborting!";
+         throw PsiException(str,__FILE__,__LINE__);
          }
 
       /* Again Schmidt orthog b's (minimize numerical error) */

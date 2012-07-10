@@ -195,8 +195,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    
    occlist = (unsigned char *) malloc (N * sizeof(unsigned char));
    if (occlist == NULL) {
-      fprintf(stderr, "(form_stringwr): Malloc error\n");
-      exit(0);
+      throw PsiException("(form_stringwr): Malloc error",__FILE__,__LINE__);
       }
 
    for (i=0; i<N; i++) {

@@ -802,8 +802,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
          for (j=0,tmpi=0; Parameters.Ms0 && j<L && !tmpi; j++) {
             l = H0block.pair[j];
             if (l == -1) {
-               printf("(diag_h sem_test): unpaired H0block member!\n");
-               exit(1);
+               throw PsiException("(diag_h sem_test): unpaired H0block member!",__FILE__,__LINE__);
                }
             tval = sm_evecs[l][i];
             if ((int) Parameters.S%2) tval = -tval;
@@ -826,8 +825,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
       for (i=k; i<Parameters.num_init_vecs; i++) free(b[i]);
       L = k;
       if (L < Parameters.num_roots) {
-         printf("(diag_h sem_test): Ooops! L < num_roots!\n");
-         exit(1);
+         throw PsiException("(diag_h sem_test): Ooops! L < num_roots!",__FILE__,__LINE__);
          }
       sem_test(H, size, Parameters.num_roots, L, evecs, evals, b, conv_e,
          conv_rms, Parameters.maxiter, (nucrep+CalcInfo.efzc), &i,
