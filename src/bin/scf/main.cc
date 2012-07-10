@@ -15,6 +15,7 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
+#include <libmints/writer.h>
 #include <psi4-dec.h>
 
 #include <libscf_solver/rhf.h>
@@ -73,6 +74,17 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     energy = scf->compute_energy();
 
     Communicator::world->sync();
+
+    // Print a molden file
+    if ( options["MOLDEN_FILE"].has_changed() ) {
+       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
+       molden->write(options.get_str("MOLDEN_FILE"));
+    }
+    // Print molecular orbitals
+    if ( options.get_bool("PRINT_MOS") ) {
+       boost::shared_ptr<MOWriter> mo(new MOWriter(scf,options));
+       mo->write();
+    }
 
     // Set some environment variables
     Process::environment.globals["SCF TOTAL ENERGY"] = energy;

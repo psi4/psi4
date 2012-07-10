@@ -69,6 +69,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    double lse_tolerance, *renorm_c, *E_est, ovlpmax=0.0;
    double cknorm, tvalmatt=0.0, tmp; /* Add by CDS for debugging purposes */
    int errcod; 
+   std::string str;
  
    CIvect Cvec;
    CIvect Cvec2;
@@ -247,9 +248,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 	fprintf(outfile, "Using %d vectors \n", L);
       }
       if (L < nroots) {
-        fprintf(outfile, "\nRestart failed... %d vectors for %d roots\n", 
-                L, nroots);
-        exit(0);
+        str = "Restart failed...  ";
+        str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+        str += " vectors for ";
+        str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+        str += " roots";
+        throw PsiException(str,__FILE__,__LINE__);
       }
         
       fprintf(outfile, "\nAttempting Restart with %d vectors\n", L);
@@ -320,8 +324,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       /* loop over roots and write out the required number of vects */
       if (nroots + L > maxnvect) {
-         fprintf(outfile,"Error: Can't do restart if maxnvect < nroots + L\n");
-         exit(0);
+         throw PsiException("Error: Can't do restart if maxnvect < nroots + L",__FILE__,__LINE__);
          }
       
 
@@ -385,9 +388,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      Cvec.buf_lock(buffer1);
      Dvec.buf_lock(buffer2);
      if ((i = Dvec.read_num_vecs()) < nroots) {
-       fprintf(outfile, "Only %d vectors available in D file for %d roots!\n",
-               i, nroots); 
-       exit(0);
+       str = "Only ";
+       str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+       str += " vectors available in D file for ";
+       str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+       str += " roots!";
+       throw PsiException(str,__FILE__,__LINE__);
      }
      
 
@@ -553,9 +559,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    fflush(outfile);
 
    if (k < nroots) {
-      printf("(sem_iter): Failure to get required number of guess vects.\n");
-      printf("  Got %d, need nroots=%d to proceed.  Aborting\n", k, nroots);
-      exit(1);
+      str = "(sem_iter): Failure to get required number of guess vects.\n";
+      str += "  Got ";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << k) )->str();
+      str += ", need nroots=";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+      str += " to proceed.  Aborting";
+      throw PsiException(str,__FILE__,__LINE__);
    }
 
    L = k;
@@ -1045,9 +1055,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           buffer1,buffer2,root_converged,(print_lvl > 4),outfile,E_est);
          }
         else { 
-          fprintf(outfile,
-                  "UPDATE option not recognized.  Choose DAVIDSON or OLSEN\n");
-          exit(0);
+          throw PsiException("UPDATE option not recognized.  Choose DAVIDSON or OLSEN",__FILE__,__LINE__);
           }
 
 
@@ -1185,9 +1193,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          if (Dvec.schmidt_add(Cvec, L)) L++;
          Cvec.buf_unlock();
          if (L > maxnvect) {
-            fprintf(outfile, "(sem_iter): L(%2d) > maxnvect(%2d)!",L,maxnvect);
-            fprintf(outfile, " Aborting!\n");
-            exit(0);
+            str = "(sem_iter): L(";
+            str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+            str += ") > maxnvect(";
+            str += static_cast<std::ostringstream*>( &(std::ostringstream() << maxnvect) )->str();
+            str += "!  Aborting!";
+            throw PsiException(str,__FILE__,__LINE__);
             }
          } /* end loop over roots for new expansion vectors */
 
