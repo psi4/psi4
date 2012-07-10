@@ -1147,6 +1147,7 @@ AC_CONFIG_FILES([
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
+          tests/mints5/Makefile
           tests/omp2_1/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
