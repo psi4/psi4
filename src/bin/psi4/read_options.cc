@@ -843,6 +843,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+    /*- The name of a molden-style output file which is only generated
+    if the user specifies one -*/
+    options.add_str("MOLDEN_FILE", "");
+    /*- Flag to print the molecular orbitals. -*/
+    options.add_bool("PRINT_MOS", false);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
@@ -1158,11 +1163,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- Do ? -*/
+    /*- Do print two-electron integrals (TEIs)? -*/
     options.add_bool("PRINT_TEI", false);
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- -*/
+    /*- Controls how to cache quantities within the DPD library !expert-*/
     options.add_int("CACHELEVEL", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
@@ -1179,106 +1184,108 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "CCSD");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
+    /*- The amount of information to print to the output file.  1 prints
+     basic information, and higher levels print more information. A value
+     of 5 will print very large amounts of debugging information. -*/
     options.add_int("PRINT_LVL", 1);
-    /*- -*/
+    /*- The way of transformation, from ao basis to mo basis or vice versa -*/
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
-    /*- Do ? -*/
+    /*- Do specific arrangements for PSIMRCC? -*/
     options.add_bool("PSIMRCC", false);
-    /*- -*/
+    /*- Transformations for explicitly-correlated MP2 methods -*/
     options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- -*/
+    /*- One-electron parameters file -*/
     options.add_int("OEI_FILE", PSIF_OEI);
-    /*- -*/
+    /*- Alpha-spin one-electron parameters file -*/
     options.add_int("OEI_A_FILE", PSIF_OEI);
-    /*- -*/
+    /*- Beta-spin one-electron parameters file -*/
     options.add_int("OEI_B_FILE", PSIF_OEI);
-    /*- -*/
+    /*- Frozen-core file -*/
     options.add_int("FZC_FILE", PSIF_OEI);
-    /*- -*/
+    /*- Alpha-spin frozen-core file -*/
     options.add_int("FZC_A_FILE", PSIF_OEI);
-    /*- -*/
+    /*- Beta-spin frozen-core file -*/
     options.add_int("FZC_B_FILE", PSIF_OEI);
-    /*- -*/
+    /*- MO-basis sorted two-electron integrals file -*/
     options.add_int("SORTED_TEI_FILE", PSIF_MO_TEI);
-    /*- -*/
+    /*- MO-basis two-particle density matrix file -*/
     options.add_int("TPDM_FILE", PSIF_MO_TPDM);
-    /*- -*/
+    /*- SO basis overlap matrix file -*/
     options.add_int("SO_S_FILE", PSIF_OEI);
-    /*- -*/
+    /*- SO basis kinetic energy matrix file -*/
     options.add_int("SO_T_FILE", PSIF_OEI);
-    /*- -*/
+    /*- SO basis potential energy matrix file -*/
     options.add_int("SO_V_FILE", PSIF_OEI);
-    /*- -*/
+    /*- SO basis two-electron integrals file -*/
     options.add_int("SO_TEI_FILE", PSIF_SO_TEI); // ?
-    /*- -*/
+    /*- First temporary file -*/
     options.add_int("FIRST_TMP_FILE", 150);
-    /*- -*/
+    /*- MO-basis one-particle density matrix file -*/
     options.add_int("OPDM_IN_FILE", PSIF_MO_OPDM);
-    /*- -*/
+    /*- AO-basis one-particle density matrix file -*/
     options.add_int("OPDM_OUT_FILE", PSIF_AO_OPDM);
-    /*- -*/
+    /*- MO-basis MO-lagrangian file -*/
     options.add_int("LAG_IN_FILE", PSIF_MO_LAG);
-    /*- -*/
+    /*- SO-basis presort file -*/
     options.add_int("PRESORT_FILE", PSIF_SO_PRESORT);
-    /*- Do ? -*/
+    /*- Do keep presort file? -*/
     options.add_bool("KEEP_PRESORT", false);
-    /*- -*/
+    /*- Half-transformed integrals -*/
     options.add_int("J_FILE", 91);
     /*- Do keep half-transformed integrals? -*/
     options.add_bool("KEEP_J", false);
-    /*- -*/
+    /*- Output integrals file -*/
     options.add_int("M_FILE", 0); // output integrals file; depends on direction
-    /*- -*/
+    /*- MO basis (PQ|RS) type two-electron integrals file -*/
     options.add_int("AA_M_FILE", PSIF_MO_AA_TEI);
-    /*- -*/
+    /*- MO basis (pq|rs) type two-electron integrals file -*/
     options.add_int("BB_M_FILE", PSIF_MO_BB_TEI);
-    /*- -*/
+    /*- MO basis (PQ|rs) type two-electron integrals file -*/
     options.add_int("AB_M_FILE", PSIF_MO_AB_TEI);
-    /*- -*/
+    /*- Maximum buckets -*/
     options.add_int("MAX_BUCKETS", 499);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Don't ? -*/
+    /*- Do delete AO integral files? -*/
     options.add_bool("DELETE_AO", true);
-    /*- Don't ? -*/
+    /*- Do delete TPDM file? -*/
     options.add_bool("DELETE_TPDM", true);
-    /*- Do ? -*/
+    /*- Do print two-electron integrals? -*/
     options.add_bool("PRINT_TE_INTEGRALS", false);
-    /*- Do ? -*/
+    /*- Do print one-electron integrals? -*/
     options.add_bool("PRINT_OE_INTEGRALS", false);
-    /*- Do ? -*/
+    /*- Do print sorted one-electron integrals? -*/
     options.add_bool("PRINT_SORTED_OE_INTS", false);
-    /*- Do ? -*/
+    /*- Do print sorted two-electron integrals (TEIs)? -*/
     options.add_bool("PRINT_SORTED_TE_INTS", false);
-    /*- Do ? -*/
+    /*- Do print MOs? -*/
     options.add_bool("PRINT_MOS", false);
 
-    /*- Do ? -*/
+    /*- Do multiply the MO-lagrangian by 2.0? -*/
     options.add_bool("LAGRAN_DOUBLE", false);
-    /*- Do ? -*/
+    /*- Do divide the MO-lagrangian by 2.0? -*/
     options.add_bool("LAGRAN_HALVE", false);
-    /*- Do ? -*/
+    /*- Do transform all TEIs -*/
     options.add_bool("DO_ALL_TEI", false);
-    /*- Do ? -*/
+    /*- Do add reference contribution to TPDM? -*/
     options.add_bool("TPDM_ADD_REF", false);
-    /*- Don't ? -*/
+    /*- Do delete restricted doubly occupieds? -*/
     options.add_bool("DELETE_RESTR_DOCC", true);
-    /*- Do ? -*/
+    /*- Do print reordered MOs? -*/
     options.add_bool("PRINT_REORDER", false);
-    /*- Do ? -*/
+    /*- Do use Pitzer ordering? -*/
     options.add_bool("PITZER", false);
-    /*- Do ? -*/
+    /*- Do reorder MOs? -*/
     options.add_bool("REORDER", false);
-    /*- Do ? -*/
+    /*- Do check MO orthogonality condition? -*/
     options.add_bool("CHECK_C_ORTHONORM", false);
-    /*- Do ? -*/
+    /*- Do form quasi RHF (QRHF) orbitals? -*/
     options.add_bool("QRHF", false);
-    /*- Do ? -*/
+    /*- Do form improved virtual orbitals (IVO)? -*/
     options.add_bool("IVO", false);
-    /*- -*/
+    /*- Numbering of MOs for reordering requests?  -*/
     options.add("MOORDER", new ArrayType());
 
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
@@ -1311,31 +1318,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
-    /*- -*/
+    /*- Reference wavefunction type for EOM computations -*/
     options.add_str("EOM_REFERENCE","RHF");
-    /*- -*/
+    /*- The response property desired.  The unique acceptable values is ``POLARIZABILITY``
+    for dipole-polarizabilitie. -*/
     options.add_str("PROPERTY", "POLARIZABILITY");
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", false);
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- -*/
+    /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-    /*- -*/
+    /*- Local core cutoff value -*/
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
+    developed by H.-J. Werner and co-workers. -*/
     options.add_str("LOCAL_METHOD","WERNER");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
+    the same manner as strong pairs. -*/
     options.add_str("LOCAL_WEAKP","NONE");
-    /*- -*/
+    /*- Definition of local pair domains, unique avaliable option is BP, Boughton-Pulay. -*/
     options.add_str("LOCAL_PAIRDEF","BP");
-    /*- Do ? -*/
+    /*- Do use augment domains with polarized orbitals? -*/
     options.add_bool("LOCAL_DOMAIN_POLAR", false);
-    /*- Do ? -*/
+    /*- Do generate magnetic-field CPHF solutions for local-CC? -*/
     options.add_bool("LOCAL_DOMAIN_MAG", false);
     /*- Do ? -*/
     options.add_bool("LOCAL_DOMAIN_SEP", false);
-    /*- Do ? -*/
+    /*- Do apply local filtering to single excitation amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", false);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
@@ -1345,7 +1358,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("KEEP_OEIFILE", false);
     /*- Minimum absolute value below which integrals are neglected. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL", 2);
     /*- Energy of applied field [au] for dynamic properties -*/
     options.add("OMEGA", new ArrayType());
@@ -1391,13 +1410,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PROP_ALL",true);
     /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 1);
-    /*- -*/
+    /*- Root number (within its irrep) for computing properties -*/
     options.add_int("PROP_ROOT", 1);
     /*- Do compute Xi? -*/
     options.add_bool("XI", false);
-    /*- Do ? -*/
+    /*- Do use zeta?  -*/
     options.add_bool("ZETA",false);
-    /*- Do ? -*/
+    /*- Do compute one-particle density matrix? -*/
     options.add_bool("ONEPDM",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
@@ -1407,47 +1426,61 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN","SCF");
     /*- Convergence criterion for wavefunction (change) in CC lambda-amplitude equations. -*/
     options.add_double("R_CONVERGENCE",1e-7);
-    /*- Do ? -*/
+    /*- Do restart the coupled-cluster iterations from old $\lambda@@1$ and $\lambda@@2$
+    amplitudes? -*/
     options.add_bool("RESTART",false);
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Do ? -*/
+    /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",false);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- -*/
+    /*- Type of ABCD algorithm will be used -*/
     options.add_str("ABCD","NEW");
-    /*- -*/
+    /*- Number of important CC amplitudes per excitation level to print.
+    CC analog to |detci__num_dets_print|. -*/
     options.add_int("NUM_AMPS_PRINT",10);
     /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE","");
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL",false);
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
+    the same manner as strong pairs. -*/
     options.add_str("LOCAL_WEAKP","NONE");
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF",0.02);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
+    developed by H.-J. Werner and co-workers. -*/
     options.add_str("LOCAL_METHOD","WERNER");
-    /*- Do ? -*/
+    /*- Do apply local filtering to single de-excitation ($\lambda 1$ amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES",true);
-    /*- -*/
+    /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    /*- -*/
+    /*- Definition of local pair domains -*/
     options.add_str("LOCAL_PAIRDEF","");
-    /*- -*/
+    /*- The number of electronic states to computed, per irreducible
+    representation -*/
     options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- Compute unrelaxed properties for all excited states. -*/
     options.add_bool("PROP_ALL",true);
-    /*- -*/
+    /*- The symmetry of states -*/
     options.add_int("PROP_SYM",1);
-    /*- -*/
+    /*- Root number (within its irrep) for computing properties -*/
     options.add_int("PROP_ROOT",1);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
-    /*- -*/
+    /*- Do use zeta?  -*/
     options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
@@ -1504,11 +1537,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
          properties and/or gradients are required. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- -*/
+    /*- Reference wavefunction type for EOM computations -*/
     options.add_str("EOM_REFERENCE","RHF");
     /*- Do compute the Tamplitude equation matrix elements? -*/
     options.add_bool("T_AMPS",false);
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
     options.add_bool("WABEI_LOWDISK", false);
@@ -1519,37 +1558,51 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- -*/
+    /*- Reference wavefunction type for EOM computations -*/
     options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
-    /*- Do ? -*/
+    /*- Do use full effective Hamiltonian matrix? -*/
     options.add_bool("FULL_MATRIX",false);
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- -*/
+    /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
     /*- Number of threads -*/
     options.add_int("CC_NUM_THREADS", 1);
-    /*- -*/
+    /*- Type of ABCD algorithm will be used -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
-    /*- Do ? -*/
+    /*- Do build W intermediates required for eom_cc3 in core memory? -*/
     options.add_bool("T3_WS_INCORE", false);
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", false);
-    /*- -*/
+     /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` selects the method
+    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
+    developed by G.E. Scuseria and co-workers (currently inoperative). -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
+    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+    the same manner as strong pairs. A value of MP2 uses second-order perturbation
+    theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
-    /*- -*/
+    /*- Preconditioner will be used in local CC computations -*/
     options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
     /*- -*/
     options.add_int("LOCAL_GHOST", -1);
     /*- Do ? -*/
     options.add_bool("LOCAL_DO_SINGLES", true);
-    /*- Do ? -*/
+    /*- Do apply local filtering to singles amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", true);
-    /*- Do ? -*/
+    /*- Do use new triples? -*/
     options.add_bool("NEW_TRIPLES", true);
     /*- Number of excited states per irreducible representation for EOM-CC
     and CC-LR calculations. Irreps denote the final state symmetry, not the
@@ -1563,9 +1616,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Root number (within its irrep) for computing properties. Defaults to
     highest root requested. -*/
     options.add_int("PROP_ROOT", 0);
-    /*- Do ? -*/
+    /*- Do turn on root following for CC3 -*/
     options.add_bool("CC3_FOLLOW_ROOT", false);
-    /*- Do ? -*/
+    /*- Do form a triplet state from RHF reference? -*/
     options.add_bool("RHF_TRIPLETS", false);
     /*- The depth into the occupied and valence spaces from which one-electron
     excitations are seeded into the Davidson guess to the CIS (the default of 2
@@ -1576,15 +1629,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do print information on the iterative solution to the single-excitation
     EOM-CC problem used as a guess to full EOM-CC? -*/
     options.add_bool("SINGLES_PRINT", false);
-    /*- -*/
+    /*- SS vectors stored per root -*/
     options.add_int("SS_VECS_PER_ROOT", 5);
-    /*- -*/
+    /*- Vectors stored per root -*/
     options.add_int("VECS_PER_ROOT", 12);
-    /*- -*/
+    /*- Vectors stored in CC3 computations -*/
     options.add_int("VECS_CC3", 10);
-    /*- Do ? -*/
+    /*- Do collapse with last vector? -*/
     options.add_bool("COLLAPSE_WITH_LAST", true);
-    /*- -*/
+    /*- Complex tolerance applied in CCEOM computations -*/
     options.add_double("COMPLEX_TOLERANCE", 1E-12);
     /*- Convergence criterion for norm of the residual vector in the Davidson algorithm for CC-EOM. -*/
     options.add_double("R_CONVERGENCE", 1E-6);
@@ -1599,9 +1652,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value above which a guess vector to a root is added
     to the Davidson algorithm in the EOM-CC iterative procedure. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
-    /*- Do ? -*/
+    /*- Do skip diagonalization of Hbar SS block? -*/
     options.add_bool("SS_SKIP_DIAG", false);
-    /*- Do ? -*/
+    /*- Do restart from on-disk? -*/
     options.add_bool("RESTART_EOM_CC3", false);
     /*- Specifies a set of single-excitation guess vectors for the EOM-CC
     procedure.  If EOM_GUESS = ``SINGLES``, the guess will be taken from
@@ -1638,27 +1691,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
     ``ROA`` for Raman Optical Activity, and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
-    /*- -*/
+    /*- Type of ABCD algorithm will be used -*/
     options.add_str("ABCD","NEW");
     /*- Do restart from on-disk amplitudes? -*/
     options.add_bool("RESTART",1);
     /*- Do simulate local correlation? -*/
     options.add_bool("LOCAL",0);
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF",0.01);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique avaliable option) selects the method
+    developed by H.-J. Werner and co-workers. -*/
     options.add_str("LOCAL_METHOD","WERNER");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique avaliable option) treats weak pairs in
+    the same manner as strong pairs. -*/
     options.add_str("LOCAL_WEAKP","NONE");
-    /*- Do ? -*/
+    /*- Do apply local filtering to single excitation amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", false);
-    /*- -*/
+    /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    /*- -*/
+    /*- Definition of local pair domains -*/
     options.add_str("LOCAL_PAIRDEF","NONE");
-    /*- Do ? -*/
+    /*- Do analyze X2 amplitudes -*/
     options.add_bool("ANALYZE",0);
-    /*- -*/
+    /*- Number of important CC amplitudes per excitation level to print.
+    CC analog to |detci__num_dets_print|. -*/
     options.add_int("NUM_AMPS_PRINT",5);
     /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",0);
@@ -1675,7 +1734,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
-    /*- -*/
+    /*- Array that specifies the desired frequencies of the incident
+    radiation field in CCLR calculations.  If only one element is
+    given, the units will be assumed to be atomic units.  If more
+    than one element is given, then the units must be specified as the final
+    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
     options.add("OMEGA", new ArrayType());
     /*- Array that specifies the desired frequencies of the incident
     radiation field in CCLR calculations.  If only one element is
@@ -1729,7 +1792,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
     /*- Do canonicalize the inactive (DOCC and Virtual) orbitals such that the average Fock matrix is diagonal? -*/
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
-    /*- Do ? -*/
+    /*- Do consider internal rotations? -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
     /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ ? -*/
     options.add_bool("FORCE_TWOCON",false);
@@ -1747,9 +1810,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- Do ? -*/
+    /*- Do use new triples? -*/
     options.add_bool("NEW_TRIPLES", 1);
-    /*- Do ? -*/
+    /*- Do analyze T2 amplitudes -*/
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
@@ -1798,9 +1861,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS", true);
     /*- Do ? -*/
     options.add_bool("T2_COUPLED", false);
-    /*- -*/
+    /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
+    (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
+    ``ROA`` for Raman Optical Activity, and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
-    /*- -*/
+    /*- Type of ABCD algorithm will be used -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
     /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", 0);
@@ -1819,8 +1884,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
+    /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-    /*- -*/
+    /*- Definition of local pair domains, default is BP, Boughton-Pulay. -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
@@ -1833,21 +1899,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PAIR_ENERGIES_PRINT", 0);
     /*- Do print spin-adapted pair energies? -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
-    /*- Do ? -*/
+    /*- Do build W intermediates required for cc3 in core memory? -*/
     options.add_bool("T3_WS_INCORE", 0);
-    /*- Do ? -*/
+    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
     options.add_bool("SCSN_MP2", 0);
-    /*- Do ? -*/
+    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
     options.add_bool("SCS_MP2", 0);
-    /*- Do ? -*/
+    /*- Do spin-component-scaled CCSD -*/
     options.add_bool("SCS_CCSD", 0);
-    /*- -*/
+    /*- MP2 opposite-spin scaling value -*/
     options.add_double("MP2_OS_SCALE",1.20);
-    /*- -*/
+    /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
-    /*- -*/
+    /*- Coupled-cluster opposite-spin scaling value -*/
     options.add_double("CC_OS_SCALE", 1.27);
-    /*- -*/
+    /*- Coupled-cluster same-spin scaling value -*/
     options.add_double("CC_SS_SCALE",1.13);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
@@ -1860,7 +1926,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- -*/
+    /*- Cutoff value for printing local amplitudes -*/
     options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
@@ -1869,21 +1935,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The number of electronic states to computed, per irreducible
     representation-*/
     options.add("ROOTS_PER_IRREP", new ArrayType());
-    /*- -*/
+    /*- Diagonalization method for the CI matrix -*/
     options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", false);
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- -*/
+    /*- Type of local-CIS scheme to be simulated. ``WERNER`` selects the method
+    developed by H.-J. Werner and co-workers, and ``AOBASIS`` selects the method
+    developed by G.E. Scuseria and co-workers. -*/
     options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CIS method. A value of
+    ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+    the same manner as strong pairs. A value of MP2 uses second-order perturbation
+    theory to correct the local-CIS energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
     /*- -*/
     options.add_int("LOCAL_GHOST", -1);
     /*- -*/
     options.add("DOMAINS", new ArrayType());
-    /*- Do ? -*/
+    /*- Do print the domains? -*/
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
@@ -1920,15 +1994,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS", 5);
     /*- Localization cutoff -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- -*/
+    /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 2000);
-    /*- Do ? -*/
+    /*- Do spin-component-scaled MP2 (SCS-MP2)? -*/
     options.add_bool("SCS", false);
-    /*- Do ? -*/
+    /*- Do SCS-MP2 with parameters optimized for nucleic acids? -*/
     options.add_bool("SCS_N", false);
-    /*- -*/
+    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
     options.add_double("MP2_OS_SCALE", 6.0/5.0);
-    /*- -*/
+    /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("MP2_SS_SCALE", 1.0/3.0);
     /*- Do screen integrals? -*/
     options.add_bool("SCREEN_INTS", false);
@@ -2057,7 +2131,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("FROZEN_UOCC", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
-    /*- Do ? -*/
+    /*- Do disregard updating single excitation amplitudes? -*/
     options.add_bool("NO_SINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
@@ -2204,61 +2278,137 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DISP_SIZE", 0.005);
   }
   if (name == "OMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs quadratically convergence orbital-optimized MP2 computations. -*/
+    /*- MODULEDESCRIPTION Performs orbital-optimized MP2 computations. -*/
 
     //options.add_int("MEMORY", 256);
     //options.add_str("REFERENCE", "UHF", "UHF");
 
-    /*- -*/
+    /*- Convergence criterion for energy. -*/
     options.add_double("E_CONVERGENCE",1e-8);
-    /*- -*/
+    /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
-    /*- -*/
+    /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- -*/
+    /*- Convergence criterion for maximum orbital gradient -*/
     options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
-    /*- -*/
+    /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
-    /*- -*/
+    /*- Maximum number of iterations to determine the orbitals -*/
     options.add_int("MO_MAXITER",50);
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Number of vectors used in DIIS -*/
     options.add_int("DIIS_MAX_VECS",4);
-    /*- -*/
+    /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
 
-    /*- -*/
+    /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
-    /*- -*/
+    /*- Level shift to aid convergence -*/
     options.add_double("LEVEL_SHIFT",0.02);
-    /*- -*/
+    /*- MP2 opposite-spin scaling value -*/
     options.add_double("MP2_OS_SCALE",6.0/5.0);
-    /*- -*/
+    /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
-    /*- -*/
-    options.add_double("SOS_SCALE",1.3); // It is used for MP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
-    /*- -*/
-    options.add_double("SOS_SCALE2",1.2); // It is used for OMP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
+    /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
+    options.add_double("SOS_SCALE",1.3); 
+    /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
+    options.add_double("SOS_SCALE2",1.2); 
     //options.add_str("LINEQ","CDGESV","CDGESV FLIN POPLE");
-    /*- -*/
+    /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     //options.add_str("STABILITY","FALSE","TRUE FALSE");
-    /*- Do ? -*/
+    /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
-    /*- -*/
+    /*- The optimization algorithm -*/
     options.add_str("OPT_METHOD","DIIS","SD DIIS");
-    /*- -*/
+    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
-    /*- Do ? -*/
+    /*- Do print OMP2 orbital energies? -*/
     options.add_bool("OMP2_ORBS_PRINT",false);
-    /*- Do ? -*/
+    /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SCS-OMP2, one needs to set 
+     'DO_SCS' to true -*/
     options.add_bool("DO_SCS",false);
-    /*- Do ? -*/
+    /*- Do perform spin-opposite-scaled OMP2 (SOS-OMP2)? In all computation, SOS-OMP2 energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SOS-OMP2, one needs to set 
+     'DO_SOS' to true -*/
     options.add_bool("DO_SOS",false);
-    /*- Do write coefficient matrices to psi files? -*/
+    /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
     options.add_bool("MO_WRITE",false);
-    /*- Do read coefficient matrices from psi files? -*/
+    /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
+    options.add_bool("MO_READ",false);
+  }
+  if (name == "OMP3"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
+
+    /*- Convergence criterion for energy. -*/
+    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    /*- Maximum number of iterations to determine the amplitudes -*/
+    options.add_int("CC_MAXITER",50);
+    /*- Maximum number of iterations to determine the orbitals -*/
+    options.add_int("MO_MAXITER",50);
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    options.add_int("CACHELEVEL",2);
+    /*- Number of vectors used in DIIS -*/
+    options.add_int("DIIS_MAX_VECS",4);
+    /*- Cutoff value for numerical procedures -*/
+    options.add_int("CUTOFF",14);
+
+    /*- Maximum step size in orbital-optimization procedure -*/
+    options.add_double("MO_STEP_MAX",0.5);
+    /*- Level shift to aid convergence -*/
+    options.add_double("LEVEL_SHIFT",0.02);
+    /*- MP2 opposite-spin scaling value -*/
+    options.add_double("MP2_OS_SCALE",6.0/5.0);
+    /*- MP2 same-spin scaling value -*/
+    options.add_double("MP2_SS_SCALE",1.0/3.0);
+    /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
+    options.add_double("SOS_SCALE",1.3);  
+    /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
+    options.add_double("SOS_SCALE2",1.2);  
+    /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
+    options.add_double("E3_SCALE",0.25); 
+    /*- The algorithm for orthogonalization of MOs -*/
+    options.add_str("ORTH_TYPE","MGS","GS MGS");
+
+    /*- Do compute natural orbitals? -*/
+    options.add_bool("NAT_ORBS",false);
+    /*- The optimization algorithm -*/
+    options.add_str("OPT_METHOD","DIIS","SD DIIS");
+    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
+    options.add_str("HESS_TYPE","NONE","NONE");
+    /*- Do print OMP3 orbital energies? -*/
+    options.add_bool("OMP3_ORBS_PRINT",false);
+    /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SCS-OMP3, one needs to set 
+     'DO_SCS' to true -*/
+    options.add_bool("DO_SCS",false);
+    /*- Do perform spin-opposite-scaled OMP3 (SOS-OMP3)? In all computation, SOS-OMP3 energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SOS-OMP3, one needs to set 
+     'DO_SOS' to true -*/
+    options.add_bool("DO_SOS",false);
+    /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
+    options.add_bool("MO_WRITE",false);
+    /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
   }
   if (name == "MRCC"|| options.read_globals()) {

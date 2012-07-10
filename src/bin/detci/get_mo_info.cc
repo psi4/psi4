@@ -91,8 +91,7 @@ void get_mo_info(Options &options)
                 rstr_docc, rstr_uocc,
                 CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options))
    {
-     fprintf(outfile, "Error in ras_set().  Aborting.\n");
-     exit(1);
+     throw PsiException("Error in ras_set(). Aborting.",__FILE__,__LINE__);
    }
 
   /* Check if there are any restricted orbitals.  If there are, then
@@ -199,9 +198,7 @@ void get_mo_info(Options &options)
          CalcInfo.num_bet += CalcInfo.docc[i];
          }
       if (CalcInfo.spab % 2) {
-         fprintf(outfile,"For opentype=singlet must have even number ");
-         fprintf(outfile,"of socc electrons!\n");
-         exit(1);
+         throw PsiException("For opentype=singlet must have even number of socc electrons!.",__FILE__,__LINE__);
          }
       CalcInfo.spab /= 2;
       tmp = 0;
@@ -223,9 +220,9 @@ void get_mo_info(Options &options)
          }
       }
    else {
-      fprintf(outfile, "(get_mo_info): Can't handle opentype = %d\n",
-         Parameters.opentype);
-      exit(1);
+      std::string str = "(get_mo_info): Can't handle opentype = ";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.opentype) )->str();
+      throw PsiException(str,__FILE__,__LINE__);
       }
 
    /* at this stage I've already overwritten CalcInfo.frozen_docc,
@@ -251,8 +248,7 @@ void get_mo_info(Options &options)
      CalcInfo.num_fzv_orbs;
 
    if ((CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 > IOFF_MAX) {
-      fprintf(outfile, "Error: IOFF_MAX not large enough!\n");
-      exit(1);
+      throw PsiException("error: IOFF_MAX not large enough!",__FILE__,__LINE__);
    }
 
    CalcInfo.num_alp_expl = CalcInfo.num_alp - CalcInfo.num_fzc_orbs;

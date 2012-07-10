@@ -24,6 +24,7 @@ procedures = {
             'df-mp2'        : run_dfmp2,
             'mp2'           : run_mp2,
             'omp2'          : run_omp2,
+            'omp3'          : run_omp3,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -237,6 +238,8 @@ def energy(name, **kwargs):
     | aqcc                    | averaged quadratic coupled cluster                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | omp3                    | orbital-optimized third order Moller--Plesset perturbation theory                     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:

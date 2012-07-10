@@ -667,6 +667,56 @@ void Matrix::set_diagonal(const boost::shared_ptr<Vector>& vec)
     }
 }
 
+SharedVector Matrix::get_row(int h, int m)
+{
+    if (i >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
+    }
+    SharedVector vec = SharedVector(new Vector("Row",rowspi_));
+    vec->zero();
+    int size = colspi_[h];
+    for (int i = 0; i < size; ++i){
+        vec->vector_[h][i] = matrix_[h][m][i];
+    }
+    return vec;
+}
+
+SharedVector Matrix::get_column(int h, int m)
+{
+    if (m >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
+    }
+    SharedVector vec = SharedVector(new Vector("Row",colspi_));
+    vec->zero();
+    int size = rowspi_[h];
+    for (int i = 0; i < size; ++i){
+        vec->vector_[h][i] = matrix_[h][i][m];
+    }
+    return vec;
+}
+
+void Matrix::set_row(int h, int m, SharedVector vec)
+{
+    if (i >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
+    }
+    int size = colspi_[h];
+    for (int i = 0; i < size; ++i){
+        matrix_[h][m][i] = vec->vector_[h][i];
+    }
+}
+
+void Matrix::set_column(int h, int m, SharedVector vec)
+{
+    if (m >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
+    }
+    int size = rowspi_[h];
+    for (int i = 0; i < size; ++i){
+        matrix_[h][i][m] = vec->vector_[h][i];
+    }
+}
+
 double *Matrix::to_lower_triangle() const
 {
     int sizer=0, sizec=0;
@@ -2368,6 +2418,26 @@ void Matrix::zero_upper()
         }
     }
 
+}
+
+void Matrix::zero_row(int h, int i)
+{
+    if (i >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
+    }
+    for (int m=0; m<colspi_[h]; ++m) {
+        matrix_[h][i][m] = 0.0;
+    }
+}
+
+void Matrix::zero_column(int h, int i)
+{
+    if (i >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::zero_column: index is out of bounds.");
+    }
+    for (int m=0; m<rowspi_[h]; ++m) {
+        matrix_[h][m][i] = 0.0;
+    }
 }
 
 void Matrix::copy_lower_to_upper()

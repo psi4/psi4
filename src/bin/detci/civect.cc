@@ -811,8 +811,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na, 
               nb, nbf);
          else {
-           fprintf(outfile," hd_ave option not recognized.\n");
-           exit(0);
+           throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
 
          if (Parameters.hd_otf && H0block.size) {
@@ -859,8 +858,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
               nb, nbf);
             else {
-              fprintf(outfile," hd_ave option not recognized.\n");
-              exit(0);
+              throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
               }
 
             if (Parameters.hd_otf && H0block.size) {
@@ -904,8 +902,7 @@ void CIvect::diag_mat_els(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
               nb, nbf);
          else {
-           fprintf(outfile," hd_ave option not recognized.\n");
-           exit(0);
+           throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
          if (Parameters.hd_otf && H0block.size) {
             minval = blk_max_abs_vals(block, buf_offdiag[buf], 
@@ -956,8 +953,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
               nb, nbf);
          else {
-           fprintf(outfile," hd_ave option not recognized.\n");
-           exit(0);
+           throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
          }
       } /* end icore==1 */
@@ -989,8 +985,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
               nb, nbf);
             else {
-              fprintf(outfile," hd_ave option not recognized.\n");
-              exit(0);
+              throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
               }
             }
       } /* end icore==2 */
@@ -1021,8 +1016,7 @@ void CIvect::diag_mat_els_otf(struct stringwr **alplist, struct stringwr
               Parameters.perturbation_parameter, tei, efzc, ias, ibs, na,
               nb, nbf);
          else {
-           fprintf(outfile," hd_ave option not recognized.\n");
-           exit(0);
+           throw PsiException("hd_ave option not recognized.",__FILE__,__LINE__);
            }
       } /* end icore==0 */
 

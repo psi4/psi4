@@ -16,6 +16,7 @@
 #include <math.h>
 #include <physconst.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 
 namespace psi {
 
@@ -209,8 +210,7 @@ print_mat(ref_B_final,P_B,3,outfile);
      for (xyz=0; xyz<3; ++xyz)
        tval += fabs(ref_B[i][xyz] - ref_B_final[i][xyz]);
    if (tval > 1.0e10) {
-     fprintf(outfile, "Unable to construct multi-fragment geometry.");
-     exit(PSI_RETURN_FAILURE);
+     throw PsiException("Unable to construct multi-fragment geometry.",__FILE__,__LINE__);
    }
    else
      fprintf(outfile,"Successfully constructed multifragment geometry.\n");
