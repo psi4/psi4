@@ -300,9 +300,11 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
       fprintf(outfile, "CI space contains %4d blocks\n", nblocks);
 
    if (nblocks > CI_BLK_MAX) {
-      fprintf(outfile, "nblocks = %d > CI_BLK_MAX = %d\n", nblocks, 
-         CI_BLK_MAX);
-      exit(0);
+      std::string str = "nblocks = ";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << nblocks) )->str();
+      str += " > CI_BLK_MAX = ";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << CI_BLK_MAX) )->str();
+      throw PsiException(str,__FILE__,__LINE__);
       }
 
    CIblks.offset[0] = 0;
