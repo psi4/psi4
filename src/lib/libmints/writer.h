@@ -10,6 +10,7 @@ class Molecule;
 class Matrix;
 class BasisSet;
 class Wavefunction;
+class Options;
 
 class GradientWriter
 {
@@ -30,6 +31,19 @@ public:
     MoldenWriter(boost::shared_ptr<Wavefunction> wavefunction);
 
     void write(const std::string& filename);
+};
+
+class MOWriter
+{
+    boost::shared_ptr<Wavefunction> wavefunction_;
+    Options & options_;
+private:
+    double * Ca_pointer, * eps;
+    int * map, * sym, * occ, nmo, nso;
+    void write_mos(Molecule & mol);
+public:
+    MOWriter(boost::shared_ptr<Wavefunction> wavefunction,Options&options);
+    void write();
 };
 
 class NBOWriter

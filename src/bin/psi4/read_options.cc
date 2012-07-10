@@ -846,6 +846,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The name of a molden-style output file which is only generated
     if the user specifies one -*/
     options.add_str("MOLDEN_FILE", "");
+    /*- Flag to print the molecular orbitals. -*/
+    options.add_bool("PRINT_MOS", false);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
