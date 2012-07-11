@@ -1606,6 +1606,7 @@ Vector Molecule::rotational_constants(double zero_tol) const {
       rot_const[i] = im2rotconst/evals[i];
   }
 
+/*
   fprintf(outfile,"\n\tRotational constants (cm^-1) :\n");
   if (rot_const[0] == 0) // linear
     fprintf(outfile,"\tA = **********  ");
@@ -1616,6 +1617,7 @@ Vector Molecule::rotational_constants(double zero_tol) const {
     fprintf(outfile,"  B = **********    C = **********  \n");
   else               // molecule
     fprintf(outfile,"  B = %10.5lf   C = %10.5lf\n", rot_const[1], rot_const[2]);
+*/
   return rot_const;
 }
 
@@ -2801,7 +2803,7 @@ void Molecule::set_full_point_group(double zero_tol) {
   // Check inversion
   Vector3 v3_zero(0, 0, 0);
   bool op_i = has_inversion(v3_zero, zero_tol);
-  fprintf(outfile,"\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
+  //fprintf(outfile,"\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
 
   int i;
   double dot, phi;
@@ -2914,7 +2916,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     if (fabs(phi) > 1.0e-14) {
       rot_axis = z_axis.cross(old_axis);
       test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
-      fprintf(outfile, "Rotating by %lf to get principal axis on z-axis.\n", phi);
+      //fprintf(outfile, "Rotating by %lf to get principal axis on z-axis.\n", phi);
       geom.copy(test_mat);
     }
 
@@ -2973,7 +2975,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     bool is_D = false;
     if (fabs(phi) > 1.0e-14) {
       test_mat = geom.matrix_3d_rotation(z_axis, phi, false);
-      fprintf(outfile, "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
+      //fprintf(outfile, "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
       geom.copy(test_mat);
     }
 

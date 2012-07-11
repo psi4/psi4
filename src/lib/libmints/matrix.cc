@@ -669,7 +669,7 @@ void Matrix::set_diagonal(const boost::shared_ptr<Vector>& vec)
 
 SharedVector Matrix::get_row(int h, int m)
 {
-    if (i >= rowspi_[h]) {
+    if (m >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
     }
     SharedVector vec = SharedVector(new Vector("Row",rowspi_));
@@ -697,7 +697,7 @@ SharedVector Matrix::get_column(int h, int m)
 
 void Matrix::set_row(int h, int m, SharedVector vec)
 {
-    if (i >= rowspi_[h]) {
+    if (m >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
     }
     int size = colspi_[h];
