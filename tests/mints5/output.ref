@@ -1,3 +1,29 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 421ae702f531083adbef368dfae290b0fc25ec18
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  38250
+    PSI4DATADIR: /Users/rking/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
 #! Tests to determine full point group symmetry.  Currently, these only matter
 #! for the rotational symmetry number in thermodynamic computations.
 
@@ -453,3 +479,38 @@ Ih.update_geometry()
 print_out("\t" + Ih.get_full_point_group() + "\n" )
 compare_strings("Ih", Ih.get_full_point_group(), "Ih point group"); #TEST
 
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+	D_inf_h
+	D_inf_h
+	C_inf_v
+	C_inf_v
+	C1
+	Cs
+	Cs
+	Ci
+	Ci
+	C2
+	C3
+	C2v
+	C2v
+	C3v
+	C4v
+	C2h
+	C3h
+	S4
+	S4
+	D2
+	D3
+	D2d
+	D2d
+	D3d
+	D2h
+	D3h
+	D4h
+	Td
+	Oh
+	Ih
+
+*** PSI4 exiting successfully. Buy a developer a beer!
