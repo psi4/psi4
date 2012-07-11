@@ -249,9 +249,16 @@ def scf_helper(name, **kwargs):
     #   read effective PUREAM setting off of it
     # This if statement is only to handle generic, unnamed basis cases
     #   (like mints2) that should be departing soon
+    # Stash printing options before initializing mintshelper
+    optstash3 = OptionsState(
+        ['SCF', 'PRINT'],
+        ['SCF', 'PRINT_BASIS'])
+    PsiMod.set_local_option('SCF', 'PRINT', 0)
+    PsiMod.set_local_option('SCF', 'PRINT_BASIS', False)
     if PsiMod.has_global_option_changed('BASIS'):
         PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
         PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
+    optstash3.restore()
 
     if (cast):
 
