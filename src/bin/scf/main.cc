@@ -40,6 +40,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     double energy;
     //bool parallel = options.get_bool("PARALLEL");
 
+
     if (reference == "RHF") {
         scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
     }
@@ -61,6 +62,13 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
         energy = 0.0;
+    }
+
+    // print the basis set
+    if ( options.get_bool("PRINT_BASIS") ) {
+       boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+       boost::shared_ptr<BasisSet> basisset = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, Process::environment.molecule(), "BASIS"));
+       basisset->print_detail();
     }
 
     // Set this early because the callback mechanism uses it.
