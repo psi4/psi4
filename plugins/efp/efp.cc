@@ -39,6 +39,9 @@ int read_options(std::string name, Options& options)
         /*- Dispersion damping type. ``TT`` is a damping formula by
         Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
         options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
+        /*- Names of fragment files corresponding to molecule subsets.
+        This is temporary until better EFP input geometry parsing is implemented. -*/
+        options.add("FRAGS", new ArrayType());
     }
 
     return true;
@@ -80,11 +83,20 @@ PsiReturnType efp(Options& options)
     if (disp_enabled);
     if (exch_enabled);
 
+    int nfrag = options["FRAGS"].size();
+    std::vector<std::string> frag_name;
+
+    for(int i=0; i<nfrag; i++)
+        frag_name.push_back(options["FRAGS"][i].to_string());
+
+
     double e_elst = 0.0;
     double e_pol = 0.0;
     double e_disp = 0.0;
     double e_exch = 0.0;
     double e_total = 0.0;
+
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     fprintf(outfile, "\n");
     fprintf(outfile, "         --------------------------------------------------------\n");
@@ -95,9 +107,65 @@ PsiReturnType efp(Options& options)
     fprintf(outfile, "         --------------------------------------------------------\n");
     fprintf(outfile, "\n");
 
-    fprintf(outfile, "  ==> Calculation Information <==\n\n");
+    fprintf(outfile, "  ==> Geometry <==\n\n");
 
-    //molecule_->print();
+    molecule->print();
+    if (molecule->nfragments() != nfrag)
+        throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag, __FILE__, __LINE__);
+
+    std::vector<int> realsA;
+    realsA.push_back(0);
+    std::vector<int> ghostsA;
+    boost::shared_ptr<Molecule> monomerA = molecule->extract_subsets(realsA, ghostsA);
+    monomerA->print();
+    monomerA->print_in_bohr();
+
+    std::vector<int> realsB;
+    realsB.push_back(1);
+    std::vector<int> ghostsB;
+    ghostsB.push_back(0);
+    boost::shared_ptr<Molecule> monomerB = molecule->extract_subsets(realsB, ghostsB);
+    //monomerB->print();
+
+    std::vector<int> realsC;
+    realsC.push_back(2);
+    std::vector<int> ghostsC;
+    ghostsC.push_back(0);
+    ghostsC.push_back(1);
+    boost::shared_ptr<Molecule> monomerC = molecule->extract_subsets(realsC, ghostsC);
+    //monomerC->print();
+
+    int natomA = 0, natomB = 0, natomC = 0;
+    for (int n=0; n<monomerA->natom(); n++)
+      if (monomerA->Z(n)) natomA++;
+    for (int n=0; n<monomerB->natom(); n++)
+      if (monomerB->Z(n)) natomB++;
+    for (int n=0; n<monomerC->natom(); n++)
+      if (monomerC->Z(n)) natomC++;
+
+    if (natomA != 3)
+        throw InputException("Fragment doesn't have three coordinate triples.", "natomA", natomA, __FILE__, __LINE__);
+    if (natomB != 3)
+        throw InputException("Fragment doesn't have three coordinate triples.", "natomB", natomB, __FILE__, __LINE__);
+    if (natomC != 3)
+        throw InputException("Fragment doesn't have three coordinate triples.", "natomC", natomC, __FILE__, __LINE__);
+
+    SharedMatrix xyz = SharedMatrix (new Matrix("Fragment Cartesian Coordinates(x,y,z)", monomerA->natom(), 3));
+    double** xyzp = xyz->pointer();
+
+    for (int A = 0; A < monomerA->natom(); A++) {
+        xyzp[A][0] = monomerA->x(A);
+        xyzp[A][1] = monomerA->y(A);
+        xyzp[A][2] = monomerA->z(A);
+    }
+
+    for(int i=0; i<nfrag; i++)
+        fprintf(outfile, "%s\n", frag_name[i].c_str());
+
+    xyz->print();
+
+
+    fprintf(outfile, "  ==> Calculation Information <==\n\n");
 
     fprintf(outfile, "  Simulation type:        %12s\n", efp_mode.c_str());
     fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
