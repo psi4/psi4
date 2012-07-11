@@ -5,192 +5,274 @@
 #include <libmints/mints.h>
 #include <libpsio/psio.hpp>
 
+#include <efp.h>
+
 INIT_PLUGIN
 
 using namespace boost;
 
 namespace psi{ namespace efp {
 
+static int string_compare(const void *a, const void *b)
+{
+	const char *s1 = *(const char **)a;
+	const char *s2 = *(const char **)b;
+
+	return strcasecmp(s1, s2);
+}
+
+/* this is from libefp/efpmd/parse.c */
+static char **make_potential_file_list(const char **frag_name,
+				       const char *fraglib_path,
+				       const char *userlib_path)
+{
+	/* This function constructs the list of library potential data files.
+	 * For each unique fragment if fragment name contains an _l suffix
+	 * append fraglib_path prefix and remove _l suffix. Otherwise append
+	 * userlib_path prefix. Add .efp extension in both cases. */
+
+	int n_frag = 0;
+
+	while (frag_name[n_frag])
+		n_frag++;
+
+	const char **unique = new const char*[n_frag];
+
+	for (int i = 0; i < n_frag; i++)
+		unique[i] = frag_name[i];
+
+	qsort(unique, n_frag, sizeof(char *), string_compare);
+
+	int n_unique = 1;
+
+	for (int i = 1; i < n_frag; i++)
+		if (strcasecmp(unique[i - 1], unique[i])) {
+			unique[n_unique] = unique[i];
+			n_unique++;
+		}
+
+	char **list = new char*[n_unique + 1];
+
+	for (int i = 0; i < n_unique; i++) {
+		const char *name = unique[i];
+		size_t len = strlen(name);
+		char *path;
+
+		if (len > 2 && name[len - 2] == '_' && name[len - 1] == 'l') {
+			path = new char[strlen(fraglib_path) + len + 4];
+			strcat(strcpy(path, fraglib_path), "/");
+			strcat(strncat(path, name, len - 2), ".efp");
+		}
+		else {
+			path = new char[strlen(userlib_path) + len + 6];
+			strcat(strcpy(path, userlib_path), "/");
+			strcat(strcat(path, name), ".efp");
+		}
+
+		list[i] = path;
+	}
+
+	list[n_unique] = NULL;
+	delete[] unique;
+	return list;
+}
+
 extern "C" 
 int read_options(std::string name, Options& options)
 {
-    if (name == "EFP"|| options.read_globals()) {
-        /*- The amount of information printed to the output file. -*/
-        options.add_int("PRINT", 1);
-        /*- Type of EFP simulation. One of single point (``SP``), gradient
-        (``GRAD``), conjugate gradient geometry optimization (``CG``),
-        molecular dynamics in microcanonical ensemble (``NVE``), or
-        molecular dynamics in canonical ensemble (``NVT``). This
-        specification will probably be moved to energy(), grad(), opt(),
-        etc. eventually. -*/
-        options.add_str("EFP_TYPE", "SP", "SP GRAD CG NVE NVT");
-        /*- Do include electrostatics energy term in EFP computation? -*/
-        options.add_bool("EFP_ELST", true);
-        /*- Do include polarization energy term in EFP computation? -*/
-        options.add_bool("EFP_POL", true);
-        /*- Do include dispersion energy term in EFP computation? -*/
-        options.add_bool("EFP_DISP", true);
-        /*- Do include exchange repulsion energy term in EFP computation? -*/
-        options.add_bool("EFP_EXCH", true);
-        /*- Electrostatic damping type. ``SCREEN`` is a damping formula
-        based on screen group in the EFP potential. ``OVERLAP`` is
-        damping that computes charge penetration energy. -*/
-        options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
-        /*- Dispersion damping type. ``TT`` is a damping formula by
-        Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
-        options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
-        /*- Names of fragment files corresponding to molecule subsets.
-        This is temporary until better EFP input geometry parsing is implemented. -*/
-        options.add("FRAGS", new ArrayType());
-    }
+	if (name == "EFP"|| options.read_globals()) {
+		/*- The amount of information printed to the output file. -*/
+		options.add_int("PRINT", 1);
+		/*- Type of EFP simulation. One of single point (``SP``), gradient
+		(``GRAD``), conjugate gradient geometry optimization (``CG``),
+		molecular dynamics in microcanonical ensemble (``NVE``), or
+		molecular dynamics in canonical ensemble (``NVT``). This
+		specification will probably be moved to energy(), grad(), opt(),
+		etc. eventually. -*/
+		//        options.add_str("EFP_TYPE", "SP", "SP GRAD CG NVE NVT");
+		/*- Do include electrostatics energy term in EFP computation? -*/
+		options.add_bool("EFP_ELST", true);
+		/*- Do include polarization energy term in EFP computation? -*/
+		options.add_bool("EFP_POL", true);
+		/*- Do include dispersion energy term in EFP computation? -*/
+		options.add_bool("EFP_DISP", true);
+		/*- Do include exchange repulsion energy term in EFP computation? -*/
+		options.add_bool("EFP_EXCH", true);
+			/*- Electrostatic damping type. ``SCREEN`` is a damping formula
+		based on screen group in the EFP potential. ``OVERLAP`` is
+		damping that computes charge penetration energy. -*/
+		options.add_str("EFP_ELST_DAMPING", "SCREEN", "SCREEN OVERLAP OFF");
+		/*- Dispersion damping type. ``TT`` is a damping formula by
+		Tang and Toennies. ``OVERLAP`` is overlap-based dispersion damping. -*/
+		options.add_str("EFP_DISP_DAMPING", "OVERLAP", "TT OVERLAP OFF");
+		/*- Names of fragment files corresponding to molecule subsets.
+		This is temporary until better EFP input geometry parsing is implemented. -*/
+		options.add("FRAGS", new ArrayType());
+	}
 
-    return true;
+	return true;
 }
 
 extern "C" 
 PsiReturnType efp(Options& options)
 {
-    int print = options.get_int("PRINT");
+	enum efp_result res;
+	int print = options.get_int("PRINT");
 
-    bool elst_enabled = options.get_bool("EFP_ELST");
-    bool pol_enabled  = options.get_bool("EFP_POL");
-    bool disp_enabled = options.get_bool("EFP_DISP");
-    bool exch_enabled = options.get_bool("EFP_EXCH");
+	struct efp_opts opts;
+	memset(&opts, 0, sizeof(struct efp_opts));
 
-    std::string efp_mode = options.get_str("EFP_TYPE");
-    std::string elst_damping = options.get_str("EFP_ELST_DAMPING");
-    std::string disp_damping = options.get_str("EFP_DISP_DAMPING");
+	bool elst_enabled = options.get_bool("EFP_ELST");
+	bool pol_enabled  = options.get_bool("EFP_POL");
+	bool disp_enabled = options.get_bool("EFP_DISP");
+	bool exch_enabled = options.get_bool("EFP_EXCH");
 
-    if (elst_damping == "SCREEN") {
-    } else if (elst_damping == "OVERLAP") {
-    } else if (elst_damping == "OFF") {
-    }
+	if (elst_enabled)
+		opts.terms |= EFP_TERM_ELEC;
+	if (pol_enabled)
+		opts.terms |= EFP_TERM_POL;
+	if (disp_enabled)
+		opts.terms |= EFP_TERM_DISP;
+	if (exch_enabled)
+		opts.terms |= EFP_TERM_XR;
 
-    if (disp_damping == "TT") {
-    } else if (disp_damping == "OVERLAP") {
-    } else if (disp_damping == "OFF") {
-    }
+	std::string elst_damping = options.get_str("EFP_ELST_DAMPING");
+	std::string disp_damping = options.get_str("EFP_DISP_DAMPING");
 
-    if (efp_mode == "SP") {
-    } else if (efp_mode == "GRAD") {
-    } else if (efp_mode == "CG") {
-    } else if (efp_mode == "NVE") {
-    } else if (efp_mode == "NVT") {
-    }
+	if (elst_damping == "SCREEN") {
+		opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
+	} else if (elst_damping == "OVERLAP") {
+		opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
+	} else if (elst_damping == "OFF") {
+		opts.elec_damp = EFP_ELEC_DAMP_OFF;
+	}
 
-    if (elst_enabled);
-    if (pol_enabled);
-    if (disp_enabled);
-    if (exch_enabled);
+	if (disp_damping == "TT") {
+	    opts.disp_damp = EFP_DISP_DAMP_TT;
+	} else if (disp_damping == "OVERLAP") {
+	    opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
+	} else if (disp_damping == "OFF") {
+	    opts.disp_damp = EFP_DISP_DAMP_OFF;
+	}
 
-    int nfrag = options["FRAGS"].size();
-    std::vector<std::string> frag_name;
+	int nfrag = options["FRAGS"].size();
 
-    for(int i=0; i<nfrag; i++)
-        frag_name.push_back(options["FRAGS"][i].to_string());
+	char **frag_name = new char*[nfrag + 1]; /* NULL-terminated */
 
+	for(int i=0; i<nfrag; i++) {
+		std::string name = options["FRAGS"][i].to_string();
+		frag_name[i] = new char[name.length() + 1];
+		strcpy(frag_name[i], name.c_str());
+		for (char *p = frag_name[i]; *p; p++)
+			*p = tolower(*p);
+	}
+	frag_name[nfrag] = NULL;
 
-    double e_elst = 0.0;
-    double e_pol = 0.0;
-    double e_disp = 0.0;
-    double e_exch = 0.0;
-    double e_total = 0.0;
+	std::string psi_data_dir = Process::environment("PSIDATADIR");
+	std::string frag_lib_path = psi_data_dir + "/fraglib";
 
-    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
+	char **potential_file_list = make_potential_file_list((const char **)frag_name,
+		frag_lib_path.c_str(), frag_lib_path.c_str());
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "         --------------------------------------------------------\n");
-    fprintf(outfile, "                                   EFP                           \n");
-    fprintf(outfile, "                   Effective Fragment Potential Method           \n");
-    fprintf(outfile, "\n");
-    fprintf(outfile, "                              Ilya Kaliman                       \n");
-    fprintf(outfile, "         --------------------------------------------------------\n");
-    fprintf(outfile, "\n");
+	struct efp *efp;
+	if ((res = efp_init(&efp, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
+		fprintf(outfile, efp_result_to_string(res));
+		return Failure;
+	}
 
-    fprintf(outfile, "  ==> Geometry <==\n\n");
+	for (int i = 0; potential_file_list[i]; i++)
+			delete[] potential_file_list[i];
+	delete[] potential_file_list;
 
-    molecule->print();
-    if (molecule->nfragments() != nfrag)
-        throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag, __FILE__, __LINE__);
+	boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
-    std::vector<int> realsA;
-    realsA.push_back(0);
-    std::vector<int> ghostsA;
-    boost::shared_ptr<Molecule> monomerA = molecule->extract_subsets(realsA, ghostsA);
-    monomerA->print();
-    monomerA->print_in_bohr();
+	fprintf(outfile, efp_banner());
+	fprintf(outfile, "  ==> Geometry <==\n\n");
 
-    std::vector<int> realsB;
-    realsB.push_back(1);
-    std::vector<int> ghostsB;
-    ghostsB.push_back(0);
-    boost::shared_ptr<Molecule> monomerB = molecule->extract_subsets(realsB, ghostsB);
-    //monomerB->print();
+	molecule->print();
+	if (molecule->nfragments() != nfrag)
+		throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag, __FILE__, __LINE__);
 
-    std::vector<int> realsC;
-    realsC.push_back(2);
-    std::vector<int> ghostsC;
-    ghostsC.push_back(0);
-    ghostsC.push_back(1);
-    boost::shared_ptr<Molecule> monomerC = molecule->extract_subsets(realsC, ghostsC);
-    //monomerC->print();
+	// array of coordinates, 9 numbers for each fragment - first three atoms
+	double *coords = new double[9 * nfrag];
+	double *pcoords = coords;
 
-    int natomA = 0, natomB = 0, natomC = 0;
-    for (int n=0; n<monomerA->natom(); n++)
-      if (monomerA->Z(n)) natomA++;
-    for (int n=0; n<monomerB->natom(); n++)
-      if (monomerB->Z(n)) natomB++;
-    for (int n=0; n<monomerC->natom(); n++)
-      if (monomerC->Z(n)) natomC++;
+	for (int i = 0; i < nfrag; i++) {
+		std::vector<int> realsA;
+		realsA.push_back(i);
+		std::vector<int> ghostsA;
+		for (int j = 0; j < nfrag; j++) {
+				if (i != j)
+						ghostsA.push_back(j);
+		}
+		boost::shared_ptr<Molecule> monomerA = molecule->extract_subsets(realsA, ghostsA);
+		monomerA->print();
+		monomerA->print_in_bohr();
 
-    if (natomA != 3)
-        throw InputException("Fragment doesn't have three coordinate triples.", "natomA", natomA, __FILE__, __LINE__);
-    if (natomB != 3)
-        throw InputException("Fragment doesn't have three coordinate triples.", "natomB", natomB, __FILE__, __LINE__);
-    if (natomC != 3)
-        throw InputException("Fragment doesn't have three coordinate triples.", "natomC", natomC, __FILE__, __LINE__);
+		int natomA = 0;
+		for (int n=0; n<monomerA->natom(); n++)
+			if (monomerA->Z(n))
+				natomA++;
 
-    SharedMatrix xyz = SharedMatrix (new Matrix("Fragment Cartesian Coordinates(x,y,z)", monomerA->natom(), 3));
-    double** xyzp = xyz->pointer();
+		if (natomA != 3)
+			throw InputException("Fragment doesn't have three coordinate triples.", "natomA", natomA, __FILE__, __LINE__);
+	
+		SharedMatrix xyz = SharedMatrix (new Matrix("Fragment Cartesian Coordinates(x,y,z)", monomerA->natom(), 3));
+		double** xyzp = xyz->pointer();
+	
+		for (int j = 0; j < monomerA->natom(); j++) {
+			if (monomerA->Z(j)) {
+				*pcoords++ = xyzp[j][0] = monomerA->x(j);
+				*pcoords++ = xyzp[j][1] = monomerA->y(j);
+				*pcoords++ = xyzp[j][2] = monomerA->z(j);
+			}
+		}
 
-    for (int A = 0; A < monomerA->natom(); A++) {
-        xyzp[A][0] = monomerA->x(A);
-        xyzp[A][1] = monomerA->y(A);
-        xyzp[A][2] = monomerA->z(A);
-    }
+        fprintf(outfile, "%s\n", frag_name[i]);
+    	xyz->print();
+	}
 
-    for(int i=0; i<nfrag; i++)
-        fprintf(outfile, "%s\n", frag_name[i].c_str());
+	if ((res = efp_set_coordinates_2(efp, coords))) {
+		fprintf(outfile, efp_result_to_string(res));
+		return Failure;
+	}
 
-    xyz->print();
+	delete[] coords;
 
+  	fprintf(outfile, "  ==> Calculation Information <==\n\n");
 
-    fprintf(outfile, "  ==> Calculation Information <==\n\n");
+	fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
+	fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+	fprintf(outfile, "\n");
 
-    fprintf(outfile, "  Simulation type:        %12s\n", efp_mode.c_str());
-    fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
-    fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
-    fprintf(outfile, "\n");
+	/* Main EFP computation routine */
+	if ((res = efp_compute(efp, 0))) {
+		fprintf(outfile, efp_result_to_string(res));
+		return Failure;
+	}
 
-    e_total = e_elst + e_pol + e_disp + e_exch;
+	struct efp_energy energy;
+	efp_get_energy(efp, &energy);
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
-    fprintf(outfile, "  Electrostatics Energy = %24.16f [H] %s\n", e_elst, elst_enabled ? "*" : "");
-    fprintf(outfile, "  Polarization Energy =   %24.16f [H] %s\n", e_pol, pol_enabled ? "*" : "");
-    fprintf(outfile, "  Dispersion Energy =     %24.16f [H] %s\n", e_disp, disp_enabled ? "*" : "");
-    fprintf(outfile, "  Exchange Energy =       %24.16f [H] %s\n", e_exch, exch_enabled ? "*" : "");
-    fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", e_total, "*");
+    fprintf(outfile, "  Electrostatics Energy = %24.16f [H] %s\n", energy.electrostatic, elst_enabled ? "*" : "");
+    fprintf(outfile, "  Polarization Energy =   %24.16f [H] %s\n", energy.polarization, pol_enabled ? "*" : "");
+    fprintf(outfile, "  Dispersion Energy =     %24.16f [H] %s\n", energy.dispersion, disp_enabled ? "*" : "");
+    fprintf(outfile, "  Exchange Energy =       %24.16f [H] %s\n", energy.exchange_repulsion, exch_enabled ? "*" : "");
+    fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", energy.total, "*");
 
-    Process::environment.globals["EFP ELST ENERGY"] = e_elst;
-    Process::environment.globals["EFP POL ENERGY"] = e_pol;
-    Process::environment.globals["EFP DISP ENERGY"] = e_disp;
-    Process::environment.globals["EFP EXCH ENERGY"] = e_exch;
-    Process::environment.globals["CURRENT ENERGY"] = e_total;
+    Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic;
+    Process::environment.globals["EFP POL ENERGY"] = energy.polarization;
+    Process::environment.globals["EFP DISP ENERGY"] = energy.dispersion;
+    Process::environment.globals["EFP EXCH ENERGY"] = energy.exchange_repulsion;
+    Process::environment.globals["CURRENT ENERGY"] = energy.total;
 
+	for (int i = 0; frag_name[i]; i++)
+		delete[] frag_name[i];
+	delete[] frag_name;
 
     return Success;
 }
 
 }} // End namespaces
-
