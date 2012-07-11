@@ -39,10 +39,10 @@ PsiReturnType thermo(Options &options) {
   RotorType rot_type = mol->rotor_type();
 
   mol->set_full_point_group();
-  std::string pg = mol->full_point_group();
-  fprintf(outfile,"\tFull point group: %s\n", pg.c_str());
+  std::string pg = mol->full_point_group_with_n();
+  std::string pg_n_replaced = mol->full_point_group();
+  fprintf(outfile,"\tFull point group: %s (%s)\n", pg.c_str(), pg_n_replaced.c_str());
   int full_pg_n = mol->full_pg_n();
-
 
   int rot_symm_num;
 
@@ -225,6 +225,8 @@ and number of atoms.\n");
   fprintf(outfile,"\t\tInternal energy      = %15.8lf  %15.8lf\n",  DU, E_elec + DU);
   fprintf(outfile,"\t\tEnthalpy             = %15.8lf  %15.8lf\n",  DH, E_elec + DH);
   fprintf(outfile,"\t\tGibbs Free Energy    = %15.8lf  %15.8lf\n",  DG, E_elec + DG);
+
+  Process::environment.globals["GIBBS FREE ENERGY"] = E_elec + DG;
 
   return Success;
 }
