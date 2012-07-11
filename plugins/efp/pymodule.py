@@ -24,7 +24,7 @@ def run_efp(name, **kwargs):
     # Your plugin's PsiMod run sequence goes here
     PsiMod.set_global_option('BASIS', 'sto-3g')
     PsiMod.set_local_option('EFP', 'PRINT', 1)
-    energy('scf', **kwargs)
+    #energy('scf', **kwargs)
     returnvalue = PsiMod.plugin('efp.so')
 
     return returnvalue

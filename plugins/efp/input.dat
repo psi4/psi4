@@ -13,11 +13,28 @@ R = .9
 A = 104.5
 }
 
+molecule efp_spec {
+He    -3.394 -1.900 -3.700 # H2O
+He    -3.524 -1.089 -3.147
+He    -2.544 -2.340 -3.445
+--
+He    -5.515  1.083  0.968 # NH3
+He    -5.161  0.130  0.813
+He    -4.833  1.766  0.609
+--
+He     1.848  0.114  0.130 # NH3
+He     1.966  0.674 -0.726
+He     0.909  0.273  0.517
+no_reorient
+no_com
+}
+
 set {
   basis sto-3g
   efp_elst no
   efp_disp no
   efp_disp_damping off
+  frags ['h2o', 'nh3', 'nh3']
 }
 
 set efp {
