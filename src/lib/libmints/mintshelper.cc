@@ -102,7 +102,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     }
 
     // Print the basis set
-    if (print_)
+    if (options_.get_bool("PRINT_BASIS") || print_ > 3)
         basisset_->print_detail();
 
     // Create integral factory
@@ -132,7 +132,7 @@ void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
         molecule_->print();
 
     // Print the basis set
-    if (print_)
+    if (options_.get_bool("PRINT_BASIS") || print_ > 3)
         basisset_->print_detail();
 
     // Create integral factory

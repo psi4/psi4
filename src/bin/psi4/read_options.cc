@@ -848,6 +848,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MOLDEN_FILE", "");
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
+    /*- Flag to print the basis set. -*/
+    options.add_bool("PRINT_BASIS", false);
 
     /*- SUBSECTION Convergence Control/Stabilization -*/
 
