@@ -252,6 +252,11 @@ PsiReturnType ccdensity(Options& options)
 
       add_core_ROHF(&OutBuf);
       add_ref_RHF(&OutBuf);
+
+      // ==> One-Electron Properties <== //
+      fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
+      dipole();
+
       if(params.onepdm_grid_dump) densgrid_RHF();
       dump_RHF(&OutBuf, rho_params[i]);
 
@@ -286,12 +291,6 @@ PsiReturnType ccdensity(Options& options)
       iwl_buf_close(&OutBuf_BB, 1);
       iwl_buf_close(&OutBuf_AB, 1);
     }
-
-    // ==> One-Electron Properties <== //
-    /*
-    fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
-    dipole();
-    */
 
     free_block(moinfo.opdm);
 

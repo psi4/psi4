@@ -72,6 +72,7 @@ struct MOInfo {
   double **rtd_a;       /* <n|O|0> Right transition alpha density */
   double **rtd_b;       /* <n|O|0> Right transition beta density */
   int *pitzer2qt;    /* Pitzer to QT re-ordering array */
+  int *qt2pitzer;    /* QT to Pitzer re-ordering array */
   double **scf_qt;      /* SCF orbitals (QT ordering of MOs) */
   double ***L;
   double ***nabla;
