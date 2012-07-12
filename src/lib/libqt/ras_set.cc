@@ -191,8 +191,7 @@ int ras_set(int nirreps, int nbfso, int freeze_core, int *orbspi,
       while (tras[i][irrep]) {
     point = used[irrep] + offset[irrep];
     if (point < 0 || point >= nbfso) {
-      fprintf(stderr, "(ras_set): Invalid point value\n");
-      exit(PSI_RETURN_FAILURE);
+      throw PsiException("(ras_set): Invalid point value",__FILE__,__LINE__);
     }
     order[point] = cnt++;
     used[irrep]++;

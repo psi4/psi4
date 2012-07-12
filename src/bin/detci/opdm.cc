@@ -1094,8 +1094,7 @@ void opdm_ke(double **onepdm)
   errcod = iwl_rdone(src_T_file,PSIF_SO_T,T,noeints,0,
                      (Parameters.print_lvl>2),outfile);
   if (!errcod) {
-    printf("(detci): Error reading kinetic energy ints\n");
-    exit(1);
+    throw PsiException("(detci): Error reading kinetic energy ints",__FILE__,__LINE__);
   }
 
   /* find biggest blocksize */

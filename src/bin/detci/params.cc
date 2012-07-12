@@ -599,9 +599,9 @@ void get_parameters(Options &options)
   if (options["EX_ALLOW"].has_changed()) {
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters.ex_lvl) {
-      fprintf(outfile,"Dim. of EX_ALLOW must be %d\n",
-              Parameters.ex_lvl);
-      exit(0);
+      std::string str = "Dim. of EX_ALLOW must be";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.ex_lvl) )->str();
+      throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters.ex_allow);
   }
@@ -672,8 +672,10 @@ void get_parameters(Options &options)
   if (options["AVG_STATES"].has_changed()) {
     i = options["AVG_STATES"].size();
     if (i < 1 || i > Parameters.num_roots) {
-      fprintf(outfile,"Invalid number of states to average (%d)\n", i);
-      exit(1);
+      std::string str = "Invalid number of states to average (";
+      str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+      str += ")";
+      throw PsiException(str,__FILE__,__LINE__);
     }
 
     Parameters.average_states = init_int_array(i);
@@ -682,10 +684,10 @@ void get_parameters(Options &options)
     for (i=0;i<Parameters.average_num;i++) {
       Parameters.average_states[i] = options["AVG_STATES"][i].to_integer();
       if (Parameters.average_states[i] < 1) {
-        fprintf(outfile,"AVG_STATES start numbering from 1.\n");
-        fprintf(outfile,"Invalid state number %d\n",
-          Parameters.average_states[i]);
-        exit(1);
+        std::string str = "AVG_STATES start numbering from 1.\n";
+        str += "Invalid state number ";
+        str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.average_states[i]) )->str();
+        throw PsiException(str,__FILE__,__LINE__);
       }
       Parameters.average_states[i] -= 1; /* number from 1 externally */
       Parameters.average_weights[i] = 1.0/((double)Parameters.average_num);
@@ -693,8 +695,10 @@ void get_parameters(Options &options)
 
     if (options["AVG_WEIGHTS"].has_changed()) {
       if (options["AVG_WEIGHTS"].size() != Parameters.average_num) {
-        fprintf(outfile,"Mismatched number of average weights (%d)\n", i);
-        exit(0);
+        std::string str = "Mismatched number of average weights (";
+        str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+        str += ")";
+        throw PsiException(str,__FILE__,__LINE__);
       }
       for (i=0; i<Parameters.average_num; i++) {
         Parameters.average_weights[i] =
@@ -765,8 +769,12 @@ void get_parameters(Options &options)
     junk += Parameters.average_weights[i];
   }
   if (junk <= 0.0) {
-    fprintf(outfile, "Error: AVERAGE WEIGHTS add up to %12.6lf\n", junk);
-    exit(0);
+    std::string str = "Error: AVERAGE WEIGHTS add up to ";
+    char*str2 = new char[25];
+    sprintf(str2,"%20.15lf",junk);
+    str += str2;
+    delete str2;
+    throw PsiException(str,__FILE__,__LINE__);
   }
   for (i=0; i<Parameters.average_num; i++) {
     Parameters.average_weights[i] /= junk;
