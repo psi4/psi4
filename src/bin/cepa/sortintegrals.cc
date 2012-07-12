@@ -33,7 +33,7 @@ void abci5_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci5,struc
 void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1);
 void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd2,struct integral*abcd2);
 
-void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options){
+void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool isdirect,bool iscim){
   struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
   fflush(outfile);
@@ -47,12 +47,12 @@ void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&op
   fprintf(outfile,"\n");
   fflush(outfile);
 
-  if (options.get_bool("CEPA_VABCD_DIRECT")){
+  if (isdirect){
      SortOXXX(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt);
      fprintf(outfile,"         ==> (AB|CD) contraction will be integral direct <==\n");
      fprintf(outfile,"\n");
   }else{
-     SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,true);
+     SortAllIntegrals(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,iscim);
   }
 
   iwl_buf_close(&Buf,1);
@@ -527,10 +527,10 @@ void SortAllIntegrals(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccac
   fprintf(outfile,"        (IJ|AB) block.......");fflush(outfile);
   SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_DCC_IJAB,"E2ijab",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        (AB|CI) block 1/2...");fflush(outfile);
+  fprintf(outfile,"        (IA|BC) block 1/2...");fflush(outfile);
   SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI3,"E2abci3",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
-  fprintf(outfile,"        (AB|CI) block 2/2...");fflush(outfile);
+  fprintf(outfile,"        (IA|BC) block 2/2...");fflush(outfile);
   SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI5,"E2abci5",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        (AB|CD) block 1/2...");fflush(outfile);
@@ -856,7 +856,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -892,7 +892,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -928,7 +928,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -964,7 +964,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1006,7 +1006,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1042,7 +1042,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1078,7 +1078,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1114,7 +1114,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d){
+  if ( (a<=b && c<=d) || (a>=b && c>=d) ){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1619,7 +1619,7 @@ void SortOXXX(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        Sort (IA|BC) 1/2....");fflush(outfile);
   SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_DCC_ABCI5,"E2abci5",maxelem);
-  fprintf(outfile,"done.\n");fflush(outfile);
+  fprintf(outfile,"done.\n\n");fflush(outfile);
 
   delete integralbuffer;
   delete tmp;
