@@ -96,6 +96,8 @@ public:
     Vector * create_vector();
 
     void create_vector(Vector& vec);
+
+    SharedVector create_shared_vector(const std::string& name);
 };
 
 }

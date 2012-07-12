@@ -11,7 +11,7 @@ namespace psi{ namespace cepa{
   void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options);
   void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
   void TransformIntegrals(boost::shared_ptr<Wavefunction>wfn,Options&options);
-  void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options);
+  void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool isdirect,bool islocal);
 }}
 
 namespace psi{ namespace cepa{
@@ -27,17 +27,16 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn,options));
   PsiReturnType status;
 
-  // integral transformation. note that the transformation was already
-  // done if this is part of a cim computation
+  // integral transformation.  only needed if not cim or integral direct
   tstart();
-  if ( !wfn->isCIM() ) {
+  if ( !wfn->isCIM() && options.get_bool("CEPA_VABCD_DIRECT")) {
      TransformIntegrals(wfn,options);
   }
   tstop();
 
   // integral sort
   tstart();
-  SortIntegrals(cepa->nfzc,cepa->nfzv,cepa->nmo+cepa->nfzc+cepa->nfzv,cepa->ndoccact,cepa->nvirt,options);
+  SortIntegrals(cepa->nfzc,cepa->nfzv,cepa->nmo+cepa->nfzc+cepa->nfzv,cepa->ndoccact,cepa->nvirt,options.get_bool("CEPA_VABCD_DIRECT"),wfn->isCIM());
   tstop();
 
   // solve cepa equations

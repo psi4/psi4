@@ -155,12 +155,12 @@ MintsHelper::MintsHelper(Options & options, int print): options_(options), print
 }
 
 MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), print_(1) 
+    : options_(Process::environment.options), print_(0) 
 {
     init_helper_2(basis);
 }
 
-MintsHelper::MintsHelper() : options_(Process::environment.options), print_(1)
+MintsHelper::MintsHelper() : options_(Process::environment.options), print_(0)
 {
     init_helper();
 }
