@@ -1346,7 +1346,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL_DOMAIN_POLAR", false);
     /*- Do generate magnetic-field CPHF solutions for local-CC? -*/
     options.add_bool("LOCAL_DOMAIN_MAG", false);
-    /*- Do ? -*/
+    /*- -*/
     options.add_bool("LOCAL_DOMAIN_SEP", false);
     /*- Do apply local filtering to single excitation amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", false);
@@ -1596,9 +1596,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
     /*- Preconditioner will be used in local CC computations -*/
     options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
-    /*- -*/
+    /*- Permit ghost atoms to hold projected atomic orbitals to include in the virtual space in local-EOM-CCSD calculations -*/
     options.add_int("LOCAL_GHOST", -1);
-    /*- Do ? -*/
+    /*- -*/
     options.add_bool("LOCAL_DO_SINGLES", true);
     /*- Do apply local filtering to singles amplitudes? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", true);
@@ -1859,7 +1859,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_NUM_THREADS",1);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- Do ? -*/
+    /*- -*/
     options.add_bool("T2_COUPLED", false);
     /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
     (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
