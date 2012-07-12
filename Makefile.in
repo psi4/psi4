@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 MAKE_MADNESS=@BUILD_MADNESS@
 
-.PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc
+.PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc plugins pluginsclean pluginstests
 
 default: all
 
@@ -80,6 +80,15 @@ testsclean:
 
 doc:
 	(cd doc; echo Building documentation...; $(MAKE)) || exit 1;
+
+plugins:
+	(cd plugins; echo Building plugins...; $(MAKE)) || exit 1;
+
+pluginsclean:
+	(cd plugins; echo Cleaning plugins...; $(MAKE) clean) || exit 1;
+
+pluginstests:
+	(cd plugins; echo Testing plugins...; $(MAKE) tests) || exit 1;
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
 	cd $(top_srcdir) && autoconf
