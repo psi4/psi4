@@ -4,6 +4,51 @@
 sys.path.insert(0, './..')
 import efp
 
+
+ref_force = [
+     [-0.004883,     -0.003389,      0.000621],  #TEST    
+     [-0.000319,      0.000794,      0.003689],  #TEST    
+     [-0.000650,      0.000122,      0.000022],  #TEST    
+     [ 0.002850,      0.003714,     -0.002373],  #TEST    
+     [ 0.000941,     -0.000014,     -0.001263],  #TEST    
+     [ 0.000799,      0.000002,      0.004360],  #TEST    
+     [-0.000091,      0.000497,      0.001837],  #TEST    
+     [ 0.003255,     -0.002735,     -0.004364],  #TEST    
+     [-0.001902,      0.001009,     -0.002530] ] #TEST
+
+
+ref_torque = [                                   #TEST
+     [-0.002172,     -0.003548,      0.006235],  #TEST
+     [-0.008444,     -0.008035,      0.001560],  #TEST
+     [ 0.000562,      0.002723,     -0.003843],  #TEST
+     [ 0.007033,     -0.005472,      0.002904],  #TEST
+     [-0.002158,     -0.001924,      0.004688],  #TEST
+     [-0.004346,      0.002913,      0.003006],  #TEST
+     [-0.000217,      0.001300,     -0.000636],  #TEST
+     [ 0.005464,      0.002667,     -0.004870],  #TEST
+     [-0.000059,      0.003312,      0.004040] ] #TEST
+
+ref_efp = [
+     [-0.004883,     -0.003389,      0.000621,     -0.002172,     -0.003548,      0.006235],   #TEST
+     [-0.000319,      0.000794,      0.003689,     -0.008444,     -0.008035,      0.001560],   #TEST
+     [-0.000650,      0.000122,      0.000022,      0.000562,      0.002723,     -0.003843],   #TEST
+     [ 0.002850,      0.003714,     -0.002373,      0.007033,     -0.005472,      0.002904],   #TEST
+     [ 0.000941,     -0.000014,     -0.001263,     -0.002158,     -0.001924,      0.004688],   #TEST
+     [ 0.000799,      0.000002,      0.004360,     -0.004346,      0.002913,      0.003006],   #TEST
+     [-0.000091,      0.000497,      0.001837,     -0.000217,      0.001300,     -0.000636],   #TEST
+     [ 0.003255,     -0.002735,     -0.004364,      0.005464,      0.002667,     -0.004870],   #TEST
+     [-0.001902,      0.001009,     -0.002530,     -0.000059,      0.003312,      0.004040] ]   #TEST
+
+refF = PsiMod.Matrix(9, 3)                       #TEST
+refF.set(ref_force)                              #TEST
+refT = PsiMod.Matrix(9, 3)                       #TEST
+refT.set(ref_torque)                             #TEST
+refEFP = PsiMod.Matrix(9, 6)			 #TEST
+refEFP.set(ref_efp)				 #TEST
+
+
+
+
 molecule {
 O
 H 1 R
@@ -57,17 +102,23 @@ set {
   basis sto-3g
   efp_disp no
   efp_exch no
-  efp_gradient yes
+#  efp_gradient yes
   frags ['h2o_l', 'nh3_l', 'nh3_l', 'nh3_l', 'ch3oh_l', 'h2o_l', 'h2o_l', 'ch3oh_l', 'h2o_l']
 }
 
 set efp {
   print 1
+  dertype first
 }
 
 energy('efp')
-
-efp.exampleFN()
-
 compare_values(-0.0126416598208905, get_variable('CURRENT ENERGY'), 6, 'EFP Total')  #TEST
+
+grad = get_gradient()
+compare_matrices(refEFP, grad, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
+
+# want to be able to say
+#gradient('efp')
+
+
 

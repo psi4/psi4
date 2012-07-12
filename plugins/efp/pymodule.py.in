@@ -30,8 +30,29 @@ def run_efp(name, **kwargs):
     return returnvalue
 
 
+def run_efp_gradient(name, **kwargs):
+    r"""Function encoding sequence of PSI module and plugin calls so that
+    efp can be called via :py:func:`~driver.energy`.
+
+    >>> optimize('efp')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # Your plugin's PsiMod run sequence goes here
+    PsiMod.set_global_option('BASIS', 'sto-3g')
+    PsiMod.set_local_option('EFP', 'PRINT', 1)
+    PsiMod.set_local_option('EFP', 'DERTYPE', 'FIRST')
+    #energy('scf', **kwargs)
+    returnvalue = PsiMod.plugin('efp.so')
+
+    return returnvalue
+
+
 # Integration with driver routines
 procedures['energy']['efp'] = run_efp
+procedures['gradient']['efp'] = run_efp_gradient
 
 
 def exampleFN():
