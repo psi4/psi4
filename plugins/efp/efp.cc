@@ -108,6 +108,8 @@ int read_options(std::string name, Options& options)
 		/*- Names of fragment files corresponding to molecule subsets.
 		This is temporary until better EFP input geometry parsing is implemented. -*/
 		options.add("FRAGS", new ArrayType());
+		/* Do EFP gradient. */
+		options.add_bool("EFP_GRADIENT", false);
 	}
 
 	return true;
@@ -127,6 +129,8 @@ PsiReturnType efp(Options& options)
 	bool disp_enabled = options.get_bool("EFP_DISP");
 	bool exch_enabled = options.get_bool("EFP_EXCH");
 
+	bool do_grad = options.get_bool("EFP_GRADIENT");
+
 	if (elst_enabled)
 		opts.terms |= EFP_TERM_ELEC;
 	if (pol_enabled)
@@ -135,6 +139,8 @@ PsiReturnType efp(Options& options)
 		opts.terms |= EFP_TERM_DISP;
 	if (exch_enabled)
 		opts.terms |= EFP_TERM_XR;
+
+	double *coords = NULL, *pcoords, *grad = NULL;
 
 	std::string elst_damping = options.get_str("EFP_ELST_DAMPING");
 	std::string disp_damping = options.get_str("EFP_DISP_DAMPING");
@@ -156,6 +162,7 @@ PsiReturnType efp(Options& options)
 	}
 
 	int nfrag = options["FRAGS"].size();
+	boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
 	char **frag_name = new char*[nfrag + 1]; /* NULL-terminated */
 
@@ -177,16 +184,13 @@ PsiReturnType efp(Options& options)
 	struct efp *efp;
 	if ((res = efp_init(&efp, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
 		fprintf(outfile, efp_result_to_string(res));
-		return Failure;
+		goto fail;
 	}
 
-	for (int i = 0; potential_file_list[i]; i++)
-			delete[] potential_file_list[i];
-	delete[] potential_file_list;
-
-	boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
-
+	fprintf(outfile, "\n\n");
 	fprintf(outfile, efp_banner());
+	fprintf(outfile, "\n\n");
+
 	fprintf(outfile, "  ==> Geometry <==\n\n");
 
 	molecule->print();
@@ -194,8 +198,7 @@ PsiReturnType efp(Options& options)
 		throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag, __FILE__, __LINE__);
 
 	// array of coordinates, 9 numbers for each fragment - first three atoms
-	double *coords = new double[9 * nfrag];
-	double *pcoords = coords;
+	coords = new double[9 * nfrag], pcoords = coords;
 
 	for (int i = 0; i < nfrag; i++) {
 		std::vector<int> realsA;
@@ -234,25 +237,49 @@ PsiReturnType efp(Options& options)
 
 	if ((res = efp_set_coordinates_2(efp, coords))) {
 		fprintf(outfile, efp_result_to_string(res));
-		return Failure;
+		goto fail;
 	}
-
-	delete[] coords;
 
   	fprintf(outfile, "  ==> Calculation Information <==\n\n");
 
 	fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
-	fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+
+	if (disp_enabled)
+		fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+
 	fprintf(outfile, "\n");
 
 	/* Main EFP computation routine */
-	if ((res = efp_compute(efp, 0))) {
+	if ((res = efp_compute(efp, do_grad ? 1 : 0))) {
 		fprintf(outfile, efp_result_to_string(res));
-		return Failure;
+		goto fail;
 	}
 
 	struct efp_energy energy;
-	efp_get_energy(efp, &energy);
+
+	if ((res = efp_get_energy(efp, &energy))) {
+		fprintf(outfile, efp_result_to_string(res));
+		goto fail;
+	}
+
+	if (do_grad) {
+			grad = new double[6 * nfrag];
+			double *pgrad = grad;
+			if ((res = efp_get_gradient(efp, 6 * nfrag, grad))) {
+				fprintf(outfile, efp_result_to_string(res));
+				goto fail;
+			}
+
+			fprintf(outfile, "  ==> EFP Gradient <==\n\n");
+
+			for (int i = 0; i < nfrag; i++) {
+					for (int j = 0; j < 6; j++) {
+							fprintf(outfile, "%14.6lf", *pgrad++);
+					}
+					fprintf(outfile, "\n");
+			}
+			fprintf(outfile, "\n");
+	}
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
@@ -268,11 +295,20 @@ PsiReturnType efp(Options& options)
     Process::environment.globals["EFP EXCH ENERGY"] = energy.exchange_repulsion;
     Process::environment.globals["CURRENT ENERGY"] = energy.total;
 
+fail:
 	for (int i = 0; frag_name[i]; i++)
 		delete[] frag_name[i];
 	delete[] frag_name;
 
-    return Success;
+	for (int i = 0; potential_file_list[i]; i++)
+			delete[] potential_file_list[i];
+	delete[] potential_file_list;
+
+	delete[] coords;
+	delete[] grad;
+
+	efp_shutdown(efp);
+    return res ? Failure : Success;
 }
 
 }} // End namespaces
