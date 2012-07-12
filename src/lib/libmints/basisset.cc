@@ -230,6 +230,9 @@ void BasisSet::print_detail(FILE* out) const
             fprintf(out, "    ****\n");
         }
     }
+    if (Communicator::world->me() == 0){
+        fprintf(out, "\n");
+    }
 }
 
 const GaussianShell& BasisSet::shell(int si) const
