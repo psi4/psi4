@@ -68,3 +68,5 @@ energy('efp')
 
 efp.exampleFN()
 
+compare_values(-0.0126416598208905, get_variable('CURRENT ENERGY'), 6, 'EFP Total')  #TEST
+
