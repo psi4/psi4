@@ -202,8 +202,8 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
            
             if (C8_type_ == C8_geom) {
                 C8 = sqrt(C8_[(int)m->Z(i)] * C8_[(int)m->Z(j)]);
-            } else {
-                throw PSIEXCEPTION("Unrecognized C8 Type");
+            }else {
+                C8 = 0.0;
             } 
 
             if (Damping_type_ == Damping_D1) {
@@ -233,7 +233,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
                 g = sqrt(A_[(int)m->Z(i)] * A_[(int)m->Z(j)]) * exp(-R * beta);
             } 
             else {
-                throw PSIEXCEPTION("Unrecognized Spherical Dispersion Function");
+                g = 0.0;
             }
 
             E += C6 * Rm6 * f_6;
