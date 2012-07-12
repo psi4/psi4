@@ -1,0 +1,16 @@
+memory 250 mb
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.957
+  H 2 0.957 1 104.5
+}
+
+set {
+  basis cc-pVDZ
+  freeze_core true
+  onepdm_grid_dump = true
+}
+
+property('ccsd',properties=['dipole'])
