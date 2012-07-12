@@ -57,6 +57,7 @@ set {
   basis sto-3g
   efp_disp no
   efp_exch no
+  efp_gradient yes
   frags ['h2o_l', 'nh3_l', 'nh3_l', 'nh3_l', 'ch3oh_l', 'h2o_l', 'h2o_l', 'ch3oh_l', 'h2o_l']
 }
 

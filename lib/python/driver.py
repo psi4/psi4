@@ -809,6 +809,16 @@ def optimize(name, **kwargs):
 
     full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
+    PsiMod.print_out("wtf")
+
+    # are we in sow/reap mode?
+    isSowReap = False
+    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
+       isSowReap = True
+    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
+       isSowReap = True
+    optstash = OptionsState(
+        ['SCF','GUESS'])
 
     n = 1
     if ('opt_iter' in kwargs):
@@ -817,6 +827,10 @@ def optimize(name, **kwargs):
     while n <= PsiMod.get_global_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
+        # Use orbitals from previous iteration as a guess
+        if ( (n > 1) and (not isSowReap) ) :
+           PsiMod.set_local_option('SCF','GUESS','READ')
+           
         # Compute the gradient
         thisenergy = gradient(name, **kwargs)
 
@@ -869,6 +883,8 @@ def optimize(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
                 fmaster.write('# Optimization complete!\n\n')
                 fmaster.close()
+
+            optstash.restore()
             return thisenergy
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
@@ -879,6 +895,7 @@ def optimize(name, **kwargs):
         n += 1
 
     PsiMod.print_out('\tOptimizer: Did not converge!')
+    optstash.restore()
     return 0.0
 
 ##  Aliases  ##
