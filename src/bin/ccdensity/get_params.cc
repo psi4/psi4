@@ -35,6 +35,7 @@ void get_params( Options& options)
   }
 
   params.onepdm = options.get_bool("ONEPDM");
+  params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
 
   params.calc_xi = options.get_bool("XI");
   if(params.calc_xi) {

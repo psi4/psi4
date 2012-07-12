@@ -94,6 +94,7 @@ void x_oe_intermediates_rhf(struct RHO_Params rho_params);
 void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
+void densgrid_RHF(void);
 
 PsiReturnType ccdensity(Options& options)
 {
@@ -251,6 +252,7 @@ PsiReturnType ccdensity(Options& options)
 
       add_core_ROHF(&OutBuf);
       add_ref_RHF(&OutBuf);
+      if(params.onepdm_grid_dump) densgrid_RHF();
       dump_RHF(&OutBuf, rho_params[i]);
 
       iwl_buf_flush(&OutBuf, 1);

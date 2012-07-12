@@ -1420,6 +1420,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ZETA",false);
     /*- Do compute one-particle density matrix? -*/
     options.add_bool("ONEPDM",false);
+    /*- Write one-particle density matrix on a grid to file opdm.dx -*/
+    options.add_bool("ONEPDM_GRID_DUMP",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
