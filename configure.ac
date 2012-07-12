@@ -1001,6 +1001,7 @@ AC_CONFIG_FILES([
           src/bin/optking/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
+          src/bin/omp3/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1039,6 +1040,7 @@ AC_CONFIG_FILES([
           tests/fd-freq-energy/Makefile
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
+          tests/gibbs/Makefile
           tests/castup1/Makefile
           tests/castup2/Makefile
           tests/castup3/Makefile
@@ -1147,7 +1149,9 @@ AC_CONFIG_FILES([
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
+          tests/mints5/Makefile
           tests/omp2_1/Makefile
+          tests/omp3_1/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile

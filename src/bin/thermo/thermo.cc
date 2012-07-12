@@ -38,74 +38,32 @@ PsiReturnType thermo(Options &options) {
   Vector rot_const = mol->rotational_constants();
   RotorType rot_type = mol->rotor_type();
 
-  fprintf(outfile,"\tHighest point group: %s\n", mol->find_highest_point_group()->symbol().c_str());
-
-  std::string pg = mol->schoenflies_symbol();
-  fprintf(outfile,"\tSchoenflies_symbol: %s\n", pg.c_str());
-
-  CharacterTable ct = mol->point_group()->char_table();
-  int order = ct.order();
-  fprintf(outfile,"\tOrder of the group: %d\n", order);
-
-  //const char *pg = pg;
-  //fprintf(outfile,"pg[0]: %c\n", pg[0]);
-  //fprintf(outfile,"pg[1]: %c\n", pg[1]);
+  mol->set_full_point_group();
+  std::string pg = mol->full_point_group_with_n();
+  std::string pg_n_replaced = mol->full_point_group();
+  fprintf(outfile,"\tFull point group: %s (%s)\n", pg.c_str(), pg_n_replaced.c_str());
+  int full_pg_n = mol->full_pg_n();
 
   int rot_symm_num;
-  if (options["ROTATIONAL_SYMMETRY_NUMBER"].has_changed()) {
-    rot_symm_num = options.get_int("ROTATIONAL_SYMMETRY_NUMBER");
-  }
-  else {
-    fprintf(outfile,"\tWARNING: The user should check the value of the rotational symmetry number. \n");
-    fprintf(outfile,"\t It may be incorrect, if higher-order rotational axes are present.  If it is incorrect, \n");
-    fprintf(outfile,"\t then so will the values of Cv, S, and G.  The symmetry number may be specified in the \n");
-    fprintf(outfile,"\t input file via the ROTATIONAL_SYMMETRY_NUMBER keyword.\n");
 
-    // Point Group    symmetry number
-    // C1,Ci,Cs,Cinfv 1
-    // Cn, Cnv, Cnh   n
-    // Dinfh 	      2
-    // T, Td          12
-    // Oh             24
-    // Dn, Dnh, Dnd   2n
-    // Sn             n/2
-    // Ih             60
-
-    // The code below will only work for D2h and subgroups!
-    if (rot_type == ATOM)            // atom
-      rot_symm_num = 1;
-    else if (rot_type == LINEAR) {
-      if (pg[0] == 'd')              // D-inf-v
-        rot_symm_num = 2;
-      else if (pg[0] == 'c')         // C-inf-v
-        rot_symm_num = 1;
-    }
-    else if (pg == "c1" || pg == "ci") {
-      rot_symm_num = 1;
-    }
-    else if (rot_type == ASYMMETRIC_TOP) {
-      if ( pg == "cs")                  // Cs
-        rot_symm_num = 1;
-      if ( pg[0] == 'c' && pg[1] == 2 ) // C2, C2v, C2h
-        rot_symm_num = 2;
-      if ( pg[0] == 'd' && pg[1] == 2 ) // D2, D2d, D2h
-        rot_symm_num = 4;
-      else
-        rot_symm_num = 1;
-    }
-    else if (rot_type == SYMMETRIC_TOP) {
-      if (pg[0] == 'c' && pg[1] == 's')       // Guess Cs  -> really C3v ; wrong for C5v, C7v ...!
-        rot_symm_num = 3;
-      else if (pg[0] == 'c' && pg[2] == '2')  // Guess C2v -> really D3h 
-          rot_symm_num = 6;
-     }
-     else if (rot_type == SPHERICAL_TOP) {
-       if (pg[0] == 'c')      // Guess Cs  -> really T,Td
-         rot_symm_num = 12;
-       else if (pg[0] == 'd') // Guess D2h -> really octahedral
-         rot_symm_num = 24;
-     }
-  }
+  if (pg == "ATOM" || pg == "C1" || pg == "Ci" || pg == "Cs" || pg == "C_inf_v")
+    rot_symm_num = 1;
+  else if (pg == "D_inf_h")
+    rot_symm_num = 2;
+  else if (pg == "Td")
+    rot_symm_num = 12;
+  else if (pg == "Oh")
+    rot_symm_num = 24;
+  else if (pg == "Ih")
+    rot_symm_num = 60;
+  else if (pg == "Cn" || pg == "Cnv" || pg == "Cnh")
+    rot_symm_num = full_pg_n;
+  else if (pg == "Dn" || pg == "Dnd" || pg == "Dnh")
+    rot_symm_num = 2*full_pg_n;
+  else if (pg == "Sn")
+    rot_symm_num = full_pg_n / 2;
+  else 
+    throw PsiException("thermo(): Could not interpret molecular point group.", __FILE__, __LINE__);
 
   // Set number of vibrational frequencies.
   int nvib_freqs;
@@ -267,6 +225,8 @@ and number of atoms.\n");
   fprintf(outfile,"\t\tInternal energy      = %15.8lf  %15.8lf\n",  DU, E_elec + DU);
   fprintf(outfile,"\t\tEnthalpy             = %15.8lf  %15.8lf\n",  DH, E_elec + DH);
   fprintf(outfile,"\t\tGibbs Free Energy    = %15.8lf  %15.8lf\n",  DG, E_elec + DG);
+
+  Process::environment.globals["GIBBS FREE ENERGY"] = E_elec + DG;
 
   return Success;
 }

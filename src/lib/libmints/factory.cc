@@ -181,3 +181,8 @@ void MatrixFactory::create_vector(Vector& vec)
 {
     vec.init(nirrep_, rowspi_);
 }
+
+SharedVector MatrixFactory::create_shared_vector(const std::string& name)
+{
+    return SharedVector(new Vector(name, nirrep_, rowspi_));
+}

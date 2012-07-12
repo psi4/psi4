@@ -9,6 +9,7 @@
 #include <cstring>
 #include <string>
 #include <psifiles.h>
+#include"psi4-dec.h"
 
 namespace psi {
 	
@@ -33,8 +34,9 @@ int cc_excited(const char *wfn)
     return 1;
   }
   else {
-    printf("Invalid value of input keyword WFN: %s\n", wfn);
-    exit(PSI_RETURN_FAILURE);
+    std::string str = "Invalid value of input keyword WFN: ";
+    str += wfn;
+    throw PsiException(str,__FILE__,__LINE__);
   }
 }
 

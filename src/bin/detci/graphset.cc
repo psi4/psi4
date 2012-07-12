@@ -542,8 +542,7 @@ void gs_fill(int nel, int norb, int nirreps, struct graph_set *GraphSet)
 
       graph = GraphSet->AllGraph[gnum];
       if (graph==NULL) {
-         printf("(gs_fill): Error, get NULL graph pointer!\n");
-         exit(1);
+         throw PsiException("(gs_fill): Error, get NULL graph pointer!",__FILE__,__LINE__);
          }
       
       /* calculate vertex weights x first */
@@ -569,8 +568,9 @@ void gs_fill(int nel, int norb, int nirreps, struct graph_set *GraphSet)
 
       /* check the value of num_strings */
       if (graph->num_strings != xmat[nel][norb]) {
-         printf("(gs_fill): num_strings != x[nel][norb] for graph %2d\n",gnum);
-         exit(1);
+         std::string str = "(gs_fill): num_strings != x[nel][norb] for graph ";
+         str += str += static_cast<std::ostringstream*>( &(std::ostringstream() << gnum) )->str();
+         throw PsiException(str,__FILE__,__LINE__);
          }
 
       } /* end loop over graphs */
@@ -834,8 +834,7 @@ void form_stringwr(struct stringwr *strlist, int *occs, int N,
    
    occlist = (unsigned char *) malloc (N * sizeof(unsigned char));
    if (occlist == NULL) {
-      fprintf(stderr, "(gs_form_stringwr): Malloc error\n");
-      exit(1);
+      throw PsiException("(gs_form_stringwr): Malloc error",__FILE__,__LINE__);
       }
 
    for (i=0; i<N; i++) {
@@ -963,8 +962,7 @@ int s2bgen1(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
    #ifdef DEBUG
    for (i=0; i<nras; i++) {
       if (I_n[i] != ecnt[i]) {
-         printf("(s2bgen1): I_n != ecnt\n");
-         exit(1);
+         throw PsiException("(s2bgen1): I_n != ecnt",__FILE__,__LINE__);
          }
       }
    #endif DEBUG
@@ -1081,8 +1079,7 @@ int s2bgen2(struct fastgraph *graph, int *occs, int *I_n, int ijsym, int nel,
    #ifdef DEBUG
    for (i=0; i<nras; i++) {
       if (I_n[i] != ecnt[i]) {
-         printf("(s2bgen1): I_n != ecnt\n");
-         exit(1);
+         throw PsiException("(s2bgen1): I_n != ecnt",__FILE__,__LINE__);
          }
       }
    #endif DEBUG

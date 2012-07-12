@@ -1,0 +1,29 @@
+refnuc      =  9.18738712306164 #TEST
+refscf      = -76.02676109921089 #TEST
+refomp3      = -76.23809235168488 #TEST
+refscsomp3  = -76.22933696224761 #TEST
+refsosomp3     = -76.22741629483849 #TEST
+
+memory 250 mb
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  d_convergence 8
+  e_convergence 8
+}
+
+energy('omp3')
+
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refomp3, get_variable("OMP3 TOTAL ENERGY"), 6, "OMP3 Total Energy (a.u.)");                   #TEST
+compare_values(refscsomp3, get_variable("SCS-OMP3 TOTAL ENERGY"), 6, "SCS-OMP3 Total Energy (a.u.)");                #TEST
+compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 Total Energy (a.u.)");     #TEST
+

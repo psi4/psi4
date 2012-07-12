@@ -368,6 +368,7 @@ void export_mints()
             def("find_point_group", &Molecule::find_point_group, "docstring").
             def("reset_point_group", &Molecule::reset_point_group, "docstring").
             def("set_point_group", &Molecule::set_point_group, "docstring").
+            def("get_full_point_group", &Molecule::full_point_group, "docstring").
             def("point_group", &Molecule::point_group, "docstring").
             def("schoenflies_symbol", &Molecule::schoenflies_symbol, "docstring").
             def("form_symmetry_information", &Molecule::form_symmetry_information, "docstring").
