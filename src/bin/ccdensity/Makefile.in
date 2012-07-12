@@ -48,7 +48,7 @@ dump_ROHF.cc      sortone.cc                  zero_pdm.cc \
 dump_UHF.cc       sortone_ROHF.cc \
 dump_RHF.cc add_ref_RHF.cc deanti_RHF.cc fold_RHF.cc sortI_RHF.cc sortone_RHF.cc \
 relax_I_RHF.cc build_Z_RHF.cc build_A_RHF.cc energy_RHF.cc energy_ROHF.cc energy_UHF.cc \
-Gijab_RHF.cc ael.cc \
+Gijab_RHF.cc ael.cc densgrid_RHF.cc \
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
