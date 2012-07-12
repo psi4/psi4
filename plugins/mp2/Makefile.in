@@ -19,6 +19,9 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 
 default:: $(PSITARGET)
 
+tests:
+	psi4
+
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
     LDFLAGS = -shared
@@ -38,7 +41,7 @@ $(PSITARGET): $(BINOBJ)
 
 # Erase all compiled intermediate files
 clean:
-	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc
+	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc *.test output.dat psi.timer.dat
 
 # Dependency handling
 %.d: %.cc
