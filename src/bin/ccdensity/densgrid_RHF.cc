@@ -30,6 +30,7 @@ namespace psi { namespace ccdensity {
 void compute_delta(double **delta, double x, double y, double z);
 int nmo, nso, nao; // global
 double **scf, **u; // global
+boost::shared_ptr<Molecule> molecule;
 boost::shared_ptr<BasisSet> basis;
 boost::shared_ptr<Wavefunction> wfn;
 
@@ -37,12 +38,14 @@ void densgrid_RHF(Options& options)
 {
   double dens;
   double **D, **delta;
+  double x, y, z;
   double xmin, xmax, ymin, ymax, zmin, zmax;
   double xstep, ystep, zstep;
   int *order;
   double **scf_pitzer;
 
   wfn = Process::environment.reference_wavefunction();
+  molecule = wfn->molecule();
   basis = wfn->basisset();
 
   nao = basis->nao();
@@ -78,14 +81,30 @@ void densgrid_RHF(Options& options)
       for(int j=0; j < nso; j++) scf[j][I] = scf_pitzer[j][i];
     }
 
-  xmin = -3.0; xmax = +3.0; xstep = 0.1;
-  ymin = -3.0; ymax = +3.0; ystep = 0.1;
-  zmin = -3.0; zmax = +3.0; zstep = 0.1;
+  // Compute density at the nuclei
+  fprintf(outfile, "    Density at nuclei:\n");
+  for(int atom=0; atom < molecule->natom(); atom++) {
+    x = molecule->xyz(atom, 0);
+    y = molecule->xyz(atom, 1);
+    z = molecule->xyz(atom, 2);
+    compute_delta(delta, x, y, z);
+    dens = 0.0;
+    for(int i=0; i < nmo; i++)
+      for(int j=0; j < nmo; j++)
+        dens += delta[i][j] * D[i][j];
 
-  // Loop over points
-  for(double x=xmin; x <= xmax; x += xstep) {
-    for(double y=ymin; y <= ymax; y += ystep) {
-      for(double z=zmin; z <= zmax; z += zstep) {
+    fprintf(outfile, "    Atom %d, dens = %20.12f\n", atom, dens);
+   }
+
+  xmin = -5.0; xmax = +5.0; xstep = 0.1;
+  ymin = -5.0; ymax = +5.0; ystep = 0.1;
+  zmin = -5.0; zmax = +5.0; zstep = 0.1;
+
+  // Loop over points and integrate along the way
+  double charge = 0;
+  for(x=xmin; x <= xmax; x += xstep) {
+    for(y=ymin; y <= ymax; y += ystep) {
+      for(z=zmin; z <= zmax; z += zstep) {
 
         // Compute delta function in Gaussian basis
         compute_delta(delta, x, y, z);
@@ -95,9 +114,13 @@ void densgrid_RHF(Options& options)
           for(int j=0; j < nmo; j++)
             dens += delta[i][j] * D[i][j];
 
+        charge += dens * xstep * ystep * zstep;
+
       } // z
     }  // y
   } // x
+
+  fprintf(outfile, "    Number of electrons = %20.12f?\n", charge);
 
   free_block(delta);
   free_block(scf);
