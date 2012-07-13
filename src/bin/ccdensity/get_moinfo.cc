@@ -132,8 +132,13 @@ void get_moinfo(void)
 
   /* Compute spatial-orbital reordering arrays */
   moinfo.pitzer2qt = init_int_array(moinfo.nmo);
+  moinfo.qt2pitzer = init_int_array(moinfo.nmo);
   reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
              moinfo.pitzer2qt, moinfo.orbspi, moinfo.nirreps);
+  for(i=0; i < moinfo.nmo; i++) {
+    j = moinfo.pitzer2qt[i];
+    moinfo.qt2pitzer[j] = i;
+  }
 
   /* Adjust clsdpi array for frozen orbitals */
   for(i=0; i < moinfo.nirreps; i++)
@@ -277,6 +282,7 @@ void cleanup(void)
     free(moinfo.cc_occ);
     free(moinfo.cc_vir);
     free(moinfo.pitzer2qt);
+    free(moinfo.qt2pitzer);
     free_block(moinfo.scf_qt);
   }
   else if(params.ref == 2) { /** UHF **/

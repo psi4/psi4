@@ -105,3 +105,57 @@ def drop_duplicates(seq):
     noDupes = []
     [noDupes.append(i) for i in seq if not noDupes.count(i)]
     return noDupes
+
+
+def all_casings(input_string):
+    """Function to return a generator of all lettercase permutations
+    of *input_string*.
+    
+    """
+    if not input_string:
+        yield ""
+    else:
+        first = input_string[:1]
+        if first.lower() == first.upper():
+            for sub_casing in all_casings(input_string[1:]):
+                yield first + sub_casing
+        else:
+            for sub_casing in all_casings(input_string[1:]):
+                yield first.lower() + sub_casing
+                yield first.upper() + sub_casing
+
+
+def getattr_ignorecase(module, attr):
+    """Function to extract attribute *attr* from *module* if *attr*
+    is available in any possible lettercase permutation. Returns
+    attribute if available, None if not.
+    
+    """
+    array = None
+    for per in list(all_casings(attr)):
+        try:
+            getattr(module, per)
+        except AttributeError:
+            pass
+        else:
+            array = getattr(module, per)
+            break
+
+    return array
+
+
+def import_ignorecase(module):
+    """Function to import *module* in any possible lettercase 
+    permutation. Returns module object if available, None if not.
+    
+    """
+    modobj = None
+    for per in list(all_casings(module)):
+        try:
+            modobj = __import__(per)
+        except ImportError:
+            pass
+        else:
+            break
+
+    return modobj

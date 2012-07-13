@@ -218,6 +218,18 @@ public:
     */
     static SharedMatrix vertcat(const std::vector<SharedMatrix >& mats);
 
+    /**
+    ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
+    ** arbitrary axis.  Vectors are the rows of the matrix.
+    **
+    ** @param  axis  Vector3   : axis around which to rotate (need not be normalized)
+    ** @param  phi   double    : magnitude of rotation in rad
+    ** @param  Sn    bool      : if true, then also reflect in plane through origin and
+    **                           perpendicular to rotation
+    ** @returns SharedMatrix with rotated points (rows)
+    */
+    SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
+
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const * const data);
 
@@ -375,6 +387,42 @@ public:
      * @returns value at position (h, m, n)
      */
     double get(const int& m, const int& n) const { return matrix_[0][m][n]; }
+
+    /**
+     * Returns a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    SharedVector get_row(int h, int m);
+
+    /**
+     * Returns a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    SharedVector get_column(int h, int m);
+
+    /**
+     * Set a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    void set_row(int h, int m, SharedVector vec);
+
+    /**
+     * Set a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    void set_column(int h, int m, SharedVector vec);
 
     /**
      * Python wrapper for get
@@ -892,6 +940,10 @@ public:
     void zero_lower();
     /*! Zero upper triangle */
     void zero_upper();
+    /*! Zero row */
+    void zero_row(int h, int i);
+    /*! Zero column */
+    void zero_column(int h, int i);
 
     // Reference versions of the above functions
     /// Transform a by transformer save result to this
@@ -982,6 +1034,15 @@ public:
     bool equal(const Matrix& rhs);
     bool equal(const SharedMatrix& rhs);
     bool equal(const Matrix* rhs);
+    /// @}
+
+    /// @{
+    /// Checks matrix equality, but allows rows to be in a different order.
+    /// @param rhs Matrix to compare to.
+    /// @returns true if equal, otherwise false.
+    bool equal_but_for_row_order(const Matrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const SharedMatrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
     /**

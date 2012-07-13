@@ -140,3 +140,32 @@ are not translated correctly. Python docstrings are absorbed as-is, so
 please use reST math formatting (essentially ``$latex math$`` :math:`\Rightarrow`
 ``:math:`latex math```).
 
+The Map of the Sphinx
+^^^^^^^^^^^^^^^^^^^^^
+
+* Adding a new Appendix or First-TOC-Level page
+
+  Create your reST file and fill it with information. Add the name of your
+  file to :source:`doc/sphinxman/source/template_appendices.rst` for an
+  appendix or to :source:`doc/sphinxman/source/template_index.rst` for a
+  first-TOC-level.  Consider the ``#####`` lines to be like preprocessor
+  directives that separate user and programmer manuals. Finally, add your
+  file to the ``STATICDOC`` variable in the Makefile at
+  :source:`doc/sphinxman/Makefile.in`. Sphinx will now build with your new
+  page.
+
+* Adding a new module to "Theoretical Methods"
+
+  Copy the file of a well-established module, like
+  :source:`doc/sphinxman/source/sapt.rst`. Change the title, author, sec
+  label, ref, and source labels at the top of the file to point instead to
+  your code. Edit :source:`doc/sphinxman/source/methods.rst` to add the
+  name of your file so that it will appear in the TOC tree. Add your file
+  to the ``STATICDOC`` variable in the Makefile at
+  :source:`doc/sphinxman/Makefile.in`. Sphinx will now build with your new
+  file.  Follow the models in existing methods pages to write your
+  documentation. If you don't get all the keyword links, bibliography
+  links, sample inputs, math, tables, etc. working in Sphinx, don't worry
+  about it. A genie will probably come through and tidy up all your
+  source.
+

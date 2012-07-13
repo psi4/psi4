@@ -15,6 +15,7 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
+#include <libmints/writer.h>
 #include <psi4-dec.h>
 
 #include <libscf_solver/rhf.h>
@@ -39,6 +40,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     double energy;
     //bool parallel = options.get_bool("PARALLEL");
 
+
     if (reference == "RHF") {
         scf = boost::shared_ptr<Wavefunction>(new RHF(options, psio));
     }
@@ -62,6 +64,13 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
         energy = 0.0;
     }
 
+    // print the basis set
+    if ( options.get_bool("PRINT_BASIS") ) {
+       boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+       boost::shared_ptr<BasisSet> basisset = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, Process::environment.molecule(), "BASIS"));
+       basisset->print_detail();
+    }
+
     // Set this early because the callback mechanism uses it.
     Process::environment.set_reference_wavefunction(scf);
 
@@ -73,6 +82,17 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     energy = scf->compute_energy();
 
     Communicator::world->sync();
+
+    // Print a molden file
+    if ( options["MOLDEN_FILE"].has_changed() ) {
+       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
+       molden->write(options.get_str("MOLDEN_FILE"));
+    }
+    // Print molecular orbitals
+    if ( options.get_bool("PRINT_MOS") ) {
+       boost::shared_ptr<MOWriter> mo(new MOWriter(scf,options));
+       mo->write();
+    }
 
     // Set some environment variables
     Process::environment.globals["SCF TOTAL ENERGY"] = energy;
