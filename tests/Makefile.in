@@ -25,11 +25,11 @@ df_subdirs = sapt1 sapt3 sapt5 dfmp2_1 dfmp2_2 dfmp2_3 ghosts
 
 psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2
 
-mints_subdirs = mints1 mints2 mints3 mints4
+mints_subdirs = mints1 mints2 mints3 mints4 mints5
 
 matrix_subdirs = matrix1
 
-opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large
+opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large gibbs
 
 mp2_subdirs = mp2_1 omp2_1 omp3_1
 
