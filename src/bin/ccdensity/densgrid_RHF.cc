@@ -96,6 +96,14 @@ void densgrid_RHF(Options& options)
     fprintf(outfile, "    Atom %d, dens = %20.12f\n", atom, dens);
    }
 
+  // Prep .dx file
+  FILE *dxfile;
+  ffile(&dxfile, "density.dx", 0);
+  fprintf(dxfile, "#  Output from PSI4 calculation\n");
+  fprintf(dxfile, "#  Electronic density (in e/ang^3) for: \n");
+  fprintf(dxfile, "object 1 class gridpositions counts 180 180 180\n");
+  fprintf(dxfile, "origin %8.6E  %8.6E  %8.6E\n", 0.0, 0.0, 0.0);
+
   xmin = -5.0; xmax = +5.0; xstep = 0.1;
   ymin = -5.0; ymax = +5.0; ystep = 0.1;
   zmin = -5.0; zmax = +5.0; zstep = 0.1;
@@ -121,6 +129,8 @@ void densgrid_RHF(Options& options)
   } // x
 
   fprintf(outfile, "    Number of electrons = %20.12f?\n", charge);
+
+  fclose(dxfile);
 
   free_block(delta);
   free_block(scf);
