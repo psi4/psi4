@@ -106,7 +106,8 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
   // orbital energies
   // NOTE: when using libtrans, the Fock matrix will be in Pitzer order, 
   // regardless of the ordering specified in the constructor.
-  if (!wfn->isCIM()){
+  if (!wfn->isCIM() && options.get_bool("CEPA_VABCD_DIRECT")){
+     // pitzer
      int* aQT = (int*)malloc((ndocc+nvirt+nfzc)*sizeof(int));
      double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
      reorder_qt(wfn->doccpi(), wfn->soccpi(), wfn->frzcpi(), wfn->frzvpi(), aQT, wfn->nmopi(), nirreps);
@@ -123,7 +124,24 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
      }
      free(tmp);
      free(aQT);
+  }else if (!wfn->isCIM()){
+     // qt
+     eps = (double*)malloc(nmo*sizeof(double));
+     int count=0;
+     for (int h=0; h<nirreps; h++){
+         eps_test = wfn_->epsilon_a();
+         for (int norb = fzc[h]; norb<docc[h]; norb++){
+             eps[count++] = eps_test->get(h,norb);
+         }
+     }
+     for (int h=0; h<nirreps; h++){
+         eps_test = wfn_->epsilon_a();
+         for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+             eps[count++] = eps_test->get(h,norb);
+         }
+     }
   }else{
+     // cim
      long int count = 0;
      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
      eps_test = wfn_->CIMOrbitalEnergies();

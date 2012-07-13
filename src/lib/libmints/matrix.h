@@ -218,6 +218,18 @@ public:
     */
     static SharedMatrix vertcat(const std::vector<SharedMatrix >& mats);
 
+    /**
+    ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
+    ** arbitrary axis.  Vectors are the rows of the matrix.
+    **
+    ** @param  axis  Vector3   : axis around which to rotate (need not be normalized)
+    ** @param  phi   double    : magnitude of rotation in rad
+    ** @param  Sn    bool      : if true, then also reflect in plane through origin and
+    **                           perpendicular to rotation
+    ** @returns SharedMatrix with rotated points (rows)
+    */
+    SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
+
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const * const data);
 
@@ -1022,6 +1034,15 @@ public:
     bool equal(const Matrix& rhs);
     bool equal(const SharedMatrix& rhs);
     bool equal(const Matrix* rhs);
+    /// @}
+
+    /// @{
+    /// Checks matrix equality, but allows rows to be in a different order.
+    /// @param rhs Matrix to compare to.
+    /// @returns true if equal, otherwise false.
+    bool equal_but_for_row_order(const Matrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const SharedMatrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
     /**

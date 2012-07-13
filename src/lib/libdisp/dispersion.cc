@@ -11,6 +11,7 @@
 #include "dispersion.h"
 #include "dispersion_defines.h"
 #include <boost/algorithm/string.hpp>
+#include <boost/math/special_functions/factorials.hpp>
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
@@ -41,7 +42,9 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D1_;
         disp->RvdW_ = RvdW_D1_;
         disp->C6_type_ = C6_arit;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_D1;
+        disp->Spherical_type_ = Spherical_grimme;
         return disp;
     } else if (boost::to_upper_copy(name) == "-D2") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
@@ -53,7 +56,9 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D2_;
         disp->RvdW_ = RvdW_D2_;
         disp->C6_type_ = C6_geom;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_D1;
+        disp->Spherical_type_ = Spherical_grimme;
         return disp;
     } else if (boost::to_upper_copy(name) == "-CHG") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
@@ -65,7 +70,25 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D2_;
         disp->RvdW_ = RvdW_D2_;
         disp->C6_type_ = C6_geom;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_CHG;
+        disp->Spherical_type_ = Spherical_grimme;
+        return disp;
+    } else if (boost::to_upper_copy(name) == "-DAS") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-DAS";
+        disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
+        disp->citation_ = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201\n";
+        disp->s6_ = s6;  
+        disp->C6_ = C6_Das_;
+        disp->C8_ = C8_Das_;
+        disp->RvdW_ = RvdW_D2_;
+        disp->A_ = A_Das_;
+        disp->Beta_ = Beta_Das_;
+        disp->C6_type_ = C6_geom;
+        disp->C8_type_ = C8_geom;
+        disp->Damping_type_ = Damping_TT;
+        disp->Spherical_type_ = Spherical_Das;
         return disp;
     } else {
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
@@ -160,7 +183,8 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
     for (int i = 0; i < m->natom(); i++) {
         for (int j = 0; j < i; j++) {
 
-            double C6, Rm6, f;
+            double C6, C8, Rm6, Rm8, f_6, f_8, g, beta;
+
 
             double dx = m->x(j) - m->x(i);
             double dy = m->y(j) - m->y(i);
@@ -169,10 +193,11 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
             double R2 = dx * dx + dy * dy + dz * dz;
             double R = sqrt(R2);
             double R6 = R2 * R2 * R2;
+            double R8 = R2 * R2 * R2 * R2;
             Rm6 = 1.0 / R6;
+            Rm8 = 1.0 / R8;
 
-            double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
-
+        
             if (C6_type_ == C6_arit) {
                 C6 = 2.0 * C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)] / (C6_[(int)m->Z(i)] + C6_[(int)m->Z(j)]);
             } else if (C6_type_ == C6_geom) {
@@ -180,16 +205,50 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
             } else {
                 throw PSIEXCEPTION("Unrecognized C6 Type");
             } 
+           
+            if (C8_type_ == C8_geom) {
+                C8 = sqrt(C8_[(int)m->Z(i)] * C8_[(int)m->Z(j)]);
+            } else if (C8_type_ == C8_grimme) {
+                C8 = 0.0;
+            } else {
+                throw PSIEXCEPTION("Unrecognized C8 Type");
+            } 
 
             if (Damping_type_ == Damping_D1) {
-                f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1)));
-            } else if (Damping_type_ == Damping_CHG) {
-                f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));
-            } else {
+                double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
+                f_6 = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1)));} 
+            else if (Damping_type_ == Damping_CHG) {
+                double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
+                f_6 = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));} 
+            else if (Damping_type_ == Damping_TT) {
+                double f_6_sum = 1.0;
+                double f_8_sum = 1.0;
+                beta = sqrt(Beta_[(int)m->Z(i)] * Beta_[(int)m->Z(j)]);
+                for (int n = 1; n <= 6; n++) {
+                    f_6_sum += pow(R * beta,n) / math::factorial<double>(n); 
+                } 
+                for (int n = 1; n <= 8; n++) {
+                    f_8_sum += pow(R * beta,n) / math::factorial<double>(n); 
+                }
+                f_6 = 1.0 - exp(-R * beta) * f_6_sum;
+                f_8 = 1.0 - exp(-R * beta) * f_8_sum;
+            } 
+            else {
                 throw PSIEXCEPTION("Unrecognized Damping Function");
             }
+           
+            if (Spherical_type_ == Spherical_Das) {
+                g = sqrt(A_[(int)m->Z(i)] * A_[(int)m->Z(j)]) * exp(-R * beta);
+            } else if (Spherical_type_ == Spherical_grimme) {
+                g = 0.0;
+            } else {
+                throw PSIEXCEPTION("Unrecognized Spherical Type");
+            }
 
-            E += C6 * Rm6 * f;
+
+            E += C6 * Rm6 * f_6;
+            E += C8 * Rm8 * f_8;
+            E += g;
         }
     } 
 
@@ -241,6 +300,12 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
             } else {
                 throw PSIEXCEPTION("Unrecognized C6 Type");
             } 
+           // if (C8_type_ == C8_geom) {
+           //     C8 = sqrt(C8_[(int)m->Z(i)] * C8_[(int)m->Z(j)]);
+           //     C8_R = 0.0;
+           // } else {
+           //     throw PSIEXCEPTION("Unrecognized C8 Type");
+           // } 
 
             if (Damping_type_ == Damping_D1) {
                 f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1.0)));
@@ -248,6 +313,8 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
             } else if (Damping_type_ == Damping_CHG) {
                 f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));
                 f_R = - f * f * d_ * (-12.0) * pow((R / RvdW), -13.0) * (1.0 / RvdW);
+            } else if (Damping_type_ == Damping_TT) {
+                throw PSIEXCEPTION("+Das Gradients not yet implemented");
             } else {
                 throw PSIEXCEPTION("Unrecognized Damping Function");
             }
