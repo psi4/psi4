@@ -108,8 +108,8 @@ int read_options(std::string name, Options& options)
 		/*- Names of fragment files corresponding to molecule subsets.
 		This is temporary until better EFP input geometry parsing is implemented. -*/
 		options.add("FRAGS", new ArrayType());
-		/* Do EFP gradient. */
-		options.add_bool("EFP_GRADIENT", false);
+		/* Do EFP gradient. !expert */
+		options.add_str("DERTYPE", "NONE", "NONE FIRST");
 	}
 
 	return true;
@@ -129,7 +129,10 @@ PsiReturnType efp(Options& options)
 	bool disp_enabled = options.get_bool("EFP_DISP");
 	bool exch_enabled = options.get_bool("EFP_EXCH");
 
-	bool do_grad = options.get_bool("EFP_GRADIENT");
+	std::string dertype = options.get_str("DERTYPE");
+	bool do_grad = false;
+	if (dertype == "FIRST")
+	    do_grad = true;
 
 	if (elst_enabled)
 		opts.terms |= EFP_TERM_ELEC;
@@ -264,7 +267,6 @@ PsiReturnType efp(Options& options)
 
 	if (do_grad) {
 			grad = new double[6 * nfrag];
-			double *pgrad = grad;
 			if ((res = efp_get_gradient(efp, 6 * nfrag, grad))) {
 				fprintf(outfile, efp_result_to_string(res));
 				goto fail;
@@ -272,6 +274,7 @@ PsiReturnType efp(Options& options)
 
 			fprintf(outfile, "  ==> EFP Gradient <==\n\n");
 
+			double *pgrad = grad;
 			for (int i = 0; i < nfrag; i++) {
 					for (int j = 0; j < 6; j++) {
 							fprintf(outfile, "%14.6lf", *pgrad++);
@@ -279,6 +282,18 @@ PsiReturnType efp(Options& options)
 					fprintf(outfile, "\n");
 			}
 			fprintf(outfile, "\n");
+
+			SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag, 6)); //
+			double ** psmgrad = smgrad->pointer();
+			pgrad = grad;
+			for (int i = 0; i < nfrag; i++) {
+					for (int jj = 0; jj < 6; jj++) {
+						psmgrad[i][jj] = *pgrad++;
+					}
+			}
+
+			psi::Process::environment.set_gradient(smgrad);
+			smgrad->print();
 	}
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
