@@ -10,6 +10,7 @@
 
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 #define DEFAULT_SYM_TOL 1.0E-8
+#define FULL_PG_TOL 1.0e-8 // default
 
 #include <boost/shared_ptr.hpp>  // something is going on requiring this header
 
@@ -22,10 +23,15 @@ namespace python{
 namespace psi {
 extern FILE *outfile;
 
-enum RotorType {ASYMMETRIC_TOP, SYMMETRIC_TOP, SPHERICAL_TOP, LINEAR, ATOM};
+enum RotorType {RT_ASYMMETRIC_TOP, RT_SYMMETRIC_TOP, RT_SPHERICAL_TOP, RT_LINEAR, RT_ATOM};
+enum FullPointGroup {PG_ATOM, PG_Cinfv, PG_Dinfh, PG_C1, PG_Cs, PG_Ci, PG_Cn, PG_Cnv,
+ PG_Cnh, PG_Sn, PG_Dn, PG_Dnd, PG_Dnh, PG_Td, PG_Oh, PG_Ih};
 
 const std::string RotorTypeList[] = {"ASYMMETRIC_TOP", "SYMMETRIC_TOP",
  "SPHERICAL_TOP", "LINEAR", "ATOM"};
+
+const std::string FullPointGroupList[] = {"ATOM", "C_inf_v", "D_inf_h", "C1", "Cs", "Ci", "Cn", "Cnv",
+ "Cnh", "Sn", "Dn", "Dnd", "Dnh", "Td", "Oh", "Ih"};
 
 /*! \ingroup MINTS
  *  \class Molecule
@@ -110,6 +116,10 @@ protected:
 
     /// Point group to use with this molecule.
     boost::shared_ptr<PointGroup> pg_;
+    /// Full point group.
+    FullPointGroup full_pg_;
+    /// n of the highest rotational axis Cn
+    int full_pg_n_;
 
     /// Number of unique atoms
     int nunique_;
@@ -325,10 +335,10 @@ public:
     Matrix* inertia_tensor() const;
 
     /// Compute the rotational constants and return them in wavenumbers
-    Vector rotational_constants() const;
+    Vector rotational_constants(double tol = FULL_PG_TOL) const;
 
     /// Return the rotor type
-    RotorType rotor_type() const;
+    RotorType rotor_type(double tol = FULL_PG_TOL) const;
 
     /// Print the molecule
     void print() const;
@@ -346,6 +356,7 @@ public:
     void print_distances() const;
     void print_bond_angles() const;
     void print_dihedrals() const;
+    void print_out_of_planes() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
@@ -384,6 +395,8 @@ public:
     bool has_symmetry_element(Vector3& op, double tol=DEFAULT_SYM_TOL) const;
     boost::shared_ptr<PointGroup> point_group() const;
     void set_point_group(boost::shared_ptr<PointGroup> pg);
+    /// Determine and set FULL point group
+    void set_full_point_group(double tol=FULL_PG_TOL);
     /// Does the molecule have an inversion center at origin
     bool has_inversion(Vector3& origin, double tol=DEFAULT_SYM_TOL) const;
     /// Is a plane?
@@ -554,6 +567,12 @@ public:
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
     bool valid_atom_map(double tol = 0.01) const;
+    /// Return point group name such as C3v or S8.
+    std::string full_point_group() const;
+    /// Return point group name such as Cnv or Sn.
+    std::string full_point_group_with_n() const { return FullPointGroupList[full_pg_];}
+    /// Return n in Cnv, etc.; If there is no n (e.g. Td) it's the highest-order rotation axis.
+    int full_pg_n() { return full_pg_n_; }
 
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values

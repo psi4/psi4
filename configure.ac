@@ -1001,6 +1001,7 @@ AC_CONFIG_FILES([
           src/bin/optking/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
+          src/bin/omp3/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1039,6 +1040,7 @@ AC_CONFIG_FILES([
           tests/fd-freq-energy/Makefile
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
+          tests/gibbs/Makefile
           tests/castup1/Makefile
           tests/castup2/Makefile
           tests/castup3/Makefile
@@ -1147,7 +1149,9 @@ AC_CONFIG_FILES([
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
+          tests/mints5/Makefile
           tests/omp2_1/Makefile
+          tests/omp3_1/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
@@ -1167,16 +1171,16 @@ AC_CONFIG_FILES([
           plugins/sointegrals/Makefile
           plugins/sointegrals/input.dat
           plugins/sointegrals/sointegrals.cc
-          plugins/plugin_mp2/Makefile
-          plugins/plugin_mp2/__init__.py
-          plugins/plugin_mp2/doc.rst
-          plugins/plugin_mp2/globals.h
-          plugins/plugin_mp2/input.dat
-          plugins/plugin_mp2/inputalt.dat
-          plugins/plugin_mp2/plugin_mp2.cc
-          plugins/plugin_mp2/plugin_mp2_restricted.cc
-          plugins/plugin_mp2/plugin_mp2_unrestricted.cc
-          plugins/plugin_mp2/pymodule.py
+          plugins/mp2/Makefile
+          plugins/mp2/__init__.py
+          plugins/mp2/doc.rst
+          plugins/mp2/globals.h
+          plugins/mp2/input.dat
+          plugins/mp2/inputalt.dat
+          plugins/mp2/mp2.cc
+          plugins/mp2/mp2_restricted.cc
+          plugins/mp2/mp2_unrestricted.cc
+          plugins/mp2/pymodule.py
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc

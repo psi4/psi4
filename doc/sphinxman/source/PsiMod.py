@@ -232,3 +232,11 @@ class Dispersion():
     def build(sstr, ffloat):
         return Dispersion()
   
+
+class Process():
+
+    def __init__(self):
+        pass
+
+Process.environment = {}
+Process.environment['PSI_SCRATCH'] = 'nonsense'

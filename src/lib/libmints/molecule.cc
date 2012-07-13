@@ -57,9 +57,8 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-// TODO: These should probably be moved to psi4-def.h
-#define ZERO_MOMENT_INERTIA 1.0E-9      // Tolerance (relative) for degenerate moments of intertia
-#define ZERO 1.0E-14                    // Tolerance for zero moments of intertia
+// used by 'if_to_invert_axis' and 'inertia_tensor'
+#define ZERO 1.0E-14
 
 namespace psi {
 
@@ -162,7 +161,9 @@ Molecule::Molecule():
     atom_to_unique_(0),
     //old_symmetry_frame_(0)
     reinterpret_coordentries_(true),
-    lock_frame_(false)
+    lock_frame_(false),
+    full_pg_(PG_C1),
+    full_pg_n_(1)
 {
 }
 
@@ -199,7 +200,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     reinterpret_coordentries_= other.reinterpret_coordentries_;
     lock_frame_              = other.lock_frame_;
 
-    // These are symmetry related variables, and are filled in by the following funtions
+    // These are symmetry related variables, and are filled in by the following functions
     pg_             = boost::shared_ptr<PointGroup>();
     nunique_        = 0;
     nequiv_         = 0;
@@ -207,6 +208,8 @@ Molecule& Molecule::operator=(const Molecule& other)
     atom_to_unique_ = 0;
     symmetry_from_input_ = other.symmetry_from_input_;
     form_symmetry_information();
+    full_pg_        = other.full_pg_;
+    full_pg_n_      = other.full_pg_n_;
 
     atoms_.clear();
     // Deep copy the map of variables
@@ -1105,6 +1108,7 @@ void Molecule::update_geometry()
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
+    set_full_point_group();
 
     // Disabling symmetrize for now if orientation is fixed, as it is not correct.  We may want
     // to fix this in the future, but in some cases of finite-differences the set geometry is not
@@ -1291,7 +1295,8 @@ void Molecule::print_in_bohr() const
     // and psi3 using bohr.
     if (Communicator::world->me() == 0) {
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol().c_str());
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
             fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     "Bohr", molecular_charge_, multiplicity_);
             fprintf(outfile,"       Center              X                  Y                   Z       \n");
@@ -1342,7 +1347,8 @@ void Molecule::print() const
 {
     if (Communicator::world->me() == 0) {
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol().c_str());
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
             fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
             fprintf(outfile,"       Center              X                  Y                   Z       \n");
@@ -1367,7 +1373,8 @@ void Molecule::print_full() const
 {
     if (Communicator::world->me() == 0) {
         if (natom()) {
-            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol().c_str());
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
             fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
                     units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
             fprintf(outfile,"       Center              X                  Y                   Z       \n");
@@ -1390,50 +1397,121 @@ void Molecule::print_full() const
 
 void Molecule::print_distances() const
 {
-    fprintf(outfile, "        Interatomic Distances (Bohr)\n\n");
+    fprintf(outfile, "        Interatomic Distances (Angstroms)\n\n");
     for(int i=0;i<natom();i++) {
-        for(int j=i;j<natom();j++) {
-            double xx = x(i) - x(j);
-            double yy = y(i) - y(j);
-            double zz = z(i) - z(j);
-            double distance = sqrt(xx*xx+yy*yy+zz*zz);
-            fprintf(outfile, "        %3d  %3d  %6.3lf\n",i,j,distance);
+        for(int j=i+1;j<natom();j++) {
+            Vector3 eij = xyz(j)-xyz(i);
+            double distance=eij.norm();
+            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance);
         }
     }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::print_bond_angles() const
 {
     fprintf(outfile, "        Bond Angles (degrees)\n\n");
-    for(int i=0;i<natom();i++) {
-        for(int j=i+1;j<natom();j++) {
-            for(int k=j+1;k<natom();k++) {
-                double rijxx = x(i) - x(j);
-                double rijyy = y(i) - y(j);
-                double rijzz = z(i) - z(j);
-                double rij = sqrt(rijxx*rijxx+rijyy*rijyy+rijzz*rijzz);
-
-                double rjkxx = x(j) - x(k);
-                double rjkyy = y(j) - y(k);
-                double rjkzz = z(j) - z(k);
-                double rjk = sqrt(rjkxx*rjkxx+rjkyy*rjkyy+rjkzz*rjkzz);
-
-                double rikxx = x(i) - x(k);
-                double rikyy = y(i) - y(k);
-                double rikzz = z(i) - z(k);
-                double rik = sqrt(rikxx*rikxx+rikyy*rikyy+rikzz*rikzz);
-
-                double invAngle = (rij*rij+rjk*rjk-rik*rik) / (2*rij*rjk);
-                double bondAngle = acos(invAngle);
-                printf("        %3d  %3d  %3d  %6.3lf\n", i, j, k, (bondAngle*180));
+    for(int j=0;j<natom();j++) {
+        for(int i=0;i<natom();i++){
+            if(i==j)
+                continue;
+            for(int k=i+1;k<natom();k++) {
+                if(k==j)
+                    continue;
+                Vector3 eji = xyz(i)-xyz(j);
+                eji.normalize ();
+                Vector3 ejk = xyz(k)-xyz(j);
+                ejk.normalize ();
+                double dotproduct=eji.dot (ejk);
+                double phi = 180*acos(dotproduct)/_pi;
+                fprintf(outfile, "        Angle %d-%d-%d: %8.3lf\n", i+1, j+1, k+1, phi);
             }
         }
     }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::print_dihedrals() const
 {
+    fprintf(outfile, "        Dihedral Angles (Degrees)\n\n");
+    for(int i=0; i<natom(); i++) {
+        for(int j=0; j<natom(); j++) {
+            if(i==j)
+                continue;
+            for(int k=0; k<natom(); k++) {
+                if(i==k || j==k)
+                    continue;
+                for(int l=0; l<natom(); l++) {
+                    if(i==l || j==l || k==l)
+                        continue;
+                    Vector3 eij = xyz(j)-xyz(i);
+                    eij.normalize ();
+                    Vector3 ejk = xyz(k)-xyz(j);
+                    ejk.normalize ();
+                    Vector3 ekl = xyz(l) - xyz(k);
+                    ekl.normalize ();
+                    //Compute angle ijk
+                    double angleijk = acos(-eij.dot (ejk));
+                    //Compute angle jkl
+                    double anglejkl = acos(-ejk.dot (ekl));
+                    //compute term1 (eij x ejk)
+                    Vector3 term1 = eij.cross (ejk);
+                    //compute term2 (ejk x ekl)
+                    Vector3 term2 = ejk.cross (ekl);
+                    double numerator = term1.dot (term2);
+                    double denominator = sin(angleijk)*sin(anglejkl);
+                    double costau = (numerator/denominator);
+                    if( costau>1.00 && costau<1.000001)
+                        costau=1.00;
+                    if(costau<-1.00 && costau>-1.000001)
+                        costau=-1.00;
+                    double tau = 180*acos(costau)/_pi;
+                    fprintf(outfile, "        Dihedral %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, tau);
+                }
+            }
+        }
+    }
+    fprintf(outfile, "\n\n");
+}
 
+void Molecule::print_out_of_planes () const
+{
+    fprintf(outfile, "        Out-Of-Plane Angles (Degrees)\n\n");
+    for(int i=0; i<natom(); i++) {
+        for(int j=0; j<natom(); j++) {
+            if(i==j)
+                continue;
+            for(int k=0; k<natom(); k++) {
+                if(i==k || j==k)
+                    continue;
+                for(int l=0; l<natom(); l++) {
+                    if(i==l || j==l || k==l)
+                        continue;
+                    //Compute vectors we need first
+                    Vector3 elj = xyz(j)-xyz(l);
+                    elj.normalize ();
+                    Vector3 elk = xyz(k)-xyz(l);
+                    elk.normalize ();
+                    Vector3 eli = xyz(i)-xyz(l);
+                    eli.normalize ();
+                    //Denominator
+                    double denominator = sin(acos(elj.dot (elk)));
+                    //Numerator
+                    Vector3 eljxelk = elj.cross(elk);
+                    double numerator = eljxelk.dot (eli);
+                    //compute angle
+                    double sinetheta = numerator/denominator;
+                    if(sinetheta>1.00)
+                        sinetheta=1.000;
+                    if(sinetheta<-1.00)
+                        sinetheta=-1.000;
+                    double theta = 180*asin(sinetheta)/_pi;
+                    fprintf(outfile, "        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, theta);
+                }
+            }
+        }
+    }
+    fprintf(outfile, "\n\n");
 }
 
 void Molecule::save_xyz(const std::string& filename) const
@@ -1508,7 +1586,7 @@ Matrix* Molecule::inertia_tensor() const
     return tensor;
 }
 
-Vector Molecule::rotational_constants() const {
+Vector Molecule::rotational_constants(double zero_tol) const {
 
   SharedMatrix pI(inertia_tensor()); 
   Vector evals(3);
@@ -1522,7 +1600,7 @@ Vector Molecule::rotational_constants() const {
 
   Vector rot_const(3);
   for (int i=0; i<3; ++i) {
-    if (evals[i] < ZERO)
+    if (evals[i] < zero_tol)
       rot_const[i] = 0.0;
     else
       rot_const[i] = im2rotconst/evals[i];
@@ -1543,7 +1621,7 @@ Vector Molecule::rotational_constants() const {
   return rot_const;
 }
 
-RotorType Molecule::rotor_type() const {
+RotorType Molecule::rotor_type(double zero_tol) const {
 
   Vector rot_const = rotational_constants();
 
@@ -1558,7 +1636,7 @@ RotorType Molecule::rotor_type() const {
         rel = abs/tmp;
       else
         rel = 0.0;
-      if (rel < ZERO_MOMENT_INERTIA)
+      if (rel < zero_tol)
         degen++;
     }
   }
@@ -1568,15 +1646,15 @@ RotorType Molecule::rotor_type() const {
   RotorType rotor_type;
 
   if (natom() == 1)
-    rotor_type = ATOM;
-  else if (rot_const[2] == 0.0)  // A == 0, B == C
-    rotor_type = LINEAR;
+    rotor_type = RT_ATOM;
+  else if (rot_const[0] == 0.0)  // A == 0, B == C
+    rotor_type = RT_LINEAR;
   else if (degen == 2)           // A == B == C
-    rotor_type = SPHERICAL_TOP;
+    rotor_type = RT_SPHERICAL_TOP;
   else if (degen == 1)           // A  > B == C
-    rotor_type = SYMMETRIC_TOP;  // A == B > C
+    rotor_type = RT_SYMMETRIC_TOP;  // A == B > C
   else
-    rotor_type = ASYMMETRIC_TOP; // A != B != C
+    rotor_type = RT_ASYMMETRIC_TOP; // A != B != C
 
   return rotor_type;
 }
@@ -2683,4 +2761,362 @@ void Molecule::set_com_fixed(bool _fix) {
     }
 }
 
+// These two declarations are left here as it's not clear that anyone else will use them:
+
+// Function used by set_full_point_group() to find the max. order of a rotational axis.
+int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL, int max_Cn_to_check=-1);
+
+// Function used by set_full_point_group() to scan a given geometry and
+// determine if an atom is present at a given location.
+bool atom_present_in_geom(Matrix & geom, Vector3 & b, double tol);
+
+bool atom_present_in_geom(Matrix & geom, Vector3 & b, double tol) {
+  for (int i=0; i < geom.nrow(); ++i) {
+    Vector3 a(geom(i,0),geom(i,1),geom(i,2));
+    if (b.distance(a) < tol)
+      return true;
+  }
+  return false;
+}
+
+// full_pg_n_ is highest order n in Cn.  0 for atoms or infinity.
+void Molecule::set_full_point_group(double zero_tol) {
+
+  // Get cartesian geometry and put COM at origin
+  Matrix geom = geometry();
+  Vector3 com = center_of_mass();
+  for (int i=0; i<natom(); ++i) {
+    geom.add(i, 0, -com[0]);
+    geom.add(i, 1, -com[1]);
+    geom.add(i, 2, -com[2]);
+  }
+
+  // Get rotor type
+  RotorType rotor = rotor_type(zero_tol);
+  //fprintf(outfile,"\t\tRotor type        : %s\n", RotorTypeList[rotor].c_str());
+
+  // Get the D2h point group from Jet and Ed's code.
+  // c1 ci c2 cs d2 c2v c2h d2h
+  std::string d2h_subgroup = point_group()->symbol();
+  //fprintf(outfile,"d2h_subgroup %s \n", d2h_subgroup.c_str());
+
+  // Check inversion
+  Vector3 v3_zero(0, 0, 0);
+  bool op_i = has_inversion(v3_zero, zero_tol);
+  //fprintf(outfile,"\t\tInversion symmetry: %s\n", (op_i ? "yes" : "no"));
+
+  int i;
+  double dot, phi;
+  Vector3 x_axis(1,0,0);
+  Vector3 y_axis(0,1,0);
+  Vector3 z_axis(0,0,1);
+  SharedMatrix test_mat;
+  Vector3 rot_axis;
+
+  if (rotor == RT_ATOM) { // atoms
+    full_pg_ = PG_ATOM;
+    full_pg_n_ = 0;
+  }
+  else if (rotor == RT_LINEAR) { // linear molecules
+    if (op_i)
+      full_pg_ = PG_Dinfh;
+    else
+      full_pg_ = PG_Cinfv;
+    full_pg_n_ = 0;
+  }
+  else if (rotor == RT_SPHERICAL_TOP) { // spherical tops
+    if (!op_i) { // The only spherical top without inversion is Td.
+      full_pg_ = PG_Td; 
+      full_pg_n_ = 3;
+    }
+    else { // Oh or Ih ?
+      // Oh has a S4 and should be oriented properly already.
+      test_mat = geom.matrix_3d_rotation(z_axis, _pi/2, true);
+      bool op_symm = geom.equal_but_for_row_order(test_mat, zero_tol);
+      //fprintf(outfile,"\t\tS4z : %s\n", (op_symm ? "yes" : "no"));
+
+      if (op_symm) {
+        full_pg_ = PG_Oh; 
+        full_pg_n_ = 4;
+      }
+      else {
+        full_pg_ = PG_Ih; 
+        full_pg_n_ = 5;
+      }
+    }
+  }
+  else if (rotor == RT_ASYMMETRIC_TOP) { // asymmetric tops cannot exceed D2h, right?
+
+    if (d2h_subgroup == "c1") {
+      full_pg_ = PG_C1; 
+      full_pg_n_ = 1;
+    }
+    else if (d2h_subgroup == "ci") {
+      full_pg_ = PG_Ci; 
+      full_pg_n_ = 1;
+    }
+    else if (d2h_subgroup == "c2") {
+      full_pg_ = PG_Cn; 
+      full_pg_n_ = 2;
+    }
+    else if (d2h_subgroup == "cs") {
+      full_pg_ = PG_Cs; 
+      full_pg_n_ = 1;
+    }
+    else if (d2h_subgroup == "d2") {
+      full_pg_ = PG_Dn; 
+      full_pg_n_ = 2;
+    }
+    else if (d2h_subgroup == "c2v") {
+      full_pg_ = PG_Cnv; 
+      full_pg_n_ = 2;
+    }
+    else if (d2h_subgroup == "c2h") {
+      full_pg_ = PG_Cnh; 
+      full_pg_n_ = 2;
+    }
+    else if (d2h_subgroup == "d2h") {
+      full_pg_ = PG_Dnh; 
+      full_pg_n_ = 2;
+    }
+    else 
+      fprintf(outfile,"\t\tWarning: Cannot determine point group.\n");
+  }
+  else if (rotor == RT_SYMMETRIC_TOP) {
+
+    // Find principal axis that is unique and make it z-axis.
+    SharedMatrix It(inertia_tensor());
+    Vector I_evals(3);
+    SharedMatrix I_evects(new Matrix(3, 3));
+    It->diagonalize(I_evects, I_evals, ascending);
+    // I_evects->print_out();
+    // fprintf(outfile,"I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
+
+    int unique_axis;
+    if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
+      unique_axis = 2;
+    else if (fabs(I_evals[1] - I_evals[2]) < zero_tol)
+      unique_axis = 0;
+
+    // Compute angle between unique axis and the z-axis
+    // Returned eigenvectors appear to be columns (in Fortan style) ?!
+    Vector3 old_axis(I_evects->get(0,unique_axis),
+                     I_evects->get(1,unique_axis),
+                     I_evects->get(2,unique_axis));
+
+    dot = z_axis.dot(old_axis);
+    if (fabs(dot-1) < 1.0e-10)
+      phi = 0.0;
+    else if (fabs(dot+1) < 1.0e-10)
+      phi = _pi;
+    else
+      phi = acos(dot);
+
+    // Rotate geometry to put unique axis on the z-axis, if it isn't already.
+    if (fabs(phi) > 1.0e-14) {
+      rot_axis = z_axis.cross(old_axis);
+      test_mat = geom.matrix_3d_rotation(rot_axis, phi, false);
+      //fprintf(outfile, "Rotating by %lf to get principal axis on z-axis.\n", phi);
+      geom.copy(test_mat);
+    }
+
+    //fprintf(outfile,"Geometry to analyze - principal axis on z-axis:\n");
+    //for (i=0; i<natom(); ++i)
+      //fprintf(outfile,"%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
+    //fprintf(outfile,"\n");
+
+    // Determine order Cn and Sn of principal axis.
+    int Cn_z = matrix_3d_rotation_Cn(geom, z_axis, false, zero_tol);
+    //fprintf(outfile,"\t\tHighest rotation axis (Cn_z) : %d\n", Cn_z);
+
+    int Sn_z = matrix_3d_rotation_Cn(geom, z_axis, true, zero_tol);
+    //fprintf(outfile,"\t\tHighest rotation axis (Sn_z) : %d\n", Sn_z);
+
+    // Check for sigma_h (xy plane).
+    bool op_sigma_h = false;
+    for (i=0; i<natom(); ++i) {
+      if (fabs(geom(i,2)) < zero_tol)
+        continue; // atom is in xy plane
+      else {
+        Vector3 test_atom(geom(i,0), geom(i,1), -1*geom(i,2));
+        if (!atom_present_in_geom(geom, test_atom, zero_tol))
+          break;
+      }
+    }
+    if (i == natom())
+      op_sigma_h = true;
+    //fprintf(outfile,"\t\t sigma_h : %s\n", (op_sigma_h ? "yes" : "no"));
+
+    // Rotate one off-axis atom to the yz plane and check for sigma_v's.
+    int pivot_atom_i;
+    for (i=0; i<natom(); ++i) {
+      double dist_from_z = sqrt(geom(i,0)*geom(i,0)+geom(i,1)*geom(i,1));
+      if (fabs(dist_from_z) > zero_tol) {
+        pivot_atom_i = i;
+        break;
+      }
+    }
+    if (pivot_atom_i == natom())
+      throw PSIEXCEPTION("Not a linear molecule but could not find off-axis atom.");
+
+    // Rotate around z-axis to put pivot atom in the yz plane
+    Vector3 xy_point(geom(pivot_atom_i,0), geom(pivot_atom_i,1), 0);
+
+    xy_point.normalize();
+    dot = y_axis.dot(xy_point);
+    if (fabs(dot-1) < 1.0e-10)
+      phi = 0.0;
+    else if (fabs(dot+1) < 1.0e-10)
+      phi = _pi;
+    else
+      phi = acos(dot);
+
+    int Cn_x, Cn_y;
+    bool is_D = false;
+    if (fabs(phi) > 1.0e-14) {
+      test_mat = geom.matrix_3d_rotation(z_axis, phi, false);
+      //fprintf(outfile, "Rotating by %8.3e to get atom %d in yz-plane.\n", phi, pivot_atom_i+1);
+      geom.copy(test_mat);
+    }
+
+    // Check for sigma_v (yz plane).
+    bool op_sigma_v = false;
+    for (i=0; i<natom(); ++i) {
+      if (fabs(geom(i,0)) < zero_tol)
+        continue; // atom is in yz plane
+      else {
+        Vector3 test_atom(-1*geom(i,0), geom(i,1), geom(i,2));
+        if (!atom_present_in_geom(geom, test_atom, zero_tol))
+          break;
+      }
+    }
+    if (i == natom())
+      op_sigma_v = true;
+    //fprintf(outfile,"\t\tsigma_v : %s\n", (op_sigma_v ? "yes" : "no"));
+
+    //fprintf(outfile,"geom to analyze - one atom in yz plane\n");
+    //for (i=0; i<natom(); ++i)
+      //fprintf(outfile,"%20.15lf %20.15lf %20.15lf\n", geom(i,0), geom(i,1), geom(i,2));
+    //fprintf(outfile,"\n");
+
+    // Check for perpendicular C2's.
+    // Loop through pairs of atoms to find c2 axis candidates.
+    for (i=0; i<natom(); ++i) {
+      Vector3 A(geom(i,0), geom(i,1), geom(i,2));
+      double AdotA = A.dot(A);
+      for (int j=0; j<i; ++j) {
+
+        if (Z(i) != Z(j)) continue; // ensure same atomic number
+
+        Vector3 B(geom(j,0), geom(j,1), geom(j,2)); // ensure same distance from com
+        if (fabs(AdotA - B.dot(B)) > 1.0e-6) continue; // loose check
+
+        // Use sum of atom vectors as axis if not 0.
+        Vector3 axis= A+B;
+        if (axis.norm() < 1.0e-12) continue;
+        axis.normalize();
+
+        // Check if axis is perpendicular to z-axis.
+        if (fabs(axis.dot(z_axis)) > 1.0e-6) continue;
+
+        // Do the thorough check for C2.
+        if (matrix_3d_rotation_Cn(geom, axis, false, zero_tol, 2) == 2)
+          is_D = true;
+      }
+    }
+    //fprintf(outfile,"\t\tperp. C2's :  %s\n", (is_D ? "yes" : "no"));
+
+    // Now assign point groups!  Sn first.
+    if (Sn_z == 2 * Cn_z && !is_D) {
+      full_pg_   = PG_Sn;
+      full_pg_n_ = Sn_z;
+      return;
+    }
+
+    if (is_D) {  // has perpendicular C2's
+      if (op_sigma_h && op_sigma_v) { // Dnh : Cn, nC2, sigma_h, nSigma_v
+        full_pg_   = PG_Dnh;
+        full_pg_n_ = Cn_z;
+      }
+      else if (Sn_z == 2*Cn_z) { // Dnd : Cn, nC2, S2n axis coincident with Cn
+        full_pg_   = PG_Dnd;
+        full_pg_n_ = Cn_z;
+      }
+      else {                     // Dn : Cn, nC2           
+        full_pg_   = PG_Dn;
+        full_pg_n_ = Cn_z;
+      }
+    }
+    else {      // lacks perpendicular C2's
+      if (op_sigma_h && Sn_z == Cn_z) {// Cnh : Cn, sigma_h, Sn coincident with Cn
+        full_pg_   = PG_Cnh;
+        full_pg_n_ = Cn_z;
+      }
+      else if (op_sigma_v) {           // Cnv : Cn, nCv
+        full_pg_   = PG_Cnv;
+        full_pg_n_ = Cn_z;
+      }
+      else {                           // Cn  : Cn
+        full_pg_   = PG_Cn;
+        full_pg_n_ = Cn_z;
+      }
+    }
+  } // symmetric top
+
+  return;
+}
+
+/*
+** @brief Find maximum n in Cn around given axis, i.e., the highest-order rotation axis.
+**
+** @param coord Matrix    : points to rotate - column dim is 3
+** @param axis  Vector3   : axis around which to rotate, does not need to be normalized
+** @param bool  reflect   : if true, really look for Sn not Cn
+** @returns n
+*/
+int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL, int max_Cn_to_check) {
+  int max_possible;
+  if (max_Cn_to_check == -1)     // default
+    max_possible = coord.nrow(); // Check all atoms. In future, make more intelligent.
+  else
+    max_possible = max_Cn_to_check;
+
+  int Cn = 1; // C1 is there for sure
+  SharedMatrix rotated_mat;
+  bool present;
+
+  for (int n=2; n<max_possible+1; ++n) {
+    rotated_mat = coord.matrix_3d_rotation(axis, 2*_pi/n, reflect);
+    present = coord.equal_but_for_row_order(rotated_mat, TOL);
+   
+    if (present)
+      Cn = n;
+  }
+  return Cn;
+}
+
+
+// Return point group name such as D3d or S8 in string form, with the 'n'
+// replaced by an integer.
+std::string Molecule::full_point_group() const {
+
+  string pg_with_n = FullPointGroupList[full_pg_];
+
+  // These don't need changes - have no 'n'.
+  if (pg_with_n == "D_inf_h" || pg_with_n == "C_inf_v" ||
+      pg_with_n == "C1"      || pg_with_n == "Cs"      ||
+      pg_with_n == "Ci"      || pg_with_n == "Td"      ||
+      pg_with_n == "Oh"      || pg_with_n == "Ih" )
+        return pg_with_n;
+
+  stringstream n_integer;
+  n_integer << full_pg_n_;
+
+  // Replace 'n'.  It can only appear once.
+  size_t start_pos = pg_with_n.find("n");
+
+  pg_with_n.replace(start_pos, n_integer.str().length(), n_integer.str());
+
+  return  pg_with_n;
+}
 

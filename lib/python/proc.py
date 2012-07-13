@@ -64,6 +64,16 @@ def run_omp2(name, **kwargs):
     return PsiMod.omp2()
     PsiMod.set_global_option('REFERENCE', oldref)
 
+def run_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP3 computation
+
+    """
+    oldref = PsiMod.get_global_option('REFERENCE')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.scf()
+    return PsiMod.omp3()
+    PsiMod.set_global_option('REFERENCE', oldref)    
 
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -1445,8 +1455,13 @@ def run_cepa(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    # save user options
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CEPA', 'CEPA_NO_SINGLES'])
+
     # override symmetry if integral direct
-    if PsiMod.get_global_option('CEPA_VABCD_DIRECT'):
+    if PsiMod.get_option('CEPA','CEPA_VABCD_DIRECT'):
        molecule = PsiMod.get_active_molecule()
        molecule.update_geometry()
        molecule.reset_point_group('c1')
@@ -1454,7 +1469,7 @@ def run_cepa(name, **kwargs):
        #molecule.update_geometry()
 
     # throw an exception for open-shells
-    if (PsiMod.get_global_option('reference') != 'RHF' ):
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
        PsiMod.print_out("\n")
        PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
        PsiMod.print_out("\n")
@@ -1462,47 +1477,43 @@ def run_cepa(name, **kwargs):
 
     # what type of cepa?
     if (lowername == 'cepa(0)'):
-        PsiMod.set_global_option('cepa_level', 'cepa0')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA0')
     if (lowername == 'cepa(1)'):
-        PsiMod.set_global_option('cepa_level', 'cepa1')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA1')
     if (lowername == 'cepa(2)'):
-        #PsiMod.set_global_option('cepa_level', 'cepa2')
+        #PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA2')
         # throw an exception for cepa(2)
         PsiMod.print_out("\n")
         PsiMod.print_out("Error: %s not implemented\n" % lowername )
         PsiMod.print_out("\n")
     if (lowername == 'cepa(3)'):
-        PsiMod.set_global_option('cepa_level', 'cepa3')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA3')
     if (lowername == 'sdci'):
-        PsiMod.set_global_option('cepa_level', 'cisd')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CISD')
     if (lowername == 'dci'):
-        PsiMod.set_global_option('cepa_level', 'cisd')
-        user_no_singles = PsiMod.get_global_option('cepa_no_singles')
-        PsiMod.set_global_option('cepa_no_singles', 1)
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CISD')
+        PsiMod.set_local_option('CEPA','CEPA_NO_SINGLES', True)
     if (lowername == 'acpf'):
-        PsiMod.set_global_option('cepa_level', 'acpf')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'ACPF')
     if (lowername == 'aqcc'):
-        PsiMod.set_global_option('cepa_level', 'aqcc')
+        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'AQCC')
 
-    PsiMod.set_global_option('WFN', 'CCSD')
+    PsiMod.set_local_option('TRANSQT2','WFN', 'CCSD')
     run_scf('scf', **kwargs)
 
     # If the scf type is DF, then the AO integrals were never generated
-    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_option('SCF','SCF_TYPE') == 'DF'):
+    if PsiMod.get_option('SCF','SCF_TYPE') == 'DF':
        mints = PsiMod.MintsHelper()
        mints.integrals()
    
     # only call transqt2() if (ac|bd) is not integral direct
-    #if (PsiMod.get_global_option('cepa_vabcd_direct') == False):
-    # never call transqt2 since the switch to libtrans
-    #   PsiMod.transqt2()
+    if PsiMod.get_option('CEPA','CEPA_VABCD_DIRECT') == False:
+       PsiMod.transqt2()
 
     PsiMod.cepa()
 
-    # if dci, make sure we didn't overwrite the cepa_no_singles options
-    if (lowername == 'dci'):
-       PsiMod.set_global_option('cepa_no_singles', user_no_singles)
-       PsiMod.revoke_global_option_changed('cepa_no_singles')
+    # restore options ( transqt2/wfn, cepa/cepa_no_singles )
+    optstash.restore()
 
     return PsiMod.get_variable("CURRENT ENERGY")
 
