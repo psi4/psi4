@@ -1,0 +1,19 @@
+run_type grad
+coord xyzabc
+units bohr
+terms elec pol disp
+disp_damp tt
+fraglib_path ../fraglib
+
+fragment h2o_l
+   0.000   0.000   0.000   0.000   0.000   0.000
+fragment h2o_l
+   5.000   0.000   0.000   2.000   0.000   2.000
+fragment nh3_l
+   0.000   5.000   0.000   5.000   0.000  -3.000
+fragment nh3_l
+   0.000   0.000   5.000   8.000   0.000   4.000
+fragment h2o_l
+   5.000   5.000   0.000   2.000   0.000   5.000
+fragment nh3_l
+   0.000   5.000   5.000   1.000   0.000  -2.000
