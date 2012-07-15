@@ -12,9 +12,7 @@ AM_CPPFLAGS = \
 AM_CFLAGS = ${my_CFLAGS} ${OPENMP_CFLAGS} \
 	-fvisibility=hidden
 
-AM_LDFLAGS = \
-	-Wl,--gc-sections \
-	-Wl,--as-needed
+AM_LDFLAGS =
 
 SED_PROCESS = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
@@ -72,9 +70,7 @@ EXTRA_DIST += \
 	fraglib/h2o.efp \
 	fraglib/nh3.efp
 
-src_libefp_la_LDFLAGS = $(AM_LDFLAGS) \
-	-version-info $(LIBEFP_CURRENT):$(LIBEFP_REVISION):$(LIBEFP_AGE) \
-	-Wl,--version-script=$(top_srcdir)/src/libefp.sym
+src_libefp_la_LDFLAGS = $(AM_LDFLAGS)
 src_libefp_la_DEPENDENCIES = ${top_srcdir}/src/libefp.sym
 
 pkgconfigdir = $(libdir)/pkgconfig
