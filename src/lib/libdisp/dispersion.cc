@@ -42,7 +42,9 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D1_;
         disp->RvdW_ = RvdW_D1_;
         disp->C6_type_ = C6_arit;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_D1;
+        disp->Spherical_type_ = Spherical_grimme;
         return disp;
     } else if (boost::to_upper_copy(name) == "-D2") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
@@ -54,7 +56,9 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D2_;
         disp->RvdW_ = RvdW_D2_;
         disp->C6_type_ = C6_geom;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_D1;
+        disp->Spherical_type_ = Spherical_grimme;
         return disp;
     } else if (boost::to_upper_copy(name) == "-CHG") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
@@ -66,7 +70,9 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C6_ = C6_D2_;
         disp->RvdW_ = RvdW_D2_;
         disp->C6_type_ = C6_geom;
+        disp->C8_type_ = C8_grimme;
         disp->Damping_type_ = Damping_CHG;
+        disp->Spherical_type_ = Spherical_grimme;
         return disp;
     } else if (boost::to_upper_copy(name) == "-DAS") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
@@ -202,6 +208,8 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
            
             if (C8_type_ == C8_geom) {
                 C8 = sqrt(C8_[(int)m->Z(i)] * C8_[(int)m->Z(j)]);
+            } else if (C8_type_ == C8_grimme) {
+                C8 = 0.0;
             } else {
                 throw PSIEXCEPTION("Unrecognized C8 Type");
             } 
@@ -231,10 +239,12 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
            
             if (Spherical_type_ == Spherical_Das) {
                 g = sqrt(A_[(int)m->Z(i)] * A_[(int)m->Z(j)]) * exp(-R * beta);
-            } 
-            else {
-                throw PSIEXCEPTION("Unrecognized Spherical Dispersion Function");
+            } else if (Spherical_type_ == Spherical_grimme) {
+                g = 0.0;
+            } else {
+                throw PSIEXCEPTION("Unrecognized Spherical Type");
             }
+
 
             E += C6 * Rm6 * f_6;
             E += C8 * Rm8 * f_8;
