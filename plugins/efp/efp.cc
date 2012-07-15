@@ -182,6 +182,20 @@ PsiReturnType efp(Options& options)
 		frag_lib_path.c_str(), frag_lib_path.c_str());
 
 	struct efp *efp;
+
+	// XXX
+	//struct efp_callbacks;
+	//efp_callbacks.get_electron_density_field = &get_electron_field;
+
+	// signature
+	//typedef enum efp_result (*efp_electron_density_field_fn)(int n_pt,
+	//	 const double *xyz, double *field, void *user_data);
+
+	//  Will be passed as a last parameter to
+	//    efp_callbacks::get_electron_density_field.
+	//efp_callbacks.get_electron_density_field_user_data = NULL;
+
+	// place &efp_callbacks instead of NULL
 	if ((res = efp_init(&efp, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
 		fprintf(outfile, efp_result_to_string(res));
 		goto fail;
