@@ -46,6 +46,10 @@ ifeq ($(MAKE_LIBEFP),1)
    PSILIBS += $(efplibs)/libefp.a
 endif
 
+ifeq ($(MAKE_LIBEFP),1)
+   PSILIBS += $(efplibs)/libefp.a
+endif
+
 # The psilibs need a little extra handling for plugins on linux
 ifeq ($(HAVE_PLUGINS),yes)
    ifeq ($(TARGET_OS),linux-gnu)
