@@ -500,6 +500,7 @@ tests_xr_3_CPPFLAGS = $(TESTS_CPPFLAGS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 	$(MAKE) install
+	/bin/cp -pR @abs_srcdir@/fraglib @abs_srcdir@/../lib/fraglib
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
