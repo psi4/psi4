@@ -6,6 +6,7 @@ PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 MODULE = false
 
 MAKE_PYTHON_MODULE=@MAKE_PYTHON_MODULE@
+MAKE_LIBEFP=1
 
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_FILESYSTEM_LIB) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
@@ -39,6 +40,10 @@ endif
 ifeq ($(MAKE_PYTHON_MODULE),1)
   LDFLAGS += -shared
   PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`).so
+endif
+
+ifeq ($(MAKE_LIBEFP),1)
+   PSILIBS += $(efplibs)/libefp.a
 endif
 
 # The psilibs need a little extra handling for plugins on linux

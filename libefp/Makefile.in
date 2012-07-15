@@ -362,7 +362,7 @@ mkdir_p = @mkdir_p@
 my_CFLAGS = @my_CFLAGS@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
-prefix = @prefix@
+prefix = @abs_builddir@/install
 program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
@@ -391,9 +391,7 @@ AM_CPPFLAGS = \
 AM_CFLAGS = ${my_CFLAGS} ${OPENMP_CFLAGS} \
 	-fvisibility=hidden
 
-AM_LDFLAGS = \
-	-Wl,--gc-sections \
-	-Wl,--as-needed
+AM_LDFLAGS =
 
 SED_PROCESS = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
@@ -432,9 +430,7 @@ src_libefp_la_SOURCES = \
 	src/terms.h \
 	src/xr.c
 
-src_libefp_la_LDFLAGS = $(AM_LDFLAGS) \
-	-version-info $(LIBEFP_CURRENT):$(LIBEFP_REVISION):$(LIBEFP_AGE) \
-	-Wl,--version-script=$(top_srcdir)/src/libefp.sym
+src_libefp_la_LDFLAGS = $(AM_LDFLAGS)
 
 src_libefp_la_DEPENDENCIES = ${top_srcdir}/src/libefp.sym
 pkgconfigdir = $(libdir)/pkgconfig
@@ -503,6 +499,7 @@ tests_xr_3_LDADD = $(TESTS_LDADD)
 tests_xr_3_CPPFLAGS = $(TESTS_CPPFLAGS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
+	$(MAKE) install
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj

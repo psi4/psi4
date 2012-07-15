@@ -8,20 +8,29 @@
 top_srcdir = @top_srcdir@
 # Location of your PSI4 install, by default as listed
 top_objdir = @top_objdir@
+# Toggle for MADNESS
+MAKE_MADNESS = 0
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
 
 include $(top_objdir)/src/bin/MakeVars
 
-# Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
+# Reset these values, MakeVars changes them to values only valid in Psi4's objdir
 # Location of your PSI4 source
 top_srcdir = @top_srcdir@
 # Location of your PSI4 install, by default as listed
 top_objdir = @top_objdir@
 
 PSITARGET = $(shell basename `pwd`).so
+PSIINCLUDE = -I$(top_objdir)/boost/boost_1_48_0 -I$(top_srcdir)/include -I$(top_objdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib  -I$(top_objdir)/libefp/install/include -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
+
+ifeq ($(MAKE_MADNESS),1)
+  PSILIBS += $(top_objdir)/madness/src/lib/world/libMADworld.a
+  PSILIBS += $(top_objdir)/madness/src/lib/tensor/libMADtensor.a
+  PSIINCLUDE += -I$(top_srcdir)/madness/src/lib/ -I$(top_srcdir)/madness/include/ -I$(top_objdir)/madness/include/
+endif
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -41,7 +50,7 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $(PYTHON_INCLUDE) -c $< $(OUTPUT_OPTION)
 
 $(PSITARGET): $(BINOBJ)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
@@ -52,7 +61,7 @@ clean:
 
 # Dependency handling
 %.d: %.cc
-	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXFLAGS) $(CXXINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
 
 ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
