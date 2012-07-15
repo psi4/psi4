@@ -30,10 +30,8 @@ CCOperation::CCOperation(double in_factor,std::string in_assignment,
 : factor(in_factor), assignment(in_assignment), reindexing(in_reindexing),operation(in_operation),
 A_Matrix(in_A_Matrix),B_Matrix(in_B_Matrix),C_Matrix(in_C_Matrix)
 {
-  if(local_work==NULL)
-    local_work = work;
-  if(out_of_core_buffer==NULL)
-    out_of_core_buffer = buffer;
+  local_work = work;
+  out_of_core_buffer = buffer;
 }
 
 CCOperation::~CCOperation()

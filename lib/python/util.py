@@ -2,6 +2,7 @@
 import PsiMod
 import sys
 import os
+import math
 from psiexceptions import *
 
 
@@ -43,6 +44,10 @@ def compare_values(expected, computed, digits, label):
     """
     if (abs(expected - computed) > 10 ** (-digits)):
         print("\t%s: computed value (%f) does not match (%f) to %d digits." % (label, computed, expected, digits))
+        sys.exit(1)
+    if ( math.isnan(computed) ):
+        print("\t%s: computed value (%f) does not match (%f) to %d digits.\n" % (label, computed, expected, digits))
+        print("\tprobably because the computed value is nan.")
         sys.exit(1)
     success(label)
 
