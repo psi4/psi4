@@ -83,12 +83,14 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
 
     //fprintf(outfile,   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
 
-    fprintf(outfile, "\t     X       Y       Z \t\n");
+    fprintf(outfile, "\t     X       Y       Z           mass\t\n");
     for (int a=0; a<Natom; a++) {
       fprintf(outfile, "  %s \t", mol->symbol(a).c_str() );
 
       for (int xyz=0; xyz<3; ++xyz)
         fprintf(outfile, "%8.3f", modes[i]->lx[3*a+xyz]);
+
+      fprintf(outfile,"%15.6f", mol->mass(a));
 
       fprintf(outfile, "\n");
     }
