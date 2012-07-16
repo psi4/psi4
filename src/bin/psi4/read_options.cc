@@ -2448,6 +2448,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("H_BOND_CONNECT", 4.3);
       /*- Do only generate the internal coordinates and then stop? -*/
       options.add_bool("INTCOS_GENERATE_EXIT", false);
+      /*- Are EFP fragments present?      -*/
+      options.add_bool("EFP_FRAGMENTS", false);
+      /*- Are ONLY EFP fragments present? -*/
+      options.add_bool("EFP_FRAGMENTS_ONLY", false);
 
       /*- SUBSECTION Misc. -*/
 
