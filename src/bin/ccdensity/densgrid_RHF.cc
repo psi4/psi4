@@ -239,6 +239,16 @@ y*_bohr2angstroms, z*_bohr2angstroms, dens/b2a3);
   fprintf(dxfile, "end");
   fclose(dxfile);
 
+  ffile(&dxfile, "molecule.dx", 0);
+  fprintf(dxfile, "%d\n", molecule->natom());
+  fprintf(dxfile, "Initial atomic coordinates\n");
+  for(int i=0; i < molecule->natom(); i++) {
+    fprintf(dxfile, "%2s  ", molecule->symbol(i).c_str());
+    fprintf(dxfile, "  %9.6f  %9.6f  %9.6f\n", molecule->x(i)*_bohr2angstroms, molecule->y(i)*_bohr2angstroms, molecule->z(i)*_bohr2angstroms);
+  }
+  fflush(dxfile);
+  fclose(dxfile);
+
   free_block(delta);
   free_block(scf);
 }
