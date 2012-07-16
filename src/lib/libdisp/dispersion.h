@@ -19,9 +19,9 @@ class Dispersion {
 
 public:
     enum C6_type { C6_arit, C6_geom };
-    enum C8_type { C8_geom };
+    enum C8_type { C8_geom, C8_grimme };
     enum Damping_type { Damping_D1, Damping_CHG, Damping_TT };
-    enum Spherical_type { Spherical_Das };
+    enum Spherical_type { Spherical_Das, Spherical_grimme };
 
 protected:
 
