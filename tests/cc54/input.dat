@@ -11,6 +11,8 @@ set {
   basis Sadlej-pVTZ
   freeze_core false
   onepdm_grid_dump = true
+  onepdm_grid_cutoff = 1.0e-15
+  onepdm_grid_stepsize = 0.5
 }
 
 basis {
