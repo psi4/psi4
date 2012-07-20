@@ -48,11 +48,13 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
   }
   if (wfn_->isCIM()){
      ndoccact = wfn_->CIMActiveOccupied();
+     nvirt = wfn_->CIMActiveVirtual();
      nfzc = ndocc - ndoccact;
+     nmo = ndoccact + nvirt;
   }else{
      ndoccact = ndocc - nfzc;
+     nvirt  = nmo - ndoccact;
   }
-  nvirt  = nmo - ndoccact;
 
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
@@ -1037,8 +1039,6 @@ void CoupledPair::UpdateT2(long int iter){
              }
           }
           
-
-
           for (a=o; a<rs; a++){
               dija = dij + eps[a];
               for (b=o; b<rs; b++){
