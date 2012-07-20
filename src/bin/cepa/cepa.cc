@@ -28,11 +28,11 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
   PsiReturnType status;
 
   // integral transformation.  only needed if not cim or integral direct
-  tstart();
   if ( !wfn->isCIM() && options.get_bool("CEPA_VABCD_DIRECT")) {
+     tstart();
      TransformIntegrals(wfn,options);
+     tstop();
   }
-  tstop();
 
   // integral sort
   tstart();
