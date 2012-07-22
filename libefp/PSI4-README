@@ -16,8 +16,8 @@ THOROUGH WAY
 
 [1] Run autoconf in psi4 directory one level above this.
 
-[2] In this directory, run autogen.sh to build configure and Makefile.in
-    and to link m4 files.
+[2] In this directory, execute rm m4/*m4. Then, run autogen.sh to build
+    configure and Makefile.in and to link m4 files.
 
 [3] In objdir, proceed normally, running usual ../configure line to
     create objdir/libefp with contents.
