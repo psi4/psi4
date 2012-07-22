@@ -1,0 +1,60 @@
+HOPEFUL WAY
+-----------
+
+[0] Expect that Makefile.in, configure, and m4 files will work on your
+    system.
+
+[1] Run autoconf in psi4 directory one level above this, do nothing in
+    this directory, and in objdir, run usual ../configure line to create
+    objdir/libefp with contents.
+
+THOROUGH WAY
+------------
+
+[0] Regenerate Makefile.in, configure, and m4 files from Makefile.am,
+    configure.ac, etc., mirroring Ilya's libefp build instructions.
+
+[1] Run autoconf in psi4 directory one level above this.
+
+[2] In this directory, run autogen.sh to build configure and Makefile.in
+    and to link m4 files.
+
+[3] In objdir, proceed normally, running usual ../configure line to
+    create objdir/libefp with contents.
+
+MAINTAINERS
+-----------
+
+Changes between psi's Makefile.am and the githib source are as follows.
+
+[1] Clear out extra arguments to AM_LDFLAGS.
+
+    AM_LDFLAGS = \
+            -Wl,--gc-sections \
+            -Wl,--as-needed
+
+    becomes
+
+    AM_LDFLAGS =
+
+[2] Clear out libefp library's extra arguments.
+
+    src_libefp_la_LDFLAGS = $(AM_LDFLAGS) \
+            -version-info $(LIBEFP_CURRENT):$(LIBEFP_REVISION):$(LIBEFP_AGE) \
+            -Wl,--version-script=$(top_srcdir)/src/libefp.sym
+
+    becomes
+
+    src_libefp_la_LDFLAGS = $(AM_LDFLAGS)
+
+[3] Redefine all target. (libefp needs to install during psi4's build to
+    get libefp.a library.) Add the following.
+
+    all: config.h
+            $(MAKE) $(AM_MAKEFLAGS) all-am
+            $(MAKE) install
+ 
+[4] Redefine prefix to install into psi's objdir. Add the following.
+
+    prefix = @abs_builddir@/install
+

@@ -391,8 +391,7 @@ AM_CPPFLAGS = \
 AM_CFLAGS = ${my_CFLAGS} ${OPENMP_CFLAGS} \
 	-fvisibility=hidden
 
-AM_LDFLAGS =
-
+AM_LDFLAGS = 
 SED_PROCESS = \
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(SED) \
 	-e 's,@VERSION\@,$(VERSION),g' \
@@ -431,7 +430,6 @@ src_libefp_la_SOURCES = \
 	src/xr.c
 
 src_libefp_la_LDFLAGS = $(AM_LDFLAGS)
-
 src_libefp_la_DEPENDENCIES = ${top_srcdir}/src/libefp.sym
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = src/libefp.pc
@@ -499,8 +497,6 @@ tests_xr_3_LDADD = $(TESTS_LDADD)
 tests_xr_3_CPPFLAGS = $(TESTS_CPPFLAGS)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
-	$(MAKE) install
-	/bin/cp -pR @abs_srcdir@/fraglib @abs_srcdir@/../lib/fraglib
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -1875,6 +1871,10 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 
 %.pc: %.pc.in Makefile
 	$(SED_PROCESS)
+
+all: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-am
+	$(MAKE) install
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
