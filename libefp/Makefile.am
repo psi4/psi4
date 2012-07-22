@@ -26,6 +26,12 @@ SED_PROCESS = \
 %.pc: %.pc.in Makefile
 	$(SED_PROCESS)
 
+all: config.h
+	$(MAKE) $(AM_MAKEFLAGS) all-am
+	$(MAKE) install
+
+prefix = @abs_builddir@/install
+
 LIBEFP_CURRENT = 0
 LIBEFP_REVISION = 0
 LIBEFP_AGE = 0
