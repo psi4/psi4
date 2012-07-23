@@ -1422,6 +1422,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ONEPDM",false);
     /*- Write one-particle density matrix on a grid to file opdm.dx -*/
     options.add_bool("ONEPDM_GRID_DUMP",false);
+    /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
+    options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
+    /*- Stepsize (Angstrom) for one-particle density matrix values on a grid -*/
+    options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties

@@ -809,7 +809,6 @@ def optimize(name, **kwargs):
 
     full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    PsiMod.print_out("wtf")
 
     # are we in sow/reap mode?
     isSowReap = False
