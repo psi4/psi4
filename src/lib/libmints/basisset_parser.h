@@ -59,7 +59,13 @@ public:
 class BasisSetParser
 {
 public:
+    //! If the parser needs to force spherical or cartesian (e.g., loading old guess)
+    bool force_puream_or_cartesian_;
+    //! Is the forced value to use puream?  (Otherwise force Cartesian).
+    bool forced_is_puream_;
+
     BasisSetParser();
+    BasisSetParser(bool forced_puream);
     virtual ~BasisSetParser();
 
     /** Load and return the file to be used by parse.
@@ -96,8 +102,8 @@ public:
 class Gaussian94BasisSetParser : public BasisSetParser
 {
 public:
-    Gaussian94BasisSetParser() {}
-
+    Gaussian94BasisSetParser(): BasisSetParser() {}
+    Gaussian94BasisSetParser(bool forced_puream): BasisSetParser(forced_puream) {}
     virtual std::vector<GaussianShell> parse(const std::string& symbol, const std::vector<std::string>& dataset);
 };
 
