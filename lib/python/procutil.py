@@ -67,7 +67,7 @@ def format_options_for_input():
     commands = ''
     commands += """\nPsiMod.set_memory(%s)\n\n""" % (PsiMod.get_memory())
     for chgdopt in PsiMod.get_global_option_list():
-        if PsiMod.has_option_changed(chgdopt):
+        if PsiMod.has_global_option_changed(chgdopt):
             chgdoptval = PsiMod.get_global_option(chgdopt)
             if isinstance(chgdoptval, basestring):
                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)

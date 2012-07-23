@@ -94,7 +94,7 @@ void x_oe_intermediates_rhf(struct RHO_Params rho_params);
 void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
-void densgrid_RHF(void);
+void densgrid_RHF(Options& options);
 
 PsiReturnType ccdensity(Options& options)
 {
@@ -257,7 +257,7 @@ PsiReturnType ccdensity(Options& options)
       fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
       dipole();
 
-      if(params.onepdm_grid_dump) densgrid_RHF();
+      if(params.onepdm_grid_dump) densgrid_RHF(options);
       dump_RHF(&OutBuf, rho_params[i]);
 
       iwl_buf_flush(&OutBuf, 1);
