@@ -24,7 +24,7 @@ PSILIBS = \
 -lPSI_functional -lPSI_disp -lPSI_thce -lPSI_3index -lPSI_mints_deriv -lPSI_optking -lPSI_findif \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_moinfo -lPSI_util \
--lPSI_stable -lPSI_deriv -lPSI_scfgrad -lPSI_int -lPSI_util -lPSI_diis \
+-lPSI_stable -lPSI_deriv -lPSI_scfgrad -lPSI_int -lPSI_util -lPSI_diis -lPSI_efp_solver \
 -lPSI_plugin -lPSI_parallel
 
 ifeq ($(HAVE_MADNESS),1)
@@ -61,7 +61,8 @@ psi_start.cc psi_stop.cc version.cc \
 script.cc python.cc export_benchmarks.cc \
 export_blas_lapack.cc export_plugins.cc \
 export_psio.cc export_chkpt.cc export_mints.cc \
-export_functional.cc export_oeprop.cc create_new_plugin.cc
+export_functional.cc export_oeprop.cc create_new_plugin.cc \
+export_efp.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

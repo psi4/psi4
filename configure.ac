@@ -964,6 +964,7 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
+          src/lib/libefp_solver/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
