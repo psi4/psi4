@@ -76,6 +76,7 @@ void export_chkpt();
 void export_mints();
 void export_functional();
 void export_oeprop();
+void export_efp();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -1212,6 +1213,8 @@ BOOST_PYTHON_MODULE(psi4)
     // OEProp/GridProp
     export_oeprop();
 
+    // EFP
+    export_efp();
 
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
