@@ -2894,7 +2894,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     // I_evects->print_out();
     // fprintf(outfile,"I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
-    int unique_axis;
+    int unique_axis = 1;
     if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
       unique_axis = 2;
     else if (fabs(I_evals[1] - I_evals[2]) < zero_tol)
