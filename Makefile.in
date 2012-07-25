@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 MAKE_MADNESS=@BUILD_MADNESS@
 
-.PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc plugins pluginsclean pluginstests
+.PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc plugins pluginsclean pluginstests quicktests
 
 default: all
 
@@ -74,6 +74,9 @@ targetclean:
 
 tests:
 	(cd tests; echo Running test suite...; $(MAKE)) || exit 1;
+
+quicktests:
+	(cd tests; echo Running minmal test suite...; $(MAKE) quicktests) || exit 1;
 
 testsclean:
 	(cd tests; echo Cleaning test suite...; $(MAKE) clean) || exit 1;
