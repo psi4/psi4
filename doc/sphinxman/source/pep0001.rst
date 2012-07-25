@@ -1,0 +1,98 @@
+
+.. index:: PEP1
+.. _`sec:pep1`:
+
+====================================
+PEP1: Proposing PsiPEP for |PSIfour|
+====================================
+
+:PEP: 1
+:Title: Proposing PsiPEP for |PSIfour|
+:Last-Modified: 04-Jul-2012
+:Author: Lori Burns
+:Content-Type: text/x-rst
+:Created: 04-Jul-2012
+
+.. comment :Version: <version string>
+.. comment * BDFL-Delegate: <PEP czar's real name>
+.. comment * Discussions-To: <email address>
+.. comment   Status: <Draft | Active | Accepted | Deferred | Rejected |
+.. comment            Withdrawn | Final | Superseded>
+.. comment   Type: <Standards Track | Informational | Process>
+.. comment * Requires: <pep numbers>
+.. comment * Python-Version: <version number>
+.. comment   Post-History: <dates of postings to python-list and python-dev>
+.. comment * Replaces: <pep number>
+.. comment * Superseded-By: <pep number>
+.. comment * Resolution: <url>
+
+
+This document proposes using a (much more informal) version of Python's
+PEP (Python Enhancement Proposal `PEP1
+<http://www.python.org/dev/peps/pep-0001/>`_) protocol to organize
+|PSIfour|. Presently, topics are brought up on e-mail threads (where
+discussion is very temporally localized and not everyone is aware of it
+unless cc'd), are brought up at workshops (where people may be absent, no
+record is left, and not everyone may have prepared a position on the
+topic), or agreed between a couple people over g-chat (others remain
+unaware of plans), or planned by someone (who may not have committed those
+plans to a ticket or who wants general approval before restructuring the
+code).
+
+Path of a PsiPEP
+----------------
+
+* Someone creates a file ``psi4/doc/sphinxman/source/pepXXXX.rst`` modeled
+  on :source:`doc/sphinxman/source/pep0000model.rst` and adds
+  it to ``STATICDOC`` in :source:`doc/sphinxman/Makefile.in`. The file
+  should have header fields modeled on another PsiPEP and a discussion of
+  the proposed change or practice.
+
+* Anyone can comment by adding sections to the bottom of the reST file.
+  Alternatively, e-mail discussions can go out and the (possibly edited)
+  results be pasted into the bottom of the reST file once the furor dies
+  down.
+
+* Comments can be simple statements of agreement (useful for gauging
+  consensus), notation of possible problems, proposed re-writes of the
+  proposal, etc.  Only the original author or his designate should change
+  the main body of the PsiPEP (to maintain a history).
+
+* Once there's agreement, file can be stamped final and be placed into
+  effect. (Yes, this is very vague.)
+
+Roles of a PsiPEP Include
+-------------------------
+
+* **Best practices or re-vamped best practices** 
+
+  Practices can be easily linked- or referred-to by number and can be
+  tagged as obsolete by a single label change months later.
+
+* **Request/present viewpoint on organization**
+
+  Draw attention to organization needed in code outside one's area of
+  expertise. Request interface for some structure (e.g., gradients) or
+  viewpoints on how that interface will behave to ensure compatibility.
+  Offer philosophy on how processes/definitions should be.
+
+* **Fair Warning: Proposal to change things up**
+
+  Announce plans to re-organize code structure or how something is
+  handled. List goals (may be conflicting) and how proposed scheme best
+  satisfies them. PsiPEP allows discussion before roll-out in case
+  proposal has deleterious side-effects.
+
+The contrast between a PsiPEP and a ticket is that for the latter, there's
+no question of whether the task is to be done as described.
+
+Comments
+--------
+
+04-Jul-2012, LAB
+
+This is an example comment that refers to :ref:`sec:pep1` and a trac ticket :trac:`#221`. 
+
+----
+
+
