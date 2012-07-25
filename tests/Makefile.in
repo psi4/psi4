@@ -67,7 +67,7 @@ ifeq ($(HAVE_PLUGINS),yes)
 endif
 
 # the bare minimum
-quicktestdirs = 
+quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt mints2 pywrap_all 
 
 define runtests
     for dir in $1; \
