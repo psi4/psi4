@@ -36,7 +36,7 @@ needs_sphinx = '1.1'
 # 'psi4_sptheme.ext.autodoc_sections',
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 
     'sphinx.ext.extlinks', 'cloud_sptheme.ext.index_styling', 'psi4_sptheme.ext.psidomain',
-    'cloud_sptheme.ext.relbar_toc']
+    'cloud_sptheme.ext.relbar_toc', 'sphinx.ext.graphviz']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -329,5 +329,17 @@ extlinks = {'source':    ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
 pngmath_latex_preamble=r'\usepackage[active]{preview}'
 pngmath_use_preview=True
 
+trac_url = 'http://sirius.chem.vt.edu/trac/'
+
+from docutils import nodes, utils
+from docutils.parsers.rst import roles
+import urllib
+
+def trac_role(role, rawtext, text, lineno, inliner, options={}, content=[]):
+  ref = trac_url + '/intertrac/' + urllib.quote(text, safe='')
+  node = nodes.reference(rawtext, utils.unescape(text), refuri=ref, **options)
+  return [node],[]
+
+roles.register_canonical_role('trac', trac_role)
 
 
