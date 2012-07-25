@@ -183,8 +183,8 @@ protected:
     /// Prints the orbital occupation
     void print_occupation();
 
-    /// Perform casting of basis set if desired.
-    SharedMatrix dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
+    /// Perform casting of C from old basis to new basis if desired.
+    SharedMatrix BasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
     /// Common initializer
     void common_init();
@@ -315,10 +315,10 @@ protected:
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
-    /** Save orbitals to File 100 **/
+    /** Save orbitals to use later as a guess **/
     virtual void save_orbitals();
 
-    /** Load orbitals from File 100, projecting if needed **/
+    /** Load orbitals from previous computation, projecting if needed **/
     virtual void load_orbitals();
 
     /** Save SAPT info (TODO: Move to Python driver **/
