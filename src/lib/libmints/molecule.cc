@@ -2795,9 +2795,11 @@ void Molecule::set_full_point_group(double zero_tol) {
   RotorType rotor = rotor_type(zero_tol);
   //fprintf(outfile,"\t\tRotor type        : %s\n", RotorTypeList[rotor].c_str());
 
-  // Get the D2h point group from Jet and Ed's code.
-  // c1 ci c2 cs d2 c2v c2h d2h
-  std::string d2h_subgroup = point_group()->symbol();
+  // Get the D2h point group from Jet and Ed's code: c1 ci c2 cs d2 c2v c2h d2h
+  // and ignore the user-specified subgroup in this case.
+  boost::shared_ptr<PointGroup> pg = find_highest_point_group(zero_tol);
+  std::string d2h_subgroup = pg->symbol();
+  //std::string d2h_subgroup = point_group()->symbol();
   //fprintf(outfile,"d2h_subgroup %s \n", d2h_subgroup.c_str());
 
   // Check inversion
@@ -2892,7 +2894,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     // I_evects->print_out();
     // fprintf(outfile,"I_evals %15.10lf %15.10lf %15.10lf\n", I_evals[0], I_evals[1], I_evals[2]);
 
-    int unique_axis;
+    int unique_axis = 1;
     if (fabs(I_evals[0] - I_evals[1]) < zero_tol)
       unique_axis = 2;
     else if (fabs(I_evals[1] - I_evals[2]) < zero_tol)

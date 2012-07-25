@@ -61,6 +61,13 @@ BasisSetNotFound::~BasisSetNotFound() throw()
 
 BasisSetParser::BasisSetParser()
 {
+  force_puream_or_cartesian_ = false;
+  forced_is_puream_ = false;
+}
+
+BasisSetParser::BasisSetParser(bool forced_puream) {
+  force_puream_or_cartesian_ = true;
+  forced_is_puream_ = forced_puream;
 }
 
 BasisSetParser::~BasisSetParser()
@@ -164,6 +171,11 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // Basis type.
     GaussianType gaussian_type = Pure;
 
+    if (force_puream_or_cartesian_) {
+      if (forced_is_puream_ == false) gaussian_type = Cartesian;
+    }
+
+
     // Need a dummy center for the shell.
     Vector3 center;
 
@@ -180,19 +192,21 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
             continue;
 
         // Look for Cartesian or Spherical
-        if (regex_match(line, what, cartesian)) {
-            gaussian_type = Cartesian;
-            if (Process::environment.options.get_global("PUREAM").has_changed()) {
-                gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
+        if (!force_puream_or_cartesian_) {
+            if (regex_match(line, what, cartesian)) {
+                gaussian_type = Cartesian;
+                if (Process::environment.options.get_global("PUREAM").has_changed()) {
+                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
             }
-            continue;
-        } else if (regex_match(line, what, spherical)) {
-            gaussian_type = Pure;
-            if (Process::environment.options.get_global("PUREAM").has_changed()) {
-                gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
+                continue;
+            } else if (regex_match(line, what, spherical)) {
+                gaussian_type = Pure;
+                if (Process::environment.options.get_global("PUREAM").has_changed()) {
+                    gaussian_type = ((Process::environment.options.get_global("PUREAM").to_integer()) ? Pure : Cartesian);
+                }
+                continue;
             }
-            continue;
-        }
+        } // end case where puream setting wasn't forced by caller
 
         // Do some matches
         if (regex_match(line, what, comment)) {

@@ -971,8 +971,9 @@ def run_psimrcc(name, **kwargs):
 
     """
     run_mcscf(name, **kwargs)
-    return PsiMod.psimrcc()
-
+    PsiMod.psimrcc()
+    e_psimrcc = PsiMod.get_variable("Current Energy")
+    return e_psimrcc
 
 def run_psimrcc_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
@@ -981,7 +982,9 @@ def run_psimrcc_scf(name, **kwargs):
     """
 
     run_scf(name, **kwargs)
-    return PsiMod.psimrcc()
+    PsiMod.psimrcc()
+    e_psimrcc = PsiMod.get_variable("Current Energy")
+    return e_psimrcc
 
 
 def run_mp2c(name, **kwargs):

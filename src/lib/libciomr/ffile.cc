@@ -15,7 +15,7 @@ namespace psi {
 extern char* psi_file_prefix;
 
 /*!
-** ffile(): Open a PSI3 ASCII file for reading/writing.  Returns a
+** ffile(): Open a PSI ASCII file for reading/writing.  Returns a
 ** pointer to the new file.
 **
 ** \param suffix = name of the file, not including automatic prefix
@@ -53,7 +53,7 @@ void ffile(FILE **fptr, const char *suffix, int code)
 
 
 /*!
-** ffile_noexit(): Open a PSI3 ASCII file for reading/writing.
+** ffile_noexit(): Open a PSI ASCII file for reading/writing.
 ** Returns a pointer to the new file via an argument.  This function
 ** is the same as ffile(), but will not exit if fopen() fails.
 **
@@ -88,7 +88,7 @@ void ffile_noexit(FILE **fptr, char *suffix, int code)
 
 
 /*!
-** ffileb(): Open a PSI3 binary file for reading/writing.  Returns a
+** ffileb(): Open a PSI binary file for reading/writing.  Returns a
 ** pointer to the new file.
 **
 ** \param suffix = name of the file, not including automatic prefix
@@ -129,7 +129,7 @@ void ffileb(FILE **fptr, char *suffix, int code)
 
 
 /*!
-** ffileb_noexit(): Open a PSI3 binary file for reading/writing.
+** ffileb_noexit(): Open a PSI binary file for reading/writing.
 ** Returns a pointer to the new file via an argument.  This function
 ** is the same as ffileb(), but will not exit if fopen() fails.
 **
