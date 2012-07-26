@@ -116,7 +116,7 @@ DCFTSolver::update_lambda_from_residual()
     dpd_buf4_dirprd(&D, &R);
     dpd_buf4_close(&D);
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_add(&L, &R, 1.0);
     dpd_buf4_close(&R);
     dpd_buf4_close(&L);
@@ -142,7 +142,7 @@ DCFTSolver::update_lambda_from_residual()
     dpd_buf4_dirprd(&D, &R);
     dpd_buf4_close(&D);
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_add(&L, &R, 1.0);
     dpd_buf4_close(&R);
     dpd_buf4_close(&L);
