@@ -28,7 +28,7 @@ namespace psi {
 ** Returns: none
 ** \ingroup QT
 */
-void schmidt(double **A, int rows, int cols, FILE */*outfile*/)
+void schmidt(double **A, int rows, int cols, FILE * /*outfile*/)
 {
    double *tmp;
    double normval, dotval;
