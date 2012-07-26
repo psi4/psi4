@@ -1127,6 +1127,14 @@ void Molecule::activate_all_fragments()
     }
 }
 
+int Molecule::nactive_fragments() {
+    int n = 0;
+    for(int i = 0; i < fragment_types_.size(); ++i){ 
+        if ( fragment_types_[i] == Real ) n++;
+    }
+    return n;
+}
+
 void Molecule::deactivate_all_fragments()
 {
     lock_frame_ = false;
