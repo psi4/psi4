@@ -37,7 +37,7 @@ DCFTSolver::compute_lambda_residual()
 
     // R_IJAB += F_IJAB
     dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "F <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "F <OO|VV>");
     dpd_buf4_add(&R, &F, 1.0);
     dpd_buf4_close(&F);
 
@@ -77,7 +77,7 @@ DCFTSolver::compute_lambda_residual()
 
     // R_ijab += F_ijab
     dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "F <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "F <oo|vv>");
     dpd_buf4_add(&R, &F, 1.0);
     dpd_buf4_close(&F);
 
