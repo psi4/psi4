@@ -49,7 +49,7 @@ DCFTSolver::build_intermediates()
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                       ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
         dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
         dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
         dpd_contract444(&L, &I, &G, 0, 0, 0.5, 1.0);
@@ -75,7 +75,7 @@ DCFTSolver::build_intermediates()
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                       ID("[v,v]"), ID("[v,v]"), 1, "MO Ints <vv|vv>");
         dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
         dpd_contract444(&L, &I, &G, 0, 0, 0.5, 1.0);
@@ -122,7 +122,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
             ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     dpd_contract444(&I, &L, &G, 0, 1, 0.5, 1.0);
@@ -146,7 +146,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 1, "MO Ints <oo|oo>");
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     dpd_contract444(&I, &L, &G, 0, 1, 0.5, 1.0);
@@ -165,7 +165,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&Tbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "Temp (ov|ov)");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_sort(&Laa, PSIF_DCFT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Lambda (OV|OV)");
     dpd_buf4_close(&Laa);
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
@@ -178,7 +178,7 @@ DCFTSolver::build_intermediates()
                   ID("[O,v]"), ID("[o,V]"), 0, "Lambda (Ov|oV)");
 
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_sort(&Lbb, PSIF_DCFT_DPD, prqs, ID("[o,v]"),ID("[o,v]"), "Lambda (ov|ov)");
     dpd_buf4_close(&Lbb);
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
@@ -392,7 +392,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     // Temp_IJAB = lambda_IJCB F_AC
     dpd_file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     dpd_contract244(&F_VV, &Laa, &T, 1, 2, 1, 1.0, 0.0);
@@ -418,7 +418,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+              ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     // Temp_IJAB = -lambda_KJAB F_IK
     dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_contract244(&F_OO, &Laa, &T, 1, 0, 0, -1.0, 0.0);
@@ -462,7 +462,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     // Temp_ijab = lambda_ijcb F_ac
     dpd_file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     dpd_contract244(&F_vv, &Lbb, &T, 1, 2, 1, 1.0, 0.0);
@@ -488,7 +488,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+              ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     // Temp_ijab = -lambda_kjab X_ik
     dpd_file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     dpd_contract244(&F_oo, &Lbb, &T, 1, 0, 0, -1.0, 0.0);
