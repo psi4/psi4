@@ -21,9 +21,11 @@ MKDIRS = @MKDIRS@
 INSTALL = @INSTALL@
 INSTALL_INCLUDE = @INSTALL_INCLUDE@
 
-HEADERS = psiconfig.h psitypes.h ccfiles.h masses.h physconst.h \
-psifiles.h symmetry.h rgb.h vdw_radii.h chkpt_params.h psi4-dec.h psi4-def.h \
-element_to_Z.h Z_to_element.h molecular_system.h fragment.h compiler.h
+HEADERS = \
+ccfiles.h       element_to_Z.h  molecular_system.h  psifiles.h  vdw_radii.h \
+chkpt_params.h  exception.h     physconst.h         psitypes.h  Z_to_element.h \
+compiler.h      fragment.h      psi4-dec.h          rgb.h \
+cov_radii.h     masses.h        psi4-def.h          symmetry.h
 
 install: install_inc
 
