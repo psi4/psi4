@@ -50,7 +50,7 @@ DCFTSolver::mp2_guess()
     dpd_buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     dpd_buf4_dirprd(&D, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&D);
@@ -76,7 +76,7 @@ DCFTSolver::mp2_guess()
     dpd_buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
+                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     dpd_buf4_dirprd(&D, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&D);

@@ -110,7 +110,7 @@ DCFTSolver::update_lambda_from_residual()
      */
     // L_IJAB += R_IJAB / D_IJAB
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     dpd_buf4_dirprd(&D, &R);
@@ -136,7 +136,7 @@ DCFTSolver::update_lambda_from_residual()
 
     // L_IJAB += R_ijab / D_ijab
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
+                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     dpd_buf4_dirprd(&D, &R);
