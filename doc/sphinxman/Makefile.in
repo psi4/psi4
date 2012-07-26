@@ -260,7 +260,8 @@ opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst cepa.rst \
-installfile.rst optionshandling.rst basissets_byfamily.rst
+installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst \
+pep0001.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

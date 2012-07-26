@@ -1,7 +1,9 @@
 # Location of your PSI4 source
-psi_top_srcdir = /home/ilya/psi4
+psi_top_srcdir = @top_srcdir@
 # Location of your PSI4 install, by default as listed
-psi_top_objdir = $(psi_top_srcdir)/objdir
+psi_top_objdir = ../..
+# Location of your LIBEFP build
+libefp_top_srcdir = /Users/loriab/linux/libefp
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -9,7 +11,8 @@ UNAME := $(shell uname)
 include $(psi_top_objdir)/src/bin/MakeVars
 
 PSITARGET = $(shell basename `pwd`).so
-PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/src/lib/libefp/src -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+#PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/src/lib/libefp/src -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(libefp_top_srcdir)/src -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
 
 CXXSRC = $(notdir $(wildcard *.cc))
@@ -18,6 +21,9 @@ DEPENDINCLUDE = $(notdir $(wildcard *.h))
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
 default:: $(PSITARGET)
+
+tests:
+	psi4
 
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
@@ -38,7 +44,7 @@ $(PSITARGET): $(BINOBJ)
 
 # Erase all compiled intermediate files
 clean:
-	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc
+	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc *.test output.dat psi.timer.dat
 
 # Dependency handling
 %.d: %.cc

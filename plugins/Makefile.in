@@ -1,0 +1,44 @@
+
+.PHONY: default all install clean tests
+
+subdirs = aointegrals mointegrals sointegrals mp2 efp
+
+all: default
+
+default:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir} && echo Making in $${dir} && $(MAKE) default) || exit 1; \
+          done
+
+plugins:
+	for dir in $(plugin_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+clean:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+tests:
+	$(call runtests, $(subdirs))
+
+
+define runtests
+    for dir in $1; \
+        do \
+        (\
+        cd $${dir} &&\
+        echo "Testing $${dir}..." | tee -a ../../test-case-results &&\
+        $(MAKE) tests && cat $${dir}.test >> ../../test-case-results;\
+        );\
+        if [ $$? != 0 ]; then\
+         echo "\tFAILED" | tee -a ../test-case-results; exit 1;\
+        fi;\
+        done
+endef
+

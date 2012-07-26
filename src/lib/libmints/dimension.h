@@ -41,7 +41,7 @@ public:
     const std::string& name() const { return name_; }
 
     /// Set the name of the dimension.
-    void set_name(const std::string& n) { name_ = n; }
+    void set_name(const std::string& nme) { name_ = nme; }
 
     /// Blocks access
     int& operator[](int i) { return blocks_[i]; }
