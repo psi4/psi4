@@ -101,11 +101,11 @@ DCFTSolver::compute_energy()
                         //Store the DIIS vectors
                         dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
                         dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                                      ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+                                      ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
                         dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                                       ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
                         dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                                      ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+                                      ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
                         dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                       ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
                         dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -307,11 +307,11 @@ DCFTSolver::compute_energy()
                 //Store the DIIS vectors
                 dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
                 dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                              ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+                              ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
                 dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                               ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
                 dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                              ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+                              ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
                 dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                               ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
                 dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
