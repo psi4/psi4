@@ -35,11 +35,11 @@ DCFTSolver::compute_energy()
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
         dpdbuf4 Laa, Lab, Lbb;
-        dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+        dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
         dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+        dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         DIISManager scfDiisManager(maxdiis_, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
         scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(),
@@ -100,17 +100,17 @@ DCFTSolver::compute_energy()
                     if(lambda_convergence_ < diis_start_thresh_){
                         //Store the DIIS vectors
                         dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
-                        dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                        dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                                       ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
                         dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                                       ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-                        dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                        dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                                       ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-                        dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                        dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                                       ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
                         dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                                       ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-                        dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                        dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
 
                         //                    dpd_buf4_init(&J, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -241,11 +241,11 @@ DCFTSolver::compute_energy()
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
         dpdbuf4 Laa, Lab, Lbb;
-        dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+        dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
         dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+        dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(),
                                              DIISEntry::Matrix, scf_error_b_.get(),
@@ -306,17 +306,17 @@ DCFTSolver::compute_energy()
             if(scf_convergence_ < diis_start_thresh_ && lambda_convergence_ < diis_start_thresh_){
                 //Store the DIIS vectors
                 dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
-                dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                               ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
                 dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                               ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-                dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                               ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-                dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                               ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
                 dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                               ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-                dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                               ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
                 if(diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb,
                                            Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb)){
