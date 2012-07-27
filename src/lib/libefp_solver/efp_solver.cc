@@ -177,7 +177,7 @@ void EFP::common_init() {
                frag_lib_path.c_str(), frag_lib_path.c_str());
 
        if ((res = efp_init(&efp, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
-               fprintf(outfile, efp_result_to_string(res));
+               fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
@@ -198,7 +198,7 @@ void EFP::common_init() {
 void EFP::SetGeometry(){
        enum efp_result res;
        fprintf(outfile, "\n\n");
-       fprintf(outfile, efp_banner());
+       fprintf(outfile, "%s", efp_banner());
        fprintf(outfile, "\n\n");
 
        fprintf(outfile, "  ==> Geometry <==\n\n");
@@ -249,7 +249,7 @@ void EFP::SetGeometry(){
        }
 
        if ((res = efp_set_coordinates_2(efp, coords))) {
-               fprintf(outfile, efp_result_to_string(res));
+               fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 } // end of SetGeometry()
@@ -261,21 +261,21 @@ void EFP::Compute() {
 
        /* Main EFP computation routine */
        if ((res = efp_compute(efp, do_grad ? 1 : 0))) {
-               fprintf(outfile, efp_result_to_string(res));
+               fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
        struct efp_energy energy;
 
        if ((res = efp_get_energy(efp, &energy))) {
-               fprintf(outfile, efp_result_to_string(res));
+               fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
        if (do_grad) {
                        grad = new double[6 * nfrag];
                        if ((res = efp_get_gradient(efp, 6 * nfrag, grad))) {
-                               fprintf(outfile, efp_result_to_string(res));
+                               fprintf(outfile, "%s", efp_result_to_string(res));
                                 throw PsiException("efp",__FILE__,__LINE__);
                        }
 
