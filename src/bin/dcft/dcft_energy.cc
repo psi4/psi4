@@ -20,17 +20,17 @@ DCFTSolver::compute_dcft_energy()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // E += 1/4 L_IJAB G_IJAB
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
-    eGaa = 0.25 * dpd_buf4_dot(&G, &L);
+    eGaa = dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
     // E += 1/4 gbar_IJAB L_IJAB
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    eIaa = 0.25 * dpd_buf4_dot(&I, &L);
+    eIaa = dpd_buf4_dot(&I, &L);
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
 
@@ -50,18 +50,18 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_close(&L);
 
     // E += 1/4 L_ijab G_ijab
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
-    eGbb = 0.25 * dpd_buf4_dot(&G, &L);
+    eGbb = dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
 
     // E += 1/4 gbar_ijab L_ijab
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    eIbb = 0.25 * dpd_buf4_dot(&I, &L);
+    eIbb = dpd_buf4_dot(&I, &L);
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
