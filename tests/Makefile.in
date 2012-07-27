@@ -66,8 +66,17 @@ ifeq ($(HAVE_PLUGINS),yes)
    subdirs += $(plugin_subdirs)
 endif
 
-# the bare minimum
-quicktestdirs = 
+# only short tests, only one from each type of computation
+# the idea is that all these should run in ~ 5-10 minutes
+quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
+  tu5-sapt castup1 scf1 scf2 scf3 scf5 dft1 dfmp2_1 \
+  cc1 cc2 cc3 cc4 cc8 cc8a cc12 \
+  cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 \
+  fci-dipole cisd-h2o+-0 ci-multi \
+  cisd-opt-fd rasci-h2o mpn-bh \
+  dcft1 mcscf1 sapt1 sad1 \
+  psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2_1 omp3_1 \
+  pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
 define runtests
     for dir in $1; \

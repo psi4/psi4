@@ -19,9 +19,9 @@ class Dispersion {
 
 public:
     enum C6_type { C6_arit, C6_geom };
-    enum C8_type { C8_geom, C8_grimme };
+    enum C8_type { C8_geom };
     enum Damping_type { Damping_D1, Damping_CHG, Damping_TT };
-    enum Spherical_type { Spherical_Das, Spherical_grimme };
+    enum Spherical_type { Spherical_Das, Spherical_zero };
 
 protected:
 
@@ -55,6 +55,8 @@ public:
     void set_name(const std::string & name) { name_ = name; }
     void set_description(const std::string & description) { description_ = description; }
     void set_citation(const std::string & citation) { citation_ = citation; }
+
+    boost::shared_ptr<Vector> set_atom_list(boost::shared_ptr<Molecule> mol);
 
     double get_d() const { return d_; }
     double get_s6() const { return s6_; }
