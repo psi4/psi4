@@ -6,7 +6,6 @@
 
 using namespace boost;
 
-INIT_PLUGIN
 namespace psi{ namespace omp2wave {
 
 PsiReturnType

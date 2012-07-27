@@ -84,9 +84,9 @@ class NotImplementedException_ : public PsiException
 {
 public:
     NotImplementedException_(const std::string& message,
-                             const char* file,
-                             int line)
-        : PsiException(message + " function not implemented", file, line) { }
+                             const char* lfile,
+                             int lline)
+        : PsiException(message + " function not implemented", lfile, lline) { }
 };
 
 /**
