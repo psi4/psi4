@@ -34,6 +34,22 @@
 
 #define streq(a, b) (strcmp((a), (b)) == 0)
 
+// Added because not standard function.
+char * efp_strndup(const char *s, size_t n) {
+  char *result;
+  size_t len = strlen (s);
+
+  if (n < len)
+    len = n;
+
+  result = (char *) malloc (len + 1);
+  if (!result)
+    return 0;
+
+  result[len] = '\0';
+  return (char *) memcpy (result, s, len);
+}
+
 struct stream {
 	char *buffer;
 	char *ptr;
@@ -154,7 +170,7 @@ tok_label(struct stream *stream, char **val)
 		len++;
 
 	if (val)
-		*val = strndup(stream->ptr, len);
+		*val = efp_strndup(stream->ptr, len);
 
 	stream->ptr += len;
 	return 1;
