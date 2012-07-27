@@ -76,7 +76,7 @@ tests:
 	(cd tests; echo Running test suite...; $(MAKE)) || exit 1;
 
 quicktests:
-	(cd tests; echo Running minmal test suite...; $(MAKE) quicktests) || exit 1;
+	(cd tests; echo Running minimal test suite...; $(MAKE) quicktests) || exit 1;
 
 testsclean:
 	(cd tests; echo Cleaning test suite...; $(MAKE) clean) || exit 1;
