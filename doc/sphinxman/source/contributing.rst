@@ -9,4 +9,5 @@ Contributions: Intro to Programming in |PSIfour|
    plugins
    bestpractices_py
    documentation
+   psipep
 

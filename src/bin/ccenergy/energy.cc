@@ -51,6 +51,7 @@ double rhf_energy(void)
   moinfo.ecc_ss = ss_energy;
   moinfo.ecc_os = os_energy;
  
+  dpd_buf4_close(&S);
   dpd_buf4_close(&tauIjAb);
   dpd_buf4_close(&D);
   

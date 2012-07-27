@@ -200,6 +200,8 @@ public:
     /// moves a file from old_unit to new_unit
     void rename_file(unsigned int old_unit,unsigned int new_unit);
 
+    /// check if a psi unit already exists or not
+    bool exists(unsigned int unit);
     /// open unit. status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be open
     void open(unsigned int unit, int status);
     /// close unit. if keep == 0, will remove the file, else keep it
@@ -270,6 +272,8 @@ public:
     void tocprint(unsigned int unit);
     /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
     psio_tocentry* tocscan(unsigned int unit, const char *key);
+    /// Checks the TOC to see if a particular keyword exists there or not
+    bool tocentry_exists(unsigned int unit, const char *key);
     ///  Write the table of contents for file number 'unit'. NB: This function should NOT call psio_error because the latter calls it!
     void tocwrite(unsigned int unit);
 
