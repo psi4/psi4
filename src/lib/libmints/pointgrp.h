@@ -22,9 +22,9 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Library General Public License for more details.
 //
-// You should have received a copy of the GNU Library General Public License
-// along with the SC Toolkit; see the file COPYING.LIB.  If not, write to
-// the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 //
 // The U.S. Government is granted a limited license as per AL 91-7.
 //

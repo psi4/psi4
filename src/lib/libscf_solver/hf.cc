@@ -1086,6 +1086,12 @@ void HF::guess()
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     string guess_type = options_.get_str("GUESS");
+    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_DB_MOS)) {
+        fprintf(outfile, "  SCF Guess was Projection but file not found.\n");
+        fprintf(outfile, "  Switching over to SAD guess.\n\n");
+        guess_type = "SAD";
+    }
+
     if (guess_type == "READ") {
 
         if (print_ && (Communicator::world->me() == 0))
@@ -1152,6 +1158,7 @@ void HF::guess()
     if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
 }
+
 void HF::save_orbitals()
 {
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
@@ -1171,6 +1178,10 @@ void HF::save_orbitals()
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
 
+    // upon loading, need to know what value of puream was used
+    int old_puream = (basisset_->has_puream() ? 1 : 0);
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),sizeof(int));
+
     SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
@@ -1188,24 +1199,29 @@ void HF::save_orbitals()
     psio_->close(PSIF_SCF_DB_MOS,1);
     free(basisname);
 }
+
 void HF::load_orbitals()
 {
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
 
-    int basislength;
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+    int basislength, old_puream;
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",
+        (char *)(&basislength),sizeof(int));
     char *basisnamec = new char[basislength];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char));
-
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,
+        basislength*sizeof(char));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),
+        sizeof(int));
+    bool old_forced_puream = (old_puream) ? true : false;
     std::string basisname(basisnamec);
 
     if (basisname == "")
-        throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for small-basis guess");
+        throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for projection from a previous SCF");
 
     if (print_) {
         if (basisname != options_.get_str("BASIS")) {
             if (Communicator::world->me() == 0) {
-                fprintf(outfile,"  Computing dual basis set projection from %s to %s.\n", \
+                fprintf(outfile,"  Computing basis set projection from %s to %s.\n", \
                     basisname.c_str(),options_.get_str("BASIS").c_str());
             }
         } else {
@@ -1214,7 +1230,7 @@ void HF::load_orbitals()
         }
     }
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser(old_forced_puream));
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
@@ -1239,7 +1255,7 @@ void HF::load_orbitals()
     Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
     SharedMatrix Ca;
     if (basisname != options_.get_str("BASIS")) {
-        Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+        Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
     } else {
         Ca = Ctemp_a;
     }
@@ -1252,7 +1268,7 @@ void HF::load_orbitals()
     Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
     SharedMatrix Cb;
     if (basisname != options_.get_str("BASIS")) {
-        Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+        Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
     } else {
         Cb = Ctemp_b;
     }

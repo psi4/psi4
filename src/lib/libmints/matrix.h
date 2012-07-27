@@ -980,6 +980,9 @@ public:
     bool schmidt_add_row(int h, int rows, double* v) throw();
     /// @}
 
+    /*! Calls libqt schmidt function */
+    void schmidt();
+
     /*! Schmidt orthogonalize this. S is the overlap matrix.
      *  n is the number of columns to orthogonalize. */
     void schmidt_orthog(SharedMatrix S, int n);
