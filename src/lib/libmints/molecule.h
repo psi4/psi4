@@ -206,6 +206,9 @@ public:
     bool charge_specified() const { return charge_specified_; }
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
+    /// The number of active fragments in the molecule
+    int nactive_fragments();
+    /// Get molecule name
     /// Get molecule name
     const std::string name() const {return name_; }
     /// Set molecule name

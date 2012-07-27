@@ -2279,8 +2279,23 @@ def build_dldfd_superfunctional(name, npoints, deriv):
     sup.set_name('dlDF+D')
 
     # => +D <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-DAS', 1.0))  # Does not have an s6, so set to 1.0
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2009', 1.0))  # Does not have an s6, so set to 1.0
 
+    return sup
+
+
+def build_hfd_superfunctional(name, npoints, deriv):
+
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+    sup.set_name('HF+D')
+    sup.set_x_alpha(1.0)
+
+    # => +D <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0))  # Does not have an s6, so set to 1.0
+
+    sup.allocate()
     return sup
 
 
@@ -2716,6 +2731,7 @@ superfunctionals = {
         'm05-2x'     : build_m05_2x_superfunctional,
         'dldf'       : build_dldf_superfunctional,
         'dldf+d'     : build_dldfd_superfunctional,
+        'hf+d'       : build_hfd_superfunctional,
         'sogga'      : build_sogga_superfunctional,
         'b2plyp'     : build_b2plyp_superfunctional,
         'b2plyp-d'   : build_b2plypd_superfunctional,

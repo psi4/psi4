@@ -83,6 +83,9 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
+            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the 
+            #    whole driver to find uses of name in return values and psi variables and 
+            #    extend the logic to encompass the new alias.
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -809,7 +812,6 @@ def optimize(name, **kwargs):
 
     full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
-    PsiMod.print_out("wtf")
 
     # are we in sow/reap mode?
     isSowReap = False

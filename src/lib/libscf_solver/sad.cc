@@ -635,7 +635,7 @@ void HF::compute_SAD_guess()
 
     E_ = 0.0; // This is the -1th iteration
 }
-SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis)
+SharedMatrix HF::BasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis)
 {
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311

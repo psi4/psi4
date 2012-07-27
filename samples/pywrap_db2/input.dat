@@ -1,5 +1,6 @@
+#! Database calculation, run in sow/reap mode.
 
-set globals {
+set {
     BASIS 6-31+G*
     DF_BASIS_SCF  cc-pVDZ-JKFIT
     DF_BASIS_SAPT cc-pVDZ-RI
@@ -12,5 +13,5 @@ set globals {
     GUESS CORE
 }
 
-db('scf','BASIC',mode='sow',subset=['ch4'],func=optimize)
+db('scf','basic',mode='sow',subset=['ch4','nh3'],func=optimize,tabulate=['current energy','scf total energy'])
 
