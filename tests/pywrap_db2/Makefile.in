@@ -1,5 +1,15 @@
 SRCDIR = @srcdir@
 
 include ../MakeVars
-include ../MakeRules
+
+$(TARGET):
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../runtest.pl $(SRCDIR)/input.dat $(TARGET) $(PSIAUTOTEST)
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../runtest.pl BASIC-nh3-reagent.in $(TARGET) $(PSIAUTOTEST) BASIC-nh3-reagent.out
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../runtest.pl BASIC-ch4-reagent.in $(TARGET) $(PSIAUTOTEST) BASIC-ch4-reagent.out
+	/bin/cat $(SRCDIR)/tests >> BASIC-master.in
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../runtest.pl BASIC-master.in $(TARGET) $(PSIAUTOTEST) BASIC-master.out
+
+clean:
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) 
+	/bin/rm -f $(TARGET) $(GARBAGE) BASIC-*
 

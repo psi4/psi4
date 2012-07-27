@@ -412,9 +412,9 @@ def run_dfmp2_gradient(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2'):
+    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
         return e_dfmp2
     
 
@@ -959,9 +959,9 @@ def run_dfmp2(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2'):
+    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
         return e_dfmp2
 
 
