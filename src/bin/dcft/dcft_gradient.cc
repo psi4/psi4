@@ -603,7 +603,7 @@ DCFTSolver::compute_density()
      * The VVVV block
      */
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-              ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+              ID("[V>V]-"), ID("[V>V]-"), 0, "Gamma <VV|VV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
@@ -693,7 +693,7 @@ DCFTSolver::compute_density()
     dpd_buf4_close(&Gab);
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
-              ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+              ID("[v>v]-"), ID("[v>v]-"), 0, "Gamma <vv|vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
@@ -742,7 +742,7 @@ DCFTSolver::compute_density()
      * The OOOO  block
      */
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
-              ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+              ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
@@ -840,7 +840,7 @@ DCFTSolver::compute_density()
     dpd_buf4_close(&Gab);
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
-              ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+              ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
@@ -894,15 +894,15 @@ DCFTSolver::compute_density()
      */
 
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+              ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
     dpd_buf4_axpbycz(&Laa,&Zaa,&Gaa,0.25,0.25,0.0);
 
     dpd_buf4_close(&Gaa);
 
     // Resort the Г_OOVV to Г_VVOO. Used for the MO Lagrangian
-    dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
-    dpd_buf4_sort(&Gaa, PSIF_DCFT_DENSITY, rspq, ID("[V,V]"), ID("[O,O]"), "Gamma <VV|OO>");
+    dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"),
+              ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
+    dpd_buf4_sort(&Gaa, PSIF_DCFT_DENSITY, rspq, ID("[V>V]-"), ID("[O>O]-"), "Gamma <VV|OO>");
     dpd_buf4_close(&Gaa);
 
     dpd_buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
@@ -918,15 +918,15 @@ DCFTSolver::compute_density()
     dpd_buf4_close(&Gab);
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+              ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
     dpd_buf4_axpbycz(&Lbb,&Zbb,&Gbb,0.25,0.25,0.0);
 
     dpd_buf4_close(&Gbb);
 
     // Resort the Г_oovv to Г_vvoo. Used for the MO Lagrangian
-    dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
-    dpd_buf4_sort(&Gbb, PSIF_DCFT_DENSITY, rspq, ID("[v,v]"), ID("[o,o]"), "Gamma <vv|oo>");
+    dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"),
+              ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
+    dpd_buf4_sort(&Gbb, PSIF_DCFT_DENSITY, rspq, ID("[v>v]-"), ID("[o>o]-"), "Gamma <vv|oo>");
     dpd_buf4_close(&Gbb);
 
     dpd_buf4_close(&Laa);
@@ -1265,7 +1265,7 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 1, "MO Ints <OV|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+                  ID("[V>V]-"), ID("[V>V]-"), 0, "Gamma <VV|VV>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -1289,7 +1289,7 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 1, "MO Ints <ov|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+                  ID("[v>v]-"), ID("[v>v]-"), 0, "Gamma <vv|vv>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -1317,7 +1317,7 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 1, "MO Ints <VO|OO>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[O,O]"),
-                  ID("[V,V]"), ID("[O,O]"), 0, "Gamma <VV|OO>");
+                  ID("[V>V]-"), ID("[O>O]-"), 0, "Gamma <VV|OO>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -1341,7 +1341,7 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
                   ID("[v,o]"), ID("[o,o]"), 1, "MO Ints <vo|oo>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[o,o]"),
-                  ID("[v,v]"), ID("[o,o]"), 0, "Gamma <vv|oo>");
+                  ID("[v>v]-"), ID("[o>o]-"), 0, "Gamma <vv|oo>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -1521,7 +1521,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
                   ID("[V,O]"), ID("[O,O]"), 1, "MO Ints <VO|OO>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+                  ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -1545,7 +1545,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
                   ID("[v,o]"), ID("[o,o]"), 1, "MO Ints <vo|oo>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+                  ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -1573,7 +1573,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 1, "MO Ints <OV|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -1597,7 +1597,7 @@ DCFTSolver::compute_lagrangian_VO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 1, "MO Ints <ov|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -3833,7 +3833,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+                  ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -3857,7 +3857,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 1, "MO Ints <oo|oo>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+                  ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -3885,7 +3885,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -3909,7 +3909,7 @@ DCFTSolver::compute_lagrangian_OO()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -4052,7 +4052,7 @@ DCFTSolver::compute_lagrangian_VV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+                  ID("[V>V]-"), ID("[V>V]-"), 0, "Gamma <VV|VV>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -4076,7 +4076,7 @@ DCFTSolver::compute_lagrangian_VV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 1, "MO Ints <vv|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+                  ID("[v>v]-"), ID("[v>v]-"), 0, "Gamma <vv|vv>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     dpd_buf4_close(&G);
@@ -4104,7 +4104,7 @@ DCFTSolver::compute_lagrangian_VV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
                   ID("[V,V]"), ID("[O,O]"), 1, "MO Ints <VV|OO>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[O,O]"),
-                  ID("[V,V]"), ID("[O,O]"), 0, "Gamma <VV|OO>");
+                  ID("[V>V]-"), ID("[O>O]-"), 0, "Gamma <VV|OO>");
 
     dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -4128,7 +4128,7 @@ DCFTSolver::compute_lagrangian_VV()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,o]"),
                   ID("[v,v]"), ID("[o,o]"), 1, "MO Ints <vv|oo>");
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[o,o]"),
-                  ID("[v,v]"), ID("[o,o]"), 0, "Gamma <vv|oo>");
+                  ID("[v>v]-"), ID("[o>o]-"), 0, "Gamma <vv|oo>");
 
     dpd_contract442(&I, &G, &X, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&G);
@@ -4559,7 +4559,7 @@ DCFTSolver::compute_ewdm()
 
     // Compute the OOOV densities
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
-                  ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
+                  ID("[O>O]-"), ID("[O,V]"), 0, "Gamma <OO|OV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
@@ -4641,7 +4641,7 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
+                  ID("[o>o]-"), ID("[o,v]"), 0, "Gamma <oo|ov>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
@@ -4670,7 +4670,7 @@ DCFTSolver::compute_ewdm()
 
     // Compute the OVVV densities
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
+                  ID("[O,V]"), ID("[V>V]-"), 0, "Gamma <OV|VV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
@@ -4753,7 +4753,7 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"),
-                  ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
+                  ID("[o,v]"), ID("[v>v]-"), 0, "Gamma <ov|vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
@@ -4788,7 +4788,7 @@ DCFTSolver::compute_ewdm()
     // If restriction is used it seems that one needs to do a seperate dpd_buf4_sort to the chemists' notation
     // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-              ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+              ID("[V>V]-"), ID("[V>V]-"), 0, "Gamma <VV|VV>");
     dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -4816,13 +4816,13 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
-              ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+              ID("[v>v]-"), ID("[v>v]-"), 0, "Gamma <vv|vv>");
     dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OOOO
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
-              ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+              ID("[O>O]-"), ID("[O>O]-"), 0, "Gamma <OO|OO>");
     dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -4851,13 +4851,13 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
-              ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+              ID("[o>o]-"), ID("[o>o]-"), 0, "Gamma <oo|oo>");
     dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OOVV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+              ID("[O>O]-"), ID("[V>V]-"), 0, "Gamma <OO|VV>");
     dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -4885,7 +4885,7 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+              ID("[o>o]-"), ID("[v>v]-"), 0, "Gamma <oo|vv>");
     dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -5042,7 +5042,7 @@ DCFTSolver::compute_ewdm()
 
     // OOOV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
-              ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
+              ID("[O>O]-"), ID("[O,V]"), 0, "Gamma <OO|OV>");
     dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -5095,13 +5095,13 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
-              ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
+              ID("[o>o]-"), ID("[o,v]"), 0, "Gamma <oo|ov>");
     dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OVVV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"),
-              ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
+              ID("[O,V]"), ID("[V>V]-"), 0, "Gamma <OV|VV>");
     dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
@@ -5154,7 +5154,7 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"),
-              ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
+              ID("[o,v]"), ID("[v>v]-"), 0, "Gamma <ov|vv>");
     dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
