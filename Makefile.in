@@ -75,11 +75,14 @@ targetclean:
 tests:
 	(cd tests; echo Running test suite...; $(MAKE)) || exit 1;
 
+testsclean:
+	(cd tests; echo Cleaning test suite...; $(MAKE) clean) || exit 1;
+
 quicktests:
 	(cd tests; echo Running minimal test suite...; $(MAKE) quicktests) || exit 1;
 
-testsclean:
-	(cd tests; echo Cleaning test suite...; $(MAKE) clean) || exit 1;
+quicktestsclean:
+	(cd tests; echo Cleaning test suite...; $(MAKE) quicktestsclean) || exit 1;
 
 doc:
 	(cd doc; echo Building documentation...; $(MAKE)) || exit 1;
