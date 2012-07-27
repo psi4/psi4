@@ -32,6 +32,24 @@
 #include "common.h"
 #include "parse.h"
 
+// Added because not standard function.
+// Added because not standard function.
+char * efp_strndup(const char *s, size_t n) {
+  char *result;
+  size_t len = strlen (s);
+
+  if (n < len)
+    len = n;
+
+  result = (char *) malloc (len + 1);
+  if (!result)
+    return 0;
+
+  result[len] = '\0';
+  return (char *) memcpy (result, s, len);
+}
+
+
 struct stream {
 	char *buffer;
 	char *ptr;
@@ -115,7 +133,7 @@ static int parse_run_type(struct stream *stream, struct config *config)
 	while (*ptr && !isspace(*ptr))
 		ptr++;
 
-	config->run_type = strndup(stream->ptr, ptr - stream->ptr);
+	config->run_type = efp_strndup(stream->ptr, ptr - stream->ptr);
 	stream->ptr = ptr;
 	return 0;
 }
@@ -255,7 +273,7 @@ static char *parse_path(struct stream *stream)
 			stream->ptr++;
 	}
 
-	return strndup(ptr, stream->ptr - ptr);
+	return efp_strndup(ptr, stream->ptr - ptr);
 }
 
 static int parse_fraglib_path(struct stream *stream, struct config *config)
@@ -324,7 +342,7 @@ static int parse_frag(struct stream *stream,
 	while (stream->ptr[len] && !isspace(stream->ptr[len]))
 		len++;
 
-	sys->frag_name[sys->n_frag - 1] = strndup(stream->ptr, len);
+	sys->frag_name[sys->n_frag - 1] = efp_strndup(stream->ptr, len);
 	next_line(stream);
 
 	switch (config->coord_type) {
