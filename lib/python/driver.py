@@ -428,10 +428,6 @@ def gradient(name, **kwargs):
         dertype = 0
         func = energy
 
-    if (PsiMod.get_global_option('REFERENCE').lower() == 'rks') or (PsiMod.get_global_option('REFERENCE').lower() == 'uks'):
-        dertype = 0
-        func = energy
-
     # 2. Check if the user passes dertype into this function
     if 'dertype' in kwargs:
         opt_dertype = kwargs['dertype']
