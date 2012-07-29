@@ -1,0 +1,512 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 3034b1730e8de3189fdd759e7001366ccfeb8a22
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  95420
+    PSI4DATADIR: /Users/loriab/linux/psi4_efp_nowcurrent/psi4/objdir/../lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
+
+ref_vals = [                                                 #TEST
+             [ 0.0040014655,  0.0000000000,  0.0069307508],  #TEST
+             [-0.0040014655,  0.0000000000,  0.0069307508],  #TEST
+             [-0.0080028871,  0.0000000000,  0.0000000000],  #TEST
+             [-0.0040014655,  0.0000000000, -0.0069307508],  #TEST
+             [ 0.0040014655,  0.0000000000, -0.0069307508],  #TEST
+             [ 0.0080028871,  0.0000000000,  0.0000000000],  #TEST
+             [ 0.0047224616,  0.0000000000,  0.0081795432],  #TEST
+             [-0.0047224616,  0.0000000000,  0.0081795432],  #TEST
+             [-0.0094449331,  0.0000000000,  0.0000000000],  #TEST
+             [-0.0047224616,  0.0000000000, -0.0081795432],  #TEST
+             [ 0.0047224616,  0.0000000000, -0.0081795432],  #TEST
+             [ 0.0094449331,  0.0000000000,  0.0000000000]   #TEST
+           ]                                                 #TEST
+ref = PsiMod.Matrix(12, 3)                                   #TEST
+ref.set(ref_vals)                                            #TEST
+memory 250 mb
+molecule {
+    C         -0.694303272975    -0.000000000000    -1.202568545351
+    C          0.694303272975     0.000000000000    -1.202568545351
+    C          1.388606546154     0.000000000000     0.000000000000
+    C          0.694303272975     0.000000000000     1.202568545351
+    C         -0.694303272975    -0.000000000000     1.202568545351
+    C         -1.388606546154    -0.000000000000     0.000000000000
+    H         -1.235418032354    -0.000000000000    -2.139806800843
+    H          1.235418032354     0.000000000000    -2.139806800843
+    H          2.470836065313     0.000000000000     0.000000000000
+    H          1.235418032354     0.000000000000     2.139806800843
+    H         -1.235418032354    -0.000000000000     2.139806800843
+    H         -2.470836065313    -0.000000000000     0.000000000000
+}
+
+set {
+    scf_type      df
+    basis         cc-pvdz
+    freeze_core   true
+}
+
+gradient("df-mp2")
+
+grad = PsiMod.reference_wavefunction().gradient()                                  #TEST
+compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
+
+
+*** tstart() called on localhost
+*** at Sat Jul 28 01:30:10 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C         -0.694303272975    -0.000000000000    -1.202568545351
+           C          0.694303272975     0.000000000000    -1.202568545351
+           C          1.388606546154     0.000000000000     0.000000000000
+           C          0.694303272975     0.000000000000     1.202568545351
+           C         -0.694303272975    -0.000000000000     1.202568545351
+           C         -1.388606546154    -0.000000000000     0.000000000000
+           H         -1.235418032354    -0.000000000000    -2.139806800843
+           H          1.235418032354     0.000000000000    -2.139806800843
+           H          2.470836065313     0.000000000000     0.000000000000
+           H          1.235418032354     0.000000000000     2.139806800843
+           H         -1.235418032354    -0.000000000000     2.139806800843
+           H         -2.470836065313    -0.000000000000     0.000000000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =  204.317349477548987
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 42
+  Nalpha       = 21
+  Nbeta        = 21
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 54
+    Number of basis function: 114
+    Number of Cartesian functions: 120
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        24      24       0       0       0       0
+     B1g        9       9       0       0       0       0
+     B2g       18      18       0       0       0       0
+     B3g        6       6       0       0       0       0
+     Au         6       6       0       0       0       0
+     B1u       18      18       0       0       0       0
+     B2u        9       9       0       0       0       0
+     B3u       24      24       0       0       0       0
+   -------------------------------------------------------
+    Total     114     114      21      21      21       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                  12
+      Number of AO shells:              54
+      Number of SO shells:              18
+      Number of primitives:            162
+      Number of atomic orbitals:       120
+      Number of basis functions:       114
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  24    9   18    6    6   18    9   24 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: cc-pvdz-jkfit
+    Number of shells: 198
+    Number of basis function: 558
+    Number of Cartesian functions: 636
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4876109204E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:  -178.38732924911295
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:  -194.32093106884645   -1.59336e+01   0.00000e+00 
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     7,    0,    4,    0,    0,    4,    0,    6 ]
+
+   @RHF iter   2:  -190.58668722772074    3.73424e+00   2.38499e+00 DIIS
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     6,    1,    3,    1,    0,    4,    1,    5 ]
+
+   @RHF iter   3:  -230.17473085167251   -3.95880e+01   2.44056e+00 DIIS
+   @RHF iter   4:  -230.68928242786052   -5.14552e-01   1.56515e-02 DIIS
+   @RHF iter   5:  -230.72116156295715   -3.18791e-02   5.71060e-03 DIIS
+   @RHF iter   6:  -230.72182765171152   -6.66089e-04   1.11592e-03 DIIS
+   @RHF iter   7:  -230.72192010818122   -9.24565e-05   3.80547e-04 DIIS
+   @RHF iter   8:  -230.72192589661171   -5.78843e-06   7.18731e-05 DIIS
+   @RHF iter   9:  -230.72192597996019   -8.33485e-08   7.35429e-06 DIIS
+   @RHF iter  10:  -230.72192598079516   -8.34973e-10   1.25230e-06 DIIS
+   @RHF iter  11:  -230.72192598081870   -2.35332e-11   1.28759e-07 DIIS
+   @RHF iter  12:  -230.72192598081881   -1.13687e-13   2.34538e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1Ag   -11.237082     1B3u  -11.236511     1B1u  -11.236511  
+	   2Ag   -11.235281     1B2g  -11.235281     2B3u  -11.234682  
+	   3Ag    -1.151967     2B1u   -1.014930     3B3u   -1.014930  
+	   4Ag    -0.822578     2B2g   -0.822578     5Ag    -0.707597  
+	   4B3u   -0.639912     3B1u   -0.617454     4B1u   -0.585291  
+	   5B3u   -0.585291     1B2u   -0.501478     6Ag    -0.490790  
+	   3B2g   -0.490790     1B3g   -0.334607     1B1g   -0.334607  
+
+	Virtual:                                                              
+
+	   2B2u    0.138869     1Au     0.138869     7Ag     0.182524  
+	   6B3u    0.220134     5B1u    0.220134     8Ag     0.256400  
+	   4B2g    0.256400     7B3u    0.273443     2B1g    0.353997  
+	   9Ag     0.439427     5B2g    0.439427     6B1u    0.472372  
+	   8B3u    0.472372     7B1u    0.583793    10Ag     0.590208  
+	   9B3u    0.678197     3B2u    0.679494    11Ag     0.712822  
+	   2B3g    0.730754     3B1g    0.730754     8B1u    0.741815  
+	  10B3u    0.741815    12Ag     0.746713     6B2g    0.746713  
+	   7B2g    0.747497     4B2u    0.823240     2Au     0.823240  
+	   9B1u    0.853209    11B3u    0.853209    13Ag     0.890678  
+	   8B2g    0.890678     4B1g    0.911878    12B3u    0.993450  
+	  14Ag     0.998706     5B2u    1.048015    10B1u    1.109074  
+	  13B3u    1.109074     9B2g    1.132103     3B3g    1.154692  
+	  15Ag     1.205802    10B2g    1.205802     4B3g    1.247983  
+	   5B1g    1.247983    11B1u    1.249627    14B3u    1.249627  
+	  15B3u    1.318298     3Au     1.323891     6B2u    1.323891  
+	  16Ag     1.470506    17Ag     1.517534    11B2g    1.517534  
+	  12B1u    1.722162     7B2u    1.747552     4Au     1.747552  
+	   6B1g    1.770901    18Ag     1.818323    19Ag     1.876554  
+	  12B2g    1.876554     8B2u    1.900739    13B1u    1.904801  
+	  16B3u    1.904801     7B1g    1.954847     5B3g    1.954847  
+	  17B3u    1.967704    14B1u    1.967704    18B3u    1.968496  
+	   8B1g    2.098839     6B3g    2.098839    15B1u    2.130722  
+	  16B1u    2.155301    19B3u    2.155301    13B2g    2.171095  
+	  20Ag     2.177325    14B2g    2.177325     9B2u    2.272643  
+	   5Au     2.272643    21Ag     2.289682    15B2g    2.289682  
+	  20B3u    2.334424     6Au     2.511138     9B1g    2.571798  
+	  22Ag     2.712311    16B2g    2.775739    23Ag     2.775739  
+	  21B3u    2.799244    17B1u    2.799244    18B1u    2.982291  
+	  22B3u    2.982291    23B3u    3.012663    17B2g    3.149386  
+	  24Ag     3.295171    18B2g    3.295171    24B3u    4.059587  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     6,    1,    3,    1,    0,    4,    1,    5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:  -230.72192598081881
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =        204.3173494775489871
+    One-Electron Energy =            -715.0182563696273519
+    Two-Electron Energy =             279.9789809112595549
+    DFT Functional Energy =             0.0000000000000000
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                   -230.7219259808188099
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on localhost at Sat Jul 28 01:30:21 2012
+Module time:
+	user time   =      10.07 seconds =       0.17 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+Total time:
+	user time   =      10.07 seconds =       0.17 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+No DF_BASIS_MP2 auxiliary basis selected, defaulting to cc-pvdz-ri
+
+*** tstart() called on localhost
+*** at Sat Jul 28 01:30:21 2012
+
+	 --------------------------------------------------------
+	                          DF-MP2                         
+	      2nd-Order Density-Fitted Moller-Plesset Theory     
+	              RMP2 Wavefunction,   1 Threads             
+	                                                         
+	        Rob Parrish, Justin Turney, Andy Simmonett,      
+	           Ed Hohenstein, and C. David Sherrill          
+	 --------------------------------------------------------
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: cc-pvdz-ri
+    Number of shells: 144
+    Number of basis function: 420
+    Number of Cartesian functions: 486
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+	 --------------------------------------------------------
+	                 NBF =   114, NAUX =   420
+	 --------------------------------------------------------
+	   CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+	   PAIRS       6      21      15      93      93       0
+	 --------------------------------------------------------
+
+
+         ------------------------------------------------------------
+                                     CPHF                           
+                                  Rob Parrish                       
+         ------------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C         -0.694303272975    -0.000000000000    -1.202568545351
+           C          0.694303272975     0.000000000000    -1.202568545351
+           C          1.388606546154     0.000000000000     0.000000000000
+           C          0.694303272975     0.000000000000     1.202568545351
+           C         -0.694303272975    -0.000000000000     1.202568545351
+           C         -1.388606546154    -0.000000000000     0.000000000000
+           H         -1.235418032354    -0.000000000000    -2.139806800843
+           H          1.235418032354     0.000000000000    -2.139806800843
+           H          2.470836065313     0.000000000000     0.000000000000
+           H          1.235418032354     0.000000000000     2.139806800843
+           H         -1.235418032354    -0.000000000000     2.139806800843
+           H         -2.470836065313    -0.000000000000     0.000000000000
+
+  Nuclear repulsion =  204.317349477548987
+  Reference energy  = -230.721925980818810
+
+  ==> Basis Set <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 54
+    Number of basis function: 114
+    Number of Cartesian functions: 120
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> CGRSolver (by Rob Parrish) <==
+
+   Number of roots    =         1
+   Preconditioning    =    JACOBI
+   Convergence cutoff =     1E-06
+   Maximum iterations =       100
+
+  ==> CPHFRHamiltonian (by Rob Parrish) <== 
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Number of shells: 198
+    Number of basis function: 558
+    Number of Cartesian functions: 636
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> CPHF Iterations <==
+
+  => Iterations <=
+
+             Iter  Converged  Remaining    Residual
+  CGR           1          0          1   7.888E-02
+  CGR           2          0          1   1.002E-02
+  CGR           3          0          1   1.758E-03
+  CGR           4          0          1   2.428E-04
+  CGR           5          0          1   2.076E-05
+  CGR           6          0          1   2.732E-06
+  CGR           7          1          0   2.251E-07
+
+    CGRSolver converged.
+
+  ==> DFCorrGrad: Density-Fitted Correlated Gradients <==
+
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Number of shells: 198
+    Number of basis function: 558
+    Number of Cartesian functions: 636
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+	----------------------------------------------------------
+	 ====================> MP2 Energies <==================== 
+	----------------------------------------------------------
+	 Reference Energy          =    -230.7219259808188099 [H]
+	 Singles Energy            =      -0.0000000000000001 [H]
+	 Same-Spin Energy          =      -0.2054163562673604 [H]
+	 Opposite-Spin Energy      =      -0.5761268051294085 [H]
+	 Correlation Energy        =      -0.7815431613967690 [H]
+	 Total Energy              =    -231.5034691422155788 [H]
+	----------------------------------------------------------
+	 ==================> SCS-MP2 Energies <================== 
+	----------------------------------------------------------
+	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
+	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+	 SCS Same-Spin Energy      =      -0.0684721187557868 [H]
+	 SCS Opposite-Spin Energy  =      -0.6913521661552902 [H]
+	 SCS Correlation Energy    =      -0.7598242849110771 [H]
+	 SCS Total Energy          =    -231.4817502657298860 [H]
+	----------------------------------------------------------
+
+
+  -Total Gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.004001457477     0.000000000000     0.006930728022
+       2       -0.004001457642    -0.000000000000     0.006930728553
+       3       -0.008002916091    -0.000000000000     0.000000000304
+       4       -0.004001457925     0.000000000000    -0.006930728394
+       5        0.004001459059     0.000000000000    -0.006930728119
+       6        0.008002916108    -0.000000000000    -0.000000000679
+       7        0.004722463317    -0.000000000000     0.008179546336
+       8       -0.004722463150     0.000000000000     0.008179546030
+       9       -0.009444926282    -0.000000000000    -0.000000000020
+      10       -0.004722463376    -0.000000000000    -0.008179546372
+      11        0.004722462882     0.000000000000    -0.008179545721
+      12        0.009444925624     0.000000000000     0.000000000059
+
+
+*** tstop() called on localhost at Sat Jul 28 01:31:14 2012
+Module time:
+	user time   =      50.60 seconds =       0.84 minutes
+	system time =       0.95 seconds =       0.02 minutes
+	total time  =         53 seconds =       0.88 minutes
+Total time:
+	user time   =      60.68 seconds =       1.01 minutes
+	system time =       1.17 seconds =       0.02 minutes
+	total time  =         64 seconds =       1.07 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
