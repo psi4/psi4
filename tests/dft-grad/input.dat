@@ -1,0 +1,39 @@
+#! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+ref_bp86d2 = [
+             [  0.000471372941,    -0.006768222864,     0.000000000000],  #TEST
+             [  0.000447936019,    -0.006988081177,    -0.000000000000],  #TEST
+             [ -0.000919105947,     0.013753536153,    -0.000000000000]]  #TEST
+
+ref = PsiMod.Matrix(3, 3)                                                 #TEST
+ref.set(ref_bp86d2)                                                       #TEST
+
+memory 250 mb
+molecule {
+  0 1
+  N    -0.0034118    3.5353926    0.0000000
+  C     0.0751963    2.3707040    0.0000000
+  H     0.1476295    1.3052847    0.0000000
+}
+
+
+set {
+    scf_type      df
+    basis         cc-pvdz
+    freeze_core   true
+}
+
+gradient('bp86-d')
+grad = PsiMod.reference_wavefunction().gradient()                          #TEST
+compare_matrices(ref, grad, 7, "Analytic dft gradients called by name")    #TEST
+clean()
+
+
+set {
+    dft_functional bp86-d
+    reference rks
+}
+
+gradient('bp86-d')
+grad = PsiMod.reference_wavefunction().gradient()                          #TEST
+compare_matrices(ref, grad, 7, "Analytic dft gradients called by options") #TEST

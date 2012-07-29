@@ -790,14 +790,14 @@ public:
     /// @}
 
     /// @{
-    /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
+    /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
-    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
+    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
@@ -1006,7 +1006,7 @@ public:
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
-    /// Diagonalize. Eigvectors and eigvalues must be created by caller.
+    /// Diagonalize a symmetric matrix. Eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz = 1);
 
     /// @{
