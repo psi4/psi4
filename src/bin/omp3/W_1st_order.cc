@@ -43,6 +43,7 @@ void OMP3Wave::W_1st_order()
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);
      
+    /*
     // W_MNIJ = <MN||IJ>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
@@ -116,6 +117,7 @@ void OMP3Wave::W_1st_order()
       dpd_buf4_print(&W, outfile, 1);
       dpd_buf4_close(&W); 
     }
+    */
     
     
     // W_MBEJ => W(ME,JB) = <MB||EJ> = (ME|JB) - <ME|JB>
@@ -212,7 +214,7 @@ void OMP3Wave::W_1st_order()
       dpd_buf4_close(&W);
     }
     
-    /*
+    /* it is unnecessary for omp3
     // W_mBeJ => W(me,JB) = <mB||eJ> = (JB|me) = W(JB,me) = W_JeBm
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
