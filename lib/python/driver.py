@@ -11,6 +11,7 @@ from proc import *
 from text import *
 from procutil import *
 from functional import *
+from psifiles import *
 # never import wrappers or aliases into this file
 
 
@@ -24,6 +25,7 @@ procedures = {
             'df-mp2'        : run_dfmp2,
             'mp2'           : run_mp2,
             'omp2'          : run_omp2,
+            'omp3'          : run_omp3,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -82,6 +84,9 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
+            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the 
+            #    whole driver to find uses of name in return values and psi variables and 
+            #    extend the logic to encompass the new alias.
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -237,6 +242,8 @@ def energy(name, **kwargs):
     | aqcc                    | averaged quadratic coupled cluster                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | omp3                    | orbital-optimized third order Moller--Plesset perturbation theory                     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -419,10 +426,6 @@ def gradient(name, **kwargs):
     if lowername in procedures['gradient']:
         dertype = 1
     elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    if (PsiMod.get_global_option('REFERENCE').lower() == 'rks') or (PsiMod.get_global_option('REFERENCE').lower() == 'uks'):
         dertype = 0
         func = energy
 
@@ -807,6 +810,15 @@ def optimize(name, **kwargs):
     full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
+    # are we in sow/reap mode?
+    isSowReap = False
+    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
+       isSowReap = True
+    if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
+       isSowReap = True
+    optstash = OptionsState(
+        ['SCF','GUESS'])
+
     n = 1
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
@@ -814,6 +826,10 @@ def optimize(name, **kwargs):
     while n <= PsiMod.get_global_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
+        # Use orbitals from previous iteration as a guess
+        if ( (n > 1) and (not isSowReap) ) :
+           PsiMod.set_local_option('SCF','GUESS','READ')
+           
         # Compute the gradient
         thisenergy = gradient(name, **kwargs)
 
@@ -866,6 +882,8 @@ def optimize(name, **kwargs):
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
                 fmaster.write('# Optimization complete!\n\n')
                 fmaster.close()
+
+            optstash.restore()
             return thisenergy
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
@@ -876,6 +894,7 @@ def optimize(name, **kwargs):
         n += 1
 
     PsiMod.print_out('\tOptimizer: Did not converge!')
+    optstash.restore()
     return 0.0
 
 ##  Aliases  ##

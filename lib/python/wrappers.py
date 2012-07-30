@@ -82,6 +82,7 @@ def auto_fragments(name, **kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
    
     geom = molecule.save_string_xyz()
 
@@ -748,6 +749,9 @@ counterpoise_correction = cp
 ##  Start of Database  ##
 #########################
 
+DB_RGT = {}
+DB_RXN = {}
+
 def database(name, db_name, **kwargs):
     r"""Function to access the molecule objects and reference energies of
     popular chemical databases.
@@ -764,6 +768,7 @@ def database(name, db_name, **kwargs):
        * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
        * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
        * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
+       * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
         using the script :source:`lib/scripts/ixyz2database.pl`.
@@ -788,8 +793,9 @@ def database(name, db_name, **kwargs):
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.
 
         Second argument, usually unlabeled. Indicates the requested database
-        name, matching the name of a python file in ``psi4/lib/databases``.
-        Consult that directory for available databases and literature citations.
+        name, matching (case insensitive) the name of a python file in 
+        ``psi4/lib/databases`` or :envvar:`PYTHONPATH`.  Consult that 
+        directory for available databases and literature citations.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
@@ -868,16 +874,16 @@ def database(name, db_name, **kwargs):
             ``'large'``, the largest of the database members, or
             ``'equilibrium'``, the equilibrium geometries for a database
             composed of dissociation curves.
-        * ``'BzBz_S'`` || ``'FaOOFaON'`` || ``'ArNe'`` || etc.
-            For databases composed of dissociation curves, individual
-            curves can be called by name. Consult the database python
-            files for available molecular systems.  The choices for this
-            keyword are case sensitive and must match the database python file
+        * ``'BzBz_S'`` || ``'FaOOFaON'`` || ``'ArNe'`` ||  ``'HB'`` || etc.
+            For databases composed of dissociation curves, or otherwise
+            divided into subsets, individual curves and subsets can be
+            called by name. Consult the database python files for available
+            molecular systems (case insensitive).
         * ``[1,2,5]`` || ``['1','2','5']`` || ``['BzMe-3.5', 'MeMe-5.0']`` || etc.
             Specify a list of database members to run. Consult the
-            database python files for available molecular systems.  The
-            choices for this keyword are case sensitive and must match the
-            database python file
+            database python files for available molecular systems.  This
+            is the only portion of database input that is case sensitive;
+            choices for this keyword must match the database python file.
 
     :examples:
 
@@ -900,7 +906,6 @@ def database(name, db_name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
-    #hartree2kcalmol = 627.509469  # consistent with perl SETS scripts
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -924,9 +929,8 @@ def database(name, db_name, **kwargs):
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
     sys.path.append('%s/lib/databases' % PsiMod.psi_top_srcdir())
-    try:
-        database = __import__(db_name)
-    except ImportError:
+    database = import_ignorecase(db_name)
+    if database is None:
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         PsiMod.print_out('\nSearch path that was tried:\n')
         PsiMod.print_out(", ".join(map(str, sys.path)))
@@ -1076,12 +1080,9 @@ def database(name, db_name, **kwargs):
         if (db_benchmark.lower() == 'default'):
             pass
         else:
-            try:
-                getattr(database, 'BIND_' + db_benchmark)
-            except AttributeError:
+            BIND = getattr_ignorecase(database, 'BIND_' + db_benchmark)
+            if BIND is None:
                 raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
-            else:
-                BIND = getattr(database, 'BIND_' + db_benchmark)
 
     #   Option tabulate- whether tables of variables other than primary energy method are formed
     db_tabulate = []
@@ -1116,19 +1117,11 @@ def database(name, db_name, **kwargs):
             else:
                 HRXN = database.HRXN_EQ
         else:
-            try:
-                getattr(database, db_subset)
-            except AttributeError:
-
-                try:
-                    getattr(database, 'HRXN_' + db_subset)
-                except AttributeError:
+            HRXN = getattr_ignorecase(database, db_subset)
+            if HRXN is None:
+                HRXN = getattr_ignorecase(database, 'HRXN_' + db_subset)
+                if HRXN is None:
                     raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
-                else:
-                    HRXN = getattr(database, 'HRXN_' + db_subset)
-
-            else:
-                HRXN = getattr(database, db_subset)
     else:
         temp = []
         for rxn in db_subset:
@@ -1260,7 +1253,7 @@ def database(name, db_name, **kwargs):
             exec(banners)
             exec(GEOS[rgt])
             exec(commands)
-            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
+            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             PsiMod.set_variable('NATOM', molecule.natom())
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
@@ -1268,7 +1261,7 @@ def database(name, db_name, **kwargs):
             PsiMod.print_variables()
             exec(actives)
             for envv in db_tabulate:
-                VRGT[rgt][envv] = PsiMod.get_variable(envv)
+                VRGT[rgt][envv.upper()] = PsiMod.get_variable(envv)
             PsiMod.set_global_option("REFERENCE", user_reference)
             PsiMod.clean()
 
@@ -1298,7 +1291,7 @@ def database(name, db_name, **kwargs):
         elif (db_mode.lower() == 'reap'):
             ERGT[rgt] = 0.0
             for envv in db_tabulate:
-                VRGT[rgt][envv] = 0.0
+                VRGT[rgt][envv.upper()] = 0.0
             exec(banners)
             exec(actives)
             try:
@@ -1327,9 +1320,10 @@ def database(name, db_name, **kwargs):
                             PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
                         elif (s[8:10] == ['variable', 'value']):
                             for envv in db_tabulate:
-                                if (s[13:] == envv.upper().split()):
+                                envv = envv.upper()
+                                if (s[13:] == envv.split()):
                                     VRGT[rgt][envv] = float(s[10])
-                                    PsiMod.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv.upper(), VRGT[rgt][envv]))
+                                    PsiMod.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv, VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files
@@ -1360,13 +1354,17 @@ def database(name, db_name, **kwargs):
     tables += """   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from\n"""
     tables += """   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.\n"""
     tables += """   Depending on the nature of the variable, this may or may not make any physical sense.\n"""
+    for rxn in HRXN:
+        db_rxn = dbse + '-' + str(rxn)
+        VRXN[db_rxn] = {}
+
     for envv in db_tabulate:
+        envv = envv.upper()
         tables += """\n   ==> %s <==\n\n""" % (envv.title())
         tables += tblhead(maxrgt, table_delimit, 2)
 
         for rxn in HRXN:
             db_rxn = dbse + '-' + str(rxn)
-            VRXN[db_rxn] = {}
 
             if FAIL[rxn]:
                 tables += """\n%23s   %8s %8s   %8s""" % (db_rxn, '', '****', '')
@@ -1453,7 +1451,11 @@ def database(name, db_name, **kwargs):
     if not b_user_reference:
         PsiMod.revoke_global_option_changed('REFERENCE')
 
-    return finalenergy
+    DB_RGT.clear()
+    DB_RGT.update(VRGT)
+    DB_RXN.clear()
+    DB_RXN.update(VRXN)
+    return finalenergy 
 
 
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
@@ -1964,6 +1966,9 @@ def complete_basis_set(name, **kwargs):
     #    instructions += """   %12s / %-24s for  %s\n""" % (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']+mc['f_portion']])
     PsiMod.print_out(instructions)
 
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(PSIF_SCF_DB_MOS, True)
+
     # Run necessary computations
     for mc in JOBS:
         kwargs['name'] = mc['f_wfn']
@@ -1991,6 +1996,8 @@ def complete_basis_set(name, **kwargs):
                     job['f_energy'] = PsiMod.get_variable(VARH[temp_wfn][menial])
 
         PsiMod.clean()
+
+    psioh.set_specific_retention(PSIF_SCF_DB_MOS, False)
 
     # Build string of title banner
     cbsbanners = ''

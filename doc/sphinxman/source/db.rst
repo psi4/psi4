@@ -85,6 +85,63 @@ of atoms in each reagent. ::
               RMS Dev                         0.0240
     -----------------------------------------------------------------------------------
 
+As well as being printed in the output file, database results from the
+``tabulate`` option are available in the input file as ordinary Python
+dictionaries ``DB_RGT`` and ``DB_RXN``, indexed firstly by reagent or reaction
+name and secondly by the requested PSI variable name. See the first
+paragraph of :ref:`sec:createDatabase` for the distinction between
+reagents and reactions. For example, an input file like the following
+requests a couple variables through ``tabulate`` and then makes use of the
+resulting data structures, here, only to print. ::
+   
+   set basis 6-31g*
+   db('dfmp2','s22',subset='small',tabulate=['CURRENT ENERGY','DF-MP2 CORRELATION ENERGY'])
+
+   from pprint import pprint
+
+   print_stdout('\nDB_RGT')
+   pprint(DB_RGT)
+
+   print_stdout('\nDB_RXN')
+   pprint(DB_RXN)
+
+   print_stdout('\ndf-mp2 interaction energy of water dimer (S22-2)')
+   print_stdout(DB_RXN['S22-2']['CURRENT ENERGY'])
+
+The output to the screen is as follows. ::
+
+   DB_RGT
+   {'S22-16-dimer': {'CURRENT ENERGY': -155.37373581838636,
+                     'DF-MP2 CORRELATION ENERGY': -0.523870772178089},
+    'S22-16-monoA-unCP': {'CURRENT ENERGY': -78.29412053242164,
+                          'DF-MP2 CORRELATION ENERGY': -0.2629759351596186},
+    'S22-16-monoB-unCP': {'CURRENT ENERGY': -77.07606823017188,
+                          'DF-MP2 CORRELATION ENERGY': -0.2594122526144091},
+    'S22-2-dimer': {'CURRENT ENERGY': -152.40958884746667,
+                    'DF-MP2 CORRELATION ENERGY': -0.3797598812113561},
+    'S22-2-monoA-unCP': {'CURRENT ENERGY': -76.19905879745446,
+                         'DF-MP2 CORRELATION ENERGY': -0.1887118848315123},
+    'S22-2-monoB-unCP': {'CURRENT ENERGY': -76.19902978067739,
+                         'DF-MP2 CORRELATION ENERGY': -0.18857384937354635},
+    'S22-8-dimer': {'CURRENT ENERGY': -80.67416758080654,
+                    'DF-MP2 CORRELATION ENERGY': -0.2844102558783027},
+    'S22-8-monoA-unCP': {'CURRENT ENERGY': -40.336952636980364,
+                         'DF-MP2 CORRELATION ENERGY': -0.14185962536715307},
+    'S22-8-monoB-unCP': {'CURRENT ENERGY': -40.336952636980506,
+                         'DF-MP2 CORRELATION ENERGY': -0.14185962536715097}}
+   
+   DB_RXN
+   {'S22-16': {'CURRENT ENERGY': -0.0035470557928363178,
+               'DF-MP2 CORRELATION ENERGY': -0.0014825844040612934},
+    'S22-2': {'CURRENT ENERGY': -0.011500269334817403,
+              'DF-MP2 CORRELATION ENERGY': -0.0024741470062974724},
+    'S22-8': {'CURRENT ENERGY': -0.0002623068456699684,
+              'DF-MP2 CORRELATION ENERGY': -0.0006910051439986686}}
+   
+   df-mp2 interaction energy of water dimer (S22-2)
+   -0.0115002693348
+
+
 .. index:: database(); available
 
 .. _`sec:availableDatabases`:

@@ -594,7 +594,7 @@ def process_input(raw_input, print_level=1):
     temp = process_multiline_arrays(temp)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}',
+    set_commands = re.compile(r'^(\s*?)set\s*([-,\w]*?)[\s=]*\{(.*?)\}',
                               re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
 
@@ -664,6 +664,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from frac import *\n'
     imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
+    imports += 'from psifiles import *\n'
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
 

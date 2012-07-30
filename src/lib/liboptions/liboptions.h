@@ -32,8 +32,8 @@ class DuplicateKeyException : public PsiException
 {
 public:
     DuplicateKeyException(const std::string &key, const std::string &type1, const std::string &type2,
-                          const char *file, int line):
-        PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, file, line) { }
+                          const char *lfile, int lline):
+        PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, lfile, lline) { }
 };
 
 class OptionsException : public PsiException

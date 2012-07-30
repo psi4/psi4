@@ -437,6 +437,52 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
     return cat;
 }
 
+SharedMatrix Matrix::matrix_3d_rotation(Vector3 axis, double phi, bool Sn) {
+
+  if (ncol() != 3)
+    throw PSIEXCEPTION("Can only rotate matrix with 3d vectors");
+
+  // Normalize rotation vector
+  double norm = sqrt(axis[0]*axis[0] + axis[1]*axis[1] + axis[2]*axis[2]);
+  axis[0] /= norm; axis[1] /= norm; axis[2] /= norm;
+
+  double wx, wy, wz, cp;
+  wx = axis[0]; wy = axis[1]; wz = axis[2];
+  cp = 1.0 - cos(phi);
+
+  Matrix R("Rotation Matrix",3,3);
+  R(0,0) =     cos(phi) + wx*wx*cp;
+  R(0,1) = -wz*sin(phi) + wx*wy*cp;
+  R(0,2) =  wy*sin(phi) + wx*wz*cp;
+  R(1,0) =  wz*sin(phi) + wx*wy*cp;
+  R(1,1) =     cos(phi) + wy*wy*cp;
+  R(1,2) = -wx*sin(phi) + wy*wz*cp;
+  R(2,0) = -wy*sin(phi) + wx*wz*cp;
+  R(2,1) =  wx*sin(phi) + wy*wz*cp;
+  R(2,2) =     cos(phi) + wz*wz*cp;
+
+  //  R * coord^t = R_coord^t or coord * R^t = R_coord
+  Matrix rotated_coord(nrow(),3);
+  rotated_coord.gemm(false, true, 1.0, *this, R, 0.0);
+
+  if (Sn) { // delta_ij - 2 a_i a_j / ||a||^2
+    R.identity();
+    R(0,0) -= 2 * wx * wx;
+    R(1,1) -= 2 * wy * wy;
+    R(2,2) -= 2 * wz * wz;
+    R(1,0) = R(0,1) = 2 * wx * wy;
+    R(2,0) = R(0,2) = 2 * wx * wz;
+    R(2,1) = R(1,2) = 2 * wy * wz;
+    Matrix tmp(nrow(),3);
+    tmp.gemm(false, true, 1.0, rotated_coord, R, 0.0);
+    rotated_coord.copy(tmp);
+  }
+
+  SharedMatrix to_return = rotated_coord.clone();
+  return to_return;
+}
+
+
 void Matrix::copy_to_row(int h, int row, double const * const data)
 {
     if (h >= nirrep_ || row >= rowspi_[h])
@@ -618,6 +664,56 @@ void Matrix::set_diagonal(const boost::shared_ptr<Vector>& vec)
             for (i=0; i<size; ++i)
                 matrix_[h][i][i] = vec->vector_[h][i];
         }
+    }
+}
+
+SharedVector Matrix::get_row(int h, int m)
+{
+    if (m >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
+    }
+    SharedVector vec = SharedVector(new Vector("Row",rowspi_));
+    vec->zero();
+    int size = colspi_[h];
+    for (int i = 0; i < size; ++i){
+        vec->vector_[h][i] = matrix_[h][m][i];
+    }
+    return vec;
+}
+
+SharedVector Matrix::get_column(int h, int m)
+{
+    if (m >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
+    }
+    SharedVector vec = SharedVector(new Vector("Row",colspi_));
+    vec->zero();
+    int size = rowspi_[h];
+    for (int i = 0; i < size; ++i){
+        vec->vector_[h][i] = matrix_[h][i][m];
+    }
+    return vec;
+}
+
+void Matrix::set_row(int h, int m, SharedVector vec)
+{
+    if (m >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
+    }
+    int size = colspi_[h];
+    for (int i = 0; i < size; ++i){
+        matrix_[h][m][i] = vec->vector_[h][i];
+    }
+}
+
+void Matrix::set_column(int h, int m, SharedVector vec)
+{
+    if (m >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
+    }
+    int size = rowspi_[h];
+    for (int i = 0; i < size; ++i){
+        matrix_[h][i][m] = vec->vector_[h][i];
     }
 }
 
@@ -1350,6 +1446,12 @@ int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance
     return northog;
 }
 
+}
+
+void Matrix::schmidt()
+{
+    for (int h=0; h<nirrep(); ++h)
+        psi::schmidt(matrix_[h], rowspi(h), colspi(h), NULL);
 }
 
 Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double *res)
@@ -2324,6 +2426,26 @@ void Matrix::zero_upper()
 
 }
 
+void Matrix::zero_row(int h, int i)
+{
+    if (i >= rowspi_[h]) {
+        throw PSIEXCEPTION("Matrix::zero_row: index is out of bounds.");
+    }
+    for (int m=0; m<colspi_[h]; ++m) {
+        matrix_[h][i][m] = 0.0;
+    }
+}
+
+void Matrix::zero_column(int h, int i)
+{
+    if (i >= colspi_[h]) {
+        throw PSIEXCEPTION("Matrix::zero_column: index is out of bounds.");
+    }
+    for (int m=0; m<rowspi_[h]; ++m) {
+        matrix_[h][m][i] = 0.0;
+    }
+}
+
 void Matrix::copy_lower_to_upper()
 {
     if (symmetry_) {
@@ -3147,6 +3269,50 @@ bool Matrix::equal(const Matrix* rhs)
         }
     }
 
+    return true;
+}
+
+bool Matrix::equal_but_for_row_order(const Matrix& rhs, double TOL)
+{
+    return equal_but_for_row_order(&rhs, TOL);
+}
+
+bool Matrix::equal_but_for_row_order(const SharedMatrix& rhs, double TOL)
+{
+    return equal_but_for_row_order(rhs.get(), TOL);
+}
+
+bool Matrix::equal_but_for_row_order(const Matrix* rhs, double TOL)
+{
+    if (rhs->nirrep() != nirrep())
+        return false;
+
+    if (symmetry_ != rhs->symmetry_)
+        return false;
+
+    for (int h=0; h<nirrep(); ++h)
+      if ((rowspi()[h] != rhs->rowspi()[h]) || (colspi()[h] != rhs->colspi()[h]))
+        return false;
+
+    for (int h=0; h<nirrep(); ++h) {
+      for (int m = 0; m < rowspi()[h]; ++m) {
+        for (int m_rhs = 0; m_rhs < rowspi()[h]; ++m_rhs) {
+
+          int n;
+          for (n = 0; n < colspi()[h^symmetry_]; ++n) {
+            if (fabs(get(h, m, n) - rhs->get(h, m_rhs, n)) > TOL)
+              break;
+          }
+
+          if ( n == colspi()[h^symmetry_] ) {
+            break; // whole row matched, goto next m row
+          }
+
+          if (m_rhs == rowspi()[h]-1)
+            return false; // no matching row was found
+        }
+      }
+    }
     return true;
 }
 

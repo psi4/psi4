@@ -218,6 +218,18 @@ public:
     */
     static SharedMatrix vertcat(const std::vector<SharedMatrix >& mats);
 
+    /**
+    ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
+    ** arbitrary axis.  Vectors are the rows of the matrix.
+    **
+    ** @param  axis  Vector3   : axis around which to rotate (need not be normalized)
+    ** @param  phi   double    : magnitude of rotation in rad
+    ** @param  Sn    bool      : if true, then also reflect in plane through origin and
+    **                           perpendicular to rotation
+    ** @returns SharedMatrix with rotated points (rows)
+    */
+    SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
+
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const * const data);
 
@@ -375,6 +387,42 @@ public:
      * @returns value at position (h, m, n)
      */
     double get(const int& m, const int& n) const { return matrix_[0][m][n]; }
+
+    /**
+     * Returns a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    SharedVector get_row(int h, int m);
+
+    /**
+     * Returns a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    SharedVector get_column(int h, int m);
+
+    /**
+     * Set a single row of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @returns SharedVector object
+     */
+    void set_row(int h, int m, SharedVector vec);
+
+    /**
+     * Set a single column of matrix_
+     *
+     * @param h Subblock
+     * @param m Column
+     * @returns SharedVector object
+     */
+    void set_column(int h, int m, SharedVector vec);
 
     /**
      * Python wrapper for get
@@ -742,14 +790,14 @@ public:
     /// @}
 
     /// @{
-    /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
+    /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
-    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
+    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
@@ -892,6 +940,10 @@ public:
     void zero_lower();
     /*! Zero upper triangle */
     void zero_upper();
+    /*! Zero row */
+    void zero_row(int h, int i);
+    /*! Zero column */
+    void zero_column(int h, int i);
 
     // Reference versions of the above functions
     /// Transform a by transformer save result to this
@@ -928,6 +980,9 @@ public:
     bool schmidt_add_row(int h, int rows, double* v) throw();
     /// @}
 
+    /*! Calls libqt schmidt function */
+    void schmidt();
+
     /*! Schmidt orthogonalize this. S is the overlap matrix.
      *  n is the number of columns to orthogonalize. */
     void schmidt_orthog(SharedMatrix S, int n);
@@ -951,7 +1006,7 @@ public:
 
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
-    /// Diagonalize. Eigvectors and eigvalues must be created by caller.
+    /// Diagonalize a symmetric matrix. Eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix& eigvectors, Vector& eigvalues, int nMatz = 1);
 
     /// @{
@@ -982,6 +1037,15 @@ public:
     bool equal(const Matrix& rhs);
     bool equal(const SharedMatrix& rhs);
     bool equal(const Matrix* rhs);
+    /// @}
+
+    /// @{
+    /// Checks matrix equality, but allows rows to be in a different order.
+    /// @param rhs Matrix to compare to.
+    /// @returns true if equal, otherwise false.
+    bool equal_but_for_row_order(const Matrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const SharedMatrix& rhs, double TOL=1.0e-10);
+    bool equal_but_for_row_order(const Matrix* rhs, double TOL=1.0e-10);
     /// @}
 
     /**

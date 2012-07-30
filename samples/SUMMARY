@@ -247,6 +247,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
+dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+
 dft1:         DFT Functional Test
 
 
@@ -295,6 +298,9 @@ frac:         Carbon/UHF Fractionally-Occupied SCF Test Case
 ghosts:       Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
 
 
+gibbs:        Test Gibbs free energies at 298 K of N2, H2O, and CH4.
+
+
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
 
 
@@ -320,6 +326,9 @@ mints3:       Test individual integral objects for correctness.
 
 
 mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.
+
+
+mints5:       Tests to determine full point group symmetry.  Currently, these only matter for the rotational symmetry number in thermodynamic computations.
 
 
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
@@ -382,6 +391,9 @@ psimrcc-ccsd_t-3:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
 psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
 
+psimrcc-fd-freq1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+
 psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
 
 
@@ -401,6 +413,9 @@ pywrap_cbs1:  Various basis set extrapolation tests
 
 
 pywrap_db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
+
+
+pywrap_db2:   Database calculation, run in sow/reap mode.
 
 
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC

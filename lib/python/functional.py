@@ -2226,13 +2226,6 @@ def build_dldf_superfunctional(name, npoints, deriv):
     X.set_parameter('Meta_a2' ,-0.1880028)
     X.set_parameter('Meta_a3' ,-0.4490609)
     X.set_parameter('Meta_a4' ,-0.0082359)
-    X.set_parameter('Meta_a5' , 0)
-    X.set_parameter('Meta_a6' , 0)
-    X.set_parameter('Meta_a7' , 0)
-    X.set_parameter('Meta_a8' , 0)
-    X.set_parameter('Meta_a9' , 0)
-    X.set_parameter('Meta_a10', 0)
-    X.set_parameter('Meta_a11', 0)
 
     C = build_functional('M_C')
     C.set_name('dlDF_C')
@@ -2244,15 +2237,11 @@ def build_dldf_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_os_a0', 1.00000)
     C.set_parameter('B97_os_a1', 5.9515308)
     C.set_parameter('B97_os_a2',-11.1602877)
-    C.set_parameter('B97_os_a3', 0)
-    C.set_parameter('B97_os_a4', 0)
 
     C.set_parameter('B97_ss_gamma', 0.06)
     C.set_parameter('B97_ss_a0', 1.00000)
     C.set_parameter('B97_ss_a1',-2.5960897)
     C.set_parameter('B97_ss_a2', 2.2233793)
-    C.set_parameter('B97_ss_a3', 0)
-    C.set_parameter('B97_ss_a4', 0)
 
     # Meta Correlation type is Becke metric, no parameters
 
@@ -2271,6 +2260,44 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
+
+def build_dldfd09_superfunctional(name, npoints, deriv):
+
+    sup = build_dldf_superfunctional(name, npoints, deriv)
+    sup.set_name('dlDF+D09')
+
+    # => +D <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2009', 1.0))  # Does not have an s6, so set to 1.0
+
+    return sup
+
+
+def build_dldfd_superfunctional(name, npoints, deriv):
+
+    sup = build_dldf_superfunctional(name, npoints, deriv)
+    sup.set_name('dlDF+D')
+
+    # => +D <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0))  # Does not have an s6, so set to 1.0
+
+    return sup
+
+
+def build_hfd_superfunctional(name, npoints, deriv):
+
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+    sup.set_name('HF+D')
+    sup.set_x_alpha(1.0)
+
+    # => +D <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0))  # Does not have an s6, so set to 1.0
+
+    sup.allocate()
+    return sup
+
 
 def build_b2plyp_superfunctional(name, npoints, deriv):
 
@@ -2521,7 +2548,7 @@ def build_dsd_pbep86_superfunctional(name, npoints, deriv):
    # No spaces, keep it short and according to convention
    sup.set_name('DSD-PBEP86')
    # Tab in, trailing newlines
-   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (optimized for -D2)\n')
+   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (opt. for -D2)\n')
    # Tab in, trailing newlines
    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
@@ -2687,7 +2714,7 @@ superfunctionals = {
         'hcth407'    : build_hcth407_superfunctional,
         'blyp-d'     : build_blypd_superfunctional,
         'pbe-d'      : build_pbed_superfunctional,
-        'bp86-d'     : build_bp86_superfunctional,
+        'bp86-d'     : build_bp86d_superfunctional,
         'b97-d'      : build_b97d_superfunctional,
         'b3lyp-d'    : build_b3lypd_superfunctional,
         'b3lyp5-d'   : build_b3lyp5d_superfunctional,
@@ -2703,6 +2730,9 @@ superfunctionals = {
         'm05'        : build_m05_superfunctional,
         'm05-2x'     : build_m05_2x_superfunctional,
         'dldf'       : build_dldf_superfunctional,
+        'dldf+d09'   : build_dldfd09_superfunctional,
+        'dldf+d'     : build_dldfd_superfunctional,
+        'hf+d'       : build_hfd_superfunctional,
         'sogga'      : build_sogga_superfunctional,
         'b2plyp'     : build_b2plyp_superfunctional,
         'b2plyp-d'   : build_b2plypd_superfunctional,
