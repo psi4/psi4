@@ -94,7 +94,7 @@ the following code will do that::
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-Individual files can be send to specific locations.  For example, file 32 is
+Individual files can be sent to specific locations.  For example, file 32 is
 the checkpoint file that the user might want to retain in the working directory
 (*i.e.*, where |PSIfour| was launched from) for restart purposes.  This is
 accomplished by the commands below::
@@ -102,6 +102,7 @@ accomplished by the commands below::
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
 
+A guide to the contents of individual scratch files may be found at :ref:`apdx:psiFiles`.
 To circumvent difficulties with running multiple jobs in the same scratch, the
 process ID (PID) of the |PSIfour| instance is incorporated into the full file
 name; therefore, it is safe to use the same scratch directory for calculations

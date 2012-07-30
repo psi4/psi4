@@ -2714,7 +2714,7 @@ superfunctionals = {
         'hcth407'    : build_hcth407_superfunctional,
         'blyp-d'     : build_blypd_superfunctional,
         'pbe-d'      : build_pbed_superfunctional,
-        'bp86-d'     : build_bp86_superfunctional,
+        'bp86-d'     : build_bp86d_superfunctional,
         'b97-d'      : build_b97d_superfunctional,
         'b3lyp-d'    : build_b3lypd_superfunctional,
         'b3lyp5-d'   : build_b3lyp5d_superfunctional,

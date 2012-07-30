@@ -11,6 +11,7 @@ from proc import *
 from text import *
 from procutil import *
 from functional import *
+from psifiles import *
 # never import wrappers or aliases into this file
 
 
@@ -83,6 +84,9 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
+            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the 
+            #    whole driver to find uses of name in return values and psi variables and 
+            #    extend the logic to encompass the new alias.
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -422,10 +426,6 @@ def gradient(name, **kwargs):
     if lowername in procedures['gradient']:
         dertype = 1
     elif lowername in procedures['energy']:
-        dertype = 0
-        func = energy
-
-    if (PsiMod.get_global_option('REFERENCE').lower() == 'rks') or (PsiMod.get_global_option('REFERENCE').lower() == 'uks'):
         dertype = 0
         func = energy
 

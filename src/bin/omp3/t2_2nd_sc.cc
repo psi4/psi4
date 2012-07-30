@@ -131,14 +131,18 @@ void OMP3Wave::t2_2nd_sc()
     // T_IJ^AB(2) += 1/2 \sum_{M,N} T_MN^AB(1) W_MNIJ(1)
     dpd_buf4_init(&TAA, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "W_1 <OO|OO>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+    //              ID("[O,O]"), ID("[O,O]"), 0, "W_1 <OO|OO>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
     dpd_contract444(&W, &TAA, &T, 1, 1, 0.5, 1.0);
     dpd_buf4_close(&W);
     
     // T_IJ^AB(2) += 1/2 \sum_{E,F} T_IJ^EF(1) W_ABEF(1)
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "W_1 <VV|VV>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+    //              ID("[V,V]"), ID("[V,V]"), 0, "W_1 <VV|VV>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV||VV>");
     dpd_contract444(&TAA, &W, &T, 0, 0, 0.5, 1.0);
     dpd_buf4_close(&W);
     dpd_buf4_close(&T);
@@ -237,14 +241,18 @@ void OMP3Wave::t2_2nd_sc()
     // T_ij^ab(2) += 1/2 \sum_{m,n} T_mn^ab(1) W_mnij(1)
     dpd_buf4_init(&TBB, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o,o]"), ID("[o,o]"), 0, "W_1 <oo|oo>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+    //              ID("[o,o]"), ID("[o,o]"), 0, "W_1 <oo|oo>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
     dpd_contract444(&W, &TBB, &T, 1, 1, 0.5, 1.0);
     dpd_buf4_close(&W);
     
     // T_ij^ab(2) += 1/2 \sum_{e,f} T_ij^ef(1) W_abef(1)
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "W_1 <vv|vv>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+    //              ID("[v,v]"), ID("[v,v]"), 0, "W_1 <vv|vv>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv||vv>");
     dpd_contract444(&TBB, &W, &T, 0, 0, 0.5, 1.0);
     dpd_buf4_close(&W);
     dpd_buf4_close(&T);
@@ -347,14 +355,18 @@ void OMP3Wave::t2_2nd_sc()
     // T_Ij^Ab(2) += \sum_{M,n} T_Mn^Ab(1) W_MnIj(1) = \sum_{M,n} W(Mn,Ij) T(Mn,Ab)
     dpd_buf4_init(&TAB, PSIF_OMP3_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,o]"), ID("[O,o]"),
-                  ID("[O,o]"), ID("[O,o]"), 0, "W_1 <Oo|Oo>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+    //              ID("[O,o]"), ID("[O,o]"), 0, "W_1 <Oo|Oo>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                  ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");
     dpd_contract444(&W, &TAB, &T, 1, 1, 1.0, 1.0);
     dpd_buf4_close(&W);
     
     // T_Ij^Ab(2) +=  \sum_{E,f} T_Ij^Ef(1) W_AbEf(1) =  \sum_{E,f} T(Ij,Ef) W(Ab,Ef)
-    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[V,v]"), ID("[V,v]"),
-                  ID("[V,v]"), ID("[V,v]"), 0, "W_1 <Vv|Vv>");
+    //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[V,v]"), ID("[V,v]"),
+    //              ID("[V,v]"), ID("[V,v]"), 0, "W_1 <Vv|Vv>");
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),
+                  ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
     dpd_contract444(&TAB, &W, &T, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&W);
     dpd_buf4_close(&T);

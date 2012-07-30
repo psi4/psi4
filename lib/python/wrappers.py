@@ -749,6 +749,9 @@ counterpoise_correction = cp
 ##  Start of Database  ##
 #########################
 
+DB_RGT = {}
+DB_RXN = {}
+
 def database(name, db_name, **kwargs):
     r"""Function to access the molecule objects and reference energies of
     popular chemical databases.
@@ -765,6 +768,7 @@ def database(name, db_name, **kwargs):
        * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
        * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
        * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
+       * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
         using the script :source:`lib/scripts/ixyz2database.pl`.
@@ -902,7 +906,6 @@ def database(name, db_name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
-    #hartree2kcalmol = 627.509469  # consistent with perl SETS scripts
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -1258,7 +1261,7 @@ def database(name, db_name, **kwargs):
             PsiMod.print_variables()
             exec(actives)
             for envv in db_tabulate:
-                VRGT[rgt][envv] = PsiMod.get_variable(envv)
+                VRGT[rgt][envv.upper()] = PsiMod.get_variable(envv)
             PsiMod.set_global_option("REFERENCE", user_reference)
             PsiMod.clean()
 
@@ -1288,7 +1291,7 @@ def database(name, db_name, **kwargs):
         elif (db_mode.lower() == 'reap'):
             ERGT[rgt] = 0.0
             for envv in db_tabulate:
-                VRGT[rgt][envv] = 0.0
+                VRGT[rgt][envv.upper()] = 0.0
             exec(banners)
             exec(actives)
             try:
@@ -1317,9 +1320,10 @@ def database(name, db_name, **kwargs):
                             PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
                         elif (s[8:10] == ['variable', 'value']):
                             for envv in db_tabulate:
-                                if (s[13:] == envv.upper().split()):
+                                envv = envv.upper()
+                                if (s[13:] == envv.split()):
                                     VRGT[rgt][envv] = float(s[10])
-                                    PsiMod.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv.upper(), VRGT[rgt][envv]))
+                                    PsiMod.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv, VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files
@@ -1350,13 +1354,17 @@ def database(name, db_name, **kwargs):
     tables += """   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from\n"""
     tables += """   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.\n"""
     tables += """   Depending on the nature of the variable, this may or may not make any physical sense.\n"""
+    for rxn in HRXN:
+        db_rxn = dbse + '-' + str(rxn)
+        VRXN[db_rxn] = {}
+
     for envv in db_tabulate:
+        envv = envv.upper()
         tables += """\n   ==> %s <==\n\n""" % (envv.title())
         tables += tblhead(maxrgt, table_delimit, 2)
 
         for rxn in HRXN:
             db_rxn = dbse + '-' + str(rxn)
-            VRXN[db_rxn] = {}
 
             if FAIL[rxn]:
                 tables += """\n%23s   %8s %8s   %8s""" % (db_rxn, '', '****', '')
@@ -1443,7 +1451,11 @@ def database(name, db_name, **kwargs):
     if not b_user_reference:
         PsiMod.revoke_global_option_changed('REFERENCE')
 
-    return finalenergy
+    DB_RGT.clear()
+    DB_RGT.update(VRGT)
+    DB_RXN.clear()
+    DB_RXN.update(VRXN)
+    return finalenergy 
 
 
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
@@ -1954,6 +1966,9 @@ def complete_basis_set(name, **kwargs):
     #    instructions += """   %12s / %-24s for  %s\n""" % (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']+mc['f_portion']])
     PsiMod.print_out(instructions)
 
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(PSIF_SCF_DB_MOS, True)
+
     # Run necessary computations
     for mc in JOBS:
         kwargs['name'] = mc['f_wfn']
@@ -1981,6 +1996,8 @@ def complete_basis_set(name, **kwargs):
                     job['f_energy'] = PsiMod.get_variable(VARH[temp_wfn][menial])
 
         PsiMod.clean()
+
+    psioh.set_specific_retention(PSIF_SCF_DB_MOS, False)
 
     # Build string of title banner
     cbsbanners = ''
