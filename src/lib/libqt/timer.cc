@@ -40,6 +40,7 @@
 #include <sys/times.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 
 /* guess for HZ, if missing */
 #ifndef HZ
@@ -208,8 +209,10 @@ void timer_on(const char *key)
     }
   else {
     if((this_timer->status == TIMER_ON) && (this_timer->calls)) {
-        fprintf(stderr, "Timer %s is already on.\n", key);
-        exit(PSI_RETURN_FAILURE);
+        std::string str = "Timer ";
+        str += key;
+        str += " is already on.";
+        throw PsiException(str,__FILE__,__LINE__);
     }
   }
 
@@ -237,13 +240,16 @@ void timer_off(const char *key)
   this_timer = timer_scan(key);
 
   if(this_timer == NULL) {
-      fprintf(stderr, "Bad timer key: %s\n", key);
-      exit(PSI_RETURN_FAILURE);
+      std::string str = "Bad timer key:";
+      str += key;
+      throw PsiException(str,__FILE__,__LINE__);
     }
 
   if(this_timer->status == TIMER_OFF) {
-     fprintf(stderr, "Timer %s is already off.\n", this_timer->key);
-     exit(PSI_RETURN_FAILURE);
+     std::string str = "Timer ";
+     str += key;
+     str += " is already off.";
+     throw PsiException(str,__FILE__,__LINE__);
     }
 
   ontime = this_timer->ontime;

@@ -195,9 +195,20 @@ void BasisSet::print_detail(FILE* out) const
     print_summary(out);
 
     //TODO: Use unique atoms (C1 for now)
+    if (Communicator::world->me() == 0) {
+        fprintf(out, "  ==> AO Basis Functions <==\n");
+        fprintf(out, "\n");
+        fprintf(out, "    [ %s ]\n",name_.c_str());
+        if (has_puream())
+            fprintf(out, "    spherical\n");
+        else
+            fprintf(out, "    cartesian\n");
+        fprintf(out, "    ****\n");
+    }
     for (int A = 0; A < molecule_->natom(); A++) {
-        if (Communicator::world->me() == 0)
-            fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->symbol(A).c_str());
+        if (Communicator::world->me() == 0) {
+            fprintf(out, "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
+        }
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
@@ -205,19 +216,22 @@ void BasisSet::print_detail(FILE* out) const
         for (int Q = 0; Q < n_shell; Q++) {
             const GaussianShell& shell = shells_[Q + first_shell];
 
+            if (Communicator::world->me() == 0) {
+                fprintf(outfile, "    %c %3d 1.00\n", shell.AMCHAR(),shell.nprimitive());
+            }
             for (int K = 0; K < shell.nprimitive(); K++) {
                 if (Communicator::world->me() == 0) {
-                    if (K == 0)
-                        fprintf(outfile, "     %c ", shell.AMCHAR());
-                    else
-                        fprintf(outfile, "       ");
-                    fprintf(outfile, "(%20.8f %20.8f)\n",shell.exp(K), shell.coef(K));
+                    fprintf(outfile, "               %20.8f %20.8f\n",shell.exp(K), shell.coef(K));
                 }
 
             }
         }
-        if (Communicator::world->me() == 0)
-            fprintf(out, "\n");
+        if (Communicator::world->me() == 0){
+            fprintf(out, "    ****\n");
+        }
+    }
+    if (Communicator::world->me() == 0){
+        fprintf(out, "\n");
     }
 }
 

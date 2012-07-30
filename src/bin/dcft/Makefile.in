@@ -12,7 +12,7 @@ CXXSRC = \
 half_transform.cc   	       AO_contribute.cc		      dcft.cc                    dcft_integrals.cc \
 dcft_memory.cc                 dcft_scf.cc                dcft_compute.cc            dcft_intermediates.cc  \
 dcft_mp2.cc                    dcft_tau.cc                dcft_energy.cc             dcft_lambda.cc    \
-dcft_n_representability.cc    dcft_gradient.cc        main.cc
+dcft_n_representability.cc    dcft_gradient.cc        main.cc                    dcft_qc.cc
 
 
 BINOBJ = $(CXXSRC:%.cc=%.o)

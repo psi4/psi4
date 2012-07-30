@@ -49,9 +49,12 @@ void dipole(void)
       if (!nmo || !nmor) continue;
       double** Pap = Pa->pointer(h);
         
+      // Loop over QT, convert to Pitzer
       for (int i=0; i<nmor; i++) {
         for (int j=0; j<nmor; j++) {
-          Pap[i][j] = moinfo.opdm[i + mo_offset][j + mo_offset]; 
+          int I = moinfo.pitzer2qt[i+mo_offset];
+          int J = moinfo.pitzer2qt[j+mo_offset];
+          Pap[i][j] = moinfo.opdm[I][J];
         } 
       }
       mo_offset += nmor; 

@@ -488,13 +488,13 @@ that global keywords can be specified::
     
      or
     
-    set{
+    set {
       basis cc-pVDZ
     }
     
      or
     
-    set{
+    set {
       basis = cc-pVDZ
     }
 
@@ -503,7 +503,7 @@ Psithon preprocessor automatically wraps any string values in ``set`` commands i
 strings. The last three examples provide a more convenient way for specifying
 multiple keywords::
 
-    set{
+    set {
       basis = cc-pVDZ
       print = 1
       reference = rhf
@@ -512,7 +512,7 @@ multiple keywords::
 For arguments that require an array input, standard Python list syntax should
 be used, *viz.*::
 
-    set{
+    set {
       docc = [3, 0, 1, 1]
     }
 

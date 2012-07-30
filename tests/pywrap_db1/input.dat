@@ -21,11 +21,11 @@ set globals {
     GUESS CORE
 }
 
-S22mad = database('sapt0','S22',subset=[2,8],BENCHMARK='S22A')
+S22mad = database('sapt0','s22',subset=[2,8],BENCHMARK='s22A')
 compare_values(refS22AmadSAPT0, S22mad, 5, "S22 with S22A subset mean absolute deviation")  #TEST
 #S22mad = database('sapt0','S22',subset=[2,8])
 #compare_values(refS22BmadSAPT0, S22mad, 5, "S22 with S22B subset mean absolute deviation")  #TEST
 #NBCmad = database('df-mp2','NBC10',cp='on',symm='off',subset='small')  # Revive after df-mp2 regains independence from madness
 #compare_values(refNBCmadDFMP2, NBCmad, 5, "NBC subset mean absolute deviation")             #TEST
-NBCmad = database('scf','NBC10',cp='on',SYMM='OFF',subset='small')
+NBCmad = database('scF','nBc10',cp='on',SYMM='OfF',subset='sMall')
 compare_values(refNBCmadSCF, NBCmad, 5, "NBC subset mean absolute deviation")               #TEST

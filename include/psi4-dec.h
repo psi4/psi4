@@ -63,7 +63,7 @@ public:
         boost::shared_ptr<Wavefunction> reference_wavefunction() const;
 
         /// Set gradient manually
-        void set_gradient(const SharedMatrix gradient) { gradient_ = gradient; }
+        void set_gradient(const SharedMatrix g) { gradient_ = g; }
         /// Get gradient manually
         SharedMatrix gradient() const { return gradient_; }
 

@@ -20,6 +20,6 @@ include $(LIBOBJ:%.o=%.d)
 endif
 
 install_inc:: $(INC)
-	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+	$(MKDIRS) $(DESTDIR)$(incdir)/libparallel
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libparallel
 

@@ -1,0 +1,83 @@
+#! Test Gibbs free energies at 298 K of N2, H2O, and CH4.
+
+memory 500 mb
+
+N2_321G_RHF_G  = -108.313412 #TEST
+H2O_321G_RHF_G =  -75.581830 #TEST
+NH3_321G_RHF_G =  -55.854174 #TEST
+CH4_321G_RHF_G =  -39.946175 #TEST
+
+molecule N2 {
+  N
+  N 1 1.1
+}
+
+set globals {
+  basis 3-21G
+  max_disp_g_convergence = 1e-5
+}
+
+optimize('scf')
+frequencies('scf')
+thermo()
+compare_values( N2_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "N2 Gibbs Free Energy") #TEST
+
+#
+
+molecule H2O {
+ 0 1
+ H
+ O 1 1.0
+ H 2 1.0 1 109.5
+}
+
+set globals {
+  basis 3-21G
+  max_disp_g_convergence = 1e-5
+}
+
+optimize('scf')
+frequencies('scf')
+thermo()
+compare_values( H2O_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "H2O Gibbs Free Energy") #TEST
+
+#
+
+molecule nh3 {
+  N         -0.000000000075    -0.055054563313     0.000000000000
+  H         -0.477097924216     0.254982462134    -0.826357845779
+  H         -0.477097924216     0.254982462134     0.826357845779
+  H          0.954195849480     0.254982462271     0.000000000000
+}
+
+set globals {
+  basis 3-21G
+  max_disp_g_convergence = 1e-5
+}
+
+optimize('scf')
+frequencies('scf')
+thermo()
+compare_values( NH3_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "NH3 Gibbs Free Energy") #TEST
+
+#
+
+molecule CH4 {
+   C
+   H 1 r
+   H 1 r 2 TDA
+   H 1 r 2 TDA 3 120
+   H 1 r 2 TDA 4 120
+   r = 1.09
+}
+
+set globals {
+  basis 3-21G
+  max_disp_g_convergence = 1e-5
+}
+
+optimize('scf')
+frequencies('scf')
+thermo()
+compare_values( CH4_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "CH4 Gibbs Free Energy") #TEST
+

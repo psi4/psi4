@@ -1,0 +1,128 @@
+#include "psi4-dec.h"
+#include <libmints/mints.h>
+#include <liboptions/liboptions.h>
+#include <libplugin/plugin.h>
+#include "libchkpt/chkpt.h"
+#include "ccfiles.h"
+#include "globals.h"
+
+INIT_PLUGIN
+
+namespace psi{ namespace plugin_mp2{
+
+extern "C" int
+read_options(std::string name, Options &options){
+    if(name == "PLUGIN_MP2") {
+        /*- The amount of information printed
+            to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- How to cache quantities within the DPD library -*/
+        options.add_int("CACHELEV", 2);
+        /*- The amount of memory available (in Mb) -*/
+        options.add_int("MEMORY", 2000);
+        /*- The Reference -*/
+        options.add_str("REFERENCE", "");
+    }
+}
+
+
+extern "C" PsiReturnType
+mp2(Options &options)
+{
+    int print = options.get_int("PRINT");
+    // This will print out all of the user-provided options for this module
+    if (print > 2) options.print();
+   
+    psio = _default_psio_lib_;
+    // Open the default checkpoint object
+    //shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+
+    eSCF = Process::environment.reference_wavefunction()->reference_energy();
+
+    nirreps             = Process::environment.reference_wavefunction()->nirrep();
+    SharedVector aEvals = Process::environment.reference_wavefunction()->epsilon_a();
+    SharedVector bEvals = Process::environment.reference_wavefunction()->epsilon_b();
+    char **labels       = Process::environment.molecule()->irrep_labels();
+    aOccOrbsPI          = new int[nirreps];
+    bOccOrbsPI          = new int[nirreps];
+    aVirOrbsPI          = new int[nirreps];
+    bVirOrbsPI          = new int[nirreps];
+    mopi                = Process::environment.reference_wavefunction()->nmopi();
+    nmo                 = Process::environment.reference_wavefunction()->nmo();
+    clsdpi              = Process::environment.reference_wavefunction()->doccpi();
+    openpi              = Process::environment.reference_wavefunction()->soccpi();
+    frzcpi              = Process::environment.reference_wavefunction()->frzcpi();
+    frzvpi              = Process::environment.reference_wavefunction()->frzvpi();
+
+    numAOcc = 0; numBOcc = 0; numAVir = 0; numBVir = 0;
+    int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
+    for(int h = 0; h < nirreps; ++h){
+        aOccOrbsPI[h] = clsdpi[h] + openpi[h] - frzcpi[h];
+        bOccOrbsPI[h] = clsdpi[h] - frzcpi[h];
+        aVirOrbsPI[h] = mopi[h]   - clsdpi[h] - openpi[h] - frzvpi[h];
+        bVirOrbsPI[h] = mopi[h]   - clsdpi[h] - frzvpi[h];
+        numAOcc += aOccOrbsPI[h];
+        numBOcc += bOccOrbsPI[h];
+        numAVir += aVirOrbsPI[h];
+        numBVir += bVirOrbsPI[h];
+    }
+    aOccEvals = new double[numAOcc];
+    bOccEvals = new double[numBOcc];
+    aVirEvals = new double[numAVir];
+    bVirEvals = new double[numBVir];
+
+    fprintf(outfile, "\n\n\tIrrep  Core  Docc  Socc  aOcc  aVir  bOcc  bVir\n");
+    fprintf(outfile,     "\t===============================================\n");
+    for(int h = 0; h < nirreps; ++h){
+       fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d   %3d   %3d   %3d\n",
+                             labels[h], frzcpi[h], clsdpi[h], openpi[h], 
+                             aOccOrbsPI[h], aVirOrbsPI[h], bOccOrbsPI[h], bVirOrbsPI[h]);
+    }
+    fprintf(outfile,     "\t===============================================\n\n");
+
+    aOccCount = 0; bOccCount = 0; aVirCount = 0; bVirCount = 0;
+    for(int h = 0; h < nirreps; ++h){
+        for(int a = frzcpi[h]; a < clsdpi[h] + openpi[h]; ++a) aOccEvals[aOccCount++] = aEvals->get(h, a);
+        for(int b = frzcpi[h]; b < clsdpi[h]; ++b) bOccEvals[bOccCount++] = bEvals->get(h, b);
+        for(int a = clsdpi[h] + openpi[h]; a < mopi[h]; ++a) aVirEvals[aVirCount++] = aEvals->get(h, a);
+        for(int b = clsdpi[h]; b < mopi[h]; ++b) bVirEvals[bVirCount++] = bEvals->get(h, b);
+    }
+
+    if(print > 2){
+        for(int i = 0; i < numAOcc; ++i)
+            fprintf(outfile, "\taOccEvals[%2d] = %10.6f\n", i, aOccEvals[i]);
+        fprintf(outfile, "\n");
+        for(int i = 0; i < numBOcc; ++i)
+            fprintf(outfile, "\tbOccEvals[%2d] = %10.6f\n", i, bOccEvals[i]);
+        fprintf(outfile, "\n");
+        for(int i = 0; i < numAVir; ++i)
+            fprintf(outfile, "\taVirEvals[%2d] = %10.6f\n", i, aVirEvals[i]);
+        fprintf(outfile, "\n");
+        for(int i = 0; i < numBVir; ++i)
+            fprintf(outfile, "\tbVirEvals[%2d] = %10.6f\n", i, bVirEvals[i]);
+        fprintf(outfile, "\n");
+    }
+
+    double eMP2;
+    if(options.get_str("REFERENCE") == "UHF"){
+        eMP2 = plugin_mp2_unrestricted(options, chkpt);
+    }else if(options.get_str("REFERENCE") == "ROHF"){
+        eMP2 = plugin_mp2_unrestricted(options, chkpt);
+    }else if(options.get_str("REFERENCE") == "RHF"){
+        eMP2 = plugin_mp2_restricted(options, chkpt);
+    }else{
+         std::string str1 = options.get_str("REFERENCE");
+         std::string str2 = "reference in plugin_mp2";
+         throw FeatureNotImplemented(str1, str2, __FILE__, __LINE__);
+    }
+
+    Process::environment.globals["MP2 ENERGY"] = eMP2 + eSCF; 
+    Process::environment.globals["CURRENT ENERGY"] = eMP2 + eSCF; 
+    fprintf(outfile, "\n\t\tSCF Reference energy  = %20.16f\n", eSCF);
+    fprintf(outfile,   "\t\tMP2 Total Energy      = %20.16f\n\n", eMP2 + eSCF);
+
+    return Success;   
+}
+
+}} // End Namespaces

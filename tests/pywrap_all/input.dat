@@ -31,6 +31,7 @@ set globals {
     GUESS CORE
 }
 
+
 banner('Test [1] optimize(cbs(energy()))')
 optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
 compare_values(ref_OPT_CBS_E_0, get_variable('CBS TOTAL ENERGY'), 7, "[1] Wrapper optimize(cbs(), dertype=0)")  #TEST
