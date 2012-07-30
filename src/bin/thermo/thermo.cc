@@ -24,7 +24,7 @@ PsiReturnType thermo(Options &options) {
   double P = options.get_double("P"); // P in Pascals
 
   // Read in essential data
-  const boost::shared_ptr<Wavefunction> wf = psi::Process::environment.reference_wavefunction();
+  const boost::shared_ptr<Wavefunction> wf = psi::Process::environment.wavefunction();
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
