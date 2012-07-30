@@ -247,6 +247,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
+dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+
 dft1:         DFT Functional Test
 
 

@@ -19,6 +19,7 @@ Appendices
    basissets_byelement
    basissets_byfamily
    dft_byfunctional
+   autodoc_psifiles
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
    autodoc_glossary_options_c
