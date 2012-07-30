@@ -57,7 +57,7 @@ void  DFMP2::setup()
 {
   timer_on("Setup");
 
-  boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+  boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
   SharedMatrix C;
   boost::shared_ptr<Vector> epsilon;
 

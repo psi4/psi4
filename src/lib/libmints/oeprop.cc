@@ -788,7 +788,7 @@ OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn_)
 {
     common_init();
 }
-OEProp::OEProp() : Prop(Process::environment.reference_wavefunction())
+OEProp::OEProp() : Prop(Process::environment.wavefunction())
 {
     common_init();
 }
@@ -1674,7 +1674,7 @@ GridProp::GridProp(boost::shared_ptr<Wavefunction> wfn) : filename_("out.grid"),
 {
     common_init();
 }
-GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.reference_wavefunction())
+GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.wavefunction())
 {
     common_init();
 }

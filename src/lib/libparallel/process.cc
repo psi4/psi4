@@ -208,14 +208,14 @@ boost::shared_ptr<Molecule> Process::Environment::molecule() const
     return molecule_;
 }
 
-void Process::Environment::set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction)
+void Process::Environment::set_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction)
 {
-    reference_wavefunction_ = reference_wavefunction;
+    wavefunction_ = reference_wavefunction;
 }
 
-boost::shared_ptr<Wavefunction> Process::Environment::reference_wavefunction() const
+boost::shared_ptr<Wavefunction> Process::Environment::wavefunction() const
 {
-    return reference_wavefunction_;
+    return wavefunction_;
 }
 
 void Process::Arguments::init(int argc, char **argv)
