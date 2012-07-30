@@ -247,6 +247,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
+dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+
 dft1:         DFT Functional Test
 
 
@@ -410,6 +413,9 @@ pywrap_cbs1:  Various basis set extrapolation tests
 
 
 pywrap_db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
+
+
+pywrap_db2:   Database calculation, run in sow/reap mode.
 
 
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC

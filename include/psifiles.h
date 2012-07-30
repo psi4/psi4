@@ -19,137 +19,133 @@
 
 #define PSI_DEFAULT_FILE_PREFIX "psi"
 
-#define PSIF_CHKPT             32 /* new libpsio checkpoint file number */
+#define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/
 
-#define PSIF_OPTKING           1
-#define PSIF_DSCF              31
-#define PSIF_SO_TEI            33
-#define PSIF_OEI               35
-#define PSIF_SO_R12            38
-#define PSIF_SO_R12T1          39
-#define PSIF_DERINFO           40
-#define PSIF_SO_PRESORT        41
-#define PSIF_OLD_CHKPT         42   /* Until we have flexible PSIF_CHKPT this will store previous calculation info */
-#define PSIF_CIVECT            43   /* CI vector from DETCI along with string and determinant info */
+#define PSIF_OPTKING           1    /*-  -*/
+#define PSIF_DSCF              31   /*-  -*/
+#define PSIF_SO_TEI            33   /*-  -*/
+#define PSIF_OEI               35   /*-  -*/
+#define PSIF_SO_R12            38   /*-  -*/
+#define PSIF_SO_R12T1          39   /*-  -*/
+#define PSIF_DERINFO           40   /*-  -*/
+#define PSIF_SO_PRESORT        41   /*-  -*/
+#define PSIF_OLD_CHKPT         42   /*- Until we have flexible PSIF_CHKPT this will store previous calculation info -*/
+#define PSIF_CIVECT            43   /*- CI vector from DETCI along with string and determinant info -*/
 
-#define PSIF_AO_DGDBX          44   /* B-field derivative AO integrals over GIAO Gaussians -- only bra-ket
-                                    permutational symmetry holds */
-#define PSIF_AO_DGDBY          45
-#define PSIF_AO_DGDBZ          46
+#define PSIF_AO_DGDBX          44   /*- B-field derivative AO integrals over GIAO Gaussians -- only bra-ket permutational symmetry holds -*/
+#define PSIF_AO_DGDBY          45   /*-  -*/
+#define PSIF_AO_DGDBZ          46   /*-  -*/
 /* PSIMRCC files */
-#define PSIF_PSIMRCC_INTEGRALS 50
-#define PSIF_PSIMRCC_RESTART   51
+#define PSIF_PSIMRCC_INTEGRALS 50   /*-  -*/
+#define PSIF_PSIMRCC_RESTART   51   /*-  -*/
 /* MCSCF files */
-#define PSIF_MCSCF             52
-#define PSIF_TPDM_HALFTRANS    53
-#define PSIF_DETCAS            60
+#define PSIF_MCSCF             52   /*-  -*/
+#define PSIF_TPDM_HALFTRANS    53   /*-  -*/
+#define PSIF_DETCAS            60   /*-  -*/
 // The integral files used by libtrans
-#define PSIF_LIBTRANS_DPD      61 // All transformed integrals in DPD format are sent here by default
-#define PSIF_LIBTRANS_A_HT     62 // The Alpha half-transformed integrals in DPD format
-#define PSIF_LIBTRANS_B_HT     63 // The Beta half-tranformed integrals in DPD format
+#define PSIF_LIBTRANS_DPD      61   /*- libtrans: All transformed integrals in DPD format are sent here by default -*/
+#define PSIF_LIBTRANS_A_HT     62   /*- libtrans: Alpha half-transformed integrals in DPD format -*/
+#define PSIF_LIBTRANS_B_HT     63   /*- libtrans: Beta half-tranformed integrals in DPD format -*/
 
-// Storage file for libdiis
-#define PSIF_LIBDIIS           64
-// Storage file for DFT/pseudospectral grid
-#define PSIF_DFT_GRID          65
+#define PSIF_LIBDIIS           64   /*- Storage for libdiis -*/
+#define PSIF_DFT_GRID          65   /*- Storage for DFT/pseudospectral grid -*/
 // DFCC 3-index files
-#define PSIF_DF_TENSOR         66 
-#define PSIF_PS_TENSOR         67 
+#define PSIF_DF_TENSOR         66   /*-  -*/
+#define PSIF_PS_TENSOR         67   /*-  -*/
 
-#define PSIF_TPDM_PRESORT      71
-#define PSIF_MO_TEI            72
-#define PSIF_MO_OPDM           73
-#define PSIF_MO_TPDM           74
-#define PSIF_MO_LAG            75
-#define PSIF_AO_OPDM           76   /* PSIF_AO_OPDM also contains AO Lagrangian */
-#define PSIF_AO_TPDM           77
-/* Use for DBOC calculations */
-#define PSIF_DBOC              78
+#define PSIF_TPDM_PRESORT      71   /*-  -*/
+#define PSIF_MO_TEI            72   /*-  -*/
+#define PSIF_MO_OPDM           73   /*-  -*/
+#define PSIF_MO_TPDM           74   /*-  -*/
+#define PSIF_MO_LAG            75   /*-  -*/
+#define PSIF_AO_OPDM           76   /*- PSIF_AO_OPDM also contains AO Lagrangian -*/
+#define PSIF_AO_TPDM           77   /*-  -*/
 
-#define PSIF_MO_R12            79
-#define PSIF_MO_R12T2          80
+#define PSIF_DBOC              78   /*- dboc: -*/
+
+#define PSIF_MO_R12            79   /*-  -*/
+#define PSIF_MO_R12T2          80   /*-  -*/
 
 /*
 ** Additions for UHF-based transformations.
 ** -TDC, 6/01
 */
-#define PSIF_MO_AA_TEI         81
-#define PSIF_MO_BB_TEI         82
-#define PSIF_MO_AB_TEI         83
-#define PSIF_MO_AA_TPDM        84
-#define PSIF_MO_BB_TPDM        85
-#define PSIF_MO_AB_TPDM        86
-#define PSIF_AA_PRESORT        87   /* AA UHF twopdm presort file */
-#define PSIF_BB_PRESORT        88   /* BB UHF twopdm presort file */
-#define PSIF_AB_PRESORT        89   /* AB UHF twopdm presort file */
+#define PSIF_MO_AA_TEI         81   /*-  -*/
+#define PSIF_MO_BB_TEI         82   /*-  -*/
+#define PSIF_MO_AB_TEI         83   /*-  -*/
+#define PSIF_MO_AA_TPDM        84   /*-  -*/
+#define PSIF_MO_BB_TPDM        85   /*-  -*/
+#define PSIF_MO_AB_TPDM        86   /*-  -*/
+#define PSIF_AA_PRESORT        87   /*- AA UHF twopdm presort file -*/
+#define PSIF_BB_PRESORT        88   /*- BB UHF twopdm presort file -*/
+#define PSIF_AB_PRESORT        89   /*- AB UHF twopdm presort file -*/
 /*
 ** MO Hessian File (also contains specialized integral and Fock lists.
 ** See programs STABLE and CPHF for more info.
 ** -TDC, 7/00
 */
-#define PSIF_MO_HESS           90
-#define PSIF_CPHF              91
+#define PSIF_MO_HESS           90   /*-  -*/
+#define PSIF_CPHF              91   /*-  -*/
 
-#define PSIF_SO_PKSUPER1       92
-#define PSIF_SO_PKSUPER2       93
+#define PSIF_SO_PKSUPER1       92   /*-  -*/
+#define PSIF_SO_PKSUPER2       93   /*-  -*/
 
 // The half-transformed integrals
-#define PSIF_HALFT0            94
-#define PSIF_HALFT1            95
+#define PSIF_HALFT0            94   /*-  -*/
+#define PSIF_HALFT1            95   /*-  -*/
 
-#define PSIF_DFSCF_A           96   /* B Matrix containing 3-index tensor in AOs for use with DF-SCF*/
-#define PSIF_DFSCF_BJ          97   /* B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF*/
-#define PSIF_DFSCF_K           98   /* Exchange tensor for DF-SCF*/
-#define PSIF_DFSCF_BJI         99   /* The three-center integrals for DF-SCF */
+#define PSIF_DFSCF_A           96   /*- B Matrix containing 3-index tensor in AOs for use with DF-SCF -*/
+#define PSIF_DFSCF_BJ          97   /*- B Matrix containing 3-index tensor in AOs with J^-1/2 for use with DF-SCF -*/
+#define PSIF_DFSCF_K           98   /*- Exchange tensor for DF-SCF -*/
+#define PSIF_DFSCF_BJI         99   /*- The three-center integrals for DF-SCF -*/
 
-#define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
-#define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */
-#define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon B */
+#define PSIF_SAPT_DIMER        120  /*- SAPT Two-Body Dimer -*/
+#define PSIF_SAPT_MONOMERA     121  /*- SAPT Two-Body Mon A -*/
+#define PSIF_SAPT_MONOMERB     122  /*- SAPT Two-Body Mon B -*/
 
-#define PSIF_SAPT_AA_DF_INTS   123 /* SAPT AA DF Ints */
-#define PSIF_SAPT_AB_DF_INTS   124 /* SAPT AB DF Ints */
-#define PSIF_SAPT_BB_DF_INTS   125 /* SAPT BB DF Ints */
-#define PSIF_SAPT_AMPS         126 /* SAPT Amplitudes */
-#define PSIF_SAPT_TEMP         127 /* SAPT Temporary worlds fastest code file */
+#define PSIF_SAPT_AA_DF_INTS   123  /*- SAPT AA DF Ints -*/
+#define PSIF_SAPT_AB_DF_INTS   124  /*- SAPT AB DF Ints -*/
+#define PSIF_SAPT_BB_DF_INTS   125  /*- SAPT BB DF Ints -*/
+#define PSIF_SAPT_AMPS         126  /*- SAPT Amplitudes -*/
+#define PSIF_SAPT_TEMP         127  /*- SAPT Temporary worlds fastest code file -*/
 
-#define PSIF_SAPT_LRINTS         128 /* SAPT0 2-Body linear response LDA integrals */
+#define PSIF_SAPT_LRINTS       128  /*- SAPT0 2-Body linear response LDA integrals -*/
 
-#define PSIF_SCF_DB_MOS        180  /* Dual basis set MOs for DB-SCF or Basis-2 Guesses */
-#define PSIF_DFMP2_AIA         181  /* Unfitted three-index MO ints for DFMP2 */
-#define PSIF_DFMP2_QIA         182  /* Fitted-three index MO ints for DFMP2 */
+#define PSIF_SCF_DB_MOS        180  /*- Dual basis set MOs for DB-SCF or Basis-2 Guesses -*/
+#define PSIF_DFMP2_AIA         181  /*- Unfitted three-index MO ints for DFMP2 -*/
+#define PSIF_DFMP2_QIA         182  /*- Fitted-three index MO ints for DFMP2 -*/
 
-#define PSIF_3B_SAPT_TRIMER              220/* SAPT Three-Body Trimer */
-#define PSIF_3B_SAPT_DIMER_AB            221 /* SAPT Three-Body Dimer AB */
-#define PSIF_3B_SAPT_DIMER_AC            222/* SAPT Three-Body Dimer AC */
-#define PSIF_3B_SAPT_DIMER_BC            223/* SAPT Three-Body Dimer BC */
-#define PSIF_3B_SAPT_MONOMER_A           224 /* SAPT Three-Body Mon A */
-#define PSIF_3B_SAPT_MONOMER_B           225/* SAPT Three-Body Mon B */
-#define PSIF_3B_SAPT_MONOMER_C           226/* SAPT Three-Body Mon C  */
-#define PSIF_3B_SAPT_AA_DF_INTS          227
-#define PSIF_3B_SAPT_BB_DF_INTS          228
-#define PSIF_3B_SAPT_CC_DF_INTS          229
-#define PSIF_3B_SAPT_AMPS                230
+#define PSIF_3B_SAPT_TRIMER              220  /*- SAPT Three-Body Trimer -*/
+#define PSIF_3B_SAPT_DIMER_AB            221  /*- SAPT Three-Body Dimer AB -*/
+#define PSIF_3B_SAPT_DIMER_AC            222  /*- SAPT Three-Body Dimer AC -*/
+#define PSIF_3B_SAPT_DIMER_BC            223  /*- SAPT Three-Body Dimer BC -*/
+#define PSIF_3B_SAPT_MONOMER_A           224  /*- SAPT Three-Body Mon A -*/
+#define PSIF_3B_SAPT_MONOMER_B           225  /*- SAPT Three-Body Mon B -*/
+#define PSIF_3B_SAPT_MONOMER_C           226  /*- SAPT Three-Body Mon C -*/
+#define PSIF_3B_SAPT_AA_DF_INTS          227  /*-  -*/
+#define PSIF_3B_SAPT_BB_DF_INTS          228  /*-  -*/
+#define PSIF_3B_SAPT_CC_DF_INTS          229  /*-  -*/
+#define PSIF_3B_SAPT_AMPS                230  /*-  -*/
 
-#define PSIF_DCC_IJAK  251 /* CEPA/CC (ij|ak) */
-#define PSIF_DCC_IJAK2 252 /* CEPA/CC (ij|ak) */
-#define PSIF_DCC_ABCI3 253 /* CEPA/CC (ia|bc) */
-#define PSIF_DCC_ABCI5 254 /* CEPA/CC (ia|bc) */
-#define PSIF_DCC_ABCD1 255 /* CEPA/CC (ab|cd)+ */
-#define PSIF_DCC_ABCD2 256 /* CEPA/CC (ab|cd)- */
-#define PSIF_DCC_IJAB  257 /* CEPA/CC (ij|ab) */
-#define PSIF_DCC_IAJB  258 /* CEPA/CC (ia|jb) */
-#define PSIF_DCC_IJKL  259 /* CEPA/CC (ij|kl) */
-#define PSIF_DCC_OVEC  260 /* CEPA/CC old vectors for diis */
-#define PSIF_DCC_EVEC  261 /* CEPA/CC error vectors for diis */
-#define PSIF_DCC_R2    262 /* CEPA/CC residual */
-#define PSIF_DCC_TEMP  263 /* CEPA/CC temporary storage */
-#define PSIF_DCC_T2    264 /* CEPA/CC t2 amplitudes */
+#define PSIF_DCC_IJAK          251  /*- CEPA/CC (ij|ak) -*/
+#define PSIF_DCC_IJAK2         252  /*- CEPA/CC (ij|ak) -*/
+#define PSIF_DCC_ABCI3         253  /*- CEPA/CC (ia|bc) -*/
+#define PSIF_DCC_ABCI5         254  /*- CEPA/CC (ia|bc) -*/
+#define PSIF_DCC_ABCD1         255  /*- CEPA/CC (ab|cd)+ -*/
+#define PSIF_DCC_ABCD2         256  /*- CEPA/CC (ab|cd)- -*/
+#define PSIF_DCC_IJAB          257  /*- CEPA/CC (ij|ab) -*/
+#define PSIF_DCC_IAJB          258  /*- CEPA/CC (ia|jb) -*/
+#define PSIF_DCC_IJKL          259  /*- CEPA/CC (ij|kl) -*/
+#define PSIF_DCC_OVEC          260  /*- CEPA/CC old vectors for diis -*/
+#define PSIF_DCC_EVEC          261  /*- CEPA/CC error vectors for diis -*/
+#define PSIF_DCC_R2            262  /*- CEPA/CC residual -*/
+#define PSIF_DCC_TEMP          263  /*- CEPA/CC temporary storage -*/
+#define PSIF_DCC_T2            264  /*- CEPA/CC t2 amplitudes -*/
 
-#define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
-#define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
+#define PSIF_SO_D1OEI          199  /*- Derivative OEIs are stored in file 199 -*/
+#define PSIF_SO_D1ERI          200  /*- Derivative ERIs are stored in files 200, 201, 202, etc. File 200 -*/
 
-
-#define PSIF_3INDEX            16  
+#define PSIF_3INDEX            16   /*-  -*/
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */

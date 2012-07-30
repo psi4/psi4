@@ -229,92 +229,87 @@ void OMP3Wave::trans_ints()
      
 /********************************************************************************************/
 /************************** Antisymmetrized Ints ********************************************/
-/********************************************************************************************/ 
-     // <OO||OO>:  <IJ||KL> =  <IL|KJ> - (IL|KJ) 
+/********************************************************************************************/
+     // <OO||OO>:  <IJ||KL> =  <IJ|KL> - <IJ|LK> 
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO|OO> - (OO|OO)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||OO>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO> - (OO|OO)");
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            for(int kl = 0; kl < K.params->coltot[h]; ++kl){
+                int k = K.params->colorb[h][kl][0];
+                int l = K.params->colorb[h][kl][1];
+		int lk = G.params->colidx[l][k];
+                K.matrix[h][ij][kl] -= G.matrix[h][ij][lk];
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
         dpd_buf4_mat_irrep_close(&G, h);
-    }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
-    
-    // <IL||KJ> => <IJ||KL>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO> - (OO|OO)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO||OO>");
-    dpd_buf4_close(&K);
+     }
+     dpd_buf4_close(&K);
+     dpd_buf4_close(&G);
 
-    
-     // <oo||oo>:  <ij||kl> = <il|kj> - (il|kj) 
+ 
+     // <oo||oo>:  <ij||kl> =  <ij|kl> - <ij|lk> 
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo|oo> - (oo|oo)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo||oo>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo> - (oo|oo)");
+                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o>=o]+"), ID("[o>=o]+"), 0, "MO Ints (oo|oo)");
+                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo>");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            for(int kl = 0; kl < K.params->coltot[h]; ++kl){
+                int k = K.params->colorb[h][kl][0];
+                int l = K.params->colorb[h][kl][1];
+		int lk = G.params->colidx[l][k];
+                K.matrix[h][ij][kl] -= G.matrix[h][ij][lk];
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
         dpd_buf4_mat_irrep_close(&G, h);
-    }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
-    
-    // <il||kj> => <ij||kl>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
-                  ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo> - (oo|oo)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[o,o]"), ID("[o,o]"), "MO Ints <oo||oo>");
-    dpd_buf4_close(&K);
+     }
+     dpd_buf4_close(&K);
+     dpd_buf4_close(&G); 
+   
 
-    
-    
-    
-     // <OO||OV>:  <IJ||KA> = <KJ|IA> - (KJ|IA)
+     // <OO||OV>:  <IJ||KA> = <IJ|KA> - <JI|KA>
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO|OV> - (OO|OV)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||OV>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
-                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV> - (OO|OV)");
+                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
-                  ID("[O>=O]+"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
+                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            int i = K.params->roworb[h][ij][0];
+            int j = K.params->roworb[h][ij][1];
+            int ji = G.params->rowidx[j][i];
+            for(int ka = 0; ka < K.params->coltot[h]; ++ka){ 
+                K.matrix[h][ij][ka] -= G.matrix[h][ji][ka];
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
@@ -323,47 +318,39 @@ void OMP3Wave::trans_ints()
      }
      dpd_buf4_close(&K);
      dpd_buf4_close(&G);
-     
-     // <KJ||IA> => <IJ||KA>
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
-                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV> - (OO|OV)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , rqps, ID("[O,O]"), ID("[O,V]"), "MO Ints <OO||OV>");
-     dpd_buf4_close(&K);
-
-     
-     // <oo||ov>:   <ij||ka> = <kj|ia> - (kj|ia) 
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo|ov> - (oo|ov)");
-     dpd_buf4_close(&K);
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov> - (oo|ov)");
-     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o>=o]+"), ID("[o,v]"), 0, "MO Ints (oo|ov)");
-     for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
-            }
-        }
-        dpd_buf4_mat_irrep_wrt(&K, h);
-        dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
-     }
-     dpd_buf4_close(&K);
-     dpd_buf4_close(&G);
-     
-     // <kj||ia> => <ij||ka>
-     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov> - (oo|ov)");
-     dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , rqps, ID("[o,o]"), ID("[o,v]"), "MO Ints <oo||ov>");
-     dpd_buf4_close(&K);
+    
 
     
+     // <oo||ov>:   <ij||ka> = <ij|ka> - <ji|ka>
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <oo||ov>");
+     dpd_buf4_close(&K);
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo||ov>");
+     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
+     for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
+            int i = K.params->roworb[h][ij][0];
+            int j = K.params->roworb[h][ij][1];
+            int ji = G.params->rowidx[j][i];
+            for(int ka = 0; ka < K.params->coltot[h]; ++ka){ 
+                K.matrix[h][ij][ka] -= G.matrix[h][ji][ka];
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&K, h);
+        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+     }
+     dpd_buf4_close(&K);
+     dpd_buf4_close(&G);
+
+
     
      // <OO||VV>:  <IJ||AB> = <IJ|AB> - <IJ|BA> 
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -380,8 +367,6 @@ void OMP3Wave::trans_ints()
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
-            int i = K.params->roworb[h][ij][0];
-            int j = K.params->roworb[h][ij][1];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
                 int a = K.params->colorb[h][ab][0];
                 int b = K.params->colorb[h][ab][1];
@@ -412,8 +397,6 @@ void OMP3Wave::trans_ints()
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         for(int ij = 0; ij < K.params->rowtot[h]; ++ij){
-            int i = K.params->roworb[h][ij][0];
-            int j = K.params->roworb[h][ij][1];
             for(int ab = 0; ab < K.params->coltot[h]; ++ab){
                 int a = K.params->colorb[h][ab][0];
                 int b = K.params->colorb[h][ab][1];
@@ -430,92 +413,98 @@ void OMP3Wave::trans_ints()
 
     
     
-    
-     // <OV||OV>:  <IA||JB> = <IB|JA> - (IB|JA)
+     // <OV||OV>:  <IA||JB> = <IA|JB> - (IB|JA)
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV|OV> - (OV|OV)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV||OV>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV||OV>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ia = 0; ia < K.params->rowtot[h]; ++ia){
+            int i = K.params->roworb[h][ia][0];
+            int a = K.params->roworb[h][ia][1];
+            int Gi = K.params->psym[i];
+            for(int jb = 0; jb < K.params->coltot[h]; ++jb){
+                int j = K.params->colorb[h][jb][0];
+                int b = K.params->colorb[h][jb][1];
+                int Gb = K.params->ssym[b];
+                int Gib = Gi^Gb;
+	        dpd_buf4_mat_irrep_init(&G, Gib);
+                dpd_buf4_mat_irrep_rd(&G, Gib);
+		int ib = G.params->rowidx[i][b];
+		int ja = G.params->colidx[j][a];
+		K.matrix[h][ia][jb] -= G.matrix[Gib][ib][ja];                
+                dpd_buf4_mat_irrep_close(&G, Gib);
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    
-    // <IB||JA> => <IA||JB>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV||OV>");
-    dpd_buf4_close(&K);
 
-     
-     // <ov||ov>:  <ia||jb> = <ib|ja> - (ib|ja)
+
+     // <ov||ov>:  <ia||jb> = <ia|jb> - (ib|ja)
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <ov|ov> - (ov|ov)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <ov||ov>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov||ov>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ia = 0; ia < K.params->rowtot[h]; ++ia){
+            int i = K.params->roworb[h][ia][0];
+            int a = K.params->roworb[h][ia][1];
+            int Gi = K.params->psym[i];
+            for(int jb = 0; jb < K.params->coltot[h]; ++jb){
+                int j = K.params->colorb[h][jb][0];
+                int b = K.params->colorb[h][jb][1];
+                int Gb = K.params->ssym[b];
+                int Gib = Gi^Gb;
+	        dpd_buf4_mat_irrep_init(&G, Gib);
+                dpd_buf4_mat_irrep_rd(&G, Gib);
+		int ib = G.params->rowidx[i][b];
+		int ja = G.params->colidx[j][a];
+		K.matrix[h][ia][jb] -= G.matrix[Gib][ib][ja];                
+                dpd_buf4_mat_irrep_close(&G, Gib);
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    
-    // <ib||ja> => <ia||jb>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[o,v]"), ID("[o,v]"), "MO Ints <ov||ov>");
-    dpd_buf4_close(&K);
-
-    
-    
-    
-     // <OV||VV>:  <IA||BC> = <IC|BA> - (IC|BA)
+   
+ 
+     // <OV||VV>:  <IA||BC> = <IA|BC> - <IA|CB>
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV|VV> - (OV|VV)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV||VV>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV> - (OV|VV)");
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV||VV>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
+	dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ia = 0; ia < K.params->rowtot[h]; ++ia){
+            for(int bc = 0; bc < K.params->coltot[h]; ++bc){
+                int b = K.params->colorb[h][bc][0];
+                int c = K.params->colorb[h][bc][1];
+		int cb = G.params->colidx[c][b];
+		K.matrix[h][ia][bc] -= G.matrix[h][ia][cb];                
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
@@ -525,30 +514,27 @@ void OMP3Wave::trans_ints()
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     
-    // <IC||BA> => <IA||BC>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV> - (OV|VV)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV||VV>");
-    dpd_buf4_close(&K);
 
-    
-     // <ov||vv>:  <ia||bc> = <ic|ba> - (ic|ba)
+     // <ov||vv>:  <ia||bc> = <ia|bc> - <ia|cb>
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
-     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <ov|vv> - (ov|vv)");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <ov||vv>");
      dpd_buf4_close(&K);
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv> - (ov|vv)");
+                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov||vv>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                  ID("[o,v]"), ID("[v>=v]+"), 0, "MO Ints (ov|vv)");
+                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
      for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
+	dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ia = 0; ia < K.params->rowtot[h]; ++ia){
+            for(int bc = 0; bc < K.params->coltot[h]; ++bc){
+                int b = K.params->colorb[h][bc][0];
+                int c = K.params->colorb[h][bc][1];
+		int cb = G.params->colidx[c][b];
+		K.matrix[h][ia][bc] -= G.matrix[h][ia][cb];                
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
@@ -557,80 +543,69 @@ void OMP3Wave::trans_ints()
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    
-    // <ic||ba> => <ia||bc>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv> - (ov|vv)");
-    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[o,v]"), ID("[v,v]"), "MO Ints <ov||vv>");
-    dpd_buf4_close(&K);
-
-    
            
-      // <VV||VV>: <AB||CD> = <AD|CB> - (AD|CB)
+     
+      // <VV||VV>: <AB||CD> = <AB|CD> - <AB|DC>
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
-      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <VV|VV> - (VV|VV)");
+      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <VV||VV>");
       dpd_buf4_close(&K);
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV> - (VV|VV)");
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV||VV>");
       dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ab = 0; ab < K.params->rowtot[h]; ++ab){
+            for(int cd = 0; cd < K.params->coltot[h]; ++cd){
+                int c = K.params->colorb[h][cd][0];
+                int d = K.params->colorb[h][cd][1];
+		int dc = G.params->colidx[d][c];
+                K.matrix[h][ab][cd] -= G.matrix[h][ab][dc];
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
         dpd_buf4_mat_irrep_close(&G, h);
-      }
-      dpd_buf4_close(&K);
-      dpd_buf4_close(&G);
-      
-      // <AD||CB> => <AB||CD>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV> - (VV|VV)");
-      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV||VV>");
-      dpd_buf4_close(&K);
-      
-      
-      // <vv||vv>: <ab||cd> = <ad|cb> - (ad|cb)
+     }
+     dpd_buf4_close(&K);
+     dpd_buf4_close(&G);
+
+
+
+      // <vv||vv>: <ab||cd> = <ab|cd> - <ab|dc>
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
-      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <vv|vv> - (vv|vv)");
+      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <vv||vv>");
       dpd_buf4_close(&K);
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv> - (vv|vv)");
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv||vv>");  
       dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
         dpd_buf4_mat_irrep_rd(&G, h);
-        for(int row = 0; row < K.params->rowtot[h]; ++row){
-            for(int col = 0; col < K.params->coltot[h]; ++col){
-                K.matrix[h][row][col] -= G.matrix[h][row][col];
+        for(int ab = 0; ab < K.params->rowtot[h]; ++ab){
+            for(int cd = 0; cd < K.params->coltot[h]; ++cd){
+                int c = K.params->colorb[h][cd][0];
+                int d = K.params->colorb[h][cd][1];
+		int dc = G.params->colidx[d][c];
+                K.matrix[h][ab][cd] -= G.matrix[h][ab][dc];
             }
         }
         dpd_buf4_mat_irrep_wrt(&K, h);
         dpd_buf4_mat_irrep_close(&K, h);
         dpd_buf4_mat_irrep_close(&G, h);
-      } 
-      dpd_buf4_close(&K);
-      dpd_buf4_close(&G);
-      
-      // <ad||cb> => <ab||cd>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv> - (vv|vv)");
-      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv||vv>");
-      dpd_buf4_close(&K);
-     
+     }
+     dpd_buf4_close(&K);
+     dpd_buf4_close(&G);
+
+
 /********************************************************************************************/
 /************************** Transform 1-electron int. to MO space ***************************/
 /********************************************************************************************/        

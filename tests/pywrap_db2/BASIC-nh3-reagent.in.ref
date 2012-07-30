@@ -1,0 +1,101 @@
+# This is a psi4 input file auto-generated from the database() wrapper.
+
+PsiMod.print_out('\n')
+banner(' Database basic Computation: Reagent BASIC-nh3-reagent \n   ammonia')
+PsiMod.print_out('\n')
+
+from PsiMod import *
+from physconst import *
+from molutil import *
+from driver import *
+from text import *
+from inpsight import *
+from wrappers import *
+from aliases import *
+from psiexceptions import *
+from util import *
+from qmmm import *
+from frac import *
+from functional import *
+from pubchem import *
+import pickle
+psi4_io = PsiMod.IOManager.shared_object()
+geometry("""
+0 1
+H
+H 1 0.74
+""","blank_molecule_psi4_yo")
+
+dimer = geometry("""
+0 1
+N       -1.57871800    -0.04661100     0.00000000
+H       -2.15862100     0.13639600    -0.80956500
+H       -2.15862100     0.13639600     0.80956500
+H       -0.84947100     0.65819300     0.00000000
+units angstrom
+""","dimer")
+PsiMod.IO.set_default_namespace("dimer")
+
+PsiMod.set_memory(256000000)
+
+PsiMod.set_global_option('BASIS', '6-31+G*')
+PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('GUESS', 'CORE')
+PsiMod.set_global_option('JOBTYPE', 'SP')
+PsiMod.set_global_option('PRINT', 1)
+PsiMod.set_global_option('REFERENCE', 'RHF')
+PsiMod.set_global_option('R_CONVERGENCE', 1e-11)
+PsiMod.set_global_option('SCF_TYPE', 'DF')
+
+PsiMod.set_global_option('BASIS', '6-31+G*')
+PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
+molecule = PsiMod.get_active_molecule()
+molecule.update_geometry()
+
+pickle_kw = ("""(dp0
+S'subset'
+p1
+(lp2
+S'ch4'
+p3
+aS'nh3'
+p4
+asS'name'
+p5
+S'scf'
+p6
+sS'db_mode'
+p7
+S'sow'
+p8
+sS'db_name'
+p9
+S'basic'
+p10
+sS'db_func'
+p11
+cdriver
+optimize
+p12
+sS'tabulate'
+p13
+(lp14
+S'current energy'
+p15
+aS'scf total energy'
+p16
+as.""")
+
+kwargs = pickle.loads(pickle_kw)
+electronic_energy = optimize(**kwargs)
+
+PsiMod.print_variables()
+PsiMod.print_out('\nDATABASE RESULT: computation 59953 for reagent BASIC-nh3-reagent yields electronic energy %20.12f\n' % (electronic_energy))
+
+PsiMod.set_variable('NATOM', molecule.natom())
+PsiMod.print_out('DATABASE RESULT: computation 59953 for reagent BASIC-nh3-reagent yields variable value    %20.12f for variable %s\n' % (PsiMod.get_variable('CURRENT ENERGY'), 'CURRENT ENERGY'))
+PsiMod.print_out('DATABASE RESULT: computation 59953 for reagent BASIC-nh3-reagent yields variable value    %20.12f for variable %s\n' % (PsiMod.get_variable('SCF TOTAL ENERGY'), 'SCF TOTAL ENERGY'))

@@ -1,12 +1,14 @@
 use strict;
 use warnings;
 
-die "Usage\n\t\t$0 input_file logfile\n" unless @ARGV == 3;
+die "Usage\n\t\t$0 input_file logfile [output_file]\n" unless (@ARGV == 3) || (@ARGV == 4);
 
 my $psi = "../../bin/psi4";
 my $input = $ARGV[0];
 my $logfile = $ARGV[1];
 my $psiautotest = $ARGV[2];
+my $outfile = "output.dat";
+if (@ARGV == 4) { $outfile = $ARGV[3]; }
 
 open(LOGFILE,">$logfile") or die "I can't write to $logfile\n";
 
@@ -27,7 +29,7 @@ sub backtick(@)
     }
 }
 
-my @cmd = ($psi, $input);
+my @cmd = ($psi, $input, $outfile);
 backtick(@cmd);
 
 my $return = $? ? 1 : 0;
