@@ -84,8 +84,8 @@ namespace psi {
       moinfo.mopi = chkpt_rd_orbspi();
       moinfo.clsdpi = chkpt_rd_clsdpi();
       moinfo.openpi = chkpt_rd_openpi();
-      moinfo.frdocc = Process::environment.reference_wavefunction()->frzcpi();
-      moinfo.fruocc = Process::environment.reference_wavefunction()->frzvpi();
+      moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
+      moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
       chkpt_close();
 
       moinfo.nfzc = moinfo.nfzv = 0;

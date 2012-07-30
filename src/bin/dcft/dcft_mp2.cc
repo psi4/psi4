@@ -27,7 +27,7 @@ DCFTSolver::mp2_guess()
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     // This wavefunction is really the global reference wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     _ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);

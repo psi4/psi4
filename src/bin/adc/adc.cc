@@ -12,7 +12,7 @@ namespace psi{ namespace adc {
 ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
 {   
     
-    copy(Process::environment.reference_wavefunction()); 
+    copy(Process::environment.wavefunction()); 
     
     char **irreps_      = Process::environment.molecule()->irrep_labels();
     aoccpi_             = new int[nirrep_];
