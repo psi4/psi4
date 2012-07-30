@@ -21,11 +21,11 @@ DCFTSolver::dump_density()
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
     dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
@@ -302,7 +302,7 @@ DCFTSolver::dump_density()
      * The OOVV and VVOO blocks
      */
     dpd_buf4_init(&Gaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+              ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_copy(&Gaa, PSIF_DCFT_DENSITY, "Gamma <OO|VV>");
     dpd_buf4_sort(&Gaa, PSIF_DCFT_DENSITY, rspq, ID("[V,V]"), ID("[O,O]"), "Gamma <VV|OO>");
     dpd_buf4_close(&Gaa);
@@ -314,7 +314,7 @@ DCFTSolver::dump_density()
     dpd_buf4_close(&Gab);
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+              ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_copy(&Gbb, PSIF_DCFT_DENSITY, "Gamma <oo|vv>");
     dpd_buf4_sort(&Gbb, PSIF_DCFT_DENSITY, rspq, ID("[v,v]"), ID("[o,o]"), "Gamma <vv|oo>");
     dpd_buf4_close(&Gbb);
@@ -755,7 +755,7 @@ DCFTSolver::check_n_representability()
     dpdbuf4 Laa, Lab, Lbb, D, Q, G;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,

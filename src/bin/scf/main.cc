@@ -72,7 +72,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     }
 
     // Set this early because the callback mechanism uses it.
-    Process::environment.set_reference_wavefunction(scf);
+    Process::environment.set_wavefunction(scf);
 
     if (pre)
         scf->add_preiteration_callback(pre);

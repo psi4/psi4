@@ -382,10 +382,10 @@ double py_psi_ccenergy()
 {
     py_psi_prepare_options_for_module("CCENERGY");
     boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
-                                               Process::environment.reference_wavefunction(),
+                                               Process::environment.wavefunction(),
                                                Process::environment.options)
                                            );
-    Process::environment.set_reference_wavefunction(ccwave);
+    Process::environment.set_wavefunction(ccwave);
 
     double energy = ccwave->compute_energy();
     return energy;
@@ -401,10 +401,10 @@ double py_psi_mp2()
 {
     py_psi_prepare_options_for_module("MP2");
     boost::shared_ptr<Wavefunction> mp2wave(new mp2::MP2Wavefunction(
-                                                Process::environment.reference_wavefunction(),
+                                                Process::environment.wavefunction(),
                                                 Process::environment.options)
                                            );
-    Process::environment.set_reference_wavefunction(mp2wave);
+    Process::environment.set_wavefunction(mp2wave);
 
     double energy = mp2wave->compute_energy();
     return energy;
@@ -858,8 +858,8 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 
 void py_psi_set_gradient(SharedMatrix grad)
 {
-    if (Process::environment.reference_wavefunction()) {
-        Process::environment.reference_wavefunction()->set_gradient(grad);
+    if (Process::environment.wavefunction()) {
+        Process::environment.wavefunction()->set_gradient(grad);
     } else {
         Process::environment.set_gradient(grad);
     }
@@ -867,8 +867,8 @@ void py_psi_set_gradient(SharedMatrix grad)
 
 SharedMatrix py_psi_get_gradient()
 {
-    if (Process::environment.reference_wavefunction()) {
-        boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
+    if (Process::environment.wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.wavefunction();
         return wf->gradient();
     } else {
         return Process::environment.gradient();
@@ -923,7 +923,7 @@ int py_psi_get_me()
 
 boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()
 {
-    return Process::environment.reference_wavefunction();
+    return Process::environment.wavefunction();
 }
 
 void py_psi_add_user_specified_basis_file(const string& file)
@@ -1265,6 +1265,6 @@ void Python::run(FILE *input)
 
     if (s)
       free(s);
-    Process::environment.reference_wavefunction().reset();
+    Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();
 }

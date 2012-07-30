@@ -35,7 +35,7 @@ void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options){
   // Call oeprop
   boost::shared_ptr<OEProp> oe(new OEProp());
   boost::shared_ptr<Wavefunction> wfn =
-    Process::environment.reference_wavefunction();
+    Process::environment.wavefunction();
   boost::shared_ptr<Matrix> Ca = wfn->Ca();
 
   std::stringstream ss;
