@@ -242,6 +242,7 @@ compiling and installing the PSI4 package.
 
      * Compiling for Mac
 
+       PSI4 has been compiled on OS X 10.7 (Lion) and 10.8 (Mountain Lion). 
        To get the compilers needed, it's easiest to install XCode.
        However, XCode does not provide a Fortran compiler. Although
        Fortran compilers are not needed to compile Psi, a broken one can
