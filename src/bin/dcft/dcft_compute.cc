@@ -25,13 +25,13 @@ DCFTSolver::compute_energy()
     mp2_guess();
 
     int cycle = 0;
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                     "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
-                     "\t*---------------------------------------------------------------------------------*\n");
+    // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
+    // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
+    // the desired cutoff, we're done
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
-        // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
-        // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
-        // the desired cutoff, we're done
+        fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+                         "\t*---------------------------------------------------------------------------------*\n");
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
         dpdbuf4 Laa, Lab, Lbb;
@@ -235,8 +235,12 @@ DCFTSolver::compute_energy()
             // Transform two-electron integrals to the MO basis using new orbitals, build denominators
             transform_integrals();
         }
-    }else{
-        // This is the simultaneous orbital/lambda update algorithm
+    }
+    // This is the simultaneous orbital/lambda update algorithm
+    else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
+        fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+                         "\t*---------------------------------------------------------------------------------*\n");
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -368,6 +372,15 @@ DCFTSolver::compute_energy()
             fflush(outfile);
         }
     }
+    // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
+    // for the simultaneous optimization of the cumulant and the orbitals
+    else {
+        fprintf(outfile,    "\n\n\t\t        Quadratically-convergent DCFT      \n");
+        fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
+
+        run_qc_algorithm();
+    }
+
     if(!scfDone || !lambdaDone || !densityConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_,
                                lambda_convergence_, __FILE__, __LINE__);

@@ -104,6 +104,8 @@ protected:
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
     void compute_ewdm();
+    // Quadratically-convergent DCFT
+    void run_qc_algorithm();
 
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
