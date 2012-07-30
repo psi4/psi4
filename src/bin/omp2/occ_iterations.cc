@@ -34,7 +34,6 @@
 
 using namespace boost;
 using namespace psi;
-using namespace std;
 
 
 namespace psi{ namespace omp2wave{
@@ -49,8 +48,8 @@ fprintf(outfile," ==============================================================
 fprintf(outfile,"\n");
 fprintf(outfile, "\t            Minimizing MP2-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
-fprintf(outfile, " Iter   Nidp       E_total           DE           MO Grad RMS      MAX MO Grad      Korb RMS      MAX Korb      T2 RMS    \n");
-fprintf(outfile, " ----   ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  \n");
+fprintf(outfile, " Iter       E_total           DE           MO Grad RMS      MAX MO Grad      Korb RMS      MAX Korb      T2 RMS    \n");
+fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  \n");
 fflush(outfile);
 
   
@@ -132,8 +131,8 @@ do
 	rms_t2=MAX0(rms_t2AA,rms_t2BB);
 	rms_t2=MAX0(rms_t2,rms_t2AB);
 	
-fprintf(outfile," %3d    %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e  %12.2e  %12.2e \n",
-	           itr_occ,nidp,Emp2L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
+fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e  %12.2e  %12.2e \n",
+	           itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
 fflush(outfile);
 
 /********************************************************************************************/

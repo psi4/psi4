@@ -11,6 +11,7 @@ from proc import *
 from text import *
 from procutil import *
 from functional import *
+from psifiles import *
 # never import wrappers or aliases into this file
 
 
