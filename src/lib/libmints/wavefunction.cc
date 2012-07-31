@@ -706,7 +706,3 @@ bool Wavefunction::isCIM()
     return isCIM_;
 }
 
-void Wavefunction::check_integration()
-{
-
-}
