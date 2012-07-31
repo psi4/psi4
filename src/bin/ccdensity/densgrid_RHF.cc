@@ -45,7 +45,7 @@ void densgrid_RHF(Options& options)
   int *order;
   double **scf_pitzer;
 
-  wfn = Process::environment.reference_wavefunction();
+  wfn = Process::environment.wavefunction();
   molecule = wfn->molecule();
   basis = wfn->basisset();
 

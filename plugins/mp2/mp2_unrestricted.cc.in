@@ -20,7 +20,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     IntegralTransform ints(wfn, spaces,
                                 ROHF ? IntegralTransform::SemiCanonical : IntegralTransform::Unrestricted);
     ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);

@@ -38,22 +38,22 @@ mp2(Options &options)
     //shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
     shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
-    eSCF = Process::environment.reference_wavefunction()->reference_energy();
+    eSCF = Process::environment.wavefunction()->reference_energy();
 
-    nirreps             = Process::environment.reference_wavefunction()->nirrep();
-    SharedVector aEvals = Process::environment.reference_wavefunction()->epsilon_a();
-    SharedVector bEvals = Process::environment.reference_wavefunction()->epsilon_b();
+    nirreps             = Process::environment.wavefunction()->nirrep();
+    SharedVector aEvals = Process::environment.wavefunction()->epsilon_a();
+    SharedVector bEvals = Process::environment.wavefunction()->epsilon_b();
     char **labels       = Process::environment.molecule()->irrep_labels();
     aOccOrbsPI          = new int[nirreps];
     bOccOrbsPI          = new int[nirreps];
     aVirOrbsPI          = new int[nirreps];
     bVirOrbsPI          = new int[nirreps];
-    mopi                = Process::environment.reference_wavefunction()->nmopi();
-    nmo                 = Process::environment.reference_wavefunction()->nmo();
-    clsdpi              = Process::environment.reference_wavefunction()->doccpi();
-    openpi              = Process::environment.reference_wavefunction()->soccpi();
-    frzcpi              = Process::environment.reference_wavefunction()->frzcpi();
-    frzvpi              = Process::environment.reference_wavefunction()->frzvpi();
+    mopi                = Process::environment.wavefunction()->nmopi();
+    nmo                 = Process::environment.wavefunction()->nmo();
+    clsdpi              = Process::environment.wavefunction()->doccpi();
+    openpi              = Process::environment.wavefunction()->soccpi();
+    frzcpi              = Process::environment.wavefunction()->frzcpi();
+    frzvpi              = Process::environment.wavefunction()->frzvpi();
 
     numAOcc = 0; numBOcc = 0; numAVir = 0; numBVir = 0;
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;

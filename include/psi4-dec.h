@@ -39,7 +39,7 @@ public:
 
         boost::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
-        boost::shared_ptr<Wavefunction> reference_wavefunction_;
+        boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
     public:
         void init(char **envp);
@@ -58,9 +58,15 @@ public:
         boost::shared_ptr<Molecule> molecule() const;
 
         /// Set reference wavefunction
-        void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction);
+        void set_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction);
+        void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction) const{
+            throw PSIEXCEPTION("set_reference_wavefunction(wfn) should be replaced with set_wavefunction(wfn)");
+        }
         /// Get reference wavefunction
-        boost::shared_ptr<Wavefunction> reference_wavefunction() const;
+        boost::shared_ptr<Wavefunction> wavefunction() const;
+        boost::shared_ptr<Wavefunction> reference_wavefunction() const{
+            throw PSIEXCEPTION("reference_wavefunction() should be replaced with wavefunction()");
+        }
 
         /// Set gradient manually
         void set_gradient(const SharedMatrix g) { gradient_ = g; }

@@ -14,8 +14,8 @@ omp3wave(Options &options)
     // Start the timers
     tstart();
    
-    boost::shared_ptr<Wavefunction> omp3 = boost::shared_ptr<Wavefunction>(new OMP3Wave(Process::environment.reference_wavefunction(), options));
-    Process::environment.set_reference_wavefunction(omp3);
+    boost::shared_ptr<Wavefunction> omp3 = boost::shared_ptr<Wavefunction>(new OMP3Wave(Process::environment.wavefunction(), options));
+    Process::environment.set_wavefunction(omp3);
     omp3->compute_energy();
     
     
