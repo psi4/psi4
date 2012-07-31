@@ -353,7 +353,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     int debug = Process::environment.options.get_int("DEBUG");
 
-    boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
     Dimension focc = ref->frzcpi();
     Dimension docc = ref->doccpi();
     Dimension nmopi = ref->nmopi();
@@ -577,7 +577,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
         throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
 
     // Use libtrans to initialize DPD
-    boost::shared_ptr<Wavefunction> wave = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wave = Process::environment.wavefunction();
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
@@ -626,7 +626,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     fprintf(outfile, "        method %d\n        exlevel %d\n        fullname %s\n\n",
             method, exlevel, fullname.c_str());
 
-    boost::shared_ptr<Wavefunction> wave     = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wave     = Process::environment.wavefunction();
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
 
     // Orbitals spaces

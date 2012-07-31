@@ -321,7 +321,7 @@ void Wavefunction::call_preiteration_callbacks()
     std::vector<void*>::const_iterator iter;
     for (iter = precallbacks_.begin(); iter != precallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.reference_wavefunction());
+            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
     }
 }
 void Wavefunction::call_postiteration_callbacks()
@@ -329,7 +329,7 @@ void Wavefunction::call_postiteration_callbacks()
     std::vector<void*>::const_iterator iter;
     for (iter = postcallbacks_.begin(); iter != postcallbacks_.end(); ++iter) {
         if ((PyObject*)*iter != Py_None)
-            boost::python::call<void>((PyObject*)*iter, Process::environment.reference_wavefunction());
+            boost::python::call<void>((PyObject*)*iter, Process::environment.wavefunction());
     }
 }
 

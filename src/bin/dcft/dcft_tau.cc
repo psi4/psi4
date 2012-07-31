@@ -33,12 +33,10 @@ DCFTSolver::build_tau()
 
     dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&L2, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
-                  0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     /*
      * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
      */
@@ -52,12 +50,10 @@ DCFTSolver::build_tau()
 
     dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&L2, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  _ints->DPD_ID("[o,o]"), _ints->DPD_ID("[v,v]"),
-                  0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     /*
      * Tau_ij = -1/2 Lambda_ikab Lambda_jkab
      */

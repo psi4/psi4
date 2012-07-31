@@ -74,9 +74,9 @@ void get_mo_info(Options &options)
    //CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
    //CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.frozen_docc =
-     Process::environment.reference_wavefunction()->frzcpi();
+     Process::environment.wavefunction()->frzcpi();
    CalcInfo.frozen_uocc =
-     Process::environment.reference_wavefunction()->frzvpi();
+     Process::environment.wavefunction()->frzvpi();
 
    rstr_docc = init_int_array(CalcInfo.nirreps);
    rstr_uocc = init_int_array(CalcInfo.nirreps);

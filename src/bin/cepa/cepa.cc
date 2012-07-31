@@ -17,7 +17,7 @@ namespace psi{ namespace cepa{
 namespace psi{ namespace cepa{
 
 PsiReturnType cepa(Options&options){
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
   RunCoupledPair(options,ref);
   return Success;
 }

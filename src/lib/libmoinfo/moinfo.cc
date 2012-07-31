@@ -92,11 +92,11 @@ void MOInfo::read_info()
      * Read Nuclear,SCF and other stuff
      */
     read_data();
-    nmo            = Process::environment.reference_wavefunction()->nmo();
+    nmo            = Process::environment.wavefunction()->nmo();
     compute_number_of_electrons();
-    scf_energy     = Process::environment.reference_wavefunction()->reference_energy();
-    mopi           = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->nmopi());
-    SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
+    scf_energy     = Process::environment.wavefunction()->reference_energy();
+    mopi           = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->nmopi());
+    SharedMatrix matCa = Process::environment.wavefunction()->Ca();
     scf            = block_matrix(nso, nmo);
     unsigned int soOffset = 0;
     unsigned int moOffset = 0;
@@ -275,9 +275,9 @@ void MOInfo::read_mo_spaces()
         //    delete [] correlation;
     }else{
         // For a single-point only
-        focc = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->frzcpi());
-        docc = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->doccpi());
-        actv = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->soccpi());
+        focc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
+        docc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
+        actv = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->soccpi());
 
         for (int h = 0; h < nirreps; h++)
             docc[h] -= focc[h];
