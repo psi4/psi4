@@ -101,7 +101,7 @@ void get_params(Options &options)
     }
   }
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   boost::shared_ptr<Molecule> mol = wfn->molecule();
   boost::shared_ptr<IntegralFactory> fact = wfn->integral();
 

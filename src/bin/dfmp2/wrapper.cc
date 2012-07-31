@@ -65,7 +65,7 @@ PsiReturnType dfmp2grad(Options & options)
     SharedMatrix G = dfmp2->compute_gradient();
 
     Process::environment.set_gradient(G); 
-    Process::environment.reference_wavefunction()->set_gradient(G);
+    Process::environment.wavefunction()->set_gradient(G);
 
     tstop();
 

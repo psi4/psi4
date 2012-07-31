@@ -14,8 +14,8 @@ omp2wave(Options &options)
     // Start the timers
     tstart();
    
-    boost::shared_ptr<Wavefunction> omp2 = boost::shared_ptr<Wavefunction>(new OMP2Wave(Process::environment.reference_wavefunction(), options));
-    Process::environment.set_reference_wavefunction(omp2);
+    boost::shared_ptr<Wavefunction> omp2 = boost::shared_ptr<Wavefunction>(new OMP2Wave(Process::environment.wavefunction(), options));
+    Process::environment.set_wavefunction(omp2);
     omp2->compute_energy();
     
     

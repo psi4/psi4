@@ -739,7 +739,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- The algorithm to use for the density cumulant and orbital updates in the energy computation.
       Two-step algorithm (default) is generally more efficient and shows better convergence than simultaneous -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
       /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.
       Two-step algorithm is generally more efficient than simultaneous and is used by default-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");

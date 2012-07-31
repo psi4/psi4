@@ -28,7 +28,7 @@ void get_moinfo(void)
 {
   int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
 
-  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
   moinfo.nirreps = wfn->nirrep();
   moinfo.nmo = wfn->nmo();
   moinfo.nso = wfn->nso();

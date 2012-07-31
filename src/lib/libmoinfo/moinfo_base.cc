@@ -53,13 +53,13 @@ void MOInfoBase::cleanup()
 
 void MOInfoBase::read_data()
 {
-    if(!Process::environment.reference_wavefunction())
+    if(!Process::environment.wavefunction())
         throw PSIEXCEPTION("The reference wavefunction does not exist yet");
 
-    nirreps        = Process::environment.reference_wavefunction()->nirrep();
-    nso            = Process::environment.reference_wavefunction()->nso();
+    nirreps        = Process::environment.wavefunction()->nirrep();
+    nso            = Process::environment.wavefunction()->nso();
     // Read sopi and save as a STL vector
-    sopi           = convert_int_array_to_vector(nirreps, Process::environment.reference_wavefunction()->nsopi());
+    sopi           = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->nsopi());
     irr_labs       = Process::environment.molecule()->irrep_labels();
     nuclear_energy = Process::environment.molecule()->nuclear_repulsion_energy();
 }
