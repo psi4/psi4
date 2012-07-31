@@ -453,10 +453,6 @@ public:
 
     /// Set if this is a CIM computation
     void CIMSet(bool value,int nactive_occupied);
-
-    /// Temporary function for checking numerical integration grid 
-    /// (TDC, 6/8/12)
-    virtual void check_integration();
 };
 
 }
