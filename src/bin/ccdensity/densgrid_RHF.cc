@@ -193,11 +193,11 @@ y*_bohr2angstroms, z*_bohr2angstroms, dens/b2a3);
   fprintf(dxfile, "#  Output from PSI4 calculation\n");
   fprintf(dxfile, "#  Electronic density (in e/ang^3) for: \n");
   fprintf(dxfile, "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
-  fprintf(dxfile, "origin %8.6E  %8.6E  %8.6E\n", 0.0, 0.0, 0.0);
+  fprintf(dxfile, "origin %8.6E  %8.6E  %8.6E\n", xmin, ymin, zmin);
   fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", step_size, 0.0, 0.0);
   fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", 0.0, step_size, 0.0);
   fprintf(dxfile, "delta %8.6E  %8.6E  %8.6E\n", 0.0, 0.0, step_size);
-  fprintf(dxfile, "object 1 class gridpositions counts %d %d %d\n", xsteps, ysteps, zsteps);
+  fprintf(dxfile, "object 1 class gridconnections counts %d %d %d\n", xsteps, ysteps, zsteps);
   fprintf(dxfile, "object 3 class array double rank 0 items %d data follows\n", xsteps*ysteps*zsteps);
 
   // Loop over points and integrate along the way
