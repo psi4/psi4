@@ -624,7 +624,7 @@ void get_moinfo(Options & options)
   moinfo.openpi = chkpt_rd_openpi();
   moinfo.enuc = chkpt_rd_enuc();
   moinfo.escf = chkpt_rd_escf();
-  moinfo.nshell = Process::environment.reference_wavefunction()->basisset()->nshell();
+  moinfo.nshell = Process::environment.wavefunction()->basisset()->nshell();
 //  moinfo.sloc = Process::environment.reference_wavefunction()->basisset()->;
 //  moinfo.snuc = chkpt_rd_snuc();
 //  moinfo.stype = chkpt_rd_stype();
@@ -699,8 +699,8 @@ void get_moinfo(Options & options)
     }
   }
 
-  moinfo.frdocc = Process::environment.reference_wavefunction()->frzcpi();
-  moinfo.fruocc = Process::environment.reference_wavefunction()->frzvpi();
+  moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
+  moinfo.fruocc = Process::environment.wavefunction()->frzvpi();
 
   if (params.wfn == "CI" || params.wfn == "DETCI" || params.wfn == "GVVPT2"
       || params.wfn == "MCSCF" || params.wfn == "OOCCD" || params.wfn == "ZAPTN"

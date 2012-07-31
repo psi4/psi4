@@ -653,7 +653,7 @@ void RHF::stability_analysis()
         spaces.push_back(MOSpace::occ);
         spaces.push_back(MOSpace::vir);
         // Ref wfn is really "this"
-        boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+        boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
         IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted, IntegralTransform::DPDOnly,
                                IntegralTransform::QTOrder, IntegralTransform::None);
         ints.set_keep_dpd_so_ints(true);

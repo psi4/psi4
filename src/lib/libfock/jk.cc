@@ -822,9 +822,9 @@ void PKJK::preiterations()
     mints->integrals();
     mints.reset();
 
-    int nso   = Process::environment.reference_wavefunction()->nso();
-    int *sopi = Process::environment.reference_wavefunction()->nsopi();
-    int nirreps = Process::environment.reference_wavefunction()->nirrep();
+    int nso   = Process::environment.wavefunction()->nso();
+    int *sopi = Process::environment.wavefunction()->nsopi();
+    int nirreps = Process::environment.wavefunction()->nirrep();
 
     so2symblk_ = new int[nso];
     so2index_  = new int[nso];
@@ -1024,8 +1024,8 @@ void PKJK::preiterations()
 
 void PKJK::compute_JK()
 {
-    int nirreps = Process::environment.reference_wavefunction()->nirrep();
-    int *sopi   = Process::environment.reference_wavefunction()->nsopi();
+    int nirreps = Process::environment.wavefunction()->nirrep();
+    int *sopi   = Process::environment.wavefunction()->nsopi();
 
 
     bool file_open_on_entry = psio_->open_check(pk_file_);

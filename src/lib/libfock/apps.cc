@@ -44,7 +44,7 @@ RBase::~RBase()
 }
 void RBase::common_init()
 {
-    boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> ref = Process::environment.wavefunction();
     
     if (!ref) {
         // Try to build an RHF from Checkpoint
@@ -105,7 +105,7 @@ void RBase::common_init()
         refp->epsilon_a_ = epsilon;
 
         ref = boost::shared_ptr<Wavefunction>(refp);
-        Process::environment.set_reference_wavefunction(ref); 
+        Process::environment.set_wavefunction(ref); 
     }
 
     set_reference(ref);

@@ -113,8 +113,8 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
   fprintf(outfile,"\tGradient written to file11.\n");
 
   SharedMatrix sgradient(gradient_matrix.clone());
-  if (Process::environment.reference_wavefunction()) {
-    Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  if (Process::environment.wavefunction()) {
+    Process::environment.wavefunction()->set_gradient(sgradient);
     fprintf(outfile,"\tGradient saved to wavefunction.\n");
   } else {
     Process::environment.set_gradient(sgradient);
