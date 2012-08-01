@@ -115,6 +115,8 @@ public:
         vector_[h][m] += val;
     }
 
+    void add(const std::vector<double>& rhs);
+
     /// Adds other vector to this
     void add(const boost::shared_ptr<Vector>& other) {
         for (int h=0; h<nirrep_; ++h) {
