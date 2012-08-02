@@ -272,16 +272,21 @@ def process_basis_block(matchobj):
             if m.group(3):
                 basistype = m.group(3).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            result += "%sPsiMod.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
         elif(symbol_re.match(line)):
             m = symbol_re.match(line)
             if m.group(3):
                 basistype = m.group(3).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            result += "%sPsiMod.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
+            custom_basis = True
         elif(all_re.match(line)):
             m = all_re.match(line)
             if m.group(2):
                 basistype = m.group(2).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+            result += "%sPsiMod.set_global_option(\"%s\", \"%s\")" % (spacing, basistype, m.group(1))
+            custom_basis = False
         else:
             # Ignore blank lines
             if (line and not line.isspace()):
