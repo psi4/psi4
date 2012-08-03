@@ -71,7 +71,7 @@ ObaraSaikaTwoCenterMIRecursion::~ObaraSaikaTwoCenterMIRecursion()
     free_box(z_, max_am1_+1, max_am2_+1);
 }
 
-void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double gamma, int am1, int am2)
+void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double PC[3], double gamma, int am1, int am2)
 {
     if (am1 < 0 || am1 > max_am1_)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
@@ -84,9 +84,9 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
     x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
 
     for(int n = 2; n <= max_m_; ++n) {
-        x_[0][0][n] = x_[0][0][n-1] + oog * x_[0][0][n-2];
-        y_[0][0][n] = y_[0][0][n-1] + oog * y_[0][0][n-2];
-        z_[0][0][n] = z_[0][0][n-1] + oog * z_[0][0][n-2];
+        x_[0][0][n] = PC[0] * x_[0][0][n-1] + oog * x_[0][0][n-2];
+        y_[0][0][n] = PC[1] * y_[0][0][n-1] + oog * y_[0][0][n-2];
+        z_[0][0][n] = PC[2] * z_[0][0][n-1] + oog * z_[0][0][n-2];
     }
 
     // Upward recursion in j for i=0
