@@ -164,14 +164,14 @@ void SAPT0::print_results()
       e_ind20_*1000.0,e_ind20_*_hartree2kcalmol);
     fprintf(outfile,"      Exch-Ind20       %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind20_*1000.0,e_exch_ind20_*_hartree2kcalmol);
-    fprintf(outfile,"      delta HF (2)     %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    fprintf(outfile,"      delta HF         %16.8lf mH %16.8lf kcal mol^-1\n\n",
       dHF*1000.0,dHF*_hartree2kcalmol);
   } else {
     fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind20_*1000.0,e_ind20_*_hartree2kcalmol);
     fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind20_*1000.0,e_exch_ind20_*_hartree2kcalmol);
-    fprintf(outfile,"      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    fprintf(outfile,"      delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n\n",
       dHF*1000.0,dHF*_hartree2kcalmol);
   }
   fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",

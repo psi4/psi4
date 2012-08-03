@@ -247,8 +247,11 @@ def scf_helper(name, **kwargs):
     # Note that can't query PUREAM option directly, as it only
     #   reflects user changes to value, so load basis and
     #   read effective PUREAM setting off of it
-    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
-    PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
+    # This if statement is only to handle generic, unnamed basis cases
+    #   (like mints2) that should be departing soon
+    if PsiMod.has_global_option_changed('BASIS'):
+        PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
+        PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
     if (cast):
 
@@ -1165,16 +1168,6 @@ def run_sapt(name, **kwargs):
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
-
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if PsiMod.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if ribasis:
-            PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.') 
-
     PsiMod.print_out('\n')
     banner(name.upper())
     PsiMod.print_out('\n')
@@ -1280,15 +1273,6 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out('\n')
     banner('SAPT Charge Transfer')
     PsiMod.print_out('\n')
-
-    # if the df_basis_sapt basis is not set, pick a sensible one.
-    if PsiMod.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
-        if ribasis:
-            PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
-        else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.') 
 
     PsiMod.print_out('\n')
     banner('Dimer Basis SAPT')
