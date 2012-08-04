@@ -483,8 +483,8 @@ void OMP3Wave::trans_ints()
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-   
- 
+  
+     /* 
      // <OV||VV>:  <IA||BC> = <IA|BC> - <IA|CB>
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
@@ -544,7 +544,6 @@ void OMP3Wave::trans_ints()
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
            
-     
       // <VV||VV>: <AB||CD> = <AB|CD> - <AB|DC>
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
@@ -604,6 +603,7 @@ void OMP3Wave::trans_ints()
      }
      dpd_buf4_close(&K);
      dpd_buf4_close(&G);
+     */
 
 
 /********************************************************************************************/
