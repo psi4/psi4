@@ -153,7 +153,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision December 30, 2011\n") ;
+   fprintf(outfile,"              Latest Revision August 4, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
    fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;

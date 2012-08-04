@@ -465,13 +465,15 @@ void OMP3Wave::twopdm_ovvo()
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-    
+   
+    // VoOv block is here! 
     // G_AiJb = G_JbAi so I do not need to VoOv block, however for proper contraction in the GFock.cc I need it. 
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     dpd_buf4_sort(&G, PSIF_OMP3_DENSITY , rspq, ID("[V,o]"), ID("[O,v]"), "TPDM <Vo|Ov>");
     dpd_buf4_close(&G);
-    
+
+        
     //Print 
     if (print_ > 3) {
       dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
