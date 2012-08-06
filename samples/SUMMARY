@@ -403,6 +403,9 @@ psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using th
 pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
 
 
+pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
+
+
 pywrap_alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
 
 
