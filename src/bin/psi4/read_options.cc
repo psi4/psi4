@@ -705,7 +705,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_BASIS_SAPT", "");
     /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
     computations, may be important if heavier elements are involved.
-    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+    Defaults to |sapt__df_basis_sapt|. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum error allowed (Max error norm in Delta tensor)
     in the approximate energy denominators employed for most of the
