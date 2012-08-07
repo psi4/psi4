@@ -15,6 +15,7 @@
 #include <liboptions/liboptions.h>
 #include <libdiis/diismanager.h>
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 
 #include "omp3wave.h"
 #include "defines.h"
@@ -75,15 +76,9 @@ void OMP3Wave::common_init()
 	do_sos=options_.get_str("DO_SOS");
 	write_mo_coeff=options_.get_str("MO_WRITE");
 	read_mo_coeff=options_.get_str("MO_READ");
+        lineq=options_.get_str("LINEQ_SOLVER"); 
 	
 	cutoff = pow(10.0,-exp_cutoff);
-	/*
-	fprintf(outfile,"\n");
-	fprintf(outfile,"\texp_cutoff    : %12.14f\n", exp_cutoff);
-        fprintf(outfile,"\tCutoff    : %12.14f\n", cutoff);
-        fflush(outfile);
-        */
-	
 	
 	if (print_ > 0) options_.print();
         title();
@@ -115,6 +110,7 @@ void OMP3Wave::common_init()
 	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
 	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirreps, avirtpiB, avirtpiB));
 
+        
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
         fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
@@ -164,7 +160,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision August 4, 2012\n") ;
+   fprintf(outfile,"              Latest Revision August 7, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).\n") ;
    fprintf(outfile,"\n");
@@ -192,12 +188,24 @@ double OMP3Wave::compute_energy()
 	}
 	
 	mo_optimized = 0;
+        timer_on("trans_ints");
 	trans_ints();  
+        timer_off("trans_ints");
+        timer_on("T2(1)");
 	t2_1st_sc();
+        timer_off("T2(1)");
+        timer_on("T2(2)");
 	t2_2nd_sc();
+        timer_off("T2(2)");
+        timer_on("REF Energy");
 	ref_energy();
+        timer_off("REF Energy");
+        timer_on("MP2 Energy");
 	mp2_energy();
+        timer_off("MP2 Energy");
+        timer_on("MP3 Energy");
 	mp3_energy();
+        timer_off("MP3 Energy");
 	Emp3L=Emp3;
         EcorrL=Emp3L-Escf;
 	Emp3L_old=Emp3;
@@ -329,8 +337,8 @@ double OMP3Wave::compute_energy()
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso,nmo);
 	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(int)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(int)*nso*nmo);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
+	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
     
 	  //set C_pitzer
 	  C_pitzerA = Ca_->to_block_matrix();    
@@ -863,6 +871,19 @@ void OMP3Wave::mem_release()
 	  free_block(vecsA);
 	  free_block(vecsB);
 	}
+
+        if (hess_type == "SCF") {
+           delete [] kappa;
+           //AorbAA.reset();
+           //AorbBB.reset();
+           //AorbAB.reset();
+           //Aorb.reset();
+	   free_block(Aorb);
+	   free_block(AorbAA);
+	   free_block(AorbBB);
+	   free_block(AorbAB);
+        }
+
 	
 	chkpt_.reset();
 	Ca_.reset();

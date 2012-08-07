@@ -49,11 +49,14 @@ void OMP3Wave::response_pdms()
 /********************************************************************************************/
 /************************** Build G intermediates *******************************************/
 /********************************************************************************************/  
+        timer_on("G int");
 	G_int(); 
+        timer_off("G int");
    
 /********************************************************************************************/
 /************************** (OO) Block whole ************************************************/
 /********************************************************************************************/ 
+        timer_on("OPDM");
 	// alpha contrb.
 	for (int i=nfrzc; i<nooA;i++) {
 	  for (int j=nfrzc; j<nooA;j++) { 
@@ -150,19 +153,38 @@ void OMP3Wave::response_pdms()
 	    }
 	  }
 	}
+        timer_off("OPDM");
 
 /********************************************************************************************/
 /************************** TPDMs ***********************************************************/
 /********************************************************************************************/ 
+        timer_on("V int");
         V_2nd_order(); 
+        timer_off("V int");
+        timer_on("TPDM OOVV");
 	twopdm_oovv();
+        timer_off("TPDM OOVV");
+        timer_on("TPDM OOOO");
 	twopdm_oooo();
+        timer_off("TPDM OOOO");
+        timer_on("TPDM VVVV");
         twopdm_vvvv();
+        timer_off("TPDM VVVV");
+        timer_on("TPDM OVOV");
         twopdm_ovov();
+        timer_off("TPDM OVOV");
+        timer_on("TPDM VOVO");
         twopdm_vovo();
+        timer_off("TPDM VOVO");
+        timer_on("TPDM OVVO");
         twopdm_ovvo();
+        timer_off("TPDM OVVO");
+        timer_on("TPDM REF");
 	twopdm_ref(); 
+        timer_off("TPDM REF");
+        timer_on("TPDM CORR OPDM");
 	twopdm_corr_opdm();
+        timer_off("TPDM CORR OPDM");
 
 /********************************************************************************************/
 /************************** Print ***********************************************************/
