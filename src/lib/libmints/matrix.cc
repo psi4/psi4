@@ -1832,7 +1832,7 @@ void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
                 Up[i][i] = 1.0;
             }
         }else if((m == 0) && (n != 0)){
-            // There is nothing to SVD, but we need set the U block to the identity matrix
+            // There is nothing to SVD, but we need set the V block to the identity matrix
             double** Vp = V->pointer(h^symmetry_);
             for (int i = 0; i < n; ++i){
                 for (int j = 0; j < n; ++j){
