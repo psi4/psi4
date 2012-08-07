@@ -164,7 +164,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision July 7, 2012\n") ;
+   fprintf(outfile,"              Latest Revision August 4, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).\n") ;
    fprintf(outfile,"\n");
@@ -571,6 +571,7 @@ void OMP3Wave::mp3l_energy()
 
      
     // VVVV-Block contribution
+    /*
     // E += G_ABCD <AB||CD>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV||VV>");
@@ -579,13 +580,34 @@ void OMP3Wave::mp3l_energy()
     Emp3_rdm += dpd_buf4_dot(&G, &K);         
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);   
-    
+    */
+
+     // E += 2*G_ABCD <AB|CD>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+    Emp3_rdm += 2.0 * dpd_buf4_dot(&G, &K);         
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G); 
+
+    /* 
     // E += G_abcd <ab||cd>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv||vv>");
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
     Emp3_rdm += dpd_buf4_dot(&G, &K);  
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);  
+    */
+     
+     // E += 2*G_abcd <ab|cd>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
+    Emp3_rdm += 2.0 * dpd_buf4_dot(&G, &K);  
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);  
     

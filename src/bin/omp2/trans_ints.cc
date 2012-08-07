@@ -485,7 +485,7 @@ void OMP2Wave::trans_ints()
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     
-    
+     /* 
      // <OV||VV>:  <IA||BC> = <IA|BC> - <IA|CB>
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
@@ -544,70 +544,7 @@ void OMP2Wave::trans_ints()
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    
-    if (hess_type == "FULL") {
-    
-      // <VV||VV>: <AB||CD> = <AB|CD> - <AB|DC>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
-      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <VV||VV>");
-      dpd_buf4_close(&K);
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV||VV>");
-      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
-      for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int ab = 0; ab < K.params->rowtot[h]; ++ab){
-            for(int cd = 0; cd < K.params->coltot[h]; ++cd){
-                int c = K.params->colorb[h][cd][0];
-                int d = K.params->colorb[h][cd][1];
-		int dc = G.params->colidx[d][c];
-                K.matrix[h][ab][cd] -= G.matrix[h][ab][dc];
-            }
-        }
-        dpd_buf4_mat_irrep_wrt(&K, h);
-        dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
-     }
-     dpd_buf4_close(&K);
-     dpd_buf4_close(&G);
-
-
-
-      // <vv||vv>: <ab||cd> = <ab|cd> - <ab|dc>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
-      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <vv||vv>");
-      dpd_buf4_close(&K);
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv||vv>");  
-      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
-      for(int h = 0; h < nirreps; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int ab = 0; ab < K.params->rowtot[h]; ++ab){
-            for(int cd = 0; cd < K.params->coltot[h]; ++cd){
-                int c = K.params->colorb[h][cd][0];
-                int d = K.params->colorb[h][cd][1];
-		int dc = G.params->colidx[d][c];
-                K.matrix[h][ab][cd] -= G.matrix[h][ab][dc];
-            }
-        }
-        dpd_buf4_mat_irrep_wrt(&K, h);
-        dpd_buf4_mat_irrep_close(&K, h);
-        dpd_buf4_mat_irrep_close(&G, h);
-     }
-     dpd_buf4_close(&K);
-     dpd_buf4_close(&G);
-      
-    }// end if
+    */
      
 /********************************************************************************************/
 /************************** Transform 1-electron int. to MO space ***************************/
