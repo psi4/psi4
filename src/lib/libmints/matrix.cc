@@ -672,7 +672,7 @@ SharedVector Matrix::get_row(int h, int m)
     if (m >= rowspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_row: index is out of bounds.");
     }
-    SharedVector vec = SharedVector(new Vector("Row",rowspi_));
+    SharedVector vec = SharedVector(new Vector("Row",colspi_));
     vec->zero();
     int size = colspi_[h];
     for (int i = 0; i < size; ++i){
@@ -686,7 +686,7 @@ SharedVector Matrix::get_column(int h, int m)
     if (m >= colspi_[h]) {
         throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
     }
-    SharedVector vec = SharedVector(new Vector("Row",colspi_));
+    SharedVector vec = SharedVector(new Vector("Column",rowspi_));
     vec->zero();
     int size = rowspi_[h];
     for (int i = 0; i < size; ++i){
