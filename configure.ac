@@ -1272,10 +1272,10 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 
 # If we are using libefp, and we are linking the internal libefp
 # library then set up the internal libefp to be built
-if test "$HAVE_LIBEFP" = "1"; then
-  if test "$BUILD_LIBEFP" = "1"; then
-    AC_CONFIG_SUBDIRS([libefp])
-  fi
-fi
+#if test "$HAVE_LIBEFP" = "1"; then
+#  if test "$BUILD_LIBEFP" = "1"; then
+#    AC_CONFIG_SUBDIRS([libefp])
+#  fi
+#fi
 
 AC_OUTPUT
