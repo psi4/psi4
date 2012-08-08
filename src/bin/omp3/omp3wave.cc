@@ -872,18 +872,6 @@ void OMP3Wave::mem_release()
 	  free_block(vecsB);
 	}
 
-        if (hess_type == "SCF") {
-           delete [] kappa;
-           //AorbAA.reset();
-           //AorbBB.reset();
-           //AorbAB.reset();
-           //Aorb.reset();
-	   free_block(Aorb);
-	   free_block(AorbAA);
-	   free_block(AorbBB);
-	   free_block(AorbAB);
-        }
-
 	
 	chkpt_.reset();
 	Ca_.reset();

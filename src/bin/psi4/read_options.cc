@@ -2404,6 +2404,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("OPT_METHOD","DIIS","SD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
+    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- Do print OMP3 orbital energies? -*/
     options.add_bool("OMP3_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically. 
