@@ -248,7 +248,7 @@ void EFP::SetGeometry(){
        xyz->print();
        }
 
-       if ((res = efp_set_coordinates_2(efp, coords))) {
+       if ((res = efp_set_coordinates(efp, EFP_COORD_TYPE_POINTS, coords))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
