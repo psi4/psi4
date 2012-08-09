@@ -39,7 +39,7 @@ mointegrals(Options &options)
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
 
     // Now we want the reference (SCF) wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     if(!wfn) throw PSIEXCEPTION("SCF has not been run yet!");
 
     // Quickly check that there are no open shell orbitals here...
