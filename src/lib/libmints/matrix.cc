@@ -684,7 +684,7 @@ SharedVector Matrix::get_row(int h, int m)
 SharedVector Matrix::get_column(int h, int m)
 {
     if (m >= colspi_[h]) {
-        throw PSIEXCEPTION("Matrix::set_column: index is out of bounds.");
+        throw PSIEXCEPTION("Matrix::get_column: index is out of bounds.");
     }
     SharedVector vec = SharedVector(new Vector("Column",rowspi_));
     vec->zero();
@@ -1718,6 +1718,19 @@ boost::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps()
 
     return boost::tuple<SharedMatrix, SharedVector, SharedMatrix>(U,S,V);
 }
+boost::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_a_temps()
+{
+    Dimension rank(nirrep_);
+    for (int h = 0; h < nirrep_; h++) {
+        int m = rowspi_[h];
+        int n = colspi_[h^symmetry_];
+        rank[h] = std::min(m,n);
+    }
+    SharedMatrix U(new Matrix("U", rowspi_, rowspi_));
+    SharedVector S(new Vector("S", rank));
+    SharedMatrix V(new Matrix("V", colspi_, colspi_));
+    return boost::tuple<SharedMatrix, SharedVector, SharedMatrix>(U,S,V);
+}
 void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
     // Actually, this routine takes mn + mk + nk
@@ -1769,46 +1782,65 @@ void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
     // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h] || !colspi_[h^symmetry_])
-            continue;
-
         int m = rowspi_[h];
         int n = colspi_[h^symmetry_];
-        int k = (m < n ? m : n);
+        // There is something to SVD
+        if ((m != 0) && (n != 0)){
 
-        double** Ap = Matrix::matrix(m,n);
-        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n);
-        double*  Sp = S->pointer(h);
-        double** Up = U->pointer(h);
-        double** Vp = V->pointer(h^symmetry_);
+            int k = (m < n ? m : n);
 
-        int* iwork = new int[8L * k];
+            double** Ap = Matrix::matrix(m,n);
+            ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n);
+            double*  Sp = S->pointer(h);
+            double** Up = U->pointer(h);
+            double** Vp = V->pointer(h^symmetry_);
 
-        // Workspace Query
-        double lwork;
-        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,&lwork,-1,iwork);
+            int* iwork = new int[8L * k];
 
-        double* work = new double[(int)lwork];
+            // Workspace Query
+            double lwork;
+            int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,&lwork,-1,iwork);
 
-        // SVD
-        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,work,(int)lwork,iwork);
+            double* work = new double[(int)lwork];
 
-        delete[] work;
-        delete[] iwork;
+            // SVD
+            info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,work,(int)lwork,iwork);
 
-        if (info != 0) {
-            if (info < 0) {
-                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
-                fflush(outfile);
-                abort();
+            delete[] work;
+            delete[] iwork;
+
+            if (info != 0) {
+                if (info < 0) {
+                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                    fflush(outfile);
+                    abort();
+                }
+                if (info > 0) {
+                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                    fflush(outfile);
+                    abort();
+                }
             }
-            if (info > 0) {
-                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
-                fflush(outfile);
-                abort();
+            Matrix::free(Ap);
+        }else if((m != 0) && (n == 0)){
+            // There is nothing to SVD, but we need set the U block to the identity matrix
+            double** Up = U->pointer(h);
+            for (int i = 0; i < m; ++i){
+                for (int j = 0; j < m; ++j){
+                    Up[i][j] = 0.0;
+                }
+                Up[i][i] = 1.0;
+            }
+        }else if((m == 0) && (n != 0)){
+            // There is nothing to SVD, but we need set the V block to the identity matrix
+            double** Vp = V->pointer(h^symmetry_);
+            for (int i = 0; i < n; ++i){
+                for (int j = 0; j < n; ++j){
+                    Vp[i][j] = 0.0;
+                }
+                Vp[i][i] = 1.0;
             }
         }
-        Matrix::free(Ap);
     }
 }
 

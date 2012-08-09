@@ -15,6 +15,7 @@
 #include <liboptions/liboptions.h>
 #include <libdiis/diismanager.h>
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 
 #include "omp2wave.h"
 #include "defines.h"
@@ -153,7 +154,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision August 4, 2012\n") ;
+   fprintf(outfile,"              Latest Revision August 7, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
    fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;
@@ -179,10 +180,18 @@ double OMP2Wave::compute_energy()
 	}
 	
 	mo_optimized = 0;
+        timer_on("trans_ints");
 	trans_ints();  
+        timer_off("trans_ints");
+        timer_on("T2(1)");
 	t2_1st_sc();
+        timer_off("T2(1)");
+        timer_on("REF Energy");
 	ref_energy();
+        timer_off("REF Energy");
+        timer_on("MP2 Energy");
 	mp2_energy();
+        timer_off("MP2 Energy");
 	Emp2L=Emp2;
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
