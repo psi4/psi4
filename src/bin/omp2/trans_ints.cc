@@ -125,7 +125,7 @@ void OMP2Wave::trans_ints()
                   ID("[O>=O]+"), ID("[o>=o]+"), 0, "MO Ints (OO|oo)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[O,o]"), "MO Ints <Oo|Oo>");
      dpd_buf4_close(&K);
-     timer_on("Sort (OO|OO) -> <OO|OO>");
+     timer_off("Sort (OO|OO) -> <OO|OO>");
      
  
   
