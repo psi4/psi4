@@ -19,6 +19,7 @@ Dimension::Dimension(int n, const std::string &name)
 }
 
 Dimension::Dimension(const std::vector<int> &v)
+    : n_(static_cast<int>(v.size()))
 {
     blocks_ = new int[v.size()];
     std::copy( v.begin(), v.end(), blocks_);

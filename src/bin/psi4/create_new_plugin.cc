@@ -140,6 +140,7 @@ class PluginFileManager{
             match_format = boost::xpressive::as_xpr("@Plugin@");
             filestring = xpressive::regex_replace(filestring, match_format, Name);
             match_format = boost::xpressive::as_xpr("@PLUGIN@");
+            filestring = xpressive::regex_replace(filestring, match_format, format_PLUGIN);
 
             // Write the new file out
             fp = fopen(target_name.c_str(), "w");

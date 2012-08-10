@@ -306,6 +306,13 @@ void Vector::scale(const double& sc)
     std::transform(v_.begin(), v_.end(), v_.begin(), scale_vector<double>(sc));
 }
 
+void Vector::add(const std::vector<double>& rhs)
+{
+    size_t min = std::min(rhs.size(), v_.size());
+    for (size_t i=0; i<min; ++i)
+        v_[i] += rhs[i];
+}
+
 void Vector::send()
 {
 }

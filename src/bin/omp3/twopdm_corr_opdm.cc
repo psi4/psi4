@@ -296,7 +296,43 @@ void OMP3Wave::twopdm_corr_opdm()
       dpd_buf4_print(&G, outfile, 1);
       dpd_buf4_close(&G);
     }
-    
+   
+
+    // G_IABJ = -GIAJB so I do not need to OVVO block,
+    //  however for proper contraction (to avoid construction of <OV||VV>)  in the GFock.cc I need it. 
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+    dpd_buf4_sort(&G, PSIF_OMP3_DENSITY , pqsr, ID("[O,V]"), ID("[V,O]"), "TPDM <OV|VO>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
+                  ID("[O,V]"), ID("[V,O]"), 0, "TPDM <OV|VO>");
+    dpd_buf4_scm(&G, -1.0);
+    dpd_buf4_close(&G);
+
+    /*
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
+                  ID("[O,V]"), ID("[V,O]"), 0, "TPDM <OV|VO>");
+    dpd_buf4_print(&G, outfile, 1);
+    dpd_buf4_close(&G);
+    */
+
+    // G_iabj = -Giajb so I do not need to ovvo block,
+    //  however for proper contraction (to avoid construction of <ov||vv>)  in the GFock.cc I need it. 
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
+    dpd_buf4_sort(&G, PSIF_OMP3_DENSITY , pqsr, ID("[o,v]"), ID("[v,o]"), "TPDM <ov|vo>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),
+                  ID("[o,v]"), ID("[v,o]"), 0, "TPDM <ov|vo>");
+    dpd_buf4_scm(&G, -1.0);
+    dpd_buf4_close(&G);
+ 
+    /*
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),
+                  ID("[o,v]"), ID("[v,o]"), 0, "TPDM <ov|vo>");
+    dpd_buf4_print(&G, outfile, 1);
+    dpd_buf4_close(&G);
+    */
     
     psio_->close(PSIF_OMP3_DENSITY, 1);
    

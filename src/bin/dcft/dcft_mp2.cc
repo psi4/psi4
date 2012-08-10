@@ -27,7 +27,7 @@ DCFTSolver::mp2_guess()
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
     // This wavefunction is really the global reference wavefunction
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     _ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
@@ -43,14 +43,14 @@ DCFTSolver::mp2_guess()
      */
 
     // L_IJAB = <IJ||AB> / D_IJAB
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
     dpd_buf4_copy(&I, PSIF_DCFT_DPD, "Lambda <OO|VV>");
     dpd_buf4_close(&I);
     dpd_buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+                  ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     dpd_buf4_dirprd(&D, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&D);
@@ -69,14 +69,14 @@ DCFTSolver::mp2_guess()
     dpd_buf4_close(&D);
 
     // L_ijab = <ij||ab> / D_ijab
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
     dpd_buf4_copy(&I, PSIF_DCFT_DPD, "Lambda <oo|vv>");
     dpd_buf4_close(&I);
     dpd_buf4_init(&I, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
+                  ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     dpd_buf4_dirprd(&D, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&D);
@@ -92,7 +92,7 @@ DCFTSolver::mp2_guess()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     double eAA = 0.25 * dpd_buf4_dot(&L, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
@@ -110,7 +110,7 @@ DCFTSolver::mp2_guess()
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     double eBB = 0.25 * dpd_buf4_dot(&L, &I);
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
@@ -131,7 +131,7 @@ DCFTSolver::mp2_guess()
         psio_->open(CC_TAMPS, PSIO_OPEN_OLD);
         dpdbuf4 T2;
         // Copy the AA amplitudes from CCEnergy
-        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O,O]"), ID("[V,V]"),
+        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "tIJAB");
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <OO|VV>");
         dpd_buf4_close(&T2);
@@ -141,7 +141,7 @@ DCFTSolver::mp2_guess()
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <Oo|Vv>");
         dpd_buf4_close(&T2);
         // Copy the BB amplitudes from CCEnergy
-        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[o,o]"), ID("[v,v]"),
+        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "tijab");
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <oo|vv>");
         dpd_buf4_close(&T2);
