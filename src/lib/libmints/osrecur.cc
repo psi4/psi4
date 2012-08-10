@@ -56,22 +56,22 @@ ObaraSaikaTwoCenterMIRecursion::ObaraSaikaTwoCenterMIRecursion(int max_am1, int 
         throw SanityCheckError("ObaraSaikaTwoCenterMIRecursion -- max_am1 must be nonnegative", __FILE__, __LINE__);
     if (max_am2 < 0)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_am2 must be nonnegative", __FILE__, __LINE__);
-    if (max_m > 3)
-        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_m must be nonnegative and less than 4", __FILE__, __LINE__);
+//    if (max_m > 3)
+//        throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion -- max_m must be nonnegative and less than 4", __FILE__, __LINE__);
 
-    x_ = init_box(max_am1+3, max_am2+3, max_m+1);
-    y_ = init_box(max_am1+3, max_am2+3, max_m+1);
-    z_ = init_box(max_am1+3, max_am2+3, max_m+1);
+    x_ = init_box(max_am1+1, max_am2+1, max_m+1);
+    y_ = init_box(max_am1+1, max_am2+1, max_m+1);
+    z_ = init_box(max_am1+1, max_am2+1, max_m+1);
 }
 
 ObaraSaikaTwoCenterMIRecursion::~ObaraSaikaTwoCenterMIRecursion()
 {
-    free_box(x_, max_am1_+3, max_am2_+3);
-    free_box(y_, max_am1_+3, max_am2_+3);
-    free_box(z_, max_am1_+3, max_am2_+3);
+    free_box(x_, max_am1_+1, max_am2_+1);
+    free_box(y_, max_am1_+1, max_am2_+1);
+    free_box(z_, max_am1_+1, max_am2_+1);
 }
 
-void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double gamma, int am1, int am2)
+void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double PC[3], double gamma, int am1, int am2)
 {
     if (am1 < 0 || am1 > max_am1_)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
@@ -81,8 +81,12 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
     int i, j, k;
     double oog = 1.0 / (2.0 * gamma);
 
-    if (max_m_) {
-        x_[0][0][2] = y_[0][0][2] = z_[0][0][2] = oog;
+    x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
+
+    for(int n = 2; n <= max_m_; ++n) {
+        x_[0][0][n] = PC[0] * x_[0][0][n-1] + oog * x_[0][0][n-2];
+        y_[0][0][n] = PC[1] * y_[0][0][n-1] + oog * y_[0][0][n-2];
+        z_[0][0][n] = PC[2] * z_[0][0][n-1] + oog * z_[0][0][n-2];
     }
 
     // Upward recursion in j for i=0

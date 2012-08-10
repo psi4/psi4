@@ -607,12 +607,12 @@ command is used::
        assign C aug-cc-pVDZ-RI df_basis_mp2
     }
 
-When Dunning's correlation consistent basis sets (cc-pV*X*Z), and core-valence
-and diffuse variants thereof, are being used the SCF and DF-MP2 codes will
-chose the appropriate auxiliary basis set automatically, unless instructed
-otherwise by setting the auxiliary basis set in the input.  Finally, we note
-that the ``basis`` block may also be used for defining basis sets, as
-detailed in Sec. :ref:`sec:basisUserDefined`.
+When most popular basis sets are being used, including Dunning and
+Pople-style, the SCF, DF-MP2, and SAPT codes will chose the appropriate
+auxiliary basis set automatically according to :ref:`apdx:basisFamily`,
+unless instructed otherwise by setting the auxiliary basis set in the
+input.  Finally, we note that the ``basis {...}`` block may also be used
+for defining basis sets, as detailed in Sec. :ref:`sec:basisUserDefined`.
 
 .. index:: memory
 .. _`sec:memory`:

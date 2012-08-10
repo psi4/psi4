@@ -788,7 +788,7 @@ OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn_)
 {
     common_init();
 }
-OEProp::OEProp() : Prop(Process::environment.reference_wavefunction())
+OEProp::OEProp() : Prop(Process::environment.wavefunction())
 {
     common_init();
 }
@@ -845,6 +845,12 @@ void OEProp::compute_dipole(bool transition)
     } else {
         Da = Da_so_;
         Db = Db_so_;
+    }
+
+    if(print_ > 4){
+        std::vector<SharedMatrix>::iterator iter;
+        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
+            iter->get()->print();
     }
 
     de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
@@ -919,6 +925,12 @@ void OEProp::compute_quadrupole(bool transition)
 
     // Compute multipole moment integrals
     soqOBI->compute(so_Qpole);
+
+    if(print_ > 4){
+        std::vector<SharedMatrix>::iterator iter;
+        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
+            iter->get()->print();
+    }
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
@@ -1662,7 +1674,7 @@ GridProp::GridProp(boost::shared_ptr<Wavefunction> wfn) : filename_("out.grid"),
 {
     common_init();
 }
-GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.reference_wavefunction())
+GridProp::GridProp() : filename_("out.grid"), Prop(Process::environment.wavefunction())
 {
     common_init();
 }

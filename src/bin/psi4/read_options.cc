@@ -705,7 +705,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_BASIS_SAPT", "");
     /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
     computations, may be important if heavier elements are involved.
-    :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+    Defaults to |sapt__df_basis_sapt|. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum error allowed (Max error norm in Delta tensor)
     in the approximate energy denominators employed for most of the
@@ -739,7 +739,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- The algorithm to use for the density cumulant and orbital updates in the energy computation.
       Two-step algorithm (default) is generally more efficient and shows better convergence than simultaneous -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
       /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.
       Two-step algorithm is generally more efficient than simultaneous and is used by default-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
@@ -2404,6 +2404,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("OPT_METHOD","DIIS","SD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
+    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- Do print OMP3 orbital energies? -*/
     options.add_bool("OMP3_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically. 

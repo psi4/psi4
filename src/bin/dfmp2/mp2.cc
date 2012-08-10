@@ -53,7 +53,7 @@ void DFMP2::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-    reference_wavefunction_ = Process::environment.reference_wavefunction();
+    reference_wavefunction_ = Process::environment.wavefunction();
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("DFMP2: Run SCF first");
     }

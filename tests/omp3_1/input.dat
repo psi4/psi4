@@ -1,8 +1,8 @@
-refnuc      =  9.18738712306164 #TEST
-refscf      = -76.02676109921089 #TEST
-refomp3      = -76.23809235168488 #TEST
-refscsomp3  = -76.22933696224761 #TEST
-refsosomp3     = -76.22741629483849 #TEST
+refnuc      =  9.18738642147759 #TEST
+refscf      = -76.02676109559440 #TEST
+refomp3      = -76.23814597596026 #TEST
+refscsomp3  = -76.22939049493380 #TEST
+refsosomp3     = -76.22747335472796 #TEST
 
 memory 250 mb
 
@@ -17,6 +17,7 @@ set {
   basis cc-pvdz
   d_convergence 8
   e_convergence 8
+  print 0
 }
 
 energy('omp3')

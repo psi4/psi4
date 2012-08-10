@@ -556,7 +556,7 @@ namespace psi{ namespace dcft{
 
         /********** AA ***********/
         dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
         dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
                 ID("[O,O]"), ID("[n,n]"), 0, "tau1AO <OO|nn>");
         dpd_buf4_scm(&tau1_AO_aa, 0.0);
@@ -582,7 +582,7 @@ namespace psi{ namespace dcft{
 
         /********** BB ***********/
         dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
                 ID("[o,o]"), ID("[n,n]"), 0, "tau1AO <oo|nn>");
         dpd_buf4_scm(&tau1_AO_bb, 0.0);
@@ -1241,7 +1241,7 @@ namespace psi{ namespace dcft{
 
       /********** AA ***********/
       dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                    ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+                    ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
       dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
                     ID("[O,O]"), ID("[n,n]"), 0, "tau1AO <OO|nn>");
       dpd_buf4_scm(&tau1_AO_aa, 0.0);
@@ -1266,7 +1266,7 @@ namespace psi{ namespace dcft{
 
       /********** BB ***********/
       dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                    ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+                    ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
       dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
                     ID("[o,o]"), ID("[n,n]"), 0, "tau1AO <oo|nn>");
       dpd_buf4_scm(&tau1_AO_bb, 0.0);

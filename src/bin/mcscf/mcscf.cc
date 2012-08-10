@@ -67,7 +67,7 @@ PsiReturnType mcscf(Options& options)
       delete mints;
       // Now, set the reference wavefunction for subsequent codes to use
       boost::shared_ptr<Wavefunction> wfn(new SCF(options,psio,chkpt));
-      Process::environment.set_reference_wavefunction(wfn);
+      Process::environment.set_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();
       Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();

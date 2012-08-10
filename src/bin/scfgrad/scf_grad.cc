@@ -35,7 +35,7 @@ SCFGrad::~SCFGrad()
 }
 void SCFGrad::common_init()
 {
-    reference_wavefunction_ = Process::environment.reference_wavefunction();
+    reference_wavefunction_ = Process::environment.wavefunction();
     
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("SCFGrad: Run SCF first");
