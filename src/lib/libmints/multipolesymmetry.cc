@@ -163,7 +163,7 @@ void MultipoleSymmetry::common_init()
     int n_components = (order_+1)*(order_+2)*(order_+3)/6 - 1;
     component_symmetry_.resize(n_components, 0);
 
-    int component_count = 0;
+    int l_offset = 0;
     for(int l = 1; l <= order_; ++l){
         int ncart = INT_NCART(l);
 
@@ -190,14 +190,14 @@ void MultipoleSymmetry::common_init()
                 }
             }
 
-            // Print out t
             for (int xyz=0; xyz<ncart; ++xyz) {
                 if (t[xyz] != 0) {
-                    component_symmetry_[component_count]= irrep;
+                    component_symmetry_[l_offset + xyz]= irrep;
+//                    fprintf(outfile, "Component %d %d = %d\n", l, l_offset+xyz, irrep);
                 }
-                component_count++;
             }
         }
+        l_offset+= ncart;
 
         delete[] t;
     }
