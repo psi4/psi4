@@ -42,7 +42,9 @@ void OMP3Wave::t2_2nd_sc()
 /********************************************************************************************/
 /************************** Build W intermediates *******************************************/
 /********************************************************************************************/     
+     timer_on("W int");
      W_1st_order();     
+     timer_off("W int");
      
      dpdbuf4 K, T, TAA, TAB, TBB, Tp, D, W;     
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -137,7 +139,8 @@ void OMP3Wave::t2_2nd_sc()
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
     dpd_contract444(&W, &TAA, &T, 1, 1, 0.5, 1.0);
     dpd_buf4_close(&W);
-    
+   
+    /* 
     // T_IJ^AB(2) += 1/2 \sum_{E,F} T_IJ^EF(1) W_ABEF(1)
     //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[V,V]"), ID("[V,V]"),
     //              ID("[V,V]"), ID("[V,V]"), 0, "W_1 <VV|VV>");
@@ -147,6 +150,17 @@ void OMP3Wave::t2_2nd_sc()
     dpd_buf4_close(&W);
     dpd_buf4_close(&T);
     dpd_buf4_close(&TAA);
+    */
+
+
+    // T_IJ^AB(2) += 1/2 \sum_{E,F} T_IJ^EF(1) <EF||AB> = \sum_{E,F} T_IJ^EF(1) <EF|AB>
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
+    dpd_contract444(&TAA, &W, &T, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&W);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&TAA);
+
     
     // T_IJ^AB = T_IJ^AB / D_IJ^AB
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -247,7 +261,8 @@ void OMP3Wave::t2_2nd_sc()
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
     dpd_contract444(&W, &TBB, &T, 1, 1, 0.5, 1.0);
     dpd_buf4_close(&W);
-    
+   
+    /* 
     // T_ij^ab(2) += 1/2 \sum_{e,f} T_ij^ef(1) W_abef(1)
     //dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[v,v]"), ID("[v,v]"),
     //              ID("[v,v]"), ID("[v,v]"), 0, "W_1 <vv|vv>");
@@ -257,8 +272,16 @@ void OMP3Wave::t2_2nd_sc()
     dpd_buf4_close(&W);
     dpd_buf4_close(&T);
     dpd_buf4_close(&TBB);  
+    */
     
-    
+    // T_ij^ab(2) += 1/2 \sum_{e,f} T_ij^ef(1) <ef||ab> = \sum_{e,f} T_ij^ef(1) <ef|ab>
+    dpd_buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
+    dpd_contract444(&TBB, &W, &T, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&W);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&TBB); 
+ 
     // T_ij^ab = T_ij^ab / D_ij^ab
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");

@@ -1,0 +1,260 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 0649d128c4432ca087d37bd3509a2e532dae305d
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  19478
+    PSI4DATADIR: /Users/loriab/linux/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# This is a psi4 input file auto-generated from the gradient() wrapper.
+
+from PsiMod import *
+from physconst import *
+from molutil import *
+from driver import *
+from text import *
+from inpsight import *
+from wrappers import *
+from aliases import *
+from psiexceptions import *
+from util import *
+from qmmm import *
+from frac import *
+from functional import *
+from pubchem import *
+from psifiles import *
+import pickle
+psi4_io = PsiMod.IOManager.shared_object()
+geometry("""
+0 1
+H
+H 1 0.74
+""","blank_molecule_psi4_yo")
+
+h2s = geometry("""
+0 1
+ S    0.000000000000    0.000000000000   -0.056307964633
+ H    0.000000000000   -0.965827951908    0.893152177096
+ H   -0.000000000000    0.965827951908    0.893152177096
+units angstrom
+""","h2s")
+PsiMod.IO.set_default_namespace("h2s")
+
+PsiMod.set_memory(256000000)
+
+PsiMod.set_global_option('BASIS', 'STO-3G')
+PsiMod.set_global_option('CART_HESS_READ', 0)
+PsiMod.set_global_option('GEOM_MAXITER', 4)
+
+pickle_kw = ("""(dp0
+S'opt_datafile'
+p1
+S'.//psi.19464.h2s.1'
+p2
+sS'opt_iter'
+p3
+I4
+sS'mode'
+p4
+S'reap'
+p5
+sS'linkage'
+p6
+I19464
+sS'level'
+p7
+I3
+s.""")
+
+kwargs = pickle.loads(pickle_kw)
+optimize('mp', **kwargs)
+
+
+#    Follow the instructions below to carry out this optimization cycle.
+#
+#    (1)  Run all of the OPT-4-*.in input files on any variety of computer architecture.
+#       The output file names must be as given below.
+#
+#             psi4 -i OPT-4-1.in                  -o OPT-4-1.out                
+#             psi4 -i OPT-4-2.in                  -o OPT-4-2.out                
+#             psi4 -i OPT-4-3.in                  -o OPT-4-3.out                
+#             psi4 -i OPT-4-4.in                  -o OPT-4-4.out                
+#             psi4 -i OPT-4-5.in                  -o OPT-4-5.out                
+#
+#    (2)  Gather all the resulting output files in a directory. Place input file
+#         OPT-master.in into that directory and run it. The job will be minimal in
+#         length and give summary results for the gradient step in its output file.
+#
+#             psi4 -a -i OPT-master.in               -o OPT-master.out             
+#
+#    After each optimization iteration, the OPT-master.in file is overwritten so return here
+#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not
+#    overwritten and so maintains a history of the job. To use the (binary) optimizer
+#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.
+
+
+compare_values(-394.3502481472680, get_variable('current energy'), 5, 'Finite difference optimization through sow/reap')  #TEST
+
+
+--------------------------------------------------------------------------
+
+  Memory set to 256.000 MiB by Python script.
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients (fd_geoms_1_0).
+	Generating geometries for use with 3-point formula.
+	Displacement size will be 5.00e-03.
+	Number of atoms is 3.
+	Number of symmetric SALC's is 2.
+	Number of displacements (including reference) is 5.
+
+-------------------------------------------------------------
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Gradient 4 Computation: Displacement 1//
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+GRADIENT RESULT: electronic energy =    -394.350245791193
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Gradient 4 Computation: Displacement 2//
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+GRADIENT RESULT: electronic energy =    -394.350245243105
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Gradient 4 Computation: Displacement 3//
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+GRADIENT RESULT: electronic energy =    -394.350246857529
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Gradient 4 Computation: Displacement 4//
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+GRADIENT RESULT: electronic energy =    -394.350244031635
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  // Gradient 4 Computation: Displacement 5//
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+GRADIENT RESULT: electronic energy =    -394.350248147268
+
+-------------------------------------------------------------
+
+  Computing gradient from energies (fd_1_0).
+	Using 3-point formula.
+	Energy without displacement: -394.3502481473
+	Check energies below for precision!
+	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
+
+	 Coord      Energy(-)        Energy(+)        Force
+	    0   -394.3502457912  -394.3502452431     0.0000548088
+	    1   -394.3502468575  -394.3502440316     0.0002825894
+
+	Gradient written to file11.
+	Gradient saved to environment.
+
+-------------------------------------------------------------
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Previous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 S           0.0000000000        0.0000000000       -0.1064066323
+	 H           0.0000000000       -1.8251503206        1.6878130097
+	 H          -0.0000000000        1.8251503206        1.6878130097
+	             0.0000000000        0.0000000000        0.0000754714
+	             0.0000000000        0.0002006012       -0.0000377357
+	             0.0000000000       -0.0002006012       -0.0000377357
+
+	---Fragment 1 Intrafragment Coordinates---
+	 - Coordinate -           - BOHR/RAD -       - ANG/DEG -
+	 R(1,2)           =         2.559374	       1.354363
+	 R(1,3)           =         2.559374	       1.354363
+	 B(2,1,3)         =         1.587888	      90.979261
+
+	Current energy   :      -394.3502481473
+
+	Energy change for the previous step:
+		Projected    :        -0.0000009981
+		Actual       :        -0.0000003880
+
+	Performing BFGS update with previous 1 gradient(s).
+	Going to follow RFO solution 1.
+	Projected energy change by RFO approximation:        -0.0000002340
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.354363     0.001397     0.000253     1.354616
+	 R(1,3)          =      1.354363     0.001397     0.000253     1.354616
+	 B(2,1,3)        =     90.979261     0.000022     0.060181    91.039442
+	 ----------------------------------------------------------------------
+
+  ==> Convergence Check <==
+
+  Measures of convergence in internal coordinates in au.
+  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).
+  ---------------------------------------------------------------------------------------------
+   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   
+  ---------------------------------------------------------------------------------------------
+    Convergence Criteria    1.00e-06 *    3.00e-04 *             o    1.20e-03 *             o
+  ---------------------------------------------------------------------------------------------
+      4    -394.35024815   -3.88e-07 *    2.91e-04 *    2.18e-04 o    1.05e-03 *    7.21e-04 o  ~
+  ---------------------------------------------------------------------------------------------
+
+
+  **** Optimization is complete! ****
+
+  ==> Optimization Summary <==
+
+  Measures of convergence in internal coordinates in au.
+  --------------------------------------------------------------------------------------------------------------- ~
+   Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~
+  --------------------------------------------------------------------------------------------------------------- ~
+      1    -394.349786769905   -394.349786769905      0.01215243      0.01024190      0.04523216      0.04014749  ~
+      2    -394.350206078775     -0.000419308870      0.00324392      0.00293108      0.01041173      0.00964065  ~
+      3    -394.350247759285     -0.000041680510      0.00045955      0.00035546      0.00270392      0.00188815  ~
+      4    -394.350248147268     -0.000000387983      0.00029105      0.00021770      0.00105035      0.00072143  ~
+  --------------------------------------------------------------------------------------------------------------- ~
+
+	Writing optimization data to binary file.
+	Final energy is   -394.3502481472680
+	Final (previous) structure:
+	Cartesian Geometry (au)
+	    S     0.0000000000   0.0000000000  -0.1064066323
+	    H     0.0000000000  -1.8251503206   1.6878130097
+	    H    -0.0000000000   1.8251503206   1.6878130097
+	Saving final (previous) structure.
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** PSI4 exiting successfully. Buy a developer a beer!
