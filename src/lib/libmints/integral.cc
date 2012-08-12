@@ -157,6 +157,17 @@ OneBodySOInt* IntegralFactory::so_quadrupole()
     return new OneBodySOInt(ao_int, this);
 }
 
+OneBodyAOInt* IntegralFactory::ao_multipoles(int order)
+{
+    return new MultipoleInt(spherical_transforms_, bs1_, bs2_, order);
+}
+
+OneBodySOInt* IntegralFactory::so_multipoles(int order)
+{
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_multipoles(order));
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole()
 {
     return new TracelessQuadrupoleInt(spherical_transforms_, bs1_, bs2_);
