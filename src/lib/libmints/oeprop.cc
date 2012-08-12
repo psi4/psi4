@@ -828,6 +828,62 @@ void OEProp::compute()
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
 }
+
+void OEProp::compute_multipoles(int order, bool transition)
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+    MultipoleSymmetry mpsymm (order, mol, integral_, factory_);
+    std::vector<SharedMatrix> mp_ints = mpsymm.create_matrices("");
+    boost::shared_ptr<OneBodySOInt> sompOBI (integral_->so_multipoles(order));
+    sompOBI->compute(mp_ints);
+    Vector3 de;
+    SharedMatrix Da;
+    SharedMatrix Db;
+
+    if (same_dens_) {
+        Da = Da_so_;
+        Db = Da;
+    } else {
+        Da = Da_so_;
+        Db = Db_so_;
+    }
+
+    if(print_ > 4){
+        std::vector<SharedMatrix>::iterator iter;
+        for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
+            iter->get()->print();
+    }
+
+    SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order);
+
+    fprintf(outfile,"\n%s Multipole Moments:\n", transition ? "Transition" : "");
+    fprintf(outfile, "\n --------------------------------------------------------------------------------\n");
+    fprintf(outfile, "     Multipole           Electric       Nuclear                 Total   \n");
+    fprintf(outfile, "                           (a.u)         (a.u.)        (a.u.)   (Debye.ang^[l-1])\n");
+    fprintf(outfile, " --------------------------------------------------------------------------------\n\n");
+    double convfac = _dipmom_au2debye;
+    int address = 0;
+    for(int l = 1; l <= order; ++l){
+        int ncomponents = (l + 1) * (l + 2) / 2;
+        for(int component = 0; component < ncomponents; ++component){
+            SharedMatrix mpmat = mp_ints[address];
+            std::string name = mpmat->name();
+            double nuc = transition ? 0.0 : nuclear_contributions->get(address);
+            double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
+            double tot = nuc + elec;
+            fprintf(outfile, " %-20s: %13.8f %13.8f %13.8f %13.8f\n",
+                    name.c_str(), elec, nuc, tot, convfac*tot);
+            ++address;
+        }
+        fprintf(outfile, "\n");
+        convfac *= _bohr2angstroms;
+    }
+    fprintf(outfile, " --------------------------------------------------------------------------------\n");
+
+    fflush(outfile);
+}
+
+
 void OEProp::compute_dipole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
