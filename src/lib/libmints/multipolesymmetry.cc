@@ -139,4 +139,123 @@ vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basen
     return matrices;
 }
 
+
+
+MultipoleSymmetry::MultipoleSymmetry(int order,
+                                   boost::shared_ptr<Molecule> mol,
+                                   boost::shared_ptr<IntegralFactory> ints)
+    : order_(order), molecule_(mol), integral_(ints)
+{
+    common_init();
+}
+
+MultipoleSymmetry::MultipoleSymmetry(int order,
+                                   boost::shared_ptr<Molecule> mol,
+                                   boost::shared_ptr<IntegralFactory> ints,
+                                   boost::shared_ptr<MatrixFactory> mats)
+    : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
+{
+    common_init();
+}
+
+void MultipoleSymmetry::common_init()
+{
+    int n_components = (order_+1)*(order_+2)*(order_+3)/6 - 1;
+    component_symmetry_.resize(n_components, 0);
+
+    int component_count = 0;
+    for(int l = 1; l <= order_; ++l){
+        int ncart = INT_NCART(l);
+
+        CharacterTable ct = molecule_->point_group()->char_table();
+        int nirrep = ct.nirrep();
+
+        double *t = new double[ncart];
+
+        for (int irrep=0; irrep<nirrep; ++irrep) {
+            IrreducibleRepresentation gamma = ct.gamma(irrep);
+
+            ::memset(t, 0, sizeof(double)*ncart);
+
+            // Apply the projection
+            for (int G=0; G<nirrep; ++G) {
+                SymmetryOperation so = ct.symm_operation(G);
+                ShellRotation rr(order_, so, integral_.get(), false);
+
+                // rr(xyz, xyz) tells us how the orbitals transform in this
+                // symmetry operation, then we multiply by the character in
+                // the irrep
+                for (int xyz=0; xyz<ncart; ++xyz) {
+                    t[xyz] += rr(xyz, xyz) * gamma.character(G) / nirrep;
+                }
+            }
+
+            // Print out t
+            for (int xyz=0; xyz<ncart; ++xyz) {
+                if (t[xyz] != 0) {
+                    component_symmetry_[component_count]= irrep;
+                }
+                component_count++;
+            }
+        }
+
+        delete[] t;
+    }
+}
+
+MultipoleSymmetry::~MultipoleSymmetry()
+{
+}
+
+
+
+vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &basename)
+{
+    vector<SharedMatrix > matrices;
+
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+
+    int component = 0;
+    for(int l = 1; l <= order_; ++l){
+        for(int ii = 0; ii <= l; ii++) {
+            int lx = l - ii;
+            for(int lz = 0; lz <= ii; lz++) {
+                int ly = ii - lz;
+                std::stringstream sstream;
+                if(l == 1){
+                    sstream << "Dipole ";
+                }else if(l == 2){
+                    sstream << "Quadrupole ";
+                }else if (l == 3){
+                    sstream << "Octupole ";
+                }else if (l == 4){
+                    sstream << "Hexadecapole ";
+                }else{
+                    int n = (1 << l);
+                    sstream << n << "-pole ";
+                }
+                std::string name = sstream.str();
+                for(int xval = 0; xval < lx; ++xval)
+                    name += "X";
+                for(int yval = 0; yval < ly; ++yval)
+                    name += "Y";
+                for(int zval = 0; zval < lz; ++zval)
+                    name += "Z";
+
+                name = basename + name;
+                int sym = component_symmetry_[component];
+                if (matrix_) {
+                    matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[component]));
+                }else{
+                    SharedMatrix mat(new Matrix(name, wfn->nsopi(), wfn->nsopi(), sym));
+                    matrices.push_back(mat);
+                }
+                ++component;
+            }
+        }
+    }
+
+    return matrices;
+}
+
 }
