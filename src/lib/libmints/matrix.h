@@ -819,6 +819,11 @@ public:
     ///@}
 
     ///@{
+    /// Matrices/Vectors U (m x m), S (k), V (n x n) to feed to Matrix::svd_a
+    boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_a_temps();
+    ///@}
+
+    ///@{
     /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
     SharedMatrix pseudoinverse(double condition = 0.0, bool* conditioned = NULL);
     ///@}

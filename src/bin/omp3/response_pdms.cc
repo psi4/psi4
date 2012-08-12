@@ -49,11 +49,14 @@ void OMP3Wave::response_pdms()
 /********************************************************************************************/
 /************************** Build G intermediates *******************************************/
 /********************************************************************************************/  
+        timer_on("G int");
 	G_int(); 
+        timer_off("G int");
    
 /********************************************************************************************/
 /************************** (OO) Block whole ************************************************/
 /********************************************************************************************/ 
+        timer_on("OPDM");
 	// alpha contrb.
 	for (int i=nfrzc; i<nooA;i++) {
 	  for (int j=nfrzc; j<nooA;j++) { 
@@ -150,19 +153,38 @@ void OMP3Wave::response_pdms()
 	    }
 	  }
 	}
+        timer_off("OPDM");
 
 /********************************************************************************************/
 /************************** TPDMs ***********************************************************/
 /********************************************************************************************/ 
+        timer_on("V int");
         V_2nd_order(); 
+        timer_off("V int");
+        timer_on("TPDM OOVV");
 	twopdm_oovv();
+        timer_off("TPDM OOVV");
+        timer_on("TPDM OOOO");
 	twopdm_oooo();
+        timer_off("TPDM OOOO");
+        timer_on("TPDM VVVV");
         twopdm_vvvv();
+        timer_off("TPDM VVVV");
+        timer_on("TPDM OVOV");
         twopdm_ovov();
+        timer_off("TPDM OVOV");
+        timer_on("TPDM VOVO");
         twopdm_vovo();
+        timer_off("TPDM VOVO");
+        timer_on("TPDM OVVO");
         twopdm_ovvo();
+        timer_off("TPDM OVVO");
+        timer_on("TPDM REF");
 	twopdm_ref(); 
+        timer_off("TPDM REF");
+        timer_on("TPDM CORR OPDM");
 	twopdm_corr_opdm();
+        timer_off("TPDM CORR OPDM");
 
 /********************************************************************************************/
 /************************** Print ***********************************************************/
@@ -465,13 +487,15 @@ void OMP3Wave::twopdm_ovvo()
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-    
+   
+    // VoOv block is here! 
     // G_AiJb = G_JbAi so I do not need to VoOv block, however for proper contraction in the GFock.cc I need it. 
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     dpd_buf4_sort(&G, PSIF_OMP3_DENSITY , rspq, ID("[V,o]"), ID("[O,v]"), "TPDM <Vo|Ov>");
     dpd_buf4_close(&G);
-    
+
+        
     //Print 
     if (print_ > 3) {
       dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),

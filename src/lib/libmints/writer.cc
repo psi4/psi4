@@ -206,7 +206,7 @@ void MoldenWriter::write(const std::string &filename)
             fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
             fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
             fprintf(molden, " Spin= Alpha\n");
-            int occ = n < (wavefunction_->doccpi()[h] + wavefunction_->soccpi()[h]) ? 1.0 : 0.0;
+            int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
             fprintf(molden, " Occup= %3.1d\n", occ);
             for (int so=0; so<wavefunction_->nso(); ++so)
                 fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
@@ -219,7 +219,7 @@ void MoldenWriter::write(const std::string &filename)
             fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
             fprintf(molden, " Ene= %20.10f\n", Eb.get(h, n));
             fprintf(molden, " Spin= Beta\n");
-            int occ = n < (wavefunction_->doccpi()[h]) ? 1.0 : 0.0;
+            int occ = n < (wavefunction_->nbetapi()[h]) ? 1.0 : 0.0;
             fprintf(molden, " Occup= %3.1d\n", occ);
             for (int so=0; so<wavefunction_->nso(); ++so)
                 fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
