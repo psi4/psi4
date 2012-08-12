@@ -1,0 +1,40 @@
+#! DF-SCF cc-pVDZ multipole moments of ethylene, up to 7th order
+ 
+memory 250 mb
+ 
+molecule bz {
+symmetry c1
+    C          0.710500000000    0.000000000000   -1.230622098778
+    C          1.421000000000    0.000000000000    0.000000000000
+    C          0.710500000000    0.000000000000    1.230622098778
+    C         -0.710500000000    0.000000000000    1.230622098778
+    H          1.254500000000    0.000000000000   -2.172857738095
+    H         -1.254500000000    0.000000000000    2.172857738095
+    C         -0.710500000000    0.000000000000   -1.230622098778
+    C         -1.421000000000    0.000000000000    0.000000000000
+    H          2.509000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000    2.172857738095
+    H         -1.254500000000    0.000000000000   -2.172857738095
+    H         -2.509000000000    0.000000000000    0.000000000000
+}
+
+set {
+    basis cc-pVDZ
+    puream false
+    E_CONVERGENCE 11
+    D_CONVERGENCE 11
+    GUESS SAD
+    SCF_TYPE DF
+    REFERENCE RHF
+}
+
+
+eehf = energy('scf')
+
+#Now use an OEProp object to compute multipole moments through 7th order
+oe = OEProp()
+oe.add("MULTIPOLES(7)")
+oe.compute()
+
+clean()
+
