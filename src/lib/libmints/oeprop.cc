@@ -934,11 +934,11 @@ void OEProp::compute_dipole(bool transition)
         Db = Db_so_;
     }
 
-    if(print_ > 4){
-        std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
-            iter->get()->print();
-    }
+//    if(print_ > 4){
+//        std::vector<SharedMatrix>::iterator iter;
+//        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
+//            iter->get()->print();
+//    }
 
     de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
     de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
@@ -1013,11 +1013,11 @@ void OEProp::compute_quadrupole(bool transition)
     // Compute multipole moment integrals
     soqOBI->compute(so_Qpole);
 
-    if(print_ > 4){
-        std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
-            iter->get()->print();
-    }
+//    if(print_ > 4){
+//        std::vector<SharedMatrix>::iterator iter;
+//        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
+//            iter->get()->print();
+//    }
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
