@@ -1,0 +1,2 @@
+For the moment, to compile on mac, move libefp-0.1.tar.gz-mac to libefp-0.1.tar.gz .
+This is only until Ilya fixes the --version-script issue in the main libefp tarball.
