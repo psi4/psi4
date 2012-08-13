@@ -1160,9 +1160,12 @@ AC_CONFIG_FILES([
           tests/pubchem1/Makefile
           tests/props1/Makefile
           tests/props2/Makefile
+          tests/props3/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
           tests/dft-b2plyp/Makefile
+          tests/dft-pbe0-2/Makefile
+          tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
           tests/mom/Makefile
           tests/frac/Makefile

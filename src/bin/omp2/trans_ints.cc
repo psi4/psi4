@@ -47,33 +47,53 @@ void OMP2Wave::trans_ints()
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
     
     // Trans (OO|OO)
+    timer_on("Trans (OO|OO)");
     ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
+    timer_off("Trans (OO|OO)");
     
     // Trans (OO|OV)
+    timer_on("Trans (OO|OV)");
     ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir);
+    timer_off("Trans (OO|OV)");
     
     // Trans (OV|OO)
+    timer_on("Trans (OV|OO)");
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ);
+    timer_off("Trans (OV|OO)");
 
     // Trans (OV|OV)
+    timer_on("Trans (OV|OV)");
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+    timer_off("Trans (OV|OV)");
     
     // Trans (OO|VV)
+    timer_on("Trans (OO|VV)");
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
+    timer_off("Trans (OO|VV)");
     ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
     
     // Trans (VV|OO)
+    timer_on("Trans (VV|OO)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
+    timer_off("Trans (VV|OO)");
     
     // Trans (OV|VV)
+    timer_on("Trans (OV|VV)");
     ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    timer_off("Trans (OV|VV)");
     
     // Trans (VV|OV)
+    timer_on("Trans (VV|OV)");
+    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+    timer_off("Trans (VV|OV)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
     
     
     // Trans (VV|VV)
     if (hess_type == "FULL") {
+      timer_on("Trans (VV|VV)");
       ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+      timer_off("Trans (VV|VV)");
     }
     
     
@@ -85,8 +105,10 @@ void OMP2Wave::trans_ints()
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      
      // Build MO ints    
+     timer_on("Sort chem -> phys");
      
      // (OO|OO) -> <OO|OO>
+     timer_on("Sort (OO|OO) -> <OO|OO>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,O]"), "MO Ints <OO|OO>");
@@ -103,10 +125,12 @@ void OMP2Wave::trans_ints()
                   ID("[O>=O]+"), ID("[o>=o]+"), 0, "MO Ints (OO|oo)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[O,o]"), "MO Ints <Oo|Oo>");
      dpd_buf4_close(&K);
+     timer_off("Sort (OO|OO) -> <OO|OO>");
      
  
   
      // (OO|OV) -> <OO|OV>
+     timer_on("Sort (OO|OV) -> <OO|OV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O>=O]+"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[O,V]"), "MO Ints <OO|OV>");
@@ -129,11 +153,13 @@ void OMP2Wave::trans_ints()
                   ID("[O,V]"), ID("[o>=o]+"), 0, "MO Ints (OV|oo)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,o]"), "MO Ints <Oo|Vo>");
      dpd_buf4_close(&K);
+     timer_off("Sort (OO|OV) -> <OO|OV>");
           
      
      
      
      // (OV|OV) -> <OO|VV>
+     timer_on("Sort (OV|OV) -> <OO|VV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
@@ -150,11 +176,13 @@ void OMP2Wave::trans_ints()
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
      dpd_buf4_close(&K);
+     timer_off("Sort (OV|OV) -> <OO|VV>");
      
      
      
     
      // (OO|VV) -> <OV|OV>
+     timer_on("Sort (OO|VV) -> <OV|OV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV|OV>");
@@ -177,11 +205,13 @@ void OMP2Wave::trans_ints()
                   ID("[V>=V]+"), ID("[o>=o]+"), 0, "MO Ints (VV|oo)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,o]"), ID("[V,o]"), "MO Ints <Vo|Vo>");
      dpd_buf4_close(&K);
+     timer_off("Sort (OO|VV) -> <OV|OV>");
      
      
      
      
      // (OV|VV) -> <OV|VV>
+     timer_on("Sort (OV|VV) -> <OV|VV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>");
@@ -204,12 +234,14 @@ void OMP2Wave::trans_ints()
                   ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
      dpd_buf4_close(&K);
+     timer_off("Sort (OV|VV) -> <OV|VV>");
      
      
      
      if (hess_type == "FULL") {
        
        // (VV|VV) -> <VV|VV>
+      timer_on("Sort (VV|VV) -> <VV|VV>");
       dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
       dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
@@ -226,14 +258,17 @@ void OMP2Wave::trans_ints()
                   ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
       dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,v]"), ID("[V,v]"), "MO Ints <Vv|Vv>");
       dpd_buf4_close(&K);
-      
+      timer_off("Sort (VV|VV) -> <VV|VV>");
      }
+      timer_off("Sort chem -> phys");
      
      
 /********************************************************************************************/
 /************************** Antisymmetrized Ints ********************************************/
 /********************************************************************************************/ 
+      timer_on("Antisymmetrize integrals");
      // <OO||OO>:  <IJ||KL> =  <IJ|KL> - <IJ|LK> 
+     timer_on("Make <OO||OO>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||OO>");
@@ -291,9 +326,11 @@ void OMP2Wave::trans_ints()
      }
      dpd_buf4_close(&K);
      dpd_buf4_close(&G);
+     timer_off("Make <OO||OO>");
     
      
      // <OO||OV>:  <IJ||KA> = <IJ|KA> - <JI|KA>
+     timer_on("Make <OO||OV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||OV>");
@@ -352,9 +389,11 @@ void OMP2Wave::trans_ints()
      }
      dpd_buf4_close(&K);
      dpd_buf4_close(&G);
+     timer_off("Make <OO||OV>");
     
     
      // <OO||VV>:  <IJ||AB> = <IJ|AB> - <IJ|BA> 
+     timer_on("Make <OO||VV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OO||VV>");
@@ -412,9 +451,76 @@ void OMP2Wave::trans_ints()
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
+    timer_off("Make <OO||VV>");
 
     
      // <OV||OV>:  <IA||JB> = <IA|JB> - (IB|JA)
+     timer_on("Make <OV||OV>");
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV|OV> - (OV|OV)");
+     dpd_buf4_close(&K);
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+     for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(int row = 0; row < K.params->rowtot[h]; ++row){
+            for(int col = 0; col < K.params->coltot[h]; ++col){
+                K.matrix[h][row][col] -= G.matrix[h][row][col];
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&K, h);
+        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);
+    
+    // <IB||JA> => <IA||JB>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[O,V]"), ID("[O,V]"), "MO Ints <OV||OV>");
+    dpd_buf4_close(&K);
+     
+     // <ov||ov>:  <ia||jb> = <ib|ja> - (ib|ja)
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
+     dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <ov|ov> - (ov|ov)");
+     dpd_buf4_close(&K);
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+     dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+     for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(int row = 0; row < K.params->rowtot[h]; ++row){
+            for(int col = 0; col < K.params->coltot[h]; ++col){
+                K.matrix[h][row][col] -= G.matrix[h][row][col];
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&K, h);
+        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);
+    
+    // <ib||ja> => <ia||jb>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+    dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , psrq, ID("[o,v]"), ID("[o,v]"), "MO Ints <ov||ov>");
+    dpd_buf4_close(&K);
+    timer_off("Make <OV||OV>");
+
+     /*
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
      dpd_buf4_copy(&K, PSIF_LIBTRANS_DPD, "MO Ints <OV||OV>");
@@ -484,6 +590,7 @@ void OMP2Wave::trans_ints()
     }
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
+    */
     
      /* 
      // <OV||VV>:  <IA||BC> = <IA|BC> - <IA|CB>
@@ -545,15 +652,18 @@ void OMP2Wave::trans_ints()
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     */
+     timer_off("Antisymmetrize integrals");
      
 /********************************************************************************************/
 /************************** Transform 1-electron int. to MO space ***************************/
 /********************************************************************************************/        
       // Trans H matrix
+      timer_on("Trans OEI");
       HmoA->copy(Hso);
       HmoB->copy(Hso);
       HmoA->transform(Ca_);
       HmoB->transform(Cb_);
+      timer_off("Trans OEI");
       
       if (print_ > 1) {
 	HmoA->print();
@@ -561,10 +671,14 @@ void OMP2Wave::trans_ints()
       }
       
       // Trans Fock matrix    
+      timer_on("Build Fock");
       Fockmo_alpha();      
       Fockmo_beta();   
+      timer_off("Build Fock");
 
+      timer_on("Build Denominators");
       denominators();
+      timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
       //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
  

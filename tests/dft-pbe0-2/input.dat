@@ -1,20 +1,4 @@
-
-
-molecule ammonia {
-0 1
-N  -1.578718  -0.046611   0.000000
-H  -2.158621   0.136396  -0.809565
-H  -2.158621   0.136396   0.809565
-H  -0.849471   0.658193   0.000000
---
-0 1
-N   1.578718   0.046611   0.000000
-H   2.158621  -0.136396  -0.809565
-H   0.849471  -0.658193   0.000000
-H   2.158621  -0.136396   0.809565
-}
-set basis 6-311++G(3df_3pd)
-set df_basis_mp2 aug-cc-pvtz-ri
+# Internal match to psi4, test to match to literature values in litref.in/litref.out
 
 molecule water {
 0 1
@@ -27,47 +11,16 @@ O   1.350625   0.111469   0.000000
 H   1.680398  -0.373741  -0.758561
 H   1.680398  -0.373741   0.758561
 }
-set basis 6-311++G(3df_3pd)
-set df_basis_mp2 aug-cc-pvtz-ri
-
-molecule ethene {
-0 1
-C  -0.471925  -0.471925  -1.859111
-C   0.471925   0.471925  -1.859111
-H  -0.872422  -0.872422  -0.936125
-H   0.872422   0.872422  -0.936125
-H  -0.870464  -0.870464  -2.783308
-H   0.870464   0.870464  -2.783308
---
-0 1
-C  -0.471925   0.471925   1.859111
-C   0.471925  -0.471925   1.859111
-H  -0.872422   0.872422   0.936125
-H   0.872422  -0.872422   0.936125
-H  -0.870464   0.870464   2.783308
-H   0.870464  -0.870464   2.783308
-}
-set basis 6-311++G(3df_3pd)
-set df_basis_mp2 aug-cc-pvtz-ri
-
+set basis aug-cc-pvdz
 
 set reference rks
-set scf_type direct
-set freeze_core false
+set scf_type out_of_core
+set freeze_core true
 
-activate(ammonia)
-e_dhdft = cp('pbe0-2')*627.5095
-compare_values(-2.93, e_dhdft, 2, 'Ammonia')       #TEST
+e_dhdft = energy('pbe0-2')
+print_variables()
+val = -152.648635492831
+compare_values(val, e_dhdft, 8, "PBE0-2: Water")
+
 clean()
-
-activate(water)
-e_dhdft = cp('pbe0-2')*627.5095
-compare_values(-4.89, e_dhdft, 2, 'Water')   #TEST
-clean()
-
-# works but too long for test case            
-activate(ethene)                             
-e_dhdft = cp('pbe0-2')*627.5095                     
-compare_values(-1.00, e_dhdft, 2, 'Ethene')    # TEST
-clean()                                       
 

@@ -1,3 +1,4 @@
+#include <boost/regex.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -804,8 +805,32 @@ void OEProp::print_header()
     fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
     fprintf(outfile, "  built on LIBMINTS.\n\n");
 }
+
+template <class T>
+bool from_string(T& t,
+                 const std::string& s,
+                 std::ios_base& (*f)(std::ios_base&))
+{
+    std::istringstream iss(s);
+    return !(iss >> f >> t).fail();
+}
+
 void OEProp::compute()
 {
+
+    // Search for multipole strings, which are handled separately
+    std::set<std::string>::const_iterator iter = tasks_.begin();
+    boost::regex mpoles("^MULTIPOLE(?:S)?\\s*\\((\\d+)\\)$");
+    boost::smatch matches;
+    for(; iter !=tasks_.end(); ++iter){
+        std::string str = *iter;
+        if(boost::regex_match(str, matches, mpoles)){
+            int order;
+            if(!from_string<int>(order, matches[1], std::dec))
+                throw PSIEXCEPTION("Problem detemining multipole order!  Specify, e.g., MULTIPOLE(5)");
+            compute_multipoles(order);
+        }
+    }
     // print_header();  // Not by default, happens too often -CDS
     if (tasks_.count("DIPOLE"))
         compute_dipole(false);
@@ -828,6 +853,68 @@ void OEProp::compute()
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
 }
+
+void OEProp::compute_multipoles(int order, bool transition)
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+    MultipoleSymmetry mpsymm (order, mol, integral_, factory_);
+    std::vector<SharedMatrix> mp_ints = mpsymm.create_matrices("");
+    boost::shared_ptr<OneBodySOInt> sompOBI (integral_->so_multipoles(order));
+    sompOBI->compute(mp_ints);
+    Vector3 de;
+    SharedMatrix Da;
+    SharedMatrix Db;
+
+    if (same_dens_) {
+        Da = Da_so_;
+        Db = Da;
+    } else {
+        Da = Da_so_;
+        Db = Db_so_;
+    }
+
+    if(print_ > 4){
+        std::vector<SharedMatrix>::iterator iter;
+        for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
+            iter->get()->print();
+    }
+
+    SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order);
+
+    fprintf(outfile,"\n%s Multipole Moments:\n", transition ? "Transition" : "");
+    fprintf(outfile, "\n ------------------------------------------------------------------------------------\n");
+    fprintf(outfile, "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+    fprintf(outfile, " ------------------------------------------------------------------------------------\n\n");
+    double convfac = _dipmom_au2debye;
+    int address = 0;
+    for(int l = 1; l <= order; ++l){
+        int ncomponents = (l + 1) * (l + 2) / 2;
+        std::stringstream ss;
+        if(l > 1)
+            ss << ".ang";
+        if(l > 2)
+            ss << "^" << l-1;
+        std::string exp = ss.str();
+        fprintf(outfile, " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        for(int component = 0; component < ncomponents; ++component){
+            SharedMatrix mpmat = mp_ints[address];
+            std::string name = mpmat->name();
+            double nuc = transition ? 0.0 : nuclear_contributions->get(address);
+            double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
+            double tot = nuc + elec;
+            fprintf(outfile, " %-20s: %18.7f   %18.7f   %18.7f\n",
+                    name.c_str(), elec, nuc, tot);
+            ++address;
+        }
+        fprintf(outfile, "\n");
+        convfac *= _bohr2angstroms;
+    }
+    fprintf(outfile, " --------------------------------------------------------------------------------\n");
+
+    fflush(outfile);
+}
+
+
 void OEProp::compute_dipole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
@@ -847,11 +934,11 @@ void OEProp::compute_dipole(bool transition)
         Db = Db_so_;
     }
 
-    if(print_ > 4){
-        std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
-            iter->get()->print();
-    }
+//    if(print_ > 4){
+//        std::vector<SharedMatrix>::iterator iter;
+//        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
+//            iter->get()->print();
+//    }
 
     de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
     de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
@@ -926,11 +1013,11 @@ void OEProp::compute_quadrupole(bool transition)
     // Compute multipole moment integrals
     soqOBI->compute(so_Qpole);
 
-    if(print_ > 4){
-        std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
-            iter->get()->print();
-    }
+//    if(print_ > 4){
+//        std::vector<SharedMatrix>::iterator iter;
+//        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
+//            iter->get()->print();
+//    }
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
