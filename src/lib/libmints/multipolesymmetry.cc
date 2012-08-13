@@ -180,7 +180,7 @@ void MultipoleSymmetry::common_init()
             // Apply the projection
             for (int G=0; G<nirrep; ++G) {
                 SymmetryOperation so = ct.symm_operation(G);
-                ShellRotation rr(order_, so, integral_.get(), false);
+                ShellRotation rr(l, so, integral_.get(), false);
 
                 // rr(xyz, xyz) tells us how the orbitals transform in this
                 // symmetry operation, then we multiply by the character in
@@ -191,10 +191,8 @@ void MultipoleSymmetry::common_init()
             }
 
             for (int xyz=0; xyz<ncart; ++xyz) {
-                if (t[xyz] != 0) {
+                if (t[xyz] != 0)
                     component_symmetry_[l_offset + xyz]= irrep;
-//                    fprintf(outfile, "Component %d %d = %d\n", l, l_offset+xyz, irrep);
-                }
             }
         }
         l_offset+= ncart;
