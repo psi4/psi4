@@ -80,6 +80,52 @@ public:
     std::vector<SharedMatrix > create_matrices(const std::string& basename);
 };
 
+class MultipoleSymmetry
+{
+    // The order of the multipole (dipole=1, quadrupole=2, etc...)
+    int order_;
+
+    // Variables we need from the user
+    boost::shared_ptr<Molecule> molecule_;
+    boost::shared_ptr<IntegralFactory> integral_;
+    boost::shared_ptr<MatrixFactory> matrix_;
+
+    /**
+     * The symmetry of each component of the multipole.
+     * Length = INT_NCART(order_)
+     */
+    std::vector<int> component_symmetry_;
+
+    void common_init();
+
+public:
+
+    /** Constructor
+     * Constructs an object that determines the symmetry of the different
+     * components of all multipoles up to (and including) L=order.  For all componenets of a given order
+     * use the OperatorSymmetry class instead
+     *
+     * @param order Order of the highest multipole (1 = dipole, 2 = quadrupole, etc.)
+     * @param mol Molecule the the multipole will be computed for. Needed to obtain
+     *            point group object.
+     * @param ints Integral factory. Needed for creation of ShellRotation objects.
+     * @param mats Matrix factory. Used by create_matrices to create matrices of the
+     *             proper size and symmetry.
+     */
+    MultipoleSymmetry(int order,
+                     boost::shared_ptr<Molecule> mol,
+                     boost::shared_ptr<IntegralFactory> ints,
+                     boost::shared_ptr<MatrixFactory> mats);
+    MultipoleSymmetry(int order,
+                     boost::shared_ptr<Molecule> mol,
+                     boost::shared_ptr<IntegralFactory> ints);
+    virtual ~MultipoleSymmetry();
+
+    int address_of_component(int lx, int ly, int lz);
+    int component_symmetry(int i) const { return component_symmetry_[i]; }
+
+    std::vector<SharedMatrix > create_matrices(const std::string& basename);
+};
 }
 
 #endif // MULTIPOLESYMMETRY_H

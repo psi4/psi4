@@ -1,0 +1,34 @@
+#! Dispersionless density functional (dlDF+D) internal match to Psi4
+#! Extensive testing has been done to match supplemental info of
+#! Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+memory 500 mb
+
+set basis aug-cc-pvdz
+set scf_type df
+
+edft = energy('dldf+d')
+val = -153.8044099603441168
+compare_values(val, edft, 8, "dlDF+D (2010 +D correction)")
+
+clean()
+
+
+edft = energy('dldf+d09')
+val = -153.8046528936604886 
+compare_values(val, edft, 8, "dlDF+D09 (2009 +D correction)")
+
+clean()
+

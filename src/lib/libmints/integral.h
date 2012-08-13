@@ -421,6 +421,10 @@ public:
     virtual OneBodyAOInt* ao_quadrupole();
     virtual OneBodySOInt* so_quadrupole();
 
+    /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
+    virtual OneBodyAOInt* ao_multipoles(int order);
+    virtual OneBodySOInt* so_multipoles(int order);
+
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
     virtual OneBodyAOInt* ao_traceless_quadrupole();
     virtual OneBodySOInt* so_traceless_quadrupole();

@@ -34,12 +34,17 @@ public:
     // The following line is to shut it up.
     #pragma warning disable 1125
     /// Computes integrals between two shells.
-    void compute_shell(int, int, Vector3&);
+    void compute_shell(int, int, const Vector3&);
     /// Computes integrals between two shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&, Vector3&);
+    void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3&);
+
+    /// Computes integrals and stores in result.
+    void compute(SharedMatrix& result, const Vector3&);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }
+
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
 };
 
 }
