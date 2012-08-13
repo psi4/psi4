@@ -105,7 +105,14 @@ protected:
     void compute_lagrangian_VV();
     void compute_ewdm();
     // Quadratically-convergent DCFT
-    void run_qc_algorithm();
+    void run_qc_dcft();
+    void qc_dcft_init();
+    void compute_orbital_gradient();
+    void form_idps();
+    void compute_sigma_vector();
+    void iterate_conjugate_gradients();
+    void check_qc_convergence();
+    void update_cumulant_and_orbitals();
 
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
@@ -133,6 +140,27 @@ protected:
     int maxiter_;
     /// The current number of macroiteration for energy or gradient computation
     int iter_;
+    // Quadratically-convergent DCFT
+    /// The total number of independent pairs for the current NR step
+    int nidp_;
+    /// The number of orbital independent pairs for the current NR step (Alpha spin)
+    int orbital_idp_a_;
+    /// The number of orbital independent pairs for the current NR step (Beta spin)
+    int orbital_idp_b_;
+    /// The total number of orbital independent pairs for the current NR step
+    int orbital_idp_;
+    /// The number of cumulant independent pairs for the current NR step (Alpha-Alpha spin)
+    int lambda_idp_aa_;
+    /// The number of cumulant independent pairs for the current NR step (Alpha-Beta spin)
+    int lambda_idp_ab_;
+    /// The number of cumulant independent pairs for the current NR step (Beta-Beta spin)
+    int lambda_idp_bb_;
+    /// The total number of cumulant independent pairs for the current NR step
+    int lambda_idp_;
+    /// The maximum number of IDPs ever possible
+    int dim_;
+    /// The lookup array that determines which compound indices belong to IDPs and which don't
+    int *lookup_;
     /// The number of occupied alpha orbitals per irrep
     Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
@@ -251,6 +279,27 @@ protected:
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector
     SharedMatrix scf_error_b_;
+    // Quadratically-convergent DCFT
+    /// The orbital gradient ([f,kappa]) in the MO basis (Alpha spin)
+    SharedMatrix orbital_gradient_a_;
+    /// The orbital gradient ([f,kappa]) in the MO basis (Beta spin)
+    SharedMatrix orbital_gradient_b_;
+    /// Orbital and cumulant gradient in the basis of IDP
+    SharedVector gradient_;
+    /// Contribution of the Fock matrix to the diagonal part of the Hessian. Used as preconditioner for conjugate gradient procedure
+    SharedVector Hd_;
+    /// The step vector in the IDP basis
+    SharedVector X_;
+    /// Sigma vector in the basis of IDP (the product of the off-diagonal part of the Hessian with the step vector X)
+    SharedVector sigma_;
+    /// The conjugate direction vector in the IDP basis for conjugate gradient procedure
+    SharedVector D_;
+    /// The residual vector in the IDP basis for conjugate gradient procedure
+    SharedVector R_;
+    /// The search direction vector in the IDP basis for conjugate gradient procedure
+    SharedVector S_;
+    /// The new element of Krylov subspace vector in the IDP basis for conjugate gradient procedure
+    SharedVector Q_;
 //    /// The alpha orbital response matrix elements (MO basis)
 //    SharedMatrix az_;
 //    /// The beta orbital response matrix elements (MO basis)
