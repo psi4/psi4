@@ -3,7 +3,6 @@
 memory 250 mb
  
 molecule bz {
-symmetry c1
     C          0.710500000000    0.000000000000   -1.230622098778
     C          1.421000000000    0.000000000000    0.000000000000
     C          0.710500000000    0.000000000000    1.230622098778
@@ -20,9 +19,9 @@ symmetry c1
 
 set {
     basis cc-pVDZ
-    puream false
     E_CONVERGENCE 11
     D_CONVERGENCE 11
+    puream = false
     GUESS SAD
     SCF_TYPE DF
     REFERENCE RHF
