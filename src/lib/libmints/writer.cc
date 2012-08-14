@@ -135,9 +135,9 @@ void MoldenWriter::write(const std::string &filename)
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
     Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
-    aotoso->print();
-    Ca_ao_mo->print();
-    Cb_ao_mo->print();
+//    aotoso->print();
+//    Ca_ao_mo->print();
+//    Cb_ao_mo->print();
 
     // The order Molden expects
     //     P: x, y, z
