@@ -3,6 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <libmints/corrtab.h>
+#include <libmints/molecule.h>
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 
@@ -53,7 +55,7 @@ MOInfoSCF::~MOInfoSCF()
 
 void MOInfoSCF::read_mo_spaces()
 {
-    /*****************************************************
+  /*****************************************************
      See if we're in a subgroup for finite difference
      calculations, by looking to see what OptKing has
      written to the checkpoint file.  Reassign the
@@ -64,45 +66,29 @@ void MOInfoSCF::read_mo_spaces()
     docc.resize(nirreps,0);
     actv.resize(nirreps,0);
 
-    // For single-point geometry optimizations and frequencies
-    // TODO restore this functionality, avoiding chkpt calls.
-    const char *current_displacement_label = "";
-    if(0/*chkpt->exist(current_displacement_label)*/){
-        //    int disp_irrep = 0;
-        // int   disp_irrep  = chkpt->rd_disp_irrep();
-        //    char *save_prefix = chkpt->rd_prefix();
-        //    int nirreps_ref;
+    // Map the symmetry of the input occupations, to account for displacements
+    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    if(old_pg){
+        // This is one of a series of displacements;  check the dimension against the parent point group
+        int nirreps_ref = old_pg->char_table().nirrep();
 
-        // read symmetry info and MOs for undisplaced geometry from
-        // root section of checkpoint file
-        //    chkpt->reset_prefix();
-        //    chkpt->commit_prefix();
+        intvec docc_ref;
+        intvec actv_ref;
 
-        //    char *ptgrp_ref;
-        //char *ptgrp_ref = chkpt->rd_sym_label();
+        read_mo_space(nirreps_ref,ndocc,docc_ref,"DOCC");
+        read_mo_space(nirreps_ref,nactv,actv_ref,"SOCC");
 
-        // Lookup irrep correlation table
-        //    int* correlation;
-        //    correlate(ptgrp_ref, disp_irrep, nirreps_ref, nirreps,correlation);
+        // Build the correlation table between full, and subgroup
+        boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+        boost::shared_ptr<PointGroup> sub =  Process::environment.molecule()->point_group();
+        CorrelationTable corrtab(full, sub);
 
-        //    intvec docc_ref;
-        //    intvec actv_ref;
-
-        //    // build orbital information for current point group
-        //    read_mo_space(nirreps_ref,ndocc,docc_ref,"DOCC");
-        //    read_mo_space(nirreps_ref,nactv,actv_ref,"ACTV ACTIVE SOCC");
-
-        //    for (int h=0; h < nirreps_ref; h++) {
-        //      docc[ correlation[h] ] += docc_ref[h];
-        //      actv[ correlation[h] ] += actv_ref[h];
-        //    }
-
-        //    wfn_sym = correlation[wfn_sym];
-        //    chkpt->set_prefix(save_prefix);
-        //    chkpt->commit_prefix();
-        //    free(save_prefix);
-        //    free(ptgrp_ref);
-        //    delete [] correlation;
+        // Find the occupation in the subgroup
+        for(int h = 0; h < nirreps_ref; ++h){
+            int target = corrtab.gamma(h, 0);
+            docc[target] += docc_ref[h];
+            actv[target] += actv_ref[h];
+        }
     }else{
         // For a single-point only
         read_mo_space(nirreps,ndocc,docc,"DOCC");
@@ -115,8 +101,6 @@ void MOInfoSCF::read_mo_spaces()
 
     if((ndocc > 0) || (nactv > 0))
         guess_occupation = false;
-
-    //  free(current_displacement_label);
 }
 
 void MOInfoSCF::print_mo()
