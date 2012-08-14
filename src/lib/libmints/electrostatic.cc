@@ -14,16 +14,64 @@ ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, boost::s
     PotentialInt(st, bs1, bs2, deriv)
 {
 }
+
 ElectrostaticInt::~ElectrostaticInt()
 {
 
 }
-void ElectrostaticInt::compute_shell(int s1, int s2, Vector3& C)
+
+void ElectrostaticInt::compute(SharedMatrix &result, const Vector3& C)
 {
-    compute_pair(bs1_->shell(s1), bs2_->shell(s2), C);
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+
+    int i_offset=0;
+    double *location;
+
+    // Leave as this full double for loop. We could be computing nonsymmetric integrals
+    for (int i=0; i<ns1; ++i) {
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+
+            // Compute the shell (automatically transforms to pure am in needed)
+            compute_shell(i, j, C);
+
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int p=0; p<ni; ++p) {
+                for (int q=0; q<nj; ++q) {
+                    result->add(0, i_offset+p, j_offset+q, *location);
+                    location++;
+                }
+            }
+
+            j_offset += nj;
+        }
+        i_offset += ni;
+    }
 }
+
+void ElectrostaticInt::compute_shell(int sh1, int sh2, const Vector3& C)
+{
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+
+    // Call the child's compute_pair method, results better be in buffer_.
+    compute_pair(s1, s2, C);
+
+    // Normalize for angular momentum
+    normalize_am(s1, s2, nchunk_);
+    if(!force_cartesian_){
+        // Pure angular momentum (6d->5d, ...) transformation
+        pure_transform(s1, s2, nchunk_);
+    }
+}
+
 // The engine only supports segmented basis sets
-void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2, Vector3& C)
+void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2, const Vector3& C)
 {
     int ao12;
     int am1 = s1.am();
@@ -114,11 +162,29 @@ void ElectrostaticInt::compute_pair(const GaussianShell& s1, const GaussianShell
             }
         }
     }
-
-    // Integrals are done. Normalize for angular momentum
-    normalize_am(s1, s2);
-
-    // Spherical harmonic transformation
-    // Wrapped up in the AO to SO transformation (I think)
 }
 
+SharedVector ElectrostaticInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+{
+    boost::shared_ptr<Vector> sret(new Vector(mol->natom()));
+    double *ret = sret->pointer();
+
+    int natom = mol->natom();
+    for(int k=0;k<natom;k++) {
+        Vector3 kgeom = mol->xyz(k);
+        for(int i=0;i<natom;i++) {
+            if (i != k) {
+                Vector3 igeom = mol->xyz(i);
+
+                double x = kgeom[0] - igeom[0];
+                double y = kgeom[1] - igeom[1];
+                double z = kgeom[2] - igeom[2];
+                double r2 = x*x+y*y+z*z;
+                double r = std::sqrt(r2);
+                ret[k]  += mol->Z(i)/r;
+            }
+        }
+    }
+
+    return sret;
+}

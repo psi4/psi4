@@ -484,8 +484,8 @@ void OMP3Wave::get_moinfo()
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso,nmo);
 	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(int)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(int)*nso*nmo);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
+	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
 	
 	  // read binary data
 	  ifstream InFile1;

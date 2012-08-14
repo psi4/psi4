@@ -208,7 +208,8 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 3, 3, 2.0, 0.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-	
+
+        /*	
 	// FAJ += 2 * \sum{E,M,F} <EF||MA> * G_MJEF = 2 * \sum{E,M,F} <MA||EF> * G_MJEF 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV||VV>");
@@ -217,7 +218,19 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 1, 1, 2.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
+        */
+
+        // FAJ += 2 * \sum{E,M,F} <EF||MA> * G_MJEF = 2 * \sum{E,M,F} <MA||EF> * G_MJEF 
+        //      = 4 * \sum{E,M,F} <MA|EF> * G_MJEF         
+        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+        dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+        dpd_contract442(&K, &G, &GF, 1, 1, 4.0, 1.0);
+        dpd_buf4_close(&G);
+ 
 	
+        /*
 	// FAJ += 4 * \sum{E,M,F} <EM||FA> * G_MEJF = 4 * \sum{E,M,F} <ME||AF> * G_MEJF
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV||VV>");
@@ -226,6 +239,25 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
+        */
+
+      	// FAJ += 4 * \sum{E,M,F} <EM||FA> * G_MEJF = 4 * \sum{E,M,F} <ME||AF> * G_MEJF
+     	//      = 4 * \sum{E,M,F} <ME|AF> * G_MEJF - 4 * \sum{E,M,F} <ME|FA> * G_MEJF 
+        //      = 4 * \sum{E,M,F} <ME|AF> * G_MEJF + 4 * \sum{E,M,F} <ME|FA> * G_MEFJ => 1st term
+        dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+        dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0);
+        dpd_buf4_close(&G);
+ 
+	// FAJ += 4 * \sum{E,M,F} <EM||FA> * G_MEJF = 4 * \sum{E,M,F} <ME||AF> * G_MEJF
+     	//      = 4 * \sum{E,M,F} <ME|AF> * G_MEJF - 4 * \sum{E,M,F} <ME|FA> * G_MEJF 
+        //      = 4 * \sum{E,M,F} <ME|AF> * G_MEJF + 4 * \sum{E,M,F} <ME|FA> * G_MEFJ => 2nd term
+        dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
+                  ID("[O,V]"), ID("[V,O]"), 0, "TPDM <OV|VO>");
+        dpd_contract442(&K, &G, &GF, 3, 3, 4.0, 1.0);
+        dpd_buf4_close(&K);
+        dpd_buf4_close(&G);
+
 	
 	// FAJ += 4 * \sum{m,N,k} <Nm|Ak> * G_NmJk 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
@@ -271,7 +303,8 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 3, 3, 2.0, 0.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-	
+
+        /*	
 	// Faj += 2 * \sum{e,m,f} <ef||ma> * G_mjef = 2 * \sum{e,m,f} <ma||ef> * G_mjef 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov||vv>");
@@ -280,7 +313,18 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 1, 1, 2.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-	
+        */
+
+        // Faj += 2 * \sum{e,m,f} <ef||ma> * G_mjef = 2 * \sum{e,m,f} <ma||ef> * G_mjef 
+	//      = 4 * \sum{e,m,f} <ma|ef> * G_mjef 
+        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
+	dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "TPDM <oo|vv>");
+	dpd_contract442(&K, &G, &GF, 1, 1, 4.0, 1.0); 
+	dpd_buf4_close(&G);
+
+        /*	
 	// Faj += 4 * \sum{e,m,f} <em||fa> * G_mejf = 4 * \sum{e,m,f} <me||af> * G_mejf
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov||vv>");
@@ -289,6 +333,25 @@ void OMP2Wave::GFockmo()
 	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
+        */
+
+        // Faj += 4 * \sum{e,m,f} <em||fa> * G_mejf = 4 * \sum{e,m,f} <me||af> * G_mejf
+        //      = 4 * \sum{e,m,f} <me|af> * G_mejf - 4 * \sum{e,m,f} <me|fa> * G_mejf 
+        //      = 4 * \sum{e,m,f} <me|af> * G_mejf + 4 * \sum{e,m,f} <me|fa> * G_mefj => 1st term
+	dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
+	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
+	dpd_buf4_close(&G);
+ 
+        // Faj += 4 * \sum{e,m,f} <em||fa> * G_mejf = 4 * \sum{e,m,f} <me||af> * G_mejf
+        //      = 4 * \sum{e,m,f} <me|af> * G_mejf - 4 * \sum{e,m,f} <me|fa> * G_mejf 
+        //      = 4 * \sum{e,m,f} <me|af> * G_mejf + 4 * \sum{e,m,f} <me|fa> * G_mefj => 2nd term
+	dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,v]"), ID("[v,o]"),
+                  ID("[o,v]"), ID("[v,o]"), 0, "TPDM <ov|vo>");
+	dpd_contract442(&K, &G, &GF, 3, 3, 4.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+
 	
 	// Faj += 4 * \sum{M,n,K} <Mn|Ka> * G_MnKj 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
