@@ -158,11 +158,29 @@ MultipoleSymmetry::MultipoleSymmetry(int order,
     common_init();
 }
 
+
+int MultipoleSymmetry::address_of_component(int lx, int ly, int lz)
+{
+    int l = lx + ly + lz;
+    // Do a few sanity checks first!
+    if(lx < 0 || ly < 0 || lz < 0)
+        throw PSIEXCEPTION("MultipoleSymmetry::address_of_component - component has negative angular momentum!");
+    if(l == 0)
+        throw PSIEXCEPTION("MultipoleSymmetry::address_of_component - minimum address too low. "
+                           "Only dipoles and upwards are addressed");
+    if(l > order_)
+        throw PSIEXCEPTION("MultipoleSymmetry::address_of_component - angular momentum exceeds the order of "
+                           "this object");
+    return addresses_[lx][ly][lz];
+}
+
 void MultipoleSymmetry::common_init()
 {
     int n_components = (order_+1)*(order_+2)*(order_+3)/6 - 1;
     component_symmetry_.resize(n_components, 0);
+    addresses_.clear();
 
+    int count = 0;
     int l_offset = 0;
     for(int l = 1; l <= order_; ++l){
         int ncart = INT_NCART(l);
@@ -192,10 +210,19 @@ void MultipoleSymmetry::common_init()
 
             for (int xyz=0; xyz<ncart; ++xyz) {
                 if (t[xyz] != 0)
-                    component_symmetry_[l_offset + xyz]= irrep;
+                    component_symmetry_[l_offset + xyz] = irrep;
             }
         }
         l_offset+= ncart;
+
+        // Add all A.M. components to the address map
+        for(int ii = 0; ii <= l; ii++) {
+            int lx = l - ii;
+            for(int lz = 0; lz <= ii; lz++) {
+                int ly = ii - lz;
+                addresses_[lx][ly][lz] = count++;
+            }
+        }
 
         delete[] t;
     }
