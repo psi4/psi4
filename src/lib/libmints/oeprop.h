@@ -220,6 +220,8 @@ protected:
     void compute_dipole(bool transition = false);
     /// Compute quadrupole
     void compute_quadrupole(bool transition = false);
+    /// Compute arbitrary-order multipoles up to (and including) l=order
+    void compute_multipoles(int order, bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges

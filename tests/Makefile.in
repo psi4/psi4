@@ -23,7 +23,7 @@ mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
 df_subdirs = sapt1 sapt3 sapt5 dfmp2_1 dfmp2_2 dfmp2_3 ghosts
 
-psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2 psimrcc-fd-freq1
+psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2 psimrcc-fd-freq1 psimrcc-fd-freq2
 
 mints_subdirs = mints1 mints2 mints3 mints4 mints5
 
@@ -33,9 +33,9 @@ opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energ
 
 mp2_subdirs = mp2_1 omp2_1 omp3_1
 
-scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 dft1 dfscf-bz2 pubchem1 dft1-alt dft-b2plyp castup2 castup3 dft-grad
+scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 props3 dft1 dfscf-bz2 pubchem1 dft1-alt dft-b2plyp dft-pbe0-2 dft-dldf castup2 castup3 dft-grad
 
-python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
+python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias pywrap-opt-sowreap pywrap-basis
 
 longtest_subdirs = sapt2 sapt4
 

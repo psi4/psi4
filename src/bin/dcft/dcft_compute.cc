@@ -375,10 +375,14 @@ DCFTSolver::compute_energy()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
     else {
-        fprintf(outfile,    "\n\n\t\t        Quadratically-convergent DCFT      \n");
+        fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
         fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
 
-        run_qc_algorithm();
+        run_qc_dcft();
+
+        scfDone = true;
+        lambdaDone = true;
+        densityConverged = true;
     }
 
     if(!scfDone || !lambdaDone || !densityConverged)

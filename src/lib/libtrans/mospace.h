@@ -110,7 +110,7 @@ class MOSpace{
         const std::vector<int>& aIndex() {return aIndex_;}
 
         /// Get the beta orbital indexing array for IWL
-        const std::vector<int>& bIndex() {return bIndex_ == NULL ? aIndex_ : bIndex_;}
+        const std::vector<int>& bIndex() {return bIndex_.size() == 0 ? aIndex_ : bIndex_;}
 
 
     protected:

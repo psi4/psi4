@@ -1,0 +1,4 @@
+
+compare_values(-394.3502481472680, get_variable('current energy'), 5, 'Finite difference optimization through sow/reap')  #TEST
+print_variables()
+
