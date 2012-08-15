@@ -1054,7 +1054,7 @@ namespace psi{ namespace dcft{
   {
       dcft_timer_on("DCFTSolver::update_fock");
 
-      dpdfile2 Gtau, F;
+      dpdfile2 Gtau;
 
       moFa_->copy(F0a_);
       moFb_->copy(F0b_);
@@ -1123,59 +1123,8 @@ namespace psi{ namespace dcft{
       moFa_->add(moG_tau_a_);
       moFb_->add(moG_tau_b_);
 
-      // Write the MO basis Fock operator to the DPD file
-
-      //Alpha Occupied
-      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-      dpd_file2_mat_init(&F);
-      for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0 ; i < naoccpi_[h]; ++i){
-              for(int j = 0 ; j < naoccpi_[h]; ++j){
-                  F.matrix[h][i][j] = moFa_->get(h, i, j);
-              }
-          }
-      }
-      dpd_file2_mat_wrt(&F);
-      dpd_file2_close(&F);
-
-      //Alpha Virtual
-      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-      dpd_file2_mat_init(&F);
-      for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0 ; i < navirpi_[h]; ++i){
-              for(int j = 0 ; j < navirpi_[h]; ++j){
-                  F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
-              }
-          }
-      }
-      dpd_file2_mat_wrt(&F);
-      dpd_file2_close(&F);
-
-      //Beta Occupied
-      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
-      dpd_file2_mat_init(&F);
-      for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0 ; i < nboccpi_[h]; ++i){
-              for(int j = 0 ; j < nboccpi_[h]; ++j){
-                  F.matrix[h][i][j] = moFb_->get(h, i, j);
-              }
-          }
-      }
-      dpd_file2_mat_wrt(&F);
-      dpd_file2_close(&F);
-
-      //Beta Virtual
-      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
-      dpd_file2_mat_init(&F);
-      for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0 ; i < nbvirpi_[h]; ++i){
-              for(int j = 0 ; j < nbvirpi_[h]; ++j){
-                  F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
-              }
-          }
-      }
-      dpd_file2_mat_wrt(&F);
-      dpd_file2_close(&F);
+      // Write the MO basis Fock operator to the DPD file and update the denominators
+      build_denominators();
 
       psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
