@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace boost {
 template<class T>
@@ -96,6 +97,11 @@ class MultipoleSymmetry
      */
     std::vector<int> component_symmetry_;
 
+    /**
+     * A 3D map to hold the addresses of each {lx, ly, lz} combination
+     */
+    std::map< int, std::map< int, std::map< int, int > > > addresses_;
+
     void common_init();
 
 public:
@@ -121,6 +127,9 @@ public:
                      boost::shared_ptr<IntegralFactory> ints);
     virtual ~MultipoleSymmetry();
 
+    /**
+     * Returns the address in the array of the {lx, ly, lz} moment.
+     */
     int address_of_component(int lx, int ly, int lz);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
