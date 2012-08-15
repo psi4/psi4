@@ -803,6 +803,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
+      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) !expert-*/
+      options.add_bool("QC_COUPLING", true);
 
   }
   if (name == "MINTS"|| options.read_globals()) {
