@@ -21,6 +21,8 @@ DCFTSolver::compute_lambda_residual()
 
     dpdbuf4 R, G, F;
     double sumSQ = 0.0;
+    double sum_F = 0.0;
+    double sum_G = 0.0;
     size_t nElements = 0;
 
     /*

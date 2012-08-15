@@ -1,0 +1,47 @@
+#! Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using
+#! the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
+
+test_freq = PsiMod.Vector(3)  #TEST
+test_freq.set(0,582.44)
+test_freq.set(1,937.49)
+test_freq.set(2,1013.22) #TEST
+
+memory 250 mb
+
+molecule ch2 {
+  0 1
+            O    -2.1952205263  -0.0000000000   0.4671108832
+            O     0.0000000000   0.0000000000  -0.9342217664
+            O     2.1952205263   0.0000000000   0.4671108832
+
+  units au
+}
+
+set {
+  basis DZ
+  e_convergence 13
+  d_convergence 10
+  r_convergence 9
+}
+
+set mcscf {
+  reference       twocon
+  docc            [6,0,4,1]      # Doubly occupied MOs
+  socc            [0,1,0,1]      # Singly occupied MOs
+  maxiter         300
+}
+
+set psimrcc {
+  corr_wfn        ccsd         # Do Mk-MRCCSD 
+  frozen_docc     [2,0,1,0]    # Frozen MOs
+  restricted_docc [4,0,3,1]    # Doubly occupied MOs
+  active          [0,1,0,1]    # Active MOs
+  frozen_uocc     [0,0,0,0]    # Frozen virtual MOs
+  corr_multp      1            # Select the Ms = 0 component
+  wfn_sym         A1           # Select the A1 state
+  tikhonow_omega 0.001         # Regularization of the c_mu/c_nu fractions to make sure we converge
+}
+
+freq('psimrcc')
+fd_freq = PsiMod.reference_wavefunction().frequencies() #TEST
+compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST
