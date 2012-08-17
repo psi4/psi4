@@ -3,6 +3,7 @@
 
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include "arrays.h"
 
 using namespace std;
 
@@ -60,8 +61,7 @@ protected:
     void Fockmo_alpha();
     void Fockmo_beta();
     void idp();
-    double dot_product(int dim, double *x, double *y);
-    void diis(int dimvec, double **vecs, double **errvecs, double *vec_new);
+    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
     void W_1st_order();
     void V_2nd_order();
     
@@ -86,32 +86,6 @@ protected:
      int dimtei;	// dimension of tei in pitzer order for all integrals 
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
-     int dimvvAA; 
-     int dimvvBB;
-     int dimooAA; 
-     int dimooBB; 
-     int dimvoAA; 
-     int dimvoBB; 
-     int dimvoAB; 
-     int dimvoBA; 
-     int dimss; 
-     int dimosA;	// O-all 
-     int dimosB;	// o-all 
-     int dimvsA; 
-     int dimvsB; 
-     int dimacsacs;
-     int dimacoacoAA;
-     int dimacoacoBB;
-     int dimacvacvAA;
-     int dimacvacvBB;
-     int dimacvacoAA;
-     int dimacvacoAB;
-     int dimacvacoBA;
-     int dimacvacoBB;
-     int dimacofoAA;
-     int dimacofoBB;
-     int dimfvacvAA;
-     int dimfvacvBB;
      int cc_maxiter;
      int mo_maxiter;
      int exp_tol_Eod;
@@ -231,6 +205,8 @@ protected:
      string omp3_orb_energy;
      string do_scs;		// Spin-Component-Scaling
      string do_sos;		// Spin-Opposite-Scaling
+     string compute_mp3l;	// Do compute mp3l energy during iterations?
+     string twopdm_abcd_type;	// How to handle G_abcd
      string write_mo_coeff;	// Write CmoA to CmoA.psi and CmoB to CmoB.psi
      string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
      string swap_mo;		// Swap phi_i with phi_j
@@ -285,44 +261,25 @@ protected:
      int *idpirrA;
      int *idpirrB;
 
-     
-     /*
-     int **idprowA;
-     int **idprowB;
-     int **idpcolA;
-     int **idpcolB;
-     */
-     
-     /*
-     SharedIntVector nidpA;
-     SharedIntVector nidpB;
-     SharedIntVector idprowA;
-     SharedIntVector idpcolA;
-     SharedIntVector idprowB;
-     SharedIntVector idpcolB;
-     SharedVector wogA;
-     SharedVector wogB;
-     SharedVector kappaA;
-     SharedVector kappaB;
-     */
-
      double *evalsA; 
      double *evalsB; 
      double *evals_c1A; 
      double *evals_c1B; 
-     double *wogA; 
-     double *wogB; 
-     double *kappaA; 
-     double *kappaB; 
-     double *kappa_barA; 
-     double *kappa_barB;      
+
+     Array1d *wogA; 
+     Array1d *wogB; 
+     Array1d *kappaA; 
+     Array1d *kappaB; 
+     Array1d *kappa_barA; 
+     Array1d *kappa_barB;   
+     
+     Array2d *vecsA;
+     Array2d *vecsB;
+     Array2d *errvecsA;
+     Array2d *errvecsB;
 
      double **C_pitzerA;     
      double **C_pitzerB;     
-     double **vecsA; 
-     double **vecsB; 
-     double **errvecsA;
-     double **errvecsB;
      char **irreplabels; 
      
      SharedMatrix Ca_new;	// New Alpha MO coeff. 
@@ -364,12 +321,6 @@ protected:
      SharedMatrix GooB;
      SharedMatrix GvvA;
      SharedMatrix GvvB;
-     SharedMatrix BmatA;
-     SharedMatrix BmatB;
-     //SharedSimpleMatrix AorbAA;
-     //SharedSimpleMatrix AorbAB;
-     //SharedSimpleMatrix AorbBB;
-
     
 };
 

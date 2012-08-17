@@ -167,9 +167,13 @@ void OMP3Wave::response_pdms()
         timer_on("TPDM OOOO");
 	twopdm_oooo();
         timer_off("TPDM OOOO");
-        timer_on("TPDM VVVV");
-        twopdm_vvvv();
-        timer_off("TPDM VVVV");
+
+        if (twopdm_abcd_type == "COMPUTE") {
+           timer_on("TPDM VVVV");
+           twopdm_vvvv();
+           timer_off("TPDM VVVV");
+        }
+
         timer_on("TPDM OVOV");
         twopdm_ovov();
         timer_off("TPDM OVOV");
@@ -320,11 +324,13 @@ void OMP3Wave::twopdm_oooo()
 /*=======================*/
 void OMP3Wave::twopdm_vvvv()
 {      
+    // NOTE: contract444 can handle only TN and NT type contractions, which means (0,0) and (1,1) type target indices,
+    //  with out-of-core algorithm!!!!     
     dpdbuf4  T, L, G, V;
      
     psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD); 
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
-    
+   
     // Alpha-Alpha spin case
     // G_ABCD(2) = 1/8 \sum_{M,N} T_MN^CD(1) L_AB^MN(1) = 1/8 \sum_{M,N} T_MN^AB(1) T_MN^CD(1)
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -337,7 +343,6 @@ void OMP3Wave::twopdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
-    
     
     // Beta-Beta spin case
     // G_abcd(2) = 1/8 \sum_{m,n} T_mn^cd(1) L_ab^mn(1) = 1/8 \sum_{m,n} T_mn^ab(1) T_mn^cd(1)
@@ -366,6 +371,7 @@ void OMP3Wave::twopdm_vvvv()
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
     
+
     //Print 
     if (print_ > 3) {
       dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
