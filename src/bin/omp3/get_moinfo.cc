@@ -159,31 +159,6 @@ void OMP3Wave::get_moinfo()
 	nacvoA=nvoA-nfrzv; 	// Number of active virtual orbitals
 	nacvoB=nvoB-nfrzv; 	// Number of active virtual orbitals
 	npop=nmo-nfrzv;         // Number of populated orbitals
-
-	/*
-	dimooAA=nooA*nooA;
-	dimooBB=nooB*nooB;
-	dimvvAA=nvoA*nvoA;
-	dimvvBB=nvoB*nvoB;
-	dimvoAA=nvoA*nooA;
-	dimvoBB=nvoB*nooB;
-	dimss=nmo*nmo;
-	dimosA=nooA*nmo;
-	dimosB=nooB*nmo;
-	dimvsA=nvoA*nmo;
-	dimvsB=nvoB*nmo;
-	dimacsacs=nacso*nacso;
-	dimacvacvAA=nacvoA*nacvoA;
-	dimacvacvBB=nacvoB*nacvoB;
-	dimacoacoAA=nacooA*nacooA;
-	dimacoacoBB=nacooB*nacooB;
-	dimacvacoAA=nacvoA*nacooA;
-	dimacvacoBB=nacvoB*nacooB;
-	dimacofoA=nfrzc*nacooA;
-	dimacofoB=nfrzc*nacooB;
-	dimfvacvAA=nfrzv*nacvoA;
-	dimfvacvBB=nfrzv*nacvoB;
-	*/
 	ntri_so = 0.5*nso*(nso+1);
         ntri = 0.5*nmo*(nmo+1);
 	dimtei = 0.5*ntri*(ntri+1);
