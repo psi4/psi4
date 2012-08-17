@@ -88,15 +88,6 @@ void OMP2Wave::trans_ints()
     timer_off("Trans (VV|OV)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
     
-    
-    // Trans (VV|VV)
-    if (hess_type == "FULL") {
-      timer_on("Trans (VV|VV)");
-      ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-      timer_off("Trans (VV|VV)");
-    }
-    
-    
 /********************************************************************************************/
 /************************** sort chem -> phys ***********************************************/
 /********************************************************************************************/  
@@ -235,32 +226,7 @@ void OMP2Wave::trans_ints()
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
      dpd_buf4_close(&K);
      timer_off("Sort (OV|VV) -> <OV|VV>");
-     
-     
-     
-     if (hess_type == "FULL") {
-       
-       // (VV|VV) -> <VV|VV>
-      timer_on("Sort (VV|VV) -> <VV|VV>");
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
-      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
-      dpd_buf4_close(&K);
-      
-      // (vv|vv) -> <vv|vv>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                  ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
-      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv|vv>");
-      dpd_buf4_close(&K);
-      
-      // (VV|vv) -> <Vv|Vv>
-      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
-                  ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
-      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[V,v]"), ID("[V,v]"), "MO Ints <Vv|Vv>");
-      dpd_buf4_close(&K);
-      timer_off("Sort (VV|VV) -> <VV|VV>");
-     }
-      timer_off("Sort chem -> phys");
+     timer_off("Sort chem -> phys");
      
      
 /********************************************************************************************/

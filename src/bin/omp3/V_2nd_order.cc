@@ -58,8 +58,7 @@ void OMP3Wave::V_2nd_order()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&V);
-    
-    
+
     // Build V(ij,kl)
     // V_ijkl(2) = 1/2 \sum_{e,f} T_ij^ef(1) L_ef^kl(1) = 1/2 \sum_{e,f} T_ij^ef(1) T_kl^ef(1)
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -86,10 +85,8 @@ void OMP3Wave::V_2nd_order()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&V);
-  
     
     
-    /*
     //Print 
     if (print_ > 3) {
       dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
@@ -107,7 +104,6 @@ void OMP3Wave::V_2nd_order()
       dpd_buf4_print(&V, outfile, 1);
       dpd_buf4_close(&V); 
     }
-    */
     
 /********************************************************************************************/
 /************************** OVOV-block ******************************************************/
@@ -123,7 +119,7 @@ void OMP3Wave::V_2nd_order()
     dpd_contract444(&T, &L, &V, 0, 0, 0.5, 0.0); 
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
-    
+   
     // V_IAJB(2) => V(IB,JA) += 1/2 \sum_{m,e} T_Im^Be(1) T_Jm^Ae(1) = 1/2 \sum_{m,e} T(IB,me) T(JA,me) 
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "T2_1 (OV|ov)");
@@ -132,12 +128,10 @@ void OMP3Wave::V_2nd_order()
     dpd_contract444(&T, &L, &V, 0, 0, 0.5, 1.0); 
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
-    
+
     // V(IB,JA) => V(IA,JB)
     dpd_buf4_sort(&V, PSIF_OMP3_DENSITY , psrq, ID("[O,V]"), ID("[O,V]"), "V_2 <OV|OV>");
     dpd_buf4_close(&V);
-    
-    
     
     
     // Build V(ia,jb)  
@@ -151,7 +145,7 @@ void OMP3Wave::V_2nd_order()
     dpd_contract444(&T, &L, &V, 0, 0, 0.5, 0.0); 
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
-    
+   
     // V_iajb(2) => V(ib,ja) += 1/2 \sum_{M,E} T_Mi^Eb(1) T_Mj^Ea(1) = 1/2 \sum_{M,E} T(ME,ib) T(ME,ja) 
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "T2_1 (OV|ov)");
@@ -160,7 +154,7 @@ void OMP3Wave::V_2nd_order()
     dpd_contract444(&T, &L, &V, 1, 1, 0.5, 1.0); 
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
-    
+
     // V(ib,ja) => V(ia,jb)
     dpd_buf4_sort(&V, PSIF_OMP3_DENSITY , psrq, ID("[o,v]"), ID("[o,v]"), "V_2 <ov|ov>");
     dpd_buf4_close(&V);
@@ -192,6 +186,7 @@ void OMP3Wave::V_2nd_order()
     
     
     // Build V(Ia,jB)  
+    /* old
     // V_IajB(2) => V(IB,ja) = 1/2 \sum_{M,E} T_IM^BE(1) T_Mj^Ea(1) = 1/2 \sum_{M,E} T(IB,ME) T(ME,ja) 
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "T2_1 (OV|OV)");
@@ -201,11 +196,26 @@ void OMP3Wave::V_2nd_order()
                   ID("[O,V]"), ID("[o,v]"), 0, "V_2 <IB|ja>");
     dpd_contract444(&T, &L, &V, 0, 1, 0.5, 0.0); 
     dpd_buf4_close(&T);
-    
+    */
+   
+    // Build V(Ia,jB)  
+    // V_IajB(2) => V(IB,ja) = 1/2 \sum_{M,E} T_IM^BE(1) T_Mj^Ea(1) = 1/2 \sum_{M,E} T(IB,ME) T(ME,ja) 
+    //                       = 1/2 \sum_{M,E} T(IB,ME) T(ja,ME)
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "T2_1 (OV|OV)");
+    dpd_buf4_init(&L, PSIF_OMP3_DPD, 0, ID("[o,v]"), ID("[O,V]"),
+                  ID("[o,v]"), ID("[O,V]"), 0, "T2_1 (ov|OV)");
+    dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "V_2 <IB|ja>");
+    dpd_contract444(&T, &L, &V, 0, 0, 0.5, 0.0); 
+    dpd_buf4_close(&T);
+    //
+
     // V_IajB(2) => V(IB,ja) += 1/2 \sum_{m,e} T_Im^Be(1) T_jm^ae(1) = 1/2 \sum_{m,e} T(IB,me) T(ja,me) 
+    //                        = 1/2 \sum_{m,e} T(me,IB) T(me,ja)
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "T2_1 (ov|ov)");
-    dpd_contract444(&L, &T, &V, 0, 0, 0.5, 1.0); 
+    dpd_contract444(&L, &T, &V, 1, 1, 0.5, 1.0); 
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     

@@ -31,6 +31,7 @@
 
 #include "omp2wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -48,7 +49,7 @@ fprintf(outfile," ==============================================================
 fprintf(outfile,"\n");
 fprintf(outfile, "\t            Minimizing MP2-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
-fprintf(outfile, " Iter       E_total           DE           MO Grad RMS      MAX MO Grad      Korb RMS      MAX Korb      T2 RMS    \n");
+fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      T2 RMS    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  \n");
 fflush(outfile);
 
@@ -63,15 +64,14 @@ fflush(outfile);
       
       if (opt_method == "DIIS") {
 	nvar = num_vecs +1;
-	vecsA = block_matrix(num_vecs, nidpA);
-	errvecsA = block_matrix(num_vecs, nidpA);
-	memset(vecsA[0], 0, sizeof(double)*num_vecs*nidpA);  
-	memset(errvecsA[0], 0, sizeof(double)*num_vecs*nidpA); 
-      
-	vecsB = block_matrix(num_vecs, nidpB);
-	errvecsB = block_matrix(num_vecs, nidpB);
-	memset(vecsB[0], 0, sizeof(double)*num_vecs*nidpB);  
-	memset(errvecsB[0], 0, sizeof(double)*num_vecs*nidpB); 
+        vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
+        errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
+        vecsA->zero();
+        errvecsA->zero();
+        vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
+        errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
+        vecsB->zero();
+        errvecsB->zero();
       }
       
       
@@ -155,8 +155,8 @@ fflush(outfile);
 /********************************************************************************************/
 /********************************************************************************************/   
     if (itr_occ >= mo_maxiter) {
-      break;  
       conver = 0; // means MOs are NOT optimized
+      break;  
     }
 
     if (rms_wog == 0.0) break;
