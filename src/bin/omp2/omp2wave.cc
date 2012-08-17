@@ -59,14 +59,7 @@ void OMP2Wave::common_init()
 	sos_scale=options_.get_double("SOS_SCALE");
 	sos_scale2=options_.get_double("SOS_SCALE2");
 	
-	//wfn=options_.get_str("WFN");
-        if (options_["LEVEL_SHIFT"].has_changed()) {
-	  level_shift="TRUE";
-        }
-        
-	//lineq=options_.get_str("LINEQ");
 	orth_type=options_.get_str("ORTH_TYPE");
-	//stability=options_.get_str("STABILITY");
 	opt_method=options_.get_str("OPT_METHOD");
 	hess_type=options_.get_str("HESS_TYPE");
 	omp2_orb_energy=options_.get_str("OMP2_ORBS_PRINT");
@@ -76,6 +69,8 @@ void OMP2Wave::common_init()
 	do_sos=options_.get_str("DO_SOS");
 	write_mo_coeff=options_.get_str("MO_WRITE");
 	read_mo_coeff=options_.get_str("MO_READ");
+        lineq=options_.get_str("LINEQ_SOLVER"); 
+	level_shift=options_.get_str("DO_LEVEL_SHIFT");
 	
 	cutoff = pow(10.0,-exp_cutoff);
 	
@@ -154,7 +149,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision August 7, 2012\n") ;
+   fprintf(outfile,"              Latest Revision August 17, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
    fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;
@@ -263,7 +258,7 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tOMP2 Total Energy (a.u.)           : %12.14f\n", Emp2L);
 	fprintf(outfile,"\tSCS-OMP2 Total Energy (a.u.)       : %12.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-OMP2 Total Energy (a.u.)       : %12.14f\n", Esosmp2);
-	fprintf(outfile,"\t============================================================================ \n");
+	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);
 
@@ -301,8 +296,8 @@ double OMP2Wave::compute_energy()
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso,nmo);
 	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(int)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(int)*nso*nmo);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
+	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
     
 	  //set C_pitzer
 	  C_pitzerA = Ca_->to_block_matrix();    
@@ -641,20 +636,6 @@ fflush(outfile);
       
 } // end of nbo
 
-double OMP2Wave::dot_product(int dim, double *x, double *y)
-{
-  double value;
-  
-  value = 0.0;
-  for (int i=0; i < dim; i++) {
-    value += x[i] * y[i];
-  }
-  
-  return value; 
-    
-} // end of dot_product
-
-
 void OMP2Wave::mem_release()
 {   
 
@@ -665,12 +646,6 @@ void OMP2Wave::mem_release()
 	delete [] idpcolB;
 	delete [] idpirrA;
 	delete [] idpirrB;
-	delete [] wogA;
-	delete [] wogB;
-	delete [] kappaA;
-	delete [] kappaB;
-	delete [] kappa_barA;
-	delete [] kappa_barB;
 	delete [] evalsA;
 	delete [] evalsB;
 	delete [] evals_c1A;
@@ -699,12 +674,19 @@ void OMP2Wave::mem_release()
 	delete [] qt2c1A;
 	delete [] qt2c1B;
 	*/
+
+        delete wogA;
+	delete wogB;
+	delete kappaA;
+	delete kappaB;
+	delete kappa_barA;
+	delete kappa_barB;
 	
 	if (opt_method == "DIIS") {
-	  free_block(errvecsA);
-	  free_block(errvecsB);
-	  free_block(vecsA);
-	  free_block(vecsB);
+          delete vecsA;
+          delete errvecsA;
+          delete vecsB;
+          delete errvecsB;
 	}
 	
 	chkpt_.reset();
