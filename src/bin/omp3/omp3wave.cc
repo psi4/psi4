@@ -159,7 +159,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision August 17, 2012\n") ;
+   fprintf(outfile,"              Latest Revision August 20, 2012\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).\n") ;
    fprintf(outfile,"\n");
@@ -201,7 +201,7 @@ double OMP3Wave::compute_energy()
         timer_off("MP2 Energy");
 
 	fprintf(outfile,"\n \n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs... \n"); 
+	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Standard MP2)... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -215,6 +215,10 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %12.14f\n", Esosmp2);
+	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %12.14f\n", Escsnmp2);
+	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
+	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
+	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -231,7 +235,7 @@ double OMP3Wave::compute_energy()
 	Emp3L_old=Emp3;
 	
 	fprintf(outfile,"\n \n"); 
-	fprintf(outfile,"\tComputing MP3 energy using SCF MOs... \n"); 
+	fprintf(outfile,"\tComputing MP3 energy using SCF MOs (Standard MP3)... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -244,6 +248,10 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %12.14f\n", Esosmp3);
+	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %12.14f\n", Escsnmp3);
+	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %12.14f\n", Escsmimp3);
+	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp3vdw);
+	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %12.14f\n", Esospimp3);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -284,6 +292,10 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-MP2 Total Energy (a.u.)        : %12.14f\n", Esosmp2);
+	fprintf(outfile,"\tSCSN-MP2 Total Energy (a.u.)       : %12.14f\n", Escsnmp2);
+	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
+	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
+	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -302,6 +314,10 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %12.14f\n", Esosmp3);
+	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %12.14f\n", Escsnmp3);
+	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %12.14f\n", Escsmimp3);
+	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp3vdw);
+	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %12.14f\n", Esospimp3);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -309,7 +325,7 @@ double OMP3Wave::compute_energy()
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ CONGRATULATIONS OMP3 ITERATIONS ARE CONVERGED =============== \n");
+	fprintf(outfile,"\t================ FINAL OMP3 RESULTS ========================================== \n");
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -319,6 +335,10 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tOMP3 Total Energy (a.u.)           : %12.14f\n", Emp3L);
 	fprintf(outfile,"\tSCS-OMP3 Total Energy (a.u.)       : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-OMP3 Total Energy (a.u.)       : %12.14f\n", Esosmp3);
+	fprintf(outfile,"\tSCSN-OMP3 Total Energy (a.u.)      : %12.14f\n", Escsnmp3);
+	fprintf(outfile,"\tSCS-MI-OMP3 Total Energy (a.u.)    : %12.14f\n", Escsmimp3);
+	fprintf(outfile,"\tSCS-OMP3-VDW Total Energy (a.u.    : %12.14f\n", Escsmp3vdw);
+	fprintf(outfile,"\tSOS-PI-OMP3 Total Energy (a.u.)    : %12.14f\n", Esospimp3);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);
@@ -427,12 +447,32 @@ void OMP3Wave::mp2_energy()
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);
      
-     Ecorr=0.0;
-     Escsmp2AA=0.0;
-     Escsmp2AB=0.0;
-     Escsmp2BB=0.0;
-     Escsmp2=0.0;
-     Esosmp2AB=0.0;
+     Ecorr = 0.0;
+
+     Escsmp2AA = 0.0;
+     Escsmp2AB = 0.0;
+     Escsmp2BB = 0.0;
+     Escsmp2 = 0.0;
+
+     Esosmp2AB = 0.0;
+     Esosmp2 = 0.0;
+
+     Escsnmp2AA = 0.0;
+     Escsnmp2BB = 0.0;
+     Escsnmp2 = 0.0;
+     
+     Escsmimp2AA = 0.0;
+     Escsmimp2AB = 0.0;
+     Escsmimp2BB = 0.0;
+     Escsmimp2 = 0.0;
+
+     Escsmp2vdwAA = 0.0;
+     Escsmp2vdwAB = 0.0;
+     Escsmp2vdwBB = 0.0;
+     Escsmp2vdw = 0.0;
+
+     Esospimp2AB = 0.0;
+     Esospimp2 = 0.0;
      
      // Compute Energy
      // Alpha-Alpha spin contribution
@@ -444,8 +484,11 @@ void OMP3Wave::mp2_energy()
      dpd_buf4_close(&T);
      dpd_buf4_close(&K);
      
-     Emp2AA=Ecorr;    
+     Emp2AA = Ecorr;    
      Escsmp2AA = ss_scale * Emp2AA; 
+     Escsnmp2AA = 1.76 * Emp2AA; 
+     Escsmimp2AA = 1.29 * Emp2AA; 
+     Escsmp2vdwAA = 0.50 * Emp2AA; 
      
      
      // Alpha-Beta spin contribution
@@ -462,6 +505,9 @@ void OMP3Wave::mp2_energy()
      Esosmp2AB = sos_scale * Emp2AB; 
      //if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB; 
      //else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;  
+     Escsmimp2AB = 0.40 * Emp2AB; 
+     Escsmp2vdwAB = 1.28 * Emp2AB; 
+     Esospimp2AB = 1.40 * Emp2AB; 
      
      
      // Beta-Beta spin contribution
@@ -475,15 +521,20 @@ void OMP3Wave::mp2_energy()
      
      Emp2BB = Ecorr - Emp2AA - Emp2AB;  
      Escsmp2BB = ss_scale * Emp2BB;  
+     Escsnmp2BB = 1.76 * Emp2BB; 
+     Escsmimp2BB = 1.29 * Emp2BB; 
+     Escsmp2vdwBB = 0.50 * Emp2BB; 
      
      Emp2 = Eref + Ecorr;
      Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
      Esosmp2 = Eref + Esosmp2AB;     
+     Escsnmp2 = Eref + Escsnmp2AA + Escsnmp2BB;
+     Escsmimp2 = Eref + Escsmimp2AA + Escsmimp2AB + Escsmimp2BB;
+     Escsmp2vdw = Eref + Escsmp2vdwAA + Escsmp2vdwAB + Escsmp2vdwBB;
+     Esospimp2 = Eref + Esospimp2AB;     
      
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP3_DPD, 1);    
-     
-     Emp2=Eref+Ecorr;
      
 } // end of mp2_energy
 
@@ -498,7 +549,7 @@ void OMP3Wave::mp3_energy()
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);
      
-     Ecorr=0.0;
+     Ecorr = 0.0;
  
      // Compute Energy
      // Alpha-Alpha spin contribution
@@ -509,7 +560,7 @@ void OMP3Wave::mp3_energy()
      Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
      dpd_buf4_close(&T);
      dpd_buf4_close(&K);     
-     Emp3AA=Ecorr;    
+     Emp3AA = Ecorr;    
      
      
      // Alpha-Beta spin contribution
@@ -535,6 +586,10 @@ void OMP3Wave::mp3_energy()
      Emp3 = Eref + Ecorr;
      Escsmp3 = Escsmp2 + (e3_scale * (Emp3 - Emp2) );
      Esosmp3 = Esosmp2 + (e3_scale * (Emp3 - Emp2) );
+     Escsnmp3 = Escsnmp2 + (e3_scale * (Emp3 - Emp2) );
+     Escsmimp3 = Escsmimp2 + (e3_scale * (Emp3 - Emp2) );
+     Escsmp3vdw = Escsmp2vdw + (e3_scale * (Emp3 - Emp2) );
+     Esospimp3 = Esospimp2 + (e3_scale * (Emp3 - Emp2) );
      
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP3_DPD, 1);    
