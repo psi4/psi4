@@ -15,10 +15,94 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define EPS 1.0e-17
 
-#define ERI_GRADIENT_NTYPE 9
+// libderiv computes 9 of the 12 total derivatives. It computes 3 of the
+// centers we handle the 4th.
+#define ERI_1DER_NTYPE (9)
+// libderiv computes the second derivatives using the first derivatives.
+// The first derivatives are provided when second derivatives are asked
+// for.
+#define ERI_2DER_NTYPE (ERI_1DER_NTYPE + 45)
+
+unsigned char ntypes[] = { 1, ERI_1DER_NTYPE, ERI_2DER_NTYPE };
 
 using namespace boost;
 using namespace psi;
+
+namespace {
+
+    static size_t fill_primitive_data(Libint_t* libint_, Fjt* fjt, const ShellPair* p12, const ShellPair* p34, int am, int nprim1, int nprim2, int nprim3, int nprim4, bool sh1eqsh2, bool sh3eqsh4) {
+        double zeta, eta, ooze, rho, poz, coef1, PQ[3], PQ2, W[3], o12, o34, T, *F;
+        int max_p2, max_p4, p1, p2, p3, p4, m, n, i;
+        size_t nprim = 0L;
+
+        for (p1 = 0; p1 < nprim1; ++p1) {
+            max_p2 = sh1eqsh2 ? p1+1 : nprim2;
+            for (p2 = 0; p2 < max_p2; ++p2) {
+                m = (1 + (sh1eqsh2 && p1 != p2));
+
+                zeta = p12->gamma[p1][p2];
+                o12  = p12->overlap[p1][p2];
+
+                for (p3 = 0; p3 < nprim3; ++p3) {
+                    max_p4 = sh3eqsh4 ? p3+1 : nprim4;
+                    for (p4 = 0; p4 < max_p4; ++p4) {
+                        n = m * (1 + (sh3eqsh4 && p3 != p4));
+
+                        eta  = p34->gamma[p3][p4];
+                        o34  = p34->overlap[p3][p4];
+                        ooze = 1.0 / (zeta + eta);
+                        poz  = eta * ooze;
+                        rho  = zeta * poz;
+                        coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34 * n;
+
+                        libint_->PrimQuartet[nprim].poz   = poz;
+                        libint_->PrimQuartet[nprim].oo2zn = 0.5 * ooze;
+                        libint_->PrimQuartet[nprim].pon   = zeta * ooze;
+                        libint_->PrimQuartet[nprim].oo2z  = 0.5 / zeta;
+                        libint_->PrimQuartet[nprim].oo2n  = 0.5 / eta;
+
+                        PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
+                        PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
+                        PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
+                        PQ2   = PQ[0]*PQ[0] + PQ[1]*PQ[1] + PQ[2]*PQ[2];
+
+                        W[0]  = (p12->P[p1][p2][0] * zeta + p34->P[p3][p4][0] * eta) * ooze;
+                        W[1]  = (p12->P[p1][p2][1] * zeta + p34->P[p3][p4][1] * eta) * ooze;
+                        W[2]  = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * ooze;
+
+                        // PA
+                        libint_->PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
+                        libint_->PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
+                        libint_->PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
+                        // WP
+                        libint_->PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
+                        libint_->PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
+                        libint_->PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        // QC
+                        libint_->PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
+                        libint_->PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
+                        libint_->PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        // WQ
+                        libint_->PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
+                        libint_->PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
+                        libint_->PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
+
+                        T = rho * PQ2;
+                        fjt->set_rho(rho);
+                        F = fjt->values(am, T);
+
+                        for (i=0; i<=am; ++i)
+                            libint_->PrimQuartet[nprim].F[i] = F[i] * coef1;
+
+                        nprim++;
+                    }
+                }
+            }
+        }
+        return nprim;
+    }
+
+} // end namespace
 
 TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, double schwarz)
     : TwoBodyAOInt(integral, deriv)
@@ -38,24 +122,37 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, doubl
 
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
-        fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n" \
+        fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n"
                         "       Recompile libint for higher angular momentum, then recompile this program.\n");
         throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
-    if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
-        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n" \
+    else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
+        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
                         "     Recompile libderiv for higher angular momentum, then recompile this program.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
-                                 "Recompile libint for higher angular momentum, then recompile this program.",
+                                 "Recompile libderiv for higher angular momentum, then recompile this program.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
+    }
+    else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
+        fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
+                        "     Recompile libderiv for higher angular momentum, then recompile this program.\n");
+        throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
+                                 "Recompile libderiv for higher angular momentum, this recompile this program.",
+                                 LIBDERIV_MAX_AM12, max_am, __FILE__, __LINE__);
+    }
+    else if (deriv_ > 2) {
+        fprintf(stderr, "ERROR: ERI - Cannot compute higher than second derivatives.");
+        throw PSIEXCEPTION("ERI - Cannot compute higher than second derivatives.");
     }
 
     try {
         // Initialize libint
         init_libint(&libint_, max_am, max_nprim);
         // and libderiv, if needed
-        if (deriv_)
+        if (deriv_ == 1)
             init_libderiv1(&libderiv_, max_am, max_nprim, max_cart_);
+        else if (deriv_ == 2)
+            init_libderiv12(&libderiv_, max_am, max_nprim, max_cart_);
     }
     catch (std::bad_alloc& e) {
         fprintf(stderr, "Error allocating memory for libint/libderiv.\n");
@@ -74,8 +171,8 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, doubl
     }
     memset(tformbuf_, 0, sizeof(double)*size);
 
-    if (deriv_ == 1)
-        size *= ERI_GRADIENT_NTYPE;         // 3 centers with x, y, z contributions; 4th determined by translational invariance
+    // ntypes is the number of integral types provided by libint/libderiv.
+    size *= ntypes[deriv_];
 
     try {
         target_ = new double[size];
@@ -673,6 +770,9 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
 
+        nprim = fill_primitive_data(&libint_, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4);
+
+#if 0
         for (int p1=0; p1<nprim1; ++p1) {
             max_p2 = (sh1 == sh2) ? p1+1 : nprim2;
             for (int p2=0; p2<max_p2; ++p2) {
@@ -718,14 +818,14 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
                         libint_.PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
                         libint_.PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
-                        // QC
-                        libint_.PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
-                        libint_.PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
-                        libint_.PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
                         // WP
                         libint_.PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
                         libint_.PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
                         libint_.PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        // QC
+                        libint_.PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
+                        libint_.PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
+                        libint_.PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
                         // WQ
                         libint_.PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
                         libint_.PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
@@ -736,6 +836,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                 }
             }
         }
+#endif
     }
     else {
         const std::vector<double>& a1s = s1.exps();
@@ -1039,13 +1140,13 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     size_t size = n1 * n2 * n3 * n4;
     // Permute integrals back, if needed
     if (p12 || p34 || p13p24) {
-        // ERI_GRADIENT_NTYPE of them
-        for (int i=0; i<ERI_GRADIENT_NTYPE; ++i)
+        // ERI_1DER_NTYPE of them
+        for (int i=0; i<ERI_1DER_NTYPE; ++i)
             permute_target(source_+(i*size), target_+(i*size), s1, s2, s3, s4, p12, p34, p13p24);
     }
     else {
         // copy the integrals to the target_, 3n of them
-        memcpy(target_, source_, ERI_GRADIENT_NTYPE * size *sizeof(double));
+        memcpy(target_, source_, ERI_1DER_NTYPE * size *sizeof(double));
     }
 }
 
@@ -1221,7 +1322,7 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     build_deriv1_eri[am1][am2][am3][am4](&libderiv_, nprim);
 
     // Zero out memory
-    memset(source_, 0, sizeof(double) * size * ERI_GRADIENT_NTYPE);
+    memset(source_, 0, sizeof(double) * size * ERI_1DER_NTYPE);
 
     // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers).
     // The libmints array returns the following integral derivatives:
@@ -1310,9 +1411,18 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // Transform the integrals to the spherical basis
     if (!force_cartesian_)
-        pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
+        pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
 
     // Results are in source_
+}
+
+void TwoElectronInt::compute_shell_deriv2(int, int, int, int)
+{
+
+}
+
+void TwoElectronInt::compute_quartet_deriv2(int, int, int, int)
+{
 }
 
 int TwoElectronInt::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
