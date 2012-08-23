@@ -13,7 +13,6 @@
 #define restrict
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define EPS 1.0e-17
 
 // libderiv computes 9 of the 12 total derivatives. It computes 3 of the
 // centers we handle the 4th.
@@ -23,30 +22,37 @@
 // for.
 #define ERI_2DER_NTYPE (ERI_1DER_NTYPE + 45)
 
-unsigned char ntypes[] = { 1, ERI_1DER_NTYPE, ERI_2DER_NTYPE };
-
 using namespace boost;
 using namespace psi;
 
 namespace {
 
-    static size_t fill_primitive_data(Libint_t* libint_, Fjt* fjt, const ShellPair* p12, const ShellPair* p34, int am, int nprim1, int nprim2, int nprim3, int nprim4, bool sh1eqsh2, bool sh3eqsh4) {
+    unsigned char ntypes[] = { 1, ERI_1DER_NTYPE, ERI_2DER_NTYPE };
+
+    static size_t fill_primitive_data(prim_data* PrimQuartet, Fjt* fjt, const ShellPair* p12, const ShellPair* p34, int am, int nprim1, int nprim2, int nprim3, int nprim4, bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
         double zeta, eta, ooze, rho, poz, coef1, PQ[3], PQ2, W[3], o12, o34, T, *F;
+        double a1, a2, a3, a4;
         int max_p2, max_p4, p1, p2, p3, p4, m, n, i;
         size_t nprim = 0L;
 
         for (p1 = 0; p1 < nprim1; ++p1) {
             max_p2 = sh1eqsh2 ? p1+1 : nprim2;
+            a1 = p12->ai[p1];
+
             for (p2 = 0; p2 < max_p2; ++p2) {
                 m = (1 + (sh1eqsh2 && p1 != p2));
 
+                a2   = p12->aj[p2];
                 zeta = p12->gamma[p1][p2];
                 o12  = p12->overlap[p1][p2];
 
                 for (p3 = 0; p3 < nprim3; ++p3) {
                     max_p4 = sh3eqsh4 ? p3+1 : nprim4;
+                    a3 = p34->ai[p3];
+
                     for (p4 = 0; p4 < max_p4; ++p4) {
                         n = m * (1 + (sh3eqsh4 && p3 != p4));
+                        a4 = p34->aj[p4];
 
                         eta  = p34->gamma[p3][p4];
                         o34  = p34->overlap[p3][p4];
@@ -55,11 +61,15 @@ namespace {
                         rho  = zeta * poz;
                         coef1= 2.0 * sqrt(rho*M_1_PI) * o12 * o34 * n;
 
-                        libint_->PrimQuartet[nprim].poz   = poz;
-                        libint_->PrimQuartet[nprim].oo2zn = 0.5 * ooze;
-                        libint_->PrimQuartet[nprim].pon   = zeta * ooze;
-                        libint_->PrimQuartet[nprim].oo2z  = 0.5 / zeta;
-                        libint_->PrimQuartet[nprim].oo2n  = 0.5 / eta;
+                        PrimQuartet[nprim].poz   = poz;
+                        PrimQuartet[nprim].oo2zn = 0.5 * ooze;
+                        PrimQuartet[nprim].pon   = zeta * ooze;
+                        PrimQuartet[nprim].oo2z  = 0.5 / zeta;
+                        PrimQuartet[nprim].oo2n  = 0.5 / eta;
+                        PrimQuartet[nprim].twozeta_a = 2.0 * a1;
+                        PrimQuartet[nprim].twozeta_b = 2.0 * a2;
+                        PrimQuartet[nprim].twozeta_c = 2.0 * a3;
+                        PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                         PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
                         PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
@@ -71,28 +81,36 @@ namespace {
                         W[2]  = (p12->P[p1][p2][2] * zeta + p34->P[p3][p4][2] * eta) * ooze;
 
                         // PA
-                        libint_->PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
-                        libint_->PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
-                        libint_->PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
-                        // WP
-                        libint_->PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
-                        libint_->PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
-                        libint_->PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
+                        PrimQuartet[nprim].U[0][0] = p12->PA[p1][p2][0];
+                        PrimQuartet[nprim].U[0][1] = p12->PA[p1][p2][1];
+                        PrimQuartet[nprim].U[0][2] = p12->PA[p1][p2][2];
+                        // PB
+                        PrimQuartet[nprim].U[1][0] = p12->PB[p1][p2][0];
+                        PrimQuartet[nprim].U[1][1] = p12->PB[p1][p2][1];
+                        PrimQuartet[nprim].U[1][2] = p12->PB[p1][p2][2];
                         // QC
-                        libint_->PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
-                        libint_->PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
-                        libint_->PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        PrimQuartet[nprim].U[2][0] = p34->PA[p3][p4][0];
+                        PrimQuartet[nprim].U[2][1] = p34->PA[p3][p4][1];
+                        PrimQuartet[nprim].U[2][2] = p34->PA[p3][p4][2];
+                        // QD
+                        PrimQuartet[nprim].U[3][0] = p34->PB[p3][p4][0];
+                        PrimQuartet[nprim].U[3][1] = p34->PB[p3][p4][1];
+                        PrimQuartet[nprim].U[3][2] = p34->PB[p3][p4][2];
+                        // WP
+                        PrimQuartet[nprim].U[4][0] = W[0] - p12->P[p1][p2][0];
+                        PrimQuartet[nprim].U[4][1] = W[1] - p12->P[p1][p2][1];
+                        PrimQuartet[nprim].U[4][2] = W[2] - p12->P[p1][p2][2];
                         // WQ
-                        libint_->PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
-                        libint_->PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
-                        libint_->PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
+                        PrimQuartet[nprim].U[5][0] = W[0] - p34->P[p3][p4][0];
+                        PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
+                        PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
 
                         T = rho * PQ2;
                         fjt->set_rho(rho);
-                        F = fjt->values(am, T);
+                        F = fjt->values(am+deriv_lvl, T);
 
-                        for (i=0; i<=am; ++i)
-                            libint_->PrimQuartet[nprim].F[i] = F[i] * coef1;
+                        for (i=0; i<=am+deriv_lvl; ++i)
+                            PrimQuartet[nprim].F[i] = F[i] * coef1;
 
                         nprim++;
                     }
@@ -231,7 +249,7 @@ void TwoElectronInt::init_shell_pairs12()
     double a1, a2, ab2, gam, c1, c2;
     double *curr_stack_ptr;
 
-    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4() || deriv_ > 0) {
+    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
         use_shell_pairs_ = false;
         return;
     }
@@ -770,7 +788,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
 
-        nprim = fill_primitive_data(&libint_, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4);
+        nprim = fill_primitive_data(libint_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 0);
     }
     else {
         const std::vector<double>& a1s = s1.exps();
@@ -1144,106 +1162,116 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // Prepare all the data needed by libderiv
     nprim = 0;
-    for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1.exp(p1);
-        double c1 = s1.coef(p1);
-        for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2.exp(p2);
-            double c2 = s2.coef(p2);
-            double zeta = a1 + a2;
-            double ooz = 1.0/zeta;
-            double oo2z = 1.0/(2.0 * zeta);
 
-            double PA[3], PB[3];
-            double P[3];
+    if (use_shell_pairs_) {
+        ShellPair *p12, *p34;
+        p12 = &(pairs12_[sh1][sh2]);
+        p34 = &(pairs34_[sh3][sh4]);
 
-            P[0] = (a1*A[0] + a2*B[0])*ooz;
-            P[1] = (a1*A[1] + a2*B[1])*ooz;
-            P[2] = (a1*A[2] + a2*B[2])*ooz;
-            PA[0] = P[0] - A[0];
-            PA[1] = P[1] - A[1];
-            PA[2] = P[2] - A[2];
-            PB[0] = P[0] - B[0];
-            PB[1] = P[1] - B[1];
-            PB[2] = P[2] - B[2];
+        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 1);
+    }
+    else {
+        for (int p1=0; p1<nprim1; ++p1) {
+            double a1 = s1.exp(p1);
+            double c1 = s1.coef(p1);
+            for (int p2=0; p2<nprim2; ++p2) {
+                double a2 = s2.exp(p2);
+                double c2 = s2.coef(p2);
+                double zeta = a1 + a2;
+                double ooz = 1.0/zeta;
+                double oo2z = 1.0/(2.0 * zeta);
 
-            double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
+                double PA[3], PB[3];
+                double P[3];
 
-            for (int p3=0; p3<nprim3; ++p3) {
-                double a3 = s3.exp(p3);
-                double c3 = s3.coef(p3);
-                for (int p4=0; p4<nprim4; ++p4) {
+                P[0] = (a1*A[0] + a2*B[0])*ooz;
+                P[1] = (a1*A[1] + a2*B[1])*ooz;
+                P[2] = (a1*A[2] + a2*B[2])*ooz;
+                PA[0] = P[0] - A[0];
+                PA[1] = P[1] - A[1];
+                PA[2] = P[2] - A[2];
+                PB[0] = P[0] - B[0];
+                PB[1] = P[1] - B[1];
+                PB[2] = P[2] - B[2];
 
-                    double a4 = s4.exp(p4);
-                    double c4 = s4.coef(p4);
-                    double nu = a3 + a4;
-                    double oon = 1.0/nu;
-                    double oo2n = 1.0/(2.0*nu);
-                    double oo2zn = 1.0/(2.0*(zeta+nu));
-                    double rho = (zeta*nu)/(zeta+nu);
+                double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
 
-                    double QC[3], QD[3], WP[3], WQ[3], PQ[3];
-                    double Q[3], W[3];
+                for (int p3=0; p3<nprim3; ++p3) {
+                    double a3 = s3.exp(p3);
+                    double c3 = s3.coef(p3);
+                    for (int p4=0; p4<nprim4; ++p4) {
 
-                    Q[0] = (a3*C[0] + a4*D[0])*oon;
-                    Q[1] = (a3*C[1] + a4*D[1])*oon;
-                    Q[2] = (a3*C[2] + a4*D[2])*oon;
-                    QC[0] = Q[0] - C[0];
-                    QC[1] = Q[1] - C[1];
-                    QC[2] = Q[2] - C[2];
-                    QD[0] = Q[0] - D[0];
-                    QD[1] = Q[1] - D[1];
-                    QD[2] = Q[2] - D[2];
-                    PQ[0] = P[0] - Q[0];
-                    PQ[1] = P[1] - Q[1];
-                    PQ[2] = P[2] - Q[2];
+                        double a4 = s4.exp(p4);
+                        double c4 = s4.coef(p4);
+                        double nu = a3 + a4;
+                        double oon = 1.0/nu;
+                        double oo2n = 1.0/(2.0*nu);
+                        double oo2zn = 1.0/(2.0*(zeta+nu));
+                        double rho = (zeta*nu)/(zeta+nu);
 
-                    double PQ2 = 0.0;
-                    PQ2 += (P[0] - Q[0]) * (P[0] - Q[0]);
-                    PQ2 += (P[1] - Q[1]) * (P[1] - Q[1]);
-                    PQ2 += (P[2] - Q[2]) * (P[2] - Q[2]);
+                        double QC[3], QD[3], WP[3], WQ[3], PQ[3];
+                        double Q[3], W[3];
 
-                    W[0] = (zeta*P[0] + nu*Q[0]) / (zeta + nu);
-                    W[1] = (zeta*P[1] + nu*Q[1]) / (zeta + nu);
-                    W[2] = (zeta*P[2] + nu*Q[2]) / (zeta + nu);
-                    WP[0] = W[0] - P[0];
-                    WP[1] = W[1] - P[1];
-                    WP[2] = W[2] - P[2];
-                    WQ[0] = W[0] - Q[0];
-                    WQ[1] = W[1] - Q[1];
-                    WQ[2] = W[2] - Q[2];
+                        Q[0] = (a3*C[0] + a4*D[0])*oon;
+                        Q[1] = (a3*C[1] + a4*D[1])*oon;
+                        Q[2] = (a3*C[2] + a4*D[2])*oon;
+                        QC[0] = Q[0] - C[0];
+                        QC[1] = Q[1] - C[1];
+                        QC[2] = Q[2] - C[2];
+                        QD[0] = Q[0] - D[0];
+                        QD[1] = Q[1] - D[1];
+                        QD[2] = Q[2] - D[2];
+                        PQ[0] = P[0] - Q[0];
+                        PQ[1] = P[1] - Q[1];
+                        PQ[2] = P[2] - Q[2];
 
-                    for (int i=0; i<3; ++i) {
-                        libderiv_.PrimQuartet[nprim].U[0][i] = PA[i];
-                        libderiv_.PrimQuartet[nprim].U[1][i] = PB[i];
-                        libderiv_.PrimQuartet[nprim].U[2][i] = QC[i];
-                        libderiv_.PrimQuartet[nprim].U[3][i] = QD[i];
-                        libderiv_.PrimQuartet[nprim].U[4][i] = WP[i];
-                        libderiv_.PrimQuartet[nprim].U[5][i] = WQ[i];
+                        double PQ2 = 0.0;
+                        PQ2 += (P[0] - Q[0]) * (P[0] - Q[0]);
+                        PQ2 += (P[1] - Q[1]) * (P[1] - Q[1]);
+                        PQ2 += (P[2] - Q[2]) * (P[2] - Q[2]);
+
+                        W[0] = (zeta*P[0] + nu*Q[0]) / (zeta + nu);
+                        W[1] = (zeta*P[1] + nu*Q[1]) / (zeta + nu);
+                        W[2] = (zeta*P[2] + nu*Q[2]) / (zeta + nu);
+                        WP[0] = W[0] - P[0];
+                        WP[1] = W[1] - P[1];
+                        WP[2] = W[2] - P[2];
+                        WQ[0] = W[0] - Q[0];
+                        WQ[1] = W[1] - Q[1];
+                        WQ[2] = W[2] - Q[2];
+
+                        for (int i=0; i<3; ++i) {
+                            libderiv_.PrimQuartet[nprim].U[0][i] = PA[i];
+                            libderiv_.PrimQuartet[nprim].U[1][i] = PB[i];
+                            libderiv_.PrimQuartet[nprim].U[2][i] = QC[i];
+                            libderiv_.PrimQuartet[nprim].U[3][i] = QD[i];
+                            libderiv_.PrimQuartet[nprim].U[4][i] = WP[i];
+                            libderiv_.PrimQuartet[nprim].U[5][i] = WQ[i];
+                        }
+                        libderiv_.PrimQuartet[nprim].oo2z = oo2z;
+                        libderiv_.PrimQuartet[nprim].oo2n = oo2n;
+                        libderiv_.PrimQuartet[nprim].oo2zn = oo2zn;
+                        libderiv_.PrimQuartet[nprim].poz = rho * ooz;
+                        libderiv_.PrimQuartet[nprim].pon = rho * oon;
+                        // libderiv_.PrimQuartet[nprim].oo2p = oo2rho;   // NOT SET IN CINTS
+                        libderiv_.PrimQuartet[nprim].twozeta_a = 2.0 * a1;
+                        libderiv_.PrimQuartet[nprim].twozeta_b = 2.0 * a2;
+                        libderiv_.PrimQuartet[nprim].twozeta_c = 2.0 * a3;
+                        libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
+
+                        double T = rho * PQ2;
+                        double *F = fjt_->values(am+1, T);
+
+                        // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
+                        double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
+                        double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd * prefactor;
+
+                        for (int i=0; i<=am+DERIV_LVL; ++i) {
+                            libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
+                        }
+
+                        nprim++;
                     }
-                    libderiv_.PrimQuartet[nprim].oo2z = oo2z;
-                    libderiv_.PrimQuartet[nprim].oo2n = oo2n;
-                    libderiv_.PrimQuartet[nprim].oo2zn = oo2zn;
-                    libderiv_.PrimQuartet[nprim].poz = rho * ooz;
-                    libderiv_.PrimQuartet[nprim].pon = rho * oon;
-                    // libderiv_.PrimQuartet[nprim].oo2p = oo2rho;   // NOT SET IN CINTS
-                    libderiv_.PrimQuartet[nprim].twozeta_a = 2.0 * a1;
-                    libderiv_.PrimQuartet[nprim].twozeta_b = 2.0 * a2;
-                    libderiv_.PrimQuartet[nprim].twozeta_c = 2.0 * a3;
-                    libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
-
-                    double T = rho * PQ2;
-                    double *F = fjt_->values(am+1, T);
-
-                    // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
-                    double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
-                    double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd * prefactor;
-
-                    for (int i=0; i<=am+DERIV_LVL; ++i) {
-                        libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
-                    }
-
-                    nprim++;
                 }
             }
         }
