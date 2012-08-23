@@ -524,13 +524,19 @@ IntegralTransform::process_eigenvectors()
             std::string name("Alpha orbitals for space ");
             name += label;
             Ca = SharedMatrix(new Matrix(name, nirreps_, sopi_, aOrbsPI_[label]));
+            int mo_offsets[8];
+            mo_offsets[0] = 0;
+            for(int h = 1; h < nirreps_; ++h)
+                mo_offsets[h] = mo_offsets[h-1] + mopi_[h-1];
+
             for(int h = 0; h < nirreps_; ++h){
                 int count = 0;
                 for(int n = 0; n < nAOrbs; ++n){
                     int orb = aorbs[n];
                     if(mosym_[orb] == h){
-                        for(int so = 0; so < sopi_[h]; ++so)
-                            Ca->set(h, so, count, Ca_->get(h, so, orb));
+                        for(int so = 0; so < sopi_[h]; ++so){
+                            Ca->set(h, so, count, Ca_->get(h, so, orb - mo_offsets[h]));
+                        }
                         count++;
                     }
                 }
@@ -544,7 +550,7 @@ IntegralTransform::process_eigenvectors()
                         int orb = borbs[n];
                         if(mosym_[orb] == h){
                             for(int so = 0; so < sopi_[h]; ++so)
-                                Cb->set(h, so, count, Cb_->get(h, so, orb));
+                                Cb->set(h, so, count, Cb_->get(h, so, orb - mo_offsets[h]));
                             count++;
                         }
                     }

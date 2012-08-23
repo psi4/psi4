@@ -803,8 +803,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
-      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) !expert-*/
-      options.add_bool("QC_COUPLING", true);
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -2330,12 +2328,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOS_SCALE",1.3); 
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("SOS_SCALE2",1.2); 
-    //options.add_str("LINEQ","CDGESV","CDGESV FLIN POPLE");
+    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     //options.add_str("STABILITY","FALSE","TRUE FALSE");
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
+    /*- Do apply level shifting? -*/
+    options.add_bool("DO_LEVEL_SHIFT",false);
     /*- The optimization algorithm -*/
     options.add_str("OPT_METHOD","DIIS","SD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
@@ -2385,7 +2386,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
-    /*- Level shift to aid convergence -*/
+    /*- Level shift parameter -*/
     options.add_double("LEVEL_SHIFT",0.02);
     /*- MP2 opposite-spin scaling value -*/
     options.add_double("MP2_OS_SCALE",6.0/5.0);
@@ -2399,6 +2400,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E3_SCALE",0.25); 
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
+    The INDIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    Generalized-Fock Matrix. -*/
+    options.add_str("TPDM_ABCD_TYPE","INDIRECT","INDIRECT COMPUTE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
@@ -2422,6 +2427,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
+    /*- Do apply level shifting to aid convergence -*/
+    options.add_bool("DO_LEVEL_SHIFT",false);
+    /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
+    options.add_bool("MP3L_ENERGY",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -27,6 +27,7 @@
 
 #include "omp3wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -56,24 +57,24 @@ void OMP3Wave::idp()
     
     if (nidpA != 0) {
       idp_returnA = 1;
-      wogA = new double[nidpA];
-      kappaA = new double[nidpA];
-      kappa_barA = new double[nidpA];
-      memset(wogA,0, sizeof(double)*nidpA);  
-      memset(kappaA,0,sizeof(double)*nidpA);
-      memset(kappa_barA,0,sizeof(double)*nidpA);
+      wogA = new Array1d(nidpA, "Alpha MO grad vector");
+      kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
+      kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
+      wogA->zero();
+      kappaA->zero();
+      kappa_barA->zero();
     }
     
     if (nidpB != 0) {
       idp_returnB = 1;
-      wogB = new double[nidpB];
-      kappaB = new double[nidpB];
-      kappa_barB = new double[nidpB];
-      memset(wogB,0, sizeof(double)*nidpB);
-      memset(kappaB,0,sizeof(double)*nidpB);
-      memset(kappa_barB,0,sizeof(double)*nidpB);
+      wogB = new Array1d(nidpB, "Beta MO grad vector");
+      kappaB = new Array1d(nidpB, "Beta orb rot params vector of current step");
+      kappa_barB = new Array1d(nidpB, "Beta orb rot params vector with respect to scf MOs");
+      wogB->zero();
+      kappaB->zero();
+      kappa_barB->zero();
     }
-    
+ 
 /********************************************************************************************/
 /************************** form idprow & idpcol vectors ************************************/
 /********************************************************************************************/
