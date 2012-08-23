@@ -214,13 +214,12 @@ void OMP3Wave::W_1st_order()
       dpd_buf4_close(&W);
     }
     
-    /* it is unnecessary for omp3
+    // it is unnecessary for omp3, but i will create it so that can use DPD with OOC
     // W_mBeJ => W(me,JB) = <mB||eJ> = (JB|me) = W(JB,me) = W_JeBm
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_buf4_sort(&K, PSIF_OMP3_DPD , rqsp, ID("[o,V]"), ID("[v,O]"), "W_1 <oV|vO>");
-    dpd_buf4_close(&K);
-    */
+    dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
+    dpd_buf4_sort(&W, PSIF_OMP3_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "W_1 (ov|OV)");
+    dpd_buf4_close(&W);
     
     
      psio_->close(PSIF_LIBTRANS_DPD, 1);
