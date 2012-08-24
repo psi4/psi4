@@ -782,6 +782,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     nprim3 = s3.nprimitive();
     nprim4 = s4.nprimitive();
 
+    // If we can, use the precomputed values found in ShellPair.
     if (use_shell_pairs_) {
         ShellPair * restrict p12, * restrict p34;
         // 1234 -> 1234 no change
@@ -921,7 +922,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
     // Compute the integral
     if (am) {
-        REALTYPE *target_ints;
+        double *target_ints;
 
         target_ints = build_eri[am1][am2][am3][am4](&libint_, nprim);
 
@@ -951,7 +952,6 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
     // Results are in source_
 }
-
 
 void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
@@ -1378,13 +1378,335 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     // Results are in source_
 }
 
-void TwoElectronInt::compute_shell_deriv2(int, int, int, int)
+void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
 {
+    if (deriv_ < 2) {
+        psi_error("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
+        abort();
+    }
 
+    // Need to ensure the ordering asked by the user is valid for libderiv.
+    // compute_quartet_deriv2 does NOT check this. SEGFAULTS will likely occur
+    // if order is not guarantee.
+    int s1, s2, s3, s4;
+    int am1, am2, am3, am4, temp;
+    shared_ptr<BasisSet> bs_temp;
+    bool p13p24 = false, p12 = false, p34 = false;
+
+    // AM used for ordering
+    am1 = original_bs1_->shell(sh1).am();
+    am2 = original_bs2_->shell(sh2).am();
+    am3 = original_bs3_->shell(sh3).am();
+    am4 = original_bs4_->shell(sh4).am();
+
+    int n1, n2, n3, n4;
+    n1 = original_bs1_->shell(sh1).ncartesian();
+    n2 = original_bs2_->shell(sh2).ncartesian();
+    n3 = original_bs3_->shell(sh3).ncartesian();
+    n4 = original_bs4_->shell(sh4).ncartesian();
+
+    // am1 >= am2, am3 >= am4, and am3 + am3 >= am1 + am2
+    if (am1 >= am2) {
+        s1 = sh1;
+        s2 = sh2;
+
+        bs1_ = original_bs1_;
+        bs2_ = original_bs2_;
+    }
+    else {
+        s1 = sh2;
+        s2 = sh1;
+
+        bs1_ = original_bs2_;
+        bs2_ = original_bs1_;
+
+        p12 = true;
+    }
+
+    if (am3 >= am4) {
+        s3 = sh3;
+        s4 = sh4;
+
+        bs3_ = original_bs3_;
+        bs4_ = original_bs4_;
+    }
+    else {
+        s3 = sh4;
+        s4 = sh3;
+
+        bs3_ = original_bs4_;
+        bs4_ = original_bs3_;
+
+        p34 = true;
+    }
+
+    if ((am1 + am2) > (am3 + am4)) {
+        // swap s1 and s2 with s3 and s4.
+        temp = s1;
+        s1 = s3;
+        s3 = temp;
+
+        temp = b2;
+        s2 = s4;
+        s4 = temp;
+
+        bs_temp = bs1_;
+        bs1_ = bs3_;
+        bs3_ = bs_temp;
+
+        bs_temp = bs2_;
+        bs2_ = bs4_;
+        bs4_ = bs_temp;
+
+        p13p24 = true;
+    }
+
+    // libderiv offsets
+    // the call to libderiv will provide both first and second derivatives.
+    // A -> 0
+    // B -> 3
+    // C -> 6
+    // D -> 9
+    if(p12){
+        if(p34){
+            if(p13p24){
+                // (AB|CD) -> (DC|BA)
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
+            }else{
+                // (AB|CD) -> (BA|DC)
+                buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
+            }
+        }else{
+            if(p13p24){
+                // (AB|CD) -> (CD|BA)
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
+            }else{
+                // (AB|CD) -> (BA|CD)
+                buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
+            }
+        }
+    }else{
+        if(p34){
+            if(p13p24){
+                // (AB|CD) -> (DC|AB)
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
+            }else{
+                // (AB|CD) -> (AB|DC)
+                buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
+            }
+        }else{
+            if(p13p24){
+                // (AB|CD) -> (CD|AB)
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
+            }else{
+                // (AB|CD) -> (AB|CD)
+                buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
+            }
+        }
+    }
+
+    compute_quartet_deriv2(s1, s2, s3, s4);
+
+    // This only handles only first derivative parts.
+    size_t size = n1 * n2 * n3 * n4;
+    if (p12 || p34 || p13p24) {
+        for (int i=0; i < ERI_1DER_NTYPE; ++i)
+            permute_target(source_+(i*size), target_+(i*size), s1, s2, s3, s4, p12, p34, p13p24);
+    }
+    else {
+        memcpy(target_, source_, ERI_1DER_NTYPE * size * sizeof(double));
+    }
 }
 
 void TwoElectronInt::compute_quartet_deriv2(int, int, int, int)
 {
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell& s3 = bs3_->shell(sh3);
+    const GaussianShell& s4 = bs4_->shell(sh4);
+
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
+    int am = am1 + am2 + am3 + am4;
+
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
+    int nprim3 = s3.nprimitive();
+    int nprim4 = s4.nprimitive();
+    size_t nprim;
+
+    double A[3], B[3], C[3], D[3];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
+
+    C[0] = s3.center()[0];
+    C[1] = s3.center()[1];
+    C[2] = s3.center()[2];
+
+    D[0] = s4.center()[0];
+    D[1] = s4.center()[1];
+    D[2] = s4.center()[2];
+
+    // prefactor
+    double prefactor = 1.0;
+
+    // compute intermediates
+    double AB2 = 0.0;
+    AB2 += (A[0] - B[0]) * (A[0] - B[0]);
+    AB2 += (A[1] - B[1]) * (A[1] - B[1]);
+    AB2 += (A[2] - B[2]) * (A[2] - B[2]);
+
+    double CD2 = 0.0;
+    CD2 += (C[0] - D[0]) * (C[0] - D[0]);
+    CD2 += (C[1] - D[1]) * (C[1] - D[1]);
+    CD2 += (C[2] - D[2]) * (C[2] - D[2]);
+
+    libderiv_.AB[0] = A[0] - B[0];
+    libderiv_.AB[1] = A[1] - B[1];
+    libderiv_.AB[2] = A[2] - B[2];
+    libderiv_.CD[0] = C[0] - D[0];
+    libderiv_.CD[1] = C[1] - D[1];
+    libderiv_.CD[2] = C[2] - D[2];
+
+    // prepare all the data needed for libderiv
+    if (use_shell_pairs_) {
+        ShellPair *p12, *p34;
+        p12 = &(pairs12_[sh1][sh2]);
+        p34 = &(pairs34_[sh3][sh4]);
+
+        nprim = fill_primitive_data(libderiv_.PrimQuartet, fjt_, p12, p34, am, nprim1, nprim2, nprim3, nprim4, sh1 == sh2, sh3 == sh4, 2);
+    }
+    else {
+        for (int p1=0; p1<nprim1; ++p1) {
+            double a1 = s1.exp(p1);
+            double c1 = s1.coef(p1);
+            for (int p2=0; p2<nprim2; ++p2) {
+                double a2 = s2.exp(p2);
+                double c2 = s2.coef(p2);
+                double zeta = a1 + a2;
+                double ooz = 1.0/zeta;
+                double oo2z = 1.0/(2.0 * zeta);
+
+                double PA[3], PB[3];
+                double P[3];
+
+                P[0] = (a1*A[0] + a2*B[0])*ooz;
+                P[1] = (a1*A[1] + a2*B[1])*ooz;
+                P[2] = (a1*A[2] + a2*B[2])*ooz;
+                PA[0] = P[0] - A[0];
+                PA[1] = P[1] - A[1];
+                PA[2] = P[2] - A[2];
+                PB[0] = P[0] - B[0];
+                PB[1] = P[1] - B[1];
+                PB[2] = P[2] - B[2];
+
+                double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
+
+                for (int p3=0; p3<nprim3; ++p3) {
+                    double a3 = s3.exp(p3);
+                    double c3 = s3.coef(p3);
+                    for (int p4=0; p4<nprim4; ++p4) {
+
+                        double a4 = s4.exp(p4);
+                        double c4 = s4.coef(p4);
+                        double nu = a3 + a4;
+                        double oon = 1.0/nu;
+                        double oo2n = 1.0/(2.0*nu);
+                        double oo2zn = 1.0/(2.0*(zeta+nu));
+                        double rho = (zeta*nu)/(zeta+nu);
+
+                        double QC[3], QD[3], WP[3], WQ[3], PQ[3];
+                        double Q[3], W[3];
+
+                        Q[0] = (a3*C[0] + a4*D[0])*oon;
+                        Q[1] = (a3*C[1] + a4*D[1])*oon;
+                        Q[2] = (a3*C[2] + a4*D[2])*oon;
+                        QC[0] = Q[0] - C[0];
+                        QC[1] = Q[1] - C[1];
+                        QC[2] = Q[2] - C[2];
+                        QD[0] = Q[0] - D[0];
+                        QD[1] = Q[1] - D[1];
+                        QD[2] = Q[2] - D[2];
+                        PQ[0] = P[0] - Q[0];
+                        PQ[1] = P[1] - Q[1];
+                        PQ[2] = P[2] - Q[2];
+
+                        double PQ2 = 0.0;
+                        PQ2 += (P[0] - Q[0]) * (P[0] - Q[0]);
+                        PQ2 += (P[1] - Q[1]) * (P[1] - Q[1]);
+                        PQ2 += (P[2] - Q[2]) * (P[2] - Q[2]);
+
+                        W[0] = (zeta*P[0] + nu*Q[0]) / (zeta + nu);
+                        W[1] = (zeta*P[1] + nu*Q[1]) / (zeta + nu);
+                        W[2] = (zeta*P[2] + nu*Q[2]) / (zeta + nu);
+                        WP[0] = W[0] - P[0];
+                        WP[1] = W[1] - P[1];
+                        WP[2] = W[2] - P[2];
+                        WQ[0] = W[0] - Q[0];
+                        WQ[1] = W[1] - Q[1];
+                        WQ[2] = W[2] - Q[2];
+
+                        for (int i=0; i<3; ++i) {
+                            libderiv_.PrimQuartet[nprim].U[0][i] = PA[i];
+                            libderiv_.PrimQuartet[nprim].U[1][i] = PB[i];
+                            libderiv_.PrimQuartet[nprim].U[2][i] = QC[i];
+                            libderiv_.PrimQuartet[nprim].U[3][i] = QD[i];
+                            libderiv_.PrimQuartet[nprim].U[4][i] = WP[i];
+                            libderiv_.PrimQuartet[nprim].U[5][i] = WQ[i];
+                        }
+                        libderiv_.PrimQuartet[nprim].oo2z = oo2z;
+                        libderiv_.PrimQuartet[nprim].oo2n = oo2n;
+                        libderiv_.PrimQuartet[nprim].oo2zn = oo2zn;
+                        libderiv_.PrimQuartet[nprim].poz = rho * ooz;
+                        libderiv_.PrimQuartet[nprim].pon = rho * oon;
+                        // libderiv_.PrimQuartet[nprim].oo2p = oo2rho;   // NOT SET IN CINTS
+                        libderiv_.PrimQuartet[nprim].twozeta_a = 2.0 * a1;
+                        libderiv_.PrimQuartet[nprim].twozeta_b = 2.0 * a2;
+                        libderiv_.PrimQuartet[nprim].twozeta_c = 2.0 * a3;
+                        libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
+
+                        double T = rho * PQ2;
+                        double *F = fjt_->values(am+2, T);
+
+                        // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
+                        double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
+                        double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd * prefactor;
+
+                        for (int i=0; i<=am+2; ++i) {
+                            libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
+                        }
+
+                        nprim++;
+                    }
+                }
+            }
+        }
+    }
+
+    size_t size = INT_NCART(am1) * INT_NCART(am2) * INT_NCART(am3) * INT_NCART(am4);
+    build_deriv12_eri[am1][am2][am3][am4](&libderiv_, nprim);
+
+    // zero out the memory
+    memset(source_, 0, sizeof(double) * size * ERI_2DER_NTYPE);
+
+    // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers)
+    // The libmints array returns the following integral derivatives:
+    //
 }
 
 int TwoElectronInt::shell_is_zero(int sh1, int sh2, int sh3, int sh4)

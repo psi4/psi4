@@ -70,6 +70,9 @@ TwoBodyAOInt* TwoBodyAOInt::clone()
 
 void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4, int nchunk)
 {
+    // Integrals assume this normalization is 1.0.
+    return;
+#if 0
 #ifdef MINTS_TIMER
     timer_on("Angular momentum normalization");
 #endif
@@ -125,6 +128,7 @@ void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shar
     }
 #ifdef MINTS_TIMER
     timer_off("Angular momentum normalization");
+#endif
 #endif
 }
 
