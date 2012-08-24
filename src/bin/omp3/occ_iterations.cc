@@ -31,6 +31,7 @@
 
 #include "omp3wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -49,7 +50,7 @@ fprintf(outfile," ==============================================================
 fprintf(outfile,"\n");
 fprintf(outfile, "\t            Minimizing MP3-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
-fprintf(outfile, " Iter       E_total           DE           MO Grad RMS      MAX MO Grad      Korb RMS      MAX Korb      T2 RMS    \n");
+fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      T2 RMS    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  \n");
 fflush(outfile);
 
@@ -58,23 +59,21 @@ fflush(outfile);
 /************************** NR iterations **************************************************/
 /********************************************************************************************/
       itr_occ = 0;
-      mu_ls = 0;
+      mu_ls = -lshift_parameter;
       conver = 1; // Assuming that the MOs will be optimized.
       mo_optimized = 0; 
       
       if (opt_method == "DIIS") {
-	nvar = num_vecs +1;
-	vecsA = block_matrix(num_vecs, nidpA);
-	errvecsA = block_matrix(num_vecs, nidpA);
-	memset(vecsA[0], 0, sizeof(double)*num_vecs*nidpA);  
-	memset(errvecsA[0], 0, sizeof(double)*num_vecs*nidpA); 
-      
-	vecsB = block_matrix(num_vecs, nidpB);
-	errvecsB = block_matrix(num_vecs, nidpB);
-	memset(vecsB[0], 0, sizeof(double)*num_vecs*nidpB);  
-	memset(errvecsB[0], 0, sizeof(double)*num_vecs*nidpB); 
+	nvar = num_vecs + 1;
+        vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
+        errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
+        vecsA->zero();
+        errvecsA->zero();
+        vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
+        errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
+        vecsB->zero();
+        errvecsB->zero();
       }
-      
       
 // head of loop      
 do
@@ -129,22 +128,24 @@ do
 /********************************************************************************************/
 /************************** Compute Lagrangian Energy ***************************************/
 /********************************************************************************************/
-        /*
-        timer_on("MP3L Energy");
-	mp3l_energy();
-        timer_off("MP3L Energy");
-        */
-
-        timer_on("REF Energy");
-	ref_energy();
-        timer_off("REF Energy");
-        timer_on("MP3 Energy");
-	mp3_energy();
-        timer_off("MP3 Energy");
-	Emp3L = Emp3;
-        EcorrL = Emp3L-Escf;
-        DE = Emp3L - Emp3L_old;
-        Emp3L_old = Emp3L;
+        if (compute_mp3l == "TRUE") {
+           timer_on("MP3L Energy");
+	   mp3l_energy();
+           timer_off("MP3L Energy");
+        }
+       
+        else {
+           timer_on("REF Energy");
+           ref_energy();
+           timer_off("REF Energy");
+           timer_on("MP3 Energy");
+           mp3_energy();
+           timer_off("MP3 Energy");
+           Emp3L = Emp3;
+           EcorrL = Emp3L-Escf;
+           DE = Emp3L - Emp3L_old;
+           Emp3L_old = Emp3L;
+        }
 
 /********************************************************************************************/
 /************************** new orbital gradient ********************************************/
@@ -171,8 +172,8 @@ fflush(outfile);
 /********************************************************************************************/
 /********************************************************************************************/   
     if (itr_occ >= mo_maxiter) {
-      break;  
       conver = 0; // means MOs are NOT optimized
+      break;  
     }
 
     if (rms_wog == 0.0) break;
@@ -182,10 +183,6 @@ while(fabs(DE) >= tol_Eod || rms_wog >= tol_grad || rms_kappa >= tol_grad || big
       biggest_kappa >= mograd_max || rms_t2 >= tol_t2); 
 
 if (conver == 1) {
-timer_on("MP3L Energy");
-mp3l_energy();
-timer_off("MP3L Energy");
-
 mo_optimized = 1; 
 fprintf(outfile,"\n");
 fprintf(outfile," ============================================================================== \n");

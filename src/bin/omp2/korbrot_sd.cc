@@ -28,6 +28,7 @@
 
 #include "omp2wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 
 using namespace boost;
@@ -50,7 +51,7 @@ void OMP2Wave::korbrot_sd()
 	  int i = idpcolA[x];
 	  int h = idpirrA[x];
 	  double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
-	  kappaA[x] = -wogA[x] / (2*value);
+	  kappaA->set(x, -wogA->get(x) / (2*value));
 	}
 	
 	// beta
@@ -59,47 +60,32 @@ void OMP2Wave::korbrot_sd()
 	  int i = idpcolB[x];
 	  int h = idpirrB[x];
 	  double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);  
-	  kappaB[x] = -wogB[x] / (2*value);
+	  kappaB->set(x, -wogB->get(x) / (2*value));
 	}
+
 
 /********************************************************************************************/
 /************************** find biggest_kappa ***********************************************/
 /********************************************************************************************/
 	biggest_kappaA=0;            
-	for (int i=0; i<nidpA;i++) 
-	{ 
-	      if (fabs(kappaA[i]) > biggest_kappaA)
-	      {
-		  biggest_kappaA=fabs(kappaA[i]);
-	      }
+	for (int i=0; i<nidpA;i++) { 
+	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
 	}
 	
 	biggest_kappaB=0;            
-	for (int i=0; i<nidpB;i++) 
-	{ 
-	      if (fabs(kappaB[i]) > biggest_kappaB)
-	      {
-		  biggest_kappaB=fabs(kappaB[i]);
-	      }
+	for (int i=0; i<nidpB;i++){ 
+	    if (fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=fabs(kappaB->get(i));
 	}
 	
 /********************************************************************************************/
 /************************** scale array *****************************************************/
 /********************************************************************************************/	 	
-	 if (biggest_kappaA > step_max)
-	 {   
-	      for (int i=0; i<nidpA;i++) 
-	      { 
-		  kappaA[i]=kappaA[i]*(step_max/biggest_kappaA);
-	      }
+	 if (biggest_kappaA > step_max) {   
+	    for (int i=0; i<nidpA;i++) kappaA->set(i, kappaA->get(i) *(step_max/biggest_kappaA));
 	 }
 	 
-	 if (biggest_kappaB > step_max)
-	 {   
-	      for (int i=0; i<nidpB;i++) 
-	      { 
-		  kappaB[i]=kappaB[i]*(step_max/biggest_kappaB);
-	      }
+	 if (biggest_kappaB > step_max) {   
+	    for (int i=0; i<nidpB;i++) kappaB->set(i, kappaB->get(i) *(step_max/biggest_kappaB));
 	 }
 	 
 /********************************************************************************************/
@@ -110,9 +96,9 @@ void OMP2Wave::korbrot_sd()
 	  biggest_kappaA=0;            
 	  for (int i=0; i<nidpA;i++) 
 	  { 
-	      if (fabs(kappaA[i]) > biggest_kappaA)
+	      if (fabs(kappaA->get(i)) > biggest_kappaA)
 	      {
-		  biggest_kappaA=fabs(kappaA[i]);
+		  biggest_kappaA = fabs(kappaA->get(i));
 	      }
 	  }
 	}
@@ -122,9 +108,9 @@ void OMP2Wave::korbrot_sd()
 	  biggest_kappaB=0;            
 	  for (int i=0; i<nidpB;i++) 
 	  { 
-	      if (fabs(kappaB[i]) > biggest_kappaB)
+	      if (fabs(kappaB->get(i)) > biggest_kappaB)
 	      {
-		  biggest_kappaB=fabs(kappaB[i]);
+		  biggest_kappaB=fabs(kappaB->get(i));
 	      }
 	  }
 	}
@@ -134,23 +120,12 @@ void OMP2Wave::korbrot_sd()
 /********************************************************************************************/	 	
 	rms_kappaA=0;
 	rms_kappaB=0;
-	
-	for (int i=0; i<nidpA;i++) rms_kappaA+=kappaA[i]*kappaA[i];
-	for (int i=0; i<nidpB;i++) rms_kappaB+=kappaB[i]*kappaB[i];
-	rms_kappaA=sqrt(rms_kappaA)/nidpA;
-	rms_kappaB=sqrt(rms_kappaB)/nidpB;
-	
+	rms_kappaA = kappaA->rms();
+	rms_kappaB = kappaB->rms();
 	
       if(print_ > 1){
-	for(int i = 0; i<nidpA; i++){
-	  fprintf(outfile,"\n idpA, idprowA, idpcolA, kappaA: %3d %3d %3d %20.14f\n", i, idprowA[i],idpcolA[i],kappaA[i]);
-	  fflush(outfile);
-	}
-
-	for(int i = 0; i<nidpB; i++){
-	  fprintf(outfile,"\n idpB, idprowB, idpcolB, kappaB: %3d %3d %3d %20.14f\n", i, idprowB[i],idpcolB[i],kappaB[i]); 
-	  fflush(outfile);
-	}
+       kappaA->print();
+       kappaB->print();
       }
       
     //fprintf(outfile,"\n korbrot_sd done. \n"); fflush(outfile);
