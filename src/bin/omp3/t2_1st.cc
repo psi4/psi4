@@ -129,10 +129,36 @@ void OMP3Wave::t2_1st_sc()
     dpd_buf4_sort(&T, PSIF_OMP3_DPD , prqs, ID("[O,V]"), ID("[o,v]"), "T2_1 (OV|ov)");
     dpd_buf4_sort(&T, PSIF_OMP3_DPD , qrps, ID("[o,V]"), ID("[O,v]"), "T2_1 (oV|Ov)");
     dpd_buf4_close(&T);    
+   
+    // T(IA,jb) => T(jb,IA)   
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "T2_1 (OV|ov)");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "T2_1 (ov|OV)");
+    dpd_buf4_close(&T);
      
+    /* 
+    // Build Lambda amplitudes 
+    // T_IJ^AB => L_AB^IJ
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[V,V]"), ID("[O,O]"), "L2_1 <VV|OO>");
+    dpd_buf4_close(&T);
+    
+    // T_ij^ab => L_ab^ij
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[v,v]"), ID("[o,o]"), "L2_1 <vv|oo>");
+    dpd_buf4_close(&T);
      
-     psio_->close(PSIF_LIBTRANS_DPD, 1);
-     psio_->close(PSIF_OMP3_DPD, 1);
+    // T_Ij^Ab => L_Ab^Ij
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[V,v]"), ID("[O,o]"), "L2_1 <Vv|Oo>");
+    dpd_buf4_close(&T);    
+    */
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_OMP3_DPD, 1);
 
 } // end t2_1st_sc
 
@@ -363,8 +389,33 @@ void OMP3Wave::t2_1st_general()
     dpd_buf4_sort(&T, PSIF_OMP3_DPD , prqs, ID("[O,V]"), ID("[o,v]"), "T2_1 (OV|ov)");
     dpd_buf4_sort(&T, PSIF_OMP3_DPD , qrps, ID("[o,V]"), ID("[O,v]"), "T2_1 (oV|Ov)");
     dpd_buf4_close(&T);
+
+    // T(IA,jb) => T(jb,IA)   
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "T2_1 (OV|ov)");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "T2_1 (ov|OV)");
+    dpd_buf4_close(&T);
+
+     /* 
+    // Build Lambda amplitudes 
+    // T_IJ^AB => L_AB^IJ
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[V,V]"), ID("[O,O]"), "L2_1 <VV|OO>");
+    dpd_buf4_close(&T);
     
-    
+    // T_ij^ab => L_ab^ij
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[v,v]"), ID("[o,o]"), "L2_1 <vv|oo>");
+    dpd_buf4_close(&T);
+     
+    // T_Ij^Ab => L_Ab^Ij
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[V,v]"), ID("[O,o]"), "L2_1 <Vv|Oo>");
+    dpd_buf4_close(&T);    
+    */
     
     // close files
     psio_->close(PSIF_LIBTRANS_DPD, 1);
