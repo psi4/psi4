@@ -408,8 +408,9 @@ void DCFTSolver::form_idps(){
         X_->set(p, grad[p]/Hd[p]);
     }
 
-    // Obtain several lowest eigenvalues of the Hessian using Davidson algorithm
-    if (true) run_davidson();
+
+    // Perform stability analysis if requested by the user
+    if (options_.get_bool("STABILITY_CHECK")) run_davidson();
 
     sigma_->zero();
 
@@ -1872,13 +1873,14 @@ DCFTSolver::update_cumulant_and_orbitals() {
 void
 DCFTSolver::run_davidson() {
 
-    // Allocate the globals TODO: Clean this up
-    nguess_ = 3;
+    // Allocate the globals
     b_ = SharedMatrix(new Matrix("Expansion subspace |b>", 0, nidp_));
-    vec_add_tol_ = 0.1;
-    max_eval_ = 1.0;
-    r_convergence_ = 1e-10;
-    n_add_ = 3;
+    vec_add_tol_ = options_.get_double("STABILITY_AUGMENT_SPACE_TOL");
+    r_convergence_ = options_.get_double("STABILITY_CONVERGENCE");
+    n_add_ = options_.get_int("STABILITY_ADD_VECTORS");
+    nguess_ = options_.get_int("STABILITY_N_GUESS_VECTORS");
+    nevals_ = options_.get_int("STABILITY_N_EIGENVALUES");
+    max_space_ = options_.get_int("STABILITY_MAX_SPACE_SIZE");
     b_dim_ = 0;
 
     // Create a set of guess orthonormal expansion vectors b_ (identity matrix)
@@ -1891,9 +1893,12 @@ DCFTSolver::run_davidson() {
     SharedMatrix Hd(new Matrix("Diagonal part of the Hessian", nidp_, nidp_));
     Hd->set_diagonal(Hd_);
 
+    fprintf(outfile, "\tStability analysis of DCFT solution \n");
+    SharedVector Evals;
+    SharedMatrix Evecs;
     while(!converged){
         if (count > maxiter_) throw PSIEXCEPTION("Davidson diagonalization did not converge!");
-        fprintf(outfile, "\tIteration %d\n", ++count);
+        if (print_ > 1) fprintf(outfile, "\tIteration %d\n", ++count);
 
         // Form the off-diagonal contribution to the sigma vector
         SharedMatrix sigma_vector(new Matrix("Sigma vector for the Davidson algorithm", b_dim_, nidp_));
@@ -1916,8 +1921,8 @@ DCFTSolver::run_davidson() {
 
         // Form G matrix and diagonalize it
         SharedMatrix G(new Matrix("Subspace representation of the Hessian", b_dim_, b_dim_));
-        SharedMatrix Evecs(new Matrix("Eigenvectors of the Hessian subspace representation", b_dim_, b_dim_));
-        SharedVector Evals(new Vector("Eigenvalues of the Hessian subspace representation", b_dim_));
+        Evecs = SharedMatrix(new Matrix("Eigenvectors of the Hessian subspace representation", b_dim_, b_dim_));
+        Evals = SharedVector(new Vector("Eigenvalues of the Hessian subspace representation", b_dim_));
         G->gemm(false, true, 1.0, b_, sigma_vector, 0.0);
         G->diagonalize(Evecs, Evals, ascending);
 
@@ -1946,40 +1951,24 @@ DCFTSolver::run_davidson() {
         for (int k = 0; k < b_dim_; ++k) C_DAXPY(nidp_, -Evals->get(k), b_p[k], 1, r_p[k], 1);
 
         // Check the convergence for each vector
-        converged = true;
         double max_rms = 0.0;
         int n_good = 0;
         int n_bad  = 0;
-        fprintf(outfile, "\tEigenvalues:\n");
-        bool range_spanned = false;
-        int counter = 0;
-        while(1){
-            if(counter == b_dim_) break;
-            double new_val = Evals->get(counter);
-            if(new_val > max_eval_ && counter){
-                range_spanned = true;
-                break;
-            }
-            double ms = C_DDOT(b_dim_, r_p[counter], 1, r_p[counter], 1);
+        if (print_ > 1) fprintf(outfile, "\tEigenvalues:\n");
+        for (int k = 0; k < nevals_; ++k) {
+            double new_val = Evals->get(k);
+            double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
             double rms = sqrt(ms / (double) b_dim_);
             bool not_converged = rms > r_convergence_;
-            if(not_converged){
-                converged = false;
-                n_bad += 1;
-            }else{
-                n_good +=1;
-            }
-            bool imaginary = new_val < 0.0;
+            if (not_converged) n_bad += 1;
+            else n_good += 1;
             max_rms = rms > max_rms ? rms : max_rms;
-            fprintf(outfile,  "\t\t%s%10.6f%s   (residual = %10.6f)\n",
-                    not_converged ? "*" : " ", new_val, imaginary ? "i" : " ", rms);
-            ++counter;
+            if (print_ > 1) fprintf(outfile,  "\t\t%s%10.6f   (residual = %10.6f)\n", not_converged ? "*" : " ", new_val, rms);
         }
-        fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
-        fprintf(outfile, "\tMax RMS residual %12.8f, %d converged, %d not converged\n",
-                          max_rms, n_good, n_bad);
-        if(!range_spanned)
-            converged = false;
+        if (n_bad == 0) converged = true;
+
+        if (print_ > 1) fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
+        if (print_ > 1) fprintf(outfile, "\tMax RMS residual %12.8f, %d converged, %d not converged\n", max_rms, n_good, n_bad);
 
         // Obtain new vectors from the residual: delta = -r_kp / (Hd_p - Evals_k)
         SharedMatrix delta(new Matrix ("Correction vector", b_dim_, nidp_));
@@ -1994,17 +1983,44 @@ DCFTSolver::run_davidson() {
         for(int k = subspace_size - 1; k >= 0; --k){
             if(augment_b(delta_p[k], vec_add_tol_)){
                 added_vectors++;
-                if(print_ > 1)
-                    fprintf(outfile, "\t%d added\n", k);
                 if(added_vectors == n_add_)
                     break;
             }
         }
-        if(!added_vectors && !converged){
-            throw PSIEXCEPTION("No new vectors were added");
-        }
-        fprintf(outfile, "\tAdded %d new vector(s) to the subspace\n\n\n", added_vectors);
+        if(!added_vectors && !converged) throw PSIEXCEPTION("No new vectors were added");
 
+        if (print_ > 1) fprintf(outfile, "\tAdded %d new vector(s) to the subspace\n\n\n", added_vectors);
+
+        if (b_dim_ > max_space_) throw PSIEXCEPTION("The subspace size is exceeded, but the convergence is not reached in stability analysis");
+
+    }
+
+    // Analyze the eigenvector of the Hessian for n largest contributions, whether it's orbital or cumulant space
+    fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
+    int n_neg = 0;
+    bool orbital_orbital = false;
+    bool cumulant_cumulant = false;
+    for (int k = 0; k < nevals_; k++) {
+        double value = Evals->get(k);
+        fprintf(outfile, "\t %10.6f \n", value);
+        if (value < 0.0) {
+            double max_value = 0.0;
+            int max_value_idp = 0;
+            for (int i = 0; i < nidp_; ++i) {
+                double evec_value = fabs(b_->get(k, i));
+                if (evec_value > max_value) {
+                    max_value = evec_value;
+                    max_value_idp = i;
+                }
+            }
+            if (max_value_idp < orbital_idp_) orbital_orbital = true;
+            else cumulant_cumulant = true;
+            n_neg++;
+        }
+    }
+    if (n_neg) {
+        fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
+//        fprintf(outfile, "\tTypes of the instability: %s %s \n", n_neg);
     }
 
 }

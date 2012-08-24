@@ -168,12 +168,14 @@ protected:
     int nguess_;
     /// The dimension of the subspace in the Davidson diagonalization
     int b_dim_;
-    /// Maximum eigenvalue requested for the Davidson diagonalization
-    int max_eval_;
     /// Convergence of the residual in the Davidson diagonalization
     double r_convergence_;
     /// The number of vectors that can be added during the iteration in the Davidson diagonalization
     int n_add_;
+    /// The number of eigenvalues requested in the stability check
+    int nevals_;
+    /// The maximum size of the subspace in stability check
+    int max_space_;
     /// The number of occupied alpha orbitals per irrep
     Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep

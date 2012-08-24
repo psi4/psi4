@@ -795,7 +795,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Minimum absolute value below which integrals are neglected !expert-*/
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- Controls whether to force the occupation to be that of the SCF guess.
-      For practical applications only the default must be used !expert-*/
+          For practical applications only the default must be used !expert-*/
       options.add_bool("LOCK_OCC", true);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
@@ -805,6 +805,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RELAX_GUESS_ORBITALS", false);
       /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) !expert-*/
       options.add_bool("QC_COUPLING", true);
+      /*- Performs stability analysis of the DCFT energy !expert-*/
+      options.add_bool("STABILITY_CHECK", false);
+      /*- The value of the rms of the residual in Schmidt orthogonalization which is used as a threshold
+          for augmenting the vector subspace in stability check !expert-*/
+      options.add_double("STABILITY_AUGMENT_SPACE_TOL", 0.1);
+      /*- Controls the convergence of the Davidson's diagonalization in stability check !expert-*/
+      options.add_double("STABILITY_CONVERGENCE", 1e-6);
+      /*- The number of vectors that can be added simultaneously into the subspace for Davidson's diagonalization in stability check !expert-*/
+      options.add_int("STABILITY_ADD_VECTORS", 20);
+      /*- The number of guess vectors used for Davidson's diagonalization in stability check !expert-*/
+      options.add_int("STABILITY_N_GUESS_VECTORS", 20);
+      /*- The number of Hessian eigenvalues computed during the stability check !expert-*/
+      options.add_int("STABILITY_N_EIGENVALUES", 3);
+      /*- The maximum size of the subspace for the stability check. The program will terminate if this parameter is exceeded
+          and the convergence (STABILITY_CONVERGENCE) is not satisfied !expert-*/
+      options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
+
 
   }
   if (name == "MINTS"|| options.read_globals()) {
