@@ -113,6 +113,9 @@ protected:
     void iterate_conjugate_gradients();
     void check_qc_convergence();
     void update_cumulant_and_orbitals();
+    void run_davidson();
+    void davidson_guess();
+    bool augment_b(double *vec, double tol);
 
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
@@ -161,6 +164,16 @@ protected:
     int dim_;
     /// The lookup array that determines which compound indices belong to IDPs and which don't
     int *lookup_;
+    /// The number of the guess subspace vectors for the Davidson diagonalization
+    int nguess_;
+    /// The dimension of the subspace in the Davidson diagonalization
+    int b_dim_;
+    /// Maximum eigenvalue requested for the Davidson diagonalization
+    int max_eval_;
+    /// Convergence of the residual in the Davidson diagonalization
+    double r_convergence_;
+    /// The number of vectors that can be added during the iteration in the Davidson diagonalization
+    int n_add_;
     /// The number of occupied alpha orbitals per irrep
     Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
@@ -201,6 +214,9 @@ protected:
     double new_total_energy_;
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double regularizer_;
+    /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
+    double vec_add_tol_;
+
     /// The alpha occupied eigenvectors, per irrep
     SharedMatrix aocc_c_;
     /// The beta occupied eigenvectors, per irrep
@@ -300,10 +316,8 @@ protected:
     SharedVector S_;
     /// The new element of Krylov subspace vector in the IDP basis for conjugate gradient procedure
     SharedVector Q_;
-//    /// The alpha orbital response matrix elements (MO basis)
-//    SharedMatrix az_;
-//    /// The beta orbital response matrix elements (MO basis)
-//    SharedMatrix bz_;
+    /// The subspace vector in the Davidson diagonalization procedure
+    SharedMatrix b_;
     /// Used to align things in the output
     std::string indent;
 };
