@@ -2,6 +2,7 @@
 #include <libmints/vector.h>
 #include <libmints/matrix.h>
 #include <stdexcept>
+#include "detail.h"
 
 namespace psi { namespace libmatrix {
 
@@ -40,8 +41,8 @@ namespace psi { namespace libmatrix {
         void fill(double val) {
             matrix_.set(val);
         }
-        
-        void gemm(bool ta, bool tb, double alpha, 
+
+        void gemm(bool ta, bool tb, double alpha,
                   const libmints_matrix_wrapper& A,
                   const libmints_matrix_wrapper& B,
                   double beta)
