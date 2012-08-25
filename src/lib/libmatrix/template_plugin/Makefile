@@ -7,31 +7,23 @@
 # Location of your PSI4 source
 top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /Users/jturney/Build/psi4/compile-parallel
+top_objdir = /Users/jturney/Build/psi4/compile-mpi
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
 
 include $(top_objdir)/src/bin/MakeVars
 
+CXXDEF += -DHAVE_MPI
+
 # Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
 # Location of your PSI4 source
 top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /Users/jturney/Build/psi4/compile-parallel
-
-# elemental
-LIBS = -L/Users/jturney/Build/elemental \
-       -lelemental \
-       -L/Users/jturney/Build/elemental/external/plcg \
-       -lplcg \
-       -L/Users/jturney/Build/elemental/external/pmrrr \
-       -lpmrrr
-CXXINC += -I/Users/jturney/Install/libflame/include -I/Users/jturney/Build/elemental/include
-CXXDEF += -DHAVE_ELEMENTAL -DHAVE_MPI
+top_objdir = /Users/jturney/Build/psi4/compile-opt
 
 PSITARGET = $(shell basename `pwd`).so
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin $(LIBS)
+PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -58,7 +50,7 @@ $(PSITARGET): $(BINOBJ)
 
 # Erase all compiled intermediate files
 clean:
-	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc
+	rm -f $(BINOBJ) $(PSITARGET) *.d *.pyc *.test output.dat psi.timer.dat
 
 # Dependency handling
 %.d: %.cc
