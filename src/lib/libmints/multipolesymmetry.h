@@ -128,8 +128,8 @@ public:
     virtual ~MultipoleSymmetry();
 
     /**
-     * Returns the address in the array of the {lx, ly, lz} moment.
-     */
+    * Returns the address in the array of the {lx, ly, lz} moment.
+    */
     int address_of_component(int lx, int ly, int lz);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
