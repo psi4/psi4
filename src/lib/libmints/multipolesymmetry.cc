@@ -158,7 +158,6 @@ MultipoleSymmetry::MultipoleSymmetry(int order,
     common_init();
 }
 
-
 int MultipoleSymmetry::address_of_component(int lx, int ly, int lz)
 {
     int l = lx + ly + lz;

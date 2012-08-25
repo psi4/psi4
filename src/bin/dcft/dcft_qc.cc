@@ -399,7 +399,6 @@ void DCFTSolver::form_idps(){
     R_->zero();
     S_->zero();
     Q_->zero();
-    sigma_->zero();
 
     // Set the gradient Hessian diagonal vectors
     for (int p = 0; p < nidp_; ++p) {
@@ -407,8 +406,18 @@ void DCFTSolver::form_idps(){
         Hd_->set(p, Hd[p]);
         // Compute the guess for the step vector
         X_->set(p, grad[p]/Hd[p]);
+    }
+
+
+    // Perform stability analysis if requested by the user
+    if (options_.get_bool("STABILITY_CHECK")) run_davidson();
+
+    sigma_->zero();
+
+    // Set the gradient Hessian diagonal vectors
+    for (int p = 0; p < nidp_; ++p) {
         // D is used to store X for the initial formation of the sigma vector
-        D_->set(p, grad[p]/Hd[p]);
+        D_->set(p, X_->get(p));
     }
 
 }
@@ -1858,6 +1867,220 @@ DCFTSolver::update_cumulant_and_orbitals() {
         dpd_buf4_mat_irrep_close(&L, h);
     }
     dpd_buf4_close(&L);
+
+}
+
+void
+DCFTSolver::run_davidson() {
+
+    // Allocate the globals
+    b_ = SharedMatrix(new Matrix("Expansion subspace |b>", 0, nidp_));
+    vec_add_tol_ = options_.get_double("STABILITY_AUGMENT_SPACE_TOL");
+    r_convergence_ = options_.get_double("STABILITY_CONVERGENCE");
+    n_add_ = options_.get_int("STABILITY_ADD_VECTORS");
+    nguess_ = options_.get_int("STABILITY_N_GUESS_VECTORS");
+    nevals_ = options_.get_int("STABILITY_N_EIGENVALUES");
+    max_space_ = options_.get_int("STABILITY_MAX_SPACE_SIZE");
+    b_dim_ = 0;
+
+    // Create a set of guess orthonormal expansion vectors b_ (identity matrix)
+    davidson_guess();
+
+    bool converged = false;
+    int count = 0;
+
+    // Create a matrix with the Hessian diagonal for convenience
+    SharedMatrix Hd(new Matrix("Diagonal part of the Hessian", nidp_, nidp_));
+    Hd->set_diagonal(Hd_);
+
+    fprintf(outfile, "\tStability analysis of DCFT solution \n");
+    SharedVector Evals;
+    SharedMatrix Evecs;
+    while(!converged){
+        if (count > maxiter_) throw PSIEXCEPTION("Davidson diagonalization did not converge!");
+        if (print_ > 1) fprintf(outfile, "\tIteration %d\n", ++count);
+
+        // Form the off-diagonal contribution to the sigma vector
+        SharedMatrix sigma_vector(new Matrix("Sigma vector for the Davidson algorithm", b_dim_, nidp_));
+        for (int k = 0; k < b_dim_; ++k) {
+            double *D_p = D_->pointer();
+            double *b_p = b_->pointer()[k];
+            // Copy the kth b vector to D_
+            ::memcpy(D_p, b_p, nidp_ * sizeof(double));
+            // Compute the off-diagonal part of the sigma vector for kth b vector sigma = Ho * b
+            compute_sigma_vector();
+            // Store sigma vector
+            double *sigma_p = sigma_->pointer();
+            double *sigma_vector_p = sigma_vector->pointer()[k];
+            ::memcpy(sigma_vector_p, sigma_p, nidp_ * sizeof(double));
+        }
+        // Add the diagonal contribution
+        SharedMatrix temp(new Matrix("Temp matrix", b_dim_, nidp_));
+        temp->gemm(false, false, 1.0, b_, Hd, 0.0);
+        sigma_vector->add(temp);
+
+        // Form G matrix and diagonalize it
+        SharedMatrix G(new Matrix("Subspace representation of the Hessian", b_dim_, b_dim_));
+        Evecs = SharedMatrix(new Matrix("Eigenvectors of the Hessian subspace representation", b_dim_, b_dim_));
+        Evals = SharedVector(new Vector("Eigenvalues of the Hessian subspace representation", b_dim_));
+        G->gemm(false, true, 1.0, b_, sigma_vector, 0.0);
+        G->diagonalize(Evecs, Evals, ascending);
+
+        // Define the eigenvectors to be positive to make sure the phase doesn't change
+        double *ones = new double[b_dim_];
+        for (int i = 0; i < b_dim_; ++i) ones[i] = 1.0;
+        double **Evecs_p = Evecs->pointer();
+        for (int k = 0; k < b_dim_; ++k) {
+            double dot = C_DDOT(b_dim_, ones, 1, &Evecs_p[0][k], b_dim_);
+            if (dot < 0.0) Evecs->scale_column(0, k, -1.0);
+        }
+
+        // Rotate sigma and b vectors to the new subspace
+        // sigma'_kp = sum(i) alpha_ki sigma_ip
+        // b_kp' = sum(i) alpha_ki b_ip
+        temp->gemm(true, false, 1.0, Evecs, sigma_vector, 0.0);
+        sigma_vector->copy(temp);
+        temp->gemm(true, false, 1.0, Evecs, b_, 0.0);
+        b_->copy(temp);
+
+        // Compute the residual: r_kp = sigma'_kp - ro_k b_kp'
+        SharedMatrix r(new Matrix("Residual", b_dim_, nidp_));
+        r->copy(sigma_vector);
+        double **r_p = r->pointer();
+        double **b_p = b_->pointer();
+        for (int k = 0; k < b_dim_; ++k) C_DAXPY(nidp_, -Evals->get(k), b_p[k], 1, r_p[k], 1);
+
+        // Check the convergence for each vector
+        double max_rms = 0.0;
+        int n_good = 0;
+        int n_bad  = 0;
+        if (print_ > 1) fprintf(outfile, "\tEigenvalues:\n");
+        for (int k = 0; k < nevals_; ++k) {
+            double new_val = Evals->get(k);
+            double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
+            double rms = sqrt(ms / (double) b_dim_);
+            bool not_converged = rms > r_convergence_;
+            if (not_converged) n_bad += 1;
+            else n_good += 1;
+            max_rms = rms > max_rms ? rms : max_rms;
+            if (print_ > 1) fprintf(outfile,  "\t\t%s%10.6f   (residual = %10.6f)\n", not_converged ? "*" : " ", new_val, rms);
+        }
+        if (n_bad == 0) converged = true;
+
+        if (print_ > 1) fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
+        if (print_ > 1) fprintf(outfile, "\tMax RMS residual %12.8f, %d converged, %d not converged\n", max_rms, n_good, n_bad);
+
+        // Obtain new vectors from the residual: delta = -r_kp / (Hd_p - Evals_k)
+        SharedMatrix delta(new Matrix ("Correction vector", b_dim_, nidp_));
+        for (int k = 0; k < b_dim_; ++k)
+            for (int p = 0; p < nidp_; ++p)
+                delta->set(k, p, -r->get(k, p) / (Hd_->get(p) - Evals->get(k)));
+
+        // Orthogonalize the new vectors against the subspace, and add if nececssary
+        int added_vectors = 0;
+        double **delta_p = delta->pointer();
+        int subspace_size = b_dim_;
+        for(int k = subspace_size - 1; k >= 0; --k){
+            if(augment_b(delta_p[k], vec_add_tol_)){
+                added_vectors++;
+                if(added_vectors == n_add_)
+                    break;
+            }
+        }
+        if(!added_vectors && !converged) throw PSIEXCEPTION("No new vectors were added");
+
+        if (print_ > 1) fprintf(outfile, "\tAdded %d new vector(s) to the subspace\n\n\n", added_vectors);
+
+        if (b_dim_ > max_space_) throw PSIEXCEPTION("The subspace size is exceeded, but the convergence is not reached in stability analysis");
+
+    }
+
+    // Analyze the eigenvector of the Hessian for n largest contributions, whether it's orbital or cumulant space
+    fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
+    int n_neg = 0;
+    bool orbital_orbital = false;
+    bool cumulant_cumulant = false;
+    for (int k = 0; k < nevals_; k++) {
+        double value = Evals->get(k);
+        fprintf(outfile, "\t %10.6f \n", value);
+        if (value < 0.0) {
+            double max_value = 0.0;
+            int max_value_idp = 0;
+            for (int i = 0; i < nidp_; ++i) {
+                double evec_value = fabs(b_->get(k, i));
+                if (evec_value > max_value) {
+                    max_value = evec_value;
+                    max_value_idp = i;
+                }
+            }
+            if (max_value_idp < orbital_idp_) orbital_orbital = true;
+            else cumulant_cumulant = true;
+            n_neg++;
+        }
+    }
+    if (n_neg) {
+        fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
+//        fprintf(outfile, "\tTypes of the instability: %s %s \n", n_neg);
+    }
+
+}
+
+void
+DCFTSolver::davidson_guess() {
+
+    int count = 0;
+    while (count < nguess_) {
+        Vector temp("Temp", nidp_);
+        temp.set(count, 1.0);
+        // To avoid singularity in the solution the second element is set to be non-zero
+        temp.set(count + 1, 0.1);
+        double *ptemp = temp.pointer();
+        // Orthonormalize the guess vectors and form the guess b
+        if (augment_b(ptemp, vec_add_tol_)) count++;
+    }
+
+}
+
+bool
+DCFTSolver::augment_b(double *vec, double tol) {
+
+    // Normalize the vec array first
+    double vec_norm = sqrt(C_DDOT(nidp_, vec, 1, vec, 1));
+    double inv_norm = 1.0/vec_norm;
+    C_DSCAL(nidp_, inv_norm, vec, 1);
+
+    // Allocate |b'> vector and copy vec to it
+    SharedMatrix bprime(new Matrix("B'", 1, nidp_));
+    double **bpp = bprime->pointer();
+    ::memcpy(bpp[0], vec, nidp_ * sizeof(double));
+
+    // Compute the overlap of the new |b'> space and the existing space |b>: <b|b'>
+    SharedMatrix bxb(new Matrix("<b'|b>", b_dim_, 1));
+    if (b_dim_) bxb->gemm(0, 1, 1.0, b_, bprime, 0.0);
+
+    // Project out the existing subspace |b> from the current |b'> subspace: |b'> = |b'> - |b><b|b'>
+    for (int k = 0; k < b_dim_; ++k) C_DAXPY(nidp_, -bxb->get(k, 0), b_->pointer()[k], 1, bpp[0], 1);
+
+    // Compute the norm of the leftover part of the |b'> space
+    vec_norm = sqrt(C_DDOT(nidp_, bpp[0], 1, bpp[0], 1));
+
+    // If the norm exceeds a given threshold then augment the |b> space
+    if(vec_norm > tol){
+//        if(print_ > 1)
+//            fprintf(outfile, "norm = %f, adding\n", norm);
+        double inv_norm = 1.0 / vec_norm;
+        C_DSCAL(nidp_, inv_norm, bpp[0], 1);
+
+        std::vector<SharedMatrix> mats;
+        mats.push_back(b_);
+        mats.push_back(bprime);
+        b_ = Matrix::vertcat(mats);
+        b_->set_name("B");
+        b_dim_++;
+        return true;
+    }
+
+    return false;
 
 }
 
