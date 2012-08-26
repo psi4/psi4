@@ -1706,7 +1706,94 @@ void TwoElectronInt::compute_quartet_deriv2(int, int, int, int)
 
     // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers)
     // The libmints array returns the following integral derivatives:
-    //
+    //  0 -> A_x
+    //  1 -> A_y
+    //  2 -> A_z
+    //  3 -> C_x
+    //  4 -> C_y
+    //  5 -> C_z
+    //  6 -> D_x
+    //  7 -> D_y
+    //  8 -> D_z
+    // Center B can be determined by:
+    //  B_x = -(A_x + C_x + D_x)
+    //  B_y = -(A_y + C_y + D_y)
+    //  B_z = -(A_z + C_z + D_z)
+
+    // A
+    if (buffer_offsets_[0] == 3) {
+        // Ax
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_, 1);
+
+        // Ay
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+size, 1);
+
+        // Az
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+2*size, 1);
+    }
+    else {
+        memcpy(source_,        libderiv_.ABCD[buffer_offsets_[0]],    sizeof(double) * size);
+        memcpy(source_+size,   libderiv_.ABCD[buffer_offsets_[0]+1],  sizeof(double) * size);
+        memcpy(source_+2*size, libderiv_.ABCD[buffer_offsets_[0]+2],  sizeof(double) * size);
+    }
+
+    // C
+    if (buffer_offsets_[2] == 3) {
+        // Cx
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+3*size, 1);
+
+        // Cy
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+4*size, 1);
+
+        // Cz
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+5*size, 1);
+    }
+    else {
+        memcpy(source_+3*size, libderiv_.ABCD[buffer_offsets_[2]],    sizeof(double) * size);
+        memcpy(source_+4*size, libderiv_.ABCD[buffer_offsets_[2]+1],  sizeof(double) * size);
+        memcpy(source_+5*size, libderiv_.ABCD[buffer_offsets_[2]+2],  sizeof(double) * size);
+    }
+
+    // D
+    if (buffer_offsets_[3] == 3) {
+        // Dx
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+6*size, 1);
+
+        // Dy
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+7*size, 1);
+
+        // Dz
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+8*size, 1);
+    }
+    else {
+        memcpy(source_+6*size, libderiv_.ABCD[buffer_offsets_[3]],    sizeof(double) * size);
+        memcpy(source_+7*size, libderiv_.ABCD[buffer_offsets_[3]+1],  sizeof(double) * size);
+        memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
+    }
+
+    // Transform the integrals to the spherical basis
+    if (!force_cartesian_)
+        pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
+
+    // Results are in source_
 }
 
 int TwoElectronInt::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
