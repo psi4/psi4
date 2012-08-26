@@ -2,7 +2,7 @@
 #   include <string>
 #   include <libmints/dimension.h>
 #   include <elemental.hpp>
-#   include <elemental/basic.hpp>
+//#   include <elemental/basic.hpp>
 #   include "detail.h"
 #endif
 
@@ -75,7 +75,7 @@ namespace psi { namespace libmatrix {
                     //           and the columns rowShift:rowStride:n
                     const int i = colShift + iLocal*colStride;
                     const int j = rowShift + jLocal*rowStride;
-                    matrix_.SetLocalEntry( iLocal, jLocal, val);
+                    matrix_.SetLocal( iLocal, jLocal, val);
                 }
             }
         }
@@ -121,7 +121,7 @@ namespace psi { namespace libmatrix {
                     //           and the columns rowShift:rowStride:n
                     const int i = colShift + iLocal*colStride;
                     const int j = rowShift + jLocal*rowStride;
-                    matrix_.SetLocalEntry(iLocal, jLocal, rhs(0, iLocal, jLocal));  // elemental version doesn't understand symmetry yet
+                    matrix_.SetLocal(iLocal, jLocal, rhs(0, iLocal, jLocal));  // elemental version doesn't understand symmetry yet
                 }
             }
         }
