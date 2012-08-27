@@ -1148,6 +1148,7 @@ AC_CONFIG_FILES([
           tests/psimrcc-ccsd_t-4/Makefile
           tests/psimrcc-pt2/Makefile
           tests/psimrcc-fd-freq1/Makefile
+          tests/psimrcc-fd-freq2/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
@@ -1160,6 +1161,7 @@ AC_CONFIG_FILES([
           tests/pubchem1/Makefile
           tests/props1/Makefile
           tests/props2/Makefile
+          tests/props3/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
           tests/dft-b2plyp/Makefile

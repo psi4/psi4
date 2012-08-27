@@ -2,7 +2,8 @@
 #   include <string>
 #   include <libmints/dimension.h>
 #   include <elemental.hpp>
-#   include <elemental/basic.hpp>
+//#   include <elemental/basic.hpp>
+#   include "detail.h"
 #endif
 
 namespace psi { namespace libmatrix {
@@ -12,12 +13,12 @@ namespace psi { namespace libmatrix {
     struct libelemental_matrix_wrapper;
 
 #if defined(HAVE_ELEMENTAL)
-    
+
     struct libelemental_globals {
         static std::string interface_name;
         static elem::mpi::Comm mpi_comm;
         static int rank;
-        
+
         static void initialize(int argc, char** argv) {
             elem::Initialize(argc, argv);
             mpi_comm = elem::mpi::COMM_WORLD;
@@ -49,7 +50,7 @@ namespace psi { namespace libmatrix {
     struct libelemental_matrix_wrapper {
         libelemental_matrix_wrapper(const std::string& name, const Dimension& m, const Dimension& n) :
             name_(name), height_(m.sum()), width_(n.sum())
-        { 
+        {
             elem::Grid g(libelemental_globals::mpi_comm);
             matrix_ = elem::DistMatrix<double, elem::MC, elem::MR>(height_, width_, g);
         }
@@ -74,12 +75,12 @@ namespace psi { namespace libmatrix {
                     //           and the columns rowShift:rowStride:n
                     const int i = colShift + iLocal*colStride;
                     const int j = rowShift + jLocal*rowStride;
-                    matrix_.SetLocalEntry( iLocal, jLocal, val);
+                    matrix_.SetLocal( iLocal, jLocal, val);
                 }
             }
         }
 
-        void gemm(bool ta, bool tb, double alpha, 
+        void gemm(bool ta, bool tb, double alpha,
                   const libelemental_matrix_wrapper& A,
                   const libelemental_matrix_wrapper& B,
                   double beta)
@@ -120,7 +121,7 @@ namespace psi { namespace libmatrix {
                     //           and the columns rowShift:rowStride:n
                     const int i = colShift + iLocal*colStride;
                     const int j = rowShift + jLocal*rowStride;
-                    matrix_.SetLocalEntry(iLocal, jLocal, rhs(0, iLocal, jLocal));  // elemental version doesn't understand symmetry yet
+                    matrix_.SetLocal(iLocal, jLocal, rhs(0, iLocal, jLocal));  // elemental version doesn't understand symmetry yet
                 }
             }
         }

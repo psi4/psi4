@@ -65,7 +65,7 @@ public:
     double ***x() const { return x_; }
     double ***y() const { return y_; }
     double ***z() const { return z_; }
-    void compute(double PA[3], double PB[3], double PC[3], double gamma, int am1, int am2);
+    void compute(double PA[3], double PB[3], double gamma, int am1, int am2);
 };
 
 /*! \ingroup MINTS

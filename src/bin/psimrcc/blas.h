@@ -89,7 +89,8 @@ public:
   void       set_scalar(const char* cstr,int reference,double value);
   void       set_scalar(std::string& str,int reference,double value);
 
-
+  //DIIS
+  std::vector<std::pair<std::string,std::string> > diis_matrices;
 
   // These have to be improved
   MatrixMap& get_MatrixMap() {return(matrices);}
