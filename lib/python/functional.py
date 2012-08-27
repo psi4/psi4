@@ -1637,6 +1637,16 @@ def build_blypd_superfunctional(name, npoints, deriv):
     return sup
 
 
+def build_b3lypchg_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-CHG')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.00))
+
+    return sup
+
 def build_b3lypd_superfunctional(name, npoints, deriv):
 
     sup = build_b3lyp_superfunctional(name, npoints, deriv)
@@ -2717,6 +2727,7 @@ superfunctionals = {
         'bp86-d'     : build_bp86d_superfunctional,
         'b97-d'      : build_b97d_superfunctional,
         'b3lyp-d'    : build_b3lypd_superfunctional,
+        'b3lyp-chg'  : build_b3lypchg_superfunctional,
         'b3lyp5-d'   : build_b3lyp5d_superfunctional,
         'wsvwn'      : build_wsvwn_superfunctional,
         'wpbe'       : build_wpbe_superfunctional,

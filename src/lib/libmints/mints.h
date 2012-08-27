@@ -25,6 +25,7 @@
 #include <libmints/petitelist.h>
 #include <libmints/pointgrp.h>
 #include <libmints/quadrupole.h>
+#include <libmints/multipoles.h>
 #include <libmints/shellrotation.h>
 #include <libmints/sobasis.h>
 #include <libmints/vector.h>

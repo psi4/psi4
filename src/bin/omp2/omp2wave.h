@@ -3,6 +3,7 @@
 
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include "arrays.h"
 
 using namespace std;
 
@@ -31,11 +32,8 @@ protected:
     void response_pdms();
     void GFockmo();
     void mograd();
-    //void orbital_hess();
     void update_mo();
-    //void korbrot_nr();
     void korbrot_sd();
-    //void korbrot_aughess();
     void occ_iterations();
     void t2_1st_sc(); 
     void t2_1st_general();
@@ -46,8 +44,6 @@ protected:
     void twopdm_oovv();
     void nbo();
     void mp2l_energy();
-    //void idp4stable();
-    //void stable();
     void G_int();
     void get_moinfo();
     void title();
@@ -58,8 +54,7 @@ protected:
     void Fockmo_alpha();
     void Fockmo_beta();
     void idp();
-    double dot_product(int dim, double *x, double *y);
-    void diis(int dimvec, double **vecs, double **errvecs, double *vec_new);
+    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
     
      class IntegralTransform *ints;
      int nmo;		// Number of MOs
@@ -82,32 +77,6 @@ protected:
      int dimtei;	// dimension of tei in pitzer order for all integrals 
      int ntri; 		// square matrix dimension (nmo) -> pitzer order
      int ntri_so;	// square matrix dimension (nso) -> pitzer order
-     int dimvvAA; 
-     int dimvvBB;
-     int dimooAA; 
-     int dimooBB; 
-     int dimvoAA; 
-     int dimvoBB; 
-     int dimvoAB; 
-     int dimvoBA; 
-     int dimss; 
-     int dimosA;	// O-all 
-     int dimosB;	// o-all 
-     int dimvsA; 
-     int dimvsB; 
-     int dimacsacs;
-     int dimacoacoAA;
-     int dimacoacoBB;
-     int dimacvacvAA;
-     int dimacvacvBB;
-     int dimacvacoAA;
-     int dimacvacoAB;
-     int dimacvacoBA;
-     int dimacvacoBB;
-     int dimacofoAA;
-     int dimacofoBB;
-     int dimfvacvAA;
-     int dimfvacvBB;
      int cc_maxiter;
      int mo_maxiter;
      int exp_tol_Eod;
@@ -132,7 +101,6 @@ protected:
      int nidpA;
      int nidpB;
      int conver;
-     //int stability_flag;
      int mo_optimized; 		// if 0 MOs are NOT optimized, if 1 MOs are optimized.
      int swap_mo_i;
      int swap_mo_j;
@@ -160,6 +128,19 @@ protected:
      double Escsmp2AB;
      double Esosmp2AB; 
      double Esosmp2;
+     double Escsnmp2;
+     double Escsnmp2BB;
+     double Escsnmp2AA;
+     double Escsmimp2;
+     double Escsmimp2BB;
+     double Escsmimp2AA;
+     double Escsmimp2AB;
+     double Escsmp2vdw;
+     double Escsmp2vdwBB;
+     double Escsmp2vdwAA;
+     double Escsmp2vdwAB;
+     double Esospimp2AB; 
+     double Esospimp2;
      double Eopdm;
      double DE;
      double tol_Eod;
@@ -272,44 +253,26 @@ protected:
      int *idpirrA;
      int *idpirrB;
 
-     
-     /*
-     int **idprowA;
-     int **idprowB;
-     int **idpcolA;
-     int **idpcolB;
-     */
-     
-     /*
-     SharedIntVector nidpA;
-     SharedIntVector nidpB;
-     SharedIntVector idprowA;
-     SharedIntVector idpcolA;
-     SharedIntVector idprowB;
-     SharedIntVector idpcolB;
-     SharedVector wogA;
-     SharedVector wogB;
-     SharedVector kappaA;
-     SharedVector kappaB;
-     */
-
      double *evalsA; 
      double *evalsB; 
      double *evals_c1A; 
      double *evals_c1B; 
-     double *wogA; 
-     double *wogB; 
-     double *kappaA; 
-     double *kappaB; 
-     double *kappa_barA; 
-     double *kappa_barB;      
+     
+     Array1d *wogA; 
+     Array1d *wogB; 
+     Array1d *kappaA; 
+     Array1d *kappaB; 
+     Array1d *kappa_barA; 
+     Array1d *kappa_barB;   
+     
+     Array2d *vecsA;
+     Array2d *vecsB;
+     Array2d *errvecsA;
+     Array2d *errvecsB;
+
 
      double **C_pitzerA;     
      double **C_pitzerB;     
-     double **vecsA; 
-     double **vecsB; 
-     double **errvecsA;
-     double **errvecsB;
      char **irreplabels; 
      
      SharedMatrix Ca_new;	// New Alpha MO coeff. 
@@ -351,12 +314,6 @@ protected:
      SharedMatrix GooB;
      SharedMatrix GvvA;
      SharedMatrix GvvB;
-     SharedMatrix BmatA;
-     SharedMatrix BmatB;
-     //SharedSimpleMatrix AorbAA;
-     //SharedSimpleMatrix AorbAB;
-     //SharedSimpleMatrix AorbBB;
-
     
 };
 

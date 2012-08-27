@@ -30,6 +30,7 @@
 
 #include "omp3wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -53,8 +54,8 @@ void OMP3Wave::update_mo()
 /********************************************************************************************/
 /************************** Build kappa_bar *************************************************/
 /********************************************************************************************/ 
-	for(int x = 0; x < nidpA; x++) kappa_barA[x] += kappaA[x];
-	for(int x = 0; x < nidpB; x++) kappa_barB[x] += kappaB[x];
+        kappa_barA->add(kappaA);        
+        kappa_barB->add(kappaB);        
 
 /********************************************************************************************/
 /************************ DO DIIS ***********************************************************/
@@ -64,9 +65,8 @@ if (opt_method == "DIIS") {
         // Form Diis Error Vector & Extrapolant Alpha Spin Case
 	if (itr_occ <= num_vecs) {  
 	  for(int i = 0; i < nidpA; i++){
-	    errvecsA[itr_occ-1][i] = wogA[i];
-	    //errvecsA[itr_occ-1][i] = kappaA[i];
-	    vecsA[itr_occ-1][i] = kappa_barA[i];
+	    errvecsA->set(itr_occ-1, i, wogA->get(i));
+	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
 	  }  
 	}
 	
@@ -74,24 +74,22 @@ if (opt_method == "DIIS") {
 	if (itr_occ > num_vecs) {  
 	  for(int j = 0; j < (num_vecs-1); j++){
 	    for(int i = 0; i < nidpA; i++){
-	      errvecsA[j][i] = errvecsA[j+1][i];
-	      vecsA[j][i] = vecsA[j+1][i];
+	      errvecsA->set(j, i, errvecsA->get(j+1, i));
+	      vecsA->set(j, i, vecsA->get(j+1, i));
 	    }  
 	  }
 	  
 	  for(int i = 0; i < nidpA; i++){
-	    errvecsA[num_vecs-1][i] = wogA[i];
-	    //errvecsA[num_vecs-1][i] = kappaA[i];
-	    vecsA[num_vecs-1][i] = kappa_barA[i];
+	    errvecsA->set(num_vecs-1, i, wogA->get(i));
+	    vecsA->set(num_vecs-1, i, kappa_barA->get(i));
 	  }    
 	}
 	
         // Form Diis Error Vector & Extrapolant Beta Spin Case
 	if (itr_occ <= num_vecs) {  
 	  for(int i = 0; i < nidpB; i++){
-	    errvecsB[itr_occ-1][i] = wogB[i];
-	    //errvecsB[itr_occ-1][i] = kappaB[i];
-	    vecsB[itr_occ-1][i] = kappa_barB[i];
+	    errvecsB->set(itr_occ-1, i, wogB->get(i));
+	    vecsB->set(itr_occ-1, i, kappa_barB->get(i));
 	  }  
 	}
 	
@@ -99,15 +97,14 @@ if (opt_method == "DIIS") {
 	if (itr_occ > num_vecs) {  
 	  for(int j = 0; j < (num_vecs-1); j++){
 	    for(int i = 0; i < nidpB; i++){
-	      errvecsB[j][i] = errvecsB[j+1][i];
-	      vecsB[j][i] = vecsB[j+1][i];
+	      errvecsB->set(j, i, errvecsB->get(j+1, i));
+	      vecsB->set(j, i, vecsB->get(j+1, i));
 	    }  
 	  }
 	  
 	  for(int i = 0; i < nidpB; i++){
-	    errvecsB[num_vecs-1][i] = wogB[i];
-	    //rrvecsB[num_vecs-1][i] = kappaB[i];
-	    vecsB[num_vecs-1][i] = kappa_barB[i];
+	    errvecsB->set(num_vecs-1, i, wogB->get(i));
+	    vecsB->set(num_vecs-1, i, kappa_barB->get(i));
 	  }    
 	}
 	
@@ -128,8 +125,8 @@ if (opt_method == "DIIS") {
 	  int a = idprowA[x];
 	  int i = idpcolA[x];
 	  int h = idpirrA[x];
-	  KorbA->set(h, a + occpiA[h], i, kappa_barA[x]);
-	  KorbA->set(h, i, a + occpiA[h], -kappa_barA[x]);
+	  KorbA->set(h, a + occpiA[h], i, kappa_barA->get(x));
+	  KorbA->set(h, i, a + occpiA[h], -kappa_barA->get(x));
 	}
 	
 	// beta
@@ -137,8 +134,8 @@ if (opt_method == "DIIS") {
 	  int a = idprowB[x];
 	  int i = idpcolB[x];
 	  int h = idpirrB[x];
-	  KorbB->set(h, a + occpiB[h], i, kappa_barB[x]);
-	  KorbB->set(h, i, a + occpiB[h], -kappa_barB[x]);
+	  KorbB->set(h, a + occpiB[h], i, kappa_barB->get(x));
+	  KorbB->set(h, i, a + occpiB[h], -kappa_barB->get(x));
 	}
 	
 /********************************************************************************************/
@@ -242,7 +239,7 @@ else if (orth_type == "GS") {
 	Ca_->gemm(false, false, 1.0, Ca_ref, UorbA, 0.0); 
 	Cb_->gemm(false, false, 1.0, Cb_ref, UorbB, 0.0); 
 
-	if (print_ > 1) {
+       	if (print_ > 1) {
 	  UorbA->print();
           UorbB->print();
 	  Ca_->print();

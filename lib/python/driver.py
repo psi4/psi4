@@ -5,6 +5,7 @@ functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
+import sys
 import PsiMod
 import input
 from proc import *
@@ -1099,6 +1100,7 @@ def frequency(name, **kwargs):
             print(' %d' % (n + 1), end="")
             if (n + 1) == ndisp:
                 print('\n', end="")
+            sys.stdout.flush()
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -1151,6 +1153,7 @@ def frequency(name, **kwargs):
             print(' %d' % (n + 1), end="")
             if (n + 1) == ndisp:
                 print('\n', end='')
+            sys.stdout.flush()
 
             # Load in displacement into the active molecule
             molecule.set_geometry(displacement)
