@@ -913,6 +913,9 @@ void HF::compute_fcpi()
         for (int i=0; i<nfzc; ++i)
             frzcpi_[pairs[i].second]++;
     }
+    // total frozen core
+    nfrzc_ = 0;
+    for (int h = 0; h < epsilon_a_->nirrep(); h++) nfrzc_ += frzcpi_[h];
 }
 
 void HF::compute_fvpi()
