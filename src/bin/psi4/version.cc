@@ -36,7 +36,7 @@ void print_version(FILE *myout)
   fprintf(myout, "    Process ID: %6d\n",pid);
   fprintf(myout, "    PSI4DATADIR: %s\n", Process::environment("PSIDATADIR").c_str());
 
-  Communicator::world->print(myout);
+  WorldComm->print(myout);
 }
 
 }

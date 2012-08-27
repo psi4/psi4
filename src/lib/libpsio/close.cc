@@ -15,20 +15,20 @@
 namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
-    Communicator::world->sync();
+    WorldComm->sync();
   unsigned int i;
   psio_ud *this_unit;
   psio_tocentry *this_entry, *next_entry;
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* First check to see if this unit is already closed */
   if (this_unit->vol[0].stream == -1)
     psio_error(unit, PSIO_ERROR_RECLOSE);
-  
+
   /* Dump the current TOC back out to disk */
   tocwrite(unit);
-  
+
   /* Free the TOC */
   this_entry = this_unit->toc;
   for (i=0; i < this_unit->toclen; i++) {
@@ -36,15 +36,15 @@ void PSIO::close(unsigned int unit, int keep) {
     free(this_entry);
     this_entry = next_entry;
   }
-  
+
   /* Close each volume (remove if necessary) and free the path */
   for (i=0; i < this_unit->numvols; i++) {
     int errcod;
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
       errcod = ::close(this_unit->vol[i].stream);
     }
-    Communicator::world->bcast(&errcod, 1, 0);
-    //Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+    WorldComm->bcast(&errcod, 1, 0);
+    //WorldComm->raw_bcast(&errcod, sizeof(int), 0);
     if (errcod == -1)
       psio_error(unit,PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */

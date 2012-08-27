@@ -83,7 +83,7 @@ void RKS::integrals()
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
         boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
-        for (int i=0; i<Communicator::world->nthread(); ++i)
+        for (int i=0; i<WorldComm->nthread(); ++i)
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
@@ -260,7 +260,7 @@ void UKS::integrals()
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
         boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
-        for (int i=0; i<Communicator::world->nthread(); ++i)
+        for (int i=0; i<WorldComm->nthread(); ++i)
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {

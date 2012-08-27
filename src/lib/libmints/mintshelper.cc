@@ -217,7 +217,7 @@ void MintsHelper::integrals()
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for (int i=0; i<Communicator::world->nthread(); ++i)
+    for (int i=0; i<WorldComm->nthread(); ++i)
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
