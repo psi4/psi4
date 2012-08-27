@@ -15,7 +15,7 @@ namespace psi {
 
     // default constructor
     Distributed_Matrix::Distributed_Matrix() :
-        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
+        madness::WorldObject<Distributed_Matrix>(*WorldComm->get_madworld())
     {
         parallel_init();
         process_pending();
@@ -26,7 +26,7 @@ namespace psi {
                                            const int &nrows, const int &ncols,
                                            const int &tile_sz,
                                            const std::string &name) :
-        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
+        madness::WorldObject<Distributed_Matrix>(*WorldComm->get_madworld())
     {
         parallel_init();
         initialize(pgrid, nrows, ncols, tile_sz, name);
@@ -36,15 +36,15 @@ namespace psi {
     // initialize parallel stuff
     void Distributed_Matrix::parallel_init()
     {
-        me_ = Communicator::world->me();
-        nprocs_ = Communicator::world->nproc();
-        nthreads_ = Communicator::world->nthread();
-        comm_ = Communicator::world->communicator();
-        print_mutex_ = Communicator::world->get_mutex();
-        add_mutex_ = Communicator::world->get_mutex();
-        mult_mutex_ = Communicator::world->get_mutex();
-        set_mutex_ = Communicator::world->get_mutex();
-        madworld_ = Communicator::world->get_madworld();
+        me_ = WorldComm->me();
+        nprocs_ = WorldComm->nproc();
+        nthreads_ = WorldComm->nthread();
+        comm_ = WorldComm->communicator();
+        print_mutex_ = WorldComm->mutex();
+        add_mutex_ = WorldComm->mutex();
+        mult_mutex_ = WorldComm->mutex();
+        set_mutex_ = WorldComm->mutex();
+        madworld_ = WorldComm->get_madworld();
     }
 
     // initialize the distributed matrix
@@ -94,8 +94,8 @@ namespace psi {
         for (int tij=0; tij < local_ntiles_; tij++)
             data_.push_back(madness::Tensor<double>());
 
-//        Communicator::world->sync();
-//        Communicator::world->sync();
+//        WorldComm->sync();
+//        WorldComm->sync();
 
         for (int ti=0, tij=0; ti < tile_nrows_; ti++) {
             for (int tj=0; tj < tile_ncols_; tj++, tij++) {
@@ -172,7 +172,7 @@ namespace psi {
     Distributed_Matrix& Distributed_Matrix::operator= (const Distributed_Matrix &copy)
     {
         this->clear_matrix();
-        Communicator::world->sync();
+        WorldComm->sync();
         if (this->name_.size()) initialize(copy.pgrid_, copy.nrows_, copy.ncols_,
                                             copy.tile_sz_, this->name_);
         else initialize(copy.pgrid_, copy.nrows_, copy.ncols_,
@@ -184,14 +184,14 @@ namespace psi {
                 task(me_, &Distributed_Matrix::copy_tile_tij, tij, tile);
             }
         }
-        Communicator::world->sync();
+        WorldComm->sync();
         return *this;
     }
 
     Distributed_Matrix& Distributed_Matrix::operator= (const Distributed_Matrix *copy)
     {
         this->clear_matrix();
-        Communicator::world->sync();
+        WorldComm->sync();
         if (this->name_.size()) initialize(copy->pgrid_, copy->nrows_, copy->ncols_,
                                             copy->tile_sz_, this->name_);
         else initialize(copy->pgrid_, copy->nrows_, copy->ncols_,
@@ -203,29 +203,29 @@ namespace psi {
                 task(me_, &Distributed_Matrix::copy_tile_tij, tij, tile);
             }
         }
-        Communicator::world->sync();
+        WorldComm->sync();
         return *this;
     }
 
     Distributed_Matrix::Distributed_Matrix(const Distributed_Matrix &copy)
-        : madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld()),
+        : madness::WorldObject<Distributed_Matrix>(*WorldComm->get_madworld()),
           data_(NULL)
     {
-        Communicator::world->sync();
+        WorldComm->sync();
         parallel_init();
         process_pending();
         *this = copy;
-        Communicator::world->sync();
+        WorldComm->sync();
     }
     Distributed_Matrix::Distributed_Matrix(const Distributed_Matrix *copy)
-        : madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld()),
+        : madness::WorldObject<Distributed_Matrix>(*WorldComm->get_madworld()),
           data_(NULL)
     {
-        Communicator::world->sync();
+        WorldComm->sync();
         parallel_init();
         process_pending();
         *this = copy;
-        Communicator::world->sync();
+        WorldComm->sync();
     }
 
 
