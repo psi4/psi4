@@ -1869,6 +1869,7 @@ public:
      */
     Distributed_Matrix operator* (Distributed_Matrix &b_mat);
 
+    void diagonalize(Distributed_Matrix& eigvec, Vector& eigval);
 
 };
 
