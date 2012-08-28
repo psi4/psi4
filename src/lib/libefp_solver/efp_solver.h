@@ -22,20 +22,22 @@ namespace psi{ namespace efp{
 
 
 class EFP {
+    // warning: options_ is pointer to current options object, and may not reflect
+    // proper efp options outside of common_init()
     Options & options_;
     //boost::shared_ptr<PSIO> psio_;
     protected:
         char ** frag_name;
         int nfrag;
-        struct efp * efp;
+        struct efp * efp_;
         boost::shared_ptr<Molecule>molecule;
         bool elst_enabled, pol_enabled, disp_enabled, exch_enabled, do_grad;
+        /// Initialize options
+        void common_init();
     public:
         EFP(Options& options);
         ~EFP();
   
-        /// Initialize options
-        void common_init();
         /// Set geometry
         void SetGeometry();
         /// Compute energy and/or gradietn
