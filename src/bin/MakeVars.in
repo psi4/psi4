@@ -5,6 +5,10 @@ SHELL = /bin/sh
 # Initialize variables that have been figured out by configure.
 #
 
+HAVE_MADNESS = @HAVE_MADNESS@
+HAVE_ELEMENTAL = @HAVE_ELEMENTAL@
+HAVE_SCALAPACK = @HAVE_SCALAPACK@
+
 target = @target@
 
 prefix = @prefix@
@@ -21,8 +25,10 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 pkgdatadir=@pkgdatadir@
 top_srcdir = @top_srcdir@
+elemlibs = @elemlibs@
 madlibs = @madlibs@
 madinc = @madinc@
+scalapacklibs = @scalapacklibs@
 # this file is used by the subdirectories, so top_objdir is relative to those
 top_objdir = ../../..
 objincdir = @objincdir@
