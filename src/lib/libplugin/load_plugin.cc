@@ -77,7 +77,7 @@ plugin_info plugin_load(std::string& plugin_pathname)
     Process::environment.options.set_read_globals(false);
 
     // Tell the plugin to initialize itself (found in libplugin)
-    info.init_plugin(Communicator::world, Process::environment, _default_chkpt_lib_, _default_psio_lib_, psi::yetiEnv);
+    info.init_plugin(WorldComm, Process::environment, _default_chkpt_lib_, _default_psio_lib_, psi::yetiEnv);
 
     return info;
 }

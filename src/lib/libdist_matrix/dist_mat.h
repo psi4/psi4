@@ -123,7 +123,7 @@ public:
      */
     inline double get()
     {
-        return dm_->task(Communicator::world->me(), &DM::get_val, row_, col_).get();
+        return dm_->task(WorldComm->me(), &DM::get_val, row_, col_).get();
     }
 
     /**
@@ -136,7 +136,7 @@ public:
      */
     inline madness::Future<double> get_future() const
     {
-        return dm_->task(Communicator::world->me(), &DM::get_val, row_, col_);
+        return dm_->task(WorldComm->me(), &DM::get_val, row_, col_);
     }
 
     /**
@@ -158,7 +158,7 @@ public:
         else if (all_column_)
             dm_->set_col(col_, val);
         else
-            dm_->task(Communicator::world->me(), &DM::set_val, row_, col_, val);
+            dm_->task(WorldComm->me(), &DM::set_val, row_, col_, val);
     }
 
     /**
@@ -191,7 +191,7 @@ public:
         else if (all_column_)
             dm_->set_col(col_, val.get());
         else
-            dm_->task(Communicator::world->me(), &DM::set_val, row_, col_, val);
+            dm_->task(WorldComm->me(), &DM::set_val, row_, col_, val);
     }
 
     /**
@@ -221,7 +221,7 @@ public:
                 dm_->set_col(this->col_, sval.get_future());
         }
         else
-            this->dm_->task(Communicator::world->me(), &DM::set_val,
+            this->dm_->task(WorldComm->me(), &DM::set_val,
                             sval.row_, sval.col_, sval.get_future());
     }
 
@@ -645,7 +645,7 @@ public:
  *   Distributed_Matrix& Distributed_Matrix::transpose()
  *   {
  *       // This is a global operation so need a sync to make sure there are not any stray tasks
- *       Communicator::world->sync();
+ *       WorldComm->sync();
  *       // Set up a Distributed_Matrix to temporarily hold the transposed matrix
  *       Distributed_Matrix result(this->pgrid_, this->ncols_, this->nrows_,
  *                                 this->tile_sz_, this->name_);
@@ -662,7 +662,7 @@ public:
  *           }
  *       }
  *       // This sync makes sure all of the inverting and copying finish
- *       Communicator::world->sync();
+ *       WorldComm->sync();
  *       // swap *this and result
  *       std::swap(*this, result);
  *       // return *this, result is destroyed

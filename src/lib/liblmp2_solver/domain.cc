@@ -216,7 +216,7 @@ void LMP2::build_domains() {
 
         errcod = C_DGESV(row, 1, &(X[0][0]), nso_, &(ipiv[0]), &(Z[0]), nso_);
         if (errcod) {
-            //        if(Communicator::world->me() == 0)
+            //        if(WorldComm->me() == 0)
             //          fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
             //        exit(PSI_RETURN_FAILURE);
             throw PsiException("Error in DGESV in LMP2 orbital domain construction", __FILE__, __LINE__);

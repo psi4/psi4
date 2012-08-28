@@ -29,7 +29,7 @@ void PSIO::change_file_namespace(unsigned int unit, const std::string & ns1, con
 
     PSIOManager::shared_object()->move_file(std::string(old_fullpath), std::string(new_fullpath)); 
 
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         ::rename(old_fullpath,new_fullpath);
 }
 

@@ -134,7 +134,7 @@ void PSIOManager::print(FILE* out)
 void PSIOManager::mirror_to_disk()
 {
  
-    //if (Communicator::world->me() == 0) {
+    //if (WorldComm->me() == 0) {
       FILE* fh = fopen("psi.clean","w");
       if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
     
@@ -149,7 +149,7 @@ void PSIOManager::mirror_to_disk()
 }
 void PSIOManager::build_from_disk()
 {
-    //if (Communicator::world->me() == 0) {
+    //if (WorldComm->me() == 0) {
 
       FILE* fh = fopen("psi.clean","r");
       if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
@@ -189,7 +189,7 @@ void PSIOManager::psiclean()
     for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
         if (retained_files_.count((*it).first) == 0) {
             //Safe to delete
-            //if (Communicator::world->me() == 0)
+            //if (WorldComm->me() == 0)
                 unlink((*it).first.c_str());
         } else {
             temp[(*it).first] = (*it).second;
@@ -197,7 +197,7 @@ void PSIOManager::psiclean()
     }
     files_.clear();
     files_ = temp;
-    //if (Communicator::world->me() == 0)
+    //if (WorldComm->me() == 0)
         unlink("psi.clean");
 }
 

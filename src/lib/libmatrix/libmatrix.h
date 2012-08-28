@@ -5,7 +5,7 @@
 #include "libmints_wrapper.h"
 #include "libdist_wrapper.h"
 #include "elemental_wrapper.h"
-    
+
 namespace psi { namespace libmatrix {
 
 // Define the default matrix type. In general, developers should just use this type.
@@ -16,8 +16,9 @@ namespace psi { namespace libmatrix {
 #elif defined(HAVE_MPI) && !defined(HAVE_ELEMENTAL)
     typedef libdist_globals             matrix_globals;
     typedef libdist_matrix_wrapper      matrix;       // mpi and no elemental
+    //typedef libdist_vector_wrapper      vector;       // mpi and no elemental doesn't handle vectors, yet.
 #elif defined(HAVE_MPI) && defined(HAVE_ELEMENTAL)
-    typedef libelemental_globals        matrix_globals; 
+    typedef libelemental_globals        matrix_globals;
     typedef libelemental_matrix_wrapper matrix;       // mpi and elemental
     typedef libelemental_vector_wrapper vector;
 #endif

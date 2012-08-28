@@ -52,26 +52,26 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   
   buf_offset = 0;
   if (wrt) {
-	if (Communicator::world->me() == 0) {
+	if (WorldComm->me() == 0) {
       errcod_uli =:: write(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
 	}
-        Communicator::world->bcast(&errcod_uli, 1, 0);
-        //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+        WorldComm->bcast(&errcod_uli, 1, 0);
+        //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
     if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
   }
   else {
-	if (Communicator::world->me() == 0) {
+	if (WorldComm->me() == 0) {
       errcod_uli = ::read(this_unit->vol[first_vol].stream, &(buffer[buf_offset]),
           this_page_total);
         }
-        Communicator::world->bcast(&errcod_uli, 1, 0);
-        //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+        WorldComm->bcast(&errcod_uli, 1, 0);
+        //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
     if(errcod_uli != this_page_total)
       psio_error(unit,PSIO_ERROR_READ);
     else
-      Communicator::world->bcast(&(buffer[buf_offset]), this_page_total, 0);
-      //Communicator::world->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
+      WorldComm->bcast(&(buffer[buf_offset]), this_page_total, 0);
+      //WorldComm->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
 
   }
 
@@ -85,26 +85,26 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
     this_vol = this_page % numvols;
     this_page_total = PSIO_PAGELEN;
     if(wrt) {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
       }
-      Communicator::world->bcast(&errcod_uli, 1, 0);
-      //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+      WorldComm->bcast(&errcod_uli, 1, 0);
+      //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != this_page_total) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             this_page_total);
       }
-      Communicator::world->bcast(&errcod_uli, 1, 0);
-      //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+      WorldComm->bcast(&errcod_uli, 1, 0);
+      //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != this_page_total)
         psio_error(unit,PSIO_ERROR_READ);
       else
-        Communicator::world->bcast(&(buffer[buf_offset]), this_page_total, 0);
-        //Communicator::world->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
+        WorldComm->bcast(&(buffer[buf_offset]), this_page_total, 0);
+        //WorldComm->raw_bcast(&(buffer[buf_offset]), this_page_total, 0);
 
     }
     buf_offset += this_page_total;
@@ -115,26 +115,26 @@ void PSIO::rw(unsigned int unit, char *buffer, psio_address address, ULI size,
   this_vol = this_page % numvols;
   if(bytes_left) {
     if(wrt) {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         errcod_uli = ::write(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
       }
-      Communicator::world->bcast(&errcod_uli, 1, 0);
-      //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+      WorldComm->bcast(&errcod_uli, 1, 0);
+      //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != bytes_left) psio_error(unit,PSIO_ERROR_WRITE);
     }
     else {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         errcod_uli = ::read(this_unit->vol[this_vol].stream, &(buffer[buf_offset]),
             bytes_left);
       }
-      Communicator::world->bcast(&errcod_uli, 1, 0);
-      //Communicator::world->raw_bcast(&errcod_uli, sizeof(ULI), 0);
+      WorldComm->bcast(&errcod_uli, 1, 0);
+      //WorldComm->raw_bcast(&errcod_uli, sizeof(ULI), 0);
       if(errcod_uli != bytes_left)
         psio_error(unit,PSIO_ERROR_READ);
       else
-        Communicator::world->bcast(&(buffer[buf_offset]), bytes_left, 0);
-        //Communicator::world->raw_bcast(&(buffer[buf_offset]), bytes_left, 0);
+        WorldComm->bcast(&(buffer[buf_offset]), bytes_left, 0);
+        //WorldComm->raw_bcast(&(buffer[buf_offset]), bytes_left, 0);
     }
   }
 }

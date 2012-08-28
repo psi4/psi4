@@ -1301,7 +1301,7 @@ void Molecule::print_in_bohr() const
 {
     // I'm tired of wanting to compare geometries with cints and psi4 will use what's in the input
     // and psi3 using bohr.
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1326,7 +1326,7 @@ void Molecule::print_in_bohr() const
 
 void Molecule::print_in_input_format() const
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         if (nallatom()) {
             // It's only worth echoing these if the user either input some variables,
             // or they used a Z matrix for input
@@ -1353,7 +1353,7 @@ void Molecule::print_in_input_format() const
 
 void Molecule::print() const
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1379,7 +1379,7 @@ void Molecule::print() const
 
 void Molecule::print_full() const
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
@@ -1527,7 +1527,7 @@ void Molecule::save_xyz(const std::string& filename) const
 
     double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         FILE* fh = fopen(filename.c_str(), "w");
 
         fprintf(fh,"%d\n\n", natom());
@@ -1547,7 +1547,7 @@ std::string Molecule::save_string_xyz() const
     char buffer[120];
     std::stringstream ss;
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
         ss << buffer;
 
@@ -2640,7 +2640,7 @@ void Molecule::set_variable(const std::string &str, double val)
 {
     lock_frame_ = false;
     geometry_variables_[str] = val;
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
     try {
         update_geometry();

@@ -521,61 +521,9 @@ AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFCN_H=0])
 AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 
-# Check for mpi.h
-AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[
-  # Check if we can link against mpi
-  AC_MSG_CHECKING([if we can link to MPI])
-  AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ],
-    [
-      HAVE_MPI=1
-      AC_MSG_RESULT([yes])
-      AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
-      AC_SUBST(HAVE_MPI)
-    ],[
-    AC_MSG_RESULT([no])]
-  )
-],[AC_MSG_RESULT([no])])
-
-
-# Set up the location of the madness libraries.  The default
-# is to use the psi4 internal madness.  The user can also specify
-# not to use madness, or the user can specify a different madness
-# library to link with.
-HAVE_MADNESS=0
-BUILD_MADNESS=0
-if test "$HAVE_MPI" = "1"; then
-  AC_ARG_WITH([madness],
-  [  --with-madness          Specifies the location of the MADNESS libraries. You must be able to link to an MPI library. (default is internal).], [
-  case $withval in
-    yes)
-      BUILD_MADNESS=1
-      HAVE_MADNESS=1
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs='$(top_objdir)/madness/src/lib'
-      madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
-      ;;
-    no)
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,0)
-      ;;
-    *)
-      HAVE_MADNESS=1
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs="$withval/lib"
-      madinc="-I$withval/include"
-      ;;
-  esac
-  ],[
-  BUILD_MADNESS=1
-  HAVE_MADNESS=1
-  AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-  madlibs='$(top_objdir)/madness/src/lib'
-  madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
-  ])
-fi
-AC_SUBST(BUILD_MADNESS)
-
-/bin/rm -f a.out
-
+ACX_MPI()
+ACX_MADNESS()
+ACX_ELEMENTAL()
 
 ########
 ## Check for types
@@ -1208,7 +1156,7 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 # If we are using madness, and we are linking the internal madness
 # library then set up the internal madness to be built
 if test "$HAVE_MADNESS" = "1"; then
-  if test "$BUILD_MADNESS" = "1"; then
+  if test "$CONFIG_MADNESS" = "1"; then
     AC_CONFIG_SUBDIRS([madness])
   fi
 fi

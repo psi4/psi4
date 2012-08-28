@@ -67,7 +67,7 @@ main(int argc, char *argv[], char *envp[])
     Process::environment.init(envp);
 
     // Initialize local communicator
-    Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
+    WorldComm = shared_ptr<Communicator>(new LocalCommunicator);
 
     psi_start(&infile, &outfile, &psi_file_prefix,
                 num_unparsed, argv_unparsed, 0);

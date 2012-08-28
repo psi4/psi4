@@ -62,7 +62,7 @@ class PARALLEL_G_BUILD_INFO {
             }
 
             if(eri_lock.get() == NULL)
-                eri_lock = boost::shared_ptr<madness::Spinlock> (Communicator::world->mad_mutex());
+                eri_lock = boost::shared_ptr<madness::Spinlock> (WorldComm->mad_mutex());
         }
 
         boost::shared_ptr<IntegralsIterator> create_int_iter(const int & P, const int & Q,
@@ -97,7 +97,7 @@ class PARALLEL_G_BUILD_INFO {
         }
 
        void sum_G() {
-           Communicator::world->sum(pG->ptr(), nso*nso, pG->ptr(), 0);
+           WorldComm->sum(pG->ptr(), nso*nso, pG->ptr(), 0);
        }
 
        double* get_ptr_pG() {
