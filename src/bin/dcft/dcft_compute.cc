@@ -25,13 +25,13 @@ DCFTSolver::compute_energy()
     mp2_guess();
 
     int cycle = 0;
+    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                     "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+                     "\t*---------------------------------------------------------------------------------*\n");
     // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
-        fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
-                         "\t*---------------------------------------------------------------------------------*\n");
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
         dpdbuf4 Laa, Lab, Lbb;
@@ -238,9 +238,6 @@ DCFTSolver::compute_energy()
     }
     // This is the simultaneous orbital/lambda update algorithm
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
-        fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
-                         "\t*---------------------------------------------------------------------------------*\n");
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -297,6 +294,7 @@ DCFTSolver::compute_energy()
             build_intermediates();
             // Compute the residuals for density cumulant equations
             lambda_convergence_ = compute_lambda_residual();
+            if (fabs(lambda_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
             // Check convergence for density cumulant iterations
             lambdaDone = lambda_convergence_ < lambda_threshold_;
             // Update density cumulant tensor
@@ -420,8 +418,8 @@ DCFTSolver::compute_energy()
     print_opdm();
 
     if(options_.get_bool("TPDM")) dump_density();
-    mulliken_charges();
-    check_n_representability();
+//    mulliken_charges();
+//    check_n_representability();
 
     if(options_.get_str("DERTYPE") == "FIRST") {
         // Shut down the timers

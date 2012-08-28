@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta2+ Driver
 
-               Git: Rev 964183b08c882eed2de5d5fd3880c9f50b5f9812
+               Git: Rev 2a703ddcec04ec0d10f94eac43ab4230ac3b3406
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   5056
+    Process ID:   3853
     PSI4DATADIR: /home/ugur/psi4/lib/
 
     Using LocalCommunicator (Number of processes = 1)
@@ -43,19 +43,24 @@ set globals {
     d_convergence 10
     #reference uhf
     print 0
+    #opt_method sd
+    #diis_max_vecs 2
     #docc [3, 0, 1, 1]
     #socc [0, 0, 0, 0]
+    mo_maxiter 100
+    #do_level_shift true
+    #tpdm_abcd_type compute
 }
 
 set_num_threads(2)
 energy('omp3')
-#energy('ccenergy')
+#energy('ccsd')
 --------------------------------------------------------------------------
 
   Memory set to   2.500 GiB by Python script.
 
 *** tstart() called on ugur
-*** at Sat Aug  4 05:40:33 2012
+*** at Fri Aug 17 00:11:52 2012
 
 
          ---------------------------------------------------------
@@ -164,18 +169,18 @@ energy('omp3')
     Total Energy =                    -76.0267610955943667
 
 
-*** tstop() called on ugur at Sat Aug  4 05:40:33 2012
+*** tstop() called on ugur at Fri Aug 17 00:11:52 2012
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ugur
-*** at Sat Aug  4 05:40:33 2012
+*** at Fri Aug 17 00:11:52 2012
 
 
  ============================================================================== 
@@ -184,7 +189,7 @@ Total time:
 
                        OMP3 (OO-MP3)   
               Program Written by Ugur Bozkaya
-              Latest Revision August 3, 2012
+              Latest Revision August 17, 2012
 
               U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).
 
@@ -212,7 +217,7 @@ Total time:
 	Alpha-Alpha Contribution (a.u.)    : -0.02576501624001
 	Alpha-Beta Contribution (a.u.)     : -0.15248920680919
 	Beta-Beta Contribution (a.u.)      : -0.02576501624001
-	MP2 Correlation Energy (a.u.)      : -0.21080669648054
+	MP2 Correlation Energy (a.u.)      : -0.20401923928920
 	MP2 Total Energy (a.u.)            : -76.23078033488355
 	Scaled_SS Correlation Energy (a.u.): -0.01717667749334
 	Scaled_OS Correlation Energy (a.u.): -0.18298704817103
@@ -249,32 +254,51 @@ Total time:
 
 	            Minimizing MP3-L Functional 
 	            --------------------------- 
- Iter       E_total           DE           MO Grad RMS      MAX MO Grad      Korb RMS      MAX Korb      T2 RMS    
+ Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      T2 RMS    
  ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  
-   1     -76.2381233569     -5.56e-04       2.86e-04         5.87e-03        3.16e-04      4.90e-03      2.24e-07 
-   2     -76.2381443450     -2.10e-05       5.84e-05         9.07e-04        6.35e-05      1.16e-03      8.68e-08 
-   3     -76.2381457368     -1.39e-06       2.21e-05         3.33e-04        2.09e-05      5.53e-04      4.41e-08 
-   4     -76.2381459324     -1.96e-07       8.92e-06         1.66e-04        7.82e-06      1.99e-04      2.63e-08 
-   5     -76.2381459678     -3.54e-08       5.01e-06         6.38e-05        3.88e-06      1.10e-04      1.53e-08 
-   6     -76.2381459760     -8.17e-09       2.54e-06         4.03e-05        1.80e-06      3.57e-05      1.03e-08 
+   1     -76.2381231644     -5.55e-04       2.86e-04         5.87e-03        3.16e-04      4.90e-03      2.24e-07 
+   2     -76.2381442924     -2.11e-05       5.84e-05         9.07e-04        6.35e-05      1.16e-03      8.68e-08 
+   3     -76.2381457272     -1.43e-06       2.21e-05         3.33e-04        2.09e-05      5.53e-04      4.41e-08 
+   4     -76.2381459274     -2.00e-07       8.92e-06         1.66e-04        7.82e-06      1.99e-04      2.63e-08 
+   5     -76.2381459685     -4.11e-08       5.01e-06         6.38e-05        3.88e-06      1.10e-04      1.53e-08 
+   6     -76.2381459754     -6.87e-09       2.54e-06         4.03e-05        1.80e-06      3.57e-05      1.03e-08 
 
  ============================================================================== 
  ======================== OMP3 ITERATIONS ARE CONVERGED ======================= 
  ============================================================================== 
 
 
+ 
+	Computing MP2 energy using optimized MOs... 
+	============================================================================== 
+	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
+	SCF Energy (a.u.)                  : -76.02676109559440
+	REF Energy (a.u.)                  : -76.02617039343335
+	Alpha-Alpha Contribution (a.u.)    : -0.02591369814784
+	Alpha-Beta Contribution (a.u.)     : -0.15358658559384
+	Beta-Beta Contribution (a.u.)      : -0.02591369814784
+	MP2 Correlation Energy (a.u.)      : -0.21197558198007
+	MP2 Total Energy (a.u.)            : -76.23158437532285
+	Scaled_SS Correlation Energy (a.u.): -0.01727579876522
+	Scaled_OS Correlation Energy (a.u.): -0.18430390271261
+	SCS-MP2 Total Energy (a.u.)        : -76.22775009491117
+	SOS-MP2 Total Energy (a.u.)        : -76.22583295470534
+	============================================================================== 
+
+
 	Computing MP3 energy using optimized MOs... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
 	SCF Energy (a.u.)                  : -76.02676109559440
-	REF Energy (a.u.)                  : -76.02617039343332
+	REF Energy (a.u.)                  : -76.02617039343335
 	Alpha-Alpha Contribution (a.u.)    : -0.02394058041699
-	Alpha-Beta Contribution (a.u.)     : -0.16409442114610
+	Alpha-Beta Contribution (a.u.)     : -0.16409442114608
 	Beta-Beta Contribution (a.u.)      : -0.02394058041699
-	MP3 Correlation Energy (a.u.)      : -0.21197558198008
-	MP3 Total Energy (a.u.)            : -76.23814597541340
-	SCS-MP3 Total Energy (a.u.)        : -76.22939049493380
-	SOS-MP3 Total Energy (a.u.)        : -76.22747335472796
+	3rd Order Energy (a.u.)            : -0.00656160009056
+	MP3 Correlation Energy (a.u.)      : -0.21197558198007
+	MP3 Total Energy (a.u.)            : -76.23814597541342
+	SCS-MP3 Total Energy (a.u.)        : -76.22939049493381
+	SOS-MP3 Total Energy (a.u.)        : -76.22747335472798
 	============================================================================== 
 
 
@@ -283,23 +307,23 @@ Total time:
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
 	SCF Energy (a.u.)                  : -76.02676109559440
-	REF Energy (a.u.)                  : -76.02617039343332
-	OMP3 Correlation Energy (a.u.)     : -0.21138488036587
-	Eomp3 - Eref (a.u.)                : -0.21197558252695
-	OMP3 Total Energy (a.u.)           : -76.23814597596026
-	SCS-OMP3 Total Energy (a.u.)       : -76.22939049493380
-	SOS-OMP3 Total Energy (a.u.)       : -76.22747335472796
-	============================================================================ 
+	REF Energy (a.u.)                  : -76.02617039343335
+	OMP3 Correlation Energy (a.u.)     : -0.21138487981902
+	Eomp3 - Eref (a.u.)                : -0.21197558198007
+	OMP3 Total Energy (a.u.)           : -76.23814597541342
+	SCS-OMP3 Total Energy (a.u.)       : -76.22939049493381
+	SOS-OMP3 Total Energy (a.u.)       : -76.22747335472798
+	============================================================================== 
 
 
-*** tstop() called on ugur at Sat Aug  4 05:40:35 2012
+*** tstop() called on ugur at Fri Aug 17 00:11:53 2012
 Module time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.53 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       0.47 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.49 seconds =       0.02 minutes
-	system time =       0.54 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.35 seconds =       0.02 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

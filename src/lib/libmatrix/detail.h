@@ -1,13 +1,16 @@
+#if !defined(LIBMATRIX_DETAILS_H)
+#define LIBMATRIX_DETAILS_H
+
 namespace psi{ namespace libmatrix {
 
     namespace detail {
         template <typename matrix_type>
-        struct create_matrix {        
+        struct create_matrix {
             static matrix_type create(const std::string& name, const Dimension& m, const Dimension& n) {
                 return matrix_type (name, m, n);
             }
         };
-        
+
         // In the case that the generic template isn't sufficient to create the matrix
         // write a specialization of it, e.g:
         //
@@ -20,7 +23,7 @@ namespace psi{ namespace libmatrix {
         // }
 
         template <typename vector_type>
-        struct create_vector {        
+        struct create_vector {
             static vector_type create(const std::string& name, const Dimension& m) {
                 return vector_type (name, m);
             }
@@ -50,4 +53,6 @@ namespace psi{ namespace libmatrix {
     };
 
 }} // end namespaces
+
+#endif
 

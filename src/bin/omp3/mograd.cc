@@ -27,6 +27,7 @@
 
 #include "omp3wave.h"
 #include "defines.h"
+#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -67,7 +68,7 @@ void OMP3Wave::mograd()
 	int a = idprowA[x];
 	int i = idpcolA[x];
 	int h = idpirrA[x];
-	wogA[x] = WorbA->get(h, a + occpiA[h], i);
+	wogA->set(x, WorbA->get(h, a + occpiA[h], i));
       }
       
       // Beta
@@ -75,7 +76,7 @@ void OMP3Wave::mograd()
 	int a = idprowB[x];
 	int i = idpcolB[x];
 	int h = idpirrB[x];
-	wogB[x] = WorbB->get(h, a + occpiB[h], i);
+	wogB->set(x, WorbB->get(h, a + occpiB[h], i));
       }
       
     
@@ -84,24 +85,24 @@ void OMP3Wave::mograd()
 /********************************************************************************************/          
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){ 
-      if (fabs(wogA[i]) > biggest_mogradA)  biggest_mogradA=fabs(wogA[i]);
+      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
     }
     
     biggest_mogradB=0;
     for (int i=0; i<nidpB;i++){ 
-      if (fabs(wogB[i]) > biggest_mogradB)  biggest_mogradB=fabs(wogB[i]);
+      if (fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=fabs(wogB->get(i));
     }
       
 /********************************************************************************************/
 /************************** RMS *************************************************************/
 /********************************************************************************************/	  
     rms_wogA=0;
-    for (int i=0; i<nidpA;i++) rms_wogA+=wogA[i]*wogA[i];
+    for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
     norm_wogA=sqrt(rms_wogA);
     rms_wogA=sqrt(rms_wogA)/nidpA;  
     
     rms_wogB=0;
-    for (int i=0; i<nidpB;i++) rms_wogB+=wogB[i]*wogB[i];
+    for (int i=0; i<nidpB;i++) rms_wogB += wogB->get(i) * wogB->get(i);
     norm_wogB=sqrt(rms_wogB);
     rms_wogB=sqrt(rms_wogB)/nidpB;  
     
@@ -110,12 +111,12 @@ void OMP3Wave::mograd()
 /********************************************************************************************/
     if(print_ > 1){
       for(int i = 0; i < nidpA; i++){
-        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA[i]); 
+        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
 	fflush(outfile);
       }
       
       for(int i = 0; i < nidpB; i++){
-        fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB, wogB: %3d %3d %3d %3d %20.14f\n", i, idpirrB[i], idprowB[i],idpcolB[i],wogB[i]);
+        fprintf(outfile,"\n i, idpirrB, idprowB, idpcolB, wogB: %3d %3d %3d %3d %20.14f\n", i, idpirrB[i], idprowB[i],idpcolB[i],wogB->get(i));
 	fflush(outfile);
       }
     }

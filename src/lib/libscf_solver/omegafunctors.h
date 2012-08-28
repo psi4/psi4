@@ -55,8 +55,8 @@ class Omega_K_Functor
 
 public:
     void initialize(std::string scf_type_){
-        comm = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type = scf_type_;
         wK_[0]->zero();
         for (int i=1; i<nthread_; ++i)
@@ -68,7 +68,7 @@ public:
 
         if (comm != "LOCAL" && scf_type == "DIRECT") {
             for (int i=0; i < wK_[0]->nirrep(); i++)
-                Communicator::world->sum(wK_[0]->get_pointer(i), wK_[0]->rowdim(i)*wK_[0]->coldim(i));
+                WorldComm->sum(wK_[0]->get_pointer(i), wK_[0]->rowdim(i)*wK_[0]->coldim(i));
         }
 
         wK_[0]->copy_lower_to_upper();
@@ -88,7 +88,7 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                 int psym, int prel, int qsym, int qrel,
                 int rsym, int rrel, int ssym, int srel, double value) {
-        int thread = Communicator::world->thread_id(pthread_self());
+        int thread = WorldComm->thread_id(pthread_self());
         /* (pq|rs) */
         if(qabs >= rabs){
             if(qsym == rsym){
@@ -255,8 +255,8 @@ class Omega_Ka_Kb_Functor
 public:
 
     void initialize(std::string scf_type_){
-        comm = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type = scf_type_;
         wKa_[0]->zero();
         wKb_[0]->zero();
@@ -274,9 +274,9 @@ public:
         }
         if (comm != "LOCAL" && scf_type == "DIRECT") {
             for (int i=0; i < wKa_[0]->nirrep(); i++)
-                Communicator::world->sum(wKa_[0]->get_pointer(i), wKa_[0]->rowdim(i)*wKa_[0]->coldim(i));
+                WorldComm->sum(wKa_[0]->get_pointer(i), wKa_[0]->rowdim(i)*wKa_[0]->coldim(i));
             for (int i=0; i < wKb_[0]->nirrep(); i++)
-                Communicator::world->sum(wKb_[0]->get_pointer(i), wKb_[0]->rowdim(i)*wKb_[0]->coldim(i));
+                WorldComm->sum(wKb_[0]->get_pointer(i), wKb_[0]->rowdim(i)*wKb_[0]->coldim(i));
         }
 
         wKa_[0]->copy_lower_to_upper();
@@ -298,7 +298,7 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
-        int thread = Communicator::world->thread_id(pthread_self());
+        int thread = WorldComm->thread_id(pthread_self());
         /* (pq|rs) */
         if(qabs >= rabs){
             if(qsym == rsym){

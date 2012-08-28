@@ -17,14 +17,14 @@ using namespace std;
 namespace psi {
 
 // anonymous namespace, only visible in this file.
-namespace {
-string to_string(const int val)
-{
-    stringstream strm;
-    strm <<  val;
-    return strm.str();
-}
-}
+//namespace {
+//string to_string(const int val)
+//{
+//    stringstream strm;
+//    strm <<  val;
+//    return strm.str();
+//}
+//}
 
 madness::Void Distributed_Matrix::print_tile(const int &ti, const int &tj,
                                         const madness::Tensor<double> &tile) const
@@ -95,6 +95,7 @@ madness::Void Distributed_Matrix::print_tile_tij(const int &tij, const madness::
         }
         fprintf(outfile,"\n\n");        }
 
+    fflush(outfile);
     print_mutex_->unlock();
 
 }
@@ -102,7 +103,7 @@ madness::Void Distributed_Matrix::print_tile_tij(const int &tij, const madness::
 
 madness::Void Distributed_Matrix::print(const std::string str) const
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (me_ == 0) {
         if (nelements_) {
             fprintf(outfile, "\n\n%s\n", str.c_str());
@@ -112,29 +113,29 @@ madness::Void Distributed_Matrix::print(const std::string str) const
             }
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
 madness::Void Distributed_Matrix::print(const int &ti, const int &tj) const
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (me_ == 0) {
         madness::Future<madness::Tensor<double> > tile = task(owner(ti,tj), &Distributed_Matrix::get_tile, ti, tj);
         task(me_, &Distributed_Matrix::print_tile, ti, tj, tile);
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
 madness::Void Distributed_Matrix::print(const int &tij) const
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (me_ == 1) {
         madness::Future<madness::Tensor<double> > tile = task(owner(tij), &Distributed_Matrix::get_tile_tij, tij);
         task(me_, &Distributed_Matrix::print_tile_tij, tij, tile);
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 
 }
@@ -171,7 +172,7 @@ void Distributed_Matrix::print_matrix_info()
                              local(tij) << std::endl;
                 //                    std::cout << "proc " << me_ << ": Tile[" << ti << "][" << tj << "] = " << data_[local(tij)].dim(0) << " x " << data_[local(tij)].dim(1) << std::endl;
             }
-            Communicator::world->sync();
+            WorldComm->sync();
         }
     }
     print_mutex_->unlock();

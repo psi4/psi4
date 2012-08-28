@@ -913,12 +913,12 @@ int py_psi_get_n_threads()
 
 int py_psi_get_nproc()
 {
-    return Communicator::world->nproc();
+    return WorldComm->nproc();
 }
 
 int py_psi_get_me()
 {
-    return Communicator::world->me();
+    return WorldComm->me();
 }
 
 boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()

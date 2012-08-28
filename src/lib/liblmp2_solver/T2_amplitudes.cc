@@ -124,11 +124,11 @@ int LMP2::compute_T2_energy(const int &iter) {
         }
     }
 
-    Communicator::world->sync();
-    Communicator::world->sum(&Elmp2_, 1);
+    WorldComm->sync();
+    WorldComm->sum(&Elmp2_, 1);
 
     if (iter > 0) {
-        Communicator::world->sum(&Drms_T2_, 1);
+        WorldComm->sum(&Drms_T2_, 1);
 
         Drms_T2_ = sqrt(Drms_T2_/terms);
         Delta_Elmp2_ = Elmp2_ - Elmp2_old_;
