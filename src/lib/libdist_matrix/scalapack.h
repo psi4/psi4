@@ -1,6 +1,6 @@
 #include <psiconfig.h>
 
-#if defined(HAVE_SCALAPACK)
+#if defined(HAVE_SCALAPACK) && defined(HAVE_MADNESS)
 
 extern "C" {
 
@@ -10,6 +10,7 @@ extern int    Cblacs_gridinit( int* context, char * order, int np_row, int np_co
 extern void   Cblacs_gridinfo( int context, int*  np_row, int* np_col, int*  my_row, int*  my_col);
 extern void   Cblacs_gridexit( int context);
 extern void   Cblacs_exit( int error_code);
+extern void   Cblacs_barrier(int, char*);
 
 extern int    numroc_( int *n, int *nb, int *iproc, int *isrcproc, int *nprocs);
 extern void   descinit_( int *desc, int *m, int *n, int *mb, int *nb, int *irsrc, int *icsrc,
@@ -21,6 +22,8 @@ extern void pdlacpy_( char *uplo, int *m, int *n, double *a, int *ia, int *ja, i
 				double *b, int *ib, int *jb, int *descb);
 extern void pdgesv_( int *n, int *nrhs, double *A, int *ia, int *ja, int *desca, int* ipiv,
 				double *B, int *ib, int *jb, int *descb, int *info);
+extern void pdsyev_(char *, char*, int *n, double* A, int* ia, int* ja, int* desca, double* w,
+                   double* Z, int *iz, int *jz, int* descz, double* work, int* lwork, int* info);
 extern void pdgemm_( char *TRANSA, char *TRANSB, int * M, int * N, int * K, double * ALPHA,
 				double * A, int * IA, int * JA, int * DESCA, double * B, int * IB, int * JB, int * DESCB,
 				double * BETA, double * C, int * IC, int * JC, int * DESCC );

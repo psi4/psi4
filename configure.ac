@@ -845,6 +845,13 @@ case $withval in
 esac
 ])
 
+# If compiling on Mac, disable position independent executable.
+case $target_os in
+    darwin*)
+        LDFLAGS="$LDFLAGS -Wl,-no_pie"
+        ;;
+esac
+
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
 AC_ARG_WITH(insanely-strict,[  --with-insanely-strict  --with-insanely-strict=yes to turn on strict compiler warnings (cover your eyes, it ain't pretty, for now)],[
