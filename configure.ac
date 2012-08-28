@@ -535,6 +535,9 @@ ACX_MPI()
 # Make sure we're back in C++
 AC_LANG([C++])
 
+BUILD_LIBEFP=1
+AC_SUBST(BUILD_LIBEFP)
+
 ########
 ## Check for types
 ########
