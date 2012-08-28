@@ -23,6 +23,9 @@
 /* ELEMENTAL? */
 #undef HAVE_ELEMENTAL
 
+/* ScaLAPACK? */
+#undef HAVE_SCALAPACK
+
 /* Defined if we are using MKL */
 #undef HAVE_MKL
 

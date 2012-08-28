@@ -28,7 +28,6 @@ namespace psi {
 class PSIO;
 //class process_grid;
 
-template <size_t NumDims=2>
 class process_grid
 {
 private:
@@ -66,6 +65,9 @@ private:
     }
 
 public:
+
+    enum { NumDims = 2 };
+
     ~process_grid()
     {
         dims_.clear();

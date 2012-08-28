@@ -6,17 +6,17 @@ AC_ARG_WITH([scalapack],
 [  --with-scalapack          Specifies the location of the SCALAPACK libraries.], [
 case $withval in
   no)
-    scalpacklibs=""
-    scalpackinc=""
+    scalapacklibs=""
+    scalapackinc=""
     ;;
   *)
-    scalpacklibs="$withval/lib/libscalapack.a"
+    scalapacklibs="$withval/lib/libscalapack.a"
     ;;
 esac
-],[ scalpacklibs=""
-    scalpackinc=""  ])
+],[ scalapacklibs=""
+    scalapackinc=""  ])
 
-CFLAGS="${CXXFLAGS} ${scalpacklibs}"
+CFLAGS="${CXXFLAGS} ${scalapacklibs}"
 
 # Check if we can link against mpi
 AC_MSG_CHECKING([if we can link to SCALAPACK])

@@ -23,7 +23,7 @@ namespace psi { namespace libmatrix {
         {
             std::vector<int> dims(2);
             dims[0] = 2; dims[1] = 2;
-            process_grid<2> pgrid(dims);
+            process_grid pgrid(dims);
 
             matrix_.initialize(pgrid, m.sum(), n.sum(), 64, name);
         }
