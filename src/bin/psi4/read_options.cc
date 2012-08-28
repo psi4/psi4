@@ -811,7 +811,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           for augmenting the vector subspace in stability check !expert-*/
       options.add_double("STABILITY_AUGMENT_SPACE_TOL", 0.1);
       /*- Controls the convergence of the Davidson's diagonalization in stability check !expert-*/
-      options.add_double("STABILITY_CONVERGENCE", 1e-6);
+      options.add_double("STABILITY_CONVERGENCE", 1e-4);
       /*- The number of vectors that can be added simultaneously into the subspace for Davidson's diagonalization in stability check !expert-*/
       options.add_int("STABILITY_ADD_VECTORS", 20);
       /*- The number of guess vectors used for Davidson's diagonalization in stability check !expert-*/
