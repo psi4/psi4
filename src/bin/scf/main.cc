@@ -81,7 +81,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
     energy = scf->compute_energy();
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     // Print a molden file
     if ( options["MOLDEN_FILE"].has_changed() ) {

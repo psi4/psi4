@@ -7,9 +7,9 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/lib/libPSI_parallel.a
 CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
-TRUECXXSRC = communicator.cc mad.cc local.cc fprintf.cc process.cc
+TRUECXXSRC = fprintf.cc process.cc parallel.cc 
 
-INC = parallel.h serialize.h
+INC = parallel.h local.h mad.h elem.h openmp.h
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
@@ -20,6 +20,6 @@ include $(LIBOBJ:%.o=%.d)
 endif
 
 install_inc:: $(INC)
-	$(MKDIRS) $(DESTDIR)$(incdir)/libparallel
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libparallel
+	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
 

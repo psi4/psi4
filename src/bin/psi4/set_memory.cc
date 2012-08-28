@@ -21,10 +21,10 @@ void set_memory(FILE *outfile)
     maxcrr = DEF_MAXCRR; // set to default
 
     if (maxcrr < 1e9) {
-        if(Communicator::world->me() == 0) fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
+        if(WorldComm->me() == 0) fprintf(outfile,"    Memory level set to %.3lf MB\n", maxcrr / 1e6 );
     }
     else {
-        if(Communicator::world->me() == 0) fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
+        if(WorldComm->me() == 0) fprintf(outfile,"    Memory level set to %.3lf GB\n", maxcrr / 1e9 );
     }
 
     Process::environment.set_memory(maxcrr);
