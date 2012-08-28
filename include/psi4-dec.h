@@ -32,6 +32,7 @@
 #include <liboptions/liboptions.h>
 #include <exception.h>
 #include <libmints/typedefs.h>
+#include <libefp_solver/efp_solver.h>
 
 namespace psi {
 
@@ -65,6 +66,7 @@ public:
         boost::shared_ptr<Vector> frequencies_;
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
+        boost::shared_ptr<efp::EFP> efp_;
     public:
         void initialize();
 
@@ -95,6 +97,11 @@ public:
         void set_frequencies(const boost::shared_ptr<Vector> f) { frequencies_ = f; }
         /// Get frequencies manually
         boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
+
+        /// Set EFP 
+        void set_efp(const boost::shared_ptr<efp::EFP>& efp) { efp_ = efp; }
+        /// Get EFP 
+        boost::shared_ptr<efp::EFP> get_efp() const { return efp_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;

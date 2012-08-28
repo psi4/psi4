@@ -44,7 +44,7 @@ EFP::~EFP(){
                delete[] frag_name[i];
        delete[] frag_name;
 
-       efp_shutdown(efp);
+       efp_shutdown(efp_);
 }
 
 static int string_compare(const void *a, const void *b)
@@ -176,7 +176,7 @@ void EFP::common_init() {
        char **potential_file_list = make_potential_file_list((const char **)frag_name,
                frag_lib_path.c_str(), frag_lib_path.c_str());
 
-       if ((res = efp_init(&efp, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
+       if ((res = efp_init(&efp_, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
@@ -248,7 +248,7 @@ void EFP::SetGeometry(){
        xyz->print();
        }
 
-       if ((res = efp_set_coordinates(efp, EFP_COORD_TYPE_POINTS, coords))) {
+       if ((res = efp_set_coordinates(efp_, EFP_COORD_TYPE_POINTS, coords))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
@@ -260,21 +260,21 @@ void EFP::Compute() {
         double *grad = NULL;
 
        /* Main EFP computation routine */
-       if ((res = efp_compute(efp, do_grad ? 1 : 0))) {
+       if ((res = efp_compute(efp_, do_grad ? 1 : 0))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
        struct efp_energy energy;
 
-       if ((res = efp_get_energy(efp, &energy))) {
+       if ((res = efp_get_energy(efp_, &energy))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
        if (do_grad) {
                        grad = new double[6 * nfrag];
-                       if ((res = efp_get_gradient(efp, 6 * nfrag, grad))) {
+                       if ((res = efp_get_gradient(efp_, 6 * nfrag, grad))) {
                                fprintf(outfile, "%s", efp_result_to_string(res));
                                 throw PsiException("efp",__FILE__,__LINE__);
                        }
