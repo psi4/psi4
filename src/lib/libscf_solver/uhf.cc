@@ -180,6 +180,10 @@ void UHF::form_F()
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
+    // add efp contribuation to Fock matrix
+    if ( Process::environment.get_efp() ) {
+    }
+
     if (debug_) {
         Fa_->print(outfile);
         Fb_->print(outfile);

@@ -204,6 +204,12 @@ void RHF::form_F()
     Fa_->copy(H_);
     Fa_->add(G_);
 
+    // add efp contribuation to Fock matrix
+    if ( Process::environment.get_efp() ) {
+        boost::shared_ptr<Matrix> Vefp = Process::environment.get_efp()->modify_Fock();
+        Fa_->add(Vefp);
+    }
+
     if (debug_) {
         Fa_->print(outfile);
         J_->print();

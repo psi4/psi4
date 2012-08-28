@@ -195,6 +195,11 @@ void EFP::common_init() {
        fprintf(outfile, "\n");
 }
 
+// Provid list of coordinates of quantum mechanical atoms
+void EFP::SetQMAtoms(){
+// TODO: extend molecule class and coordentry class to separate qm and efp atoms
+}
+
 void EFP::SetGeometry(){
        enum efp_result res;
        fprintf(outfile, "\n\n");
@@ -253,6 +258,73 @@ void EFP::SetGeometry(){
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 } // end of SetGeometry()
+
+// this function returns a shared matrix containing the efp contribution to the potential
+// felt by qm atoms in an scf procedure.
+boost::shared_ptr<Matrix> EFP::modify_Fock() {
+
+    // get number of multipoles
+    int * n_multipole = (int*)malloc(4*sizeof(int));
+    enum efp_result err = efp_get_multipole_count(efp_,n_multipole);
+    if ( err != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return number of multipoles",__FILE__,__LINE__);
+    }
+
+    // workspace for efp_get_multipoles.
+    double ** xyz = (double**)malloc(4*sizeof(double*));
+    double **   z = (double**)malloc(4*sizeof(double*));
+    for (int i = 0; i < 4; i++) {
+        xyz[i] = (double*)malloc(3*n_multipole[i]*sizeof(double));
+        for (int j = 0; j < 3*n_multipole[i]; j++) xyz[i][j] = 0.0;
+    }
+    z[0] = (double*)malloc(n_multipole[0]*sizeof(double));
+    z[1] = (double*)malloc(3*n_multipole[1]*sizeof(double));
+    z[2] = (double*)malloc(6*n_multipole[2]*sizeof(double));
+    z[3] = (double*)malloc(10*n_multipole[3]*sizeof(double));
+
+    for (int j = 0; j < n_multipole[0]; j++)    z[0][j] = 0.0;
+    for (int j = 0; j < 3*n_multipole[1]; j++)  z[1][j] = 0.0;
+    for (int j = 0; j < 6*n_multipole[2]; j++)  z[2][j] = 0.0;
+    for (int j = 0; j < 10*n_multipole[3]; j++) z[3][j] = 0.0;
+
+    // get multipoles from libefp
+    err = efp_get_multipoles(efp_,xyz,z);
+    if ( err != EFP_RESULT_SUCCESS ) {
+        throw PsiException("libefp failed to return multipole moments",__FILE__,__LINE__);
+    }
+
+    // get electrostatic potential at each point returned in the xyz array
+    // TODO: need this function
+
+    // grab matrix factory from wavefunction and build V for EFP contribution
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<MatrixFactory> factory = wfn->matrix_factory();
+    boost::shared_ptr<Matrix> V = factory->create_shared_matrix("EFP V contribution");
+
+    // generate multipole integrals (up to octapole)
+    // TODO: need this function
+
+    // dot multipoles with multipole integrals.  the result goes into V
+    // TODO: need this function
+
+    // free workspace memory needed by libefp
+    free(n_multipole);
+    for (int i = 0; i < 4; i++) {
+        free(xyz[i]);
+        free(z[i]);
+    }
+    free(xyz);
+    free(z);
+    
+    return V;
+}
+
+// compute efp contribution to scf energy
+double EFP::scf_energy_update() {
+    double efp_energy;
+    efp_scf_update(efp_, &efp_energy);
+    return efp_energy;
+}
 
 // compute efp energy components and/or gradient
 void EFP::Compute() {
