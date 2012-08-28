@@ -135,9 +135,9 @@ void MoldenWriter::write(const std::string &filename)
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
     Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
-    aotoso->print();
-    Ca_ao_mo->print();
-    Cb_ao_mo->print();
+//    aotoso->print();
+//    Ca_ao_mo->print();
+//    Cb_ao_mo->print();
 
     // The order Molden expects
     //     P: x, y, z
@@ -180,7 +180,7 @@ void MoldenWriter::write(const std::string &filename)
             for( int j =0; j < ncart; j++) {
                 for (int h=0; h < Ca_ao_mo->nirrep(); ++h) {
                     for (int k=0; k<Ca_ao_mo->coldim(h); ++k) {
-                        fprintf(outfile, "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
+                        // fprintf(outfile, "am %d\n, from %d to %d\n", am, j, countpi[h] + molden_cartesian_order[am-1][j]);
                         Ca_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_a->get(h, j, k));
                         Cb_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-1][j], k, temp_b->get(h, j, k));
                     }

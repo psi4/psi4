@@ -31,7 +31,7 @@ madness::Void Distributed_Matrix::copy_tile(const int &ti, const int &tj, const 
 
 madness::Void Distributed_Matrix::copy_row(const int &yi, Distributed_Matrix &X, const int &xi)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (nelements_) {
         if (*this == X) {
             if (xi < X.nrows_) {
@@ -69,7 +69,7 @@ madness::Void Distributed_Matrix::copy_row(const int &yi, Distributed_Matrix &X,
         }
         else throw PSIEXCEPTION("The distributed matrices are not the same.\n");
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -154,7 +154,7 @@ std::vector<madness::Future<madness::Tensor<double> > >  Distributed_Matrix::get
 
 madness::Void Distributed_Matrix::copy_col(const int &yj, Distributed_Matrix &X, const int &xj)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (nelements_) {
         if (*this == X) {
             if (xj < X.ncols_) {
@@ -192,7 +192,7 @@ madness::Void Distributed_Matrix::copy_col(const int &yj, Distributed_Matrix &X,
         }
         else throw PSIEXCEPTION("The distributed matrices are not the same.\n");
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -228,7 +228,7 @@ madness::Void Distributed_Matrix::copy(const int &length, Distributed_Matrix &X,
 //    int yi = y[0];
 //    int yj = y[1];
 
-    Communicator::world->sync();
+    WorldComm->sync();
     bool copy_all = false;
     bool same_dist = false;
     bool copy_all_row = false;
@@ -277,7 +277,7 @@ madness::Void Distributed_Matrix::copy(const int &length, Distributed_Matrix &X,
         }
     }
 
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 
 }
@@ -286,7 +286,7 @@ madness::Void Distributed_Matrix::copy(const int &length, Distributed_Matrix &X,
 Distributed_Matrix& Distributed_Matrix::transpose()
 {
 
-    Communicator::world->sync();
+    WorldComm->sync();
     Distributed_Matrix result(this->pgrid_, this->ncols_, this->nrows_,
                               this->tile_sz_, this->name_);
 
@@ -305,7 +305,7 @@ Distributed_Matrix& Distributed_Matrix::transpose()
         }
     }
 
-    Communicator::world->sync();
+    WorldComm->sync();
     std::swap(*this, result);
     return *this;
 }

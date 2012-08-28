@@ -160,30 +160,6 @@ void OMP2Wave::get_moinfo()
 	nacvoB=nvoB-nfrzv; 	// Number of active virtual orbitals
 	npop=nmo-nfrzv;         // Number of populated orbitals
 
-	/*
-	dimooAA=nooA*nooA;
-	dimooBB=nooB*nooB;
-	dimvvAA=nvoA*nvoA;
-	dimvvBB=nvoB*nvoB;
-	dimvoAA=nvoA*nooA;
-	dimvoBB=nvoB*nooB;
-	dimss=nmo*nmo;
-	dimosA=nooA*nmo;
-	dimosB=nooB*nmo;
-	dimvsA=nvoA*nmo;
-	dimvsB=nvoB*nmo;
-	dimacsacs=nacso*nacso;
-	dimacvacvAA=nacvoA*nacvoA;
-	dimacvacvBB=nacvoB*nacvoB;
-	dimacoacoAA=nacooA*nacooA;
-	dimacoacoBB=nacooB*nacooB;
-	dimacvacoAA=nacvoA*nacooA;
-	dimacvacoBB=nacvoB*nacooB;
-	dimacofoA=nfrzc*nacooA;
-	dimacofoB=nfrzc*nacooB;
-	dimfvacvAA=nfrzv*nacvoA;
-	dimfvacvBB=nfrzv*nacvoB;
-	*/
 	ntri_so = 0.5*nso*(nso+1);
         ntri = 0.5*nmo*(nmo+1);
 	dimtei = 0.5*ntri*(ntri+1);
@@ -473,15 +449,10 @@ void OMP2Wave::get_moinfo()
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
         // read orbital coefficients from chkpt
-	//Ca_ = boost::shared_ptr<Matrix>(new Matrix("Alpha MO coefficients", nirreps, sopi, mopi));
-	//Cb_ = boost::shared_ptr<Matrix>(new Matrix("Beta MO coefficients", nirreps, sopi, mopi));
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
 	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirreps, sopi, mopi));
 	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirreps, sopi, mopi));
-	
-	//Ca_->copy(reference_wavefunction_->Ca());
-	//Cb_->copy(reference_wavefunction_->Cb());
 	
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
@@ -489,8 +460,8 @@ void OMP2Wave::get_moinfo()
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso,nmo);
 	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(int)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(int)*nso*nmo);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
+	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
 	
 	  // read binary data
 	  ifstream InFile1;

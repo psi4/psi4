@@ -28,7 +28,7 @@ namespace lmp2 {
 
 
 double LMP2::compute_energy()
-{    
+{
 
 
 //    sleep(90);
@@ -51,7 +51,7 @@ double LMP2::compute_energy()
     projection();
 
 
-//    madness::WorldContainer<psi::dist_key,psi::dist_container> test_dc(*Communicator::world->get_madworld());
+//    madness::WorldContainer<psi::dist_key,psi::dist_container> test_dc(*WorldComm->get_madworld());
 
 //    for (int ij=0; ij < ij_pairs_; ij++) {
 //        if (me_ == test_dc.owner(dist_key(ij))) {
@@ -61,7 +61,7 @@ double LMP2::compute_energy()
 //        }
 //    }
 
-//    Communicator::world->get_madworld()->gop.fence();
+//    WorldComm->get_madworld()->gop.fence();
 
 //    for (int ij=0; ij < ij_pairs_; ij++) {
 //        if (me_ == 0) {
@@ -178,7 +178,7 @@ void LMP2::setup_ij_kj_ik_maps() {
 }
 #ifdef HAVE_MADNESS
 LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
-    : Wavefunction(options, _default_psio_lib_), madness::WorldObject<LMP2>(*Communicator::world->get_madworld())
+    : Wavefunction(options, _default_psio_lib_), madness::WorldObject<LMP2>(*WorldComm->get_madworld())
 #else
 LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(options, _default_psio_lib_)
@@ -197,10 +197,10 @@ LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
 
 void LMP2::common_init() {
 
-    me_ = Communicator::world->me();
-    nproc_ = Communicator::world->nproc();
-    nthread_ = Communicator::world->nthread();
-    comm_ = Communicator::world->communicator();
+    me_ = WorldComm->me();
+    nproc_ = WorldComm->nproc();
+    nthread_ = WorldComm->nthread();
+    comm_ = WorldComm->communicator();
     wfn_ = reference_wavefunction_;
 //    molecule_ = Process::environment.molecule();
 //    wfn_ = Process::environment.reference_wavefunction();
@@ -219,10 +219,10 @@ void LMP2::common_init() {
 
 #ifdef HAVE_MADNESS
     if (comm_ == "MADNESS") {
-        madworld_ = Communicator::world->get_madworld();
-        print_mutex = Communicator::world->get_mutex();
-        mutex_ = Communicator::world->get_mutex();
-        F_mutex_ = Communicator::world->get_mutex();
+        madworld_ = WorldComm->get_madworld();
+        print_mutex = WorldComm->mutex();
+        mutex_ = WorldComm->mutex();
+        F_mutex_ = WorldComm->mutex();
 
     }
 #endif
@@ -242,7 +242,7 @@ void LMP2::print_header() const
         fprintf(outfile, "\n");
     }
 
-    Communicator::world->print();
+    WorldComm->print();
 }
 
 

@@ -1,13 +1,14 @@
 #include <string>
 #include <libdist_matrix/dist_mat.h>
 #include <libmints/dimension.h>
+#include "detail.h"
 
 namespace psi { namespace libmatrix {
 
     struct libmints_matrix_wrapper;
 
     struct libdist_globals {
-        
+
         static std::string interface_name;
 
         static void initialize(int argc, char** argv) {
@@ -22,7 +23,7 @@ namespace psi { namespace libmatrix {
         {
             std::vector<int> dims(2);
             dims[0] = 2; dims[1] = 2;
-            process_grid<2> pgrid(dims);
+            process_grid pgrid(dims);
 
             matrix_.initialize(pgrid, m.sum(), n.sum(), 64, name);
         }
@@ -53,7 +54,7 @@ namespace psi { namespace libmatrix {
         Distributed_Matrix matrix_;
     };
 #else
-    // We are not configured with Madness, derive from is_not_available to 
+    // We are not configured with Madness, derive from is_not_available to
     // cause compiler error when libdist_matrix_wrapper is instantiated in
     // the code.
     UNAVAILABLE_MATRIX(libdist_matrix_wrapper);
