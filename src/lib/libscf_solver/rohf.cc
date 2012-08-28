@@ -339,6 +339,10 @@ void ROHF::form_F()
     Fa_->add(Ga_);
     Fb_->add(Gb_);
 
+    // add efp contribuation to Fock matrix
+    if ( Process::environment.get_efp() ) {
+    }
+
     moFa_->transform(Fa_, Ca_);
     moFb_->transform(Fb_, Ca_);
 

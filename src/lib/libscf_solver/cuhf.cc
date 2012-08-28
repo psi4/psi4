@@ -283,6 +283,10 @@ void CUHF::form_F()
     Fb_->add(Fp_);
     Fb_->subtract(Fm_);
 
+    // add efp contribuation to Fock matrix
+    if ( Process::environment.get_efp() ) {
+    }
+
     if (debug_) {
         Fa_->print(outfile);
         Fb_->print(outfile);

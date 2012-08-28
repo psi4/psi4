@@ -1497,24 +1497,14 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
-	//bool has_efp = options.get("HAS_EFP");
-
-	// XXX
-	//if (has_efp) {
-	//efp_get_multipole_count
-	// allocate arrays
-	//efp_get_multipoles
-	// compute 1e contributions
-	//}
-
         E_ = compute_E();
 
-	// XXX
-	//if (has_efp) {
-	//double efp_energy;
-	//efp_scf_update(efp, &efp_energy);
-	//E_ += efp_energy;
-	//}
+        // add efp contribuation to energy
+        if ( Process::environment.get_efp() ) {
+	    double efp_energy = Process::environment.get_efp()->scf_energy_update();
+	    //fprintf(outfile,"    EFP SCF energy contribution: %20.12lf\n",efp_energy);
+	    E_ += efp_energy;
+        }
 
         timer_on("DIIS");
         bool add_to_diis_subspace = false;

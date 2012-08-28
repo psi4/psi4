@@ -42,6 +42,16 @@ class EFP {
         void SetGeometry();
         /// Compute energy and/or gradietn
         void Compute();
+
+        /// Designate which atoms are qm atoms
+        void SetQMAtoms();
+
+        /// Returns EFP contribution to SCF energy
+        double scf_energy_update();
+
+        /// Returns EFP contribution to V
+        boost::shared_ptr<Matrix> modify_Fock();
+
 };
 
 }}

@@ -2807,11 +2807,20 @@ def run_scfefp(name, **kwargs):
 
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
-    psi4.efp_setup()
-    scf_helper(name, **kwargs)
-    returnvalue = psi4.efp_compute()
 
-    return returnvalue
+    # initialize library
+    efp = PsiMod.efp_init()
+    # set geometry
+    efp.SetGeometry()
+    # set which atoms are qm
+    efp.SetQMAtoms()
+    # TODO: provide efp a callback function that computes electron density at arbitrary points
+
+    # process environment molecule needs to contain only qm atoms
+    # or modify class to distinguish between qm and efp atoms
+    returnval = scf_helper(name, **kwargs)
+
+    return returnval
 
 
 def run_efp2(name, **kwargs):
