@@ -41,9 +41,9 @@ EFP::EFP(Options& options): options_(options)
 }
 
 EFP::~EFP(){
-       for (int i = 0; frag_name[i]; i++)
-               delete[] frag_name[i];
-       delete[] frag_name;
+       for (int i = 0; frag_name_[i]; i++)
+               delete[] frag_name_[i];
+       delete[] frag_name_;
 
        efp_shutdown(efp_);
 }
@@ -119,23 +119,23 @@ void EFP::common_init() {
        struct efp_opts opts;
        memset(&opts, 0, sizeof(struct efp_opts));
 
-       elst_enabled = options_.get_bool("EFP_ELST");
-       pol_enabled  = options_.get_bool("EFP_POL");
-       disp_enabled = options_.get_bool("EFP_DISP");
-       exch_enabled = options_.get_bool("EFP_EXCH");
+       elst_enabled_ = options_.get_bool("EFP_ELST");
+       pol_enabled_  = options_.get_bool("EFP_POL");
+       disp_enabled_ = options_.get_bool("EFP_DISP");
+       exch_enabled_ = options_.get_bool("EFP_EXCH");
 
        std::string dertype = options_.get_str("DERTYPE");
-       do_grad = false;
+       do_grad_ = false;
        if (dertype == "FIRST")
-           do_grad = true;
+           do_grad_ = true;
 
-       if (elst_enabled)
+       if (elst_enabled_)
                opts.terms |= EFP_TERM_ELEC;
-       if (pol_enabled)
+       if (pol_enabled_)
                opts.terms |= EFP_TERM_POL;
-       if (disp_enabled)
+       if (disp_enabled_)
                opts.terms |= EFP_TERM_DISP;
-       if (exch_enabled)
+       if (exch_enabled_)
                opts.terms |= EFP_TERM_XR;
 
        std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
@@ -157,27 +157,27 @@ void EFP::common_init() {
            opts.disp_damp = EFP_DISP_DAMP_OFF;
        }
 
-       nfrag = options_["FRAGS"].size();
-       molecule = Process::environment.molecule();
+       nfrag_ = options_["FRAGS"].size();
+       molecule_ = Process::environment.molecule();
 
-       frag_name = new char*[nfrag + 1]; /* NULL-terminated */
+       frag_name_ = new char*[nfrag_ + 1]; /* NULL-terminated */
 
-       for(int i=0; i<nfrag; i++) {
+       for(int i=0; i<nfrag_; i++) {
                std::string name = options_["FRAGS"][i].to_string();
-               frag_name[i] = new char[name.length() + 1];
-               strcpy(frag_name[i], name.c_str());
-               for (char *p = frag_name[i]; *p; p++)
+               frag_name_[i] = new char[name.length() + 1];
+               strcpy(frag_name_[i], name.c_str());
+               for (char *p = frag_name_[i]; *p; p++)
                        *p = tolower(*p);
        }
-       frag_name[nfrag] = NULL;
+       frag_name_[nfrag_] = NULL;
 
        std::string psi_data_dir = Process::environment("PSIDATADIR");
        std::string frag_lib_path = psi_data_dir + "/fraglib";
 
-       char **potential_file_list = make_potential_file_list((const char **)frag_name,
+       char **potential_file_list = make_potential_file_list((const char **)frag_name_,
                frag_lib_path.c_str(), frag_lib_path.c_str());
 
-       if ((res = efp_init(&efp_, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name))) {
+       if ((res = efp_init(&efp_, &opts, NULL, (const char **)potential_file_list, (const char **)frag_name_))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
@@ -190,7 +190,7 @@ void EFP::common_init() {
 
        fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
 
-       if (disp_enabled)
+       if (disp_enabled_)
                fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
 
        fprintf(outfile, "\n");
@@ -211,23 +211,23 @@ void EFP::SetGeometry(){
 
        double *coords = NULL;
 
-       molecule->print();
-       if (molecule->nfragments() != nfrag)
-               throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag, __FILE__, __LINE__);
+       molecule_->print();
+       if (molecule_->nfragments() != nfrag_)
+               throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag_, __FILE__, __LINE__);
 
        // array of coordinates, 9 numbers for each fragment - first three atoms
-       coords = new double[9 * nfrag];
+       coords = new double[9 * nfrag_];
         double * pcoords = coords;
 
-       for (int i = 0; i < nfrag; i++) {
+       for (int i = 0; i < nfrag_; i++) {
                std::vector<int> realsA;
                realsA.push_back(i);
                std::vector<int> ghostsA;
-               for (int j = 0; j < nfrag; j++) {
+               for (int j = 0; j < nfrag_; j++) {
                                if (i != j)
                                                ghostsA.push_back(j);
                }
-               boost::shared_ptr<Molecule> monomerA = molecule->extract_subsets(realsA, ghostsA);
+               boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA, ghostsA);
                monomerA->print();
                monomerA->print_in_bohr();
 
@@ -250,7 +250,7 @@ void EFP::SetGeometry(){
                        }
                }
 
-        fprintf(outfile, "%s\n", frag_name[i]);
+        fprintf(outfile, "%s\n", frag_name_[i]);
        xyz->print();
        }
 
@@ -304,7 +304,6 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     boost::shared_ptr<Wavefunction> wfn         = Process::environment.wavefunction();
     boost::shared_ptr<MatrixFactory> matrix     = wfn->matrix_factory();
     boost::shared_ptr<IntegralFactory> integral = wfn->integral();
-    boost::shared_ptr<Molecule> molecule        = Process::environment.molecule();
 
     // generate multipole integrals:
     // 
@@ -314,7 +313,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
     // 
     boost::shared_ptr<OneBodySOInt> mult3 ( integral->so_multipoles(3) );
-    boost::shared_ptr<MultipoleSymmetry> multsym ( new MultipoleSymmetry(3,molecule,integral,matrix) );
+    boost::shared_ptr<MultipoleSymmetry> multsym ( new MultipoleSymmetry(3,molecule_,integral,matrix) );
     std::vector<boost::shared_ptr<Matrix> > multipoles = multsym->create_matrices("Multipole: ");
     mult3->compute(multipoles);
 
@@ -351,7 +350,7 @@ void EFP::Compute() {
         double *grad = NULL;
 
        /* Main EFP computation routine */
-       if ((res = efp_compute(efp_, do_grad ? 1 : 0))) {
+       if ((res = efp_compute(efp_, do_grad_ ? 1 : 0))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
@@ -363,9 +362,9 @@ void EFP::Compute() {
                 throw PsiException("efp",__FILE__,__LINE__);
        }
 
-       if (do_grad) {
-                       grad = new double[6 * nfrag];
-                       if ((res = efp_get_gradient(efp_, 6 * nfrag, grad))) {
+       if (do_grad_) {
+                       grad = new double[6 * nfrag_];
+                       if ((res = efp_get_gradient(efp_, 6 * nfrag_, grad))) {
                                fprintf(outfile, "%s", efp_result_to_string(res));
                                 throw PsiException("efp",__FILE__,__LINE__);
                        }
@@ -373,7 +372,7 @@ void EFP::Compute() {
                        fprintf(outfile, "  ==> EFP Gradient <==\n\n");
 
                        double *pgrad = grad;
-                       for (int i = 0; i < nfrag; i++) {
+                       for (int i = 0; i < nfrag_; i++) {
                                        for (int j = 0; j < 6; j++) {
                                                        fprintf(outfile, "%14.6lf", *pgrad++);
                                        }
@@ -381,10 +380,10 @@ void EFP::Compute() {
                        }
                        fprintf(outfile, "\n");
 
-                       SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag, 6)); //
+                       SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6)); //
                        double ** psmgrad = smgrad->pointer();
                        pgrad = grad;
-                       for (int i = 0; i < nfrag; i++) {
+                       for (int i = 0; i < nfrag_; i++) {
                                        for (int jj = 0; jj < 6; jj++) {
                                                psmgrad[i][jj] = *pgrad++;
                                        }
@@ -396,10 +395,10 @@ void EFP::Compute() {
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
-    fprintf(outfile, "  Electrostatics Energy = %24.16f [H] %s\n", energy.electrostatic, elst_enabled ? "*" : "");
-    fprintf(outfile, "  Polarization Energy =   %24.16f [H] %s\n", energy.polarization, pol_enabled ? "*" : "");
-    fprintf(outfile, "  Dispersion Energy =     %24.16f [H] %s\n", energy.dispersion, disp_enabled ? "*" : "");
-    fprintf(outfile, "  Exchange Energy =       %24.16f [H] %s\n", energy.exchange_repulsion, exch_enabled ? "*" : "");
+    fprintf(outfile, "  Electrostatics Energy = %24.16f [H] %s\n", energy.electrostatic, elst_enabled_ ? "*" : "");
+    fprintf(outfile, "  Polarization Energy =   %24.16f [H] %s\n", energy.polarization, pol_enabled_ ? "*" : "");
+    fprintf(outfile, "  Dispersion Energy =     %24.16f [H] %s\n", energy.dispersion, disp_enabled_ ? "*" : "");
+    fprintf(outfile, "  Exchange Energy =       %24.16f [H] %s\n", energy.exchange_repulsion, exch_enabled_ ? "*" : "");
     fprintf(outfile, "  Total Energy =          %24.16f [H] %s\n", energy.total, "*");
 
     Process::environment.globals["EFP ELST ENERGY"] = energy.electrostatic;

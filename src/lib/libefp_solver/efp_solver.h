@@ -10,8 +10,6 @@
 
 namespace psi{
   class Options;
-  //class PSIO;
-  class Molecule;
 }
 
 namespace boost {
@@ -25,13 +23,12 @@ class EFP {
     // warning: options_ is pointer to current options object, and may not reflect
     // proper efp options outside of common_init()
     Options & options_;
-    //boost::shared_ptr<PSIO> psio_;
     protected:
-        char ** frag_name;
-        int nfrag;
+        char ** frag_name_;
+        int nfrag_;
         struct efp * efp_;
-        boost::shared_ptr<Molecule>molecule;
-        bool elst_enabled, pol_enabled, disp_enabled, exch_enabled, do_grad;
+        boost::shared_ptr<Molecule>molecule_;
+        bool elst_enabled_, pol_enabled_, disp_enabled_, exch_enabled_, do_grad_;
         /// Initialize options
         void common_init();
     public:
@@ -40,6 +37,7 @@ class EFP {
   
         /// Set geometry
         void SetGeometry();
+
         /// Compute energy and/or gradietn
         void Compute();
 
@@ -51,7 +49,6 @@ class EFP {
 
         /// Returns EFP contribution to V
         boost::shared_ptr<Matrix> modify_Fock();
-
 };
 
 }}
