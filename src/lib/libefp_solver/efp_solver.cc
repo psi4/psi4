@@ -21,6 +21,7 @@
 
 #include "efp_solver.h"
 //#include "../../../libefp/install/include/efp.h"
+#include<libmints/multipolesymmetry.h>
 
 #include <psi4-dec.h>
 #ifdef _OPENMP
@@ -288,6 +289,9 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     for (int j = 0; j < 10*n_multipole[3]; j++) z[3][j] = 0.0;
 
     // get multipoles from libefp
+    // dipoles stored as     x,y,z
+    // quadrupoles stored as xx,yy,zz,xy,xz,yz
+    // octupoles stored as   xxx,yyy,zzz,xxy,xxz,xyy,yyz,xzz,yzz,xyz
     err = efp_get_multipoles(efp_,xyz,z);
     if ( err != EFP_RESULT_SUCCESS ) {
         throw PsiException("libefp failed to return multipole moments",__FILE__,__LINE__);
@@ -296,16 +300,31 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     // get electrostatic potential at each point returned in the xyz array
     // TODO: need this function
 
-    // grab matrix factory from wavefunction and build V for EFP contribution
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
-    boost::shared_ptr<MatrixFactory> factory = wfn->matrix_factory();
-    boost::shared_ptr<Matrix> V = factory->create_shared_matrix("EFP V contribution");
+    // grab matrix factory from wavefunction
+    boost::shared_ptr<Wavefunction> wfn         = Process::environment.wavefunction();
+    boost::shared_ptr<MatrixFactory> matrix     = wfn->matrix_factory();
+    boost::shared_ptr<IntegralFactory> integral = wfn->integral();
+    boost::shared_ptr<Molecule> molecule        = Process::environment.molecule();
 
-    // generate multipole integrals (up to octapole)
-    // TODO: need this function
+    // generate multipole integrals:
+    // 
+    // they will be ordered as follows in the vector, multipoles
+    // x, y, z, 
+    // xx, xy, xz, yy, yz, zz, 
+    // xxx, xxy, xxz, xyy, xyz, xzz, yyy, yyz, yzz, zzz
+    // 
+    boost::shared_ptr<OneBodySOInt> mult3 ( integral->so_multipoles(3) );
+    boost::shared_ptr<MultipoleSymmetry> multsym ( new MultipoleSymmetry(3,molecule,integral,matrix) );
+    std::vector<boost::shared_ptr<Matrix> > multipoles = multsym->create_matrices("Multipole: ");
+    mult3->compute(multipoles);
+
+    // arrays to map our multipole ordering to Ilya's
+    int mapq[6]  = { 0, 3, 4, 1, 5, 2};
+    int mapo[10] = { 0, 3, 4, 5, 9, 7, 1, 6, 8, 2};
 
     // dot multipoles with multipole integrals.  the result goes into V
     // TODO: need this function
+    boost::shared_ptr<Matrix> V = matrix->create_shared_matrix("EFP V contribution");
 
     // free workspace memory needed by libefp
     free(n_multipole);
@@ -315,7 +334,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
     free(xyz);
     free(z);
-    
+   
     return V;
 }
 
