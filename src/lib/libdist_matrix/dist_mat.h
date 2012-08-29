@@ -716,12 +716,14 @@ private:
 
     // Process grid stuff
     /// The process grid
-    process_grid<2> pgrid_;
+    process_grid pgrid_;
     /// The dimension sizes of the process grid
     std::vector<int> pgrid_dims_;
 
     /// An array that contains the data
     std::vector<madness::Tensor<double> > data_;
+
+    double* ptr() { return data_[0].ptr(); }
 
     /// Name of the distributed matrix
     std::string name_;
@@ -1244,7 +1246,7 @@ public:
      * @param tile_sz The size of the tiles. Defaults to 64.
      * @param name The name of the distributed matrix.
      */
-    Distributed_Matrix(const process_grid<2> &pgrid,
+    Distributed_Matrix(const process_grid &pgrid,
                        const int &nrows, const int &ncols,
                        const int &tile_sz = 64,
                        const std::string &name = "");
@@ -1274,7 +1276,7 @@ public:
      * @param tile_sz The size of the tiles. Defaults to 64.
      * @param name The name of the distributed matrix.
      */
-    void initialize(const process_grid<2> &pgrid,
+    void initialize(const process_grid &pgrid,
                      const int &nrows, const int &ncols,
                      const int &tile_sz = 64,
                      const std::string &name = "");
@@ -1869,6 +1871,7 @@ public:
      */
     Distributed_Matrix operator* (Distributed_Matrix &b_mat);
 
+    void diagonalize(Distributed_Matrix& eigvec, Vector& eigval);
 
 };
 
