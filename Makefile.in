@@ -7,7 +7,7 @@ MAKE_MADNESS=@BUILD_MADNESS@
 default: all
 
 ifeq ($(MAKE_MADNESS),1)
-  subdirs = boost madness lib include src
+  subdirs = boost madness/src/lib/world madness/src/lib/misc madness/src/lib/tensor lib include src
 else
   subdirs = boost lib include src
 endif

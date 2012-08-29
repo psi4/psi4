@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cmath>
 #include <sstream>
+#include <vector>
 
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
@@ -17,6 +18,8 @@
 #include <psiconfig.h>
 
 #include <boost/foreach.hpp>
+
+#include <libdist_matrix/dist_mat.h>
 
 using namespace boost;
 
@@ -155,7 +158,7 @@ MintsHelper::MintsHelper(Options & options, int print): options_(options), print
 }
 
 MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), print_(0) 
+    : options_(Process::environment.options), print_(0)
 {
     init_helper_2(basis);
 }
@@ -735,8 +738,28 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
 
 void MintsHelper::play()
 {
-#ifdef HAVE_MADNESS
-  // I took out the old distributed matrix
+#if defined(HAVE_MADNESS)
+    int pnrows = sqrt(WorldComm->nproc());
+    int pncols = WorldComm->nproc() / pnrows;
+
+    std::vector<int> pgrid_dimension_sizes(2);
+    pgrid_dimension_sizes[0] = pnrows;
+    pgrid_dimension_sizes[1] = pncols;
+
+    process_grid pgrid(pgrid_dimension_sizes);
+
+    Distributed_Matrix A(pgrid, 5, 5, 2, "A");
+    Distributed_Matrix B(pgrid, 5, 5, 2, "B");
+    Vector X(5);
+
+    A.fill(1.0);
+    fprintf(outfile, "Pre diag call\n");
+    A.print();
+    A.diagonalize(B, X);
+    fprintf(outfile, "Post diag call\n");
+    A.print();
+    B.print();
+    X.print();
 #endif
 }
 

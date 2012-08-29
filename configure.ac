@@ -524,6 +524,7 @@ AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 ACX_MPI()
 ACX_MADNESS()
 ACX_ELEMENTAL()
+ACX_SCALAPACK()
 
 ########
 ## Check for types
@@ -650,15 +651,23 @@ if test "x${have_boost}" == "x0"; then
     AC_SUBST(BOOST_THREAD_LIB)
 fi
 
+PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
-  AC_SUBST(PSICPPFLAGS)
+  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
+#  PSICPPFLAGS='-I. ${BOOST_CPPFLAGS} -I${top_objdir}/include -I${top_srcdir}/include -I${top_srcdir}/src/lib -I${top_objdir}/src/lib ${madinc}'
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
-else
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-  AC_SUBST(PSICPPFLAGS)
 fi
+if test "$HAVE_ELEMENTAL" = "1"; then
+  echo "we have elemental			:)"
+  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
+  echo "CPPFLAGS = "
+  echo ${PSICPPFLAGS}
+fi
+#else
+#  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+#fi
+AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
@@ -835,6 +844,13 @@ case $withval in
      ;;
 esac
 ])
+
+# If compiling on Mac, disable position independent executable.
+case $target_os in
+    darwin*)
+        LDFLAGS="$LDFLAGS -Wl,-no_pie"
+        ;;
+esac
 
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
