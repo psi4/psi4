@@ -5,6 +5,13 @@ import os
 import math
 from psiexceptions import *
 
+def oeprop(*args, **kwargs):
+    oe = PsiMod.OEProp()
+    if 'title' in kwargs:
+        oe.set_title(kwargs['title'])
+    for prop in args:
+        oe.add(prop)
+    oe.compute()
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""
