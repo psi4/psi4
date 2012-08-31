@@ -23,8 +23,9 @@ computed one-particle density, using the following syntax::
 The named argument, *title*, is completely optional and is prepended to any
 globals variables set during the computation.  The unnamed arguments are the
 properties to be computed.  These can appear in any order, and multiple
-properties may be requested, as in the example above.  The available properties
-are shown in the table below.
+properties may be requested, as in the example above.  Note that, due to Python
+syntax restrictions, the title argument must appear after the list of
+properties to compute.  The available properties are shown in the table below.
 
 .. table:: Current one-electron property capabilities of |PSIfour|
 
