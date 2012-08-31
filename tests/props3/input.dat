@@ -1,4 +1,4 @@
-#! DF-SCF cc-pVDZ multipole moments of ethylene, up to 7th order
+#! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
  
 memory 250 mb
  
@@ -28,12 +28,9 @@ set {
 }
 
 
-eehf = energy('scf')
+energy('scf')
 
-#Now use an OEProp object to compute multipole moments through 7th order
-oe = OEProp()
-oe.add("MULTIPOLES(7)")
-oe.compute()
+oeprop("MULTIPOLES(7)")
 
 clean()
 
