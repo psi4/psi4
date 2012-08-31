@@ -247,6 +247,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
+dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
 
@@ -379,6 +382,9 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
+props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
+
+
 psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
@@ -392,6 +398,9 @@ psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described us
 
 
 psimrcc-fd-freq1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+
+psimrcc-fd-freq2:  Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
 
 psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
