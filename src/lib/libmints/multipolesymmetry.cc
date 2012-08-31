@@ -233,7 +233,7 @@ MultipoleSymmetry::~MultipoleSymmetry()
 
 
 
-vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &basename)
+vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &basename, bool ignore_symmetry)
 {
     vector<SharedMatrix > matrices;
 
@@ -267,12 +267,17 @@ vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &base
                     name += "Z";
 
                 name = basename + name;
-                int sym = component_symmetry_[component];
-                if (matrix_) {
-                    matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[component]));
-                }else{
-                    SharedMatrix mat(new Matrix(name, wfn->nsopi(), wfn->nsopi(), sym));
+                if(ignore_symmetry){
+                    SharedMatrix mat(new Matrix(name, wfn->nso(), wfn->nso()));
                     matrices.push_back(mat);
+                }else{
+                    int sym = component_symmetry_[component];
+                    if (matrix_) {
+                        matrices.push_back(matrix_->create_shared_matrix(name, sym));
+                    }else{
+                        SharedMatrix mat(new Matrix(name, wfn->nsopi(), wfn->nsopi(), sym));
+                        matrices.push_back(mat);
+                    }
                 }
                 ++component;
             }
