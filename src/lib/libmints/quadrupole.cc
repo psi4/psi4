@@ -28,13 +28,13 @@ QuadrupoleInt::~QuadrupoleInt()
     delete[] buffer_;
 }
 
-SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol, const Vector3 &origin)
 {
     boost::shared_ptr<Vector> sret(new Vector(6));
     double *ret = sret->pointer();
 
     for (int i=0; i<mol->natom(); ++i) {
-        Vector3 geom = mol->xyz(i);
+        Vector3 geom = mol->xyz(i) - origin;
         ret[0] += mol->Z(i) * geom[0] * geom[0]; // xx
         ret[1] += mol->Z(i) * geom[0] * geom[1]; // xy
         ret[2] += mol->Z(i) * geom[0] * geom[2]; // xz
