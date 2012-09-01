@@ -1038,34 +1038,52 @@ void OEProp::compute_multipoles(int order, bool transition)
 void OEProp::compute_dipole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    OperatorSymmetry dipsymm (1, mol, integral_, factory_);
-    std::vector<SharedMatrix> so_dipole = dipsymm.create_matrices("SO Dipole");
-    boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
-    sodOBI->ob()->set_origin(origin_);
-    sodOBI->compute(so_dipole);
+
     Vector3 de;
     SharedMatrix Da;
     SharedMatrix Db;
-
-    if (same_dens_) {
-        Da = Da_so_;
-        Db = Da;
-    } else {
-        Da = Da_so_;
-        Db = Db_so_;
+    std::vector<SharedMatrix> dipole_ints;
+    if(origin_preserves_symmetry_){
+        // Use symmetry
+        OperatorSymmetry dipsymm (1, mol, integral_, factory_);
+        dipole_ints = dipsymm.create_matrices("SO Dipole");
+        boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
+        sodOBI->ob()->set_origin(origin_);
+        sodOBI->compute(dipole_ints);
+        if (same_dens_) {
+            Da = Da_so_;
+            Db = Da;
+        } else {
+            Da = Da_so_;
+            Db = Db_so_;
+        }    }else{
+        // Don't use symmetry
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
+        boost::shared_ptr<OneBodyAOInt> aodOBI (integral_->ao_dipole());
+        aodOBI->set_origin(origin_);
+        aodOBI->compute(dipole_ints);
+        if (same_dens_) {
+            Da = Da_ao();
+            Db = Da;
+        } else {
+            Da = Da_ao();
+            Db = Db_ao();
+        }
     }
 
-//    if(print_ > 4){
-//        std::vector<SharedMatrix>::iterator iter;
-//        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
-//            iter->get()->print();
-//    }
 
-    de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
-    de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
-    de[2] = Da->vector_dot(so_dipole[2]) + Db->vector_dot(so_dipole[2]);
+    if(print_ > 4)
+        for(int n = 0; n < 3; ++n)
+            dipole_ints[n]->print();
 
-    SharedVector ndip = DipoleInt::nuclear_contribution(mol);
+
+    de[0] = Da->vector_dot(dipole_ints[0]) + Db->vector_dot(dipole_ints[0]);
+    de[1] = Da->vector_dot(dipole_ints[1]) + Db->vector_dot(dipole_ints[1]);
+    de[2] = Da->vector_dot(dipole_ints[2]) + Db->vector_dot(dipole_ints[2]);
+
+    SharedVector ndip = DipoleInt::nuclear_contribution(mol, origin_);
 
     if (!transition) {
 
@@ -1113,47 +1131,55 @@ void OEProp::compute_quadrupole(bool transition)
     SharedMatrix Da;
     SharedMatrix Db;
 
-    if (same_dens_) {
-        Da = Da_so_;
-        Db = Da;
-    } else {
-        Da = Da_so_;
-        Db = Db_so_;
+    std::vector<SharedMatrix> qpole_ints;
+    if(origin_preserves_symmetry_){
+        OperatorSymmetry quadsymm(2, mol, integral_, factory_);
+        qpole_ints = quadsymm.create_matrices("SO Quadrupole");
+        boost::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
+        soqOBI->ob()->set_origin(origin_);
+        soqOBI->compute(qpole_ints);
+        if (same_dens_) {
+            Da = Da_so_;
+            Db = Da;
+        } else {
+            Da = Da_so_;
+            Db = Db_so_;
+        }
+    }else{
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+        boost::shared_ptr<OneBodyAOInt> aoqOBI(integral_->ao_quadrupole());
+        aoqOBI->set_origin(origin_);
+        aoqOBI->compute(qpole_ints);
+        if (same_dens_) {
+            Da = Da_ao();
+            Db = Da;
+        } else {
+            Da = Da_ao();
+            Db = Db_ao();
+        }
     }
 
-    // Form the one-electron integral matrices from the matrix factory
-    //    parameters: 1 (multipole order: 1=dipole, 2=quadrupole, etc.)
-    OperatorSymmetry quadsymm(2, mol, integral_, factory_);
-
-    // Create a vector of matrices with the proper symmetry
-    std::vector<SharedMatrix> so_Qpole = quadsymm.create_matrices("SO Quadrupole");
-
-    // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
-
-    soqOBI->ob()->set_origin(origin_);
-
-    // Compute multipole moment integrals
-    soqOBI->compute(so_Qpole);
-
-//    if(print_ > 4){
-//        std::vector<SharedMatrix>::iterator iter;
-//        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
-//            iter->get()->print();
-//    }
+    if(print_ > 4)
+        for(int n = 0; n < 6; ++n)
+            qpole_ints[n]->print();
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
-    qe[0] = Da->vector_dot(so_Qpole[0]) + Db->vector_dot(so_Qpole[0]);
-    qe[1] = Da->vector_dot(so_Qpole[1]) + Db->vector_dot(so_Qpole[1]);
-    qe[2] = Da->vector_dot(so_Qpole[2]) + Db->vector_dot(so_Qpole[2]);
-    qe[3] = Da->vector_dot(so_Qpole[3]) + Db->vector_dot(so_Qpole[3]);
-    qe[4] = Da->vector_dot(so_Qpole[4]) + Db->vector_dot(so_Qpole[4]);
-    qe[5] = Da->vector_dot(so_Qpole[5]) + Db->vector_dot(so_Qpole[5]);
+    qe[0] = Da->vector_dot(qpole_ints[0]) + Db->vector_dot(qpole_ints[0]);
+    qe[1] = Da->vector_dot(qpole_ints[1]) + Db->vector_dot(qpole_ints[1]);
+    qe[2] = Da->vector_dot(qpole_ints[2]) + Db->vector_dot(qpole_ints[2]);
+    qe[3] = Da->vector_dot(qpole_ints[3]) + Db->vector_dot(qpole_ints[3]);
+    qe[4] = Da->vector_dot(qpole_ints[4]) + Db->vector_dot(qpole_ints[4]);
+    qe[5] = Da->vector_dot(qpole_ints[5]) + Db->vector_dot(qpole_ints[5]);
 
     // Add in nuclear contribution
     if (!transition) {
-        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol);
+        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol, origin_);
         qe[0] += nquad->get(0, 0);
         qe[1] += nquad->get(0, 1);
         qe[2] += nquad->get(0, 2);

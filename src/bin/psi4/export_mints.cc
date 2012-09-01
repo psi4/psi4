@@ -16,7 +16,7 @@ using namespace psi;
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
     //SharedMolecule mol = Process::environment.molecule();
-    return DipoleInt::nuclear_contribution(mol);
+    return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
