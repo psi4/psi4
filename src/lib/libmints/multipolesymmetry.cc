@@ -268,7 +268,7 @@ vector<SharedMatrix > MultipoleSymmetry::create_matrices(const std::string &base
 
                 name = basename + name;
                 if(ignore_symmetry){
-                    SharedMatrix mat(new Matrix(name, wfn->nso(), wfn->nso()));
+                    SharedMatrix mat(new Matrix(name, wfn->basisset()->nbf(), wfn->basisset()->nbf()));
                     matrices.push_back(mat);
                 }else{
                     int sym = component_symmetry_[component];
