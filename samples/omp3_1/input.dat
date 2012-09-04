@@ -12,6 +12,7 @@ set {
   basis cc-pvdz
   d_convergence 8
   e_convergence 8
+  print 0
 }
 
 energy('omp3')
