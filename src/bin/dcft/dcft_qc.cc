@@ -1885,14 +1885,10 @@ DCFTSolver::run_davidson() {
 
     // Create a set of guess orthonormal expansion vectors b_ (identity matrix)
     davidson_guess();
-
     bool converged = false;
     int count = 0;
 
     // Create a matrix with the Hessian diagonal for convenience
-    SharedMatrix Hd(new Matrix("Diagonal part of the Hessian", nidp_, nidp_));
-    Hd->set_diagonal(Hd_);
-
     fprintf(outfile, "\tStability analysis of DCFT solution \n");
     SharedVector Evals;
     SharedMatrix Evecs;
@@ -1916,7 +1912,10 @@ DCFTSolver::run_davidson() {
         }
         // Add the diagonal contribution
         SharedMatrix temp(new Matrix("Temp matrix", b_dim_, nidp_));
-        temp->gemm(false, false, 1.0, b_, Hd, 0.0);
+        temp->copy(b_);
+        double **temp_p = temp->pointer();
+        for (int i = 0; i < nidp_; ++i) C_DSCAL(b_dim_, Hd_->get(i), &temp_p[0][i], nidp_);
+
         sigma_vector->add(temp);
 
         // Form G matrix and diagonalize it
@@ -1943,6 +1942,13 @@ DCFTSolver::run_davidson() {
         temp->gemm(true, false, 1.0, Evecs, b_, 0.0);
         b_->copy(temp);
 
+        // Check whether the norm is preserved
+        SharedMatrix check(new Matrix("Orthonormality Check, after rotation", b_dim_, b_dim_));
+        check->gemm(0, 1, 1.0, b_, b_, 0.0);
+        for (int i = 0; i < b_dim_; ++i) {
+            if (fabs(check->get(i,i) - 1.0) > 1e-5) throw PSIEXCEPTION("Norm is not preserved! Make STABILITY_AUGMENT_SPACE_TOL larger");
+        }
+
         // Compute the residual: r_kp = sigma'_kp - ro_k b_kp'
         SharedMatrix r(new Matrix("Residual", b_dim_, nidp_));
         r->copy(sigma_vector);
@@ -1954,8 +1960,9 @@ DCFTSolver::run_davidson() {
         double max_rms = 0.0;
         int n_good = 0;
         int n_bad  = 0;
+        int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
         if (print_ > 1) fprintf(outfile, "\tEigenvalues:\n");
-        for (int k = 0; k < nevals_; ++k) {
+        for (int k = 0; k < nvecs; ++k) {
             double new_val = Evals->get(k);
             double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
             double rms = sqrt(ms / (double) b_dim_);
@@ -1963,18 +1970,23 @@ DCFTSolver::run_davidson() {
             if (not_converged) n_bad += 1;
             else n_good += 1;
             max_rms = rms > max_rms ? rms : max_rms;
-            if (print_ > 1) fprintf(outfile,  "\t\t%s%10.6f   (residual = %10.6f)\n", not_converged ? "*" : " ", new_val, rms);
+            if (print_ > 1) fprintf(outfile,  "\t\t%s%10.6f   (residual = %8.3e)\n", not_converged ? "*" : " ", new_val, rms);
         }
-        if (n_bad == 0) converged = true;
 
         if (print_ > 1) fprintf(outfile, "\tThere are %d vectors in the subspace\n", b_dim_);
-        if (print_ > 1) fprintf(outfile, "\tMax RMS residual %12.8f, %d converged, %d not converged\n", max_rms, n_good, n_bad);
+        if (print_ > 1) fprintf(outfile, "\tMax RMS residual %8.3e, %d converged, %d not converged\n", max_rms, n_good, n_bad);
+
+        if (n_bad == 0) {
+            converged = true;
+            break;
+        }
 
         // Obtain new vectors from the residual: delta = -r_kp / (Hd_p - Evals_k)
         SharedMatrix delta(new Matrix ("Correction vector", b_dim_, nidp_));
         for (int k = 0; k < b_dim_; ++k)
             for (int p = 0; p < nidp_; ++p)
-                delta->set(k, p, -r->get(k, p) / (Hd_->get(p) - Evals->get(k)));
+                delta->set(k, p, -r->get(k, p));
+//                delta->set(k, p, -r->get(k, p) / (Hd_->get(p) - Evals->get(k)));
 
         // Orthogonalize the new vectors against the subspace, and add if nececssary
         int added_vectors = 0;
@@ -1995,33 +2007,50 @@ DCFTSolver::run_davidson() {
 
     }
 
-    // Analyze the eigenvector of the Hessian for n largest contributions, whether it's orbital or cumulant space
+    // Perform the stability analysis by analyzing the eigenvector of the Hessian for several largest contributions
     fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
+    int values_to_print = 5;
     int n_neg = 0;
-    bool orbital_orbital = false;
-    bool cumulant_cumulant = false;
-    for (int k = 0; k < nevals_; k++) {
+    int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
+    for (int k = 0; k < nvecs; k++) {
         double value = Evals->get(k);
         fprintf(outfile, "\t %10.6f \n", value);
         if (value < 0.0) {
-            double max_value = 0.0;
-            int max_value_idp = 0;
+            double *max_values = new double[values_to_print + 1];
+            int *max_values_idp = new int[values_to_print + 1];
+            int stored = 0;
+
+            double norm = 0.0;
+
             for (int i = 0; i < nidp_; ++i) {
-                double evec_value = fabs(b_->get(k, i));
-                if (evec_value > max_value) {
-                    max_value = evec_value;
-                    max_value_idp = i;
+                double evec_value = b_->get(k, i);
+                norm += evec_value * evec_value;
+                // Store the value at the end of the list
+                max_values[stored] = evec_value;
+                max_values_idp[stored] = i;
+                // Sort the values in the ascending order
+                for (int p = 0; p < stored; ++p) {
+                    if (fabs(max_values[stored - p]) > fabs(max_values[stored - p - 1])) {
+                        double temp_val = max_values[stored - p - 1];
+                        max_values[stored - p - 1] = max_values[stored - p];
+                        max_values[stored - p] = temp_val;
+                        int temp_val_idp = max_values_idp[stored - p - 1];
+                        max_values_idp[stored - p - 1] = max_values_idp[stored - p];
+                        max_values_idp[stored - p] = temp_val_idp;
+                    }
+                    else break;
                 }
+                if (stored < values_to_print) stored++;
+
             }
-            if (max_value_idp < orbital_idp_) orbital_orbital = true;
-            else cumulant_cumulant = true;
+            fprintf(outfile, "\t %d largest contributions to the eigenvector: \n", values_to_print);
+            for (int i = 0; i < values_to_print; ++i) {
+                fprintf(outfile, "\t %10.3e %s \n", max_values[i], (max_values_idp[i] < orbital_idp_) ? ("orbital space") : ("cumulant space"));
+            }
             n_neg++;
         }
     }
-    if (n_neg) {
-        fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
-//        fprintf(outfile, "\tTypes of the instability: %s %s \n", n_neg);
-    }
+    if (n_neg) fprintf(outfile, "\tSolution is unstable (%d negative eigenvalues obtained) \n", n_neg);
 
 }
 
@@ -2029,7 +2058,8 @@ void
 DCFTSolver::davidson_guess() {
 
     int count = 0;
-    while (count < nguess_) {
+    int dimension = nguess_ < nidp_ ? nguess_ : nidp_;
+    while (count < dimension) {
         Vector temp("Temp", nidp_);
         temp.set(count, 1.0);
         // To avoid singularity in the solution the second element is set to be non-zero
@@ -2064,10 +2094,8 @@ DCFTSolver::augment_b(double *vec, double tol) {
     // Compute the norm of the leftover part of the |b'> space
     vec_norm = sqrt(C_DDOT(nidp_, bpp[0], 1, bpp[0], 1));
 
-    // If the norm exceeds a given threshold then augment the |b> space
+    // If the rms exceeds a given threshold then augment the |b> space
     if(vec_norm > tol){
-//        if(print_ > 1)
-//            fprintf(outfile, "norm = %f, adding\n", norm);
         double inv_norm = 1.0 / vec_norm;
         C_DSCAL(nidp_, inv_norm, bpp[0], 1);
 

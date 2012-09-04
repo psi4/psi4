@@ -23,10 +23,10 @@ extern "C" {
         va_start(args, __format);
         int status = 0;
 
-        if ((Communicator::world.get() != NULL) && (Communicator::world->me() == 0)) {
+        if ((WorldComm.get() != NULL) && (WorldComm->me() == 0)) {
             status = vfprintf(__stream, __format, args);
         }
-        else if (Communicator::world.get() == NULL) {
+        else if (WorldComm.get() == NULL) {
             p_fprintf(stderr, "Communicator object does not exist.\n");
             status = vfprintf(__stream, __format, args);
         }

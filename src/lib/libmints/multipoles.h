@@ -37,7 +37,7 @@ public:
     bool has_deriv1() { return false; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, int order);
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
 };
 
 }

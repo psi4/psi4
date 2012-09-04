@@ -72,7 +72,7 @@ void  DFMP2::setup()
 
   } else {
       // Form primary basis indexing
-//      if (Communicator::world->me() == 0) {
+//      if (WorldComm->me() == 0) {
           E_scf_ = chkpt_->rd_escf();
           nirrep_ = chkpt_->rd_nirreps();
           clsdpi_ = chkpt_->rd_clsdpi();
@@ -88,13 +88,13 @@ void  DFMP2::setup()
 //          frzcpi_ = new int[8];
 //          frzvpi_ = new int[8];
 //      }
-//      Communicator::world->bcast(E_scf_, 0);
-//      Communicator::world->bcast(nirrep_, 0);
-//      Communicator::world->bcast(clsdpi_, nirrep_, 0);
-//      Communicator::world->bcast(orbspi_, nirrep_, 0);
-//      Communicator::world->bcast(frzcpi_, nirrep_, 0);
-//      Communicator::world->bcast(frzvpi_, nirrep_, 0);
-//      Communicator::world->bcast(nso_, 0);
+//      WorldComm->bcast(E_scf_, 0);
+//      WorldComm->bcast(nirrep_, 0);
+//      WorldComm->bcast(clsdpi_, nirrep_, 0);
+//      WorldComm->bcast(orbspi_, nirrep_, 0);
+//      WorldComm->bcast(frzcpi_, nirrep_, 0);
+//      WorldComm->bcast(frzvpi_, nirrep_, 0);
+//      WorldComm->bcast(nso_, 0);
   }
 
   ndocc_ = 0;
@@ -171,7 +171,7 @@ void  DFMP2::setup()
       C = SharedMatrix(new Matrix("C Matrix", nso_, nmo_));
       epsilon = boost::shared_ptr<Vector>(new Vector(nmo_));
 
-//      if (Communicator::world->me() == 0) {
+//      if (WorldComm->me() == 0) {
         double **vectors;
         double *orbital_energies;
 
@@ -189,8 +189,8 @@ void  DFMP2::setup()
         free_block(vectors);
 
 //      }
-//      Communicator::world->bcast(C->pointer()[0], nmo_*nso_, 0);
-//      Communicator::world->bcast(epsilon->pointer(), nmo_, 0);
+//      WorldComm->bcast(C->pointer()[0], nmo_*nso_, 0);
+//      WorldComm->bcast(epsilon->pointer(), nmo_, 0);
 
   }
 
@@ -1947,9 +1947,9 @@ double DFMP2::compute_E_old()
   fflush(outfile);
 
   //How many processes are we running on?
-  int nproc = Communicator::world->nproc();
+  int nproc = WorldComm->nproc();
   //What process number is this?
-  int rank = Communicator::world->me();
+  int rank = WorldComm->me();
 
   fprintf(outfile,"\n\n  Running on %d processes.\n",nproc);
   fflush(outfile);
@@ -2403,7 +2403,7 @@ for (block_A = 0; block_A < n_virt_blks; block_A++) {
   free_block(half_buffer);
   free_block(J_mhalf);
   //Reduce the energy
-  Communicator::world->sum(emp2);
+  WorldComm->sum(emp2);
 
   //Print the results
   fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);

@@ -28,11 +28,11 @@
 
 
 #define ORDER_PRINT_START for(int dummyproc = 0; dummyproc < nproc_; ++dummyproc){\
-                              Communicator::world->sync();\
+                              WorldComm->sync();\
                               if(dummyproc == rank_){
 //                              MPI_Barrier(MPI_COMM_WORLD);\
 
-#define ORDER_PRINT_END  }Communicator::world->sync();}
+#define ORDER_PRINT_END  }WorldComm->sync();}
 //#define ORDER_PRINT_START ;
 //#define ORDER_PRINT_END ;
 
@@ -43,15 +43,15 @@ using namespace boost;
 namespace psi{ namespace mad_mp2 {
 
 MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
-    Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*Communicator::world->get_madworld())
+    Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*WorldComm->get_madworld())
 {
-    nproc_   = Communicator::world->nproc();
-    mad_nthread_ = Communicator::world->nthread();
-    rank_    = Communicator::world->me();
-    comm_    = Communicator::world->communicator();
+    nproc_   = WorldComm->nproc();
+    mad_nthread_ = WorldComm->nthread();
+    rank_    = WorldComm->me();
+    comm_    = WorldComm->communicator();
 #ifdef HAVE_MADNESS
-    madworld_ = Communicator::world->get_madworld();
-    mutex_ = Communicator::world->get_mutex();
+    madworld_ = WorldComm->get_madworld();
+    mutex_ = WorldComm->mutex();
 #endif
 
     sleep(options.get_int("MADMP2_SLEEP"));
@@ -689,7 +689,7 @@ double MAD_MP2::compute_energy()
 
     Aia();
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     if (options_.get_str("MP2_ALGORITHM") == "DFMP2")
         I();
@@ -1099,9 +1099,9 @@ void MAD_MP2::I()
         }
     }
 
-    Communicator::world->sync();
-    Communicator::world->sum(&E_MP2J_, 1);
-    Communicator::world->sum(&E_MP2K_, 1);
+    WorldComm->sync();
+    WorldComm->sum(&E_MP2J_, 1);
+    WorldComm->sum(&E_MP2K_, 1);
 
     timer_off("Parallel_I");
 

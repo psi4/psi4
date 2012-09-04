@@ -243,12 +243,12 @@ typedef madness::WorldContainer<key,value> dc;
 
 //public:
 //    distributed_container() :
-//        madness::WorldObject<distributed_container>(*Communicator::world->get_madworld())
+//        madness::WorldObject<distributed_container>(*WorldComm->get_madworld())
 //    {
-//        me_ = Communicator::world->me();
-//        nproc_ = Communicator::world->nproc();
-//        nthread_ = Communicator::world->nthread();
-//        comm_ = Communicator::world->communicator();
+//        me_ = WorldComm->me();
+//        nproc_ = WorldComm->nproc();
+//        nthread_ = WorldComm->nthread();
+//        comm_ = WorldComm->communicator();
 
 //        process_pending();
 //    }

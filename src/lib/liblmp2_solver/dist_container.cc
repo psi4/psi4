@@ -24,9 +24,9 @@ typedef std::pair<int, std::vector<double> > shell_block;
 typedef block::iterator shell_block_it;
 
 dist_container::dist_container() :
-    me_(Communicator::world->me()), nproc_(Communicator::world->nproc()),
-    nthread_(Communicator::world->nthread()),
-    comm_(Communicator::world->communicator()),
+    me_(WorldComm->me()), nproc_(WorldComm->nproc()),
+    nthread_(WorldComm->nthread()),
+    comm_(WorldComm->communicator()),
     exists_(false)
 { }
 
@@ -92,7 +92,7 @@ madness::Void dist_container::first_half_transformation(const int &M, const int 
 {
     if (exists_) {
 
-        int thread = Communicator::world->thread_id( pthread_self() );
+        int thread = WorldComm->thread_id( pthread_self() );
         const double *buffer = eri_[thread]->buffer();
 
 
@@ -270,14 +270,14 @@ madness::Void dist_container::first_half_transformation(const int &M, const int 
 ////        if (me_ == 0)
 ////            std::cout << "owner[" << i << "] = " << owner_[i] << std::endl;
 ////    }
-////    Communicator::world->sync();
+////    WorldComm->sync();
 ////    if (me_ == 0) {
 ////        for (int i=0; i < total_pairs_; i++) {
 ////            if (me_ == owner_[i])
 ////            std::cout << "proc " << me_ << ": global_local_map_[" << i << "] = " << global_local_map_[i] << std::endl;
 ////        }
 ////    }
-////    Communicator::world->sync();
+////    WorldComm->sync();
 ////    if (me_ == 1) {
 ////        for (int i=0; i < total_pairs_; i++) {
 ////            if (me_ == owner_[i])
@@ -346,7 +346,7 @@ madness::Void dist_container::first_half_transformation(const int &M, const int 
 
 //    int IK = INDEX(I,K);
 
-//    int thread = Communicator::world->thread_id( pthread_self() );
+//    int thread = WorldComm->thread_id( pthread_self() );
 //    int numi = basisset_->shell(I)->nfunction();
 //    int numk = basisset_->shell(K)->nfunction();
 

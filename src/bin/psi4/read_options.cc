@@ -78,6 +78,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
+  /*- Either a set of 3 coordinates, or a string (see manual) describing the origin about which one-electron
+       properties are computed -*/
+  options.add("PROPERTIES_ORIGIN", new ArrayType());
 
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
@@ -811,7 +814,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           for augmenting the vector subspace in stability check !expert-*/
       options.add_double("STABILITY_AUGMENT_SPACE_TOL", 0.1);
       /*- Controls the convergence of the Davidson's diagonalization in stability check !expert-*/
-      options.add_double("STABILITY_CONVERGENCE", 1e-6);
+      options.add_double("STABILITY_CONVERGENCE", 1e-4);
       /*- The number of vectors that can be added simultaneously into the subspace for Davidson's diagonalization in stability check !expert-*/
       options.add_int("STABILITY_ADD_VECTORS", 20);
       /*- The number of guess vectors used for Davidson's diagonalization in stability check !expert-*/

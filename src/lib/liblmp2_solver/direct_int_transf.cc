@@ -29,7 +29,7 @@ void LMP2::integral_direct_transformation() {
     set_mn_integral_maps();
     setup_eri_matrices();
 
-//    Integrals_ = distributed_container(*Communicator::world->get_madworld());
+//    Integrals_ = distributed_container(*WorldComm->get_madworld());
 //    Integrals_.clear();
 //    distributed_container::iterator it;
 
@@ -111,7 +111,7 @@ void LMP2::integral_direct_transformation() {
         }
     }
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
 
     timer_off("First_Half_Transformation");
@@ -119,7 +119,7 @@ void LMP2::integral_direct_transformation() {
 
     redistribute_integrals();
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
 
     eri_2_MN_.clear();
@@ -128,7 +128,7 @@ void LMP2::integral_direct_transformation() {
 //        task(ij_owner_[ij], &LMP2::print_eri, ij, "eri_2");
 //    }
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
 
     timer_on("Second_Half_Transformation");
@@ -138,14 +138,14 @@ void LMP2::integral_direct_transformation() {
             task(me_, &LMP2::second_half_transformation, ij);
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
 
 
 //    for (int ij=0; ij < ij_pairs_; ij++) {
 //        task(ij_owner_[ij], &LMP2::print_eri, ij, "k_tilde");
 //    }
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     timer_off("Second_Half_Transformation");
 
@@ -217,7 +217,7 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
                                              const int &MN)
 {
 
-    int thread = Communicator::world->thread_id( pthread_self() );
+    int thread = WorldComm->thread_id( pthread_self() );
     int mn_size = numm*numn;
 
     int mn_loc = MN_local_[MN];
@@ -469,11 +469,11 @@ void LMP2::redistribute_integrals()
                     redist_integrals(eri_mn, ij, numm, numn, abs_m, abs_n);
                 }
                 else if (me_ != MN_Owner_[MN] && me_ == ij_owner_[ij]) {
-                    Communicator::world->recv(&(eri_mn[0]), numm*numn, MN_Owner_[MN]);
+                    WorldComm->recv(&(eri_mn[0]), numm*numn, MN_Owner_[MN]);
                     redist_integrals(eri_mn, ij, numm, numn, abs_m, abs_n);
                 }
                 else if (me_ == MN_Owner_[MN] && me_ != ij_owner_[ij]) {
-                    Communicator::world->send(&((copy_eri_mn(MN, ij, MN_iter_->second[1],
+                    WorldComm->send(&((copy_eri_mn(MN, ij, MN_iter_->second[1],
                                                             MN_iter_->second[3]))[0]),
                                               numm*numn, ij_owner_[ij]);
                 }

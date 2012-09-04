@@ -31,7 +31,7 @@ MultipoleInt::~MultipoleInt()
     delete[] buffer_;
 }
 
-SharedVector MultipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol, int order)
+SharedVector MultipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol, int order, const Vector3 &origin)
 {
     int ntot = (order+1)*(order+2)*(order+3)/6 - 1;
     boost::shared_ptr<Vector> sret(new Vector(ntot));
@@ -44,7 +44,7 @@ SharedVector MultipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol,
             for(int lz = 0; lz <= ii; lz++) {
                 int ly = ii - lz;
                 for(int atom = 0; atom < mol->natom(); ++atom) {
-                    Vector3 geom = mol->xyz(atom);
+                    Vector3 geom = mol->xyz(atom) - origin;
                     ret[address] += mol->Z(atom)*pow(geom[0], lx)*pow(geom[1], ly)*pow(geom[2], lz);
                 }
                 ++address;
