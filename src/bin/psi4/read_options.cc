@@ -78,6 +78,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
+  /*- Either a set of 3 coordinates, or a string (see manual) describing the origin about which one-electron
+       properties are computed -*/
+  options.add("PROPERTIES_ORIGIN", new ArrayType());
 
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
