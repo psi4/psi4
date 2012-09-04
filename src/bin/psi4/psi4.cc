@@ -6,12 +6,6 @@
 //  Justin Turney
 //  Rollin King
 
-#ifdef HAVE_MPI
-#include <mpi.h>
-#endif
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 #include <getopt.h>
 #include <stdio.h>
 #include <psiconfig.h>
@@ -51,32 +45,8 @@ int main(int argc, char **argv, char **envp)
     Process::arguments.init(argc, argv);
     Process::environment.init(envp);
 
-#ifdef _OPENMP
-    // Disable nested threads in OpenMP
-    omp_set_nested(0);
-#endif
-
-    // If no OMP thread variable is set, set nthreads to default to 1
-    if (Process::environment("OMP_NUM_THREADS") == "")
-        Process::environment.set_n_threads(1);
-
-    std::string communicator = Process::environment("COMMUNICATOR");
-
-#ifdef HAVE_MPI && HAVE_MADNESS
-    if (communicator == "MADNESS")
-        Communicator::world = SharedComm(new MadCommunicator(argc, argv));
-    else if (communicator == "LOCAL")
-        Communicator::world = SharedComm(new LocalCommunicator(argc, argv));
-    else
-        throw FeatureNotImplemented(communicator, "Communicator", __FILE__, __LINE__);
-#else
-    if (communicator == "MADNESS")
-        throw FeatureNotImplemented("PSI4 was not built with ", communicator, __FILE__, __LINE__);
-    else if (communicator == "LOCAL")
-        Communicator::world = SharedComm(new LocalCommunicator(argc, argv));
-    else
-        throw FeatureNotImplemented(communicator, "Communicator", __FILE__, __LINE__);
-#endif
+    // Initialize the world communicator
+    WorldComm = boost::shared_ptr<worldcomm>(Init_Communicator(argc, argv));
 
     // There is only one timer:
     timer_init();
@@ -113,15 +83,15 @@ int main(int argc, char **argv, char **envp)
     if(!messy) PSIOManager::shared_object()->psiclean();
 
     // Shut things down:
-    Communicator::world->sync();
+    WorldComm->sync();
     // There is only one timer:
     timer_done();
 
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
 
-    Communicator::world->sync();
-    Communicator::world->finalize();
+    WorldComm->sync();
+    WorldComm->finalize();
 
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;

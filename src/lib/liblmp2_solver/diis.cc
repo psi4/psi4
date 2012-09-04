@@ -36,7 +36,7 @@ madness::Future<int> LMP2::build_error(const int &ij)
 
 madness::Void LMP2::build_Bmat(const int &check, const int &ij)
 {
-    int thread = Communicator::world->thread_id(pthread_self());
+    int thread = WorldComm->thread_id(pthread_self());
     for(int p=0; p < matsize_; p++) {
         for(int q=0; q < matsize_; q++) {
             Bmat_[thread]->add(0, p, q, error_[p][ij]->vector_dot(error_[q][ij]));
@@ -55,7 +55,7 @@ void LMP2::perform_diis(const int &iter) {
                 task(me_, &LMP2::build_error, ij);
             }
         }
-        Communicator::world->sync();
+        WorldComm->sync();
     }
     else {
         // *** Compute the B matrix ***
@@ -73,24 +73,24 @@ void LMP2::perform_diis(const int &iter) {
             }
         }
 
-        Communicator::world->sync();
+        WorldComm->sync();
 
         for (int i=1; i < nthread_; i++) {
             Bmat_[0]->add(Bmat_[i]);
         }
 
-        Communicator::world->sum(&(Bmat_[0]->pointer(0)[0][0]), bmat_size*bmat_size);
+        WorldComm->sum(&(Bmat_[0]->pointer(0)[0][0]), bmat_size*bmat_size);
 
         double **bmat = Bmat_[0]->pointer();
         for (int i=0; i < matsize_; i++) {
             bmat[matsize_][i] = bmat[i][matsize_] = -1.0;
         }
 
-//        Communicator::world->sync();
+//        WorldComm->sync();
 //        if (me_ == 0) Bmat[0]->print();
-//        Communicator::world->sync();
+//        WorldComm->sync();
 
-        Communicator::world->bcast(&(Bmat_[0]->pointer(0)[0][0]), bmat_size*bmat_size);
+        WorldComm->bcast(&(Bmat_[0]->pointer(0)[0][0]), bmat_size*bmat_size);
 
 
         std::vector<double> co(matsize_+1);
@@ -108,7 +108,7 @@ void LMP2::perform_diis(const int &iter) {
             }
         }
 
-        Communicator::world->sync();
+        WorldComm->sync();
 
         Bmat_.clear();
         co.clear();

@@ -53,7 +53,7 @@ PsiReturnType lmp2(Options & options)
 
     energy = lmp2->compute_energy();
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     // Set some environment variables
     Process::environment.globals["LMP2 ENERGY"] = energy;

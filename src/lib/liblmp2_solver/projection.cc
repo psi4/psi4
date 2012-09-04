@@ -47,7 +47,7 @@ void LMP2::projection()
         }
     }
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     timer_off("Build Projectors");
 

@@ -133,7 +133,7 @@ public:
     int address_of_component(int lx, int ly, int lz);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
-    std::vector<SharedMatrix > create_matrices(const std::string& basename);
+    std::vector<SharedMatrix > create_matrices(const std::string& basename, bool ignore_symmetry=false);
 };
 }
 

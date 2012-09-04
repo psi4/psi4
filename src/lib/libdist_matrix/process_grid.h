@@ -28,7 +28,6 @@ namespace psi {
 class PSIO;
 //class process_grid;
 
-template <size_t NumDims=2>
 class process_grid
 {
 private:
@@ -47,10 +46,10 @@ private:
 
     void parallel_init()
     {
-        me_ = Communicator::world->me();
-        nprocs_ = Communicator::world->nproc();
-        nthreads_ = Communicator::world->nthread();
-        comm_ = Communicator::world->communicator();
+        me_ = WorldComm->me();
+        nprocs_ = WorldComm->nproc();
+        nthreads_ = WorldComm->nthread();
+        comm_ = WorldComm->communicator();
     }
 
     void fill()
@@ -66,6 +65,9 @@ private:
     }
 
 public:
+
+    enum { NumDims = 2 };
+
     ~process_grid()
     {
         dims_.clear();
@@ -232,10 +234,10 @@ public:
 
 //    void parallel_init()
 //    {
-//        me_ = Communicator::world->me();
-//        nprocs_ = Communicator::world->nproc();
-//        nthreads_ = Communicator::world->nthread();
-//        comm_ = Communicator::world->communicator();
+//        me_ = WorldComm->me();
+//        nprocs_ = WorldComm->nproc();
+//        nthreads_ = WorldComm->nthread();
+//        comm_ = WorldComm->communicator();
 //    }
 
 //    void fill()
@@ -369,7 +371,7 @@ public:
 //    {
 //        ndims_ = ndims;
 //        dims_ = grid;
-//        if (Communicator::world->me() == 0)
+//        if (WorldComm->me() == 0)
 //            std::cout << "ndims = " << ndims_ << std::endl;
 //        switch (ndims_) {
 //            case 0: throw PSIEXCEPTION("init(0): Process grid number of dimensions must be between 0-6");
