@@ -289,6 +289,71 @@ void MintsHelper::integrals()
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
 }
 
+void MintsHelper::integrals_erf()
+{
+    double omega = options_.get_double("OMEGA_ERF");
+
+    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWLWriter writer(ERIOUT);
+
+    // Get ERI object
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for (int i=0; i<WorldComm->nthread(); ++i)
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
+    boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
+
+    // Let the user know what we're doing.
+    fprintf(outfile, "      Computing non-zero ERF integrals..."); fflush(outfile);
+
+    SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
+        erf->compute_shell(shellIter, writer);
+
+    // Flush the buffers
+    ERIOUT.flush(1);
+
+    // Keep the integrals around
+    ERIOUT.set_keep_flag(true);
+    ERIOUT.close();
+
+    fprintf(outfile, "done\n");
+    fprintf(outfile, "      Computed %lu non-zero ERF integrals.\n"
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
+}
+
+void MintsHelper::integrals_erfc()
+{
+    double omega = options_.get_double("OMEGA_ERF");
+
+    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWLWriter writer(ERIOUT);
+
+    // Get ERI object
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for (int i=0; i<WorldComm->nthread(); ++i)
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
+    boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
+
+    // Let the user know what we're doing.
+    fprintf(outfile, "      Computing non-zero ERFComplement integrals..."); fflush(outfile);
+
+    SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
+        erf->compute_shell(shellIter, writer);
+
+    // Flush the buffers
+    ERIOUT.flush(1);
+
+    // Keep the integrals around
+    ERIOUT.set_keep_flag(true);
+    ERIOUT.close();
+
+    fprintf(outfile, "done\n");
+    fprintf(outfile, "      Computed %lu non-zero ERFComplement integrals.\n"
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
+}
+
+
 void MintsHelper::one_electron_integrals()
 {
     fprintf(outfile, " OEINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
