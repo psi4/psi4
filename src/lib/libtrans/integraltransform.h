@@ -217,6 +217,8 @@ class IntegralTransform{
 
         int nirrep() const { return nirreps_; }
 
+        void reset_so_int() { alreadyPresorted_ = false; }
+
     protected:
         void check_initialized();
         void common_initialize();
