@@ -937,7 +937,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Size of the perturbation (applies only to dipole perturbations) -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE");
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
@@ -951,6 +951,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("THETA_POINTS", 360);
     /*- Number of azimuthal grid points for sphereical potential integration -*/
     options.add_int("PHI_POINTS", 360);
+    /*- Read an external potential from the .dx file? -*/
+    options.add_bool("ONEPOT_GRID_READ", false);
 
 
     /*- SUBSECTION Parallel Runtime -*/
