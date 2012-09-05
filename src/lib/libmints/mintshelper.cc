@@ -293,7 +293,7 @@ void MintsHelper::integrals_erf()
 {
     double omega = options_.get_double("OMEGA_ERF");
 
-    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERF_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
@@ -318,14 +318,14 @@ void MintsHelper::integrals_erf()
 
     fprintf(outfile, "done\n");
     fprintf(outfile, "      Computed %lu non-zero ERF integrals.\n"
-                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERF_TEI);
 }
 
 void MintsHelper::integrals_erfc()
 {
     double omega = options_.get_double("OMEGA_ERF");
 
-    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERFC_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
@@ -350,7 +350,7 @@ void MintsHelper::integrals_erfc()
 
     fprintf(outfile, "done\n");
     fprintf(outfile, "      Computed %lu non-zero ERFComplement integrals.\n"
-                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERFC_TEI);
 }
 
 

@@ -156,6 +156,8 @@ class IntegralTransform{
 
         /*===== The set/get accessor functions =====*/
 
+        /// Sets the SO IWL file to read the TEIs from.
+        void set_so_tei_file(int so_tei_file) { soIntTEIFile_ = so_tei_file; }
         /// Set whether to write a DPD formatted SO basis TPDM to disk after density transformations
         void set_write_dpd_so_tpdm(bool t_f) { write_dpd_so_tpdm_ = t_f; }
         /// Set the level of printing used during transformations (0 -> 6)
@@ -200,13 +202,13 @@ class IntegralTransform{
         void set_dpd_int_file(int file) { dpdIntFile_ = file; }
         /// Set the name used for the Alpha-Alpha integrals in the DPD file.  Needs to be
         /// called before each transformation in order to override the default name.
-        void set_aa_int_name(const char *name) { aaIntName_ = const_cast<char*>(name); }
+        void set_aa_int_name(const std::string& name) { aaIntName_ = name; }
         /// Set the name used for the Alpha-Beta integrals in the DPD file.  Needs to be
         /// called before each transformation in order to override the default name.
-        void set_ab_int_name(const char *name) { abIntName_ = const_cast<char*>(name); }
+        void set_ab_int_name(const std::string& name) { abIntName_ = name; }
         /// Set the name used for the Beta-Beta integrals in the DPD file.  Needs to be
         /// called before each transformation in order to override the default name.
-        void set_bb_int_name(const char *name) { bbIntName_ = const_cast<char*>(name); }
+        void set_bb_int_name(const std::string& name) { bbIntName_ = name; }
 
         // Get the alpha correlated to Pitzer ordering array, used in backtransforms
         const int *alpha_corr_to_pitzer() const { return aCorrToPitzer_; }
@@ -276,6 +278,8 @@ class IntegralTransform{
         bool write_dpd_so_tpdm_;
         // The file to which DPD formatted integrals are written
         int dpdIntFile_;
+        // The file from which IWL SO TEIs are read
+        int soIntTEIFile_;
         // The file containing alpha half-transformed integrals in DPD format
         int aHtIntFile_;
         // The file containing beta half-transformed integrals in DPD format
@@ -301,11 +305,11 @@ class IntegralTransform{
         // The number of frozen virtual orbitals
         int nfzv_;
         // The name of the alpha-alpha DPD integral buffer
-        char *aaIntName_;
+        std::string aaIntName_;
         // The name of the alpha-beta DPD integral buffer
-        char *abIntName_;
+        std::string abIntName_;
         // The name of the beta-beta DPD integral buffer
-        char *bbIntName_;
+        std::string bbIntName_;
         // A string describing the spaces in which the integrals are to be transformed
         char *spaces_;
         // An array containing labels for each irrep
