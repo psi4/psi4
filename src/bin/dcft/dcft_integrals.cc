@@ -422,48 +422,38 @@ DCFTSolver::build_denominators()
     //Elements of the Fock matrix
     //Alpha occupied
 
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-    dpd_file2_mat_init(&F);
-    int offset = 0;
-    for(int h = 0; h < nirrep_; ++h){
-        offset += frzcpi_[h];
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int j = 0 ; j < naoccpi_[h]; ++j){
-                if (options_.get_str("TAU") == "APPROXIMATE") {
+    if (options_.get_str("TAU") == "APPROXIMATE") {
+        dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+        dpd_file2_mat_init(&F);
+        int offset = 0;
+        for(int h = 0; h < nirrep_; ++h){
+            offset += frzcpi_[h];
+            for(int i = 0 ; i < naoccpi_[h]; ++i){
+                for(int j = 0 ; j < naoccpi_[h]; ++j){
                     F.matrix[h][i][j] = moFa_->get(h, i, j);
                 }
-                else {
-                    F.matrix[h][i][j] = 0.0;
-                    if (i == j) F.matrix[h][i][j] = moFa_->get(h, i, i) / (1.0 + 2.0 * T_OO.matrix[h][i][i]);
-                }
             }
+            offset += nmopi_[h];
         }
-        offset += nmopi_[h];
-    }
-    dpd_file2_mat_wrt(&F);
-    dpd_file2_close(&F);
+        dpd_file2_mat_wrt(&F);
+        dpd_file2_close(&F);
 
-    //Alpha Virtual
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-    dpd_file2_mat_init(&F);
-    offset = 0;
-    for(int h = 0; h < nirrep_; ++h){
-        offset += naoccpi_[h];
-        for(int i = 0 ; i < navirpi_[h]; ++i){
-            for(int j = 0 ; j < navirpi_[h]; ++j){
-                if (options_.get_str("TAU") == "APPROXIMATE") {
+        //Alpha Virtual
+        dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+        dpd_file2_mat_init(&F);
+        offset = 0;
+        for(int h = 0; h < nirrep_; ++h){
+            offset += naoccpi_[h];
+            for(int i = 0 ; i < navirpi_[h]; ++i){
+                for(int j = 0 ; j < navirpi_[h]; ++j){
                     F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
                 }
-                else {
-                    F.matrix[h][i][j] = 0.0;
-                    if (i == j) F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], i + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][i][i]);
-                }
             }
+            offset += nmopi_[h] - naoccpi_[h];
         }
-        offset += nmopi_[h] - naoccpi_[h];
+        dpd_file2_mat_wrt(&F);
+        dpd_file2_close(&F);
     }
-    dpd_file2_mat_wrt(&F);
-    dpd_file2_close(&F);
 
     //Diagonal elements of the Fock matrix
     //Beta spin
@@ -493,49 +483,38 @@ DCFTSolver::build_denominators()
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
 
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
-    dpd_file2_mat_init(&F);
-    offset = 0;
-    for(int h = 0; h < nirrep_; ++h){
-        offset += frzcpi_[h];
-        for(int i = 0 ; i < nboccpi_[h]; ++i){
-            for(int j = 0 ; j < nboccpi_[h]; ++j){
-                if (options_.get_str("TAU") == "APPROXIMATE") {
+    if (options_.get_str("TAU") == "APPROXIMATE") {
+        dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+        dpd_file2_mat_init(&F);
+        int offset = 0;
+        for(int h = 0; h < nirrep_; ++h){
+            offset += frzcpi_[h];
+            for(int i = 0 ; i < nboccpi_[h]; ++i){
+                for(int j = 0 ; j < nboccpi_[h]; ++j){
                     F.matrix[h][i][j] = moFb_->get(h, i, j);
                 }
-                else {
-                    F.matrix[h][i][j] = 0.0;
-                    if (i == j) F.matrix[h][i][i] = moFb_->get(h, i, i) / (1.0 + 2.0 * T_oo.matrix[h][i][i]);
-                }
             }
+            offset += nmopi_[h];
         }
-        offset += nmopi_[h];
-    }
-    dpd_file2_mat_wrt(&F);
-    dpd_file2_close(&F);
+        dpd_file2_mat_wrt(&F);
+        dpd_file2_close(&F);
 
-    //Beta Virtual
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
-    dpd_file2_mat_init(&F);
-    offset = 0;
-    for(int h = 0; h < nirrep_; ++h){
-        offset += nboccpi_[h];
-        for(int i = 0 ; i < nbvirpi_[h]; ++i){
-            for(int j = 0 ; j < nbvirpi_[h]; ++j){
-                if (options_.get_str("TAU") == "APPROXIMATE") {
+        //Beta Virtual
+        dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+        dpd_file2_mat_init(&F);
+        offset = 0;
+        for(int h = 0; h < nirrep_; ++h){
+            offset += nboccpi_[h];
+            for(int i = 0 ; i < nbvirpi_[h]; ++i){
+                for(int j = 0 ; j < nbvirpi_[h]; ++j){
                     F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
                 }
-                else {
-                    F.matrix[h][i][j] = 0.0;
-                    if (i == j) F.matrix[h][i][i] = moFb_->get(h, i + nboccpi_[h], i + nboccpi_[h]) / (1.0 - 2.0 * T_vv.matrix[h][i][i]);
-                }
-
             }
+            offset += nmopi_[h] - nboccpi_[h];
         }
-        offset += nmopi_[h] - nboccpi_[h];
+        dpd_file2_mat_wrt(&F);
+        dpd_file2_close(&F);
     }
-    dpd_file2_mat_wrt(&F);
-    dpd_file2_close(&F);
 
     dpd_file2_close(&T_OO);
     dpd_file2_close(&T_oo);
