@@ -16,7 +16,7 @@ using namespace psi;
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
     //SharedMolecule mol = Process::environment.molecule();
-    return DipoleInt::nuclear_contribution(mol);
+    return DipoleInt::nuclear_contribution(mol, Vector3(0, 0, 0));
 }
 
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
@@ -205,6 +205,8 @@ void export_mints()
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
+            def("integrals_erf", &MintsHelper::integrals_erf, "docstring").
+            def("integrals_erfc", &MintsHelper::integrals_erfc, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("basisset", &MintsHelper::basisset, "docstring").
             def("sobasisset", &MintsHelper::sobasisset, "docstring").
