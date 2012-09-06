@@ -115,8 +115,13 @@ protected:
     void update_cumulant_and_orbitals();
     void run_davidson();
     void davidson_guess();
-    bool augment_b(double *vec, double tol);
+    // Exact Tau
+    void refine_tau();
+    void compute_F_intermediate();
+    void compute_refined_F_intermediate();
+    void one_index_transform();
 
+    bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update

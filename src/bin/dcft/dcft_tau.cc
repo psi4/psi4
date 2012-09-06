@@ -22,14 +22,10 @@ DCFTSolver::build_tau()
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     dpd_buf4_init(&L1, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"),
@@ -106,14 +102,10 @@ DCFTSolver::transform_tau()
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
@@ -190,14 +182,10 @@ DCFTSolver::compute_tau_squared()
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
@@ -312,14 +300,10 @@ DCFTSolver::print_opdm()
 {
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
@@ -390,6 +374,170 @@ DCFTSolver::print_opdm()
     delete[] irrepLabels;
     delete[] aIrrepCount;
     delete[] bIrrepCount;
+}
+
+void
+DCFTSolver::refine_tau() {
+
+    aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
+    bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
+    avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
+    bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+
+    // Read MO-basis Tau from disk into the memory
+    dpdfile2 T_OO, T_oo, T_VV, T_vv;
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int j = 0; j < naoccpi_[h]; ++j){
+                aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
+            }
+        }
+        for(int a = 0; a < navirpi_[h]; ++a){
+            for(int b = 0; b < navirpi_[h]; ++b){
+                avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
+            }
+        }
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int j = 0; j < nboccpi_[h]; ++j){
+                bocc_tau_->set(h, i, j, T_oo.matrix[h][i][j]);
+            }
+        }
+        for(int a = 0; a < nbvirpi_[h]; ++a){
+            for(int b = 0; b < nbvirpi_[h]; ++b){
+                bvir_tau_->set(h, a, b, T_vv.matrix[h][a][b]);
+            }
+        }
+    }
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    // Iteratively compute the exact Tau
+
+    SharedMatrix aocc_tau_old(new Matrix("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_));
+    SharedMatrix bocc_tau_old(new Matrix("MO basis Tau (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_));
+    SharedMatrix avir_tau_old(new Matrix("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_));
+    SharedMatrix bvir_tau_old(new Matrix("MO basis Tau (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_));
+    SharedMatrix aocc_d(new Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_));
+    SharedMatrix bocc_d(new Matrix("Non-idempotency of OPDM (Beta Occupied, old)", nirrep_, nboccpi_, nboccpi_));
+    SharedMatrix avir_d(new Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_));
+    SharedMatrix bvir_d(new Matrix("Non-idempotency of OPDM (Beta Virtual, old)", nirrep_, nbvirpi_, nbvirpi_));
+
+    bool converged = false;
+    bool failed = false;
+    int cycle = 0;
+
+    // Copy approximate Tau as the non-idempotency of OPDM
+    aocc_d->copy(aocc_tau_);
+    avir_d->copy(avir_tau_);
+    bocc_d->copy(bocc_tau_);
+    bvir_d->copy(bvir_tau_);
+
+    while(!converged && !failed){
+
+        // Save old tau from previous iteration
+        aocc_tau_old->copy(aocc_tau_);
+        avir_tau_old->copy(avir_tau_);
+        bocc_tau_old->copy(bocc_tau_);
+        bvir_tau_old->copy(bvir_tau_);
+
+        // Tau_ij = d_ij
+        // Tau_ab = -d_ab
+        aocc_tau_->copy(aocc_d);
+        avir_tau_->copy(avir_d);
+        bocc_tau_->copy(bocc_d);
+        bvir_tau_->copy(bvir_d);
+
+        // Tau_ij -= Tau_ik * Tau_kj
+        // Tau_ab += Tau_ac * Tau_cb
+        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
+        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
+        bocc_tau_->gemm(false, false, -1.0, bocc_tau_old, bocc_tau_old, 1.0);
+        bvir_tau_->gemm(false, false, 1.0, bvir_tau_old, bvir_tau_old, 1.0);
+
+        // Compute RMS
+        aocc_tau_old->subtract(aocc_tau_);
+        avir_tau_old->subtract(avir_tau_);
+        bocc_tau_old->subtract(bocc_tau_);
+        bvir_tau_old->subtract(bvir_tau_);
+
+        double rms = aocc_tau_old->rms();
+        rms += avir_tau_old->rms();
+        rms += bocc_tau_old->rms();
+        rms += bvir_tau_old->rms();
+
+        converged = (rms < lambda_threshold_);
+        failed    = (++cycle == maxiter_);
+
+        if (print_ > 2) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
+
+    } // end of macroiterations
+
+    if (failed) throw PSIEXCEPTION("Exact Tau iterations did not converge!!!");
+
+    // Write the exact tau back to disk
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int j = 0; j < naoccpi_[h]; ++j){
+                T_OO.matrix[h][i][j] = aocc_tau_->get(h, i, j);
+            }
+        }
+        for(int a = 0; a < navirpi_[h]; ++a){
+            for(int b = 0; b < navirpi_[h]; ++b){
+                T_VV.matrix[h][a][b] = avir_tau_->get(h, a, b);
+            }
+        }
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int j = 0; j < nboccpi_[h]; ++j){
+                T_oo.matrix[h][i][j] = bocc_tau_->get(h, i, j);
+            }
+        }
+        for(int a = 0; a < nbvirpi_[h]; ++a){
+            for(int b = 0; b < nbvirpi_[h]; ++b){
+                T_vv.matrix[h][a][b] = bvir_tau_->get(h, a, b);
+            }
+        }
+    }
+
+    dpd_file2_mat_wrt(&T_OO);
+    dpd_file2_mat_wrt(&T_oo);
+    dpd_file2_mat_wrt(&T_VV);
+    dpd_file2_mat_wrt(&T_vv);
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
 }
 
 }} // Namespaces
