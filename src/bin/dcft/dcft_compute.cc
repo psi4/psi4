@@ -31,6 +31,9 @@ DCFTSolver::compute_energy()
     // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
+
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "Analytic gradients", __FILE__, __LINE__);
+
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
@@ -244,6 +247,9 @@ DCFTSolver::compute_energy()
     }
     // This is the simultaneous orbital/lambda update algorithm
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
+
+        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
+
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -382,6 +388,8 @@ DCFTSolver::compute_energy()
         fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
         fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
 
+        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = QC", __FILE__, __LINE__);
+        if (options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
         run_qc_dcft();
 
         scfDone = true;
