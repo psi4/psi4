@@ -1124,9 +1124,7 @@ namespace psi{ namespace dcft{
       moFb_->add(moG_tau_b_);
 
       // Write the MO basis Fock operator to the DPD file and update the denominators
-      if (options_.get_str("TAU") == "APPROXIMATE") {
-          build_denominators();
-      }
+      build_denominators();
 
       psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 

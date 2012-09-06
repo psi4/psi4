@@ -941,7 +941,7 @@ DCFTSolver::one_index_transform() {
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv'>");
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_file2_init(&U, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "U <V|V'>");
+    dpd_file2_init(&U, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "U <v|v'>");
     dpd_contract424(&L, &U, &Lt, 3, 0, 0, 1.0, 0.0);
     dpd_file2_close(&U);
     dpd_buf4_close(&L);
