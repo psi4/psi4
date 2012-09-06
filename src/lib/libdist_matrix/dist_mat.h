@@ -1871,8 +1871,7 @@ public:
      */
     Distributed_Matrix operator* (Distributed_Matrix &b_mat);
 
-    void diagonalize(Distributed_Matrix& eigvec, Vector& eigval);
-
+    void diagonalize(Distributed_Matrix& eigvec, Vector& eigval, bool return_eigvec = true);
 };
 
 } // End of namespace psi
