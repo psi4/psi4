@@ -248,8 +248,6 @@ DCFTSolver::compute_energy()
     // This is the simultaneous orbital/lambda update algorithm
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
 
-        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
-
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -280,6 +278,9 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            if (options_.get_str("TAU") == "EXACT") {
+                refine_tau();
+            }
             transform_tau();
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);

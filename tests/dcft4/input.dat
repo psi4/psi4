@@ -4,7 +4,7 @@
 #! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
 #! The computation is then repeated using the exact expression for non-idempotent contribution to OPDM
-#! (TAU = EXACT) using two-step algorithm.
+#! (TAU = EXACT) using the same algorithms.
 
 memory 250 mb
 
@@ -72,3 +72,16 @@ energy('dcft')
 
 compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, tau=exact, ao_basis=disk)");     #TEST
 compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, tau=exact, ao_basis=disk)");                #TEST
+
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, tau=exact, ao_basis=none)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, tau=exact, ao_basis=none)");                #TEST
+
+set ao_basis disk
+energy('dcft')
+
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, tau=exact, ao_basis=disk)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, tau=exact, ao_basis=disk)");                #TEST
