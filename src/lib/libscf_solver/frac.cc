@@ -192,7 +192,7 @@ void HF::frac_renormalize()
 
         double** Cp = ((is_alpha) ? Ca_->pointer(h) : Cb_->pointer(h));
 
-        // And I say all that to say this
+        // And I say all that to say this: TODO: This destroys FMP2 computations if val == 0
         if (val != 0.0) 
             C_DSCAL(nso, 1.0 / sqrt(val), &Cp[0][i], nmo); 
     } 
