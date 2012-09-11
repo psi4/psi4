@@ -346,11 +346,17 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
     const int center_j = ncenterj * 3 * size;
 
     const int izm1 = 1;
-    const int iym1 = am1 + 1 + 1;  // extra 1 for derivative
+    const int iym1 = am1 + 1;
     const int ixm1 = iym1 * iym1;
     const int jzm1 = 1;
-    const int jym1 = am2 + 1 + 1;  // extra 1 for derivative
+    const int jym1 = am2 + 1;
     const int jxm1 = jym1 * jym1;
+    const int izm2 = 1;
+    const int iym2 = am1 + 3;
+    const int ixm2 = iym2 * iym2;
+    const int jzm2 = 1;
+    const int jym2 = am2 + 3;
+    const int jxm2 = jym2 * jym2;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -410,7 +416,11 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                 PC[2] = P[2] - Zxyzp[atom][3];
 
                 // Do recursion
-                potential_recur_->compute(PA, PB, PC, gamma, am1+1, am2+1);
+                potential_recur_->compute(PA, PB, PC, gamma, am1+2, am2+2);
+
+                for (int ii=0; ii<3; ++ii)
+                    for (int jj=0; jj<3; ++jj)
+                        fprintf(outfile, "vi %lf\n", vi[ii][jj][0]);
 
                 ao12 = 0;
                 for(int ii = 0; ii <= am1; ii++) {
@@ -426,55 +436,32 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 int n2 = ll;
 
                                 // Compute location in the recursion
-                                int iind = l1 * ixm1 + m1 * iym1 + n1 * izm1;
-                                int jind = l2 * jxm1 + m2 * jym1 + n2 * jzm1;
+                                int iind = l1 * ixm2 + m1 * iym2 + n1 * izm2;
+                                int jind = l2 * jxm2 + m2 * jym2 + n2 * jzm2;
 
                                 const double pfac = over_pf * Z;
 
-                                // x
-                                double temp = 2.0*a1*vi[iind+ixm1][jind][0];
-                                if (l1)
-                                    temp -= l1*vi[iind-ixm1][jind][0];
+                                double v_int = vi[iind][jind][0];
+
+                                // V_{\mu\nu}%{a_x a_x}
+                                double temp = 0.0;
+
+                                temp += 4.0*a1*a1*vi[iind+ixm2+ixm2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
+                                if (l1 > 1)
+                                    temp += l1*(l1-1)*vi[iind-ixm2-ixm2][jind][0];
+                                //fprintf(outfile, "\tl %lf r %lf t %lf\n", 4.0*a1*a1*vi[iind+ixm2+ixm2][jind][0], 2.0*a1*(2*l1+1)*v_int, temp);
                                 buffer_[center_i+(0*size)+ao12] -= temp * pfac;
-                                // printf("ix temp = %f ", temp);
 
-                                temp = 2.0*a2*vi[iind][jind+jxm1][0];
-                                if (l2)
-                                    temp -= l2*vi[iind][jind-jxm1][0];
-                                buffer_[center_j+(0*size)+ao12] -= temp * pfac;
-                                // printf("jx temp = %f ", temp);
-
-                                buffer_[3*size*atom+ao12] -= vx[iind][jind][0] * pfac;
-
-                                // y
-                                temp = 2.0*a1*vi[iind+iym1][jind][0];
+                                temp = 0.0;
+                                temp += 4.0*a1*a1*vi[iind+iym2+ixm2][jind][0];
+                                if (l1)
+                                    temp -= 2.0*l1*a1*vi[iind-ixm2+iym2][jind][0];
                                 if (m1)
-                                    temp -= m1*vi[iind-iym1][jind][0];
+                                    temp -= 2.0*m1*a1*vi[iind+ixm2-iym2][jind][0];
+                                if (l1 && m1)
+                                    temp += l1*m1*vi[iind-ixm2-iym2][jind][0];
+                                fprintf(outfile, "temp %lf\n", temp);
                                 buffer_[center_i+(1*size)+ao12] -= temp * pfac;
-                                // printf("iy temp = %f ", temp);
-
-                                temp = 2.0*a2*vi[iind][jind+jym1][0];
-                                if (m2)
-                                    temp -= m2*vi[iind][jind-jym1][0];
-                                buffer_[center_j+(1*size)+ao12] -= temp * pfac;
-                                // printf("jy temp = %f ", temp);
-
-                                buffer_[3*size*atom+size+ao12] -= vy[iind][jind][0] * pfac;
-
-                                // z
-                                temp = 2.0*a1*vi[iind+izm1][jind][0];
-                                if (n1)
-                                    temp -= n1*vi[iind-izm1][jind][0];
-                                buffer_[center_i+(2*size)+ao12] -= temp * pfac;
-                                // printf("iz temp = %f ", temp);
-
-                                temp = 2.0*a2*vi[iind][jind+jzm1][0];
-                                if (n2)
-                                    temp -= n2*vi[iind][jind-jzm1][0];
-                                buffer_[center_j+(2*size)+ao12] -= temp * pfac;
-                                // printf("jz temp = %f \n", temp);
-
-                                buffer_[3*size*atom+2*size+ao12] -= vz[iind][jind][0] * pfac;
 
                                 ao12++;
                             }
