@@ -477,7 +477,7 @@ public:
     const SphericalTransform* spherical_transform(int am) const { return &(spherical_transforms_[am]); }
 
     // Return spherical transform object for am
-    std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
+    std::vector<SphericalTransform>& spherical_transform() { return spherical_transforms_; }
 
     /// Return a spherical transform iterator object for am
     SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1) const;
