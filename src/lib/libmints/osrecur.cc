@@ -888,7 +888,7 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
