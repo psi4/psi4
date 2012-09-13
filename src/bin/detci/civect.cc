@@ -613,10 +613,10 @@ double CIvect::operator*(CIvect &b)
 }
 
 
-void CIvect::setarray(const double *a, int len)
+void CIvect::setarray(const double *a, BIGINT len)
 {
    double *aptr;
-   int i;
+   BIGINT i;
 
    if (len > vectlen) len = vectlen;
 
