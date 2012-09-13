@@ -10,7 +10,7 @@
 
 """
 import re
-import input
+import qcdb
 
 # <<< BASIC Database Module >>>
 # Geometries and Reference energies from nowhere special.
@@ -49,9 +49,10 @@ TAGL['%s-%s-reagent'    % (dbse, 'h2o'                   )] = 'water'
 TAGL['%s-%s'            % (dbse, 'nh3'                   )] = 'ammonia'
 TAGL['%s-%s-reagent'    % (dbse, 'nh3'                   )] = 'ammonia'
 
-# <<< Molecule Specifications >>>
-BASIC_ch4 = input.process_input("""
-molecule dimer {
+# <<< Geometry Specification Strings >>>
+GEOS = {}
+
+GEOS['%s-%s-reagent' % (dbse, 'ch4')] = qcdb.Molecule("""
 0 1
 C        0.00000000    -0.00014000     1.85916100
 H       -0.88855100     0.51306000     1.49468500
@@ -59,35 +60,31 @@ H        0.88855100     0.51306000     1.49468500
 H        0.00000000    -1.02633900     1.49486800
 H        0.00000000     0.00008900     2.94828400
 units angstrom
-}
-""", 0)
+""")
 
-BASIC_h2o = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o')] = qcdb.Molecule("""
 0 1
 O       -1.55100700    -0.11452000     0.00000000
 H       -1.93425900     0.76250300     0.00000000
 H       -0.59967700     0.04071200     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BASIC_nh3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'nh3')] = qcdb.Molecule("""
 0 1
 N       -1.57871800    -0.04661100     0.00000000
 H       -2.15862100     0.13639600    -0.80956500
 H       -2.15862100     0.13639600     0.80956500
 H       -0.84947100     0.65819300     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
-for rxn in HRXN:
-    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+#########################################################################
 
-        molname = rxnpattern.match(rgt)
-        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['BASIC-ch4-reagent'] = 13.4480422656
+DATA['NUCLEAR REPULSION ENERGY']['BASIC-h2o-reagent'] = 9.16383014597
+DATA['NUCLEAR REPULSION ENERGY']['BASIC-nh3-reagent'] = 11.9474317239

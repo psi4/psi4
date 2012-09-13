@@ -896,6 +896,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
         It is recommended to leave damping on until convergence, which is the default. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
+    /*- Accelerate convergence by performing a preliminary scf with
+    this small basis set followed by projection into the full target
+    basis. A value of ``TRUE`` turns on projection using the 3-21G
+    small basis set. -*/
+    options.add_str("BASIS_GUESS", "FALSE", "");
+    /*- When |scf__basis_guess| is active, run the preliminary scf in
+    density-fitted mode with this as fitting basis for the small basis
+    set. A value of ``TRUE`` turns on density fitting with the
+    cc-pVDZ-RI basis set (when available for all elements). -*/
+    options.add_str("DF_BASIS_GUESS", "FALSE", "");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
