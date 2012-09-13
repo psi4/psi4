@@ -409,7 +409,8 @@ void title(void)
 */
 void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 {
-   int nroots, i, j, size;
+   BIGINT size;
+   int nroots, i, j;
    double conv_rms, conv_e, *evals, **evecs, nucrep, efzc, tval;
    int *tptr;
    double *cbuf;
@@ -427,7 +428,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
        conv_rms = Parameters.special_conv;
    }
    size = CIblks.vectlen;
-   if (Parameters.nprint > size) Parameters.nprint = size;
+   if ((BIGINT) Parameters.nprint > size) Parameters.nprint = (int) size;
    nucrep = CalcInfo.enuc;
    efzc = CalcInfo.efzc;
    tmp_ras_array = init_array(1024);
@@ -450,7 +451,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
       double **H, **rsp_evecs;
       int Iarel, Ialist, Ibrel, Iblist;
-      unsigned long int ii, jj;
+      BIGINT ii, jj;
       SlaterDeterminant I, J;
       int *mi_iac, *mi_ibc, *mi_iaidx, *mi_ibidx;
       double *mi_coeff;
@@ -630,6 +631,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
           free(fzc_occ);
 
         int Iarel, Ialist, Ibrel, Iblist;
+        // the slaterdetset code below will fail if size > int
+        // but that should be ok b/c we won't be running RSP in that case...
         slaterdetset_init(&dets,size,&alphastrings,&betastrings);
         for (int ii=0; ii<size; ii++) {
           Cvec.det2strings(ii, &Ialist, &Iarel, &Iblist, &Ibrel);

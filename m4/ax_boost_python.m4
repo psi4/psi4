@@ -78,7 +78,7 @@ if test "$ac_cv_boost_python" = "yes"; then
      ax_python_lib=$with_boost_python
      ax_boost_python_lib=boost_python-$with_boost_python
    fi])
-  for ax_lib in $ax_python_lib $ax_boost_python_lib boost_python; do
+  for ax_lib in $ax_python_lib $ax_boost_python_lib boost_python boost_python-mt; do
     AC_CHECK_LIB($ax_lib, exit, [BOOST_PYTHON_LIB=-l$ax_lib ac_cv_boost_python_found_exit=yes break])
   done
   if test "x$ac_cv_boost_python_found_exit" != "xyes"; then

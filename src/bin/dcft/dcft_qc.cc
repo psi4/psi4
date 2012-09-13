@@ -19,8 +19,6 @@ DCFTSolver::run_qc_dcft()
 
     int cycle = 0;
 
-    if (options_.get_str("DERTYPE") == "FIRST") throw PSIEXCEPTION ("Analytic gradients are not available for QC DCFT yet. Please choose a different algorithm");
-
     // Allocate the memory
     qc_dcft_init();
 

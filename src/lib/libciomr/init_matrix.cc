@@ -16,6 +16,8 @@ namespace psi {
   *  WARNING: Psi 3 init/free_matrix routines deprecated
   *  by Robert Parrish, robparrish@gmail.com
   *
+  *  block_matrix() replaces this routine
+  *
   *  the signature of this method remains the same
   *
   *  June 22, 2010
@@ -95,6 +97,8 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
   /**
   *  WARNING: Psi 3 init/free_matrix routines deprecated
   *  by Robert Parrish, robparrish@gmail.com
+  *
+  *  use block_matrix allocation/free calls instead
   *
   *  the signature of this method remains the same
   *
