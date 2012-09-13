@@ -150,7 +150,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
     options.add_bool("DETCI_FREEZE_CORE",true);
 
-    /*- Do calculate the value of $\langle S^2\rangle$ for each root? -*/
+    /*- Do calculate the value of $\langle S^2\rangle$ for each root? 
+    Only supported for |detci__icore| = 1. -*/
     options.add_bool("S_SQUARED",false);
 
     /*- Specifies how to handle buffering of CI vectors.  A value of 0
