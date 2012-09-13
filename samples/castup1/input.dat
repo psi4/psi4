@@ -14,7 +14,8 @@ set globals {
 basis cc-pvdz
 reference rhf
 guess sad
+basis_guess 3-21g
 }
 
-thisenergy = energy('scf',cast_up='3-21G')
+thisenergy = energy('scf')
 
