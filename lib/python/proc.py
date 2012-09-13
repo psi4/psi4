@@ -117,9 +117,23 @@ def run_scf(name, **kwargs):
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
-
+   
+    if 'brokensymmetry' in kwargs:
+        molecule = PsiMod.get_active_molecule()
+        multp = molecule.multiplicity()
+        if multp != 1:
+            raise ValidationError('Broken symmetry is only for singlets.')
+        if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
+            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
+        molecule.set_multiplicity(3)
+        PsiMod.print_out("\n\n\tComputing high-spin triplet guess\n\n")
+        scf_helper(name, **kwargs)
+        molecule.set_multiplicity(1)
+        PsiMod.set_local_option('SCF', 'GUESS', 'READ')
+        PsiMod.print_out("\n\n\tComputing broken symmetry solution from high-spin triplet guess\n\n")
+            
     returnvalue = scf_helper(name, **kwargs)
-
+    
     optstash.restore()
     return returnvalue
 
