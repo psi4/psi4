@@ -24,7 +24,7 @@
 
 """
 import re
-import input
+import qcdb
 
 # <<< RGC10 Database Module >>>
 dbse = 'RGC1'
@@ -61,6 +61,18 @@ HRXN_SM = ['NeNe-1.0', 'NeNe-1.1', 'NeAr-0.85']
 HRXN_LG = ['KrKr-0.85']
 HRXN_EQ = ['HeHe-1.0', 'HeNe-1.0', 'HeAr-1.0', 'HeKr-1.0', 'NeNe-1.0',
            'NeAr-1.0', 'NeKr-1.0', 'ArAr-1.0', 'ArKr-1.0', 'KrKr-1.0']
+
+Req = {}
+Req['HeHe'] = 2.98
+Req['HeNe'] = 3.05
+Req['HeAr'] = 3.50
+Req['HeKr'] = 3.70
+Req['NeNe'] = 3.09
+Req['NeAr'] = 3.48
+Req['NeKr'] = 3.65
+Req['ArAr'] = 3.75
+Req['ArKr'] = 3.89
+Req['KrKr'] = 4.01
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -489,2212 +501,696 @@ TAGL['%s-Ne-mono-unCP' % (dbse)] = 'Neon Atom'
 TAGL['%s-Ar-mono-unCP' % (dbse)] = 'Argon Atom'
 TAGL['%s-Kr-mono-unCP' % (dbse)] = 'Krypton Atom'
 
-# <<< Molecule Specifications >>>
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-
-RGC1_HeHe_0p85 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  2.533000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_0p9 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  2.682000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_0p95 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  2.831000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_0p975 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  2.905500
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  2.980000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p025 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.054500
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p05 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.129000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p1 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.278000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p15 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.427000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.576000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p3 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  3.874000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p4 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  4.172000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p5 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  4.470000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p6 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  4.768000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p7 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  5.066000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_1p8 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  5.364000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_2p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  5.960000
-units angstrom
-}
-""", 0)
-
-RGC1_HeHe_2p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-He 1  R
-R =  6.556000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_0p85 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  2.592500
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_0p9 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  2.745000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_0p95 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  2.897500
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_0p975 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  2.973750
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.050000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p025 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.126250
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p05 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.202500
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p1 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.355000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p15 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.507500
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.660000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p3 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  3.965000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p4 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  4.270000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p5 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  4.575000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p6 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  4.880000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p7 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  5.185000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_1p8 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  5.490000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_2p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  6.100000
-units angstrom
-}
-""", 0)
-
-RGC1_HeNe_2p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ne 1  R
-R =  6.710000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  2.975000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.150000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.325000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.412500
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.500000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.587500
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.675000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  3.850000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  4.025000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  4.200000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  4.550000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  4.900000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  5.250000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  5.600000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  5.950000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  6.300000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  7.000000
-units angstrom
-}
-""", 0)
-
-RGC1_HeAr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Ar 1  R
-R =  7.700000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.145000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.330000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.515000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.607500
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.700000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.792500
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  3.885000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  4.070000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  4.255000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  4.440000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  4.810000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  5.180000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  5.550000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  5.920000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  6.290000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  6.660000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  7.400000
-units angstrom
-}
-""", 0)
-
-RGC1_HeKr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-He
---
-0 1
-Kr 1  R
-R =  8.140000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  2.626500
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  2.781000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  2.935500
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.012750
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.090000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.167250
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.244500
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.399000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.553500
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  3.708000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  4.017000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  4.326000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  4.635000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  4.944000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  5.253000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  5.562000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  6.180000
-units angstrom
-}
-""", 0)
-
-RGC1_NeNe_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ne 1  R
-R =  6.798000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  2.958000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.132000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.306000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.393000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.480000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.567000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.654000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  3.828000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  4.002000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  4.176000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  4.524000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  4.872000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  5.220000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  5.568000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  5.916000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  6.264000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  6.960000
-units angstrom
-}
-""", 0)
-
-RGC1_NeAr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Ar 1  R
-R =  7.656000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.102500
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.285000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.467500
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.558750
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.650000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.741250
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  3.832500
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  4.015000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  4.197500
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  4.380000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  4.745000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  5.110000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  5.475000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  5.840000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  6.205000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  6.570000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  7.300000
-units angstrom
-}
-""", 0)
-
-RGC1_NeKr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Ne
---
-0 1
-Kr 1  R
-R =  8.030000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.187500
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.375000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.562500
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.656250
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.750000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.843750
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  3.937500
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  4.125000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  4.312500
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  4.500000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  4.875000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  5.250000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  5.625000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  6.000000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  6.375000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  6.750000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  7.500000
-units angstrom
-}
-""", 0)
-
-RGC1_ArAr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Ar 1  R
-R =  8.250000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.306500
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.501000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.695500
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.792750
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.890000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  3.987250
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  4.084500
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  4.279000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  4.473500
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  4.668000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  5.057000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  5.446000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  5.835000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  6.224000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  6.613000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  7.002000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  7.780000
-units angstrom
-}
-""", 0)
-
-RGC1_ArKr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Ar
---
-0 1
-Kr 1  R
-R =  8.558000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_0p85 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  3.408500
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_0p9 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  3.609000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_0p95 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  3.809500
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_0p975 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  3.909750
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p0 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.010000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p025 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.110250
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p05 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.210500
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p1 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.411000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p15 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.611500
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p2 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  4.812000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p3 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  5.213000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p4 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  5.614000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p5 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  6.015000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p6 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  6.416000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p7 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  6.817000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_1p8 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  7.218000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_2p0 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  8.020000
-units angstrom
-}
-""", 0)
-
-RGC1_KrKr_2p2 = input.process_input("""
-molecule dimer {
-0 1
-Kr
---
-0 1
-Kr 1  R
-R =  8.822000
-units angstrom
-}
-""", 0)
-
-RGC1_He_monomer = input.process_input("""
-molecule monomer {
-0 1
-He
-units angstrom
-}
-""", 0)
-
-RGC1_Ne_monomer = input.process_input("""
-molecule monomer {
-0 1
-Ne
-units angstrom
-}
-""", 0)
-
-RGC1_Ar_monomer = input.process_input("""
-molecule monomer {
-0 1
-Ar
-units angstrom
-}
-""", 0)
-
-RGC1_Kr_monomer = input.process_input("""
-molecule monomer {
-0 1
-Kr
-units angstrom
-}
-""", 0)
-
 #<<< Geometry Specification Strings >>>
 GEOS = {}
+rxnpattern2 = re.compile(r'^(..)(..)-(.+)$')
+
 for rxn in HRXN:
-    distance = rxnpattern.match(rxn)
+    molname = rxnpattern2.match(rxn)
+    m1 = molname.group(1)
+    m2 = molname.group(2)
+    dm = m1 + m2
+    Rscal = molname.group(3)
+    Rval = float(Rscal) * Req[dm]
 
-    GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-    GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
-    GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
+    GEOS['%s-%s-%s-%s' % (dbse, dm, Rscal, 'dimer')] = qcdb.Molecule("""
+0 1
+%(m1)s 0.0 0.0 0.0
+--
+0 1
+%(m2)s 0.0 0.0 R
 
-GEOS['%s-He-mono-unCP' % (dbse)] = eval('%s_He_monomer' % (dbse))
-GEOS['%s-Ne-mono-unCP' % (dbse)] = eval('%s_Ne_monomer' % (dbse))
-GEOS['%s-Ar-mono-unCP' % (dbse)] = eval('%s_Ar_monomer' % (dbse))
-GEOS['%s-Kr-mono-unCP' % (dbse)] = eval('%s_Kr_monomer' % (dbse))
+R = %(Rval)s
+units angstrom
+""" % vars())
+
+for item in ['He', 'Ne', 'Ar', 'Kr']:
+    GEOS['%s-%s-%s' % (dbse, item, 'mono-unCP')] = qcdb.Molecule("""
+0 1
+%(item)s 0.0 0.0 0.0
+units angstrom
+""" % vars())
+
+# <<< Derived Geometry Strings >>>
+for rxn in HRXN:
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
+
+#########################################################################
+
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.85-dimer'           ] =       0.83565292
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-He-mono-unCP'              ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.9-dimer'            ] =       0.78922775
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.95-dimer'           ] =       0.74768945
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.975-dimer'          ] =       0.72851793
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.0-dimer'            ] =       0.71030498
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.025-dimer'          ] =       0.69298047
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.05-dimer'           ] =       0.67648093
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.1-dimer'            ] =       0.64573180
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.15-dimer'           ] =       0.61765650
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.2-dimer'            ] =       0.59192081
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.3-dimer'            ] =       0.54638844
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.4-dimer'            ] =       0.50736070
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.5-dimer'            ] =       0.47353665
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.6-dimer'            ] =       0.44394061
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.7-dimer'            ] =       0.41782646
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.8-dimer'            ] =       0.39461388
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.0-dimer'            ] =       0.35515249
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.2-dimer'            ] =       0.32286590
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.85-dimer'           ] =       4.08236998
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-Ne-mono-unCP'              ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.9-dimer'            ] =       3.85557165
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.95-dimer'           ] =       3.65264682
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.975-dimer'          ] =       3.55898921
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.0-dimer'            ] =       3.47001448
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.025-dimer'          ] =       3.38537998
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.05-dimer'           ] =       3.30477570
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.1-dimer'            ] =       3.15455862
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.15-dimer'           ] =       3.01740390
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.2-dimer'            ] =       2.89167874
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.3-dimer'            ] =       2.66924191
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.4-dimer'            ] =       2.47858177
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.5-dimer'            ] =       2.31334299
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.6-dimer'            ] =       2.16875905
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.7-dimer'            ] =       2.04118499
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.8-dimer'            ] =       1.92778582
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.0-dimer'            ] =       1.73500724
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.2-dimer'            ] =       1.57727931
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.85-dimer'           ] =       6.40348891
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-Ar-mono-unCP'              ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.9-dimer'            ] =       6.04773953
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.95-dimer'           ] =       5.72943745
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.975-dimer'          ] =       5.58252879
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.0-dimer'            ] =       5.44296557
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.025-dimer'          ] =       5.31021032
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.05-dimer'           ] =       5.18377674
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.1-dimer'            ] =       4.94815052
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.15-dimer'           ] =       4.73301354
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.2-dimer'            ] =       4.53580465
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.3-dimer'            ] =       4.18689660
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.4-dimer'            ] =       3.88783255
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.5-dimer'            ] =       3.62864372
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.6-dimer'            ] =       3.40185348
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.7-dimer'            ] =       3.20174446
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.8-dimer'            ] =       3.02386976
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.0-dimer'            ] =       2.72148279
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.2-dimer'            ] =       2.47407526
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.85-dimer'           ] =      12.11470875
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-Kr-mono-unCP'              ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.9-dimer'            ] =      11.44166937
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.95-dimer'           ] =      10.83947625
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.975-dimer'          ] =      10.56154096
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.0-dimer'            ] =      10.29750244
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.025-dimer'          ] =      10.04634384
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.05-dimer'           ] =       9.80714518
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.1-dimer'            ] =       9.36136585
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.15-dimer'           ] =       8.95434995
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.2-dimer'            ] =       8.58125203
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.3-dimer'            ] =       7.92115572
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.4-dimer'            ] =       7.35535888
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.5-dimer'            ] =       6.86500162
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.6-dimer'            ] =       6.43593902
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.7-dimer'            ] =       6.05735437
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.8-dimer'            ] =       5.72083469
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.0-dimer'            ] =       5.14875122
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.2-dimer'            ] =       4.68068293
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.85-dimer'           ] =      20.14761883
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.9-dimer'            ] =      19.02830667
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.95-dimer'           ] =      18.02681685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.975-dimer'          ] =      17.56459078
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.0-dimer'            ] =      17.12547601
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.025-dimer'          ] =      16.70778147
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.05-dimer'           ] =      16.30997715
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.1-dimer'            ] =      15.56861455
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.15-dimer'           ] =      14.89171827
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.2-dimer'            ] =      14.27123001
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.3-dimer'            ] =      13.17344308
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.4-dimer'            ] =      12.23248286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.5-dimer'            ] =      11.41698400
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.6-dimer'            ] =      10.70342250
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.7-dimer'            ] =      10.07380942
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.8-dimer'            ] =       9.51415334
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.0-dimer'            ] =       8.56273800
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.2-dimer'            ] =       7.78430728
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.85-dimer'           ] =      32.20145286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.9-dimer'            ] =      30.41248325
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.95-dimer'           ] =      28.81182624
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.975-dimer'          ] =      28.07306146
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.0-dimer'            ] =      27.37123493
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.025-dimer'          ] =      26.70364383
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.05-dimer'           ] =      26.06784279
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.1-dimer'            ] =      24.88294084
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.15-dimer'           ] =      23.80107385
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.2-dimer'            ] =      22.80936244
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.3-dimer'            ] =      21.05479610
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.4-dimer'            ] =      19.55088209
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.5-dimer'            ] =      18.24748995
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.6-dimer'            ] =      17.10702183
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.7-dimer'            ] =      16.10072643
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.8-dimer'            ] =      15.20624163
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.0-dimer'            ] =      13.68561746
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.2-dimer'            ] =      12.44147042
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.85-dimer'           ] =      61.40331832
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.9-dimer'            ] =      57.99202286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.95-dimer'           ] =      54.93981113
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.975-dimer'          ] =      53.53109802
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.0-dimer'            ] =      52.19282057
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.025-dimer'          ] =      50.91982495
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.05-dimer'           ] =      49.70744817
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.1-dimer'            ] =      47.44801870
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.15-dimer'           ] =      45.38506137
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.2-dimer'            ] =      43.49401714
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.3-dimer'            ] =      40.14832352
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.4-dimer'            ] =      37.28058612
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.5-dimer'            ] =      34.79521372
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.6-dimer'            ] =      32.62051286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.7-dimer'            ] =      30.70165916
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.8-dimer'            ] =      28.99601143
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.0-dimer'            ] =      26.09641029
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.2-dimer'            ] =      23.72400935
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.85-dimer'           ] =      53.78930685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.9-dimer'            ] =      50.80101202
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.95-dimer'           ] =      48.12727455
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.975-dimer'          ] =      46.89324187
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.0-dimer'            ] =      45.72091082
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.025-dimer'          ] =      44.60576666
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.05-dimer'           ] =      43.54372459
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.1-dimer'            ] =      41.56446438
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.15-dimer'           ] =      39.75731376
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.2-dimer'            ] =      38.10075902
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.3-dimer'            ] =      35.16993140
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.4-dimer'            ] =      32.65779344
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.5-dimer'            ] =      30.48060721
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.6-dimer'            ] =      28.57556926
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.7-dimer'            ] =      26.89465342
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.8-dimer'            ] =      25.40050601
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.0-dimer'            ] =      22.86045541
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.2-dimer'            ] =      20.78223219
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.85-dimer'           ] =     103.70688981
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.9-dimer'            ] =      97.94539593
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.95-dimer'           ] =      92.79037510
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.975-dimer'          ] =      90.41113471
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.0-dimer'            ] =      88.15085634
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.025-dimer'          ] =      86.00083545
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.05-dimer'           ] =      83.95319652
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.1-dimer'            ] =      80.13714213
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.15-dimer'           ] =      76.65291856
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.2-dimer'            ] =      73.45904695
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.3-dimer'            ] =      67.80835103
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.4-dimer'            ] =      62.96489739
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.5-dimer'            ] =      58.76723756
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.6-dimer'            ] =      55.09428521
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.7-dimer'            ] =      51.85344491
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.8-dimer'            ] =      48.97269797
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.0-dimer'            ] =      44.07542817
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.2-dimer'            ] =      40.06857106
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.85-dimer'           ] =     201.20688348
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.9-dimer'            ] =     190.02872328
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.95-dimer'           ] =     180.02721153
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.975-dimer'          ] =     175.41112919
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.0-dimer'            ] =     171.02585096
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.025-dimer'          ] =     166.85448874
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.05-dimer'           ] =     162.88176282
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.1-dimer'            ] =     155.47804632
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.15-dimer'           ] =     148.71813127
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.2-dimer'            ] =     142.52154246
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.3-dimer'            ] =     131.55834689
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.4-dimer'            ] =     122.16132211
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.5-dimer'            ] =     114.01723397
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.6-dimer'            ] =     106.89115685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.7-dimer'            ] =     100.60344174
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.8-dimer'            ] =      95.01436164
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.0-dimer'            ] =      85.51292548
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.2-dimer'            ] =      77.73902316
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.85-dimer'           ] =       0.83565292
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.9-dimer'            ] =       0.78922775
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.95-dimer'           ] =       0.74768945
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.975-dimer'          ] =       0.72851793
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.0-dimer'            ] =       0.71030498
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.025-dimer'          ] =       0.69298047
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.05-dimer'           ] =       0.67648093
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.1-dimer'            ] =       0.64573180
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.15-dimer'           ] =       0.61765650
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.2-dimer'            ] =       0.59192081
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.3-dimer'            ] =       0.54638844
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.4-dimer'            ] =       0.50736070
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.5-dimer'            ] =       0.47353665
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.6-dimer'            ] =       0.44394061
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.7-dimer'            ] =       0.41782646
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.8-dimer'            ] =       0.39461388
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.0-dimer'            ] =       0.35515249
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.2-dimer'            ] =       0.32286590
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeHe-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.85-dimer'           ] =       4.08236998
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.9-dimer'            ] =       3.85557165
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.95-dimer'           ] =       3.65264682
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.975-dimer'          ] =       3.55898921
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.0-dimer'            ] =       3.47001448
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.025-dimer'          ] =       3.38537998
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.05-dimer'           ] =       3.30477570
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.1-dimer'            ] =       3.15455862
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.15-dimer'           ] =       3.01740390
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.2-dimer'            ] =       2.89167874
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.3-dimer'            ] =       2.66924191
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.4-dimer'            ] =       2.47858177
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.5-dimer'            ] =       2.31334299
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.6-dimer'            ] =       2.16875905
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.7-dimer'            ] =       2.04118499
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.8-dimer'            ] =       1.92778582
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.0-dimer'            ] =       1.73500724
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.2-dimer'            ] =       1.57727931
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeNe-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.85-dimer'           ] =       6.40348891
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.9-dimer'            ] =       6.04773953
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.95-dimer'           ] =       5.72943745
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.975-dimer'          ] =       5.58252879
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.0-dimer'            ] =       5.44296557
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.025-dimer'          ] =       5.31021032
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.05-dimer'           ] =       5.18377674
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.1-dimer'            ] =       4.94815052
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.15-dimer'           ] =       4.73301354
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.2-dimer'            ] =       4.53580465
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.3-dimer'            ] =       4.18689660
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.4-dimer'            ] =       3.88783255
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.5-dimer'            ] =       3.62864372
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.6-dimer'            ] =       3.40185348
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.7-dimer'            ] =       3.20174446
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.8-dimer'            ] =       3.02386976
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.0-dimer'            ] =       2.72148279
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.2-dimer'            ] =       2.47407526
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeAr-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.85-dimer'           ] =      12.11470875
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.9-dimer'            ] =      11.44166937
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.95-dimer'           ] =      10.83947625
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.975-dimer'          ] =      10.56154096
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.0-dimer'            ] =      10.29750244
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.025-dimer'          ] =      10.04634384
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.05-dimer'           ] =       9.80714518
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.1-dimer'            ] =       9.36136585
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.15-dimer'           ] =       8.95434995
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.2-dimer'            ] =       8.58125203
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.3-dimer'            ] =       7.92115572
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.4-dimer'            ] =       7.35535888
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.5-dimer'            ] =       6.86500162
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.6-dimer'            ] =       6.43593902
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.7-dimer'            ] =       6.05735437
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.8-dimer'            ] =       5.72083469
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.0-dimer'            ] =       5.14875122
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.2-dimer'            ] =       4.68068293
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-HeKr-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.85-dimer'           ] =      20.14761883
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.9-dimer'            ] =      19.02830667
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.95-dimer'           ] =      18.02681685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.975-dimer'          ] =      17.56459078
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.0-dimer'            ] =      17.12547601
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.025-dimer'          ] =      16.70778147
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.05-dimer'           ] =      16.30997715
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.1-dimer'            ] =      15.56861455
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.15-dimer'           ] =      14.89171827
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.2-dimer'            ] =      14.27123001
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.3-dimer'            ] =      13.17344308
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.4-dimer'            ] =      12.23248286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.5-dimer'            ] =      11.41698400
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.6-dimer'            ] =      10.70342250
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.7-dimer'            ] =      10.07380942
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.8-dimer'            ] =       9.51415334
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.0-dimer'            ] =       8.56273800
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.2-dimer'            ] =       7.78430728
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeNe-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.85-dimer'           ] =      32.20145286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.9-dimer'            ] =      30.41248325
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.95-dimer'           ] =      28.81182624
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.975-dimer'          ] =      28.07306146
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.0-dimer'            ] =      27.37123493
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.025-dimer'          ] =      26.70364383
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.05-dimer'           ] =      26.06784279
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.1-dimer'            ] =      24.88294084
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.15-dimer'           ] =      23.80107385
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.2-dimer'            ] =      22.80936244
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.3-dimer'            ] =      21.05479610
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.4-dimer'            ] =      19.55088209
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.5-dimer'            ] =      18.24748995
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.6-dimer'            ] =      17.10702183
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.7-dimer'            ] =      16.10072643
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.8-dimer'            ] =      15.20624163
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.0-dimer'            ] =      13.68561746
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.2-dimer'            ] =      12.44147042
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeAr-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.85-dimer'           ] =      61.40331832
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.9-dimer'            ] =      57.99202286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.95-dimer'           ] =      54.93981113
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.975-dimer'          ] =      53.53109802
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.0-dimer'            ] =      52.19282057
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.025-dimer'          ] =      50.91982495
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.05-dimer'           ] =      49.70744817
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.1-dimer'            ] =      47.44801870
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.15-dimer'           ] =      45.38506137
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.2-dimer'            ] =      43.49401714
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.3-dimer'            ] =      40.14832352
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.4-dimer'            ] =      37.28058612
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.5-dimer'            ] =      34.79521372
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.6-dimer'            ] =      32.62051286
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.7-dimer'            ] =      30.70165916
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.8-dimer'            ] =      28.99601143
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.0-dimer'            ] =      26.09641029
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.2-dimer'            ] =      23.72400935
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-NeKr-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.85-dimer'           ] =      53.78930685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.9-dimer'            ] =      50.80101202
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.95-dimer'           ] =      48.12727455
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.975-dimer'          ] =      46.89324187
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.0-dimer'            ] =      45.72091082
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.025-dimer'          ] =      44.60576666
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.05-dimer'           ] =      43.54372459
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.1-dimer'            ] =      41.56446438
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.15-dimer'           ] =      39.75731376
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.2-dimer'            ] =      38.10075902
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.3-dimer'            ] =      35.16993140
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.4-dimer'            ] =      32.65779344
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.5-dimer'            ] =      30.48060721
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.6-dimer'            ] =      28.57556926
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.7-dimer'            ] =      26.89465342
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.8-dimer'            ] =      25.40050601
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.0-dimer'            ] =      22.86045541
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.2-dimer'            ] =      20.78223219
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArAr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.85-dimer'           ] =     103.70688981
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.85-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.9-dimer'            ] =      97.94539593
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.9-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.95-dimer'           ] =      92.79037510
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.95-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.975-dimer'          ] =      90.41113471
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-0.975-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.0-dimer'            ] =      88.15085634
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.025-dimer'          ] =      86.00083545
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.025-monoB-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.05-dimer'           ] =      83.95319652
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.05-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.1-dimer'            ] =      80.13714213
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.1-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.15-dimer'           ] =      76.65291856
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.15-monoB-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.2-dimer'            ] =      73.45904695
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.3-dimer'            ] =      67.80835103
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.3-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.4-dimer'            ] =      62.96489739
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.4-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.5-dimer'            ] =      58.76723756
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.5-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.6-dimer'            ] =      55.09428521
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.6-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.7-dimer'            ] =      51.85344491
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.7-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.8-dimer'            ] =      48.97269797
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-1.8-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.0-dimer'            ] =      44.07542817
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.0-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.2-dimer'            ] =      40.06857106
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-ArKr-2.2-monoB-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.85-dimer'           ] =     201.20688348
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.85-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.9-dimer'            ] =     190.02872328
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.9-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.95-dimer'           ] =     180.02721153
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.95-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.975-dimer'          ] =     175.41112919
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-0.975-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.0-dimer'            ] =     171.02585096
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.025-dimer'          ] =     166.85448874
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.025-monoA-CP'       ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.05-dimer'           ] =     162.88176282
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.05-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.1-dimer'            ] =     155.47804632
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.1-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.15-dimer'           ] =     148.71813127
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.15-monoA-CP'        ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.2-dimer'            ] =     142.52154246
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.2-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.3-dimer'            ] =     131.55834689
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.3-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.4-dimer'            ] =     122.16132211
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.4-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.5-dimer'            ] =     114.01723397
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.5-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.6-dimer'            ] =     106.89115685
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.6-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.7-dimer'            ] =     100.60344174
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.7-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.8-dimer'            ] =      95.01436164
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-1.8-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.0-dimer'            ] =      85.51292548
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.0-monoA-CP'         ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.2-dimer'            ] =      77.73902316
+DATA['NUCLEAR REPULSION ENERGY']['RGC1-KrKr-2.2-monoA-CP'         ] =       0.00000000
