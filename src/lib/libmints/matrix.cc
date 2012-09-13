@@ -2245,7 +2245,11 @@ Dimension Matrix::power(double alpha, double cutoff)
                 a[i] = 0.0;
             else {
                 a[i] = pow(a[i],alpha);
-                remain++;
+                if (std::isfinite(a[i])) {
+                    remain++;
+                } else {
+                    a[i] = 0.0;
+                }
             }
 
             C_DSCAL(n, a[i], A2[i], 1);

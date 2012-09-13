@@ -118,8 +118,7 @@ protected:
     // Exact Tau
     void refine_tau();
     void compute_F_intermediate();
-    void compute_refined_F_intermediate();
-    void one_index_transform();
+    void form_density_weighted_fock();
 
     bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
