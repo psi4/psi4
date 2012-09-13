@@ -38,6 +38,8 @@ install:
 	$(INSTALL_DATA) $(srcdir)/plugin/* $(DESTDIR)$(pkgdatadir)/plugin
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python
 	$(INSTALL_DATA) $(srcdir)/python/* $(DESTDIR)$(pkgdatadir)/python
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/qcdb
+	$(INSTALL_DATA) $(srcdir)/python/qcdb/* $(DESTDIR)$(pkgdatadir)/python/qcdb
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
 	$(INSTALL_DATA) $(srcdir)/quadratures/1_sqrtx/* $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
