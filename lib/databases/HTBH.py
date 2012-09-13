@@ -14,7 +14,7 @@
 
 """
 import re
-import input
+import qcdb
 
 # <<< HTBH Database Module >>>
 dbse = 'HTBH'
@@ -338,9 +338,10 @@ TAGL['%s-%s-reagent'    % (dbse, 'PH2'          )] = 'PH2'
 TAGL['%s-%s-reagent'    % (dbse, 'PH3'          )] = 'Phosphine'
 TAGL['%s-%s-reagent'    % (dbse, 'HS'           )] = 'HS'
 
-# <<< Molecule Specifications >>>
-HTBH_C2H5 = input.process_input("""
-molecule dimer {
+# <<< Geometry Specification Strings >>>
+GEOS = {}
+
+GEOS['%s-%s-reagent' % (dbse, 'C2H5')] = qcdb.Molecule("""
 0 2
 C        0.00550995    -0.00307714    -0.77443959
 C        0.00550995    -0.00307714     0.71569982
@@ -350,11 +351,9 @@ H       -0.88217468     0.49798042     1.12141209
 H        0.87299475     0.52193057     1.11660682
 H       -0.50718726    -0.77526005    -1.32801142
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_C2H6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'C2H6')] = qcdb.Molecule("""
 0 1
 C        0.00000020    -0.00000013    -0.76309187
 C        0.00000020    -0.00000013     0.76309163
@@ -365,11 +364,9 @@ H        0.87993813     0.50804049     1.15830883
 H       -0.00180313     1.01606605    -1.15830975
 H        0.88084363    -0.50646996    -1.15830912
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_C2H6NH2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'C2H6NH2ts')] = qcdb.Molecule("""
 0 2
 C       -1.48570000    -0.44815600    -0.00001900
 C       -0.50504200     0.70174000     0.00002900
@@ -383,11 +380,9 @@ H        0.66504700     0.14796100    -0.00003400
 H        2.24664400     0.15971700    -0.80480600
 H        2.24643900     0.15913300     0.80515100
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_C5H8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'C5H8')] = qcdb.Molecule("""
 0 1
 C       -2.05563800    -0.61227200     0.00000700
 C       -1.23109600     0.64044800     0.00004900
@@ -403,11 +398,9 @@ H        0.66526200    -1.38324200    -0.00010500
 H        3.06468900    -1.03771900    -0.00008800
 H        2.81927500     0.79228500     0.00002300
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_C5H8ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'C5H8ts')] = qcdb.Molecule("""
 0 1
 C       -1.29962300    -0.90485300    -0.02015500
 C       -1.20594700     0.50581700    -0.01341400
@@ -423,22 +416,18 @@ H       -2.16879600    -1.32754000    -0.51571600
 H       -0.00001100    -1.18194200    -0.52080800
 H       -1.03205900    -1.45439400     0.87315800
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_CH3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'CH3')] = qcdb.Molecule("""
 0 2
 C        0.00000000     0.00000000    -0.00000000
 H        0.00000000     0.00000000     1.07731727
 H       -0.00000000     0.93298412    -0.53865863
 H        0.00000000    -0.93298412    -0.53865863
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_CH3H2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'CH3H2ts')] = qcdb.Molecule("""
 0 2
 C        0.00000000     0.26481300     0.00000000
 H        1.05342900     0.51666800     0.00000000
@@ -447,11 +436,9 @@ H       -0.52662700     0.51702500    -0.91225000
 H       -0.00026000    -1.11777100     0.00000000
 H        0.00008400    -2.02182500     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_CH3NH2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'CH3NH2ts')] = qcdb.Molecule("""
 0 3
 C       -1.19957700    -0.01112600    -0.00003000
 N        1.40071500     0.12986200     0.00001500
@@ -461,11 +448,9 @@ H       -1.52023700     1.02280600    -0.04578300
 H        0.18892600     0.12689600     0.00100100
 H        1.57033800    -0.88766700    -0.00005300
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_CH4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'CH4')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     0.00000000
 H        0.00000000     1.08744517     0.00000000
@@ -473,83 +458,65 @@ H       -0.51262657    -0.36248173     0.88789526
 H       -0.51262657    -0.36248173    -0.88789526
 H        1.02525314    -0.36248173     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_Cl = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'Cl')] = qcdb.Molecule("""
 0 2
 Cl       0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_F = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'F')] = qcdb.Molecule("""
 0 2
 F        0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_FH2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'FH2ts')] = qcdb.Molecule("""
 0 2
 H        0.14656800    -1.12839000     0.00000000
 F        0.00000000     0.33042200     0.00000000
 H       -0.14656800    -1.84541000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_H = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'H')] = qcdb.Molecule("""
 0 2
 H        0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_H2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'H2')] = qcdb.Molecule("""
 0 1
 H        0.00000000     0.00000000     0.00000000
 H        0.74187646     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_H2O = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'H2O')] = qcdb.Molecule("""
 0 1
 O        0.00000000     0.00000000    -0.06555155
 H        0.00000000    -0.75670946     0.52017534
 H        0.00000000     0.75670946     0.52017534
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_H2S = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'H2S')] = qcdb.Molecule("""
 0 1
 S        0.00000000     0.00000000     0.10251900
 H        0.00000000     0.96624900    -0.82015400
 H        0.00000000    -0.96624900    -0.82015400
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HCl = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HCl')] = qcdb.Molecule("""
 0 1
 Cl       0.00000000     0.00000000     0.00000000
 H        1.27444789     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HClCH3ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HClCH3ts')] = qcdb.Molecule("""
 0 2
 C        0.24411700     0.59991600     1.70242300
 H       -0.67559700     0.27848200     2.17293900
@@ -558,60 +525,48 @@ H        1.14068600     0.06578700     1.98782200
 H        0.05716300     0.13997300     0.39711200
 Cl      -0.13758000    -0.33809000    -0.95941600
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HHClts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HHClts')] = qcdb.Molecule("""
 0 2
 H        0.00048000    -1.34062700     0.00000000
 Cl       0.00000000     0.20325200     0.00000000
 H       -0.00048000    -2.11465900     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HF = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HF')] = qcdb.Molecule("""
 0 1
 F        0.00000000     0.00000000     0.00000000
 H        0.91538107     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HH2Sts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HH2Sts')] = qcdb.Molecule("""
 0 2
 H        1.26209700    -0.22009700     0.00000000
 S        0.00000000     0.22315300     0.00000000
 H       -0.50057600    -1.11544500     0.00000000
 H       -0.76152100    -2.23491300     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HH2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HH2ts')] = qcdb.Molecule("""
 0 2
 H        0.00000000     0.00000000     0.00000000
 H        0.00000000     0.00000000     0.92947400
 H        0.00000000     0.00000000    -0.92947400
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_NH = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'NH')] = qcdb.Molecule("""
 0 3
 N        0.00000000     0.00000000     0.00000000
 H        1.03673136     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HPH3ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HPH3ts')] = qcdb.Molecule("""
 0 2
 P        0.21742900     0.00008800    -0.11124900
 H        0.24660900     1.03466800     0.85216400
@@ -619,21 +574,17 @@ H        0.26266100    -1.02505800     0.86162300
 H       -1.26641800    -0.01095200    -0.15062600
 H       -2.50429000     0.00002800     0.10557500
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_NH2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'NH2')] = qcdb.Molecule("""
 0 2
 N        0.00000000     0.00000000    -0.08007491
 H        0.00000000    -0.80231373     0.55629442
 H        0.00000000     0.80231373     0.55629442
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_NH2C2H5ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'NH2C2H5ts')] = qcdb.Molecule("""
 0 3
 C       -1.39498400    -0.44966100     0.00070300
 C       -0.43574600     0.71406300     0.00202700
@@ -646,11 +597,9 @@ H       -0.44112700     1.32909500     0.89746700
 H        0.82850100     0.18059300    -0.02856100
 H        2.47259200     0.49807300     0.00391000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_NH2CH4ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'NH2CH4ts')] = qcdb.Molecule("""
 0 2
 C       -1.26075000    -0.00000600     0.01229100
 N        1.31325500    -0.00000500    -0.13678200
@@ -661,39 +610,31 @@ H        0.04310800    -0.00006400    -0.15169200
 H        1.48045900     0.80557700     0.46775100
 H        1.48055700    -0.80552400     0.46780800
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_NH3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'NH3')] = qcdb.Molecule("""
 0 1
 N        0.00000000     0.00000000     0.11289000
 H        0.00000000     0.93802400    -0.26340900
 H        0.81235300    -0.46901200    -0.26340900
 H       -0.81235300    -0.46901200    -0.26340900
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_O = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'O')] = qcdb.Molecule("""
 0 3
 O        0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OH = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OH')] = qcdb.Molecule("""
 0 2
 O        0.00000000     0.00000000     0.00000000
 H        0.96889819     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHC2H6ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHC2H6ts')] = qcdb.Molecule("""
 0 2
 C        1.45833400    -0.44636500     0.02547800
 C        0.46942300     0.69742200    -0.02749300
@@ -706,11 +647,9 @@ H        0.53352400     1.30349500    -0.92856000
 H       -0.63023200     0.20781600    -0.07846500
 H       -2.26720700     0.38832100     0.46575100
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHCH3ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHCH3ts')] = qcdb.Molecule("""
 0 3
 C        0.00029000    -1.14228900     0.00000000
 H       -1.05595700    -1.38473500     0.00000000
@@ -719,11 +658,9 @@ H        0.52016700    -1.40738900    -0.91244700
 H        0.01156000     0.16009900     0.00000000
 O        0.00029000     1.36164300     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHCH4ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHCH4ts')] = qcdb.Molecule("""
 0 2
 C       -1.21148700     0.00796800     0.00040700
 O        1.29396500    -0.10869400     0.00013300
@@ -733,42 +670,34 @@ H       -1.43066500     1.03323300    -0.27808200
 H       -1.55271000    -0.71011400    -0.73770200
 H        1.41663600     0.84989400    -0.00059100
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHClts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHClts')] = qcdb.Molecule("""
 0 3
 Cl       0.01882000    -0.81730100     0.00000000
 H       -0.47048800     0.56948000     0.00000000
 O        0.01882000     1.66557900     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHH2ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHH2ts')] = qcdb.Molecule("""
 0 2
 O       -0.30106400    -0.10804900    -0.00000800
 H       -0.42794500     0.85156900     0.00001600
 H        1.01548600    -0.10036700     0.00011900
 H        1.82096800     0.11318700    -0.00007300
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHHts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHHts')] = qcdb.Molecule("""
 0 3
 H        0.00000000     0.00000000    -0.86028700
 O        0.00000000     0.00000000     0.32902400
 H        0.00000000     0.00000000    -1.77190500
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_OHNH3ts = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'OHNH3ts')] = qcdb.Molecule("""
 0 2
 N       -1.15081600    -0.04393200    -0.10255900
 O        1.17918600    -0.09269600    -0.01029000
@@ -777,44 +706,75 @@ H       -1.33891300     0.93580800     0.09185400
 H       -0.03068700    -0.15383400    -0.35318400
 H        1.29500900     0.81475300     0.29499100
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_PH2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'PH2')] = qcdb.Molecule("""
 0 2
 P        0.00000000     0.00000000    -0.11565700
 H        1.02013000     0.00000000     0.86742700
 H       -1.02013000     0.00000000     0.86742700
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_PH3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'PH3')] = qcdb.Molecule("""
 0 1
 P        0.00000000     0.00000000     0.12641100
 H        1.19133900     0.00000000    -0.63205600
 H       -0.59566900    -1.03173000    -0.63205600
 H       -0.59566900     1.03173000    -0.63205600
 units angstrom
-}
-""", 0)
+""")
 
-HTBH_HS = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'HS')] = qcdb.Molecule("""
 0 2
 S        0.00000000     0.00000000     0.00000000
 H        1.34020229     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
-for rxn in HRXN:
-    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+#########################################################################
 
-        molname = rxnpattern.match(rgt)
-        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-H-reagent'                 ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HCl-reagent'               ] =       7.05875275
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HHClts-reagent'            ] =      10.39163823
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-H2-reagent'                ] =       0.71329559
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-Cl-reagent'                ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OH-reagent'                ] =       4.36931115
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHH2ts-reagent'            ] =      10.73785396
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-H2O-reagent'               ] =       9.19771594
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-CH3-reagent'               ] =       9.69236444
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-CH3H2ts-reagent'           ] =      15.32861238
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-CH4-reagent'               ] =      13.46695412
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHCH4ts-reagent'           ] =      37.11882096
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HH2ts-reagent'             ] =       1.42332440
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-NH3-reagent'               ] =      11.97232339
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHNH3ts-reagent'           ] =      37.13900482
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-NH2-reagent'               ] =       7.56429116
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HClCH3ts-reagent'          ] =      46.25151943
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-C2H6-reagent'              ] =      42.29535986
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHC2H6ts-reagent'          ] =      76.62129511
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-C2H5-reagent'              ] =      36.98165035
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-F-reagent'                 ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-FH2ts-reagent'             ] =       6.11540453
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HF-reagent'                ] =       5.20285489
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-O-reagent'                 ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHCH3ts-reagent'           ] =      30.91033235
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-PH3-reagent'               ] =      17.63061432
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HPH3ts-reagent'            ] =      21.01063452
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-PH2-reagent'               ] =      11.46498480
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHHts-reagent'             ] =       6.15505787
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-H2S-reagent'               ] =      12.94849742
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HH2Sts-reagent'            ] =      16.45756641
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-HS-reagent'                ] =       6.31758012
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-OHClts-reagent'            ] =      38.62988868
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-CH3NH2ts-reagent'          ] =      33.45955425
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-NH-reagent'                ] =       3.57299934
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-NH2C2H5ts-reagent'         ] =      71.85720179
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-C2H6NH2ts-reagent'         ] =      78.78495055
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-NH2CH4ts-reagent'          ] =      39.42842411
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-C5H8-reagent'              ] =     155.81524012
+DATA['NUCLEAR REPULSION ENERGY']['HTBH-C5H8ts-reagent'            ] =     164.93671263
