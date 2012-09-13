@@ -31,6 +31,9 @@ DCFTSolver::compute_energy()
     // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
+
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "Analytic gradients", __FILE__, __LINE__);
+
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
@@ -78,19 +81,31 @@ DCFTSolver::compute_energy()
                 while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                     std::string diisString;
                     // Build new Tau from current Lambda
-                    build_tau();
-                    if (options_.get_str("AO_BASIS") == "DISK") {
-                        // Transform new Tau to the SO basis
-                        transform_tau();
-                        // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                        build_tensors();
+                    if (options_.get_bool("RELAX_TAU")) {
+                        build_tau();
+                        // Compute tau exactly if requested
+                        if (options_.get_str("TAU") == "EXACT") {
+                            refine_tau();
+                        }
+                        if (options_.get_str("AO_BASIS") == "DISK") {
+                            // Transform new Tau to the SO basis
+                            transform_tau();
+                            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                            build_tensors();
+                        }
+                        else {
+                            // Compute GTau contribution for the Fock operator
+                            build_gtau();
+                        }
+                        // Update Fock operator for the F intermediate
+                        update_fock();
                     }
                     else {
-                        // Compute GTau contribution for the Fock operator
-                        build_gtau();
+                        if (options_.get_str("AO_BASIS") == "DISK") {
+                            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                            build_tensors();
+                        }
                     }
-                    // Update Fock operator for the F intermediate
-                    update_fock();
                     // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                     build_intermediates();
                     // Compute the residuals for density cumulant equations
@@ -113,20 +128,12 @@ DCFTSolver::compute_energy()
                         dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
 
-                        //                    dpd_buf4_init(&J, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                        //                                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-                        //                    fprintf(outfile, "DOT = %f\n",dpd_buf4_dot(&Rab, &J));
-                        //                    dpd_buf4_close(&J);
-
                         if(lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)){
                             diisString += "S";
                         }
                         if(lambdaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0){
                             diisString += "/E";
                             lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
-                            //                        lambdaDiisManager.reset_subspace();
-                            //                    }else{
-                            //                        update_lambda_from_residual();
                         }
                         dpd_buf4_close(&Raa);
                         dpd_buf4_close(&Rab);
@@ -134,8 +141,6 @@ DCFTSolver::compute_energy()
                         dpd_buf4_close(&Laa);
                         dpd_buf4_close(&Lab);
                         dpd_buf4_close(&Lbb);
-                        //                }else{
-                        //                    update_lambda_from_residual();
                     }
                     // Save old DCFT energy
                     old_total_energy_ = new_total_energy_;
@@ -155,6 +160,10 @@ DCFTSolver::compute_energy()
             else fprintf(outfile, "\tSkipping the cumulant update to relax guess orbitals\n");
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            // Compute tau exactly if requested
+            if (options_.get_str("TAU") == "EXACT") {
+                refine_tau();
+            }
             transform_tau();
             // Update the orbitals
             int nSCFCycles = 0;
@@ -238,6 +247,7 @@ DCFTSolver::compute_energy()
     }
     // This is the simultaneous orbital/lambda update algorithm
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
+
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -268,6 +278,9 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            if (options_.get_str("TAU") == "EXACT") {
+                refine_tau();
+            }
             transform_tau();
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
@@ -376,6 +389,8 @@ DCFTSolver::compute_energy()
         fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
         fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
 
+        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = QC", __FILE__, __LINE__);
+        if (options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
         run_qc_dcft();
 
         scfDone = true;

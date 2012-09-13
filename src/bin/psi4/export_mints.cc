@@ -205,6 +205,8 @@ void export_mints()
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
+            def("integrals_erf", &MintsHelper::integrals_erf, "docstring").
+            def("integrals_erfc", &MintsHelper::integrals_erfc, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("basisset", &MintsHelper::basisset, "docstring").
             def("sobasisset", &MintsHelper::sobasisset, "docstring").

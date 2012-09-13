@@ -78,6 +78,9 @@ public:
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
+    void integrals_erf();
+    void integrals_erfc();
+
     /// Standard one electron integrals (just like oeints used to do)
     void one_electron_integrals();
     /// Derivative integrals (not implemented)

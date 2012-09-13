@@ -9,7 +9,7 @@ using namespace psi;
 
 #if defined(HAVE_MADNESS)
 
-void Distributed_Matrix::diagonalize(Distributed_Matrix& eigvec, Vector& eigval)
+void Distributed_Matrix::diagonalize(Distributed_Matrix& eigvec, Vector& eigval, bool return_eigvec)
 {
 #if defined(HAVE_SCALAPACK)
     int ictxt;   // context
@@ -19,6 +19,12 @@ void Distributed_Matrix::diagonalize(Distributed_Matrix& eigvec, Vector& eigval)
     int info;
     int nprow, npcol, myrow, mycol;
     int n, nb, np, nq, nqrhs, nrhs;
+
+    int init;
+    MPI_Initialized(&init);
+    if (init)
+        printf("already initialized\n");
+    else printf("not initialized\n");
 
     Cblacs_get( 0, 0, &ictxt );
 
@@ -51,6 +57,20 @@ void Distributed_Matrix::diagonalize(Distributed_Matrix& eigvec, Vector& eigval)
     printf("nq %d  ncols_ %d  tile_sz_ %d mycol %d  izero %d  npcol %d\n", nq, ncols_, tile_sz_, mycol, izero, npcol);
     printf("nqrhs %d  ev.nrows_ %d  tile_sz_ %d mycol %d izero %d npcol %d\n", nqrhs, eigvec.nrows_, tile_sz_, mycol, izero, npcol);
 
+    int nlocal_tile_cols = nq/tile_sz_;
+    for (int i=0; i < np; i++) {
+        int ta = convert_i_to_ti(i);
+        int a = convert_i_to_a(i);
+
+        for (int j=0; j < nq; j++) {
+            int tb = convert_j_to_tj(j);
+            int b = convert_j_to_b(j);
+            int tab = ta*nlocal_tile_cols + ta;
+            A->set(i,j, this->get_val(a,b).get());
+        }
+    }
+    WorldComm->sync();
+
     /*
      *
      * Initialize the array descriptor for the matrix A and B
@@ -78,6 +98,23 @@ void Distributed_Matrix::diagonalize(Distributed_Matrix& eigvec, Vector& eigval)
             descB, work, &lwork, &info);
     delete[] ippiv;
     delete[] work;
+
+    if (return_eigvec) {
+        int nlocal_tile_cols = nq/tile_sz_;
+        for (int i=0; i < np; i++) {
+            int ta = convert_i_to_ti(i);
+            int a = convert_i_to_a(i);
+
+            for (int j=0; j < nq; j++) {
+
+                int tb = convert_j_to_tj(j);
+                int b = convert_j_to_b(j);
+                int tab = ta*nlocal_tile_cols + ta;
+                eigvec.set(a,b, B->get(i,j));
+            }
+        }
+        WorldComm->sync();
+    }
 
     Cblacs_barrier(ictxt, "A");
     Cblacs_exit(1);
