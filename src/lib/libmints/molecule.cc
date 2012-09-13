@@ -1297,6 +1297,33 @@ void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
     free_block(fgeom);
 }
 
+void Molecule::print_in_angstrom() const
+{
+    // Sometimes one just wants angstroms regardless of input units
+    if (WorldComm->me() == 0) {
+        if (natom()) {
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    "Angstrom", molecular_charge_, multiplicity_);
+            fprintf(outfile,"       Center              X                  Y                   Z       \n");
+            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+
+            for(int i = 0; i < natom(); ++i){
+                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", xyz(i, j) * _bohr2angstroms);
+                fprintf(outfile,"\n");
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
+        else
+            fprintf(outfile, "  No atoms in this molecule.\n");
+    }
+}
+
+
 void Molecule::print_in_bohr() const
 {
     // I'm tired of wanting to compare geometries with cints and psi4 will use what's in the input
@@ -1410,7 +1437,7 @@ void Molecule::print_distances() const
         for(int j=i+1;j<natom();j++) {
             Vector3 eij = xyz(j)-xyz(i);
             double distance=eij.norm();
-            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance);
+            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance*_bohr2angstroms);
         }
     }
     fprintf(outfile, "\n\n");
@@ -1722,11 +1749,11 @@ static AxisName like_world_axis(Vector3& axis, const Vector3& worldxaxis, const 
     double xlikeness = fabs(axis.dot(worldxaxis));
     double ylikeness = fabs(axis.dot(worldyaxis));
     double zlikeness = fabs(axis.dot(worldzaxis));
-    if (xlikeness > ylikeness && xlikeness > zlikeness) {
+    if ((xlikeness - ylikeness) > 1.0e-12 && (xlikeness - zlikeness) > 1.0e-12) {
         like = XAxis;
         if (axis.dot(worldxaxis) < 0) axis = - axis;
     }
-    else if (ylikeness > zlikeness) {
+    else if ((ylikeness - zlikeness) > 1.0e-12) {
         like = YAxis;
         if (axis.dot(worldyaxis) < 0) axis = - axis;
     }
