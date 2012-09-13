@@ -32,6 +32,7 @@ set globals {
     scf_type      df
     puream        true
     print         1
+    basis_guess   true
 }
 
 set sapt {
@@ -39,7 +40,7 @@ set sapt {
     nat_orbs      true
 }
 
-energy('sapt2+(3)',cast_up=True)
+energy('sapt2+(3)')
 
 Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
 Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
