@@ -9,7 +9,6 @@ Place in this file quickly defined procedures such as
 import PsiMod
 import re
 import os
-import input
 import math
 import warnings
 from driver import *

@@ -5,7 +5,6 @@ a QM calculation.
 import PsiMod
 import re
 import os
-import input
 import math
 import physconst
 from molutil import *

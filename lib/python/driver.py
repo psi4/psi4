@@ -7,7 +7,6 @@ properties, and vibrational frequency calculations.
 """
 import sys
 import PsiMod
-import input
 from proc import *
 from text import *
 from procutil import *
@@ -85,8 +84,8 @@ procedures = {
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
             # Upon adding a method to this list, add it to the docstring in energy() below
-            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the 
-            #    whole driver to find uses of name in return values and psi variables and 
+            # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
+            #    whole driver to find uses of name in return values and psi variables and
             #    extend the logic to encompass the new alias.
         },
         'gradient' : {
@@ -136,11 +135,11 @@ def energy(name, **kwargs):
        * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
        * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
-    .. comment In this table immediately below, place methods that should only be called by 
+    .. comment In this table immediately below, place methods that should only be called by
     .. comment developers at present. This table won't show up in the manual.
     .. comment
     .. comment    .. _`table:energy_devel`:
-    .. comment 
+    .. comment
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | name                    | calls method                                                                          |
     .. comment    +=========================+=======================================================================================+
@@ -351,10 +350,13 @@ def energy(name, **kwargs):
     :type cast_up: :ref:`boolean <op_py_boolean>` or string
     :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
 
-        Indicates whether, to accelerate convergence for the scf portion of 
-        the *name* calculation, a preliminary scf should be performed with a 
-        small basis set (3-21G if a basis name is not supplied as keyword 
+        Indicates whether, to accelerate convergence for the scf portion of
+        the *name* calculation, a preliminary scf should be performed with a
+        small basis set (3-21G if a basis name is not supplied as keyword
         value) followed by projection into the full target basis.
+
+    .. deprecated:: Sept-2012
+       Use option |scf__basis_guess| instead.
 
     :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
     :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
@@ -362,6 +364,9 @@ def energy(name, **kwargs):
         Indicates whether, when *cast_up* is active, to run the preliminary
         scf in density-fitted mode or what fitting basis to employ (when
         available for all elements, cc-pVDZ-RI is the default).
+
+    .. deprecated:: Sept-2012
+       Use option |scf__df_basis_guess| instead.
 
     :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
@@ -375,12 +380,20 @@ def energy(name, **kwargs):
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
 
-    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into 
+    >>> # [2] Charge-transfer SAPT calculation with scf projection from small into
     >>> #     requested basis, with specified projection fitting basis
-    >>> energy('sapt0-ct', cast_up=True, cast_up_df='jun-cc-pVDZ-JKFIT')
+    >>> set basis_guess true
+    >>> set df_basis_guess jun-cc-pVDZ-JKFIT
+    >>> energy('sapt0-ct')
 
     >>> # [3] Arbitrary-order MPn calculation
     >>> energy('mp4')
+
+    >>> # [4] Converge scf as singlet, then run detci as triplet upon singlet reference
+    >>> molecule H2 {\\n0 1\\nH\\nH 1 0.74\\n}
+    >>> energy('scf')
+    >>> H2.set_multiplicity(3)
+    >>> energy('detci', bypass_scf=True)
 
     """
     lowername = name.lower()
@@ -434,10 +447,10 @@ def gradient(name, **kwargs):
     if 'dertype' in kwargs:
         opt_dertype = kwargs['dertype']
 
-        if input.der0th.match(str(opt_dertype)):
+        if der0th.match(str(opt_dertype)):
             dertype = 0
             func = energy
-        elif input.der1st.match(str(opt_dertype)):
+        elif der1st.match(str(opt_dertype)):
             dertype = 1
         else:
             raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
@@ -814,11 +827,11 @@ def optimize(name, **kwargs):
     # are we in sow/reap mode?
     isSowReap = False
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
-       isSowReap = True
+        isSowReap = True
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
-       isSowReap = True
+        isSowReap = True
     optstash = OptionsState(
-        ['SCF','GUESS'])
+        ['SCF', 'GUESS'])
 
     n = 1
     if ('opt_iter' in kwargs):
@@ -828,9 +841,9 @@ def optimize(name, **kwargs):
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
-        if ( (n > 1) and (not isSowReap) ) :
-           PsiMod.set_local_option('SCF','GUESS','READ')
-           
+        if (n > 1) and (not isSowReap):
+            PsiMod.set_local_option('SCF', 'GUESS', 'READ')
+
         # Compute the gradient
         thisenergy = gradient(name, **kwargs)
 
@@ -861,7 +874,7 @@ def optimize(name, **kwargs):
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
         elif ((full_hess_every == -1) and (PsiMod.get_global_option('CART_HESS_READ')) and (n == 1)):
-            pass;
+            pass
             # Do nothing; user said to read existing hessian once
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
@@ -886,6 +899,9 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
+
+        PsiMod.print_out('\n    Structure for next step:\n')
+        PsiMod.get_active_molecule().print_out_in_angstrom()
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
@@ -1118,7 +1134,7 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_1(gradients, irrep)
 
         print(' Computation complete.')
-        
+
         # Clear the "parent" symmetry now
         PsiMod.set_parent_symmetry("")
 
@@ -1157,7 +1173,7 @@ def frequency(name, **kwargs):
 
             # Load in displacement into the active molecule
             molecule.set_geometry(displacement)
-   
+
             # Perform the energy calculation
             E = func(lowername, **kwargs)
 
@@ -1171,7 +1187,7 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_0(energies, irrep)
 
         print(' Computation complete.')
-        
+
         # Clear the "parent" symmetry now
         PsiMod.set_parent_symmetry("")
 
@@ -1195,9 +1211,15 @@ def hessian(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
+
 def molden(filename):
+    """Function to write wavefunction information in molden
+    format to *filename*
+
+    """
     m = PsiMod.MoldenWriter(PsiMod.reference_wavefunction())
     m.write(filename)
+
 
 def parse_cotton_irreps(irrep):
     r"""Function to return validated Cotton ordering index from string or integer

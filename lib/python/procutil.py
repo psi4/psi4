@@ -41,14 +41,31 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
 def format_molecule_for_input(mol):
     """Function to return a string of the output of
     :py:func:`input.process_input` applied to the XYZ
-    format of molecule *mol*. Used to capture molecule
-    information for distributed (sow/reap) input files.
+    format of molecule, passed as either fragmented
+    geometry string *mol* or molecule instance *mol*. 
+    Used to capture molecule information from database
+    modules and for distributed (sow/reap) input files.
+    For the reverse, see :py:func:`molutil.geometry`.
 
     """
-    commands = ''
-    commands += 'input.process_input("""\nmolecule %s {\n' % (mol.name())
-    commands += mol.save_string_xyz()
-    commands += 'units angstrom\n}\n""", 0)\n'
+    # when mol is already a string
+    if isinstance(mol, basestring):
+        mol_string = mol
+        mol_name = ''
+    # when mol is PsiMod.Molecule or qcdb.Molecule object
+    else:
+        # save_string_for_psi4 is the more detailed choice as it includes fragment
+        #   (and possibly no_com/no_reorient) info. but this is only available
+        #   for qcdb Molecules. Since save_string_xyz was added to libmints just
+        #   for the sow/reap purpose, may want to unify these fns sometime.
+        try:
+            mol_string = mol.save_string_for_psi4()
+        except AttributeError:
+            mol_string = mol.save_string_xyz()
+
+        mol_name = mol.name()
+
+    commands = 'input.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
     return eval(commands)
 
 

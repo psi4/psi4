@@ -278,6 +278,19 @@ actually,::
 
     energy('scf')
 
+Broken Symmetry
+~~~~~~~~~~~~~~~
+
+For certain problems, such diradicals, allowing the spin-up and spin-down orbitals to differ in closed-shell computations can be advantageous; this is known as symmetry breaking.  The resulting wavefunction will often provide superior energetics, due to the increased flexibility, but will suffer non-physicical spin contamination from higher multiplicity states.  |PSIfour| can compute a high-spin triplet wavefunction and then use this as a guess for the broken-symmetry low spin state.  To do this, you request broken symmetry in the :py:func:`~driver.energy` call, using one of the following:::
+
+    energy('uhf', brokensymmetry=True)
+
+    or, equivalently
+
+    set reference uhf
+    energy('scf', brokensymmetry=True)
+
+
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
 
