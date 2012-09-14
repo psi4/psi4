@@ -234,7 +234,7 @@ void export_mints()
             def("ao_f12", &MintsHelper::ao_f12, "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
             def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
-            //def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+            def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
             def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").
             def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "docstring").
             def("mo_f12", &MintsHelper::mo_f12, "docstring").
