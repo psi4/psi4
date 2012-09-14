@@ -42,7 +42,7 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
     else if (deriv == 2) {
         set_chunks(6*natom_);  // xx, xy, xz, yy, yz, zz for each atom
         maxnao1 *= 6*natom_;
-        //maxnao2 *= 6*natom_;
+        maxnao2 *= 6*natom_;
     }
 
     buffer_ = new double[maxnao1*maxnao2];

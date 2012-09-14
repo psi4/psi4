@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
+#include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
 #include <lib3index/3index.h>
@@ -202,6 +203,9 @@ void export_mints()
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
 
+    typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
@@ -227,6 +231,16 @@ void export_mints()
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
             def("ao_eri", &MintsHelper::ao_eri, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
+            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
+            def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
+            //def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+            def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").
+            def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "docstring").
+            def("mo_f12", &MintsHelper::mo_f12, "docstring").
+            def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
+            def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
+            def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
@@ -469,4 +483,13 @@ void export_mints()
                 const boost::shared_ptr<IntegralFactory>&,
                 const boost::shared_ptr<MatrixFactory>&>()).
             def("create_matrices", &OperatorSymmetry::create_matrices, "docstring");
+
+    class_<CorrelationFactor, boost::shared_ptr<CorrelationFactor>, boost::noncopyable>("CorrelationFactor", "docstring", no_init).
+            def(init<unsigned int>()).
+            def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >()).
+            def("set_params", &CorrelationFactor::set_params, "docstring");
+    class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
+            def(init<double>()).
+            def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
 }
