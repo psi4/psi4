@@ -3,8 +3,11 @@
 #! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
 #! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
+#! The computation is then repeated using the exact expression for non-idempotent contribution to OPDM
+#! (TAU = EXACT) using the same algorithms.
 
 memory 250 mb
+
 
 
 molecule HF {
@@ -36,5 +39,24 @@ energy('dcft')
 
 
 set algorithm simultaneous
+energy('dcft')
+
+
+set tau exact
+set algorithm twostep
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
 energy('dcft')
 

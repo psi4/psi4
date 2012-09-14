@@ -133,20 +133,20 @@ $(autotarget4): %: $(autodepend4)
 # Autodoc PsiMod module
 autodepend5 = \
 @top_srcdir@/src/bin/psi4/*.cc \
-@top_srcdir@/tests/docs_psimod/input.dat
+@top_srcdir@/tests/docs-psimod/input.dat
 
 autotarget5 = \
 $(SOURCEDIR)/autodoc_man_PsiMod.txt
 
 $(autotarget5): %: $(autodepend5)
-	cd ../../tests/docs_psimod; $(MAKE) clean; $(MAKE)
-	cp ../../tests/docs_psimod/$(@F) $(SOURCEDIR)/$(@F)
+	cd ../../tests/docs-psimod; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs-psimod/$(@F) $(SOURCEDIR)/$(@F)
 
 
 # Autodoc functionals
 autodepend6 = \
 @top_srcdir@/lib/python/functional.py \
-@top_srcdir@/tests/docs_dft/input.dat
+@top_srcdir@/tests/docs-dft/input.dat
 
 autotarget6 = \
 $(SOURCEDIR)/autodoc_dft_energy.rst \
@@ -160,8 +160,8 @@ $(SOURCEDIR)/autodoc_dft_scsdhybrid.rst \
 $(SOURCEDIR)/autodoc_dft_disp.rst
 
 $(autotarget6): %: $(autodepend6)
-	cd ../../tests/docs_dft; $(MAKE) clean; $(MAKE)
-	cp ../../tests/docs_dft/$(@F) $(SOURCEDIR)/$(@F)
+	cd ../../tests/docs-dft; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs-dft/$(@F) $(SOURCEDIR)/$(@F)
 
 
 # Autodoc driver
@@ -190,7 +190,7 @@ $(autotarget8): %: $(autodepend8)
 
 # Autodoc test cases
 autodepend9 = \
-$(filter-out $(wildcard @top_srcdir@/tests/docs_*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat)) \
+$(filter-out $(wildcard @top_srcdir@/tests/docs-*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat)) \
 @srcdir@/document_tests.pl
 
 autotarget9 = \
@@ -228,14 +228,14 @@ $(autotarget11): %: $(autodepend11)
 # Autodoc basisfamily
 autodepend12 = \
 @top_srcdir@/lib/python/basislist*.py \
-@top_srcdir@/tests/docs_bases/input.dat
+@top_srcdir@/tests/docs-bases/input.dat
 
 autotarget12 = \
 $(SOURCEDIR)/autodoc_basissets_byfamily.rst
 
 $(autotarget12): %: $(autodepend12)
-	cd ../../tests/docs_bases; $(MAKE) clean; $(MAKE)
-	cp ../../tests/docs_bases/$(@F) $(SOURCEDIR)/$(@F)
+	cd ../../tests/docs-bases; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs-bases/$(@F) $(SOURCEDIR)/$(@F)
 
 
 # Autodoc psi files
