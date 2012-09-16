@@ -339,25 +339,13 @@ void HF::integrals()
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
+    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-        mints->integrals();
-        try {
-            if(scf_type_ == "PK")
-                pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
-                                                                               nsopi_, so2index_, so2symblk_));
-        }
-        catch (PsiException & err) {
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ = "OUT_OF_CORE";
-            pk_integrals_.reset();
-        }
+        // Don't do anything; the JK object will handle everything!
     }else if (scf_type_ == "DF"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         if (print_ && WorldComm->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
@@ -369,7 +357,7 @@ void HF::integrals()
     }
 
     // TODO: Relax the if statement. 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
         // Tell the JK to print
@@ -404,7 +392,6 @@ void HF::finalize()
     delete[] so2symblk_;
     delete[] so2index_;
 
-    pk_integrals_.reset();
     eri_.reset();
 
     // This will be the only one

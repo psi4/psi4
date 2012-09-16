@@ -811,13 +811,7 @@ void HF::process_tei(JKFunctor & functor)
         eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
     }else if(scf_type_ == "PK"){
-        functor.initialize(scf_type_);
-        functor(pk_integrals_);
-        if(functor.k_required())
-            pk_integrals_->compute_J_and_K();
-        else
-            pk_integrals_->compute_J();
-        functor.finalize();
+        throw PSIEXCEPTION("USE LIBFOCK INSTEAD!!");
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }

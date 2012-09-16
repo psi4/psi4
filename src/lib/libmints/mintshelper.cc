@@ -289,9 +289,9 @@ void MintsHelper::integrals()
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
 }
 
-void MintsHelper::integrals_erf()
+void MintsHelper::integrals_erf(double w)
 {
-    double omega = options_.get_double("OMEGA_ERF");
+    double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
 
     IWL ERIOUT(psio_.get(), PSIF_SO_ERF_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
@@ -303,7 +303,7 @@ void MintsHelper::integrals_erf()
     boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
 
     // Let the user know what we're doing.
-    fprintf(outfile, "      Computing non-zero ERF integrals..."); fflush(outfile);
+    fprintf(outfile, "      Computing non-zero ERF integrals (omega = %.3f)...", omega); fflush(outfile);
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
@@ -321,9 +321,9 @@ void MintsHelper::integrals_erf()
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERF_TEI);
 }
 
-void MintsHelper::integrals_erfc()
+void MintsHelper::integrals_erfc(double w)
 {
-    double omega = options_.get_double("OMEGA_ERF");
+    double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
 
     IWL ERIOUT(psio_.get(), PSIF_SO_ERFC_TEI, 0.0, 0, 0);
     IWLWriter writer(ERIOUT);
