@@ -1129,6 +1129,7 @@ AC_CONFIG_FILES([
           tests/props3/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
+          tests/dft3/Makefile
           tests/dft-b2plyp/Makefile
           tests/dft-pbe0-2/Makefile
           tests/dft-dldf/Makefile
