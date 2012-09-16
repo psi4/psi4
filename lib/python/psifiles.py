@@ -4,6 +4,7 @@ PSIF_CHKPT                  =   32  # new libpsio checkpoint file number
 PSIF_OPTKING                =    1  # 
 PSIF_DSCF                   =   31  # 
 PSIF_SO_TEI                 =   33  # 
+PSIF_SO_PK                  =   34  # 
 PSIF_OEI                    =   35  # 
 PSIF_SO_ERF_TEI             =   36  # 
 PSIF_SO_ERFC_TEI            =   37  # 

@@ -262,6 +262,9 @@ dft1-alt:     DFT Functional Test
 dft2:         DFT Functional Test
 
 
+dft3:         DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation, using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
+
+
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
