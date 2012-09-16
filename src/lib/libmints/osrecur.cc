@@ -850,12 +850,14 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
 ObaraSaikaTwoCenterVIDeriv2Recursion::ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2)
     : ObaraSaikaTwoCenterVIDerivRecursion(max_am1+1, max_am2+1)
 {
-    vxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    int max_am = 2*(std::max(max_am1, max_am2) + 2) + 1;
+
+    vxx_ = init_box(size_, size_, max_am);
+    vxy_ = init_box(size_, size_, max_am);
+    vxz_ = init_box(size_, size_, max_am);
+    vyy_ = init_box(size_, size_, max_am);
+    vyz_ = init_box(size_, size_, max_am);
+    vzz_ = init_box(size_, size_, max_am);
 }
 
 ObaraSaikaTwoCenterVIDeriv2Recursion::~ObaraSaikaTwoCenterVIDeriv2Recursion()
@@ -886,7 +888,7 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));
