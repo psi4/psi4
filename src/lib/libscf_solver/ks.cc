@@ -87,6 +87,8 @@ void RKS::integrals()
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
+    } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
+    } else if (KS::options_.get_str("SCF_TYPE") == "PK") {
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
     }
@@ -111,7 +113,7 @@ void RKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
 
         // Push the C matrix on
         std::vector<SharedMatrix> & C = jk_->C_left();
@@ -264,6 +266,8 @@ void UKS::integrals()
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
+    } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
+    } else if (KS::options_.get_str("SCF_TYPE") == "PK") {
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
     }    
@@ -290,7 +294,7 @@ void UKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
 
         // Push the C matrix on
         std::vector<SharedMatrix> & C = jk_->C_left();
