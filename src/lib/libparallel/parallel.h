@@ -24,8 +24,6 @@ typedef     psi::ElemCommWrapper             worldcomm;
 typedef     psi::MADNESSCommWrapper     worldcomm;
 #endif
 
-#include "threaded_storage.h"
-
 namespace psi {
 
     extern FILE *outfile;
@@ -41,5 +39,7 @@ namespace psi {
     worldcomm* Init_Communicator(int &argc, char **argv);
 
 }
+
+#include "threaded_storage.h"
 
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */
