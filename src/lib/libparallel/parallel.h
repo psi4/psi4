@@ -12,7 +12,6 @@
 #include <psiconfig.h>
 #include <cstdio>
 
-
 // Define the default parallel environment. In general, developers should just use this type.
 #if !defined(HAVE_MADNESS) && !defined(HAVE_ELEMENTAL)
 #include <libparallel/local.h>
@@ -24,6 +23,8 @@ typedef     psi::ElemCommWrapper             worldcomm;
 #include <libparallel/mad.h>
 typedef     psi::MADNESSCommWrapper     worldcomm;
 #endif
+
+#include "threaded_storage.h"
 
 namespace psi {
 
