@@ -110,8 +110,6 @@ protected:
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-    /// PK Matrix approach
-    boost::shared_ptr<PKIntegrals> pk_integrals_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;
