@@ -3,6 +3,9 @@
     \brief Enter brief description of file here
 */
 
+#include <boost/shared_ptr.hpp>
+#include <libmints/mints.h>
+#include <psi4-dec.h>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -91,15 +94,22 @@ void local_init(Options & options)
   int num_zero;
   double **RS;
 
-  chkpt_init(PSIO_OPEN_OLD);
-  C = chkpt_rd_scf();
-  natom = chkpt_rd_natom();
-  nshell = chkpt_rd_nshell();
-  puream = chkpt_rd_puream();
-  eps_all = chkpt_rd_evals();
-  stype = chkpt_rd_stype();
-  snuc = chkpt_rd_snuc();
-  chkpt_close();
+//  chkpt_init(PSIO_OPEN_OLD);
+//  C = chkpt_rd_scf();
+//  natom = chkpt_rd_natom();
+//  nshell = chkpt_rd_nshell();
+//  puream = chkpt_rd_puream();
+//  eps_all = chkpt_rd_evals();
+//  stype = chkpt_rd_stype();
+//  snuc = chkpt_rd_snuc();
+//  chkpt_close();
+
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+  C = wfn->Ca()->pointer();
+  natom = wfn->molecule()->natom();
+  nshell = wfn->basisset()->nshell();
+  puream = wfn->basisset()->has_puream();
+  eps_all = wfn->epsilon_a()->pointer();
 
   timer_on("Local");
 
@@ -184,12 +194,13 @@ void local_init(Options & options)
   aostart = init_int_array(natom);
   aostop = init_int_array(natom);
   for(i=0,atom=-1,offset=0; i<nshell; i++) {
-    am = stype[i] - 1;
+    am = wfn->basisset()->shell(i).am();
     shell_length = l_length[am];
+    
 
-    if(atom != snuc[i] - 1) {
+    if(atom != wfn->basisset()->shell(i).ncenter()) {
       if(atom != -1) aostop[atom] = offset-1;
-      atom = snuc[i]-1;
+      atom = wfn->basisset()->shell(i).ncenter();
       aostart[atom] = offset;
     }
     offset += shell_length;
@@ -199,9 +210,6 @@ void local_init(Options & options)
   ao2atom = init_int_array(nso);
   for(i=0; i < natom; i++)
     for(j=aostart[i]; j < aostop[i]; j++) ao2atom[j] = i;
-
-  free(stype);
-  free(snuc);
 
   /************* Build the orbital domains ************/
 
@@ -956,7 +964,6 @@ void local_init(Options & options)
   free_block(Rt_full);
   free_block(D);
   free_block(Ci);
-  free_block(C);
 
   free_block(X);
   free_block(Y);
