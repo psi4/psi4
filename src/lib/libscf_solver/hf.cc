@@ -111,6 +111,9 @@ void HF::common_init()
     // Read information from input file
     maxiter_ = options_.get_int("MAXITER");
 
+    // Should we continue if we fail to converge?
+    fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
     int ndocc = 0, nsocc = 0;
@@ -1562,7 +1565,7 @@ double HF::compute_energy()
     compute_spin_contamination();
     frac_renormalize();
 
-    if (converged) {
+    if (converged || !fail_on_maxiter_) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
@@ -1571,8 +1574,13 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
-        if (Communicator::world->me() == 0) {
+        if (Communicator::world->me() == 0 && converged) {
             fprintf(outfile, "  Energy converged.\n\n");
+        }
+        if (Communicator::world->me() == 0 && !converged) {
+            fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
+        }
+        if (Communicator::world->me() == 0) {
             fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);

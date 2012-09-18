@@ -69,6 +69,9 @@ protected:
     /// Max number of iterations for HF
     int maxiter_;
 
+    /// Fail if we don't converge by maxiter?
+    bool fail_on_maxiter_;
+
     /// Current Iteration
     int iteration_;
 
