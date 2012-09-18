@@ -340,7 +340,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral) :
 #if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
 #endif
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
@@ -354,7 +354,7 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
 TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
                            const boost::shared_ptr<IntegralFactory>& integral) :
 #if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
 #endif
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
@@ -368,7 +368,7 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& tb,
                            const boost::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
 #if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
 #endif
     integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
 {
@@ -383,7 +383,7 @@ TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& 
                            const boost::shared_ptr<IntegralFactory>& integral,
                            const CdSalcList& cdsalcs) :
 #if HAVE_MADNESS
-    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+    madness::WorldObject<TwoBodySOInt>(*WorldComm->get_madworld()),
 #endif
     tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
 {
@@ -396,10 +396,10 @@ TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& 
 void TwoBodySOInt::common_init()
 {
     // MPI runtime settings (defaults provided for all communicators)
-    nthread_ = Communicator::world->nthread();
-    comm_    = Communicator::world->communicator();
-    nproc_   = Communicator::world->nproc();
-    me_      = Communicator::world->me();
+    nthread_ = WorldComm->nthread();
+    comm_    = WorldComm->communicator();
+    nproc_   = WorldComm->nproc();
+    me_      = WorldComm->me();
 
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));

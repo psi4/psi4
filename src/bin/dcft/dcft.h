@@ -105,8 +105,22 @@ protected:
     void compute_lagrangian_VV();
     void compute_ewdm();
     // Quadratically-convergent DCFT
-    void run_qc_algorithm();
+    void run_qc_dcft();
+    void qc_dcft_init();
+    void compute_orbital_gradient();
+    void form_idps();
+    void compute_sigma_vector();
+    void iterate_conjugate_gradients();
+    void check_qc_convergence();
+    void update_cumulant_and_orbitals();
+    void run_davidson();
+    void davidson_guess();
+    // Exact Tau
+    void refine_tau();
+    void compute_F_intermediate();
+    void form_density_weighted_fock();
 
+    bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update
@@ -133,6 +147,39 @@ protected:
     int maxiter_;
     /// The current number of macroiteration for energy or gradient computation
     int iter_;
+    // Quadratically-convergent DCFT
+    /// The total number of independent pairs for the current NR step
+    int nidp_;
+    /// The number of orbital independent pairs for the current NR step (Alpha spin)
+    int orbital_idp_a_;
+    /// The number of orbital independent pairs for the current NR step (Beta spin)
+    int orbital_idp_b_;
+    /// The total number of orbital independent pairs for the current NR step
+    int orbital_idp_;
+    /// The number of cumulant independent pairs for the current NR step (Alpha-Alpha spin)
+    int lambda_idp_aa_;
+    /// The number of cumulant independent pairs for the current NR step (Alpha-Beta spin)
+    int lambda_idp_ab_;
+    /// The number of cumulant independent pairs for the current NR step (Beta-Beta spin)
+    int lambda_idp_bb_;
+    /// The total number of cumulant independent pairs for the current NR step
+    int lambda_idp_;
+    /// The maximum number of IDPs ever possible
+    int dim_;
+    /// The lookup array that determines which compound indices belong to IDPs and which don't
+    int *lookup_;
+    /// The number of the guess subspace vectors for the Davidson diagonalization
+    int nguess_;
+    /// The dimension of the subspace in the Davidson diagonalization
+    int b_dim_;
+    /// Convergence of the residual in the Davidson diagonalization
+    double r_convergence_;
+    /// The number of vectors that can be added during the iteration in the Davidson diagonalization
+    int n_add_;
+    /// The number of eigenvalues requested in the stability check
+    int nevals_;
+    /// The maximum size of the subspace in stability check
+    int max_space_;
     /// The number of occupied alpha orbitals per irrep
     Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
@@ -173,6 +220,9 @@ protected:
     double new_total_energy_;
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double regularizer_;
+    /// The threshold for the norm of the residual part of the subspace (|b'> = |b'> - |b><b|b'>) that is used to augment the subspace
+    double vec_add_tol_;
+
     /// The alpha occupied eigenvectors, per irrep
     SharedMatrix aocc_c_;
     /// The beta occupied eigenvectors, per irrep
@@ -251,10 +301,29 @@ protected:
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector
     SharedMatrix scf_error_b_;
-//    /// The alpha orbital response matrix elements (MO basis)
-//    SharedMatrix az_;
-//    /// The beta orbital response matrix elements (MO basis)
-//    SharedMatrix bz_;
+    // Quadratically-convergent DCFT
+    /// The orbital gradient ([f,kappa]) in the MO basis (Alpha spin)
+    SharedMatrix orbital_gradient_a_;
+    /// The orbital gradient ([f,kappa]) in the MO basis (Beta spin)
+    SharedMatrix orbital_gradient_b_;
+    /// Orbital and cumulant gradient in the basis of IDP
+    SharedVector gradient_;
+    /// Contribution of the Fock matrix to the diagonal part of the Hessian. Used as preconditioner for conjugate gradient procedure
+    SharedVector Hd_;
+    /// The step vector in the IDP basis
+    SharedVector X_;
+    /// Sigma vector in the basis of IDP (the product of the off-diagonal part of the Hessian with the step vector X)
+    SharedVector sigma_;
+    /// The conjugate direction vector in the IDP basis for conjugate gradient procedure
+    SharedVector D_;
+    /// The residual vector in the IDP basis for conjugate gradient procedure
+    SharedVector R_;
+    /// The search direction vector in the IDP basis for conjugate gradient procedure
+    SharedVector S_;
+    /// The new element of Krylov subspace vector in the IDP basis for conjugate gradient procedure
+    SharedVector Q_;
+    /// The subspace vector in the Davidson diagonalization procedure
+    SharedMatrix b_;
     /// Used to align things in the output
     std::string indent;
 };

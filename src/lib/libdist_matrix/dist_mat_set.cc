@@ -19,13 +19,13 @@ namespace psi {
 
 madness::Void Distributed_Matrix::zero()
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     for (int tij=0; tij < ntiles_; tij++) {
         if (me_ == owner(tij)) {
             task(me_, &Distributed_Matrix::zero_tile_tij, tij);
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -45,14 +45,14 @@ madness::Void Distributed_Matrix::zero_tile_tij(const int &tij)
 
 madness::Void Distributed_Matrix::identity()
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     zero();
     for (int ti=0; ti < tile_nrows_; ti++) {
         if (me_ == owner(ti,ti)) {
             task(me_, &Distributed_Matrix::set_tile_to_identity, ti, ti);
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -82,13 +82,13 @@ madness::Void Distributed_Matrix::set_tile_to_identity_tij(const int &tij)
 
 madness::Void Distributed_Matrix::zero_diagonal()
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     for (int ti=0; ti < tile_nrows_; ti++) {
         if (me_ == owner(ti,ti)) {
             task(me_, &Distributed_Matrix::set_tile_diagonal_zero, ti, ti);
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -178,7 +178,7 @@ madness::Void Distributed_Matrix::set_tile_val(const int &tij, const int &a,
 
 madness::Void Distributed_Matrix::set_row(const int &i, const double & val)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (nelements_) {
         if (i < nrows_) {
             int ti = convert_i_to_ti(i);// i/tile_sz_;
@@ -191,7 +191,7 @@ madness::Void Distributed_Matrix::set_row(const int &i, const double & val)
             }
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -213,7 +213,7 @@ madness::Void Distributed_Matrix::set_tile_row(const int &tij,
 
 madness::Void Distributed_Matrix::set_col(const int &j, const double & val)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (nelements_) {
         if (j < ncols_) {
             int tj = convert_j_to_tj(j);  // j/tile_sz_;
@@ -226,7 +226,7 @@ madness::Void Distributed_Matrix::set_col(const int &j, const double & val)
             }
         }
     }
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -288,7 +288,7 @@ madness::Void Distributed_Matrix::set_tile_col(const int &tij,
 
 madness::Void Distributed_Matrix::fill(const double &val)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (nrows_*ncols_) {
         for (int ti=0; ti < tile_nrows_; ti++) {
             for (int tj=0; tj < tile_ncols_; tj++) {
@@ -300,7 +300,7 @@ madness::Void Distributed_Matrix::fill(const double &val)
         }
     }
     else throw PSIEXCEPTION("The matrix you are trying to fill is empty.\n");
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -319,7 +319,7 @@ madness::Void Distributed_Matrix::fill_tile(const int &tij, const double &val)
 madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix &rhs)
 {
     if (*this == rhs) {
-        Communicator::world->sync();
+        WorldComm->sync();
         for (int tij=0; tij < ntiles_; tij++) {
             if (me_ == owner(tij)) {
                 madness::Future<madness::Tensor<double> > tile = rhs.task(me_, &Distributed_Matrix::get_tile_tij, tij);
@@ -329,14 +329,14 @@ madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix &rhs)
         }
     }
     else throw PSIEXCEPTION("The matrices being added are not the same.\n");
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
 madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix *rhs)
 {
     if (*this == rhs) {
-        Communicator::world->sync();
+        WorldComm->sync();
         for (int tij=0; tij < ntiles_; tij++) {
             if (me_ == owner(tij)) {
                 madness::Future<madness::Tensor<double> > tile = rhs->task(me_, &Distributed_Matrix::get_tile_tij, tij);
@@ -346,14 +346,14 @@ madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix *rhs)
         }
     }
     else throw PSIEXCEPTION("The matrices being added are not the same.\n");
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
 madness::Void Distributed_Matrix::operator +=(boost::shared_ptr<Distributed_Matrix> rhs)
 {
     if (*this == rhs) {
-        Communicator::world->sync();
+        WorldComm->sync();
         for (int tij=0; tij < ntiles_; tij++) {
             if (me_ == owner(tij)) {
                 madness::Future<madness::Tensor<double> > tile = rhs->task(me_, &Distributed_Matrix::get_tile_tij, tij);
@@ -363,7 +363,7 @@ madness::Void Distributed_Matrix::operator +=(boost::shared_ptr<Distributed_Matr
         }
     }
     else throw PSIEXCEPTION("The matrices being added are not the same.\n");
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 
@@ -416,7 +416,7 @@ Distributed_Matrix Distributed_Matrix::operator +(const Distributed_Matrix *rhs)
 
 madness::Void Distributed_Matrix::scale(const double &val)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     if (this->nelements_) {
         for (int tij=0; tij < ntiles_; tij++) {
             if (me_ == owner(tij)) {
@@ -426,7 +426,7 @@ madness::Void Distributed_Matrix::scale(const double &val)
     }
     else throw PSIEXCEPTION("The matrix you are trying to scale is empty.\n");
 
-    Communicator::world->sync();
+    WorldComm->sync();
     return madness::None;
 }
 madness::Void Distributed_Matrix::operator*=(const double &val)
@@ -457,7 +457,7 @@ madness::Void Distributed_Matrix::scale_tile_tij(const int &tij, const double &v
 
 double Distributed_Matrix::trace() const
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     double trace_val = 0.0;
     for (int ti=0; ti < tile_nrows_; ti++) {
         if (me_ == owner(ti,ti)) {
@@ -465,8 +465,8 @@ double Distributed_Matrix::trace() const
             trace_val += val.get();
         }
     }
-    Communicator::world->sync();
-    Communicator::world->sum(&trace_val, 1);
+    WorldComm->sync();
+    WorldComm->sum(&trace_val, 1);
 
     return trace_val;
 }
@@ -496,7 +496,7 @@ double Distributed_Matrix::trace_tile_tij(const int &tij)
 
 double Distributed_Matrix::vector_dot(const Distributed_Matrix &rmat)
 {
-    Communicator::world->sync();
+    WorldComm->sync();
     double dot = 0.0;
     if (*this == rmat) {
         for (int tij=0; tij < ntiles_; tij++) {
@@ -516,8 +516,8 @@ double Distributed_Matrix::vector_dot(const Distributed_Matrix &rmat)
     }
     else throw PSIEXCEPTION("The matrices are not the same.\n");
 
-    Communicator::world->sync();
-    Communicator::world->sum(&dot, 1);
+    WorldComm->sync();
+    WorldComm->sum(&dot, 1);
     return dot;
 }
 
@@ -557,7 +557,7 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 //                                        const int &yrow, const int &ycol, const int &y_inc)
 //{
 
-//    Communicator::world->sync();
+//    WorldComm->sync();
 
 //    int yr,yc,xr,xc;
 //    for (int i=0, y_index = yrow * this->ncols_ + ycol,
@@ -576,7 +576,7 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 //            new_x = (*this)[yr][yc].get_future();
 
 //        // make sure that the new values have been sent to new node
-//        Communicator::world->sync();
+//        WorldComm->sync();
 
 //        if (this->me_ == this->owner(yr/this->tile_sz_,yc/this->tile_sz_))
 //            (*this)[yr][yc] = new_y;
@@ -600,7 +600,7 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 ////            X[xr][xc] = (*this)[yr][yc].get_future();
 
 ////    }
-//    Communicator::world->sync();
+//    WorldComm->sync();
 
 //    return madness::None;
 
@@ -611,7 +611,7 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 //                                const int y[2], const int &y_inc)
 //{
 
-//    Communicator::world->sync();
+//    WorldComm->sync();
 //    int y_row_inc = y_inc/nrows_;
 //    int y_col_inc = y_inc%ncols_;
 
@@ -636,9 +636,9 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 //            val += xval.get()*yval.get();
 //        }
 //    }
-//    Communicator::world->sync();
+//    WorldComm->sync();
 
-//    Communicator::world->sum(&val, 1);
+//    WorldComm->sum(&val, 1);
 
 //    return val;
 
@@ -690,7 +690,7 @@ double Distributed_Matrix::vector_dot_tile(const double *lptr, const double *rpt
 //                    }
 //                }
 //            }
-//            Communicator::world->sync();
+//            WorldComm->sync();
 
 //            C_mat.print("C_mat test mxm.\n");
 
@@ -839,7 +839,7 @@ Distributed_Matrix Distributed_Matrix::operator* (Distributed_Matrix &b_mat)
                 }
             }
 */
-            Communicator::world->sync();
+            WorldComm->sync();
 
             return c_mat;
         }

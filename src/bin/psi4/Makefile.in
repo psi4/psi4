@@ -26,9 +26,15 @@ PSILIBS = \
 -lPSI_stable -lPSI_deriv -lPSI_scfgrad -lPSI_int -lPSI_util -lPSI_diis \
 -lPSI_plugin -lPSI_parallel
 
-ifeq ($(MAKE_MADNESS),1)
+ifeq ($(HAVE_MADNESS),1)
   PSILIBS += $(madlibs)/world/libMADworld.a
   PSILIBS += $(madlibs)/tensor/libMADtensor.a
+endif
+ifeq ($(HAVE_ELEMENTAL),1)
+  PSILIBS += $(elemlibs)
+endif
+ifeq ($(HAVE_SCALAPACK),1)
+  PSILIBS += $(scalapacklibs)
 endif
 
 # The psilibs need a little extra handling for plugins on linux

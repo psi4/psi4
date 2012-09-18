@@ -125,7 +125,7 @@ void CartesianEntry::print_in_input_format()
     std::string xstr(variable_to_string(x_, 10));
     std::string ystr(variable_to_string(y_, 10));
     std::string zstr(variable_to_string(z_, 10));
-    fprintf(outfile, "\t%16s %16s %16s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
+    fprintf(outfile, "\t%s %16s %16s %16s\n", symbol_.c_str(), xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
 const Vector3& CartesianEntry::compute()

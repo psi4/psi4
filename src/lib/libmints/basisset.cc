@@ -95,7 +95,7 @@ boost::shared_ptr<Molecule> BasisSet::molecule() const
 
 void BasisSet::print(FILE *out) const
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(out, "  Basis Set: %s\n", name_.c_str());
         fprintf(out, "    Number of shells: %d\n", nshell());
         fprintf(out, "    Number of basis function: %d\n", nbf());
@@ -119,7 +119,7 @@ void BasisSet::print_by_level(FILE* out, int level) const
 
 void BasisSet::print_summary(FILE* out) const
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(out, "  -AO BASIS SET INFORMATION:\n");
         fprintf(out, "    Name                   = %s\n", name_.c_str());
         fprintf(out, "    Total number of shells = %d\n", nshell());
@@ -146,7 +146,7 @@ void BasisSet::print_summary(FILE* out) const
         memset((void*) nunique, '\0', (max_am_ + 1) * sizeof(int));
         memset((void*) nshells, '\0', (max_am_ + 1) * sizeof(int));
 
-        if (Communicator::world->me() == 0) {
+        if (WorldComm->me() == 0) {
             fprintf(out, "    %4d    ", A+1);
             fprintf(out, "%2s     ", molecule_->symbol(A).c_str());
         }
@@ -166,22 +166,22 @@ void BasisSet::print_summary(FILE* out) const
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nprims[l] == 0)
                 continue;
-            if (Communicator::world->me() == 0)
+            if (WorldComm->me() == 0)
                 fprintf(out, "%d%c ", nprims[l], amtypes[l]);
         }
         // Shells
-        if (Communicator::world->me() == 0)
+        if (WorldComm->me() == 0)
             fprintf(out, "// ");
         for (int l = 0; l < max_am_ + 1; l++) {
             if (nshells[l] == 0)
                 continue;
-            if (Communicator::world->me() == 0)
+            if (WorldComm->me() == 0)
                 fprintf(out, "%d%c ", nshells[l], amtypes[l]);
         }
-        if (Communicator::world->me() == 0)
+        if (WorldComm->me() == 0)
             fprintf(out, "\n");
     }
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         fprintf(out, "\n");
 
     delete[] nprims;
@@ -195,7 +195,7 @@ void BasisSet::print_detail(FILE* out) const
     print_summary(out);
 
     //TODO: Use unique atoms (C1 for now)
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(out, "  ==> AO Basis Functions <==\n");
         fprintf(out, "\n");
         fprintf(out, "    [ %s ]\n",name_.c_str());
@@ -206,7 +206,7 @@ void BasisSet::print_detail(FILE* out) const
         fprintf(out, "    ****\n");
     }
     for (int A = 0; A < molecule_->natom(); A++) {
-        if (Communicator::world->me() == 0) {
+        if (WorldComm->me() == 0) {
             fprintf(out, "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
         }
 
@@ -216,21 +216,21 @@ void BasisSet::print_detail(FILE* out) const
         for (int Q = 0; Q < n_shell; Q++) {
             const GaussianShell& shell = shells_[Q + first_shell];
 
-            if (Communicator::world->me() == 0) {
+            if (WorldComm->me() == 0) {
                 fprintf(outfile, "    %c %3d 1.00\n", shell.AMCHAR(),shell.nprimitive());
             }
             for (int K = 0; K < shell.nprimitive(); K++) {
-                if (Communicator::world->me() == 0) {
+                if (WorldComm->me() == 0) {
                     fprintf(outfile, "               %20.8f %20.8f\n",shell.exp(K), shell.coef(K));
                 }
 
             }
         }
-        if (Communicator::world->me() == 0){
+        if (WorldComm->me() == 0){
             fprintf(out, "    ****\n");
         }
     }
-    if (Communicator::world->me() == 0){
+    if (WorldComm->me() == 0){
         fprintf(out, "\n");
     }
 }
@@ -355,14 +355,14 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
                     // Need to wrap this is a try catch block
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
-                    if (Communicator::world->me() == 0)
+                    if (WorldComm->me() == 0)
                         fprintf(outfile, "  Basis set %s for %s read from %s\n",
                                 basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = false;
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
-                    if (Communicator::world->me() == 0)
+                    if (WorldComm->me() == 0)
                         fprintf(outfile, "  Unable to find %s for %s in %s.\n",
                                 basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;

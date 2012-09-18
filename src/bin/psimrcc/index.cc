@@ -22,14 +22,12 @@ extern MOInfo *moinfo;
 
 using namespace std;
 
-int                       CCIndex::nirreps=-1;
-
 CCIndex::CCIndex(std::string str):
   label(str),nelements(0), greater_than_or_equal(false), greater_than(false), ntuples(0), tuples(0),
   one_index_to_tuple_rel_index(0), two_index_to_tuple_rel_index(0), three_index_to_tuple_rel_index(0),
   one_index_to_irrep(0), two_index_to_irrep(0), three_index_to_irrep(0)
 {
-  if(nirreps<0) nirreps = moinfo->get_nirreps();
+  nirreps = moinfo->get_nirreps();
   init();
 }
 

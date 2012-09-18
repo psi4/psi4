@@ -77,12 +77,13 @@ BasisSetParser::~BasisSetParser()
 vector<string> BasisSetParser::load_file(const std::string& filename,
                                          const std::string& basisname)
 {
-    int me = Communicator::world->me();
+    int me = WorldComm->me();
+    int nproc = WorldComm->nproc();
 
     // Loads an entire file.
     vector<string> lines;
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         smatch what;
 
         // temp variable
@@ -122,17 +123,8 @@ vector<string> BasisSetParser::load_file(const std::string& filename,
         }
     }
 
-    size_t nlines = lines.size();
-    if (Communicator::world->nproc() > 1) {
-        Communicator::world->bcast(&nlines, 1);
-
-        if (me > 0)
-            lines.resize(nlines);
-
-        for (size_t i=0; i<nlines; ++i) {
-            Communicator::world->bcast(lines[i]);
-        }
-    }
+    if (nproc > 1)
+        WorldComm->bcast_serializable(lines, 0);
 
     return lines;
 }

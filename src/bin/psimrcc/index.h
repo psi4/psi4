@@ -113,6 +113,7 @@ private:
   ///////////////////////////////////////////////////////////////////////////////
   // Type                           // Name
   std::string                       label;                  // The label of this object
+  int                               nirreps;                // The number of irreps
   int                               nelements;              // Number of elements
   Size_tVec                         dimension;              // Size of the elements space
   vecvecint                         mospi;                  // Size of each irrep of the elements space
@@ -132,8 +133,6 @@ private:
   int**                             two_index_to_irrep;     // 2->irrep mapping array
   int***                            three_index_to_irrep;   // 3->irrep mapping array
   int**                             element_irrep;          // Irrep of each element
-protected:
-  static int                        nirreps;
 };
 
 }} /* End Namespaces */

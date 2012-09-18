@@ -31,7 +31,9 @@ private:
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv);
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
-                                                                           SharedMatrix C3, SharedMatrix C4);
+                                                 SharedMatrix C3, SharedMatrix C4);
+
+    SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
 
 public:
 
@@ -78,6 +80,9 @@ public:
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
+    void integrals_erf(double w = -1.0);
+    void integrals_erfc(double w = -1.0);
+
     /// Standard one electron integrals (just like oeints used to do)
     void one_electron_integrals();
     /// Derivative integrals (not implemented)
@@ -87,20 +92,39 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
+    /// AO ERF Integrals
+    SharedMatrix ao_erf_eri(double omega);
+    /// MO ERFC Omega Integrals
+    SharedMatrix ao_erfc_eri(double omega);
+    /// MO F12 Integrals
+    SharedMatrix ao_f12(boost::shared_ptr<CorrelationFactor> corr);
+    /// MO F12 squared Integrals
+    SharedMatrix ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr);
+    /// MO F12G12 Integrals
+    SharedMatrix ao_f12g12(boost::shared_ptr<CorrelationFactor> corr);
+    /// MO F12 double commutator Integrals
+    SharedMatrix ao_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr);
     /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_eri(SharedMatrix Cocc, SharedMatrix Cvir);
     /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    SharedMatrix mo_eri(SharedMatrix C1, SharedMatrix C2,
-                                     SharedMatrix C3, SharedMatrix C4);
-    /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
-    SharedMatrix ao_erf_eri(double omega);
+    SharedMatrix mo_eri(SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO ERI Omega Integrals (Full matrix, not recommended for large systems)
+    SharedMatrix mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO ERFC Omega Integrals
+    SharedMatrix mo_erfc_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO F12 Integrals
+    SharedMatrix mo_f12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO F12 squared Integrals
+    SharedMatrix mo_f12_squared(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO F12G12 Integrals
+    SharedMatrix mo_f12g12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+    /// MO F12 double commutator Integrals
+    SharedMatrix mo_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4);
+
     /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     SharedMatrix mo_erf_eri(double omega, SharedMatrix Cocc, SharedMatrix Cvir);
-    /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    SharedMatrix mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2,
-                                                       SharedMatrix C3, SharedMatrix C4);
 
     /// AO Overlap Integrals
     SharedMatrix ao_overlap();

@@ -24,7 +24,7 @@ void PSIO::open(unsigned int unit, int status) {
   char *name, *path;
   psio_ud *this_unit;
   
-  //std::cout << "proc " << Communicator::world->me() << "    status = " << status << std::endl;
+  //std::cout << "proc " << WorldComm->me() << "    status = " << status << std::endl;
   /* check for too large unit */
   if (unit > PSIO_MAXUNIT)
     psio_error(unit, PSIO_ERROR_MAXUNIT);
@@ -85,20 +85,20 @@ void PSIO::open(unsigned int unit, int status) {
 
     /* Now open the volume */
     if (status == PSIO_OPEN_OLD) {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);
       }
-      Communicator::world->bcast(&(this_unit->vol[i].stream), 1, 0);
-      //Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+      WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
+      //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
         psio_error(unit,PSIO_ERROR_OPEN);
     }
     else if(status == PSIO_OPEN_NEW) {
-      if (Communicator::world->me() == 0) {
+      if (WorldComm->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR|O_TRUNC,0644);
       }
-      Communicator::world->bcast(&(this_unit->vol[i].stream), 1, 0);
-      //Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+      WorldComm->bcast(&(this_unit->vol[i].stream), 1, 0);
+      //WorldComm->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
         psio_error(unit,PSIO_ERROR_OPEN);
     }
@@ -184,7 +184,7 @@ bool PSIO::exists(unsigned int unit) {
     sprintf(fullpath, "%s%s.%u", path2, name, unit);
     
     /* Now open the volume */
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
       stream = ::open(fullpath,O_RDWR);
     }
     if (stream == -1) {

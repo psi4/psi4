@@ -7,7 +7,7 @@ Database of Pulay corannulene structures. Subsumed into CFLOW.
 
 """
 import re
-import input
+import qcdb
 
 # <<< CORE Database Module >>>
 # Geometries and Reference energies from.
@@ -83,14 +83,10 @@ TAGL['%s-%s-monoB-CP'   % (dbse, 'dimer3_84'             )] = """Monomer B from 
 TAGL['%s-%s-monoA-unCP' % (dbse, 'dimer3_84'             )] = """Monomer A from  """
 TAGL['%s-%s-monoB-unCP' % (dbse, 'dimer3_84'             )] = """Monomer B from  """
 
-# <<< Molecule Specifications >>>
-monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+# <<< Geometry Specification Strings >>>
+GEOS = {}
 
-CORE_dimer3_54 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'dimer3_54')] = qcdb.Molecule("""
 0 1
 C        0.70622800     0.97211978     0.61694803
 C       -0.70622800     0.97211978     0.61694803
@@ -155,11 +151,9 @@ H        3.36816400    -2.57958822     2.92649403
 H        4.24094400     0.10729578     2.92626003
 H        3.49401500     2.40602178     2.92632803
 units angstrom
-}
-""", 0)
+""")
 
-CORE_dimer3_64 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'dimer3_64')] = qcdb.Molecule("""
 0 1
 C        0.70622800     0.97211978     0.61694803
 C       -0.70622800     0.97211978     0.61694803
@@ -224,11 +218,9 @@ H        3.36816400    -2.57958822     3.02649403
 H        4.24094400     0.10729578     3.02626003
 H        3.49401500     2.40602178     3.02632803
 units angstrom
-}
-""", 0)
+""")
 
-CORE_dimer3_73 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'dimer3_73')] = qcdb.Molecule("""
 0 1
 C        0.70622800     0.97211978     0.61694803
 C       -0.70622800     0.97211978     0.61694803
@@ -293,11 +285,9 @@ H        3.36816400    -2.57958822     3.11649403
 H        4.24094400     0.10729578     3.11626003
 H        3.49401500     2.40602178     3.11632803
 units angstrom
-}
-""", 0)
+""")
 
-CORE_dimer3_74 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'dimer3_74')] = qcdb.Molecule("""
 0 1
 C        0.70622800     0.97211978     0.61694803
 C       -0.70622800     0.97211978     0.61694803
@@ -362,11 +352,9 @@ H        3.36816400    -2.57958822     3.12649403
 H        4.24094400     0.10729578     3.12626003
 H        3.49401500     2.40602178     3.12632803
 units angstrom
-}
-""", 0)
+""")
 
-CORE_dimer3_84 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'dimer3_84')] = qcdb.Molecule("""
 0 1
 C        0.70622800     0.97211978     0.61694803
 C       -0.70622800     0.97211978     0.61694803
@@ -431,16 +419,43 @@ H        3.36816400    -2.57958822     3.22649403
 H        4.24094400     0.10729578     3.22626003
 H        3.49401500     2.40602178     3.22632803
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
+# <<< Derived Geometry Strings >>>
 for rxn in HRXN:
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1)
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2)
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
 
-    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
-    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
-    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
-    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
+#########################################################################
+
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_54-dimer'           ] =    4584.11459289
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_54-monoA-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_54-monoB-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_64-dimer'           ] =    4555.01239979
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_64-monoA-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_64-monoB-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_73-dimer'           ] =    4529.48976988
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_73-monoA-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_73-monoB-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_74-dimer'           ] =    4526.69216135
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_74-monoA-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_74-monoB-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_84-dimer'           ] =    4499.12706628
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_84-monoA-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_84-monoB-unCP'      ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_54-monoA-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_54-monoB-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_64-monoA-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_64-monoB-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_73-monoA-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_73-monoB-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_74-monoA-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_74-monoB-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_84-monoA-CP'        ] =    1387.77369315
+DATA['NUCLEAR REPULSION ENERGY']['CORE-dimer3_84-monoB-CP'        ] =    1387.77369315

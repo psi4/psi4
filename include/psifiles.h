@@ -24,7 +24,10 @@
 #define PSIF_OPTKING           1    /*-  -*/
 #define PSIF_DSCF              31   /*-  -*/
 #define PSIF_SO_TEI            33   /*-  -*/
+#define PSIF_SO_PK             34   /*-  -*/
 #define PSIF_OEI               35   /*-  -*/
+#define PSIF_SO_ERF_TEI        36   /*-  -*/
+#define PSIF_SO_ERFC_TEI       37   /*-  -*/
 #define PSIF_SO_R12            38   /*-  -*/
 #define PSIF_SO_R12T1          39   /*-  -*/
 #define PSIF_DERINFO           40   /*-  -*/

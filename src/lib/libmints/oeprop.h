@@ -7,6 +7,7 @@
 #include <string>
 
 #include "typedefs.h"
+#include "libmints/vector3.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -220,6 +221,8 @@ protected:
     void compute_dipole(bool transition = false);
     /// Compute quadrupole
     void compute_quadrupole(bool transition = false);
+    /// Compute arbitrary-order multipoles up to (and including) l=order
+    void compute_multipoles(int order, bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges
@@ -235,6 +238,13 @@ protected:
     /// Compute electric field and electric field gradients
     void compute_electric_field_and_gradients();
 
+    /// The center about which properties are computed
+    Vector3 origin_;
+    /// Whether the origin is on a symmetry axis or not
+    bool origin_preserves_symmetry_;
+
+    /// Computes the center for a given property, for the current molecule
+    Vector3 compute_center(const double *property) const;
 public:
     /// Compute Mulliken Charges using a specialized Da
     boost::shared_ptr<Vector> compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so);
@@ -282,6 +292,7 @@ protected:
     std::map<std::string, double***> grid_;
     /// The BasisPoints object to evaluate basis functions on the grid
     //boost::shared_ptr<BasisPoints> points_;
+
 
     /// The number of subintervals
     int n_[3];

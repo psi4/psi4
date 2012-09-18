@@ -31,7 +31,7 @@ public:
     bool has_deriv1() { return true; }
 
     /// Returns the nuclear contribution to the dipole moment
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, const Vector3 &origin);
 };
 
 }

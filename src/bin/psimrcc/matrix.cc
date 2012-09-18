@@ -17,14 +17,13 @@ namespace psi{
 
 using namespace std;
 
-int CCMatrix::nirreps                          = -1;
 double CCMatrix::fraction_of_memory_for_buffer = 0.05;
 
 CCMatrix::CCMatrix(std::string& str,CCIndex* left_index,CCIndex* right_index)
 :label(str),memory2(0),naccess(0),reference(-1),symmetry(-1),
 fock(false),integral(false),chemist_notation(false),antisymmetric(false),out_of_core(false),right(right_index),left(left_index)
 {
-  if(nirreps<0)  nirreps = moinfo->get_nirreps();
+  nirreps = moinfo->get_nirreps();
 
   if(str.find("(")!=string::npos || str.find("<")!=string::npos)
     integral = true;

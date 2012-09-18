@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cmath>
 #include <sstream>
+#include <vector>
 
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
@@ -17,6 +18,8 @@
 #include <psiconfig.h>
 
 #include <boost/foreach.hpp>
+
+#include <libdist_matrix/dist_mat.h>
 
 using namespace boost;
 
@@ -155,7 +158,7 @@ MintsHelper::MintsHelper(Options & options, int print): options_(options), print
 }
 
 MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), print_(0) 
+    : options_(Process::environment.options), print_(0)
 {
     init_helper_2(basis);
 }
@@ -217,7 +220,7 @@ void MintsHelper::integrals()
 
     // Get ERI object
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
-    for (int i=0; i<Communicator::world->nthread(); ++i)
+    for (int i=0; i<WorldComm->nthread(); ++i)
         tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
@@ -285,6 +288,71 @@ void MintsHelper::integrals()
     fprintf(outfile, "      Computed %lu non-zero two-electron integrals.\n"
                      "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
 }
+
+void MintsHelper::integrals_erf(double w)
+{
+    double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
+
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERF_TEI, 0.0, 0, 0);
+    IWLWriter writer(ERIOUT);
+
+    // Get ERI object
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for (int i=0; i<WorldComm->nthread(); ++i)
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
+    boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
+
+    // Let the user know what we're doing.
+    fprintf(outfile, "      Computing non-zero ERF integrals (omega = %.3f)...", omega); fflush(outfile);
+
+    SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
+        erf->compute_shell(shellIter, writer);
+
+    // Flush the buffers
+    ERIOUT.flush(1);
+
+    // Keep the integrals around
+    ERIOUT.set_keep_flag(true);
+    ERIOUT.close();
+
+    fprintf(outfile, "done\n");
+    fprintf(outfile, "      Computed %lu non-zero ERF integrals.\n"
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERF_TEI);
+}
+
+void MintsHelper::integrals_erfc(double w)
+{
+    double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
+
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERFC_TEI, 0.0, 0, 0);
+    IWLWriter writer(ERIOUT);
+
+    // Get ERI object
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for (int i=0; i<WorldComm->nthread(); ++i)
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->erf_complement_eri(omega)));
+    boost::shared_ptr<TwoBodySOInt> erf(new TwoBodySOInt(tb, integral_));
+
+    // Let the user know what we're doing.
+    fprintf(outfile, "      Computing non-zero ERFComplement integrals..."); fflush(outfile);
+
+    SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
+    for (shellIter.first(); shellIter.is_done() == false; shellIter.next())
+        erf->compute_shell(shellIter, writer);
+
+    // Flush the buffers
+    ERIOUT.flush(1);
+
+    // Keep the integrals around
+    ERIOUT.set_keep_flag(true);
+    ERIOUT.close();
+
+    fprintf(outfile, "done\n");
+    fprintf(outfile, "      Computed %lu non-zero ERFComplement integrals.\n"
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_ERFC_TEI);
+}
+
 
 void MintsHelper::one_electron_integrals()
 {
@@ -369,12 +437,10 @@ SharedMatrix MintsHelper::ao_potential()
     return potential_mat;
 }
 
-SharedMatrix MintsHelper::ao_erf_eri(double omega)
+SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints)
 {
     int nbf = basisset_->nbf();
-    SharedMatrix I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
-
-    boost::shared_ptr<TwoBodyAOInt> ints(integral_->erf_eri(omega));
+    SharedMatrix I(new Matrix(label, nbf*nbf, nbf*nbf));
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
@@ -394,46 +460,59 @@ SharedMatrix MintsHelper::ao_erf_eri(double omega)
                                             [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
                                             = buffer[index];
 
-                                } } } }
-
-                } } } }
-
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     return I;
+}
+
+SharedMatrix MintsHelper::ao_erf_eri(double omega)
+{
+    return ao_helper("AO ERF ERI Integrals", boost::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
 }
 
 SharedMatrix MintsHelper::ao_eri()
 {
-    int nbf = basisset_->nbf();
-    SharedMatrix I(new Matrix("AO ERI Tensor", nbf*nbf, nbf*nbf));
-
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri());
-    double** Ip = I->pointer();
-    const double* buffer = ints->buffer();
-
-    for (int M = 0; M < basisset_->nshell(); M++) {
-        for (int N = 0; N < basisset_->nshell(); N++) {
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
-
-                    ints->compute_shell(M,N,P,Q);
-
-                    for (int m = 0, index = 0; m < basisset_->shell(M).nfunction(); m++) {
-                        for (int n = 0; n < basisset_->shell(N).nfunction(); n++) {
-                            for (int p = 0; p < basisset_->shell(P).nfunction(); p++) {
-                                for (int q = 0; q < basisset_->shell(Q).nfunction(); q++, index++) {
-
-                                    Ip[(basisset_->shell(M).function_index() + m)*nbf + basisset_->shell(N).function_index() + n]
-                                            [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
-                                            = buffer[index];
-
-                                } } } }
-
-                } } } }
-
-
-    return I;
+    return ao_helper("AO ERI Tensor", ints);
 }
+
+SharedMatrix MintsHelper::ao_erfc_eri(double omega)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->erf_complement_eri(omega));
+    return ao_helper("AO ERFC ERI Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12(boost::shared_ptr<CorrelationFactor> corr)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12(corr));
+    return ao_helper("AO F12 Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_squared(boost::shared_ptr<CorrelationFactor> corr)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12_squared(corr));
+    return ao_helper("AO F12 Squared Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12g12(boost::shared_ptr<CorrelationFactor> corr)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12g12(corr));
+    return ao_helper("AO F12G12 Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr)
+{
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->f12_double_commutator(corr));
+    return ao_helper("AO F12 Double Commutator Tensor", ints);
+}
+
 SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2,
                                      SharedMatrix C3, SharedMatrix C4)
 {
@@ -441,6 +520,42 @@ SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix
     mo_ints->set_name("MO ERF ERI Tensor");
     return mo_ints;
 }
+
+SharedMatrix MintsHelper::mo_erfc_eri(double omega, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4)
+{
+    SharedMatrix mo_ints = mo_eri_helper(ao_erfc_eri(omega), C1, C2, C3, C4);
+    mo_ints->set_name("MO ERFC ERI Tensor");
+    return mo_ints;
+}
+
+SharedMatrix MintsHelper::mo_f12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4)
+{
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12(corr), C1, C2, C3, C4);
+    mo_ints->set_name("MO F12 Tensor");
+    return mo_ints;
+}
+
+SharedMatrix MintsHelper::mo_f12_squared(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4)
+{
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12_squared(corr), C1, C2, C3, C4);
+    mo_ints->set_name("MO F12 Squared Tensor");
+    return mo_ints;
+}
+
+SharedMatrix MintsHelper::mo_f12g12(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4)
+{
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12g12(corr), C1, C2, C3, C4);
+    mo_ints->set_name("MO F12G12 Tensor");
+    return mo_ints;
+}
+
+SharedMatrix MintsHelper::mo_f12_double_commutator(boost::shared_ptr<CorrelationFactor> corr, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3, SharedMatrix C4)
+{
+    SharedMatrix mo_ints = mo_eri_helper(ao_f12_double_commutator(corr), C1, C2, C3, C4);
+    mo_ints->set_name("MO F12 Double Commutator Tensor");
+    return mo_ints;
+}
+
 SharedMatrix MintsHelper::mo_eri(SharedMatrix C1, SharedMatrix C2,
                                  SharedMatrix C3, SharedMatrix C4)
 {
@@ -735,8 +850,28 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
 
 void MintsHelper::play()
 {
-#ifdef HAVE_MADNESS
-  // I took out the old distributed matrix
+#if defined(HAVE_MADNESS)
+    int pnrows = sqrt(WorldComm->nproc());
+    int pncols = WorldComm->nproc() / pnrows;
+
+    std::vector<int> pgrid_dimension_sizes(2);
+    pgrid_dimension_sizes[0] = pnrows;
+    pgrid_dimension_sizes[1] = pncols;
+
+    process_grid pgrid(pgrid_dimension_sizes);
+
+    Distributed_Matrix A(pgrid, 5, 5, 2, "A");
+    Distributed_Matrix B(pgrid, 5, 5, 2, "B");
+    Vector X(5);
+
+    A.fill(1.0);
+    fprintf(outfile, "Pre diag call\n");
+    A.print();
+    A.diagonalize(B, X);
+    fprintf(outfile, "Post diag call\n");
+    A.print();
+    B.print();
+    X.print();
 #endif
 }
 
