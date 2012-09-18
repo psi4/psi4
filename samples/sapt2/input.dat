@@ -39,6 +39,7 @@ set globals {
     scf_type      df
     puream        true
     print         1
+    basis_guess   true
 }
 
 set sapt {
@@ -47,7 +48,7 @@ set sapt {
     aio_df_ints   true
 }
 
-energy('sapt0',cast_up=True)
+energy('sapt0')
 
 Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
 Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")

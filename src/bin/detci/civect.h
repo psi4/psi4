@@ -87,7 +87,7 @@ class CIvect {
       void print(FILE *outfile);
       double operator*(CIvect &b);
       void set_nvect(int i);
-      void setarray(const double *a, int len);
+      void setarray(const double *a, BIGINT len);
       void max_abs_vals(int nval, int *iac, int *ibc, int *iaidx, int *ibidx,
          double *coeff, int neg_only);
       double blk_max_abs_vals(int i, int offdiag, int nval, int *iac, int *ibc,

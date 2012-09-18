@@ -28,7 +28,7 @@ public:
     QuadrupoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     virtual ~QuadrupoleInt();
 
-    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol, const Vector3 &origin);
 
 };
 

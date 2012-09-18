@@ -10,7 +10,7 @@ A = 104.5
 plugin_load("./template_plugin.so")
 
 set {
-  basis sto-3g
+  basis cc-pvdz
 }
 
 set matrix {

@@ -1,3 +1,4 @@
+#include <boost/regex.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -8,6 +9,7 @@
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
 #include <libciomr/libciomr.h>
+#include <libmints/vector3.h>
 #include "mints.h"
 #include <libqt/qt.h>
 #include <psi4-dec.h>
@@ -795,17 +797,138 @@ OEProp::OEProp() : Prop(Process::environment.wavefunction())
 OEProp::~OEProp()
 {
 }
+
+Vector3 OEProp::compute_center(const double *property) const
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+    int natoms = mol->natom();
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    double sum = 0.0;
+    for(int atom = 0; atom < natoms; ++atom){
+        Vector3 xyz = mol->xyz(atom);
+        double prop = property[atom];
+        x += xyz[0] * prop;
+        y += xyz[1] * prop;
+        z += xyz[2] * prop;
+    }
+    x /= sum;
+    y /= sum;
+    z /= sum;
+    return Vector3(x, y, z);
+}
+
 void OEProp::common_init()
 {
+    // See if the user specified the origin
+    Options &options = Process::environment.options;
+
+    print_ = options.get_int("PRINT");
+
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+    int natoms = mol->natom();
+    if(options["PROPERTIES_ORIGIN"].has_changed()){
+        int size = options["PROPERTIES_ORIGIN"].size();
+
+        if(size == 1){
+            double *property = new double[natoms];
+            std::string str = options["PROPERTIES_ORIGIN"].to_string();
+            if(str == "COM"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->mass(atom);
+            }else if(str == "NUCLEAR_CHARGE"){
+                for(int atom = 0; atom < natoms; ++atom)
+                    property[atom] = mol->charge(atom);
+            }else{
+                throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+            }
+            origin_ = compute_center(property);
+            delete [] property;
+        }else if(size == 3){
+            double x = options["PROPERTIES_ORIGIN"][0].to_double();
+            double y = options["PROPERTIES_ORIGIN"][1].to_double();
+            double z = options["PROPERTIES_ORIGIN"][2].to_double();
+            bool convert = mol->units() == Molecule::Angstrom;
+            if(convert){
+                x /= _bohr2angstroms;
+                y /= _bohr2angstroms;
+                z /= _bohr2angstroms;
+            }
+            origin_ = Vector3(x, y, z);
+        }else{
+            throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
+        }
+    }
+    fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
+            origin_[0], origin_[1], origin_[2]);
+
+
+    /*
+     * Now check the symmetry of the origin; if it's off-axis we can't use symmetry for multipoles anymore
+     */
+    CharacterTable ct = mol->point_group()->char_table();
+    int nirrep = ct.nirrep();
+
+    origin_preserves_symmetry_ = true;
+    for (int irrep = 1; irrep < nirrep; ++irrep) {
+        IrreducibleRepresentation gamma = ct.gamma(irrep);
+        double t[] = {0.0, 0.0, 0.0};
+
+        // Apply the projection
+        for (int G = 0; G < nirrep; ++G) {
+            SymmetryOperation so = ct.symm_operation(G);
+            ShellRotation rr(1, so, integral_.get(), false);
+
+            // rr(xyz, xyz) tells us how the orbitals transform in this
+            // symmetry operation, then we multiply by the character in
+            // the irrep
+            for (int xyz = 0; xyz < 3; ++xyz)
+                t[xyz] += origin_[xyz]*rr(xyz, xyz) * gamma.character(G) / nirrep;
+        }
+
+        for (int xyz = 0; xyz < 3; ++xyz) {
+            if(fabs(t[xyz] > 1.0E-8)){
+                fprintf(outfile, "The origin chosen breaks symmetry; multipoles will be computed without symmetry.\n");
+                origin_preserves_symmetry_ = false;
+            }
+        }
+    }
+
 }
+
 void OEProp::print_header()
 {
     fprintf(outfile, "\n OEPROP: One-electron properties/analyses.\n");
     fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
     fprintf(outfile, "  built on LIBMINTS.\n\n");
 }
+
+template <class T>
+bool from_string(T& t,
+                 const std::string& s,
+                 std::ios_base& (*f)(std::ios_base&))
+{
+    std::istringstream iss(s);
+    return !(iss >> f >> t).fail();
+}
+
 void OEProp::compute()
 {
+
+    // Search for multipole strings, which are handled separately
+    std::set<std::string>::const_iterator iter = tasks_.begin();
+    boost::regex mpoles("^MULTIPOLE(?:S)?\\s*\\((\\d+)\\)$");
+    boost::smatch matches;
+    for(; iter !=tasks_.end(); ++iter){
+        std::string str = *iter;
+        if(boost::regex_match(str, matches, mpoles)){
+            int order;
+            if(!from_string<int>(order, matches[1], std::dec))
+                throw PSIEXCEPTION("Problem detemining multipole order!  Specify, e.g., MULTIPOLE(5)");
+            compute_multipoles(order);
+        }
+    }
     // print_header();  // Not by default, happens too often -CDS
     if (tasks_.count("DIPOLE"))
         compute_dipole(false);
@@ -828,36 +951,139 @@ void OEProp::compute()
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
 }
-void OEProp::compute_dipole(bool transition)
+
+
+void OEProp::compute_multipoles(int order, bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    OperatorSymmetry dipsymm (1, mol, integral_, factory_);
-    std::vector<SharedMatrix> so_dipole = dipsymm.create_matrices("SO Dipole");
-    boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
-    sodOBI->compute(so_dipole);
-    Vector3 de;
+
     SharedMatrix Da;
     SharedMatrix Db;
 
-    if (same_dens_) {
-        Da = Da_so_;
-        Db = Da;
-    } else {
-        Da = Da_so_;
-        Db = Db_so_;
+    std::vector<SharedMatrix> mp_ints;
+    MultipoleSymmetry mpsymm (order, mol, integral_, factory_);
+
+    if(origin_preserves_symmetry_){
+        // We can use symmetry here
+        boost::shared_ptr<OneBodySOInt> sompOBI (integral_->so_multipoles(order));
+        sompOBI->ob()->set_origin(origin_);
+        mp_ints = mpsymm.create_matrices("", false);
+        sompOBI->compute(mp_ints);
+
+        if (same_dens_) {
+            Da = Da_so_;
+            Db = Da;
+        } else {
+            Da = Da_so_;
+            Db = Db_so_;
+        }
+    }else{
+        // No symmetry
+        mp_ints = mpsymm.create_matrices("", true);
+        boost::shared_ptr<OneBodyAOInt> aompOBI (integral_->ao_multipoles(order));
+        aompOBI->set_origin(origin_);
+        aompOBI->compute(mp_ints);
+
+        if (same_dens_) {
+            Da = Da_ao();
+            Db = Da;
+        } else {
+            Da = Da_ao();
+            Db = Db_ao();
+        }
     }
 
     if(print_ > 4){
         std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_dipole.begin(); iter != so_dipole.end(); ++iter)
+        for(iter = mp_ints.begin(); iter != mp_ints.end(); ++iter)
             iter->get()->print();
     }
 
-    de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
-    de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
-    de[2] = Da->vector_dot(so_dipole[2]) + Db->vector_dot(so_dipole[2]);
+    SharedVector nuclear_contributions = MultipoleInt::nuclear_contribution(mol, order, origin_);
 
-    SharedVector ndip = DipoleInt::nuclear_contribution(mol);
+    fprintf(outfile,"\n%s Multipole Moments:\n", transition ? "Transition" : "");
+    fprintf(outfile, "\n ------------------------------------------------------------------------------------\n");
+    fprintf(outfile, "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
+    fprintf(outfile, " ------------------------------------------------------------------------------------\n\n");
+    double convfac = _dipmom_au2debye;
+    int address = 0;
+    for(int l = 1; l <= order; ++l){
+        int ncomponents = (l + 1) * (l + 2) / 2;
+        std::stringstream ss;
+        if(l > 1)
+            ss << ".ang";
+        if(l > 2)
+            ss << "^" << l-1;
+        std::string exp = ss.str();
+        fprintf(outfile, " L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+        for(int component = 0; component < ncomponents; ++component){
+            SharedMatrix mpmat = mp_ints[address];
+            std::string name = mpmat->name();
+            double nuc = transition ? 0.0 : nuclear_contributions->get(address);
+            double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
+            double tot = nuc + elec;
+            fprintf(outfile, " %-20s: %18.7f   %18.7f   %18.7f\n",
+                    name.c_str(), elec, nuc, tot);
+            ++address;
+        }
+        fprintf(outfile, "\n");
+        convfac *= _bohr2angstroms;
+    }
+    fprintf(outfile, " --------------------------------------------------------------------------------\n");
+
+    fflush(outfile);
+}
+
+
+void OEProp::compute_dipole(bool transition)
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    Vector3 de;
+    SharedMatrix Da;
+    SharedMatrix Db;
+    std::vector<SharedMatrix> dipole_ints;
+    if(origin_preserves_symmetry_){
+        // Use symmetry
+        OperatorSymmetry dipsymm (1, mol, integral_, factory_);
+        dipole_ints = dipsymm.create_matrices("SO Dipole");
+        boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
+        sodOBI->ob()->set_origin(origin_);
+        sodOBI->compute(dipole_ints);
+        if (same_dens_) {
+            Da = Da_so_;
+            Db = Da;
+        } else {
+            Da = Da_so_;
+            Db = Db_so_;
+        }    }else{
+        // Don't use symmetry
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole X", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Y", basisset_->nbf(), basisset_->nbf())));
+        dipole_ints.push_back(SharedMatrix(new Matrix("AO Dipole Z", basisset_->nbf(), basisset_->nbf())));
+        boost::shared_ptr<OneBodyAOInt> aodOBI (integral_->ao_dipole());
+        aodOBI->set_origin(origin_);
+        aodOBI->compute(dipole_ints);
+        if (same_dens_) {
+            Da = Da_ao();
+            Db = Da;
+        } else {
+            Da = Da_ao();
+            Db = Db_ao();
+        }
+    }
+
+
+    if(print_ > 4)
+        for(int n = 0; n < 3; ++n)
+            dipole_ints[n]->print();
+
+
+    de[0] = Da->vector_dot(dipole_ints[0]) + Db->vector_dot(dipole_ints[0]);
+    de[1] = Da->vector_dot(dipole_ints[1]) + Db->vector_dot(dipole_ints[1]);
+    de[2] = Da->vector_dot(dipole_ints[2]) + Db->vector_dot(dipole_ints[2]);
+
+    SharedVector ndip = DipoleInt::nuclear_contribution(mol, origin_);
 
     if (!transition) {
 
@@ -905,45 +1131,55 @@ void OEProp::compute_quadrupole(bool transition)
     SharedMatrix Da;
     SharedMatrix Db;
 
-    if (same_dens_) {
-        Da = Da_so_;
-        Db = Da;
-    } else {
-        Da = Da_so_;
-        Db = Db_so_;
+    std::vector<SharedMatrix> qpole_ints;
+    if(origin_preserves_symmetry_){
+        OperatorSymmetry quadsymm(2, mol, integral_, factory_);
+        qpole_ints = quadsymm.create_matrices("SO Quadrupole");
+        boost::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
+        soqOBI->ob()->set_origin(origin_);
+        soqOBI->compute(qpole_ints);
+        if (same_dens_) {
+            Da = Da_so_;
+            Db = Da;
+        } else {
+            Da = Da_so_;
+            Db = Db_so_;
+        }
+    }else{
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XX", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XY", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole XZ", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole YY", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole YZ", basisset_->nbf(), basisset_->nbf())));
+        qpole_ints.push_back(SharedMatrix(new Matrix("AO Quadrupole ZZ", basisset_->nbf(), basisset_->nbf())));
+        boost::shared_ptr<OneBodyAOInt> aoqOBI(integral_->ao_quadrupole());
+        aoqOBI->set_origin(origin_);
+        aoqOBI->compute(qpole_ints);
+        if (same_dens_) {
+            Da = Da_ao();
+            Db = Da;
+        } else {
+            Da = Da_ao();
+            Db = Db_ao();
+        }
     }
 
-    // Form the one-electron integral matrices from the matrix factory
-    //    parameters: 1 (multipole order: 1=dipole, 2=quadrupole, etc.)
-    OperatorSymmetry quadsymm(2, mol, integral_, factory_);
-
-    // Create a vector of matrices with the proper symmetry
-    std::vector<SharedMatrix> so_Qpole = quadsymm.create_matrices("SO Quadrupole");
-
-    // Form the one-electron integral objects from the integral factory
-    boost::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
-
-    // Compute multipole moment integrals
-    soqOBI->compute(so_Qpole);
-
-    if(print_ > 4){
-        std::vector<SharedMatrix>::iterator iter;
-        for(iter = so_Qpole.begin(); iter != so_Qpole.end(); ++iter)
-            iter->get()->print();
-    }
+    if(print_ > 4)
+        for(int n = 0; n < 6; ++n)
+            qpole_ints[n]->print();
 
     // Each multipole integral needs to be dotted with the SO Density
     Vector qe(6);
-    qe[0] = Da->vector_dot(so_Qpole[0]) + Db->vector_dot(so_Qpole[0]);
-    qe[1] = Da->vector_dot(so_Qpole[1]) + Db->vector_dot(so_Qpole[1]);
-    qe[2] = Da->vector_dot(so_Qpole[2]) + Db->vector_dot(so_Qpole[2]);
-    qe[3] = Da->vector_dot(so_Qpole[3]) + Db->vector_dot(so_Qpole[3]);
-    qe[4] = Da->vector_dot(so_Qpole[4]) + Db->vector_dot(so_Qpole[4]);
-    qe[5] = Da->vector_dot(so_Qpole[5]) + Db->vector_dot(so_Qpole[5]);
+    qe[0] = Da->vector_dot(qpole_ints[0]) + Db->vector_dot(qpole_ints[0]);
+    qe[1] = Da->vector_dot(qpole_ints[1]) + Db->vector_dot(qpole_ints[1]);
+    qe[2] = Da->vector_dot(qpole_ints[2]) + Db->vector_dot(qpole_ints[2]);
+    qe[3] = Da->vector_dot(qpole_ints[3]) + Db->vector_dot(qpole_ints[3]);
+    qe[4] = Da->vector_dot(qpole_ints[4]) + Db->vector_dot(qpole_ints[4]);
+    qe[5] = Da->vector_dot(qpole_ints[5]) + Db->vector_dot(qpole_ints[5]);
 
     // Add in nuclear contribution
     if (!transition) {
-        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol);
+        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol, origin_);
         qe[0] += nquad->get(0, 0);
         qe[1] += nquad->get(0, 1);
         qe[2] += nquad->get(0, 2);
@@ -1025,6 +1261,9 @@ void OEProp::compute_mo_extents()
     // Form the one-electron integral objects from the integral factory
     boost::shared_ptr<OneBodyAOInt> aodOBI(integral_->ao_dipole());
     boost::shared_ptr<OneBodyAOInt> aoqOBI(integral_->ao_quadrupole());
+
+    aodOBI->set_origin(origin_);
+    aoqOBI->set_origin(origin_);
 
     // Compute multipole moment integrals
     aodOBI->compute(ao_Dpole);

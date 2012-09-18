@@ -59,8 +59,8 @@ public:
 
     bool k_required() const {return true;}
     void initialize(std::string scf_type){
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type_ = scf_type;
         J_[0]->zero();
         K_[0]->zero();
@@ -81,9 +81,9 @@ public:
         // Perform MPI global sum
         if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
-                Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
+                WorldComm->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
             for (int i=0; i < K_[0]->nirrep(); i++)
-                Communicator::world->sum(K_[0]->get_pointer(i), K_[0]->rowdim(i)*K_[0]->coldim(i));
+                WorldComm->sum(K_[0]->get_pointer(i), K_[0]->rowdim(i)*K_[0]->coldim(i));
         }
 
         J_[0]->copy_lower_to_upper();
@@ -106,8 +106,8 @@ public:
                 const std::string &scf_type)
         :  J_(J), K_(K), D_(D), C_(C), N_(N)
     {
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type_ = scf_type;
     }
 
@@ -132,7 +132,7 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                 int psym, int prel, int qsym, int qrel,
                 int rsym, int rrel, int ssym, int srel, double value) {
-        int thread = Communicator::world->thread_id(pthread_self());
+        int thread = WorldComm->thread_id(pthread_self());
 
         /* (pq|rs) */
         if(rsym == ssym){
@@ -332,8 +332,8 @@ public:
     bool k_required() const {return false;}
 
     void initialize(std::string scf_type){
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type_ = scf_type;
         J_[0]->zero();
 
@@ -346,7 +346,7 @@ public:
 
         if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
-                Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
+                WorldComm->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
         }
 
         J_[0]->copy_lower_to_upper();
@@ -371,8 +371,8 @@ public:
           scf_type_(scf_type),
           restricted_(restricted)
     {
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
     }
 
     J_Functor& operator=(const J_Functor&) {
@@ -395,7 +395,7 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
-        int thread = Communicator::world->thread_id(pthread_self());
+        int thread = WorldComm->thread_id(pthread_self());
         /* (pq|rs) */
         if(rsym == ssym){
             J_[thread]->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
@@ -514,8 +514,8 @@ public:
     bool k_required() const {return true;}
 
     void initialize(std::string scf_type){
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
         scf_type_ = scf_type;
         J_[0]->zero();
         Ka_[0]->zero();
@@ -536,11 +536,11 @@ public:
         }
         if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
-                Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
+                WorldComm->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
             for (int i=0; i < Ka_[0]->nirrep(); i++)
-                Communicator::world->sum(Ka_[0]->get_pointer(i), Ka_[0]->rowdim(i)*Ka_[0]->coldim(i));
+                WorldComm->sum(Ka_[0]->get_pointer(i), Ka_[0]->rowdim(i)*Ka_[0]->coldim(i));
             for (int i=0; i < Kb_[0]->nirrep(); i++)
-                Communicator::world->sum(Kb_[0]->get_pointer(i), Kb_[0]->rowdim(i)*Kb_[0]->coldim(i));
+                WorldComm->sum(Kb_[0]->get_pointer(i), Kb_[0]->rowdim(i)*Kb_[0]->coldim(i));
         }
 
         J_[0]->copy_lower_to_upper();
@@ -574,8 +574,8 @@ public:
           Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na),
           Nb_(Nb), scf_type_(scf_type)
     {
-        comm_ = Communicator::world->communicator();
-        nthread_ = Communicator::world->nthread();
+        comm_ = WorldComm->communicator();
+        nthread_ = WorldComm->nthread();
     }
 
     J_Ka_Kb_Functor& operator=(const J_Ka_Kb_Functor&) {
@@ -591,7 +591,7 @@ public:
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
-        int thread = Communicator::world->thread_id(pthread_self());
+        int thread = WorldComm->thread_id(pthread_self());
         /* (pq|rs) */
         if(rsym == ssym){
             J_[thread]->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
@@ -804,20 +804,14 @@ void HF::process_tei(JKFunctor & functor)
         }while(!lastBuffer);
         iwl->set_keep_flag(1);
         functor.finalize();
-        Communicator::world->sync();
+        WorldComm->sync();
         delete iwl;
     }else if (scf_type_ == "DIRECT"){
         functor.initialize(scf_type_);
         eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
     }else if(scf_type_ == "PK"){
-        functor.initialize(scf_type_);
-        functor(pk_integrals_);
-        if(functor.k_required())
-            pk_integrals_->compute_J_and_K();
-        else
-            pk_integrals_->compute_J();
-        functor.finalize();
+        throw PSIEXCEPTION("USE LIBFOCK INSTEAD!!");
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }

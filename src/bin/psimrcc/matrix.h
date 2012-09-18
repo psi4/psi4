@@ -152,6 +152,7 @@ private:
   ///////////////////////////////////////////////////////////////////////////////
   std::string  label;              // The matrix label
   std::string  index_label;        // The index label
+  int          nirreps;            // The number of irreps
   int          reference;          // The reference zeroth-order wavefunction
   double***    matrix;             // Pointer to the allocated memory
                                    // matrix[irrep][left_pair][right_pair]
@@ -169,8 +170,6 @@ private:
   Size_tVec    memorypi2;           // Memory required for storage in bytes
   BoolVec      out_of_core;        // Is this irrep stored on disk?
   int          naccess;            // How many times you have called get_matrix();
-protected:
-  static int   nirreps;
 public:
   static double fraction_of_memory_for_buffer;
 };

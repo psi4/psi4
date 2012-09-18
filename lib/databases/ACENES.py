@@ -16,7 +16,7 @@
 
 """
 import re
-import input
+import qcdb
 
 # <<< ACENES Database Module >>>
 dbse = 'ACENES'
@@ -198,14 +198,10 @@ TAGL['%s-%s-monoB-CP'   % (dbse, '9'                     )] = 'Monomer B from '
 TAGL['%s-%s-monoA-unCP' % (dbse, '9'                     )] = 'Monomer A from '
 TAGL['%s-%s-monoB-unCP' % (dbse, '9'                     )] = 'Monomer B from '
 
-# <<< Molecule Specifications >>>
-monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+# <<< Geometry Specification Strings >>>
+GEOS = {}
 
-ACENES_1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '1')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -234,11 +230,9 @@ H       -0.77150000     0.00000000     3.50000000
 H        0.46425000     2.14038200     3.50000000
 H        2.93575000     2.14038200     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_10 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '10')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -375,11 +369,9 @@ H       -0.77150000    21.69133200     3.50000000
 H        0.46425000    23.83171400     3.50000000
 H        2.93575000    23.83171400     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_11 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '11')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -528,11 +520,9 @@ H       -0.77150000    24.10148000     3.50000000
 H        0.46425000    26.24186200     3.50000000
 H        2.93575000    26.24186200     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_12 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '12')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -693,11 +683,9 @@ H       -0.77150000    26.51162800     3.50000000
 H        0.46425000    28.65201000     3.50000000
 H        2.93575000    28.65201000     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_13 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '13')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -870,11 +858,9 @@ H       -0.77150000    28.92177600     3.50000000
 H        0.46425000    31.06215800     3.50000000
 H        2.93575000    31.06215800     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_14 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '14')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -1059,11 +1045,9 @@ H       -0.77150000    31.33192400     3.50000000
 H        0.46425000    33.47230600     3.50000000
 H        2.93575000    33.47230600     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_15 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '15')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -1260,11 +1244,9 @@ H       -0.77150000    33.74207200     3.50000000
 H        0.46425000    35.88245400     3.50000000
 H        2.93575000    35.88245400     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_16 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '16')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -1473,11 +1455,9 @@ H       -0.77150000    36.15222000     3.50000000
 H        0.46425000    38.29260200     3.50000000
 H        2.93575000    38.29260200     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_17 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '17')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -1698,11 +1678,9 @@ H       -0.77150000    38.56236800     3.50000000
 H        0.46425000    40.70275000     3.50000000
 H        2.93575000    40.70275000     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_18 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '18')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -1935,11 +1913,9 @@ H       -0.77150000    40.97251600     3.50000000
 H        0.46425000    43.11289800     3.50000000
 H        2.93575000    43.11289800     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_19 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '19')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2184,11 +2160,9 @@ H       -0.77150000    43.38266400     3.50000000
 H        0.46425000    45.52304600     3.50000000
 H        2.93575000    45.52304600     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '2')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2229,11 +2203,9 @@ H       -0.77150000     2.41014800     3.50000000
 H        0.46425000     4.55053000     3.50000000
 H        2.93575000     4.55053000     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_20 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '20')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2490,11 +2462,9 @@ H       -0.77150000    45.79281200     3.50000000
 H        0.46425000    47.93319400     3.50000000
 H        2.93575000    47.93319400     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '3')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2547,11 +2517,9 @@ H       -0.77150000     4.82029600     3.50000000
 H        0.46425000     6.96067800     3.50000000
 H        2.93575000     6.96067800     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '4')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2616,11 +2584,9 @@ H       -0.77150000     7.23044400     3.50000000
 H        0.46425000     9.37082600     3.50000000
 H        2.93575000     9.37082600     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '5')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2697,11 +2663,9 @@ H       -0.77150000     9.64059200     3.50000000
 H        0.46425000    11.78097400     3.50000000
 H        2.93575000    11.78097400     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '6')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2790,11 +2754,9 @@ H       -0.77150000    12.05074000     3.50000000
 H        0.46425000    14.19112200     3.50000000
 H        2.93575000    14.19112200     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '7')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -2895,11 +2857,9 @@ H       -0.77150000    14.46088800     3.50000000
 H        0.46425000    16.60127000     3.50000000
 H        2.93575000    16.60127000     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '8')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -3012,11 +2972,9 @@ H       -0.77150000    16.87103600     3.50000000
 H        0.46425000    19.01141800     3.50000000
 H        2.93575000    19.01141800     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-ACENES_9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '9')] = qcdb.Molecule("""
 0 1
 C        0.69575000    -1.20507400     0.00000000
 C       -0.69575000    -1.20507400     0.00000000
@@ -3141,16 +3099,118 @@ H       -0.77150000    19.28118400     3.50000000
 H        0.46425000    21.42156600     3.50000000
 H        2.93575000    21.42156600     3.50000000
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
+# <<< Derived Geometry Strings >>>
 for rxn in HRXN:
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1)
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2)
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
 
-    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
-    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
-    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
-    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
+#########################################################################
+
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-1-dimer'                 ] =     623.45166278
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-1-monoA-unCP'            ] =     204.01997321
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-1-monoB-unCP'            ] =     204.01997321
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-2-dimer'                 ] =    1447.97918063
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-2-monoA-unCP'            ] =     462.51351405
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-2-monoB-unCP'            ] =     462.51351405
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-3-dimer'                 ] =    2478.53381614
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-3-monoA-unCP'            ] =     776.53779489
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-3-monoB-unCP'            ] =     776.53779489
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-4-dimer'                 ] =    3664.54622337
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-4-monoA-unCP'            ] =    1131.16297168
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-4-monoB-unCP'            ] =    1131.16297168
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-5-dimer'                 ] =    4974.79907551
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-5-monoA-unCP'            ] =    1517.73569587
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-5-monoB-unCP'            ] =    1517.73569587
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-6-dimer'                 ] =    6388.28553373
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-6-monoA-unCP'            ] =    1930.62605849
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-6-monoB-unCP'            ] =    1930.62605849
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-7-dimer'                 ] =    7889.97351320
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-7-monoA-unCP'            ] =    2365.88438821
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-7-monoB-unCP'            ] =    2365.88438821
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-8-dimer'                 ] =    9468.60272003
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-8-monoA-unCP'            ] =    2820.58881529
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-8-monoB-unCP'            ] =    2820.58881529
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-9-dimer'                 ] =   11115.43628142
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-9-monoA-unCP'            ] =    3292.49113688
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-9-monoB-unCP'            ] =    3292.49113688
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-10-dimer'                ] =   12823.50435945
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-10-monoA-unCP'           ] =    3779.80831432
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-10-monoB-unCP'           ] =    3779.80831432
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-11-dimer'                ] =   14587.12067915
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-11-monoA-unCP'           ] =    4281.09183900
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-11-monoB-unCP'           ] =    4281.09183900
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-12-dimer'                ] =   16401.55973922
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-12-monoA-unCP'           ] =    4795.14176671
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-12-monoB-unCP'           ] =    4795.14176671
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-13-dimer'                ] =   18262.83338543
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-13-monoA-unCP'           ] =    5320.94785288
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-13-monoB-unCP'           ] =    5320.94785288
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-14-dimer'                ] =   20167.53140066
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-14-monoA-unCP'           ] =    5857.64789898
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-14-monoB-unCP'           ] =    5857.64789898
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-15-dimer'                ] =   22112.70479751
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-15-monoA-unCP'           ] =    6404.49745327
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-15-monoB-unCP'           ] =    6404.49745327
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-16-dimer'                ] =   24095.77845643
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-16-monoA-unCP'           ] =    6960.84724639
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-16-monoB-unCP'           ] =    6960.84724639
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-17-dimer'                ] =   26114.48445685
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-17-monoA-unCP'           ] =    7526.12604311
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-17-monoB-unCP'           ] =    7526.12604311
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-18-dimer'                ] =   28166.81033192
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-18-monoA-unCP'           ] =    8099.82737807
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-18-monoB-unCP'           ] =    8099.82737807
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-19-dimer'                ] =   30250.95830169
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-19-monoA-unCP'           ] =    8681.49913522
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-19-monoB-unCP'           ] =    8681.49913522
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-20-dimer'                ] =   32365.31272557
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-20-monoA-unCP'           ] =    9270.73524802
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-20-monoB-unCP'           ] =    9270.73524802
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-1-monoA-CP'              ] =     204.01997321
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-1-monoB-CP'              ] =     204.01997321
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-2-monoA-CP'              ] =     462.51351405
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-2-monoB-CP'              ] =     462.51351405
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-3-monoA-CP'              ] =     776.53779489
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-3-monoB-CP'              ] =     776.53779489
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-4-monoA-CP'              ] =    1131.16297168
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-4-monoB-CP'              ] =    1131.16297168
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-5-monoA-CP'              ] =    1517.73569587
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-5-monoB-CP'              ] =    1517.73569587
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-6-monoA-CP'              ] =    1930.62605849
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-6-monoB-CP'              ] =    1930.62605849
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-7-monoA-CP'              ] =    2365.88438821
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-7-monoB-CP'              ] =    2365.88438821
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-8-monoA-CP'              ] =    2820.58881529
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-8-monoB-CP'              ] =    2820.58881529
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-9-monoA-CP'              ] =    3292.49113688
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-9-monoB-CP'              ] =    3292.49113688
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-10-monoA-CP'             ] =    3779.80831432
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-10-monoB-CP'             ] =    3779.80831432
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-11-monoA-CP'             ] =    4281.09183900
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-11-monoB-CP'             ] =    4281.09183900
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-12-monoA-CP'             ] =    4795.14176671
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-12-monoB-CP'             ] =    4795.14176671
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-13-monoA-CP'             ] =    5320.94785288
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-13-monoB-CP'             ] =    5320.94785288
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-14-monoA-CP'             ] =    5857.64789898
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-14-monoB-CP'             ] =    5857.64789898
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-15-monoA-CP'             ] =    6404.49745327
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-15-monoB-CP'             ] =    6404.49745327
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-16-monoA-CP'             ] =    6960.84724639
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-16-monoB-CP'             ] =    6960.84724639
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-17-monoA-CP'             ] =    7526.12604311
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-17-monoB-CP'             ] =    7526.12604311
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-18-monoA-CP'             ] =    8099.82737807
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-18-monoB-CP'             ] =    8099.82737807
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-19-monoA-CP'             ] =    8681.49913522
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-19-monoB-CP'             ] =    8681.49913522
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-20-monoA-CP'             ] =    9270.73524802
+DATA['NUCLEAR REPULSION ENERGY']['ACENES-20-monoB-CP'             ] =    9270.73524802

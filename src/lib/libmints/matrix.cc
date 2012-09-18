@@ -2245,7 +2245,11 @@ Dimension Matrix::power(double alpha, double cutoff)
                 a[i] = 0.0;
             else {
                 a[i] = pow(a[i],alpha);
-                remain++;
+                if (std::isfinite(a[i])) {
+                    remain++;
+                } else {
+                    a[i] = 0.0;
+                }
             }
 
             C_DSCAL(n, a[i], A2[i], 1);
@@ -3256,7 +3260,7 @@ void Matrix::bcast(int broadcaster)
     // Assume the user allocated the matrix to the correct size first.
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] > 0 && colspi_[h] > 0)
-            Communicator::world->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
+            WorldComm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
     }
 }
 
@@ -3264,7 +3268,7 @@ void Matrix::sum()
 {
     for (int h=0; h<nirrep_; ++h)
         if (rowspi_[h] > 0 && colspi_[h] > 0)
-            Communicator::world->sum(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_]);
+            WorldComm->sum(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_]);
 }
 
 bool Matrix::equal(const Matrix& rhs)

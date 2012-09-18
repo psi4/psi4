@@ -71,7 +71,7 @@ ObaraSaikaTwoCenterMIRecursion::~ObaraSaikaTwoCenterMIRecursion()
     free_box(z_, max_am1_+1, max_am2_+1);
 }
 
-void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double PC[3], double gamma, int am1, int am2)
+void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double gamma, int am1, int am2)
 {
     if (am1 < 0 || am1 > max_am1_)
         throw SanityCheckError("ERROR: ObaraSaikaTwoCenterMIRecursion::compute -- am1 out of bounds", __FILE__, __LINE__);
@@ -81,12 +81,13 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
     int i, j, k;
     double oog = 1.0 / (2.0 * gamma);
 
-    x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
 
-    for(int n = 2; n <= max_m_; ++n) {
-        x_[0][0][n] = PC[0] * x_[0][0][n-1] + oog * x_[0][0][n-2];
-        y_[0][0][n] = PC[1] * y_[0][0][n-1] + oog * y_[0][0][n-2];
-        z_[0][0][n] = PC[2] * z_[0][0][n-1] + oog * z_[0][0][n-2];
+    // Generate the fundamental integrals.  N.B. Only even parity terms survive!
+    x_[0][0][0] = y_[0][0][0] = z_[0][0][0] = 1.0;
+    for(int n = 1; n < max_m_; n += 2) {
+        x_[0][0][n+1] = n * oog * x_[0][0][n-1];
+        y_[0][0][n+1] = n * oog * y_[0][0][n-1];
+        z_[0][0][n+1] = n * oog * z_[0][0][n-1];
     }
 
     // Upward recursion in j for i=0
@@ -849,12 +850,14 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
 ObaraSaikaTwoCenterVIDeriv2Recursion::ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2)
     : ObaraSaikaTwoCenterVIDerivRecursion(max_am1+1, max_am2+1)
 {
-    vxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
-    vzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    int max_am = 2*(std::max(max_am1, max_am2) + 2) + 1;
+
+    vxx_ = init_box(size_, size_, max_am);
+    vxy_ = init_box(size_, size_, max_am);
+    vxz_ = init_box(size_, size_, max_am);
+    vyy_ = init_box(size_, size_, max_am);
+    vyz_ = init_box(size_, size_, max_am);
+    vzz_ = init_box(size_, size_, max_am);
 }
 
 ObaraSaikaTwoCenterVIDeriv2Recursion::~ObaraSaikaTwoCenterVIDeriv2Recursion()
@@ -885,7 +888,7 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    double *F = new double[mmax+1];
+    double *F = new double[mmax+1]; // TODO: Move this allocation into constructor
 
     // Zero out F
     memset(F, 0, sizeof(double) * (mmax+1));

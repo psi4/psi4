@@ -17,11 +17,17 @@
 
   - ``'small'``
   - ``'large'``
-  - ``'equilibrium'``
+  - ``'equilibrium'`` equilibrium points for the six systems
+  - ``'FaOOFaOO'`` dissociation curve for formic acid dimer
+  - ``'FaONFaON'`` dissociation curve for formamide dimer
+  - ``'FaNNFaNN'`` dissociation curve for formamidine dimer
+  - ``'FaOOFaON'`` dissociation curve for formic acid- formamide complex
+  - ``'FaONFaNN'`` dissociation curve for formamide- formamidine complex
+  - ``'FaOOFaNN'`` dissociation curve for formic acid- formamidine complex
 
 """
 import re
-import input
+import qcdb
 
 # <<< HBC6 Database Module >>>
 dbse = 'HBC1'
@@ -564,14 +570,10 @@ TAGL['%s-FaOO-mono-RLX'  % (dbse)]  = 'Formic Acid Relaxed Monomer'
 TAGL['%s-FaON-mono-RLX'  % (dbse)]  = 'Formamide Relaxed Monomer'
 TAGL['%s-FaNN-mono-RLX'  % (dbse)]  = 'Formamidine Relaxed Monomer'
 
-# <<< Molecule Specifications >>>
-monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+# <<< Geometry Specification Strings >>>
+GEOS = {}
 
-HBC1_FaOOFaOO_3p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.4')] = qcdb.Molecule("""
 0 1
 C        1.69147262      -0.17006280       0.00000000
 H        2.79500199      -0.28101305       0.00000000
@@ -586,11 +588,9 @@ O       -1.02814129       1.21720864       0.00000000
 O       -1.36966587      -1.08860681       0.00000000
 H       -0.34380745      -1.18798183       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_3p5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.5')] = qcdb.Molecule("""
 0 1
 C        1.74073379      -0.17985247       0.00000000
 H        2.84248921      -0.29368574       0.00000000
@@ -605,11 +605,9 @@ O       -1.04839226       1.20544675       0.00000000
 O       -1.40587723      -1.08303481       0.00000000
 H       -0.38948927      -1.16733829       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.6')] = qcdb.Molecule("""
 0 1
 C        1.79035823      -0.18606050       0.00000000
 H        2.89087214      -0.30042988       0.00000000
@@ -624,11 +622,9 @@ O       -1.07568931       1.19425943       0.00000000
 O       -1.44185816      -1.08049605       0.00000000
 H       -0.43274661      -1.15045330       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.7')] = qcdb.Molecule("""
 0 1
 C        1.84016492      -0.19051039       0.00000000
 H        2.93982222      -0.30435679       0.00000000
@@ -643,11 +639,9 @@ O       -1.10803623       1.18439540       0.00000000
 O       -1.47971186      -1.07967254       0.00000000
 H       -0.47644336      -1.13716323       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.8')] = qcdb.Molecule("""
 0 1
 C        1.89005169      -0.19417983       0.00000000
 H        2.98915191      -0.30709901       0.00000000
@@ -662,11 +656,9 @@ O       -1.14427894       1.17618187       0.00000000
 O       -1.52059687      -1.07982181       0.00000000
 H       -0.52216282      -1.12736965       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-3.9')] = qcdb.Molecule("""
 0 1
 C        1.93997588      -0.19747119       0.00000000
 H        3.03876443      -0.30931746       0.00000000
@@ -681,11 +673,9 @@ O       -1.18372180       1.16964417       0.00000000
 O       -1.56485002      -1.08053745       0.00000000
 H       -0.57046128      -1.12083453       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.0')] = qcdb.Molecule("""
 0 1
 C        1.98993209      -0.20042861       0.00000000
 H        3.08861310      -0.31108922       0.00000000
@@ -700,11 +690,9 @@ O       -1.22585974       1.16459704       0.00000000
 O       -1.61210992      -1.08161540       0.00000000
 H       -0.62108112      -1.11708149       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.1')] = qcdb.Molecule("""
 0 1
 C        2.03992872      -0.20295867       0.00000000
 H        3.13866374      -0.31227513       0.00000000
@@ -719,11 +707,9 @@ O       -1.27022640       1.16073661       0.00000000
 O       -1.66162256      -1.08294418       0.00000000
 H       -0.67334166      -1.11546236       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.2')] = qcdb.Molecule("""
 0 1
 C        2.08997101      -0.20499428       0.00000000
 H        3.18887965      -0.31278045       0.00000000
@@ -738,11 +724,9 @@ O       -1.31635032       1.15775239       0.00000000
 O       -1.71259791      -1.08444718       0.00000000
 H       -0.72653811      -1.11533705       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.3')] = qcdb.Molecule("""
 0 1
 C        2.14005789      -0.20652795       0.00000000
 H        3.23921879      -0.31260333       0.00000000
@@ -757,11 +741,9 @@ O       -1.36379229       1.15537668       0.00000000
 O       -1.76438167      -1.08605925       0.00000000
 H       -0.78011615      -1.11617462       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.4')] = qcdb.Molecule("""
 0 1
 C        2.19018321      -0.20760327       0.00000000
 H        3.28964362      -0.31181902       0.00000000
@@ -776,11 +758,9 @@ O       -1.41218943       1.15341758       0.00000000
 O       -1.81652565      -1.08773186       0.00000000
 H       -0.83371879      -1.11760094       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.6')] = qcdb.Molecule("""
 0 1
 C        2.29051747      -0.20864206       0.00000000
 H        3.39063528      -0.30885122       0.00000000
@@ -795,11 +775,9 @@ O       -1.51085984       1.15029332       0.00000000
 O       -1.92095251      -1.09113093       0.00000000
 H       -0.94036724      -1.12135540       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-4.8')] = qcdb.Molecule("""
 0 1
 C        2.39092365      -0.20853307       0.00000000
 H        3.49171140      -0.30454226       0.00000000
@@ -814,11 +792,9 @@ O       -1.61118653       1.14785646       0.00000000
 O       -2.02488292      -1.09452849       0.00000000
 H       -1.04594759      -1.12557184       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-5.0')] = qcdb.Molecule("""
 0 1
 C        2.49138346      -0.20738986       0.00000000
 H        3.59280864      -0.29907564       0.00000000
@@ -833,11 +809,9 @@ O       -1.71273443       1.14581025       0.00000000
 O       -2.12758466      -1.09795049       0.00000000
 H       -1.14991023      -1.12938889       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-5.4')] = qcdb.Molecule("""
 0 1
 C        2.69240165      -0.20242478       0.00000000
 H        3.79490134      -0.28531481       0.00000000
@@ -852,11 +826,9 @@ O       -1.91833290       1.14219531       0.00000000
 O       -2.32770522      -1.10482267       0.00000000
 H       -1.35155974      -1.13337052       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-5.8')] = qcdb.Molecule("""
 0 1
 C        2.89338469      -0.19577496       0.00000000
 H        3.99667367      -0.27042675       0.00000000
@@ -871,11 +843,9 @@ O       -2.12532927       1.13908975       0.00000000
 O       -2.52303889      -1.11116394       0.00000000
 H       -1.54758478      -1.13325561       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-6.4')] = qcdb.Molecule("""
 0 1
 C        3.19458871      -0.18602798       0.00000000
 H        4.29867458      -0.25032135       0.00000000
@@ -890,11 +860,9 @@ O       -2.43545364       1.13545523       0.00000000
 O       -2.81355286      -1.11890079       0.00000000
 H       -1.83855220      -1.13009890       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-7.0')] = qcdb.Molecule("""
 0 1
 C        3.49547568      -0.17791547       0.00000000
 H        4.60006941      -0.23413795       0.00000000
@@ -909,11 +877,9 @@ O       -2.74388512       1.13278853       0.00000000
 O       -3.10454835      -1.12465267       0.00000000
 H       -2.12977769      -1.12626632       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-8.0')] = qcdb.Molecule("""
 0 1
 C        3.99646944      -0.16803989       0.00000000
 H        5.10156877      -0.21450609       0.00000000
@@ -928,11 +894,9 @@ O       -3.25414999       1.12972545       0.00000000
 O       -3.59284622      -1.13117851       0.00000000
 H       -2.61830479      -1.12095879       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaOO_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaOO-10.0')] = qcdb.Molecule("""
 0 1
 C        4.99755344      -0.15642268       0.00000000
 H        6.10311728      -0.19102667       0.00000000
@@ -947,11 +911,9 @@ O       -4.26634092       1.12629100       0.00000000
 O       -4.57854479      -1.13834246       0.00000000
 H       -3.60431482      -1.11461219       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.4')] = qcdb.Molecule("""
 0 1
 C        1.68040472      -0.25737318       0.00000000
 H        2.78876519      -0.42713125       0.00000000
@@ -968,11 +930,9 @@ N       -1.47197100      -1.06623396       0.00000000
 H       -0.51175066      -1.43614881       0.00000000
 H       -2.30581639      -1.63815514       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.5')] = qcdb.Molecule("""
 0 1
 C        1.73857937      -0.19960660       0.00000000
 H        2.84972331      -0.32717722       0.00000000
@@ -989,11 +949,9 @@ N       -1.42842301      -1.10192478       0.00000000
 H       -0.43552514      -1.39016691       0.00000000
 H       -2.20654586      -1.74794356       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.6')] = qcdb.Molecule("""
 0 1
 C        1.79214890      -0.16793868       0.00000000
 H        2.90351314      -0.27208239       0.00000000
@@ -1010,11 +968,9 @@ N       -1.41655781      -1.11709296       0.00000000
 H       -0.40800979      -1.35225476       0.00000000
 H       -2.15197143      -1.81156642       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.7')] = qcdb.Molecule("""
 0 1
 C        1.84396206      -0.14934877       0.00000000
 H        2.95481237      -0.23932033       0.00000000
@@ -1031,11 +987,9 @@ N       -1.42230702      -1.12368101       0.00000000
 H       -0.40573498      -1.32114549       0.00000000
 H       -2.12347975      -1.85285206       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.8')] = qcdb.Molecule("""
 0 1
 C        1.89495225      -0.13840942       0.00000000
 H        3.00512682      -0.21949780       0.00000000
@@ -1052,11 +1006,9 @@ N       -1.43998729      -1.12629331       0.00000000
 H       -0.41948596      -1.29629750       0.00000000
 H       -2.11367741      -1.88100998       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-3.9')] = qcdb.Molecule("""
 0 1
 C        1.94550597      -0.13231698       0.00000000
 H        3.05506108      -0.20777961       0.00000000
@@ -1073,11 +1025,9 @@ N       -1.46671040      -1.12708677       0.00000000
 H       -0.44465999      -1.27731960       0.00000000
 H       -2.11884877      -1.90053586       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.0')] = qcdb.Molecule("""
 0 1
 C        1.99581166      -0.12937222       0.00000000
 H        3.10488983      -0.20126473       0.00000000
@@ -1094,11 +1044,9 @@ N       -1.50061758      -1.12716306       0.00000000
 H       -0.47842639      -1.26369880       0.00000000
 H       -2.13649227      -1.91403520       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.1')] = qcdb.Molecule("""
 0 1
 C        2.04597250      -0.12844429       0.00000000
 H        3.15473976      -0.19805169       0.00000000
@@ -1115,11 +1063,9 @@ N       -1.54023054      -1.12707489       0.00000000
 H       -0.51870599      -1.25472290       0.00000000
 H       -2.16442795      -1.92321328       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.2')] = qcdb.Molecule("""
 0 1
 C        2.09604836      -0.12877408       0.00000000
 H        3.20466046      -0.19688344       0.00000000
@@ -1136,11 +1082,9 @@ N       -1.58426128      -1.12705799       0.00000000
 H       -0.56383358      -1.24955108       0.00000000
 H       -2.20059240      -1.92925606       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.3')] = qcdb.Molecule("""
 0 1
 C        2.14607510      -0.12985845       0.00000000
 H        3.25466017      -0.19693865       0.00000000
@@ -1157,11 +1101,9 @@ N       -1.63157574      -1.12717703       0.00000000
 H       -0.61244489      -1.24732130       0.00000000
 H       -2.24305687      -1.93302516       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.4')] = qcdb.Molecule("""
 0 1
 C        2.19607517      -0.13136009       0.00000000
 H        3.30472871      -0.19767514       0.00000000
@@ -1178,11 +1120,9 @@ N       -1.68120383      -1.12742404       0.00000000
 H       -0.66343356      -1.24723827       0.00000000
 H       -2.29010119      -1.93517379       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.6')] = qcdb.Molecule("""
 0 1
 C        2.29604573      -0.13481753       0.00000000
 H        3.40501312      -0.19993307       0.00000000
@@ -1199,11 +1139,9 @@ N       -1.78457816      -1.12819246       0.00000000
 H       -0.76947608      -1.25110815       0.00000000
 H       -2.39273653      -1.93641581       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-4.8')] = qcdb.Molecule("""
 0 1
 C        2.39601143      -0.13831545       0.00000000
 H        3.50541998      -0.20235870       0.00000000
@@ -1220,11 +1158,9 @@ N       -1.89087102      -1.12918383       0.00000000
 H       -0.87833293      -1.25816233       0.00000000
 H       -2.50182267      -1.93524951       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-5.0')] = qcdb.Molecule("""
 0 1
 C        2.49599331      -0.14149026       0.00000000
 H        3.60589309      -0.20440710       0.00000000
@@ -1241,11 +1177,9 @@ N       -1.99827465      -1.13031983       0.00000000
 H       -0.98820948      -1.26676542       0.00000000
 H       -2.61374032      -1.93291817       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-5.4')] = qcdb.Molecule("""
 0 1
 C        2.69608420      -0.14536998       0.00000000
 H        3.80688469      -0.20526316       0.00000000
@@ -1262,11 +1196,9 @@ N       -2.21035574      -1.13294283       0.00000000
 H       -1.20419348      -1.28204746       0.00000000
 H       -2.83403804      -1.92915087       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-5.8')] = qcdb.Molecule("""
 0 1
 C        2.89633015      -0.14585783       0.00000000
 H        4.00779084      -0.20183046       0.00000000
@@ -1283,11 +1215,9 @@ N       -2.41611039      -1.13579344       0.00000000
 H       -1.41208234      -1.29109009       0.00000000
 H       -3.04382363      -1.92881894       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-6.4')] = qcdb.Molecule("""
 0 1
 C        3.19679060      -0.14329444       0.00000000
 H        4.30890404      -0.19314433       0.00000000
@@ -1304,11 +1234,9 @@ N       -2.71746327      -1.13986108       0.00000000
 H       -1.71465256      -1.29686270       0.00000000
 H       -3.34615668      -1.93211051       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-7.0')] = qcdb.Molecule("""
 0 1
 C        3.49721450      -0.13962406       0.00000000
 H        4.60973564      -0.18404076       0.00000000
@@ -1325,11 +1253,9 @@ N       -3.01520025      -1.14321645       0.00000000
 H       -2.01252678      -1.29808475       0.00000000
 H       -3.64229745      -1.93673374       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-8.0')] = qcdb.Molecule("""
 0 1
 C        3.99775075      -0.13414290       0.00000000
 H        5.11067288      -0.17148655       0.00000000
@@ -1346,11 +1272,9 @@ N       -3.51015001      -1.14724727       0.00000000
 H       -2.50709338      -1.29726882       0.00000000
 H       -4.13374763      -1.94351670       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaON_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaON-10.0')] = qcdb.Molecule("""
 0 1
 C        4.99839541      -0.12669527       0.00000000
 H        6.11168302      -0.15491398       0.00000000
@@ -1367,11 +1291,9 @@ N       -4.50192844      -1.15187623       0.00000000
 H       -3.49800610      -1.29436065       0.00000000
 H       -5.11998480      -1.95244688       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.4')] = qcdb.Molecule("""
 0 1
 C        1.69498253      -0.13051889       0.00000000
 H        2.80633596      -0.21609653       0.00000000
@@ -1390,11 +1312,9 @@ N       -1.37286317      -1.16800831       0.00000000
 H       -0.35212595      -1.46532985       0.00000000
 H       -2.16581591      -1.79503126       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.5')] = qcdb.Molecule("""
 0 1
 C        1.74573454      -0.12211451       0.00000000
 H        2.85588849      -0.19977002       0.00000000
@@ -1413,11 +1333,9 @@ N       -1.38209118      -1.16632433       0.00000000
 H       -0.35550066      -1.43042391       0.00000000
 H       -2.14642150      -1.82776097       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.6')] = qcdb.Molecule("""
 0 1
 C        1.79626801      -0.11585476       0.00000000
 H        2.90515430      -0.18737513       0.00000000
@@ -1436,11 +1354,9 @@ N       -1.39570164      -1.16335736       0.00000000
 H       -0.36558676      -1.39719019       0.00000000
 H       -2.13213780      -1.85550007       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.7')] = qcdb.Molecule("""
 0 1
 C        1.84665575      -0.11119213       0.00000000
 H        2.95429208      -0.17788590       0.00000000
@@ -1459,11 +1375,9 @@ N       -1.41335406      -1.15979090       0.00000000
 H       -0.38141976      -1.36618041       0.00000000
 H       -2.12308262      -1.87905403       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.8')] = qcdb.Molecule("""
 0 1
 C        1.89693820      -0.10782700       0.00000000
 H        3.00339990      -0.17072121       0.00000000
@@ -1482,11 +1396,9 @@ N       -1.43499889      -1.15607525       0.00000000
 H       -0.40250444      -1.33793562       0.00000000
 H       -2.11977084      -1.89888692       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-3.9')] = qcdb.Molecule("""
 0 1
 C        1.94713954      -0.10558828       0.00000000
 H        3.05254284      -0.16553141       0.00000000
@@ -1505,11 +1417,9 @@ N       -1.46072682      -1.15251669       0.00000000
 H       -0.42859974      -1.31294465       0.00000000
 H       -2.12286880      -1.91531762       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.0')] = qcdb.Molecule("""
 0 1
 C        1.99727808      -0.10431489       0.00000000
 H        3.10176903      -0.16200082       0.00000000
@@ -1528,11 +1438,9 @@ N       -1.49059653      -1.14934169       0.00000000
 H       -0.45949690      -1.29156428       0.00000000
 H       -2.13289668      -1.92867591       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.1')] = qcdb.Molecule("""
 0 1
 C        2.04736978      -0.10381896       0.00000000
 H        3.15111193      -0.15978802       0.00000000
@@ -1551,11 +1459,9 @@ N       -1.52453108      -1.14670134       0.00000000
 H       -0.49489283      -1.27394294       0.00000000
 H       -2.15004136      -1.93933564       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.2')] = qcdb.Molecule("""
 0 1
 C        2.09742845      -0.10390077       0.00000000
 H        3.20059131      -0.15854840       0.00000000
@@ -1574,11 +1480,9 @@ N       -1.56227621      -1.14466550       0.00000000
 H       -0.53433608      -1.25999374       0.00000000
 H       -2.17408498      -1.94769642       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.3')] = qcdb.Molecule("""
 0 1
 C        2.14746429      -0.10439674       0.00000000
 H        3.25020808      -0.15800548       0.00000000
@@ -1597,11 +1501,9 @@ N       -1.60342559      -1.14321301       0.00000000
 H       -0.57725829      -1.24942013       0.00000000
 H       -2.20446212      -1.95412762       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.4')] = qcdb.Molecule("""
 0 1
 C        2.19748298      -0.10521494       0.00000000
 H        3.29994728      -0.15800065       0.00000000
@@ -1620,11 +1522,9 @@ N       -1.64750275      -1.14225070       0.00000000
 H       -0.62306965      -1.24181216       0.00000000
 H       -2.24041883      -1.95893145       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.6')] = qcdb.Molecule("""
 0 1
 C        2.29747604      -0.10772948       0.00000000
 H        3.39968456      -0.15941244       0.00000000
@@ -1643,11 +1543,9 @@ N       -1.74263302      -1.14129835       0.00000000
 H       -0.72137666      -1.23384217       0.00000000
 H       -2.32599570      -1.96451573       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-4.8')] = qcdb.Molecule("""
 0 1
 C        2.39742249      -0.11120861       0.00000000
 H        3.49964090      -0.16233693       0.00000000
@@ -1666,11 +1564,9 @@ N       -1.84436251      -1.14107385       0.00000000
 H       -0.82590336      -1.23313494       0.00000000
 H       -2.42493207      -1.96604670       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-5.0')] = qcdb.Molecule("""
 0 1
 C        2.49735133      -0.11505842       0.00000000
 H        3.59972532      -0.16584719       0.00000000
@@ -1689,11 +1585,9 @@ N       -1.94973034      -1.14125016       0.00000000
 H       -0.93377159      -1.23689923       0.00000000
 H       -2.53164153      -1.96514450       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-5.4')] = qcdb.Molecule("""
 0 1
 C        2.69724643      -0.12191870       0.00000000
 H        3.80009014      -0.17176852       0.00000000
@@ -1712,11 +1606,9 @@ N       -2.16339519      -1.14223517       0.00000000
 H       -1.15164366      -1.24943138       0.00000000
 H       -2.75270049      -1.96073403       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-5.8')] = qcdb.Molecule("""
 0 1
 C        2.89724776      -0.12632587       0.00000000
 H        4.00054647      -0.17443193       0.00000000
@@ -1735,11 +1627,9 @@ N       -2.37424699      -1.14355972       0.00000000
 H       -1.36542121      -1.26070273       0.00000000
 H       -2.97042339      -1.95703238       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-6.4')] = qcdb.Molecule("""
 0 1
 C        3.19740673      -0.12881636       0.00000000
 H        4.30120367      -0.17328586       0.00000000
@@ -1758,11 +1648,9 @@ N       -2.68267636      -1.14568753       0.00000000
 H       -1.67620388      -1.27071277       0.00000000
 H       -3.28436882      -1.95508270       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-7.0')] = qcdb.Molecule("""
 0 1
 C        3.49764421      -0.12840997       0.00000000
 H        4.60176692      -0.16894593       0.00000000
@@ -1781,11 +1669,9 @@ N       -2.98518869      -1.14779235       0.00000000
 H       -1.97966414      -1.27507136       0.00000000
 H       -3.58843631      -1.95603470       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-8.0')] = qcdb.Molecule("""
 0 1
 C        3.99802556      -0.12568606       0.00000000
 H        5.10246875      -0.16040648       0.00000000
@@ -1804,11 +1690,9 @@ N       -3.48433462      -1.15076117       0.00000000
 H       -2.47917010      -1.27706322       0.00000000
 H       -4.08677787      -1.95961623       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNNFaNN_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaNNFaNN-10.0')] = qcdb.Molecule("""
 0 1
 C        4.99855171      -0.12037120       0.00000000
 H        6.10329053      -0.14697466       0.00000000
@@ -1827,11 +1711,9 @@ N       -4.47966407      -1.15461725       0.00000000
 H       -3.47428778      -1.27673150       0.00000000
 H       -5.07887010      -1.96589319       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.4')] = qcdb.Molecule("""
 0 1
 C       -1.68442643       0.20364693       0.00000000
 H       -2.78917270       0.34190070       0.00000000
@@ -1847,11 +1729,9 @@ N        1.44623488       1.09491586       0.00000000
 H        0.47728536       1.44199769       0.00000000
 H        2.26183892       1.69328776       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.5')] = qcdb.Molecule("""
 0 1
 C       -1.73348582       0.18223355       0.00000000
 H       -2.83797096       0.30364160       0.00000000
@@ -1867,11 +1747,9 @@ N        1.44809759       1.10348563       0.00000000
 H        0.46246915       1.40389863       0.00000000
 H        2.22816418       1.74757255       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.6')] = qcdb.Molecule("""
 0 1
 C       -1.78217824       0.17067463       0.00000000
 H       -2.88586235       0.28192476       0.00000000
@@ -1887,11 +1765,9 @@ N        1.46296486       1.10656646       0.00000000
 H        0.46794114       1.37317096       0.00000000
 H        2.21379368       1.78455973       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.7')] = qcdb.Molecule("""
 0 1
 C       -1.83088576       0.16446589       0.00000000
 H       -2.93370803       0.26905294       0.00000000
@@ -1907,11 +1783,9 @@ N        1.48618925       1.10754437       0.00000000
 H        0.48561914       1.34851310       0.00000000
 H        2.21266192       1.81160865       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.8')] = qcdb.Molecule("""
 0 1
 C       -1.87970385       0.16163715       0.00000000
 H       -2.98177538       0.26162942       0.00000000
@@ -1927,11 +1801,9 @@ N        1.51565227       1.10780268       0.00000000
 H        0.51184265       1.32923289       0.00000000
 H        2.22211656       1.83196397       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-3.9')] = qcdb.Molecule("""
 0 1
 C       -1.92862050       0.16119369       0.00000000
 H       -3.03011644       0.25790262       0.00000000
@@ -1947,11 +1819,9 @@ N        1.55000583       1.10795923       0.00000000
 H        0.54440542       1.31463815       0.00000000
 H        2.24038620       1.84747610       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.0')] = qcdb.Molecule("""
 0 1
 C       -1.97758328       0.16248610       0.00000000
 H       -3.07869694       0.25672827       0.00000000
@@ -1967,11 +1837,9 @@ N        1.58801714       1.10829528       0.00000000
 H        0.58149375       1.30380344       0.00000000
 H        2.26561575       1.85952935       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.1')] = qcdb.Molecule("""
 0 1
 C       -2.02654503       0.16495904       0.00000000
 H       -3.12746053       0.25719799       0.00000000
@@ -1987,11 +1855,9 @@ N        1.62857259       1.10890330       0.00000000
 H        0.62159334       1.29571943       0.00000000
 H        2.29594551       1.86920816       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.2')] = qcdb.Molecule("""
 0 1
 C       -2.07549477       0.16808404       0.00000000
 H       -3.17636801       0.25855097       0.00000000
@@ -2007,11 +1873,9 @@ N        1.67091982       1.10975954       0.00000000
 H        0.66372245       1.28959945       0.00000000
 H        2.33000288       1.87722287       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.3')] = qcdb.Molecule("""
 0 1
 C       -2.12445982       0.17139548       0.00000000
 H       -3.22540810       0.26019471       0.00000000
@@ -2027,11 +1891,9 @@ N        1.71474383       1.11078804       0.00000000
 H        0.70747623       1.28502211       0.00000000
 H        2.36711721       1.88391930       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.4')] = qcdb.Molecule("""
 0 1
 C       -2.17348283       0.17454732       0.00000000
 H       -3.27458485       0.26172858       0.00000000
@@ -2047,11 +1909,9 @@ N        1.75999690       1.11191304       0.00000000
 H        0.75279213       1.28183397       0.00000000
 H        2.40708847       1.88942849       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.6')] = qcdb.Molecule("""
 0 1
 C       -2.27180865       0.17975090       0.00000000
 H       -3.37333986       0.26380020       0.00000000
@@ -2067,11 +1927,9 @@ N        1.85465707       1.11426632       0.00000000
 H        0.84799242       1.27930626       0.00000000
 H        2.49507804       1.89722164       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-4.8')] = qcdb.Molecule("""
 0 1
 C       -2.37053947       0.18335144       0.00000000
 H       -3.47255698       0.26439714       0.00000000
@@ -2087,11 +1945,9 @@ N        1.95399445       1.11666331       0.00000000
 H        0.94841269       1.28120182       0.00000000
 H        2.59207415       1.90149404       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-5.0')] = qcdb.Molecule("""
 0 1
 C       -2.46965740       0.18532900       0.00000000
 H       -3.57215472       0.26340833       0.00000000
@@ -2107,11 +1963,9 @@ N        2.05645986       1.11912237       0.00000000
 H        1.05236659       1.28627334       0.00000000
 H        2.69518733       1.90341149       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-5.4')] = qcdb.Molecule("""
 0 1
 C       -2.66850366       0.18514825       0.00000000
 H       -3.77181125       0.25702537       0.00000000
@@ -2127,11 +1981,9 @@ N        2.26253222       1.12413593       0.00000000
 H        1.26110058       1.29739823       0.00000000
 H        2.90434733       1.90588628       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-5.8')] = qcdb.Molecule("""
 0 1
 C       -2.86735875       0.18206412       0.00000000
 H       -3.97126829       0.24767419       0.00000000
@@ -2147,11 +1999,9 @@ N        2.46432498       1.12882796       0.00000000
 H        1.46400695       1.30306213       0.00000000
 H        3.10628291       1.91044267       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-6.4')] = qcdb.Molecule("""
 0 1
 C       -3.16535897       0.17586134       0.00000000
 H       -4.26988030       0.23307508       0.00000000
@@ -2167,11 +2017,9 @@ N        2.76274851       1.13469399       0.00000000
 H        1.76253556       1.30519593       0.00000000
 H        3.40173066       1.91872273       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-7.0')] = qcdb.Molecule("""
 0 1
 C       -3.46303289       0.16994236       0.00000000
 H       -4.56795025       0.22032609       0.00000000
@@ -2187,11 +2035,9 @@ N        3.05992779       1.13914187       0.00000000
 H        2.05915506       1.30417766       0.00000000
 H        3.69489864       1.92641219       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-8.0')] = qcdb.Molecule("""
 0 1
 C       -3.95866293       0.16221564       0.00000000
 H       -5.06397335       0.20411777       0.00000000
@@ -2207,11 +2053,9 @@ N        3.55651747       1.14422533       0.00000000
 H        2.55468792       1.30114823       0.00000000
 H        4.18559310       1.93619532       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaON_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaON-10.0')] = qcdb.Molecule("""
 0 1
 C       -4.94899199       0.15261986       0.00000000
 H       -6.05466697       0.18398552       0.00000000
@@ -2227,11 +2071,9 @@ N        4.55565401       1.14984957       0.00000000
 H        3.55239498       1.29639409       0.00000000
 H        5.17702398       1.94785550       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.4')] = qcdb.Molecule("""
 0 1
 C       -1.68224527       0.20007686       0.00000000
 H       -2.79851036       0.32731687       0.00000000
@@ -2249,11 +2091,9 @@ N        1.41625166       1.12650330       0.00000000
 H        0.43768191       1.44670293       0.00000000
 H        2.21582070       1.74279349       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.5')] = qcdb.Molecule("""
 0 1
 C       -1.73161493       0.16885424       0.00000000
 H       -2.84774407       0.27229826       0.00000000
@@ -2271,11 +2111,9 @@ N        1.40087130       1.13935068       0.00000000
 H        0.40196256       1.40065024       0.00000000
 H        2.15615427       1.80923145       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.6')] = qcdb.Molecule("""
 0 1
 C       -1.78022870       0.14987298       0.00000000
 H       -2.89545364       0.23836736       0.00000000
@@ -2293,11 +2131,9 @@ N        1.40124345       1.14388415       0.00000000
 H        0.39074481       1.36097240       0.00000000
 H        2.11873085       1.85410086       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.7')] = qcdb.Molecule("""
 0 1
 C       -1.82868510       0.13792020       0.00000000
 H       -2.94280654       0.21653844       0.00000000
@@ -2315,11 +2151,9 @@ N        1.41233657       1.14451863       0.00000000
 H        0.39516324       1.32705396       0.00000000
 H        2.09724900       1.88616308       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.8')] = qcdb.Molecule("""
 0 1
 C       -1.87720296       0.13037316       0.00000000
 H       -2.99024880       0.20231026       0.00000000
@@ -2337,11 +2171,9 @@ N        1.43187244       1.14338561       0.00000000
 H        0.41107420       1.29878706       0.00000000
 H        2.08912295       1.90958573       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-3.9')] = qcdb.Molecule("""
 0 1
 C       -1.92586862       0.12572004       0.00000000
 H       -3.03796709       0.19311602       0.00000000
@@ -2359,11 +2191,9 @@ N        1.45874144       1.14162823       0.00000000
 H        0.43630966       1.27622061       0.00000000
 H        2.09327641       1.92665702       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.0')] = qcdb.Molecule("""
 0 1
 C       -1.97471721       0.12295853       0.00000000
 H       -3.08604013       0.18727896       0.00000000
@@ -2381,11 +2211,9 @@ N        1.49223980       1.13988904       0.00000000
 H        0.46948873       1.25930607       0.00000000
 H        2.10902806       1.93883512       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.1')] = qcdb.Molecule("""
 0 1
 C       -2.02376044       0.12137130       0.00000000
 H       -3.13449129       0.18360767       0.00000000
@@ -2403,11 +2231,9 @@ N        1.53167706       1.13850851       0.00000000
 H        0.50945141       1.24775624       0.00000000
 H        2.13551288       1.94717878       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.2')] = qcdb.Molecule("""
 0 1
 C       -2.07299095       0.12047764       0.00000000
 H       -3.18330109       0.18128485       0.00000000
@@ -2425,11 +2251,9 @@ N        1.57620126       1.13760159       0.00000000
 H        0.55501008       1.24096826       0.00000000
 H        2.17143215       1.95251421       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.3')] = qcdb.Molecule("""
 0 1
 C       -2.12238102       0.12001003       0.00000000
 H       -3.23241727       0.17981127       0.00000000
@@ -2447,11 +2271,9 @@ N        1.62476864       1.13714001       0.00000000
 H        0.60488448       1.23808048       0.00000000
 H        2.21504656       1.95554011       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.4')] = qcdb.Molecule("""
 0 1
 C       -2.17188140       0.11988045       0.00000000
 H       -3.28175966       0.17894887       0.00000000
@@ -2469,11 +2291,9 @@ N        1.67623295       1.13700945       0.00000000
 H        0.65776551       1.23805882       0.00000000
 H        2.26434801       1.95686864       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.6')] = qcdb.Molecule("""
 0 1
 C       -2.27098481       0.12071738       0.00000000
 H       -3.38079959       0.17880004       0.00000000
@@ -2491,11 +2311,9 @@ N        1.78379346       1.13726371       0.00000000
 H        0.76811221       1.24281216       0.00000000
 H        2.37265274       1.95644249       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-4.8')] = qcdb.Molecule("""
 0 1
 C       -2.37001060       0.12298207       0.00000000
 H       -3.47998730       0.18042379       0.00000000
@@ -2513,11 +2331,9 @@ N        1.89367698       1.13774591       0.00000000
 H        0.88057502       1.25034358       0.00000000
 H        2.48658153       1.95391122       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-5.0')] = qcdb.Molecule("""
 0 1
 C       -2.46891156       0.12607812       0.00000000
 H       -3.57918367       0.18293782       0.00000000
@@ -2535,11 +2351,9 @@ N        2.00367207       1.13832154       0.00000000
 H        0.99293782       1.25860595       0.00000000
 H        2.60169997       1.95068341       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-5.4')] = qcdb.Molecule("""
 0 1
 C       -2.66627924       0.13246574       0.00000000
 H       -3.77728386       0.18752690       0.00000000
@@ -2557,11 +2371,9 @@ N        2.21808889       1.13969445       0.00000000
 H        1.21077019       1.27082675       0.00000000
 H        2.82358807       1.94643158       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-5.8')] = qcdb.Molecule("""
 0 1
 C       -2.86354863       0.13635439       0.00000000
 H       -3.97519119       0.18862454       0.00000000
@@ -2579,11 +2391,9 @@ N        2.42557457       1.14138666       0.00000000
 H        1.42000011       1.27687473       0.00000000
 H        3.03409167       1.94580891       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-6.4')] = qcdb.Molecule("""
 0 1
 C       -3.15990010       0.13729708       0.00000000
 H       -4.27217260       0.18465048       0.00000000
@@ -2601,11 +2411,9 @@ N        2.73117559       1.14418616       0.00000000
 H        1.72670616       1.28092608       0.00000000
 H        3.34065139       1.94785431       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-7.0')] = qcdb.Molecule("""
 0 1
 C       -3.45655227       0.13564152       0.00000000
 H       -4.56921064       0.17826784       0.00000000
@@ -2623,11 +2431,9 @@ N        3.03335964       1.14677845       0.00000000
 H        2.02910179       1.28169924       0.00000000
 H        3.64162361       1.95135046       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-8.0')] = qcdb.Molecule("""
 0 1
 C       -3.95119391       0.13180726       0.00000000
 H       -5.06421494       0.16795264       0.00000000
@@ -2645,11 +2451,9 @@ N        3.53511346       1.15017556       0.00000000
 H        2.53063281       1.28082664       0.00000000
 H        4.14039777       1.95697653       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaONFaNN_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaONFaNN-10.0')] = qcdb.Molecule("""
 0 1
 C       -4.94051459       0.12561969       0.00000000
 H       -6.05385655       0.15311771       0.00000000
@@ -2667,11 +2471,9 @@ N        4.53935952       1.15434078       0.00000000
 H        3.53425488       1.27830661       0.00000000
 H        5.13978851       1.96474473       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_3p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-3.6')] = qcdb.Molecule("""
 0 1
 C       -1.76494924       0.15235779       0.00000000
 H       -2.87327871       0.25118115       0.00000000
@@ -2688,11 +2490,9 @@ N        1.45046411       1.12181032       0.00000000
 H        0.44433636       1.35982341       0.00000000
 H        2.18036640       1.81973064       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_3p7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-3.7')] = qcdb.Molecule("""
 0 1
 C       -1.81131260       0.15832706       0.00000000
 H       -2.91739607       0.25779849       0.00000000
@@ -2709,11 +2509,9 @@ N        1.48635545       1.11647699       0.00000000
 H        0.48139283       1.34214247       0.00000000
 H        2.19917472       1.83148239       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_3p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-3.8')] = qcdb.Molecule("""
 0 1
 C       -1.85851203       0.15849692       0.00000000
 H       -2.96318957       0.25525336       0.00000000
@@ -2730,11 +2528,9 @@ N        1.51877490       1.11463167       0.00000000
 H        0.51255074       1.32398473       0.00000000
 H        2.21287037       1.84762526       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_3p9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-3.9')] = qcdb.Molecule("""
 0 1
 C       -1.90625728       0.15789816       0.00000000
 H       -3.00992908       0.25165586       0.00000000
@@ -2751,11 +2547,9 @@ N        1.55373649       1.11388209       0.00000000
 H        0.54641308       1.30898417       0.00000000
 H        2.23141500       1.86193091       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.0')] = qcdb.Molecule("""
 0 1
 C       -1.95441797       0.15753953       0.00000000
 H       -3.05736547       0.24858075       0.00000000
@@ -2772,11 +2566,9 @@ N        1.59233540       1.11373305       0.00000000
 H        0.58444574       1.29777092       0.00000000
 H        2.25678662       1.87343146       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.1')] = qcdb.Molecule("""
 0 1
 C       -2.00288568       0.15766229       0.00000000
 H       -3.10533408       0.24633212       0.00000000
@@ -2793,11 +2585,9 @@ N        1.63434437       1.11404135       0.00000000
 H        0.62635840       1.29004572       0.00000000
 H        2.28868862       1.88235333       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.2')] = qcdb.Molecule("""
 0 1
 C       -2.05155512       0.15829850       0.00000000
 H       -3.15369321       0.24486622       0.00000000
@@ -2814,11 +2604,9 @@ N        1.67894465       1.11473347       0.00000000
 H        0.67115531       1.28502625       0.00000000
 H        2.32574278       1.88931006       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.3')] = qcdb.Molecule("""
 0 1
 C       -2.10033250       0.15939803       0.00000000
 H       -3.20231249       0.24404256       0.00000000
@@ -2835,11 +2623,9 @@ N        1.72522255       1.11572240       0.00000000
 H        0.71775960       1.28182144       0.00000000
 H        2.36632423       1.89492965       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.4')] = qcdb.Molecule("""
 0 1
 C       -2.14914999       0.16086986       0.00000000
 H       -3.25109115       0.24371672       0.00000000
@@ -2856,11 +2642,9 @@ N        1.77253439       1.11690493       0.00000000
 H        0.76542789       1.27975581       0.00000000
 H        2.40921970       1.89964705       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.6')] = qcdb.Molecule("""
 0 1
 C       -2.24680225       0.16448460       0.00000000
 H       -3.34889590       0.24405206       0.00000000
@@ -2877,11 +2661,9 @@ N        1.86930785       1.11945644       0.00000000
 H        0.86293152       1.27779567       0.00000000
 H        2.49986583       1.90702451       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_4p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-4.8')] = qcdb.Molecule("""
 0 1
 C       -2.34452726       0.16814176       0.00000000
 H       -3.44693630       0.24477572       0.00000000
@@ -2898,11 +2680,9 @@ N        1.96885825       1.12195665       0.00000000
 H        0.96338922       1.27845400       0.00000000
 H        2.59632255       1.91191489       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_5p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-5.0')] = qcdb.Molecule("""
 0 1
 C       -2.44239623       0.17109139       0.00000000
 H       -3.54516867       0.24497624       0.00000000
@@ -2919,11 +2699,9 @@ N        2.07067818       1.12435634       0.00000000
 H        1.06632369       1.28126044       0.00000000
 H        2.69733971       1.91489993       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_5p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-5.4')] = qcdb.Molecule("""
 0 1
 C       -2.63833181       0.17421223       0.00000000
 H       -3.74182732       0.24259469       0.00000000
@@ -2940,11 +2718,9 @@ N        2.27517829       1.12893018       0.00000000
 H        1.27261881       1.28724241       0.00000000
 H        2.90172978       1.91949574       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_5p8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-5.8')] = qcdb.Molecule("""
 0 1
 C       -2.83430026       0.17412588       0.00000000
 H       -3.93836628       0.23696684       0.00000000
@@ -2961,11 +2737,9 @@ N        2.47731363       1.13303523       0.00000000
 H        1.47540835       1.28966180       0.00000000
 H        3.10222174       1.92484945       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_6p4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-6.4')] = qcdb.Molecule("""
 0 1
 C       -3.12831510       0.17084992       0.00000000
 H       -4.23295676       0.22611350       0.00000000
@@ -2982,11 +2756,9 @@ N        2.77871570       1.13816091       0.00000000
 H        1.77677840       1.28984953       0.00000000
 H        3.39990002       1.93285794       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_7p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-7.0')] = qcdb.Molecule("""
 0 1
 C       -3.42232127       0.16653527       0.00000000
 H       -4.52734265       0.21545352       0.00000000
@@ -3003,11 +2775,9 @@ N        3.07956461       1.14215114       0.00000000
 H        2.07713948       1.28822281       0.00000000
 H        3.69667809       1.93998571       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_8p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-8.0')] = qcdb.Molecule("""
 0 1
 C       -3.91213194       0.16018637       0.00000000
 H       -5.01752318       0.20105168       0.00000000
@@ -3024,11 +2794,9 @@ N        3.58224397       1.14684614       0.00000000
 H        2.57892509       1.28493460       0.00000000
 H        4.19355750       1.94910244       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOOFaNN_10p0 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, 'FaOOFaNN-10.0')] = qcdb.Molecule("""
 0 1
 C       -4.89119351       0.15168886       0.00000000
 H       -5.99692859       0.18239314       0.00000000
@@ -3045,11 +2813,9 @@ N        4.59328914       1.15218338       0.00000000
 H        3.58879137       1.28039339       0.00000000
 H        5.19724654       1.95996355       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaOO_monomer_RLX = input.process_input("""
-molecule dimer {
+GEOS['%s-%s' % (dbse, 'FaOO-mono-RLX')] = qcdb.Molecule("""
 0 1
 C       -0.10067338      -0.41790840       0.00000000
 H       -0.02994601      -1.52175017       0.00000000
@@ -3057,11 +2823,9 @@ O       -1.13575810       0.21734849       0.00000000
 O        1.14827203       0.12334561       0.00000000
 H        1.03004150       1.09065136       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaON_monomer_RLX = input.process_input("""
-molecule dimer {
+GEOS['%s-%s' % (dbse, 'FaON-mono-RLX')] = qcdb.Molecule("""
 0 1
 C       -0.08832415      -0.41231959       0.00000000
 H       -0.04284111      -1.52506057       0.00000000
@@ -3070,11 +2834,9 @@ N        1.15566522       0.16652753       0.00000000
 H        1.23188425       1.17751832       0.00000000
 H        1.99476943      -0.39808693       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-HBC1_FaNN_monomer_RLX = input.process_input("""
-molecule dimer {
+GEOS['%s-%s' % (dbse, 'FaNN-mono-RLX')] = qcdb.Molecule("""
 0 1
 C       -0.08463791      -0.42651676       0.00000000
 H       -0.04431604      -1.53084724       0.00000000
@@ -3084,20 +2846,491 @@ N        1.15840794       0.16588754       0.00000000
 H        1.22157301       1.17651874       0.00000000
 H        2.00315093      -0.38515422       0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-#<<< Geometry Specification Strings >>>
-GEOS = {}
+# <<< Derived Geometry Strings >>>
 for rxn in HRXN:
-    molname = rxnpattern.match(rxn)
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1)
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2)
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
 
-    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
-    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
-    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
-    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
+#########################################################################
 
-GEOS['%s-FaOO-mono-RLX' % (dbse)] = eval('%s_FaOO_monomer_RLX' % (dbse))
-GEOS['%s-FaON-mono-RLX' % (dbse)] = eval('%s_FaON_monomer_RLX' % (dbse))
-GEOS['%s-FaNN-mono-RLX' % (dbse)] = eval('%s_FaNN_monomer_RLX' % (dbse))
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.4-dimer'        ] =     243.36065247
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.4-monoA-CP'     ] =      69.33894005
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.4-monoA-unCP'   ] =      69.33894005
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOO-mono-RLX'             ] =      69.43637417
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.5-dimer'        ] =     241.31794314
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.5-monoA-CP'     ] =      69.40721776
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.5-monoA-unCP'   ] =      69.40721776
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.6-dimer'        ] =     239.13071852
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.6-monoA-CP'     ] =      69.44436721
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.6-monoA-unCP'   ] =      69.44436721
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.7-dimer'        ] =     236.82630686
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.7-monoA-CP'     ] =      69.46091244
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.7-monoA-unCP'   ] =      69.46091244
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.8-dimer'        ] =     234.43461308
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.8-monoA-CP'     ] =      69.46484389
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.8-monoA-unCP'   ] =      69.46484389
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.9-dimer'        ] =     231.99257053
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.9-monoA-CP'     ] =      69.46242034
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-3.9-monoA-unCP'   ] =      69.46242034
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.0-dimer'        ] =     229.54177064
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.0-monoA-CP'     ] =      69.45752939
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.0-monoA-unCP'   ] =      69.45752939
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.1-dimer'        ] =     227.12262884
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.1-monoA-CP'     ] =      69.45239532
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.1-monoA-unCP'   ] =      69.45239532
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.2-dimer'        ] =     224.76664877
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.2-monoA-CP'     ] =      69.44786995
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.2-monoA-unCP'   ] =      69.44786995
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.3-dimer'        ] =     222.49484462
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.3-monoA-CP'     ] =      69.44428117
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.3-monoA-unCP'   ] =      69.44428117
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.4-dimer'        ] =     220.31753024
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.4-monoA-CP'     ] =      69.44143824
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.4-monoA-unCP'   ] =      69.44143824
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.6-dimer'        ] =     216.25339825
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.6-monoA-CP'     ] =      69.43719403
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.6-monoA-unCP'   ] =      69.43719403
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.8-dimer'        ] =     212.55538491
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.8-monoA-CP'     ] =      69.43411380
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-4.8-monoA-unCP'   ] =      69.43411380
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.0-dimer'        ] =     209.19075836
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.0-monoA-CP'     ] =      69.43198525
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.0-monoA-unCP'   ] =      69.43198525
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.4-dimer'        ] =     203.32614471
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.4-monoA-CP'     ] =      69.42994763
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.4-monoA-unCP'   ] =      69.42994763
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.8-dimer'        ] =     198.38447013
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.8-monoA-CP'     ] =      69.42993364
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-5.8-monoA-unCP'   ] =      69.42993364
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-6.4-dimer'        ] =     192.25159892
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-6.4-monoA-CP'     ] =      69.43156827
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-6.4-monoA-unCP'   ] =      69.43156827
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-7.0-dimer'        ] =     187.25816994
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-7.0-monoA-CP'     ] =      69.43350416
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-7.0-monoA-unCP'   ] =      69.43350416
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-8.0-dimer'        ] =     180.71326778
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-8.0-monoA-CP'     ] =      69.43495392
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-8.0-monoA-unCP'   ] =      69.43495392
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-10.0-dimer'       ] =     171.77191094
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-10.0-monoA-CP'    ] =      69.43617749
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaOO-10.0-monoA-unCP'  ] =      69.43617749
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.4-dimer'        ] =     240.46278153
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.4-monoA-CP'     ] =      70.28231877
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.4-monoA-unCP'   ] =      70.28231877
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaON-mono-RLX'             ] =      70.51505519
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.5-dimer'        ] =     239.16459501
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.5-monoA-CP'     ] =      70.32835580
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.5-monoA-unCP'   ] =      70.32835580
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.6-dimer'        ] =     237.68153218
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.6-monoA-CP'     ] =      70.37064235
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.6-monoA-unCP'   ] =      70.37064235
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.7-dimer'        ] =     236.03200309
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.7-monoA-CP'     ] =      70.40477708
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.7-monoA-unCP'   ] =      70.40477708
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.8-dimer'        ] =     234.23169579
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.8-monoA-CP'     ] =      70.42980104
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.8-monoA-unCP'   ] =      70.42980104
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.9-dimer'        ] =     232.30206866
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.9-monoA-CP'     ] =      70.44695377
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-3.9-monoA-unCP'   ] =      70.44695377
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.0-dimer'        ] =     230.27316227
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.0-monoA-CP'     ] =      70.45845935
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.0-monoA-unCP'   ] =      70.45845935
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.1-dimer'        ] =     228.18215800
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.1-monoA-CP'     ] =      70.46653132
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.1-monoA-unCP'   ] =      70.46653132
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.2-dimer'        ] =     226.06835273
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.2-monoA-CP'     ] =      70.47282327
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.2-monoA-unCP'   ] =      70.47282327
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.3-dimer'        ] =     223.96749853
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.3-monoA-CP'     ] =      70.47830733
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.3-monoA-unCP'   ] =      70.47830733
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.4-dimer'        ] =     221.90773477
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.4-monoA-CP'     ] =      70.48335622
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.4-monoA-unCP'   ] =      70.48335622
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.6-dimer'        ] =     217.97817650
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.6-monoA-CP'     ] =      70.49218648
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.6-monoA-unCP'   ] =      70.49218648
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.8-dimer'        ] =     214.34039402
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.8-monoA-CP'     ] =      70.49902069
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-4.8-monoA-unCP'   ] =      70.49902069
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.0-dimer'        ] =     210.99686112
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.0-monoA-CP'     ] =      70.50390115
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.0-monoA-unCP'   ] =      70.50390115
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.4-dimer'        ] =     205.14090516
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.4-monoA-CP'     ] =      70.50872518
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.4-monoA-unCP'   ] =      70.50872518
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.8-dimer'        ] =     200.21672958
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.8-monoA-CP'     ] =      70.51045849
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-5.8-monoA-unCP'   ] =      70.51045849
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-6.4-dimer'        ] =     194.12431457
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-6.4-monoA-CP'     ] =      70.51183703
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-6.4-monoA-unCP'   ] =      70.51183703
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-7.0-dimer'        ] =     189.17344305
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-7.0-monoA-CP'     ] =      70.51282107
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-7.0-monoA-unCP'   ] =      70.51282107
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-8.0-dimer'        ] =     182.68824188
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-8.0-monoA-CP'     ] =      70.51387004
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-8.0-monoA-unCP'   ] =      70.51387004
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-10.0-dimer'       ] =     173.81988858
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-10.0-monoA-CP'    ] =      70.51470037
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaON-10.0-monoA-unCP'  ] =      70.51470037
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.4-dimer'        ] =     239.26046970
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.4-monoA-CP'     ] =      71.02970630
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.4-monoA-unCP'   ] =      71.02970630
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNN-mono-RLX'             ] =      71.44403839
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.5-dimer'        ] =     238.10201613
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.5-monoA-CP'     ] =      71.12101788
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.5-monoA-unCP'   ] =      71.12101788
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.6-dimer'        ] =     236.84466393
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.6-monoA-CP'     ] =      71.19783215
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.6-monoA-unCP'   ] =      71.19783215
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.7-dimer'        ] =     235.48357291
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.7-monoA-CP'     ] =      71.25979426
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.7-monoA-unCP'   ] =      71.25979426
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.8-dimer'        ] =     234.01564811
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.8-monoA-CP'     ] =      71.30723795
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.8-monoA-unCP'   ] =      71.30723795
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.9-dimer'        ] =     232.44172478
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.9-monoA-CP'     ] =      71.34148564
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-3.9-monoA-unCP'   ] =      71.34148564
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.0-dimer'        ] =     230.76831303
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.0-monoA-CP'     ] =      71.36468654
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.0-monoA-unCP'   ] =      71.36468654
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.1-dimer'        ] =     229.00938305
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.1-monoA-CP'     ] =      71.37962643
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.1-monoA-unCP'   ] =      71.37962643
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.2-dimer'        ] =     227.18583883
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.2-monoA-CP'     ] =      71.38901927
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.2-monoA-unCP'   ] =      71.38901927
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.3-dimer'        ] =     225.32386318
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.3-monoA-CP'     ] =      71.39518800
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.3-monoA-unCP'   ] =      71.39518800
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.4-dimer'        ] =     223.45062338
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.4-monoA-CP'     ] =      71.39972289
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.4-monoA-unCP'   ] =      71.39972289
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.6-dimer'        ] =     219.76184605
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.6-monoA-CP'     ] =      71.40770677
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.6-monoA-unCP'   ] =      71.40770677
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.8-dimer'        ] =     216.24467046
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.8-monoA-CP'     ] =      71.41504118
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-4.8-monoA-unCP'   ] =      71.41504118
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.0-dimer'        ] =     212.95726631
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.0-monoA-CP'     ] =      71.42143886
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.0-monoA-unCP'   ] =      71.42143886
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.4-dimer'        ] =     207.11781748
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.4-monoA-CP'     ] =      71.43139269
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.4-monoA-unCP'   ] =      71.43139269
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.8-dimer'        ] =     202.17178340
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.8-monoA-CP'     ] =      71.43632979
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-5.8-monoA-unCP'   ] =      71.43632979
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-6.4-dimer'        ] =     196.05789788
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-6.4-monoA-CP'     ] =      71.43933362
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-6.4-monoA-unCP'   ] =      71.43933362
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-7.0-dimer'        ] =     191.09605908
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-7.0-monoA-CP'     ] =      71.44111494
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-7.0-monoA-unCP'   ] =      71.44111494
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-8.0-dimer'        ] =     184.60070202
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-8.0-monoA-CP'     ] =      71.44290877
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-8.0-monoA-unCP'   ] =      71.44290877
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-10.0-dimer'       ] =     175.71779864
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-10.0-monoA-CP'    ] =      71.44390386
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaNNFaNN-10.0-monoA-unCP'  ] =      71.44390386
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.4-dimer'        ] =     241.93345078
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.4-monoA-CP'     ] =      69.35267697
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.4-monoB-CP'     ] =      70.25019076
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.4-monoA-unCP'   ] =      69.35267697
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.4-monoB-unCP'   ] =      70.25019076
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.5-dimer'        ] =     240.30022964
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.5-monoA-CP'     ] =      69.38497277
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.5-monoB-CP'     ] =      70.33194829
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.5-monoA-unCP'   ] =      69.38497277
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.5-monoB-unCP'   ] =      70.33194829
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.6-dimer'        ] =     238.47937461
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.6-monoA-CP'     ] =      69.41184507
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.6-monoB-CP'     ] =      70.39031970
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.6-monoA-unCP'   ] =      69.41184507
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.6-monoB-unCP'   ] =      70.39031970
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.7-dimer'        ] =     236.49953506
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.7-monoA-CP'     ] =      69.42869781
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.7-monoB-CP'     ] =      70.42973315
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.7-monoA-unCP'   ] =      69.42869781
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.7-monoB-unCP'   ] =      70.42973315
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.8-dimer'        ] =     234.39000387
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.8-monoA-CP'     ] =      69.43660992
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.8-monoB-CP'     ] =      70.45473144
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.8-monoA-unCP'   ] =      69.43660992
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.8-monoB-unCP'   ] =      70.45473144
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.9-dimer'        ] =     232.18404486
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.9-monoA-CP'     ] =      69.43891731
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.9-monoB-CP'     ] =      70.46974894
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.9-monoA-unCP'   ] =      69.43891731
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-3.9-monoB-unCP'   ] =      70.46974894
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.0-dimer'        ] =     229.92100144
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.0-monoA-CP'     ] =      69.43897100
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.0-monoB-CP'     ] =      70.47862318
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.0-monoA-unCP'   ] =      69.43897100
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.0-monoB-unCP'   ] =      70.47862318
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.1-dimer'        ] =     227.64375917
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.1-monoA-CP'     ] =      69.43883808
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.1-monoB-CP'     ] =      70.48417849
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.1-monoA-unCP'   ] =      69.43883808
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.1-monoB-unCP'   ] =      70.48417849
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.2-dimer'        ] =     225.39202083
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.2-monoA-CP'     ] =      69.43915615
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.2-monoB-CP'     ] =      70.48816654
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.2-monoA-unCP'   ] =      69.43915615
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.2-monoB-unCP'   ] =      70.48816654
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.3-dimer'        ] =     223.19598463
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.3-monoA-CP'     ] =      69.43973769
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.3-monoB-CP'     ] =      70.49148753
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.3-monoA-unCP'   ] =      69.43973769
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.3-monoB-unCP'   ] =      70.49148753
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.4-dimer'        ] =     221.07419115
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.4-monoA-CP'     ] =      69.44018499
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.4-monoB-CP'     ] =      70.49442227
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.4-monoA-unCP'   ] =      69.44018499
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.4-monoB-unCP'   ] =      70.49442227
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.6-dimer'        ] =     217.08104010
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.6-monoA-CP'     ] =      69.44001991
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.6-monoB-CP'     ] =      70.49924468
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.6-monoA-unCP'   ] =      69.44001991
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.6-monoB-unCP'   ] =      70.49924468
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.8-dimer'        ] =     213.41989010
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.8-monoA-CP'     ] =      69.43900064
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.8-monoB-CP'     ] =      70.50267956
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.8-monoA-unCP'   ] =      69.43900064
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-4.8-monoB-unCP'   ] =      70.50267956
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.0-dimer'        ] =     210.07109853
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.0-monoA-CP'     ] =      69.43780433
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.0-monoB-CP'     ] =      70.50482980
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.0-monoA-unCP'   ] =      69.43780433
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.0-monoB-unCP'   ] =      70.50482980
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.4-dimer'        ] =     204.21761685
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.4-monoA-CP'     ] =      69.43637558
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.4-monoB-CP'     ] =      70.50670959
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.4-monoA-unCP'   ] =      69.43637558
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.4-monoB-unCP'   ] =      70.50670959
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.8-dimer'        ] =     199.28928967
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.8-monoA-CP'     ] =      69.43545989
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.8-monoB-CP'     ] =      70.50777320
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.8-monoA-unCP'   ] =      69.43545989
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-5.8-monoB-unCP'   ] =      70.50777320
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-6.4-dimer'        ] =     193.18113380
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-6.4-monoA-CP'     ] =      69.43552104
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-6.4-monoB-CP'     ] =      70.50951053
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-6.4-monoA-unCP'   ] =      69.43552104
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-6.4-monoB-unCP'   ] =      70.50951053
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-7.0-dimer'        ] =     188.21125650
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-7.0-monoA-CP'     ] =      69.43619080
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-7.0-monoB-CP'     ] =      70.51101382
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-7.0-monoA-unCP'   ] =      69.43619080
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-7.0-monoB-unCP'   ] =      70.51101382
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-8.0-dimer'        ] =     181.69923103
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-8.0-monoA-CP'     ] =      69.43703888
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-8.0-monoB-CP'     ] =      70.51306687
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-8.0-monoA-unCP'   ] =      69.43703888
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-8.0-monoB-unCP'   ] =      70.51306687
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-10.0-dimer'       ] =     172.79665021
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-10.0-monoA-CP'    ] =      69.43787499
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-10.0-monoB-CP'    ] =      70.51471612
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-10.0-monoA-unCP'  ] =      69.43787499
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaON-10.0-monoB-unCP'  ] =      70.51471612
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.4-dimer'        ] =     239.90587476
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.4-monoA-CP'     ] =      70.13040081
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.4-monoB-CP'     ] =      71.18167959
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.4-monoA-unCP'   ] =      70.13040081
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.4-monoB-unCP'   ] =      71.18167959
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.5-dimer'        ] =     238.67868671
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.5-monoA-CP'     ] =      70.18294170
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.5-monoB-CP'     ] =      71.26743554
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.5-monoA-unCP'   ] =      70.18294170
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.5-monoB-unCP'   ] =      71.26743554
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.6-dimer'        ] =     237.31444607
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.6-monoA-CP'     ] =      70.24012730
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.6-monoB-CP'     ] =      71.33055862
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.6-monoA-unCP'   ] =      70.24012730
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.6-monoB-unCP'   ] =      71.33055862
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.7-dimer'        ] =     235.81577856
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.7-monoA-CP'     ] =      70.29293605
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.7-monoB-CP'     ] =      71.37469923
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.7-monoA-unCP'   ] =      70.29293605
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.7-monoB-unCP'   ] =      71.37469923
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.8-dimer'        ] =     234.18695440
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.8-monoA-CP'     ] =      70.33739500
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.8-monoB-CP'     ] =      71.40295408
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.8-monoA-unCP'   ] =      70.33739500
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.8-monoB-unCP'   ] =      71.40295408
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.9-dimer'        ] =     232.43751991
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.9-monoA-CP'     ] =      70.37258366
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.9-monoB-CP'     ] =      71.41882940
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.9-monoA-unCP'   ] =      70.37258366
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-3.9-monoB-unCP'   ] =      71.41882940
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.0-dimer'        ] =     230.58474965
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.0-monoA-CP'     ] =      70.39937655
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.0-monoB-CP'     ] =      71.42614416
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.0-monoA-unCP'   ] =      70.39937655
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.0-monoB-unCP'   ] =      71.42614416
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.1-dimer'        ] =     228.65402462
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.1-monoA-CP'     ] =      70.41955496
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.1-monoB-CP'     ] =      71.42832750
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.1-monoA-unCP'   ] =      70.41955496
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.1-monoB-unCP'   ] =      71.42832750
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.2-dimer'        ] =     226.67727517
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.2-monoA-CP'     ] =      70.43516725
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.2-monoB-CP'     ] =      71.42823397
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.2-monoA-unCP'   ] =      70.43516725
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.2-monoB-unCP'   ] =      71.42823397
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.3-dimer'        ] =     224.68745859
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.3-monoA-CP'     ] =      70.44783207
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.3-monoB-CP'     ] =      71.42745587
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.3-monoA-unCP'   ] =      70.44783207
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.3-monoB-unCP'   ] =      71.42745587
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.4-dimer'        ] =     222.71416710
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.4-monoA-CP'     ] =      70.45874508
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.4-monoB-CP'     ] =      71.42684444
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.4-monoA-unCP'   ] =      70.45874508
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.4-monoB-unCP'   ] =      71.42684444
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.6-dimer'        ] =     218.89644490
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.6-monoA-CP'     ] =      70.47675379
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.6-monoB-CP'     ] =      71.42653225
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.6-monoA-unCP'   ] =      70.47675379
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.6-monoB-unCP'   ] =      71.42653225
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.8-dimer'        ] =     215.31571895
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.8-monoA-CP'     ] =      70.49066661
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.8-monoB-CP'     ] =      71.42750442
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.8-monoA-unCP'   ] =      70.49066661
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-4.8-monoB-unCP'   ] =      71.42750442
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.0-dimer'        ] =     211.99864089
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.0-monoA-CP'     ] =      70.50093904
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.0-monoB-CP'     ] =      71.42920390
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.0-monoA-unCP'   ] =      70.50093904
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.0-monoB-unCP'   ] =      71.42920390
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.4-dimer'        ] =     206.14542525
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.4-monoA-CP'     ] =      70.51246715
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.4-monoB-CP'     ] =      71.43261759
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.4-monoA-unCP'   ] =      70.51246715
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.4-monoB-unCP'   ] =      71.43261759
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.8-dimer'        ] =     201.20490708
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.8-monoA-CP'     ] =      70.51605248
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.8-monoB-CP'     ] =      71.43506208
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.8-monoA-unCP'   ] =      70.51605248
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-5.8-monoB-unCP'   ] =      71.43506208
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-6.4-dimer'        ] =     195.09745910
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-6.4-monoA-CP'     ] =      70.51673483
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-6.4-monoB-CP'     ] =      71.43776882
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-6.4-monoA-unCP'   ] =      70.51673483
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-6.4-monoB-unCP'   ] =      71.43776882
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-7.0-dimer'        ] =     190.13877337
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-7.0-monoA-CP'     ] =      70.51643987
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-7.0-monoB-CP'     ] =      71.43986291
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-7.0-monoA-unCP'   ] =      70.51643987
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-7.0-monoB-unCP'   ] =      71.43986291
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-8.0-dimer'        ] =     183.64663805
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-8.0-monoA-CP'     ] =      70.51626670
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-8.0-monoB-CP'     ] =      71.44194166
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-8.0-monoA-unCP'   ] =      70.51626670
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-8.0-monoB-unCP'   ] =      71.44194166
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-10.0-dimer'       ] =     174.76988329
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-10.0-monoA-CP'    ] =      70.51586617
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-10.0-monoB-CP'    ] =      71.44353226
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-10.0-monoA-unCP'  ] =      70.51586617
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaONFaNN-10.0-monoB-unCP'  ] =      71.44353226
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.6-dimer'        ] =     238.70762894
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.6-monoA-CP'     ] =      69.05387109
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.6-monoB-CP'     ] =      71.49442229
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.6-monoA-unCP'   ] =      69.05387109
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.6-monoB-unCP'   ] =      71.49442229
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.7-dimer'        ] =     236.77815589
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.7-monoA-CP'     ] =      69.19851332
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.7-monoB-CP'     ] =      71.50248139
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.7-monoA-unCP'   ] =      69.19851332
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.7-monoB-unCP'   ] =      71.50248139
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.8-dimer'        ] =     234.79258573
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.8-monoA-CP'     ] =      69.27451806
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.8-monoB-CP'     ] =      71.50357299
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.8-monoA-unCP'   ] =      69.27451806
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.8-monoB-unCP'   ] =      71.50357299
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.9-dimer'        ] =     232.73099665
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.9-monoA-CP'     ] =      69.32058150
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.9-monoB-CP'     ] =      71.49797419
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.9-monoA-unCP'   ] =      69.32058150
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-3.9-monoB-unCP'   ] =      71.49797419
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.0-dimer'        ] =     230.60990332
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.0-monoA-CP'     ] =      69.34967492
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.0-monoB-CP'     ] =      71.48853214
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.0-monoA-unCP'   ] =      69.34967492
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.0-monoB-unCP'   ] =      71.48853214
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.1-dimer'        ] =     228.45564352
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.1-monoA-CP'     ] =      69.36935851
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.1-monoB-CP'     ] =      71.47782411
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.1-monoA-unCP'   ] =      69.36935851
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.1-monoB-unCP'   ] =      71.47782411
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.2-dimer'        ] =     226.29785177
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.2-monoA-CP'     ] =      69.38400024
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.2-monoB-CP'     ] =      71.46764546
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.2-monoA-unCP'   ] =      69.38400024
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.2-monoB-unCP'   ] =      71.46764546
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.3-dimer'        ] =     224.16556584
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.3-monoA-CP'     ] =      69.39601086
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.3-monoB-CP'     ] =      71.45908818
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.3-monoA-unCP'   ] =      69.39601086
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.3-monoB-unCP'   ] =      71.45908818
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.4-dimer'        ] =     222.08187684
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.4-monoA-CP'     ] =      69.40618110
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.4-monoB-CP'     ] =      71.45222643
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.4-monoA-unCP'   ] =      69.40618110
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.4-monoB-unCP'   ] =      71.45222643
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.6-dimer'        ] =     218.11702388
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.6-monoA-CP'     ] =      69.42169291
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.6-monoB-CP'     ] =      71.44351763
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.6-monoA-unCP'   ] =      69.42169291
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.6-monoB-unCP'   ] =      71.44351763
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.8-dimer'        ] =     214.45680622
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.8-monoA-CP'     ] =      69.43148739
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.8-monoB-CP'     ] =      71.43936558
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.8-monoA-unCP'   ] =      69.43148739
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-4.8-monoB-unCP'   ] =      71.43936558
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.0-dimer'        ] =     211.10192713
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.0-monoA-CP'     ] =      69.43782064
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.0-monoB-CP'     ] =      71.43756173
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.0-monoA-unCP'   ] =      69.43782064
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.0-monoB-unCP'   ] =      71.43756173
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.4-dimer'        ] =     205.22579493
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.4-monoA-CP'     ] =      69.44196665
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.4-monoB-CP'     ] =      71.43623387
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.4-monoA-unCP'   ] =      69.44196665
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.4-monoB-unCP'   ] =      71.43623387
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.8-dimer'        ] =     200.27909874
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.8-monoA-CP'     ] =      69.44120889
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.8-monoB-CP'     ] =      71.43671523
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.8-monoA-unCP'   ] =      69.44120889
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-5.8-monoB-unCP'   ] =      71.43671523
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-6.4-dimer'        ] =     194.15525335
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-6.4-monoA-CP'     ] =      69.43965701
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-6.4-monoB-CP'     ] =      71.43803563
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-6.4-monoA-unCP'   ] =      69.43965701
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-6.4-monoB-unCP'   ] =      71.43803563
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-7.0-dimer'        ] =     189.17681765
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-7.0-monoA-CP'     ] =      69.43814576
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-7.0-monoB-CP'     ] =      71.43984273
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-7.0-monoA-unCP'   ] =      69.43814576
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-7.0-monoB-unCP'   ] =      71.43984273
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-8.0-dimer'        ] =     182.65654313
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-8.0-monoA-CP'     ] =      69.43721728
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-8.0-monoB-CP'     ] =      71.44219510
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-8.0-monoA-unCP'   ] =      69.43721728
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-8.0-monoB-unCP'   ] =      71.44219510
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-10.0-dimer'       ] =     173.74362872
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-10.0-monoA-CP'    ] =      69.43580273
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-10.0-monoB-CP'    ] =      71.44379453
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-10.0-monoA-unCP'  ] =      69.43580273
+DATA['NUCLEAR REPULSION ENERGY']['HBC1-FaOOFaNN-10.0-monoB-unCP'  ] =      71.44379453

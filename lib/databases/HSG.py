@@ -18,7 +18,7 @@
   - ``'large'``
 
 """
-import input
+import qcdb
 
 # <<< HSG Database Module >>>
 dbse = 'HSG'
@@ -231,14 +231,10 @@ TAGL['%s-%s-monoB-CP'   % (dbse, 21)] = 'indinavir from wat200'
 TAGL['%s-%s-monoA-unCP' % (dbse, 21)] = 'water from wat200'
 TAGL['%s-%s-monoB-unCP' % (dbse, 21)] = 'indinavir from wat200'
 
-# <<< Molecule Specifications >>>
-monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+# <<< Geometry Specification Strings >>>
+GEOS = {}
 
-HSG_1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '1')] = qcdb.Molecule("""
 0 1
 C   13.03200       29.07900       6.986000
 H   12.30800       29.25100       7.790000
@@ -266,11 +262,9 @@ H   11.97000       27.14900       8.585000
 H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
-}
-""", 0)
+""")
 
-HSG_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '2')] = qcdb.Molecule("""
 0 1
 C   18.71400       22.19500       2.742000
 H   18.37900       21.58700       3.577000
@@ -303,11 +297,9 @@ H   14.96900       20.29200       3.327000
 H   19.96600       19.54000       5.876000
 H   16.54908       20.59917       5.712962
 units angstrom
-}
-""", 0)
+""")
 
-HSG_3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '3')] = qcdb.Molecule("""
 1 1
 C   23.73500       21.90400       8.645000
 H   24.33900       21.64000       9.515000
@@ -337,11 +329,9 @@ H   20.08100       21.14800       8.627000
 H   18.32800       22.76900       7.913000
 H   15.93631       22.42849       8.649437
 units angstrom
-}
-""", 0)
+""")
 
-HSG_4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '4')] = qcdb.Molecule("""
 -1 1
 C   17.05600       28.65300       6.834000
 H   17.72900       28.22900       7.569000
@@ -367,11 +357,9 @@ H   14.02700       23.02800       4.754000
 H   13.45976       24.69373       4.731124
 H   14.36576       23.85731       6.174161
 units angstrom
-}
-""", 0)
+""")
 
-HSG_5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '5')] = qcdb.Molecule("""
 -1 1
 C   18.71400       22.19500       2.742000
 H   18.37900       21.58700       3.577000
@@ -399,11 +387,9 @@ H   19.96600       19.54000       5.876000
 H   17.07047       19.34799       5.667876
 H   18.18777       18.06583       5.307547
 units angstrom
-}
-""", 0)
+""")
 
-HSG_6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '6')] = qcdb.Molecule("""
 -1 1
 C   20.08800       16.66100      -0.398000
 H   19.04500       16.60200      -0.082000
@@ -427,11 +413,9 @@ H   14.96900       20.29200       3.327000
 H   16.61088       19.36781       5.137980
 H   18.01270       17.77884       4.709692
 units angstrom
-}
-""", 0)
+""")
 
-HSG_7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '7')] = qcdb.Molecule("""
 0 1
 C   15.27800       30.38900       2.305000
 O   14.37900       30.99200       1.712000
@@ -466,11 +450,9 @@ H   9.792144       24.23767       4.611163
 H   10.82891       23.34622       2.612456
 H   14.36576       23.85731       6.174161
 units angstrom
-}
-""", 0)
+""")
 
-HSG_8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '8')] = qcdb.Molecule("""
 0 1
 C   4.290000       24.10300       10.08600
 O   4.354000       23.13400       10.84900
@@ -499,11 +481,9 @@ H   4.018000       23.38100       4.943000
 H   6.274000       22.37100       4.504000
 H   7.673767       23.27955       2.693205
 units angstrom
-}
-""", 0)
+""")
 
-HSG_9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '9')] = qcdb.Molecule("""
 0 1
 N   9.334000       19.62700       6.121000
 H   10.08000       19.74000       6.781000
@@ -533,11 +513,9 @@ H   9.533425       25.51600       9.068883
 H   9.572130       27.21869       8.594352
 H   11.09040       26.32976       8.929603
 units angstrom
-}
-""", 0)
+""")
 
-HSG_10 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '10')] = qcdb.Molecule("""
 0 1
 C   18.71400       22.19500       2.742000
 H   18.37900       21.58700       3.577000
@@ -566,11 +544,9 @@ H   15.61789       22.72907       8.078654
 H   17.63853       19.12101       5.827124
 H   16.55212       19.14519       4.519021
 units angstrom
-}
-""", 0)
+""")
 
-HSG_11 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '11')] = qcdb.Molecule("""
 0 1
 C   14.75600       16.28200       8.071000
 O   15.85100       16.84300       8.024000
@@ -600,11 +576,9 @@ H   15.61789       22.72907       8.078654
 H   17.63853       19.12101       5.827124
 H   16.55212       19.14519       4.519021
 units angstrom
-}
-""", 0)
+""")
 
-HSG_12 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '12')] = qcdb.Molecule("""
 0 1
 C   5.250000       26.25800       10.94600
 H   5.928000       26.22800       10.10000
@@ -638,11 +612,9 @@ H   11.97000       27.14900       8.585000
 H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
-}
-""", 0)
+""")
 
-HSG_13 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '13')] = qcdb.Molecule("""
 0 1
 C   16.05600       13.91300       3.701000
 H   16.15900       14.95600       4.033000
@@ -673,11 +645,9 @@ H   18.19800       16.55200       2.242000
 H   18.01270       17.77884       4.709692
 H   16.61088       19.36781       5.137980
 units angstrom
-}
-""", 0)
+""")
 
-HSG_14 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '14')] = qcdb.Molecule("""
 0 1
 C   10.37400       21.44300       10.31100
 H   9.934000       21.48700       9.305000
@@ -714,11 +684,9 @@ H   11.97000       27.14900       8.585000
 H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
-}
-""", 0)
+""")
 
-HSG_15 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '15')] = qcdb.Molecule("""
 0 1
 C   12.74600       22.16800      -1.090000
 H   12.81800       23.17800      -0.699000
@@ -743,11 +711,9 @@ H   9.400716       23.94588       4.098293
 H   10.95781       24.70625       4.782907
 H   12.80321       24.79031       4.522592
 units angstrom
-}
-""", 0)
+""")
 
-HSG_16 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '16')] = qcdb.Molecule("""
 0 1
 C   20.37500       27.13100       10.18700
 H   20.77800       26.39300       10.88300
@@ -781,11 +747,9 @@ H   15.79700       23.65100       8.994000
 H   14.68200       22.28100       8.905000
 H   15.59011       22.79893       7.431346
 units angstrom
-}
-""", 0)
+""")
 
-HSG_17 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '17')] = qcdb.Molecule("""
 0 1
 C   5.679000       20.88000       0.749000
 H   6.221000       21.83800       0.688000
@@ -812,11 +776,9 @@ H   3.211000       25.24700       3.575000
 H   6.798000       25.19700       1.318000
 H   8.936083       23.65540       2.904981
 units angstrom
-}
-""", 0)
+""")
 
-HSG_18 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '18')] = qcdb.Molecule("""
 0 1
 C   11.54100       27.68600       13.69600
 H   12.45900       27.15000       13.44600
@@ -847,11 +809,9 @@ H   11.97000       27.14900       8.585000
 H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
-}
-""", 0)
+""")
 
-HSG_19 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '19')] = qcdb.Molecule("""
 0 1
 C   18.95600       23.00600       13.42400
 H   19.58200       22.11000       13.49500
@@ -879,11 +839,9 @@ H   20.08100       21.14800       8.627000
 H   18.32800       22.76900       7.913000
 H   15.93631       22.42849       8.649437
 units angstrom
-}
-""", 0)
+""")
 
-HSG_20 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '20')] = qcdb.Molecule("""
 0 1
 C   13.79100       17.02500      -2.243000
 H   12.90600       17.67000      -2.286000
@@ -911,11 +869,9 @@ H   18.19800       16.55200       2.242000
 H   18.01270       17.77884       4.709692
 H   16.61088       19.36781       5.137980
 units angstrom
-}
-""", 0)
+""")
 
-HSG_21 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '21')] = qcdb.Molecule("""
 -1 1
 O   8.976000       28.18400       5.336000
 H   9.797000       28.02600       4.860000
@@ -942,15 +898,123 @@ H   11.09040       26.32976       8.929603
 H   11.53119       24.41376       4.514093
 H   9.792144       24.23767       4.611163
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-GEOS = {}
+# <<< Derived Geometry Strings >>>
 for rxn in HRXN:
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1)
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2)
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
 
-    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
-    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
-    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
-    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP
+#########################################################################
+
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['HSG-1-dimer'                    ] =     409.61526850
+DATA['NUCLEAR REPULSION ENERGY']['HSG-1-monoA-unCP'               ] =      13.33595232
+DATA['NUCLEAR REPULSION ENERGY']['HSG-1-monoB-unCP'               ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-2-dimer'                    ] =     693.84322132
+DATA['NUCLEAR REPULSION ENERGY']['HSG-2-monoA-unCP'               ] =      41.89071165
+DATA['NUCLEAR REPULSION ENERGY']['HSG-2-monoB-unCP'               ] =     501.75349414
+DATA['NUCLEAR REPULSION ENERGY']['HSG-3-dimer'                    ] =     578.08454963
+DATA['NUCLEAR REPULSION ENERGY']['HSG-3-monoA-unCP'               ] =     194.80446994
+DATA['NUCLEAR REPULSION ENERGY']['HSG-3-monoB-unCP'               ] =     202.93507303
+DATA['NUCLEAR REPULSION ENERGY']['HSG-4-dimer'                    ] =     536.02111700
+DATA['NUCLEAR REPULSION ENERGY']['HSG-4-monoA-unCP'               ] =     336.06029689
+DATA['NUCLEAR REPULSION ENERGY']['HSG-4-monoB-unCP'               ] =      40.09418196
+DATA['NUCLEAR REPULSION ENERGY']['HSG-5-dimer'                    ] =     641.07583890
+DATA['NUCLEAR REPULSION ENERGY']['HSG-5-monoA-unCP'               ] =     440.48402439
+DATA['NUCLEAR REPULSION ENERGY']['HSG-5-monoB-unCP'               ] =      39.79355972
+DATA['NUCLEAR REPULSION ENERGY']['HSG-6-dimer'                    ] =     440.32913479
+DATA['NUCLEAR REPULSION ENERGY']['HSG-6-monoA-unCP'               ] =     112.25425669
+DATA['NUCLEAR REPULSION ENERGY']['HSG-6-monoB-unCP'               ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-7-dimer'                    ] =     825.37483209
+DATA['NUCLEAR REPULSION ENERGY']['HSG-7-monoA-unCP'               ] =     302.68630925
+DATA['NUCLEAR REPULSION ENERGY']['HSG-7-monoB-unCP'               ] =     256.12378323
+DATA['NUCLEAR REPULSION ENERGY']['HSG-8-dimer'                    ] =     721.36437027
+DATA['NUCLEAR REPULSION ENERGY']['HSG-8-monoA-unCP'               ] =     298.54657988
+DATA['NUCLEAR REPULSION ENERGY']['HSG-8-monoB-unCP'               ] =     204.68604075
+DATA['NUCLEAR REPULSION ENERGY']['HSG-9-dimer'                    ] =     699.77856295
+DATA['NUCLEAR REPULSION ENERGY']['HSG-9-monoA-unCP'               ] =     298.58992071
+DATA['NUCLEAR REPULSION ENERGY']['HSG-9-monoB-unCP'               ] =     179.49546339
+DATA['NUCLEAR REPULSION ENERGY']['HSG-10-dimer'                   ] =     538.20524151
+DATA['NUCLEAR REPULSION ENERGY']['HSG-10-monoA-unCP'              ] =     179.66798724
+DATA['NUCLEAR REPULSION ENERGY']['HSG-10-monoB-unCP'              ] =     180.34079666
+DATA['NUCLEAR REPULSION ENERGY']['HSG-11-dimer'                   ] =     697.51311416
+DATA['NUCLEAR REPULSION ENERGY']['HSG-11-monoA-unCP'              ] =     296.89990217
+DATA['NUCLEAR REPULSION ENERGY']['HSG-11-monoB-unCP'              ] =     180.34079666
+DATA['NUCLEAR REPULSION ENERGY']['HSG-12-dimer'                   ] =     553.87245309
+DATA['NUCLEAR REPULSION ENERGY']['HSG-12-monoA-unCP'              ] =      82.71734142
+DATA['NUCLEAR REPULSION ENERGY']['HSG-12-monoB-unCP'              ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-13-dimer'                   ] =     492.23285254
+DATA['NUCLEAR REPULSION ENERGY']['HSG-13-monoA-unCP'              ] =     134.28280330
+DATA['NUCLEAR REPULSION ENERGY']['HSG-13-monoB-unCP'              ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-14-dimer'                   ] =     670.02074299
+DATA['NUCLEAR REPULSION ENERGY']['HSG-14-monoA-unCP'              ] =     134.10189365
+DATA['NUCLEAR REPULSION ENERGY']['HSG-14-monoB-unCP'              ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-15-dimer'                   ] =     242.88545739
+DATA['NUCLEAR REPULSION ENERGY']['HSG-15-monoA-unCP'              ] =      42.22202660
+DATA['NUCLEAR REPULSION ENERGY']['HSG-15-monoB-unCP'              ] =     131.69625678
+DATA['NUCLEAR REPULSION ENERGY']['HSG-16-dimer'                   ] =     551.59382982
+DATA['NUCLEAR REPULSION ENERGY']['HSG-16-monoA-unCP'              ] =     135.70381177
+DATA['NUCLEAR REPULSION ENERGY']['HSG-16-monoB-unCP'              ] =     269.04078448
+DATA['NUCLEAR REPULSION ENERGY']['HSG-17-dimer'                   ] =     421.73710621
+DATA['NUCLEAR REPULSION ENERGY']['HSG-17-monoA-unCP'              ] =      42.20972067
+DATA['NUCLEAR REPULSION ENERGY']['HSG-17-monoB-unCP'              ] =     270.70970086
+DATA['NUCLEAR REPULSION ENERGY']['HSG-18-dimer'                   ] =     474.74808030
+DATA['NUCLEAR REPULSION ENERGY']['HSG-18-monoA-unCP'              ] =      42.43370398
+DATA['NUCLEAR REPULSION ENERGY']['HSG-18-monoB-unCP'              ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-19-dimer'                   ] =     410.08888873
+DATA['NUCLEAR REPULSION ENERGY']['HSG-19-monoA-unCP'              ] =      83.35857717
+DATA['NUCLEAR REPULSION ENERGY']['HSG-19-monoB-unCP'              ] =     202.93507303
+DATA['NUCLEAR REPULSION ENERGY']['HSG-20-dimer'                   ] =     392.20505391
+DATA['NUCLEAR REPULSION ENERGY']['HSG-20-monoA-unCP'              ] =      82.90559609
+DATA['NUCLEAR REPULSION ENERGY']['HSG-20-monoB-unCP'              ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-21-dimer'                   ] =     495.71409832
+DATA['NUCLEAR REPULSION ENERGY']['HSG-21-monoA-unCP'              ] =     169.11593456
+DATA['NUCLEAR REPULSION ENERGY']['HSG-21-monoB-unCP'              ] =     179.49546339
+DATA['NUCLEAR REPULSION ENERGY']['HSG-1-monoA-CP'                 ] =      13.33595232
+DATA['NUCLEAR REPULSION ENERGY']['HSG-1-monoB-CP'                 ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-2-monoA-CP'                 ] =      41.89071165
+DATA['NUCLEAR REPULSION ENERGY']['HSG-2-monoB-CP'                 ] =     501.75349414
+DATA['NUCLEAR REPULSION ENERGY']['HSG-3-monoA-CP'                 ] =     194.80446994
+DATA['NUCLEAR REPULSION ENERGY']['HSG-3-monoB-CP'                 ] =     202.93507303
+DATA['NUCLEAR REPULSION ENERGY']['HSG-4-monoA-CP'                 ] =     336.06029689
+DATA['NUCLEAR REPULSION ENERGY']['HSG-4-monoB-CP'                 ] =      40.09418196
+DATA['NUCLEAR REPULSION ENERGY']['HSG-5-monoA-CP'                 ] =     440.48402439
+DATA['NUCLEAR REPULSION ENERGY']['HSG-5-monoB-CP'                 ] =      39.79355972
+DATA['NUCLEAR REPULSION ENERGY']['HSG-6-monoA-CP'                 ] =     112.25425669
+DATA['NUCLEAR REPULSION ENERGY']['HSG-6-monoB-CP'                 ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-7-monoA-CP'                 ] =     302.68630925
+DATA['NUCLEAR REPULSION ENERGY']['HSG-7-monoB-CP'                 ] =     256.12378323
+DATA['NUCLEAR REPULSION ENERGY']['HSG-8-monoA-CP'                 ] =     298.54657988
+DATA['NUCLEAR REPULSION ENERGY']['HSG-8-monoB-CP'                 ] =     204.68604075
+DATA['NUCLEAR REPULSION ENERGY']['HSG-9-monoA-CP'                 ] =     298.58992071
+DATA['NUCLEAR REPULSION ENERGY']['HSG-9-monoB-CP'                 ] =     179.49546339
+DATA['NUCLEAR REPULSION ENERGY']['HSG-10-monoA-CP'                ] =     179.66798724
+DATA['NUCLEAR REPULSION ENERGY']['HSG-10-monoB-CP'                ] =     180.34079666
+DATA['NUCLEAR REPULSION ENERGY']['HSG-11-monoA-CP'                ] =     296.89990217
+DATA['NUCLEAR REPULSION ENERGY']['HSG-11-monoB-CP'                ] =     180.34079666
+DATA['NUCLEAR REPULSION ENERGY']['HSG-12-monoA-CP'                ] =      82.71734142
+DATA['NUCLEAR REPULSION ENERGY']['HSG-12-monoB-CP'                ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-13-monoA-CP'                ] =     134.28280330
+DATA['NUCLEAR REPULSION ENERGY']['HSG-13-monoB-CP'                ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-14-monoA-CP'                ] =     134.10189365
+DATA['NUCLEAR REPULSION ENERGY']['HSG-14-monoB-CP'                ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-15-monoA-CP'                ] =      42.22202660
+DATA['NUCLEAR REPULSION ENERGY']['HSG-15-monoB-CP'                ] =     131.69625678
+DATA['NUCLEAR REPULSION ENERGY']['HSG-16-monoA-CP'                ] =     135.70381177
+DATA['NUCLEAR REPULSION ENERGY']['HSG-16-monoB-CP'                ] =     269.04078448
+DATA['NUCLEAR REPULSION ENERGY']['HSG-17-monoA-CP'                ] =      42.20972067
+DATA['NUCLEAR REPULSION ENERGY']['HSG-17-monoB-CP'                ] =     270.70970086
+DATA['NUCLEAR REPULSION ENERGY']['HSG-18-monoA-CP'                ] =      42.43370398
+DATA['NUCLEAR REPULSION ENERGY']['HSG-18-monoB-CP'                ] =     332.12261009
+DATA['NUCLEAR REPULSION ENERGY']['HSG-19-monoA-CP'                ] =      83.35857717
+DATA['NUCLEAR REPULSION ENERGY']['HSG-19-monoB-CP'                ] =     202.93507303
+DATA['NUCLEAR REPULSION ENERGY']['HSG-20-monoA-CP'                ] =      82.90559609
+DATA['NUCLEAR REPULSION ENERGY']['HSG-20-monoB-CP'                ] =     202.38032057
+DATA['NUCLEAR REPULSION ENERGY']['HSG-21-monoA-CP'                ] =     169.11593456
+DATA['NUCLEAR REPULSION ENERGY']['HSG-21-monoB-CP'                ] =     179.49546339

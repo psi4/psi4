@@ -226,25 +226,28 @@ dcft2:        DCFT-06 calculation for the He dimer. This performs a two-step upd
 dcft3:        DCFT-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
 
-dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided. 
+dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the exact expression for non-idempotent contribution to OPDM (TAU = EXACT) using the same algorithms.
 
 
 dcft5:        DCFT-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
 
 
-dfmp2_1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
+dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
 
-dfmp2_2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
+dfmp2-2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 
-dfmp2_3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
+dfmp2-3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
 
 
 dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 
 
 dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
+
+
+dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
 
 
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
@@ -257,6 +260,9 @@ dft1-alt:     DFT Functional Test
 
 
 dft2:         DFT Functional Test
+
+
+dft3:         DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation, using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
 
 
 fci-dipole:   6-31G H2O Test FCI Energy Point
@@ -334,7 +340,7 @@ mints5:       Tests to determine full point group symmetry.  Currently, these on
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
 
 
-mp2_1:        All-electron MP2 6-31G** geometry optimization of water
+mp2-1:        All-electron MP2 6-31G** geometry optimization of water
 
 
 mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
@@ -379,6 +385,9 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
+props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
+
+
 psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
@@ -394,6 +403,9 @@ psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described us
 psimrcc-fd-freq1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
+psimrcc-fd-freq2:  Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
+
+
 psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
 
 
@@ -403,22 +415,22 @@ psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using th
 pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
 
 
+pywrap-alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
+
+
+pywrap-all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
+
+
+pywrap-cbs1:  Various basis set extrapolation tests
+
+
+pywrap-db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
+
+
+pywrap-db2:   Database calculation, run in sow/reap mode.
+
+
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
-
-
-pywrap_alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
-
-
-pywrap_all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
-
-
-pywrap_cbs1:  Various basis set extrapolation tests
-
-
-pywrap_db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
-
-
-pywrap_db2:   Database calculation, run in sow/reap mode.
 
 
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC

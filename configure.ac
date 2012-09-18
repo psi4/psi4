@@ -521,61 +521,10 @@ AC_DEFINE_UNQUOTED(HAVE_CSTDDEF,$HAVE_CSTDDEF)
 AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFCN_H=0])
 AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 
-# Check for mpi.h
-AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[
-  # Check if we can link against mpi
-  AC_MSG_CHECKING([if we can link to MPI])
-  AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ],
-    [
-      HAVE_MPI=1
-      AC_MSG_RESULT([yes])
-      AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
-      AC_SUBST(HAVE_MPI)
-    ],[
-    AC_MSG_RESULT([no])]
-  )
-],[AC_MSG_RESULT([no])])
-
-
-# Set up the location of the madness libraries.  The default
-# is to use the psi4 internal madness.  The user can also specify
-# not to use madness, or the user can specify a different madness
-# library to link with.
-HAVE_MADNESS=0
-BUILD_MADNESS=0
-if test "$HAVE_MPI" = "1"; then
-  AC_ARG_WITH([madness],
-  [  --with-madness          Specifies the location of the MADNESS libraries. You must be able to link to an MPI library. (default is internal).], [
-  case $withval in
-    yes)
-      BUILD_MADNESS=1
-      HAVE_MADNESS=1
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs='$(top_objdir)/madness/src/lib'
-      madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
-      ;;
-    no)
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,0)
-      ;;
-    *)
-      HAVE_MADNESS=1
-      AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs="$withval/lib"
-      madinc="-I$withval/include"
-      ;;
-  esac
-  ],[
-  BUILD_MADNESS=1
-  HAVE_MADNESS=1
-  AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-  madlibs='$(top_objdir)/madness/src/lib'
-  madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
-  ])
-fi
-AC_SUBST(BUILD_MADNESS)
-
-/bin/rm -f a.out
-
+ACX_MPI()
+ACX_MADNESS()
+ACX_ELEMENTAL()
+ACX_SCALAPACK()
 
 ########
 ## Check for types
@@ -702,15 +651,23 @@ if test "x${have_boost}" == "x0"; then
     AC_SUBST(BOOST_THREAD_LIB)
 fi
 
+PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
-  AC_SUBST(PSICPPFLAGS)
+  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
+#  PSICPPFLAGS='-I. ${BOOST_CPPFLAGS} -I${top_objdir}/include -I${top_srcdir}/include -I${top_srcdir}/src/lib -I${top_objdir}/src/lib ${madinc}'
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
-else
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-  AC_SUBST(PSICPPFLAGS)
 fi
+if test "$HAVE_ELEMENTAL" = "1"; then
+  echo "we have elemental			:)"
+  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
+  echo "CPPFLAGS = "
+  echo ${PSICPPFLAGS}
+fi
+#else
+#  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+#fi
+AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
@@ -888,6 +845,13 @@ case $withval in
 esac
 ])
 
+# If compiling on Mac, disable position independent executable.
+case $target_os in
+    darwin*)
+        LDFLAGS="$LDFLAGS -Wl,-no_pie"
+        ;;
+esac
+
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
 AC_ARG_WITH(insanely-strict,[  --with-insanely-strict  --with-insanely-strict=yes to turn on strict compiler warnings (cover your eyes, it ain't pretty, for now)],[
@@ -1050,16 +1014,17 @@ AC_CONFIG_FILES([
           tests/sapt4/Makefile
           tests/sapt5/Makefile
           tests/ghosts/Makefile
-          tests/dfmp2_1/Makefile
-          tests/dfmp2_2/Makefile
-          tests/dfmp2_3/Makefile
-          tests/pywrap_db1/Makefile
-          tests/pywrap_db2/Makefile
-          tests/pywrap_cbs1/Makefile
-          tests/pywrap_all/Makefile
-          tests/pywrap_alias/Makefile
+          tests/dfmp2-1/Makefile
+          tests/dfmp2-2/Makefile
+          tests/dfmp2-3/Makefile
+          tests/pywrap-db1/Makefile
+          tests/pywrap-db2/Makefile
+          tests/pywrap-cbs1/Makefile
+          tests/pywrap-all/Makefile
+          tests/pywrap-alias/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-basis/Makefile
+          tests/pywrap-db3/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
@@ -1148,27 +1113,32 @@ AC_CONFIG_FILES([
           tests/psimrcc-ccsd_t-4/Makefile
           tests/psimrcc-pt2/Makefile
           tests/psimrcc-fd-freq1/Makefile
+          tests/psimrcc-fd-freq2/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
           tests/mints5/Makefile
-          tests/omp2_1/Makefile
-          tests/omp3_1/Makefile
-          tests/mp2_1/Makefile
+          tests/omp2-1/Makefile
+          tests/omp3-1/Makefile
+          tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile
           tests/props2/Makefile
+          tests/props3/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
+          tests/dft3/Makefile
           tests/dft-b2plyp/Makefile
+          tests/dft-pbe0-2/Makefile
+          tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
-          tests/docs_psimod/Makefile
-          tests/docs_dft/Makefile
-          tests/docs_bases/Makefile
+          tests/docs-psimod/Makefile
+          tests/docs-dft/Makefile
+          tests/docs-bases/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/aointegrals/input.dat
@@ -1204,7 +1174,7 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 # If we are using madness, and we are linking the internal madness
 # library then set up the internal madness to be built
 if test "$HAVE_MADNESS" = "1"; then
-  if test "$BUILD_MADNESS" = "1"; then
+  if test "$CONFIG_MADNESS" = "1"; then
     AC_CONFIG_SUBDIRS([madness])
   fi
 fi

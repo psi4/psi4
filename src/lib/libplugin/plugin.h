@@ -1,6 +1,7 @@
 #ifndef __psi4_src_lib_libplugin_plugin_h
 #define __psi4_src_lib_libplugin_plugin_h
 
+#include <libparallel/parallel.h>
 #include <psi4-dec.h>
 #include <libyeti/env.h>
 #include <string>
@@ -21,12 +22,12 @@ namespace psi {
     // Useful typedef's
     typedef PsiReturnType (*plugin_t)(Options &);
     typedef int (*read_options_t)(std::string, Options&);
-    typedef void (*init_plugin_t)(const boost::shared_ptr<Communicator>& comm, const Process::Environment& env,
+    typedef void (*init_plugin_t)(const boost::shared_ptr<worldcomm>& comm, const Process::Environment& env,
                                   const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio,
                                   const yeti::Env &yetiEnv);
 
     // The following lines are used in plugins
-    extern "C" void init_plugin(const boost::shared_ptr<psi::Communicator>& comm, const psi::Process::Environment& env,
+    extern "C" void init_plugin(const boost::shared_ptr<worldcomm>& comm, const psi::Process::Environment& env,
                                 const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio,
                                 const yeti::Env &yetiEnv);
     #define INIT_PLUGIN psi::init_plugin_t init_plugin_p = &psi::init_plugin;

@@ -421,6 +421,10 @@ public:
     virtual OneBodyAOInt* ao_quadrupole();
     virtual OneBodySOInt* so_quadrupole();
 
+    /// Returns an OneBodyInt that computes arbitrary-order multipole integrals.
+    virtual OneBodyAOInt* ao_multipoles(int order);
+    virtual OneBodySOInt* so_multipoles(int order);
+
     /// Returns an OneBodyInt that computes the traceless quadrupole integral.
     virtual OneBodyAOInt* ao_traceless_quadrupole();
     virtual OneBodySOInt* so_traceless_quadrupole();
@@ -473,7 +477,7 @@ public:
     const SphericalTransform* spherical_transform(int am) const { return &(spherical_transforms_[am]); }
 
     // Return spherical transform object for am
-    std::vector<SphericalTransform> spherical_transform() { return spherical_transforms_; }
+    std::vector<SphericalTransform>& spherical_transform() { return spherical_transforms_; }
 
     /// Return a spherical transform iterator object for am
     SphericalTransformIter* spherical_transform_iter(int am, int inv=0, int subl=-1) const;

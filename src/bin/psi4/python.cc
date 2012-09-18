@@ -672,8 +672,13 @@ bool py_psi_set_local_option_array(std::string const & module, std::string const
 {
     string nonconst_key = boost::to_upper_copy(key);
     // Assign a new head entry on the first time around only
-    if(entry == NULL)
-        Process::environment.options.set_array(module, nonconst_key);
+    if(entry == NULL){
+        // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
+        Data& data = Process::environment.options[nonconst_key];
+        // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
+        if (data.type() == "array")
+            Process::environment.options.set_array(module,nonconst_key);
+    }
     size_t size = len(values);
     for(int n = 0; n < size; ++n){
         extract<python::list> lval(values[n]);
@@ -703,8 +708,13 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
 {
     string nonconst_key = boost::to_upper_copy(key);
     // Assign a new head entry on the first time around only
-    if(entry == NULL)
-        Process::environment.options.set_global_array(nonconst_key);
+    if(entry == NULL){
+        // We just do a cheesy "get" to make sure keyword is valid.  This get will throw if not.
+        Data& data = Process::environment.options[nonconst_key];
+        // This "if" statement is really just here to make sure the compiler doesn't optimize out the get, above.
+        if (data.type() == "array")
+            Process::environment.options.set_global_array(nonconst_key);
+    }
     size_t size = len(values);
     for(int n = 0; n < size; ++n){
         extract<python::list> lval(values[n]);
@@ -913,12 +923,12 @@ int py_psi_get_n_threads()
 
 int py_psi_get_nproc()
 {
-    return Communicator::world->nproc();
+    return WorldComm->nproc();
 }
 
 int py_psi_get_me()
 {
-    return Communicator::world->me();
+    return WorldComm->me();
 }
 
 boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()

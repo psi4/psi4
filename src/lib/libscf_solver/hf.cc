@@ -9,8 +9,12 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
+#include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <string>
+#include <sstream>
 #include <vector>
 #include <utility>
 
@@ -202,7 +206,7 @@ void HF::common_init()
         if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
-            if (Communicator::world->me() == 0) {
+            if (WorldComm->me() == 0) {
             // There are an odd number of electrons
                 fprintf(outfile,"\tThere are an odd number of electrons - assuming doublet.\n"
                             "\tSpecify the multiplicity with the MULTP option in the\n"
@@ -211,7 +215,7 @@ void HF::common_init()
         }else{
             multiplicity_ = 1;
             // There are an even number of electrons
-            if (Communicator::world->me() == 0) {
+            if (WorldComm->me() == 0) {
                 fprintf(outfile,"\tThere are an even number of electrons - assuming singlet.\n"
                             "\tSpecify the multiplicity with the MULTP option in the\n"
                             "\tinput if this is incorrect\n\n");
@@ -261,17 +265,21 @@ void HF::common_init()
                 perturb_ = embpot;
                 lambda_ = 1.0;
             }
+            else if (perturb_with == "DX") {
+                perturb_ = dx;
+                lambda_ = 1.0;
+            }
             else if (perturb_with == "SPHERE") {
                 perturb_ = sphere;
                 lambda_ = 1.0;
             }
             else {
-                if (Communicator::world->me() == 0) {
+                if (WorldComm->me() == 0) {
                     fprintf(outfile, "Unknown PERTURB_WITH. Applying no perturbation.\n");
                 }
             }
         } else {
-            if (Communicator::world->me() == 0) {
+            if (WorldComm->me() == 0) {
                 fprintf(outfile, "PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
             }
         }
@@ -330,41 +338,29 @@ void HF::damp_update()
 
 void HF::integrals()
 {
-    if (print_ && Communicator::world->me() == 0)
+    if (print_ && WorldComm->me() == 0)
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
+    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-        mints->integrals();
-        try {
-            if(scf_type_ == "PK")
-                pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
-                                                                               nsopi_, so2index_, so2symblk_));
-        }
-        catch (PsiException & err) {
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ = "OUT_OF_CORE";
-            pk_integrals_.reset();
-        }
+        // Don't do anything; the JK object will handle everything!
     }else if (scf_type_ == "DF"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
-        if (print_ && Communicator::world->me() == 0)
+        if (print_ && WorldComm->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
 //        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
-        for (int i=0; i<Communicator::world->nthread(); ++i)
+        for (int i=0; i<WorldComm->nthread(); ++i)
              aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
     }
 
     // TODO: Relax the if statement. 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
         // Tell the JK to print
@@ -399,7 +395,6 @@ void HF::finalize()
     delete[] so2symblk_;
     delete[] so2index_;
 
-    pk_integrals_.reset();
     eri_.reset();
 
     // This will be the only one
@@ -486,7 +481,7 @@ void HF::find_occupation()
 
         // If print > 2 (diagnostics), print always
         if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
-            if (Communicator::world->me() == 0)
+            if (WorldComm->me() == 0)
                 fprintf(outfile, "\tOccupation by irrep:\n");
             print_occupation();
         }
@@ -505,7 +500,7 @@ void HF::print_header()
         nthread = omp_get_max_threads();
     #endif
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(outfile, "\n");
         fprintf(outfile, "         ---------------------------------------------------------\n");
         fprintf(outfile, "                                   SCF\n");
@@ -519,7 +514,7 @@ void HF::print_header()
 
     molecule_->print();
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
@@ -552,7 +547,7 @@ void HF::print_preiterations()
 {
     CharacterTable ct = molecule_->point_group()->char_table();
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(outfile, "   -------------------------------------------------------\n");
         fprintf(outfile, "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
         fprintf(outfile, "   -------------------------------------------------------\n");
@@ -581,9 +576,9 @@ void HF::form_H()
         V_->print(outfile);
 
     if (perturb_h_) {
-      if(perturb_ == embpot || perturb_ == sphere) { // embedding potential read from file
+      if(perturb_ == embpot || perturb_ == sphere || perturb_ == dx) { // embedding potential read from file
         if(nirrep_ > 1)
-          throw PSIEXCEPTION("RHF_embed: embedding and spherical potentials require 'symmetry c1'.");
+          throw PSIEXCEPTION("RHF_embed: embedding, dx, and spherical potentials require 'symmetry c1'.");
         int nso = 0;
         for(int h=0; h < nirrep_; h++) nso += nsopi_[h];
         int nao = basisset_->nao();
@@ -632,6 +627,97 @@ void HF::form_H()
           fclose(input);
 
         } // embpot
+        else if(perturb_ == dx) {
+          int delta_count = 0;
+          bool data_ready = false;
+          int data_read = 0;
+          double xstep, ystep, zstep;
+          int xsteps, ysteps, zsteps;
+          double xmin, ymin, zmin;
+          int xinc = 0;
+          int yinc = 0;
+          int zinc = 0;
+          int num_steps = 0;
+          int total;
+
+          ifstream input;
+          input.open("potential.dx");
+          if (!input.good()) throw PSIEXCEPTION("Error opening potential.dx.");
+          while (!input.eof())
+          {
+            char buf[512];
+            input.getline(buf, 512);
+            stringstream cppbuf(buf);
+            string token;
+            vector <string> tokens;
+            while(cppbuf >> token) tokens.push_back(token);
+            if(tokens.size()) { // skip blank lines
+
+              if(data_ready && data_read <= total) { // data line
+                for(int i=0; i < tokens.size(); i++) {
+                  double x = xmin + xinc * xstep;
+                  double y = ymin + yinc * ystep;
+                  double z = zmin + zinc * zstep;
+                  double pot_val = atof(tokens[i].c_str());
+
+                  basisset_->compute_phi(phi_ao, x, y, z);
+                  // Transform phi_ao to SO basis
+                  C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
+                  for(int i=0; i < nso; i++)
+                    for(int j=0; j < nso; j++)
+                      V_eff[i][j] += pot_val * xstep * ystep * zstep * phi_so[i] * phi_so[j];
+
+//                  fprintf(outfile, "x = %f; y = %f; z = %f; v = %f\n", x, y, z, pot_val);
+                  num_steps++;
+                  zinc++;
+                  if(zinc == zsteps) { yinc++; zinc = 0; }
+                  if(yinc == ysteps) { xinc++; yinc = 0; }
+                  if(xinc == xsteps) {
+                    fprintf(outfile, "Total points read: %d\n", num_steps);
+                    data_ready = false;
+                  }
+                }
+              }
+
+              if(tokens[0] == "#") // comment lines
+                fprintf(outfile, "%s\n", buf);
+              if(tokens[0] == "origin") {
+                xmin = atof(tokens[1].c_str());
+                ymin = atof(tokens[2].c_str());
+                zmin = atof(tokens[3].c_str());
+                fprintf(outfile, "%f %f %f\n", xmin, ymin, zmin);
+              }
+
+             if(tokens[0] == "delta") {
+               if(delta_count == 0) 
+                 xstep = atof(tokens[1].c_str());
+               else if(delta_count == 1) 
+                 ystep = atof(tokens[2].c_str());
+               else if(delta_count == 2) {
+                 zstep = atof(tokens[3].c_str());
+                 fprintf(outfile, "Step sizes: %f %f %f\n", xstep, ystep, zstep);
+               }
+               delta_count++;
+             }
+
+             if(tokens[0] == "object") {
+               if(tokens[1] == "1") {
+                 xsteps = atoi(tokens[5].c_str());
+                 ysteps = atoi(tokens[6].c_str());
+                 zsteps = atoi(tokens[7].c_str());
+                 fprintf(outfile, "%d %d %d\n", xsteps, ysteps, zsteps);
+               }              
+               else if(tokens[1] == "3") {
+                 total = atoi(tokens[9].c_str());
+                 fprintf(outfile, "%d\n", total);
+                 data_ready = true;
+               }
+             }
+
+            }
+          }
+          input.close();
+        } // dx file
         else if(perturb_ == sphere) {
           radius_ = options_.get_double("RADIUS");
           thickness_ = options_.get_double("THICKNESS");
@@ -671,14 +757,21 @@ void HF::form_H()
           }
         } // sphere
 
-        if(Communicator::world->me() == 0) {
+        if(WorldComm->me() == 0) {
           fprintf(outfile, "  Perturbing H by %f V_eff.\n", lambda_);
           if(options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, outfile);
         }
 
-        for(int i=0; i < nso; i++)
-          for(int j=0; j < nso; j++)
-            V_->set(i, j, (V_eff[i][j] + V_->get(i,j)));
+        if(perturb_ == dx) {
+          for(int i=0; i < nso; i++)
+            for(int j=0; j < nso; j++)
+              V_->set(i, j, V_eff[i][j]); // ignore nuclear potential
+        }
+        else {
+          for(int i=0; i < nso; i++)
+            for(int j=0; j < nso; j++)
+              V_->set(i, j, (V_eff[i][j] + V_->get(i,j)));
+        }
 
         free(phi_ao);
         free(phi_so);
@@ -690,34 +783,34 @@ void HF::form_H()
         OneBodySOInt *so_dipole = integral_->so_dipole();
         so_dipole->compute(dipoles);
 
-        if (perturb_ == dipole_x && (Communicator::world->me() == 0)) {
+        if (perturb_ == dipole_x && (WorldComm->me() == 0)) {
             if (msymm.component_symmetry(0) != 0){
                 fprintf(outfile, "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
             }
             else {
-                if (Communicator::world->me() == 0)
+                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(x).\n", lambda_);
                 dipoles[0]->scale(lambda_);
                 V_->add(dipoles[0]);
             }
         } else if (perturb_ == dipole_y) {
             if (msymm.component_symmetry(1) != 0){
-                if (Communicator::world->me() == 0)
+                if (WorldComm->me() == 0)
                     fprintf(outfile, "  WARNING: You requested mu(y) perturbation, but mu(y) is not symmetric.\n");
             }
             else {
-                if (Communicator::world->me() == 0)
+                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(y).\n", lambda_);
                 dipoles[1]->scale(lambda_);
                 V_->add(dipoles[1]);
             }
         } else if (perturb_ == dipole_z) {
             if (msymm.component_symmetry(2) != 0){
-                if (Communicator::world->me() == 0)
+                if (WorldComm->me() == 0)
                     fprintf(outfile, "  WARNING: You requested mu(z) perturbation, but mu(z) is not symmetric.\n");
             }
             else {
-                if (Communicator::world->me() == 0)
+                if (WorldComm->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(z).\n", lambda_);
                 dipoles[2]->scale(lambda_);
                 V_->add(dipoles[2]);
@@ -793,7 +886,7 @@ void HF::form_Shalf()
             eigval->set(h, i, scale);
         }
     }
-    if (print_ && (Communicator::world->me() == 0))
+    if (print_ && (WorldComm->me() == 0))
         fprintf(outfile,"  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set_diagonal(eigval);
@@ -807,12 +900,12 @@ void HF::form_Shalf()
     double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
 
     } else {
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
 
         //Diagonalize S (or just get a fresh copy)
@@ -832,7 +925,7 @@ void HF::form_Shalf()
                     nmo_--;
                 }
             }
-            if (print_>2 && (Communicator::world->me() == 0))
+            if (print_>2 && (WorldComm->me() == 0))
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
             delta_mos += start_index;
@@ -855,7 +948,7 @@ void HF::form_Shalf()
             }
         }
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
         // Refreshes twice in RHF, no big deal
@@ -937,7 +1030,7 @@ void HF::compute_fvpi()
 
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(outfile, "\t%-70s\n\n\t", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
@@ -953,7 +1046,7 @@ void HF::print_orbitals()
 {
     char **labels = molecule_->irrep_labels();
 
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         fprintf(outfile, "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
 
     std::string reference = options_.get_str("REFERENCE");
@@ -1075,7 +1168,7 @@ void HF::print_orbitals()
         free(labels[h]);
     free(labels);
 
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         fprintf(outfile, "\tFinal Occupation by Irrep:\n");
     print_occupation();
 }
@@ -1097,7 +1190,7 @@ void HF::guess()
 
     if (guess_type == "READ") {
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
         load_orbitals();
@@ -1105,7 +1198,7 @@ void HF::guess()
 
     } else if (guess_type == "SAD") {
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
         //Superposition of Atomic Density (RHF only at present)
@@ -1114,7 +1207,7 @@ void HF::guess()
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
@@ -1138,7 +1231,7 @@ void HF::guess()
 
     } else if (guess_type == "CORE") {
 
-        if (print_ && (Communicator::world->me() == 0))
+        if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
         Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
@@ -1158,7 +1251,7 @@ void HF::guess()
         Fb_->print();
     }
 
-    if (print_ && (Communicator::world->me() == 0))
+    if (print_ && (WorldComm->me() == 0))
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
 }
 
@@ -1166,7 +1259,7 @@ void HF::save_orbitals()
 {
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
-    if (print_ && (Communicator::world->me() == 0))
+    if (print_ && (WorldComm->me() == 0))
         fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_DB_MOS);
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
@@ -1223,12 +1316,12 @@ void HF::load_orbitals()
 
     if (print_) {
         if (basisname != options_.get_str("BASIS")) {
-            if (Communicator::world->me() == 0) {
+            if (WorldComm->me() == 0) {
                 fprintf(outfile,"  Computing basis set projection from %s to %s.\n", \
                     basisname.c_str(),options_.get_str("BASIS").c_str());
             }
         } else {
-            if (Communicator::world->me() == 0)
+            if (WorldComm->me() == 0)
                 fprintf(outfile,"  Using orbitals from previous SCF, no projection.\n");
         }
     }
@@ -1403,7 +1496,7 @@ double HF::compute_energy()
     else
         iteration_ = 0;
 
-    if (print_ && (Communicator::world->me() == 0))
+    if (print_ && (WorldComm->me() == 0))
         fprintf(outfile, "  ==> Pre-Iterations <==\n\n");
 
     if (print_)
@@ -1432,7 +1525,7 @@ double HF::compute_energy()
 
 
 
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
         fprintf(outfile, "                        Total Energy        Delta E     Density RMS\n\n");
     }
@@ -1494,7 +1587,7 @@ double HF::compute_energy()
         }
         timer_off("DIIS");
 
-        if (print_>4 && diis_performed_ && (Communicator::world->me() == 0)) {
+        if (print_>4 && diis_performed_ && (WorldComm->me() == 0)) {
             fprintf(outfile,"  After DIIS:\n");
             Fa_->print(outfile);
             Fb_->print(outfile);
@@ -1521,7 +1614,7 @@ double HF::compute_energy()
             status += "FRAC";
         }
 
-        if (Communicator::world->me() == 0) {
+        if (WorldComm->me() == 0) {
             fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
@@ -1558,7 +1651,7 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
-    if (Communicator::world->me() == 0)
+    if (WorldComm->me() == 0)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
@@ -1574,7 +1667,11 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
+<<<<<<< HEAD
         if (Communicator::world->me() == 0 && converged) {
+=======
+        if (WorldComm->me() == 0) {
+>>>>>>> 4c39a121911f08a62c34c50757b555b182569b8a
             fprintf(outfile, "  Energy converged.\n\n");
         }
         if (Communicator::world->me() == 0 && !converged) {
@@ -1606,14 +1703,14 @@ double HF::compute_energy()
                 oe->add("WIBERG_LOWDIN_INDICES");
             }
 
-            if (Communicator::world->me() == 0)
+            if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
         }
 
         save_information();
     } else {
-        if (Communicator::world->me() == 0) {
+        if (WorldComm->me() == 0) {
             fprintf(outfile, "  Failed to converged.\n");
             fprintf(outfile, "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
         }
@@ -1630,7 +1727,7 @@ double HF::compute_energy()
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
 
-    Communicator::world->sync();
+    WorldComm->sync();
 
     // Perform wavefunction stability analysis
     if(options_.get_str("STABILITY_ANALYSIS") != "NONE")
@@ -1674,7 +1771,7 @@ void HF::print_energies()
 
 void HF::print_occupation()
 {
-    if (Communicator::world->me() == 0) {
+    if (WorldComm->me() == 0) {
         char **labels = molecule_->irrep_labels();
         std::string reference = options_.get_str("REFERENCE");
         fprintf(outfile, "\t      ");

@@ -27,4 +27,5 @@ A complete list of standard keywords is provided in Appendix
    mrcc
    detci
    optking
+   oeprop
 

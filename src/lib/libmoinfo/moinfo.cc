@@ -13,6 +13,7 @@
 #include <libciomr/libciomr.h>
 #include <libutil/libutil.h>
 #include <psi4-dec.h>
+#include <libmints/corrtab.h>
 #include <libmints/matrix.h>
 #include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
@@ -89,7 +90,7 @@ MOInfo::~MOInfo()
 void MOInfo::read_info()
 {
     /*
-     * Read Nuclear,SCF and other stuff
+     * Read Nuclear, SCF and other stuff
      */
     read_data();
     nmo            = Process::environment.wavefunction()->nmo();
@@ -123,19 +124,39 @@ void MOInfo::read_info()
     wfn_sym = 0;
     string wavefunction_sym_str = options.get_str("WFN_SYM");
     bool wfn_sym_found = false;
-    for(int h = 0; h < nirreps; ++h){
-        string irr_label_str = irr_labs[h];
-        trim_spaces(irr_label_str);
-        to_upper(irr_label_str);
-        if(wavefunction_sym_str == irr_label_str){
-            wfn_sym = h;
-            wfn_sym_found = true;
-            break;
+
+    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    if(old_pg){
+        for(int h = 0; h < nirreps; ++h){
+            string irr_label_str = old_pg->char_table().gamma(h).symbol();
+            trim_spaces(irr_label_str);
+            to_upper(irr_label_str);
+            if(wavefunction_sym_str == irr_label_str){
+                wfn_sym = h;
+                wfn_sym_found = true;
+                break;
+            }
+            if(wavefunction_sym_str == to_string(h+1)){
+                wfn_sym = h;
+                wfn_sym_found = true;
+                break;
+            }
         }
-        if(wavefunction_sym_str == to_string(h+1)){
-            wfn_sym = h;
-            wfn_sym_found = true;
-            break;
+    }else{
+        for(int h = 0; h < nirreps; ++h){
+            string irr_label_str = irr_labs[h];
+            trim_spaces(irr_label_str);
+            to_upper(irr_label_str);
+            if(wavefunction_sym_str == irr_label_str){
+                wfn_sym = h;
+                wfn_sym_found = true;
+                break;
+            }
+            if(wavefunction_sym_str == to_string(h+1)){
+                wfn_sym = h;
+                wfn_sym_found = true;
+                break;
+            }
         }
     }
     if(!wfn_sym_found)
@@ -211,70 +232,58 @@ void MOInfo::read_mo_spaces()
     all.assign(nirreps,0);
     actv_docc.assign(nirreps,0);
 
-    // For frequencies
-    //TODO restore this functionality, avoiding chkpt calls
-    const char* keyword = ""; //chkpt->build_keyword(const_cast<char *>("Current Displacement Irrep"));
+    // Map the symmetry of the input occupations, to account for displacements
+    boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+    if(old_pg){
+        // This is one of a series of displacements;  check the dimension against the parent point group
+        int nirreps_ref = old_pg->char_table().nirrep();
+        intvec focc_ref;
+        intvec docc_ref;
+        intvec actv_ref;
+        intvec fvir_ref;
+//        intvec actv_docc_ref;
 
-    if(0/*chkpt->exist(keyword)*/){
-        //    int   disp_irrep  = chkpt->rd_disp_irrep();
-        //    char *save_prefix = chkpt->rd_prefix();
-        //    int nirreps_ref;
+        focc_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
+        docc_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
+        actv_ref = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->soccpi());
+        fvir_ref.assign(nirreps_ref,0);
+//        actv_docc_ref.assign(nirreps_ref,0);
 
-        //    // read symmetry info and MOs for undisplaced geometry from
-        //    // root section of checkpoint file
-        //    chkpt->reset_prefix();
-        //    chkpt->commit_prefix();
+        for (int h = 0; h < nirreps_ref; h++)
+            docc_ref[h] -= focc_ref[h];
 
-        //    char *ptgrp_ref = chkpt->rd_sym_label();
+        nfocc = std::accumulate( focc_ref.begin(), focc_ref.end(), 0 );
+        ndocc = std::accumulate( docc_ref.begin(), docc_ref.end(), 0 );
+        nactv = std::accumulate( actv_ref.begin(), actv_ref.end(), 0 );
 
-        //    // Lookup irrep correlation table
-        //    int* correlation;
-        //    correlate(ptgrp_ref, disp_irrep, nirreps_ref, nirreps,correlation);
+        read_mo_space(nirreps_ref,nfocc,focc_ref,"FROZEN_DOCC");
+        read_mo_space(nirreps_ref,ndocc,docc_ref,"RESTRICTED_DOCC");
+        read_mo_space(nirreps_ref,nactv,actv_ref,"ACTIVE");
+        read_mo_space(nirreps_ref,nfvir,fvir_ref,"FROZEN_UOCC");
 
-        //    intvec focc_ref;
-        //    intvec docc_ref;
-        //    intvec actv_ref;
-        //    intvec fvir_ref;
-        //    intvec actv_docc_ref;
 
-        //    // build orbital information for current point group
-        //    // Read the values stored in the chkpt
-        //    // override if the user defines values
-        //    focc_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_frzcpi());
-        //    docc_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_clsdpi());
-        //    actv_ref = convert_int_array_to_vector(nirreps_ref,chkpt->rd_openpi());
-        //    fvir_ref.assign(nirreps_ref,0);
-        //    actv_docc_ref.assign(nirreps_ref,0);
 
-        //    for (int h = 0; h < nirreps_ref; h++)
-        //      docc_ref[h] -= focc_ref[h];
+        boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+        boost::shared_ptr<PointGroup> sub =  Process::environment.molecule()->point_group();
+        // Build the correlation table between full, and subgroup
+        CorrelationTable corrtab(full, sub);
 
-        //    nfocc = std::accumulate( focc_ref.begin(), focc_ref.end(), 0 );
-        //    ndocc = std::accumulate( docc_ref.begin(), docc_ref.end(), 0 );
-        //    nactv = std::accumulate( actv_ref.begin(), actv_ref.end(), 0 );
+        // Find the wave function symmetry
+        wfn_sym = corrtab.gamma(wfn_sym, 0);
 
-        //    read_mo_space(nirreps_ref,nfocc,focc_ref,"CORR_FOCC FROZEN_DOCC");
-        //    read_mo_space(nirreps_ref,ndocc,docc_ref,"CORR_DOCC RESTRICTED_DOCC");
-        //    read_mo_space(nirreps_ref,nactv,actv_ref,"CORR_ACTV ACTIVE ACTV");
-
-        //    read_mo_space(nirreps_ref,nfvir,fvir_ref,"CORR_FVIR FROZEN_UOCC");
+        // Find the occupation in the subgroup
+        for(int h = 0; h < nirreps_ref; ++h){
+            int target = corrtab.gamma(h, 0);
+            focc[target] += focc_ref[h];
+            docc[target] += docc_ref[h];
+            actv[target] += actv_ref[h];
+            fvir[target] += fvir_ref[h];
+        }
         //    read_mo_space(nirreps_ref,nactv_docc,actv_docc_ref,"ACTIVE_DOCC");
-
-        //    for (int h = 0; h < nirreps_ref; h++) {
-        //      focc[ correlation[h] ]      += focc_ref[h];
-        //      docc[ correlation[h] ]      += docc_ref[h];
-        //      actv[ correlation[h] ]      += actv_ref[h];
-        //      fvir[ correlation[h] ]      += fvir_ref[h];
-        //      actv_docc[ correlation[h] ] += actv_docc_ref[h];
-        //    }
-        //    wfn_sym = correlation[wfn_sym];
-        //    chkpt->set_prefix(save_prefix);
-        //    chkpt->commit_prefix();
-        //    free(save_prefix);
-        //    free(ptgrp_ref);
-        //    delete [] correlation;
     }else{
         // For a single-point only
+        fprintf(outfile,"\n  For a single-point only"); fflush(outfile);
+
         focc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->frzcpi());
         docc = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->doccpi());
         actv = convert_int_array_to_vector(nirreps, Process::environment.wavefunction()->soccpi());
@@ -296,8 +305,6 @@ void MOInfo::read_mo_spaces()
 //        read_mo_space(nirreps,nfvir,fvir,"CORR_FVIR FROZEN_UOCC");
         //    read_mo_space(nirreps,nactv_docc,actv_docc,"ACTIVE_DOCC");
     }
-
-    //  free(keyword);
 
     // Compute the number of external orbitals per irrep
     nextr = 0;
