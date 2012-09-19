@@ -1,5 +1,6 @@
 #! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
- 
+
+
 memory 250 mb
  
 molecule bz {
@@ -32,5 +33,6 @@ energy('scf')
 
 oeprop("MULTIPOLES(7)")
 
+    
 clean()
 

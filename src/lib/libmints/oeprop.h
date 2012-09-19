@@ -237,6 +237,9 @@ protected:
     void compute_no_occupations(int max_num = 3);
     /// Compute electric field and electric field gradients
     void compute_electric_field_and_gradients();
+    /// Compute electrostatic potentials at the nuclei
+    void compute_esp_at_nuclei();
+
 
     /// The center about which properties are computed
     Vector3 origin_;
