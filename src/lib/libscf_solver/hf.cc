@@ -1667,17 +1667,13 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
-<<<<<<< HEAD
-        if (Communicator::world->me() == 0 && converged) {
-=======
-        if (WorldComm->me() == 0) {
->>>>>>> 4c39a121911f08a62c34c50757b555b182569b8a
+        if (WorldComm->me() == 0 && converged) {
             fprintf(outfile, "  Energy converged.\n\n");
         }
-        if (Communicator::world->me() == 0 && !converged) {
+        if (WorldComm->me() == 0 && !converged) {
             fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
         }
-        if (Communicator::world->me() == 0) {
+        if (WorldComm->me() == 0) {
             fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
