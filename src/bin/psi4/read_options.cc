@@ -883,6 +883,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
+    /*- Fail if we reach maxiter without converging? -*/
+    options.add_bool("FAIL_ON_MAXITER",true);
+
     /*- Convergence criterion for SCF energy. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for SCF density. -*/
