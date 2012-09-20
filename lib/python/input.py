@@ -660,6 +660,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from util import *\n'
     imports += 'from qmmm import *\n'
     imports += 'from frac import *\n'
+    imports += 'from diatomic import *\n'
     imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
     imports += 'from psifiles import *\n'
