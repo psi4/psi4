@@ -27,4 +27,6 @@ extent |PSIfours| functionality.
    cbs
    intercalls
    sowreap
+   table
+   diatomic_anharmonicity
 
