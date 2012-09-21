@@ -4,25 +4,28 @@ from math import sqrt, pi
 from diatomic_fits import *
 
 def diatomic_anharmonicity(rvals, energies):
-    """Generates spectroscopic constants for a diatomic molecules.  Input parameters are
+    """Generates spectroscopic constants for a diatomic molecules.
+       Fits a diatomic potential energy curve using either a 5 or 9 point Legendre fit, locates the minimum
+       energy point, and then applies second order vibrational perturbation theory to obtain spectroscopic 
+       constants.  The r values provided must bracket the minimum energy point, or an error will result.
+       
+       A dictionary with the following keys, which correspond to spectroscopic constants, is returned:
 
-       rvals: a list containing the bond lengths (in Angstrom) for which energies are provided
-       energies: a list containing the energies (Eh) at the bond lengths in the rvals list
+       **Keywords**
 
-       The above lists may be either 5 or 9 elements long, and the r values chosen must bracket
-       the minimum energy point, or an error will result. A dictionary with the following keys,
-       which correspond to spectroscopic constants, is returned:
-               "re"              
-               "r0"              
-               "we"              
-               "wexe"            
-               "nu"              
-               "ZPVE(harmonic)"  
-               "ZPVE(anharmonic)"
-               "Be"              
-               "B0"              
-               "ae"              
-               "De"              
+       :type rvals: list
+       :param rvals:
+
+       The bond lengths (in Angstrom) for which energies are provided of length either 5 or 9
+       but must be the same length as the energies array
+
+       :type energies: list
+       :param energies:
+
+       The energies (Eh) computed at the bond lengths in the rvals list
+
+       :returns: (*dict*) Keys: "re", "r0", "we", "wexe", "nu", "ZPVE(harmonic)", "ZPVE(anharmonic)", "Be", "B0", "ae", "De"
+                 corresponding to the spectroscopic constants in cm-1
     """
 
     angstrom_to_bohr = 1.0 / psi_bohr2angstroms
