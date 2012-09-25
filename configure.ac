@@ -526,6 +526,9 @@ ACX_MADNESS()
 ACX_ELEMENTAL()
 ACX_SCALAPACK()
 
+# Make sure we're back in C++
+AC_LANG([C++])
+
 ########
 ## Check for types
 ########
@@ -797,6 +800,9 @@ AX_OPENMP([
     CXXOTH="$CXXOTH $OPENMP_CXXFLAGS"
     LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
 ])
+echo $CXXOTH
+AC_SUBST([CXXOTH])
+AC_SUBST([LDFLAGS])
 
 # Check to see if the compiler supports __builtin_expect and __builtin_prefetch
 AX_BUILTINS()
