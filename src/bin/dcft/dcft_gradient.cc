@@ -19,6 +19,8 @@ DCFTSolver::compute_gradient()
     fprintf(outfile,    "\t  *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
     fprintf(outfile,    "\t  **********************************************\n\n");
 
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DCFT-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
+
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
     // Copy the current density cumulant and tau as a guess for cumulant response and perturbed tau

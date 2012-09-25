@@ -827,8 +827,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
-      /*- Controls whether to compute non-idempotent contribution to OPDM approximately or exactly -*/
-      options.add_str("TAU", "APPROXIMATE", "APPROXIMATE EXACT");
+      /*- Chooses appropriate DCFT method -*/
+      options.add_str("DCFT_FUNCTIONAL", "DCFT-06", "DCFT-06 DCFT-06X CEPA0");
 
   }
   if (name == "MINTS"|| options.read_globals()) {

@@ -397,7 +397,7 @@ DCFTSolver::build_denominators()
     //Alpha spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
-            if (options_.get_str("TAU") == "APPROXIMATE") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i);
             }
             else {
@@ -408,7 +408,7 @@ DCFTSolver::build_denominators()
         }
 
         for(int a = 0; a < navirpi_[h]; ++a){
-            if (options_.get_str("TAU") == "APPROXIMATE") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
                 aVirEvals[aVirCount++] = moFa_->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
             }
             else {
@@ -422,7 +422,7 @@ DCFTSolver::build_denominators()
     //Elements of the Fock matrix
     //Alpha occupied
 
-    if (options_.get_str("TAU") == "APPROXIMATE") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
         dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         dpd_file2_mat_init(&F);
         int offset = 0;
@@ -459,7 +459,7 @@ DCFTSolver::build_denominators()
     //Beta spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
-            if (options_.get_str("TAU") == "APPROXIMATE") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
                 bOccEvals[bOccCount++] = moFb_->get(h, i, i);
             }
             else {
@@ -469,7 +469,7 @@ DCFTSolver::build_denominators()
                 bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
         }
         for(int a = 0; a < nbvirpi_[h]; ++a){
-            if (options_.get_str("TAU") == "APPROXIMATE") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
                 bVirEvals[bVirCount++] = moFb_->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
             }
             else {
@@ -483,7 +483,7 @@ DCFTSolver::build_denominators()
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
 
-    if (options_.get_str("TAU") == "APPROXIMATE") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06") {
         dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
         dpd_file2_mat_init(&F);
         int offset = 0;

@@ -25,6 +25,10 @@ DCFTSolver::compute_energy()
     mp2_guess();
 
     int cycle = 0;
+    fprintf(outfile, "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
+    fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
+
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                      "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                      "\t*---------------------------------------------------------------------------------*\n");
@@ -32,7 +36,7 @@ DCFTSolver::compute_energy()
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
 
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "Analytic gradients", __FILE__, __LINE__);
 
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
@@ -84,7 +88,7 @@ DCFTSolver::compute_energy()
                     if (options_.get_bool("RELAX_TAU")) {
                         build_tau();
                         // Compute tau exactly if requested
-                        if (options_.get_str("TAU") == "EXACT") {
+                        if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
                             refine_tau();
                         }
                         if (options_.get_str("AO_BASIS") == "DISK") {
@@ -161,7 +165,7 @@ DCFTSolver::compute_energy()
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
             // Compute tau exactly if requested
-            if (options_.get_str("TAU") == "EXACT") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
                 refine_tau();
             }
             transform_tau();
@@ -278,7 +282,7 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
-            if (options_.get_str("TAU") == "EXACT") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
                 refine_tau();
             }
             transform_tau();
@@ -389,7 +393,7 @@ DCFTSolver::compute_energy()
         fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
         fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
 
-        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = QC", __FILE__, __LINE__);
+        if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "ALGORITHM = QC", __FILE__, __LINE__);
         if (options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
         run_qc_dcft();
 
