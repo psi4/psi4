@@ -84,3 +84,4 @@ energy('dcft')
 
 compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (simultaneous, ao_basis=disk)");     #TEST
 compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (simultaneous, ao_basis=disk)");                #TEST
+
