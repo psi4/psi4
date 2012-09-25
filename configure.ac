@@ -990,6 +990,7 @@ AC_CONFIG_FILES([
           tests/dcft3/Makefile
           tests/dcft4/Makefile
           tests/dcft5/Makefile
+          tests/dcft6/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile

@@ -32,8 +32,8 @@ optimize('dcft')
 compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
 compare_values(refuhf, get_variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
 compare_values(refmp2, get_variable("MP2 ENERGY"), 6, "MP2 Energy");                                       #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT SCF Energy (two-step response)");     #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT Energy (two-step response)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT-06 SCF Energy (two-step response)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT-06 Energy (two-step response)");                #TEST
 
 set response_algorithm simultaneous
 O2.R = 1.200
@@ -43,5 +43,5 @@ optimize('dcft')
 compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
 compare_values(refuhf, get_variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
 compare_values(refmp2, get_variable("MP2 ENERGY"), 6, "MP2 Energy");                                       #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT SCF Energy (simultaneous response)"); #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT Energy (simultaneous response)");            #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT-06 SCF Energy (simultaneous response)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT-06 Energy (simultaneous response)");            #TEST

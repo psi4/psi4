@@ -3,8 +3,7 @@
 #! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
 #! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
-#! The computation is then repeated using the exact expression for non-idempotent contribution to OPDM
-#! (TAU = EXACT) using the same algorithms.
+#! The computation is then repeated using the DCFT-06X functional with the same algorithms.
 
 memory 250 mb
 
@@ -13,7 +12,7 @@ refmp2      = -98.202705508819363  #TEST
 refdcftscf  = -98.164839047679820  #TEST
 refdcft     = -98.2078192401319967 #TEST
 
-# TAU = EXACT                         #TEST
+# DCFT-06X                            #TEST
 refdcftscfexact = -98.165972603361965 #TEST
 refdcftexact = -98.207614955904603    #TEST
 
@@ -37,51 +36,52 @@ energy('dcft')
 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
 compare_values(refmp2, get_variable("MP2 ENERGY"), 10, "MP2 Energy");                                             #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, ao_basis=none)");     #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, ao_basis=none)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06 SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT-06 Energy (two-step, ao_basis=none)");                #TEST
 
 set algorithm simultaneous
 energy('dcft')
 
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, ao_basis=none)"); #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, ao_basis=none)");            #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06 SCF Energy (simultaneous, ao_basis=none)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT-06 Energy (simultaneous, ao_basis=none)");            #TEST
 
 set ao_basis disk
 set algorithm twostep
 energy('dcft')
 
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, ao_basis=disk)");     #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, ao_basis=disk)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06 SCF Energy (two-step, ao_basis=disk)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT-06 Energy (two-step, ao_basis=disk)");                #TEST
 
 set algorithm simultaneous
 energy('dcft')
 
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, ao_basis=disk)"); #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, ao_basis=disk)");            #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06 SCF Energy (simultaneous, ao_basis=disk)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT-06 Energy (simultaneous, ao_basis=disk)");            #TEST
 
-set tau exact
+set dcft_functional dcft-06x
 set algorithm twostep
 set ao_basis none
 energy('dcft')
 
-compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, tau=exact, ao_basis=none)");     #TEST
-compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, tau=exact, ao_basis=none)");                #TEST
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (two-step, ao_basis=none)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (two-step, ao_basis=none)");                #TEST
 
 set ao_basis disk
 energy('dcft')
 
-compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (two-step, tau=exact, ao_basis=disk)");     #TEST
-compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (two-step, tau=exact, ao_basis=disk)");                #TEST
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (two-step, ao_basis=disk)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (two-step, ao_basis=disk)");                #TEST
 
 set algorithm simultaneous
 set ao_basis none
 energy('dcft')
 
-compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, tau=exact, ao_basis=none)");     #TEST
-compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, tau=exact, ao_basis=none)");                #TEST
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (simultaneous, ao_basis=none)");                #TEST
 
 set ao_basis disk
 energy('dcft')
 
-compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT SCF Energy (simultaneous, tau=exact, ao_basis=disk)");     #TEST
-compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT Energy (simultaneous, tau=exact, ao_basis=disk)");                #TEST
+compare_values(refdcftscfexact, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdcftexact, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (simultaneous, ao_basis=disk)");                #TEST
+
