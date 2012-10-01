@@ -633,9 +633,10 @@ void MOWriter::write()
     // need dimensions
     const Dimension aos = pl->AO_basisdim();
     const Dimension sos = pl->SO_basisdim();
+    const Dimension mos = wavefunction_->nmopi();
 
-    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, sos));
-    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, sos));
+    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, mos));
+    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, mos));
 
     // do the half transform
     Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
@@ -645,8 +646,7 @@ void MOWriter::write()
 
     // order orbitals in terms of energy:
     int minorb;
-    nmo = 0;
-    for (int h = 0; h < nirrep; h++) nmo += wavefunction_->nmopi()[h];
+    nmo = mos.sum();
 
     map  = new int[nmo];
     bool * skip = new bool[nmo];
