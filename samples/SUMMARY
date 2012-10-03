@@ -226,10 +226,13 @@ dcft2:        DCFT-06 calculation for the He dimer. This performs a two-step upd
 dcft3:        DCFT-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
 
-dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the exact expression for non-idempotent contribution to OPDM (TAU = EXACT) using the same algorithms.
+dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DCFT-06X functional with the same algorithms.
 
 
 dcft5:        DCFT-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
+
+
+dcft6:        DCFT calculation for the triplet O2 using DCFT-06, DCFT-06X and CEPA0 functionals.  Only two-step algorithm is tested.
 
 
 dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
