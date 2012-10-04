@@ -93,27 +93,6 @@ void MoldenWriter::write(const std::string &filename)
         fprintf(molden, "\n");
     }
 
-    // For each atom...since we're dumping alpha and beta we need this again
-    for (atom=0; atom<mol.natom(); ++atom) {
-        fprintf(molden, "  %3d 0\n", atom+1);
-
-        // Go through all the shells on this center
-        for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
-            int overall_shell = basisset.shell_on_center(atom, shell);
-
-            const GaussianShell& gs = basisset.shell(overall_shell);
-
-            fprintf(molden, "%c %3d 1.00\n", gs.amchar(), gs.nprimitive());
-
-            for (int prim=0; prim<gs.nprimitive(); ++prim) {
-                fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
-            }
-        }
-
-        // An empty line separates atoms
-        fprintf(molden, "\n");
-    }
-
     // Convert Ca & Cb
     // make copies
     Matrix Ca(wavefunction_->Ca());
