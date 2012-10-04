@@ -1027,7 +1027,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
-    options.add_int("DFT_RADIAL_POINTS", 99);
+    options.add_int("DFT_RADIAL_POINTS", 75);
     /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme. -*/
