@@ -214,9 +214,9 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
         double * blist_p = blist->pointer();
 
         for (int i = 0; i < monoA->natom(); i++) {
-            if ( (int)monoA->fZ(i) == 0 ) continue;
+            if ( (int)monoA->Z(i) == 0 ) continue;
             for (int j = 0; j < monoB->natom(); j++) {
-                if ( (int)monoB->fZ(j) == 0 ) continue;
+                if ( (int)monoB->Z(j) == 0 ) continue;
     
                 double C6, C8, Rm6, Rm8, f_6, f_8, g, beta;
     
