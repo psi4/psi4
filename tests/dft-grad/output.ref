@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta2+ Driver
 
-               Git: Rev 3034b1730e8de3189fdd759e7001366ccfeb8a22
+               Git: Rev 189d2a088ff48a7ae7856d8ee182965f824a4556
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,8 +14,8 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  95611
-    PSI4DATADIR: /Users/loriab/linux/psi4_efp_nowcurrent/psi4/objdir/../lib
+    Process ID:  31156
+    PSI4DATADIR: /theoryfs2/ds/cook/psi4_23JULY2012/lib
 
     Using LocalCommunicator (Number of processes = 1)
 
@@ -44,9 +44,11 @@ molecule {
 
 
 set {
-    scf_type      df
-    basis         cc-pvdz
-    freeze_core   true
+    scf_type              df
+    basis                 cc-pvdz
+    freeze_core           true
+    dft_radial_points     99
+    dft_spherical_points  302
 }
 
 gradient('bp86-d')
@@ -58,6 +60,8 @@ clean()
 set {
     dft_functional bp86-d
     reference rks
+    dft_radial_points 99
+    dft_spherical_points 302
 }
 
 gradient('bp86-d')
@@ -70,8 +74,8 @@ compare_matrices(ref, grad, 7, "Analytic dft gradients called by options") #TEST
 No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
 
-*** tstart() called on localhost
-*** at Sat Jul 28 02:55:32 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:30:04 2012
 
 
          ---------------------------------------------------------
@@ -173,9 +177,9 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
     Spherical Points =            302
     Radial Points    =             99
-    Total Points     =          86161
+    Total Points     =          86191
     Total Blocks     =            145
-    Max Points       =            971
+    Max Points       =            974
     Max Functions    =             33
 
   ==> Pre-Iterations <==
@@ -234,25 +238,25 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RKS energy:   -68.62403173594760
+  Initial RKS energy:   -68.62403173594748
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -80.94425605644783   -1.23202e+01   0.00000e+00 
-   @RKS iter   2:   -80.18825813912052    7.55998e-01   3.19850e-01 DIIS
-   @RKS iter   3:   -93.01337425619603   -1.28251e+01   2.42550e-01 DIIS
-   @RKS iter   4:   -92.91261437394913    1.00760e-01   5.79165e-02 DIIS
-   @RKS iter   5:   -93.41295819734401   -5.00344e-01   1.59448e-02 DIIS
-   @RKS iter   6:   -93.40507544311144    7.88275e-03   4.23722e-03 DIIS
-   @RKS iter   7:   -93.42535916226832   -2.02837e-02   2.24973e-03 DIIS
-   @RKS iter   8:   -93.42892107582615   -3.56191e-03   1.23649e-03 DIIS
-   @RKS iter   9:   -93.42897526694000   -5.41911e-05   2.30822e-04 DIIS
-   @RKS iter  10:   -93.42897703185828   -1.76492e-06   3.56967e-05 DIIS
-   @RKS iter  11:   -93.42897703370201   -1.84373e-09   1.13244e-06 DIIS
-   @RKS iter  12:   -93.42897703373221   -3.01981e-11   1.86957e-07 DIIS
-   @RKS iter  13:   -93.42897703373330   -1.09424e-12   2.96541e-08 DIIS
+   @RKS iter   1:   -80.94425605644278   -1.23202e+01   0.00000e+00 
+   @RKS iter   2:   -80.18825813912565    7.55998e-01   3.19850e-01 DIIS
+   @RKS iter   3:   -93.01337425619104   -1.28251e+01   2.42550e-01 DIIS
+   @RKS iter   4:   -92.91261437394462    1.00760e-01   5.79165e-02 DIIS
+   @RKS iter   5:   -93.41295819734231   -5.00344e-01   1.59448e-02 DIIS
+   @RKS iter   6:   -93.40507544310972    7.88275e-03   4.23722e-03 DIIS
+   @RKS iter   7:   -93.42535916226646   -2.02837e-02   2.24973e-03 DIIS
+   @RKS iter   8:   -93.42892107582432   -3.56191e-03   1.23649e-03 DIIS
+   @RKS iter   9:   -93.42897526693818   -5.41911e-05   2.30822e-04 DIIS
+   @RKS iter  10:   -93.42897703185648   -1.76492e-06   3.56967e-05 DIIS
+   @RKS iter  11:   -93.42897703370011   -1.84363e-09   1.13244e-06 DIIS
+   @RKS iter  12:   -93.42897703373035   -3.02407e-11   1.86957e-07 DIIS
+   @RKS iter  13:   -93.42897703373137   -1.02318e-12   2.96541e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -283,17 +287,20 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
   Energy converged.
 
-  @RKS Final Energy:   -93.42897703373330
+  @RKS Final Energy:   -93.42897703373137
 
    => Energetics <=
 
     Nuclear Repulsion Energy =         23.6698792310870019
-    One-Electron Energy =            -172.3852552409644261
-    Two-Electron Energy =              67.8780382422655748
-    DFT Functional Energy =           -12.5913635855534505
+    One-Electron Energy =            -172.3852552409613565
+    Two-Electron Energy =              67.8780382422641395
+    DFT Functional Energy =           -12.5913635855531396
     Empirical Dispersion Energy =      -0.0002756805680046
-    Total Energy =                    -93.4289770337333039
+    Total Energy =                    -93.4289770337313570
 
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
@@ -311,21 +318,21 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sat Jul 28 02:55:57 2012
+*** tstop() called on ds4 at Thu Oct  4 15:30:17 2012
 Module time:
-	user time   =      20.37 seconds =       0.34 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      20.63 seconds =       0.34 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =         13 seconds =       0.22 minutes
 Total time:
-	user time   =      20.37 seconds =       0.34 minutes
-	system time =       0.72 seconds =       0.01 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      20.63 seconds =       0.34 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =         13 seconds =       0.22 minutes
 
 No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
 
-*** tstart() called on localhost
-*** at Sat Jul 28 02:55:57 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:30:17 2012
 
 
          ------------------------------------------------------------
@@ -427,35 +434,35 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
     Spherical Points =            302
     Radial Points    =             99
-    Total Points     =          86161
+    Total Points     =          86191
     Total Blocks     =            145
-    Max Points       =            971
+    Max Points       =            974
     Max Functions    =             33
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000471372941    -0.006768222864     0.000000000000
-       2        0.000447936019    -0.006988081177    -0.000000000000
-       3       -0.000919105947     0.013753536153    -0.000000000000
+       1        0.000471372962    -0.006768223201    -0.000000000000
+       2        0.000447936007    -0.006988080972     0.000000000000
+       3       -0.000919105956     0.013753536285    -0.000000000000
 
 
-*** tstop() called on localhost at Sat Jul 28 02:56:03 2012
+*** tstop() called on ds4 at Thu Oct  4 15:30:21 2012
 Module time:
-	user time   =       3.84 seconds =       0.06 minutes
+	user time   =       5.95 seconds =       0.10 minutes
 	system time =       0.11 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      24.21 seconds =       0.40 minutes
-	system time =       0.83 seconds =       0.01 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      26.59 seconds =       0.44 minutes
+	system time =       0.43 seconds =       0.01 minutes
+	total time  =         17 seconds =       0.28 minutes
 
 No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
 
-*** tstart() called on localhost
-*** at Sat Jul 28 02:56:03 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:30:21 2012
 
 
          ---------------------------------------------------------
@@ -557,9 +564,9 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
     Spherical Points =            302
     Radial Points    =             99
-    Total Points     =          86161
+    Total Points     =          86191
     Total Blocks     =            145
-    Max Points       =            971
+    Max Points       =            974
     Max Functions    =             33
 
   ==> Pre-Iterations <==
@@ -618,25 +625,25 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RKS energy:   -68.62403173594760
+  Initial RKS energy:   -68.62403173594748
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -80.94425605644783   -1.23202e+01   0.00000e+00 
-   @RKS iter   2:   -80.18825813912052    7.55998e-01   3.19850e-01 DIIS
-   @RKS iter   3:   -93.01337425619603   -1.28251e+01   2.42550e-01 DIIS
-   @RKS iter   4:   -92.91261437394913    1.00760e-01   5.79165e-02 DIIS
-   @RKS iter   5:   -93.41295819734401   -5.00344e-01   1.59448e-02 DIIS
-   @RKS iter   6:   -93.40507544311144    7.88275e-03   4.23722e-03 DIIS
-   @RKS iter   7:   -93.42535916226832   -2.02837e-02   2.24973e-03 DIIS
-   @RKS iter   8:   -93.42892107582615   -3.56191e-03   1.23649e-03 DIIS
-   @RKS iter   9:   -93.42897526694000   -5.41911e-05   2.30822e-04 DIIS
-   @RKS iter  10:   -93.42897703185828   -1.76492e-06   3.56967e-05 DIIS
-   @RKS iter  11:   -93.42897703370201   -1.84373e-09   1.13244e-06 DIIS
-   @RKS iter  12:   -93.42897703373221   -3.01981e-11   1.86957e-07 DIIS
-   @RKS iter  13:   -93.42897703373330   -1.09424e-12   2.96541e-08 DIIS
+   @RKS iter   1:   -80.94425605644278   -1.23202e+01   0.00000e+00 
+   @RKS iter   2:   -80.18825813912565    7.55998e-01   3.19850e-01 DIIS
+   @RKS iter   3:   -93.01337425619104   -1.28251e+01   2.42550e-01 DIIS
+   @RKS iter   4:   -92.91261437394462    1.00760e-01   5.79165e-02 DIIS
+   @RKS iter   5:   -93.41295819734231   -5.00344e-01   1.59448e-02 DIIS
+   @RKS iter   6:   -93.40507544310972    7.88275e-03   4.23722e-03 DIIS
+   @RKS iter   7:   -93.42535916226646   -2.02837e-02   2.24973e-03 DIIS
+   @RKS iter   8:   -93.42892107582432   -3.56191e-03   1.23649e-03 DIIS
+   @RKS iter   9:   -93.42897526693818   -5.41911e-05   2.30822e-04 DIIS
+   @RKS iter  10:   -93.42897703185648   -1.76492e-06   3.56967e-05 DIIS
+   @RKS iter  11:   -93.42897703370011   -1.84363e-09   1.13244e-06 DIIS
+   @RKS iter  12:   -93.42897703373035   -3.02407e-11   1.86957e-07 DIIS
+   @RKS iter  13:   -93.42897703373137   -1.02318e-12   2.96541e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -667,17 +674,20 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
   Energy converged.
 
-  @RKS Final Energy:   -93.42897703373330
+  @RKS Final Energy:   -93.42897703373137
 
    => Energetics <=
 
     Nuclear Repulsion Energy =         23.6698792310870019
-    One-Electron Energy =            -172.3852552409644261
-    Two-Electron Energy =              67.8780382422655748
-    DFT Functional Energy =           -12.5913635855534505
+    One-Electron Energy =            -172.3852552409613565
+    Two-Electron Energy =              67.8780382422641395
+    DFT Functional Energy =           -12.5913635855531396
     Empirical Dispersion Energy =      -0.0002756805680046
-    Total Energy =                    -93.4289770337333039
+    Total Energy =                    -93.4289770337313570
 
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
@@ -695,21 +705,21 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sat Jul 28 02:56:26 2012
+*** tstop() called on ds4 at Thu Oct  4 15:30:36 2012
 Module time:
-	user time   =      20.07 seconds =       0.33 minutes
-	system time =       0.33 seconds =       0.01 minutes
-	total time  =         23 seconds =       0.38 minutes
+	user time   =      25.00 seconds =       0.42 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =         15 seconds =       0.25 minutes
 Total time:
-	user time   =      44.34 seconds =       0.74 minutes
-	system time =       1.16 seconds =       0.02 minutes
-	total time  =         54 seconds =       0.90 minutes
+	user time   =      51.67 seconds =       0.86 minutes
+	system time =       0.79 seconds =       0.01 minutes
+	total time  =         32 seconds =       0.53 minutes
 
 No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
 
-*** tstart() called on localhost
-*** at Sat Jul 28 02:56:26 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:30:36 2012
 
 
          ------------------------------------------------------------
@@ -811,28 +821,28 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
 
     Spherical Points =            302
     Radial Points    =             99
-    Total Points     =          86161
+    Total Points     =          86191
     Total Blocks     =            145
-    Max Points       =            971
+    Max Points       =            974
     Max Functions    =             33
 
 
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000471372941    -0.006768222864     0.000000000000
-       2        0.000447936019    -0.006988081177    -0.000000000000
-       3       -0.000919105947     0.013753536153    -0.000000000000
+       1        0.000471372962    -0.006768223201    -0.000000000000
+       2        0.000447936007    -0.006988080972     0.000000000000
+       3       -0.000919105956     0.013753536285    -0.000000000000
 
 
-*** tstop() called on localhost at Sat Jul 28 02:56:30 2012
+*** tstop() called on ds4 at Thu Oct  4 15:30:40 2012
 Module time:
-	user time   =       3.60 seconds =       0.06 minutes
+	user time   =       5.99 seconds =       0.10 minutes
 	system time =       0.08 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      47.95 seconds =       0.80 minutes
-	system time =       1.24 seconds =       0.02 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =      57.66 seconds =       0.96 minutes
+	system time =       0.87 seconds =       0.01 minutes
+	total time  =         36 seconds =       0.60 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

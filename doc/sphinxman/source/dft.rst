@@ -408,7 +408,7 @@ Grid Selection
 |PSIfour| uses the standard Lebedev-Laikov spherical quadratures in concert with a
 number of radial quadratures and atomic partitioning schemes. Pruned grids are
 not yet available, but will be implemented by RC1 (in final debugging). The
-default grid in PSI4 is a Lebedev-Treutler (302,99) grid with a Treutler
+default grid in PSI4 is a Lebedev-Treutler (75,302) grid with a Treutler
 partition of the atomic weights. 
 
 Spherical grids are all of the extremely efficient Lebedev-Laikov type.

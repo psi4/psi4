@@ -16,6 +16,8 @@ set basis aug-cc-pvdz
 set reference rks
 set scf_type out_of_core
 set freeze_core true
+set dft_radial_points 99
+set dft_spherical_points 302
 
 e_dhdft = energy('pbe0-2')
 print_variables()
