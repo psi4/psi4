@@ -17,7 +17,7 @@ cepa_subdirs = cepa1 cepa2 cepa3
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
-dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5
+dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5 dcft6
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
@@ -35,7 +35,7 @@ mp2_subdirs = mp2-1 omp2-1 omp3-1
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 castup1 mom props1 props2 props3 dft1 dft3 dfscf-bz2 pubchem1 dft1-alt dft-b2plyp dft-pbe0-2 dft-dldf castup2 castup3 dft-grad
 
-python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3
+python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3 psithon1
 
 longtest_subdirs = sapt2 sapt4
 

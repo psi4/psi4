@@ -384,7 +384,7 @@ DCFTSolver::build_intermediates()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if (options_.get_str("TAU") == "EXACT") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
         form_density_weighted_fock();
     }
     compute_F_intermediate();

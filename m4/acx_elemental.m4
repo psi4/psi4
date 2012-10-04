@@ -21,7 +21,7 @@ CXXFLAGS="${CXXFLAGS} ${elemlibs} ${eleminc}"
 
 # Check if we can link against mpi
 AC_MSG_CHECKING([if we can link to ELEMENTAL])
-AC_LANG(C++)
+AC_LANG_PUSH([C++])
 AC_TRY_LINK( [#include <elemental.hpp>], [ elem::Finalize(); ],
   [
     HAVE_ELEMENTAL=1
@@ -38,5 +38,7 @@ AC_TRY_LINK( [#include <elemental.hpp>], [ elem::Finalize(); ],
     AC_MSG_RESULT([no]) 
   ]
 )
+
+AC_LANG_POP([C++])
 
 ])
