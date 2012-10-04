@@ -74,7 +74,7 @@ void MoldenWriter::write(const std::string &filename)
 
     // For each atom
     for (atom=0; atom<mol.natom(); ++atom) {
-        fprintf(molden, "  %3d 0\n", atom+1);
+        fprintf(molden, "  %d 0\n", atom+1);
 
         // Go through all the shells on this center
         for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
@@ -82,7 +82,7 @@ void MoldenWriter::write(const std::string &filename)
 
             const GaussianShell& gs = basisset.shell(overall_shell);
 
-            fprintf(molden, "%c %3d 1.00\n", gs.amchar(), gs.nprimitive());
+            fprintf(molden, " %c%5d  1.00\n", gs.amchar(), gs.nprimitive());
 
             for (int prim=0; prim<gs.nprimitive(); ++prim) {
                 fprintf(molden, "%20.10f %20.10f\n", gs.exp(prim), gs.coef(prim));
@@ -668,7 +668,7 @@ void MOWriter::write()
                 }
 
                 count++;
-                
+
             }
         }
         map[ orb ] = minorb;
@@ -702,7 +702,7 @@ void MOWriter::write()
 
     // dump to output file
     fprintf(outfile,"\n");
-    if ( isrestricted ) 
+    if ( isrestricted )
        fprintf(outfile,"  ==> Molecular Orbitals <==\n");
     else
        fprintf(outfile,"  ==> Alpha-Spin Molecular Orbitals <==\n");
@@ -712,35 +712,35 @@ void MOWriter::write()
 
     // now for beta spin
     if ( !isrestricted ) {
-   
-   
+
+
        // order orbitals in terms of energy
        for (int orb = 0; orb < nmo; orb++) skip[orb] = false;
        for (int orb = 0; orb < nmo; orb++) {
-   
+
            int count = 0;
            double minen = 1.0e9;
            for (int h = 0; h < nirrep; h++) {
                for (int n = 0; n<wavefunction_->nmopi()[h]; n++) {
-   
+
                    if ( skip[count] ) {
                       count++;
                       continue;
                    }
-   
+
                    if ( Eb.get(h,n) <= minen ) {
                       minen = Eb.get(h,n);
                       minorb = count;
                    }
                    count++;
-                   
+
                }
            }
            map[ orb ] = minorb;
            skip[ minorb ] = true;
        }
-   
-   
+
+
        // reorder orbitals:
        for (int i = 0; i < nmo * nso; i++) Ca_pointer[i] = 0.0;
        count = 0;
@@ -754,10 +754,10 @@ void MOWriter::write()
                    Ca_pointer[mu*nmo + count] = Ca_old[mu][n];
                }
                count++;
-   
+
            }
        }
-   
+
        // dump to output file
        fprintf(outfile,"\n");
        fprintf(outfile,"  ==> Beta-Spin Molecular Orbitals <==\n");
@@ -829,7 +829,7 @@ void MOWriter::write_mos(Molecule & mol){
 
     // print the partial rows:
     if ( ncolsleft > 0 ) {
-    
+
         // print blank space
         fprintf(outfile,"     ");
         // print mo number
