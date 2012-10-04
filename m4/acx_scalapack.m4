@@ -20,7 +20,7 @@ CFLAGS="${CXXFLAGS} ${scalapacklibs}"
 
 # Check if we can link against mpi
 AC_MSG_CHECKING([if we can link to SCALAPACK])
-AC_LANG(C)
+AC_LANG_PUSH([C])
 AC_TRY_LINK( [], [ extern void   Cblacs_pinfo( int* mypnum, int* nprocs); int x, y; Cblacs_pinfo(&x, &y); ],
   [
     HAVE_SCALAPACK=1
@@ -34,5 +34,7 @@ AC_TRY_LINK( [], [ extern void   Cblacs_pinfo( int* mypnum, int* nprocs); int x,
     AC_MSG_RESULT([no]) 
   ]
 )
+
+AC_LANG_POP([C])
 
 ])

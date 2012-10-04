@@ -48,6 +48,7 @@ protected:
     void build_lambda();
     void init();
     void compute_dcft_energy();
+    void compute_cepa0_energy();
     void update_lambda_from_residual();
     void compute_scf_energy();
     void mp2_guess();

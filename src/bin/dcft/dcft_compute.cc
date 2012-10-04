@@ -25,6 +25,11 @@ DCFTSolver::compute_energy()
     mp2_guess();
 
     int cycle = 0;
+
+    fprintf(outfile, "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
+    fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
+    fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
+
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                      "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                      "\t*---------------------------------------------------------------------------------*\n");
@@ -32,7 +37,14 @@ DCFTSolver::compute_energy()
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
 
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DCFT-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "ALGORITHM = QC", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
 
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
@@ -81,29 +93,32 @@ DCFTSolver::compute_energy()
                 while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                     std::string diisString;
                     // Build new Tau from current Lambda
-                    if (options_.get_bool("RELAX_TAU")) {
-                        build_tau();
-                        // Compute tau exactly if requested
-                        if (options_.get_str("TAU") == "EXACT") {
-                            refine_tau();
-                        }
-                        if (options_.get_str("AO_BASIS") == "DISK") {
-                            // Transform new Tau to the SO basis
-                            transform_tau();
-                            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                            build_tensors();
+                    if (options_.get_str("DCFT_FUNCTIONAL") != "CEPA0") {
+                        // If not CEPA0
+                        if (options_.get_bool("RELAX_TAU")) {
+                            build_tau();
+                            // Compute tau exactly if requested
+                            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+                                refine_tau();
+                            }
+                            if (options_.get_str("AO_BASIS") == "DISK") {
+                                // Transform new Tau to the SO basis
+                                transform_tau();
+                                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                                build_tensors();
+                            }
+                            else {
+                                // Compute GTau contribution for the Fock operator
+                                build_gtau();
+                            }
+                            // Update Fock operator for the F intermediate
+                            update_fock();
                         }
                         else {
-                            // Compute GTau contribution for the Fock operator
-                            build_gtau();
-                        }
-                        // Update Fock operator for the F intermediate
-                        update_fock();
-                    }
-                    else {
-                        if (options_.get_str("AO_BASIS") == "DISK") {
-                            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                            build_tensors();
+                            if (options_.get_str("AO_BASIS") == "DISK") {
+                                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                                build_tensors();
+                            }
                         }
                     }
                     // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
@@ -145,7 +160,11 @@ DCFTSolver::compute_energy()
                     // Save old DCFT energy
                     old_total_energy_ = new_total_energy_;
                     // Compute new DCFT energy (lambda contribution)
-                    compute_dcft_energy();
+                    if (options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+                        compute_cepa0_energy();
+                    } else {
+                        compute_dcft_energy();
+                    }
                     new_total_energy_ = scf_energy_ + lambda_energy_;
                     // Check convergence for density cumulant iterations
                     lambdaDone = lambda_convergence_ < lambda_threshold_;
@@ -158,10 +177,17 @@ DCFTSolver::compute_energy()
                 }
             }
             else fprintf(outfile, "\tSkipping the cumulant update to relax guess orbitals\n");
+            // Break if it's a CEPA0 computation
+            if (options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+                scfDone = true;
+                lambdaDone = true;
+                densityConverged = true;
+                break;
+            }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
             // Compute tau exactly if requested
-            if (options_.get_str("TAU") == "EXACT") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
                 refine_tau();
             }
             transform_tau();
@@ -278,7 +304,7 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
-            if (options_.get_str("TAU") == "EXACT") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
                 refine_tau();
             }
             transform_tau();
@@ -389,8 +415,6 @@ DCFTSolver::compute_energy()
         fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
         fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
 
-        if (options_.get_str("TAU") == "EXACT") throw FeatureNotImplemented("DCFT-06 with TAU = EXACT", "ALGORITHM = QC", __FILE__, __LINE__);
-        if (options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
         run_qc_dcft();
 
         scfDone = true;

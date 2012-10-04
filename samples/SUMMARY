@@ -226,10 +226,13 @@ dcft2:        DCFT-06 calculation for the He dimer. This performs a two-step upd
 dcft3:        DCFT-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
 
-dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the exact expression for non-idempotent contribution to OPDM (TAU = EXACT) using the same algorithms.
+dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DCFT-06X functional with the same algorithms.
 
 
 dcft5:        DCFT-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
+
+
+dcft6:        DCFT calculation for the triplet O2 using DCFT-06, DCFT-06X and CEPA0 functionals.  Only two-step algorithm is tested.
 
 
 dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
@@ -385,7 +388,7 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
-props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
+props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials evaluated at the nuclear coordinates
 
 
 psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
@@ -410,6 +413,9 @@ psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 
 
 
 psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+
+psithon1:     Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
 
 
 pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.

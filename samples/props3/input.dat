@@ -1,4 +1,6 @@
-#! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order
+#! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials
+#! evaluated at the nuclear coordinates
+
 
 
 memory 250 mb
@@ -8,10 +10,10 @@ molecule bz {
     C          1.421000000000    0.000000000000    0.000000000000
     C          0.710500000000    0.000000000000    1.230622098778
     C         -0.710500000000    0.000000000000    1.230622098778
-    H          1.254500000000    0.000000000000   -2.172857738095
-    H         -1.254500000000    0.000000000000    2.172857738095
     C         -0.710500000000    0.000000000000   -1.230622098778
     C         -1.421000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000   -2.172857738095
+    H         -1.254500000000    0.000000000000    2.172857738095
     H          2.509000000000    0.000000000000    0.000000000000
     H          1.254500000000    0.000000000000    2.172857738095
     H         -1.254500000000    0.000000000000   -2.172857738095
@@ -20,10 +22,6 @@ molecule bz {
 
 set {
     basis cc-pVDZ
-    E_CONVERGENCE 11
-    D_CONVERGENCE 11
-    puream = false
-    GUESS SAD
     SCF_TYPE DF
     REFERENCE RHF
 }
@@ -31,7 +29,8 @@ set {
 
 energy('scf')
 
-oeprop("MULTIPOLES(7)")
+oeprop("MULTIPOLES(7)", "ESP_AT_NUCLEI")
+
 
     
 clean()
