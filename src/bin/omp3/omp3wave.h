@@ -55,8 +55,10 @@ protected:
     void get_moinfo();
     void title();
     void semi_canonic();
-    void trans_ints();
-    void denominators();
+    void trans_ints_rhf();
+    void trans_ints_uhf();
+    void denominators_rhf();
+    void denominators_uhf();
     void ref_energy();
     void Fockmo_alpha();
     void Fockmo_beta();
@@ -312,6 +314,7 @@ protected:
      SharedMatrix FsoB;
      SharedMatrix FockA;
      SharedMatrix FockB;
+     SharedMatrix GFock;
      SharedMatrix GFockA;
      SharedMatrix GFockB;
      SharedMatrix UorbA;
@@ -322,10 +325,13 @@ protected:
      SharedMatrix KorbB;
      SharedMatrix KsqrA;
      SharedMatrix KsqrB;
+     SharedMatrix HG1;
      SharedMatrix HG1A;
      SharedMatrix HG1B;
+     SharedMatrix gamma1corr;
      SharedMatrix gamma1corrA;
      SharedMatrix gamma1corrB;
+     SharedMatrix g1symm;
      SharedMatrix g1symmA;
      SharedMatrix g1symmB;
      SharedMatrix WorbA;

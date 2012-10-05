@@ -2381,7 +2381,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
+    options.add_str("OPT_METHOD","MSD","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- Do print OMP2 orbital energies? -*/
@@ -2443,15 +2443,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E3_SCALE",0.25);
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
-    The INDIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
-    options.add_str("TPDM_ABCD_TYPE","INDIRECT","INDIRECT COMPUTE");
+    options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
+    options.add_str("OPT_METHOD","MSD","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- The solver will be used for simultaneous lineer equations. -*/

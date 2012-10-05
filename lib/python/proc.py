@@ -57,11 +57,28 @@ def run_omp2(name, **kwargs):
     an orbital-optimized MP2 computation
 
     """
-    oldref = PsiMod.get_global_option('REFERENCE')
-    PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.omp2()
-    PsiMod.set_global_option('REFERENCE', oldref)
+
+
+def run_scs_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-component scaled OMP2 computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP2', 'DO_SCS', 'TRUE')
+    return PsiMod.omp2()
+
+
+def run_sos_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-opposite scaled OMP2 computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP2', 'DO_SOS', 'TRUE')
+    return PsiMod.omp2()
 
 
 def run_omp3(name, **kwargs):
@@ -69,11 +86,31 @@ def run_omp3(name, **kwargs):
     an orbital-optimized MP3 computation
 
     """
-    oldref = PsiMod.get_global_option('REFERENCE')
-    PsiMod.set_global_option('REFERENCE', 'UHF')
+    #oldref = PsiMod.get_global_option('REFERENCE')
+    #PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.omp3()
-    PsiMod.set_global_option('REFERENCE', oldref)
+    #PsiMod.set_global_option('REFERENCE', oldref)    
+
+
+def run_scs_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-component scaled OMP3 computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP3', 'DO_SCS', 'TRUE')
+    return PsiMod.omp3()
+
+
+def run_sos_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-opposite scaled OMP3 computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP3', 'DO_SOS', 'TRUE')
+    return PsiMod.omp3()
 
 
 def run_scf(name, **kwargs):
