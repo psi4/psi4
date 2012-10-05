@@ -1128,7 +1128,11 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mints5/Makefile
           tests/omp2-1/Makefile
+          tests/omp2-2/Makefile
+          tests/omp2-3/Makefile
           tests/omp3-1/Makefile
+          tests/omp3-2/Makefile
+          tests/omp3-3/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile

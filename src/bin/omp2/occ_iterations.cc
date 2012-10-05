@@ -42,14 +42,13 @@ namespace psi{ namespace omp2wave{
 void OMP2Wave::occ_iterations()
 {
   
-fprintf(outfile,"\n  \n");      
+fprintf(outfile,"\n");      
 fprintf(outfile," ============================================================================== \n");    
 fprintf(outfile," ================ Performing OMP2 iterations... =============================== \n");  
 fprintf(outfile," ============================================================================== \n");
-fprintf(outfile,"\n");
 fprintf(outfile, "\t            Minimizing MP2-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
-fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      T2 RMS    \n");
+fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      RMS T2    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  \n");
 fflush(outfile);
 
@@ -68,10 +67,13 @@ fflush(outfile);
         errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
         vecsA->zero();
         errvecsA->zero();
-        vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
-        errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
-        vecsB->zero();
-        errvecsB->zero();
+
+        if (reference == "UHF") {
+            vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
+            errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
+            vecsB->zero();
+            errvecsB->zero();
+        }
       }
       
       
@@ -98,7 +100,8 @@ do
 /************************** Transform TEI from SO to MO space *******************************/
 /********************************************************************************************/
         timer_on("trans_ints");
-        trans_ints(); 
+	if (reference == "RHF") trans_ints_rhf();  
+	else if (reference == "UHF") trans_ints_uhf();  
         timer_off("trans_ints");
  
 /********************************************************************************************/
@@ -129,7 +132,6 @@ do
 	mp2l_energy();
         timer_off("MP2L Energy");
 
-
 /********************************************************************************************/
 /************************** new orbital gradient ********************************************/
 /********************************************************************************************/	 
@@ -140,6 +142,15 @@ do
 /********************************************************************************************/
 /************************** Print ***********************************************************/
 /********************************************************************************************/
+    if (reference == "RHF") {
+	nidp=nidpA;
+	rms_wog=rms_wogA;
+	biggest_mograd=biggest_mogradA;
+	rms_kappa=rms_kappaA;
+	biggest_kappa=biggest_kappaA;
+    }
+
+    else if (reference == "UHF") {
 	nidp=MAX0(nidpA,nidpB);
 	rms_wog=MAX0(rms_wogA,rms_wogB);
 	biggest_mograd=MAX0(biggest_mogradA,biggest_mogradB);
@@ -147,6 +158,7 @@ do
 	biggest_kappa=MAX0(biggest_kappaA,biggest_kappaB);
 	rms_t2=MAX0(rms_t2AA,rms_t2BB);
 	rms_t2=MAX0(rms_t2,rms_t2AB);
+    }
 	
 fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e  %12.2e  %12.2e \n",
 	           itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
@@ -171,7 +183,6 @@ fprintf(outfile,"\n");
 fprintf(outfile," ============================================================================== \n");
 fprintf(outfile," ======================== OMP2 ITERATIONS ARE CONVERGED ======================= \n");
 fprintf(outfile," ============================================================================== \n");
-fprintf(outfile,"\n");
 fflush(outfile);
 }
 

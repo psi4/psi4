@@ -45,7 +45,125 @@ void OMP3Wave::twopdm_corr_opdm()
     dpdbuf4 G;
     
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
+
+ if (reference == "RHF") {
+    // TPDM <OO|OO>
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+      for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
+        for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            for(int kl = 0; kl < G.params->coltot[h]; ++kl){
+                int k = G.params->colorb[h][kl][0];
+                int l = G.params->colorb[h][kl][1];
+		
+		int hi = G.params->psym[i];
+		int hj = G.params->qsym[j];
+		int hk = G.params->rsym[k];
+		int hl = G.params->ssym[l];
+		
+		int ii = i - G.params->poff[hi];
+		int jj = j - G.params->qoff[hj];
+		int kk = k - G.params->roff[hk];
+		int ll = l - G.params->soff[hl];
+		
+		if (i == k && hj == hl) G.matrix[h][ij][kl] += 0.5 * gamma1corr->get(hj,jj,ll);
+		if (j == l && hi == hk) G.matrix[h][ij][kl] += 0.5 * gamma1corr->get(hi,ii,kk);
+		if (i == l && hj == hk) G.matrix[h][ij][kl] -= 0.125 * gamma1corr->get(hj,jj,kk);
+		if (j == k && hi == hl) G.matrix[h][ij][kl] -= 0.125 * gamma1corr->get(hi,ii,ll);
+		if (i == j && hk == hl) G.matrix[h][ij][kl] -= 0.125 * gamma1corr->get(hk,kk,ll);
+		if (k == l && hi == hj) G.matrix[h][ij][kl] -= 0.125 * gamma1corr->get(hi,ii,jj);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&G, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
     
+    //Print 
+    if (print_ > 3) {
+      dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+      dpd_buf4_print(&G, outfile, 1);
+      dpd_buf4_close(&G);
+    }
+  
+
+    // TPDM <OO|VV>
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+      for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
+        for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            for(int ab = 0; ab < G.params->coltot[h]; ++ab){
+                int a = G.params->colorb[h][ab][0];
+                int b = G.params->colorb[h][ab][1];
+		int ha = G.params->rsym[a];
+		int hb = G.params->ssym[b];
+		int aa = a - G.params->roff[ha] + occpiA[ha];
+		int bb = b - G.params->soff[hb] + occpiA[hb];
+                if (i == j && ha == hb) G.matrix[h][ij][ab] -= 0.125 * gamma1corr->get(ha, aa, bb);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&G, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+  
+    //Print 
+    if (print_ > 3) {
+      dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+      dpd_buf4_print(&G, outfile, 1);
+      dpd_buf4_close(&G);
+    }
+    
+    // TPDM <OV|OV>
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+      for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
+        for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            for(int jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+		
+		int ha = G.params->qsym[a];
+		int hb = G.params->ssym[b];
+		int aa = a - G.params->qoff[ha] + occpiA[ha];
+		int bb = b - G.params->soff[hb] + occpiA[hb];
+
+		if (i == j && ha == hb) G.matrix[h][ia][jb] += 0.5 * gamma1corr->get(ha,aa,bb);
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&G, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    //Print 
+    if (print_ > 3) {
+      dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");  
+      dpd_buf4_print(&G, outfile, 1);
+      dpd_buf4_close(&G);
+    }
+
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
     // TPDM OOOO-Block 
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
@@ -53,6 +171,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -88,6 +207,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -123,6 +243,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -166,8 +287,6 @@ void OMP3Wave::twopdm_corr_opdm()
       dpd_buf4_print(&G, outfile, 1);
       dpd_buf4_close(&G);
     }
-    
-    
  
     // TPDM <OV|OV>
     // Alpha-Alpha spin case
@@ -176,6 +295,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h); 
+        #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -201,6 +321,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
+        #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -226,6 +347,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
+        #pragma omp parallel for
         for(int ia = 0; ia < G.params->rowtot[h]; ++ia){
             int i = G.params->roworb[h][ia][0];
             int a = G.params->roworb[h][ia][1];
@@ -271,6 +393,7 @@ void OMP3Wave::twopdm_corr_opdm()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
+        #pragma omp parallel for
         for(int ai = 0; ai < G.params->rowtot[h]; ++ai){
             int a = G.params->roworb[h][ai][0];
             int i = G.params->roworb[h][ai][1];
@@ -334,6 +457,7 @@ void OMP3Wave::twopdm_corr_opdm()
     dpd_buf4_close(&G);
     */
     
+ }// end if (reference == "UHF") 
     psio_->close(PSIF_OMP3_DENSITY, 1);
    
 }

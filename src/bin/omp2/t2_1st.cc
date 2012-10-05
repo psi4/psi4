@@ -38,6 +38,62 @@ namespace psi{ namespace omp2wave{
   
 void OMP2Wave::t2_1st_sc()
 {   
+
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+     dpdbuf4 K, T, D, Tau, Ttemp, Tss;
+     
+     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+     psio_->open(PSIF_OMP2_DPD, PSIO_OPEN_OLD);
+     
+    // T_ij^ab = <ij|ab>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_copy(&K, PSIF_OMP2_DPD, "T <OO|VV>");
+    dpd_buf4_close(&K);
+    
+    
+    // T_ij^ab = T_ij^ab / D_ij^ab
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+    dpd_buf4_init(&T, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
+    dpd_buf4_dirprd(&D, &T);
+    dpd_buf4_close(&D);
+    
+     // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
+     // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
+     dpd_buf4_copy(&T, PSIF_OMP2_DPD, "Tau <OO|VV>");
+     dpd_buf4_copy(&T, PSIF_OMP2_DPD, "TAA <OO|VV>");
+     dpd_buf4_sort(&T, PSIF_OMP2_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+     dpd_buf4_init(&Tau, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+     dpd_buf4_init(&Tss, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TAA <OO|VV>");
+     dpd_buf4_init(&Ttemp, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
+     dpd_buf4_scm(&Tau, 2.0);
+     dpd_buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
+     dpd_buf4_axpy(&Ttemp, &Tss, -1.0); // -1.0*Ttemp + Tss -> Tss
+     dpd_buf4_close(&Ttemp);
+     dpd_buf4_close(&Tau);
+     dpd_buf4_close(&Tss);
+     
+     if (print_ > 4) dpd_buf4_print(&T, outfile, 1);
+     dpd_buf4_close(&T);
+     
+     psio_->close(PSIF_LIBTRANS_DPD, 1);
+     psio_->close(PSIF_OMP2_DPD, 1);
+
+}// end if (reference == "RHF") 
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
      dpdbuf4 K, T, D;
      
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -103,12 +159,111 @@ void OMP2Wave::t2_1st_sc()
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP2_DPD, 1);
 
+}// end if (reference == "UHF") 
 } // end t2_1st_sc
+
 
 
 void OMP2Wave::t2_1st_general()
 {   
      //fprintf(outfile,"\n t2_1st_general is starting... \n"); fflush(outfile);
+
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+     
+     dpdbuf4 K, T, Tnew, D, R, Tau, Ttemp, Tss;
+     dpdfile2 Fo,Fv;
+     int nElements;
+     
+     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+     psio_->open(PSIF_OMP2_DPD, PSIO_OPEN_OLD);
+     
+     // T_ij^ab = <ij|ab>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_copy(&K, PSIF_OMP2_DPD, "Tnew <OO|VV>");
+    dpd_buf4_close(&K);
+    
+    
+    // initalize Tnew and Told
+    dpd_buf4_init(&Tnew, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tnew <OO|VV>");
+    dpd_buf4_init(&T, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
+    
+    // T_ij^ab = \sum_{e} T_ij^ae * F_be + \sum_{e} T_ij^eb * F_ae
+    dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");  
+    dpd_contract424(&T, &Fv, &Tnew, 3, 1, 0, 1.0, 1.0); 
+    dpd_contract244(&Fv, &T, &Tnew, 1, 2, 1, 1.0, 1.0); 
+    //dpd_contract244(&Fv, &T, &Tnew, 1, 0, 1, 1.0, 1.0); 
+    dpd_file2_close(&Fv);
+    
+    // T_ij^ab = -\sum_{m} T_im^ab * F_mj - \sum_{m} T_mj^ab * F_mi
+    dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    dpd_contract424(&T, &Fo, &Tnew, 1, 0, 1, -1.0, 1.0);
+    dpd_contract244(&Fo, &T, &Tnew, 0, 0, 0, -1.0, 1.0);
+    //dpd_contract244(&Fo, &T, &Tnew, 0, 2, 0, -1.0, 1.0);
+    dpd_file2_close(&Fo);
+    
+  
+    // T_ij^ab = T_ij^ab / D_ij^ab
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+    dpd_buf4_init(&Tnew, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tnew <OO|VV>");
+    dpd_buf4_dirprd(&D, &Tnew);
+    dpd_buf4_close(&D);
+    
+     // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
+     // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
+     dpd_buf4_copy(&Tnew, PSIF_OMP2_DPD, "Tau <OO|VV>");
+     dpd_buf4_copy(&Tnew, PSIF_OMP2_DPD, "TAA <OO|VV>");
+     dpd_buf4_sort(&Tnew, PSIF_OMP2_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+     dpd_buf4_init(&Tau, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+     dpd_buf4_init(&Tss, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TAA <OO|VV>");
+     dpd_buf4_init(&Ttemp, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
+     dpd_buf4_scm(&Tau, 2.0);
+     dpd_buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
+     dpd_buf4_axpy(&Ttemp, &Tss, -1.0); // -1.0*Ttemp + Tss -> Tss
+     dpd_buf4_close(&Ttemp);
+     dpd_buf4_close(&Tau);
+     dpd_buf4_close(&Tss);
+    
+    // Compute amplitude residual to Check Convergence
+    dpd_buf4_copy(&Tnew, PSIF_OMP2_DPD, "Residual_T <OO|VV>");
+    dpd_buf4_init(&R, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Residual_T <OO|VV>");
+    dpd_buf4_axpy(&T, &R, -1.0); // -1.0*T + R -> R
+    dpd_buf4_close(&T);
+    
+    nElements = 0;
+    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    rms_t2 = 0.0;
+    rms_t2 = dpd_buf4_dot_self(&R);
+    dpd_buf4_close(&R);
+    rms_t2 = sqrt(rms_t2 / nElements);
+    
+    // Reset
+    dpd_buf4_copy(&Tnew, PSIF_OMP2_DPD, "T <OO|VV>");
+    if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
+    
+    // close
+    dpd_buf4_close(&Tnew);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_OMP2_DPD, 1);
+ 
+}// end if (reference == "RHF") 
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
      
      dpdbuf4 K, T, Tnew, D, R;
      dpdfile2 Fo,Fv;
@@ -155,8 +310,6 @@ void OMP2Wave::t2_1st_general()
     dpd_buf4_close(&Tnew);
     
     
-    
-    
     // Build new T2BB 
     // T_ij^ab = <ij||ab>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -193,8 +346,7 @@ void OMP2Wave::t2_1st_general()
     dpd_buf4_close(&D);
     dpd_buf4_close(&Tnew);
     
-    
-    
+
     // Build new T2AB
     // T_Ij^Ab = <Ij||Ab>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -234,8 +386,6 @@ void OMP2Wave::t2_1st_general()
     dpd_buf4_dirprd(&D, &Tnew);
     dpd_buf4_close(&D);
     dpd_buf4_close(&Tnew);
-    
-    
     
     
     // Compute amplitude residual to Check Convergence
@@ -310,14 +460,13 @@ void OMP2Wave::t2_1st_general()
     if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
     
-    
-    
     // close files
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OMP2_DPD, 1);
     
-    //fprintf(outfile,"\n t2_1st_general done. \n"); fflush(outfile);
+}// end if (reference == "UHF") 
 
+    //fprintf(outfile,"\n t2_1st_general done. \n"); fflush(outfile);
 } // end t2_1st_general
 
 }} // End Namespaces
