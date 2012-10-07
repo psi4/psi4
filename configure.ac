@@ -1148,6 +1148,7 @@ AC_CONFIG_FILES([
           tests/dft-pbe0-2/Makefile
           tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
+          tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs-psimod/Makefile

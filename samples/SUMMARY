@@ -262,6 +262,9 @@ dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 dft-pbe0-2:   Internal match to psi4, test to match to literature values in litref.in/litref.out
 
 
+dft-psivar:   HF and DFT variants single-points on zmat methane, mostly to test that    PSI variables are set and computed correctly.
+
+
 dft1:         DFT Functional Test
 
 

@@ -889,12 +889,14 @@ def run_dft(name, **kwargs):
             PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
             PsiMod.dfmp2()
-            returnvalue += dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
 
         else:
             PsiMod.dfmp2()
-            returnvalue += dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
 
+        PsiMod.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        returnvalue += vdh
         PsiMod.set_variable('DFT TOTAL ENERGY', returnvalue)
         PsiMod.set_variable('CURRENT ENERGY', returnvalue)
 
@@ -1428,6 +1430,7 @@ def run_mrcc(name, **kwargs):
     """
     # TODO: Check to see if we really need to run the SCF code.
     run_scf(name, **kwargs)
+    vscf = PsiMod.get_variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
@@ -1520,12 +1523,16 @@ def run_mrcc(name, **kwargs):
         m = fields[1]
         try:
             e = float(fields[5])
-            PsiMod.set_variable(m + ' ENERGY', e)
+            if m == "MP(2)":
+                m = "MP2"
+            PsiMod.set_variable(m + ' TOTAL ENERGY', e)
+            PsiMod.set_variable(m + ' CORRELATION ENERGY', e - vscf)
         except ValueError:
             continue
 
     # The last 'e' in iface is the one the user requested.
     PsiMod.set_variable('CURRENT ENERGY', e)
+    PsiMod.set_variable('CURRENT CORRELATION ENERGY', e - vscf)
 
     # Load the iface file
     iface = open('iface', 'r')
