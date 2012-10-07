@@ -2202,7 +2202,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- SUBSECTION Optimization Algorithm -*/
 
       /*- Maximum number of geometry optimization steps -*/
-      options.add_int("GEOM_MAXITER", 20);
+      options.add_int("GEOM_MAXITER", 50);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/

@@ -782,6 +782,8 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd(t)                 | CCSD with perturbative triples                                                        |
@@ -904,6 +906,7 @@ def optimize(name, **kwargs):
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
+            PsiMod.print_out('\n    Final optimized geometry and variables:\n')
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
@@ -921,7 +924,7 @@ def optimize(name, **kwargs):
             return thisenergy
 
         PsiMod.print_out('\n    Structure for next step:\n')
-        PsiMod.get_active_molecule().print_out_in_angstrom()
+        PsiMod.get_active_molecule().print_in_input_format()
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
