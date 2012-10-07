@@ -263,7 +263,11 @@ void MOLECULE::project_f_and_H(void) {
 }
 
 void MOLECULE::print_geom(void) {
+#if defined(OPTKING_PACKAGE_QCHEM)
   fprintf(outfile,"\tCartesian Geometry (au)\n");
+#elif defined(OPTKING_PACKAGE_PSI)
+  fprintf(outfile,"\tCartesian Geometry (in Angstrom)\n");
+#endif
   fflush(outfile);
   for (int i=0; i<fragments.size(); ++i)
     fragments[i]->print_geom(outfile);
