@@ -213,7 +213,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 05, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 06, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).\n") ;
    fprintf(outfile,"\n");
@@ -276,7 +276,13 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
-	Process::environment.globals["MP2 ENERGY"] = Emp2;
+	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
+	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
         timer_on("T2(2)");
 	t2_2nd_sc();
@@ -309,7 +315,13 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
-	Process::environment.globals["MP3 ENERGY"] = Emp3;
+	Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
+	Process::environment.globals["SCS-MP3 TOTAL ENERGY"] = Escsmp3;
+	Process::environment.globals["SOS-MP3 TOTAL ENERGY"] = Esosmp3;
+	Process::environment.globals["SCSN-MP3 TOTAL ENERGY"] = Escsnmp3;
+	Process::environment.globals["SCS-MI-MP3 TOTAL ENERGY"] = Escsmimp3;
+	Process::environment.globals["SCS-MP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
+	Process::environment.globals["SOS-PI-MP3 TOTAL ENERGY"] = Esospimp3;
 
 	response_pdms();
 	GFockmo();
@@ -399,25 +411,31 @@ double OMP3Wave::compute_energy()
 	Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
 	Process::environment.globals["SCS-OMP3 TOTAL ENERGY"] =  Escsmp3;
 	Process::environment.globals["SOS-OMP3 TOTAL ENERGY"] =  Esosmp3;
+	Process::environment.globals["SCSN-OMP3 TOTAL ENERGY"] = Escsnmp3;
+	Process::environment.globals["SCS-MI-OMP3 TOTAL ENERGY"] = Escsmimp3;
+	Process::environment.globals["SCS-OMP3-VDW TOTAL ENERGY"] = Escsmp3vdw;
+	Process::environment.globals["SOS-PI-OMP3 TOTAL ENERGY"] = Esospimp3;
 	Process::environment.globals["CURRENT ENERGY"] = Emp3L;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
+        /*
 	chkpt_->wt_etot(Emp3L);
 	chkpt_->wt_emp2(Emp3L);
 	chkpt_->wt_ecorr(Emp3L-Escf);
 	chkpt_->wt_eref(Eref);
-	
+	*/
+
 	if (do_scs == "TRUE") {
 	  Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
-	  chkpt_->wt_etot(Escsmp3);
-	  chkpt_->wt_ecorr(Escsmp3-Escf);
+	  //chkpt_->wt_etot(Escsmp3);
+	  //chkpt_->wt_ecorr(Escsmp3-Escf);
 	}
     
 	else if (do_sos == "TRUE") {
 	  Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
-	  chkpt_->wt_etot(Esosmp3);
-	  chkpt_->wt_ecorr(Esosmp3-Escf);
+	  //chkpt_->wt_etot(Esosmp3);
+	  //chkpt_->wt_ecorr(Esosmp3-Escf);
 	}
  
 	if (natorb == "TRUE") nbo();

@@ -199,7 +199,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 05, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 06, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
    fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;
@@ -262,7 +262,13 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fflush(outfile);
-	Process::environment.globals["MP2 ENERGY"] = Emp2;
+	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
+	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
 	response_pdms();
 	GFockmo();
@@ -326,6 +332,10 @@ double OMP2Wave::compute_energy()
 	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
 	Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
 	Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
+	Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MI-OMP2 TOTAL ENERGY"] = Escsmimp2;
+	Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
 	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
