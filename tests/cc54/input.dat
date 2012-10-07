@@ -105,3 +105,4 @@ D 2 1.00
 }
 
 property('ccsd',properties=['dipole'])
+print_variables()
