@@ -414,7 +414,7 @@ def run_mp2(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -484,7 +484,7 @@ def run_dfmp2_gradient(name, **kwargs):
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-        run_scf('RHF', **kwargs)
+        scf_helper(name, **kwargs)
 
     PsiMod.print_out('\n')
     banner('DFMP2')
@@ -553,7 +553,7 @@ def run_ccenergy(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -604,7 +604,7 @@ def run_bccd(name, **kwargs):
     # Bypass routine scf if user did something special to get it to
     # converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -998,7 +998,7 @@ def run_detci(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -1034,7 +1034,7 @@ def run_dfmp2(name, **kwargs):
         if(PsiMod.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        run_scf('RHF', **kwargs)
+        scf_helper(name, **kwargs)
 
     PsiMod.print_out('\n')
     banner('DFMP2')
@@ -1077,7 +1077,7 @@ def run_psimrcc_scf(name, **kwargs):
 
     """
 
-    run_scf(name, **kwargs)
+    scf_helper(name, **kwargs)
     PsiMod.psimrcc()
     e_psimrcc = PsiMod.get_variable("Current Energy")
     return e_psimrcc
@@ -1429,7 +1429,7 @@ def run_mrcc(name, **kwargs):
 
     """
     # TODO: Check to see if we really need to run the SCF code.
-    run_scf(name, **kwargs)
+    scf_helper(name, **kwargs)
     vscf = PsiMod.get_variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
@@ -1619,7 +1619,7 @@ def run_cepa(name, **kwargs):
         PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'AQCC')
 
     PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-    run_scf('scf', **kwargs)
+    scf_helper(name, **kwargs)
 
     # If the scf type is DF, then the AO integrals were never generated
     if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
