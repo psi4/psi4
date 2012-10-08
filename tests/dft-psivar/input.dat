@@ -18,6 +18,10 @@ units angstrom
 
 set basis 6-31g*
 set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
+set scf e_convergence 8
+set scf d_convergence 8
 
 ref_nn = 13.3192671807114618          #TEST
 ref_hf_1e = -79.4733850581794741      #TEST
@@ -36,53 +40,53 @@ ref_b2plyp_dh = -0.046404359527       #TEST
 
 
 energy('scf')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"), 7, "HF: NN")  #TEST
-compare_values(ref_hf_1e, get_variable("One-Electron Energy"),   7, "HF: 1e")  #TEST
-compare_values(ref_hf_2e, get_variable("Two-Electron Energy"),   7, "HF: 2e")  #TEST
-compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("hf Total Energy"), 7, "HF: total HF")  #TEST
-compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("SCF Total Energy"), 7, "HF: total SCF")  #TEST
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"), 6, "HF: NN")  #TEST
+compare_values(ref_hf_1e, get_variable("One-Electron Energy"),   6, "HF: 1e")  #TEST
+compare_values(ref_hf_2e, get_variable("Two-Electron Energy"),   6, "HF: 2e")  #TEST
+compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("hf Total Energy"), 6, "HF: total HF")  #TEST
+compare_values(ref_nn + ref_hf_1e + ref_hf_2e, get_variable("SCF Total Energy"), 6, "HF: total SCF")  #TEST
 clean()
 
 energy('b3lyp')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),  7, "DFT: NN")
-compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"), 7, "DFT: 1e")
-compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"), 7, "DFT: 2e")
-compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),       7, "DFT: XC")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 7, "DFT: total FNCL")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("SCF Total Energy"), 7, "DFT: total SCF")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Total Energy"), 7, "DFT: total DFT")
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),  6, "DFT: NN")
+compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"), 6, "DFT: 1e")
+compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"), 6, "DFT: 2e")
+compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),       6, "DFT: XC")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 6, "DFT: total FNCL")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("SCF Total Energy"), 6, "DFT: total SCF")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Total Energy"), 6, "DFT: total DFT")
 clean()
 
 energy('b3lyp-d')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),          7, "DFT-D: NN")  #TEST
-compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"),         7, "DFT-D: 1e")  #TEST
-compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"),         7, "DFT-D: 2e")  #TEST
-compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),               7, "DFT-D: XC")  #TEST
-compare_values(ref_b3lyp_d, get_variable("dispersion correction Energy"), 7, "DFT-D: D")   #TEST
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 7, "DFT-D: total FNCL")  #TEST
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("SCF Total Energy"), 7, "DFT-D: total SCF")  #TEST
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("DFT Total Energy"), 7, "DFT-D: total DFT")  #TEST
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),          6, "DFT-D: NN")  #TEST
+compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"),         6, "DFT-D: 1e")  #TEST
+compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"),         6, "DFT-D: 2e")  #TEST
+compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),               6, "DFT-D: XC")  #TEST
+compare_values(ref_b3lyp_d, get_variable("dispersion correction Energy"), 6, "DFT-D: D")   #TEST
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 6, "DFT-D: total FNCL")  #TEST
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("SCF Total Energy"), 6, "DFT-D: total SCF")  #TEST
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc + ref_b3lyp_d, get_variable("DFT Total Energy"), 6, "DFT-D: total DFT")  #TEST
 clean()
 
 energy('b2plyp')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               7, "DH-DFT: NN")  #TEST
-compare_values(ref_b2plyp_1e, get_variable("One-Electron Energy"),             7, "DH-DFT: 1e")  #TEST
-compare_values(ref_b2plyp_2e, get_variable("Two-Electron Energy"),             7, "DH-DFT: 2e")  #TEST
-compare_values(ref_b2plyp_xc, get_variable("DFT XC Energy"),                   7, "DH-DFT: XC")  #TEST
-compare_values(ref_b2plyp_dh, get_variable("DOUBLE-hybrid correction Energy"), 7, "DH-DFT: DH")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 7, "DH-DFT: total FNCL")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("SCF Total Energy"), 7, "DH-DFT: total SCF")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_dh, get_variable("DFT Total Energy"), 7, "DH-DFT: total DFT")  #TEST
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               6, "DH-DFT: NN")  #TEST
+compare_values(ref_b2plyp_1e, get_variable("One-Electron Energy"),             6, "DH-DFT: 1e")  #TEST
+compare_values(ref_b2plyp_2e, get_variable("Two-Electron Energy"),             6, "DH-DFT: 2e")  #TEST
+compare_values(ref_b2plyp_xc, get_variable("DFT XC Energy"),                   6, "DH-DFT: XC")  #TEST
+compare_values(ref_b2plyp_dh, get_variable("DOUBLE-hybrid correction Energy"), 6, "DH-DFT: DH")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 6, "DH-DFT: total FNCL")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("SCF Total Energy"), 6, "DH-DFT: total SCF")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_dh, get_variable("DFT Total Energy"), 6, "DH-DFT: total DFT")  #TEST
 clean()
 
 energy('b2plyp-d')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               7, "DH-DFT-D: NN")  #TEST
-compare_values(ref_b2plyp_1e, get_variable("One-Electron Energy"),             7, "DH-DFT-D: 1e")  #TEST
-compare_values(ref_b2plyp_2e, get_variable("Two-Electron Energy"),             7, "DH-DFT-D: 2e")  #TEST
-compare_values(ref_b2plyp_xc, get_variable("DFT XC Energy"),                   7, "DH-DFT-D: XC")  #TEST
-compare_values(ref_b2plyp_d, get_variable("dispersion correction Energy"),     7, "DH-DFT-D: D")   #TEST
-compare_values(ref_b2plyp_dh, get_variable("double-hybrid correction Energy"), 7, "DH-DFT-D: DH")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 7, "DH-DFT-D: total FNCL")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d, get_variable("SCF Total Energy"), 7, "DH-DFT-D: total SCF")  #TEST
-compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d + ref_b2plyp_dh, get_variable("DFT Total Energy"), 7, "DH-DFT-D: total DFT")  #TEST
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),               6, "DH-DFT-D: NN")  #TEST
+compare_values(ref_b2plyp_1e, get_variable("One-Electron Energy"),             6, "DH-DFT-D: 1e")  #TEST
+compare_values(ref_b2plyp_2e, get_variable("Two-Electron Energy"),             6, "DH-DFT-D: 2e")  #TEST
+compare_values(ref_b2plyp_xc, get_variable("DFT XC Energy"),                   6, "DH-DFT-D: XC")  #TEST
+compare_values(ref_b2plyp_d, get_variable("dispersion correction Energy"),     6, "DH-DFT-D: D")   #TEST
+compare_values(ref_b2plyp_dh, get_variable("double-hybrid correction Energy"), 6, "DH-DFT-D: DH")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc, get_variable("DFT Functional Total Energy"), 6, "DH-DFT-D: total FNCL")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d, get_variable("SCF Total Energy"), 6, "DH-DFT-D: total SCF")  #TEST
+compare_values(ref_nn + ref_b2plyp_1e + ref_b2plyp_2e + ref_b2plyp_xc + ref_b2plyp_d + ref_b2plyp_dh, get_variable("DFT Total Energy"), 6, "DH-DFT-D: total DFT")  #TEST
 

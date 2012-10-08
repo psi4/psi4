@@ -48,6 +48,8 @@ set {
     basis cc-pVDZ
     SCF_TYPE DF
     REFERENCE RHF
+    e_convergence 8
+    d_convergence 8
 }
 
 

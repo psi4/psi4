@@ -18,6 +18,10 @@ units angstrom
 
 set basis 6-31g*
 set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
+set scf e_convergence 8
+set scf d_convergence 8
 
 
 
@@ -27,13 +31,13 @@ energy('scf')
 clean()
 
 energy('b3lyp')
-compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),  7, "DFT: NN")
-compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"), 7, "DFT: 1e")
-compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"), 7, "DFT: 2e")
-compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),       7, "DFT: XC")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 7, "DFT: total FNCL")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("SCF Total Energy"), 7, "DFT: total SCF")
-compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Total Energy"), 7, "DFT: total DFT")
+compare_values(ref_nn, get_variable("Nuclear Repulsion Energy"),  6, "DFT: NN")
+compare_values(ref_b3lyp_1e, get_variable("One-Electron Energy"), 6, "DFT: 1e")
+compare_values(ref_b3lyp_2e, get_variable("Two-Electron Energy"), 6, "DFT: 2e")
+compare_values(ref_b3lyp_xc, get_variable("DFT XC Energy"),       6, "DFT: XC")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Functional Total Energy"), 6, "DFT: total FNCL")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("SCF Total Energy"), 6, "DFT: total SCF")
+compare_values(ref_nn + ref_b3lyp_1e + ref_b3lyp_2e + ref_b3lyp_xc, get_variable("DFT Total Energy"), 6, "DFT: total DFT")
 clean()
 
 energy('b3lyp-d')

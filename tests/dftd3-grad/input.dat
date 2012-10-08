@@ -21,6 +21,10 @@ set {
     scf_type      df
     basis         cc-pvdz
     freeze_core   true
+    dft_radial_points     99
+    dft_spherical_points  302
+    e_convergence 8
+    d_convergence 8
 }
 
 gradient('bp86-d2gr')

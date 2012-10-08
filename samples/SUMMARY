@@ -385,6 +385,9 @@ omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
 
+omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
+
+
 omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
