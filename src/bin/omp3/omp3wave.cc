@@ -76,6 +76,8 @@ void OMP3Wave::common_init()
         compute_mp3l=options_.get_str("MP3L_ENERGY"); 
 	level_shift=options_.get_str("DO_LEVEL_SHIFT");
         twopdm_abcd_type=options_.get_str("TPDM_ABCD_TYPE");
+	scs_type_=options_.get_str("SCS_TYPE");
+	sos_type_=options_.get_str("SOS_TYPE");
 
 	cutoff = pow(10.0,-exp_cutoff);
 	
@@ -213,9 +215,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 06, 2012.\n") ;
-   fprintf(outfile,"\n");
-   fprintf(outfile,"              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).\n") ;
+   fprintf(outfile,"              Latest Revision October 08, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -419,25 +419,36 @@ double OMP3Wave::compute_energy()
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3L-Escf;
 
-        /*
-	chkpt_->wt_etot(Emp3L);
-	chkpt_->wt_emp2(Emp3L);
-	chkpt_->wt_ecorr(Emp3L-Escf);
-	chkpt_->wt_eref(Eref);
-	*/
-
+        // if scs on	
 	if (do_scs == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
-	  //chkpt_->wt_etot(Escsmp3);
-	  //chkpt_->wt_ecorr(Escsmp3-Escf);
+	    if (scs_type_ == "SCS") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3;
+            }
+
+	    else if (scs_type_ == "SCSN") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp3;
+            }
+
+	    else if (scs_type_ == "SCSMI") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp3;
+            }
+
+	    else if (scs_type_ == "SCSVDW") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp3vdw;
+            }
 	}
     
+        // else if sos on	
 	else if (do_sos == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
-	  //chkpt_->wt_etot(Esosmp3);
-	  //chkpt_->wt_ecorr(Esosmp3-Escf);
+	     if (sos_type_ == "SOS") {
+	         Process::environment.globals["CURRENT ENERGY"] = Esosmp3;
+             }
+
+	     else if (sos_type_ == "SOSPI") {
+	             Process::environment.globals["CURRENT ENERGY"] = Esospimp3;
+             }
 	}
- 
+
 	if (natorb == "TRUE") nbo();
 	if (omp3_orb_energy == "TRUE") semi_canonic(); 
 	
@@ -473,9 +484,7 @@ double OMP3Wave::compute_energy()
   }// end if (conver == 1)
 
         mem_release();
-	if (do_scs == "TRUE") return Escsmp3;
-	else if (do_sos == "TRUE") return Esosmp3;
-        else return Emp3L;
+        return Emp3L;
 
 } // end of compute_energy
 

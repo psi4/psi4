@@ -66,6 +66,19 @@ def run_scs_omp2(name, **kwargs):
     a spin-component scaled OMP2 computation
 
     """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of scs?
+    if (lowername == 'scs-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCS')
+    elif (lowername == 'scsn-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSN')
+    elif (lowername == 'scs-mi-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSMI')
+    elif (lowername == 'scs-omp2-vdw'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSVDW')
+
     PsiMod.scf()
     PsiMod.set_local_option('OMP2', 'DO_SCS', 'TRUE')
     return PsiMod.omp2()
@@ -76,6 +89,15 @@ def run_sos_omp2(name, **kwargs):
     a spin-opposite scaled OMP2 computation
 
     """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of sos?
+    if (lowername == 'sos-omp2'):
+        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOS')
+    elif (lowername == 'sos-pi-omp2'):
+        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOSPI')
+
     PsiMod.scf()
     PsiMod.set_local_option('OMP2', 'DO_SOS', 'TRUE')
     return PsiMod.omp2()
@@ -98,6 +120,19 @@ def run_scs_omp3(name, **kwargs):
     a spin-component scaled OMP3 computation
 
     """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of scs?
+    if (lowername == 'scs-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCS')
+    elif (lowername == 'scsn-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSN')
+    elif (lowername == 'scs-mi-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSMI')
+    elif (lowername == 'scs-omp3-vdw'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSVDW')
+
     PsiMod.scf()
     PsiMod.set_local_option('OMP3', 'DO_SCS', 'TRUE')
     return PsiMod.omp3()
@@ -108,6 +143,15 @@ def run_sos_omp3(name, **kwargs):
     a spin-opposite scaled OMP3 computation
 
     """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of sos?
+    if (lowername == 'sos-omp3'):
+        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOS')
+    elif (lowername == 'sos-pi-omp3'):
+        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOSPI')
+
     PsiMod.scf()
     PsiMod.set_local_option('OMP3', 'DO_SOS', 'TRUE')
     return PsiMod.omp3()

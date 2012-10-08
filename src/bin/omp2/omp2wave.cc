@@ -71,6 +71,8 @@ void OMP2Wave::common_init()
 	read_mo_coeff=options_.get_str("MO_READ");
         lineq=options_.get_str("LINEQ_SOLVER"); 
 	level_shift=options_.get_str("DO_LEVEL_SHIFT");
+	scs_type_=options_.get_str("SCS_TYPE");
+	sos_type_=options_.get_str("SOS_TYPE");
 	
 	cutoff = pow(10.0,-exp_cutoff);
 	
@@ -199,10 +201,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 06, 2012.\n") ;
-   fprintf(outfile,"\n");
-   fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
-   fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;
+   fprintf(outfile,"              Latest Revision October 08, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -339,24 +338,35 @@ double OMP2Wave::compute_energy()
 	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
-   
-        /* 
-	chkpt_->wt_etot(Emp2L);
-	chkpt_->wt_emp2(Emp2L);
-	chkpt_->wt_ecorr(Emp2L-Escf);
-	chkpt_->wt_eref(Eref);
-        */
-	
+
+        // if scs on	
 	if (do_scs == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
-	  //chkpt_->wt_etot(Escsmp2);
-	  //chkpt_->wt_ecorr(Escsmp2-Escf);
+	    if (scs_type_ == "SCS") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
+            }
+
+	    else if (scs_type_ == "SCSN") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
+            }
+
+	    else if (scs_type_ == "SCSMI") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp2;
+            }
+
+	    else if (scs_type_ == "SCSVDW") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
+            }
 	}
     
+        // else if sos on	
 	else if (do_sos == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
-	  //chkpt_->wt_etot(Esosmp2);
-	  //chkpt_->wt_ecorr(Esosmp2-Escf);
+	     if (sos_type_ == "SOS") {
+	         Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
+             }
+
+	     else if (sos_type_ == "SOSPI") {
+	             Process::environment.globals["CURRENT ENERGY"] = Esospimp2;
+             }
 	}
  
 	if (natorb == "TRUE") nbo();
@@ -394,9 +404,7 @@ double OMP2Wave::compute_energy()
   }// end if (conver == 1)
 
         mem_release();
-	if (do_scs == "TRUE") return Escsmp2;
-	else if (do_sos == "TRUE") return Esosmp2;
-        else return Emp2L;
+        return Emp2L;
 
 } // end of compute_energy
 

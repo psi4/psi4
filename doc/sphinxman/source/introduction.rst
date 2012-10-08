@@ -167,6 +167,28 @@ available in |PSIfour| are provided below.
   Perturbation Theory via MP2 Natural Orbitals," E. G. Hohenstein
   and C. D. Sherrill, *J. Chem. Phys.* **133**, 104107 (2010).
 
+.. rubric:: OMP2
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+.. rubric:: OMP3
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+
 .. index:: architectures
 .. index:: compilers
 
@@ -288,6 +310,10 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | CEPA(n)                 | Y         | N         | RHF             | threaded [#f3]_             |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
     | ACPF/AQCC               | Y         | N         | RHF             | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+
+    | OMP2                    | Y         | N         | RHF/UHF         | partially threaded          |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+
+    | OMP3                    | Y         | N         | RHF/UHF         | partially threaded          |
     +-------------------------+-----------+-----------+-----------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |

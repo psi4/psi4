@@ -203,7 +203,8 @@ protected:
      string do_sos;		// Spin-Opposite-Scaling
      string write_mo_coeff;	// Write CmoA to CmoA.psi and CmoB to CmoB.psi
      string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
-     string swap_mo;		// Swap phi_i with phi_j
+     string scs_type_;		
+     string sos_type_;		
 
 
      int *mopi; 		/* number of all MOs per irrep */
