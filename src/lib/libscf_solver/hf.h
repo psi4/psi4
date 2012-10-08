@@ -31,8 +31,6 @@ class TwoBodySOInt;
 class JK;
 namespace scf {
 
-class PKIntegrals;
-
 class HF : public Wavefunction {
 protected:
 
