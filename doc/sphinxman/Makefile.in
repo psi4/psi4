@@ -150,6 +150,7 @@ autodepend6 = \
 
 autotarget6 = \
 $(SOURCEDIR)/autodoc_dft_energy.rst \
+$(SOURCEDIR)/autodoc_dft_opt.rst \
 $(SOURCEDIR)/autodoc_dft_all.rst \
 $(SOURCEDIR)/autodoc_dft_gga.rst \
 $(SOURCEDIR)/autodoc_dft_meta.rst \

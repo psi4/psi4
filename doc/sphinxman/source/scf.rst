@@ -62,8 +62,8 @@ the iterations::
     @UHF iter   9:  -149.62730740326214   -1.07718e-11   1.80706e-07 DIIS
     @UHF iter  10:  -149.62730740326231   -1.70530e-13   2.19128e-08 DIIS
 
-The algorithm takes 10 true iterations to converge the energy and density to the
-default of 1.0E-8, plus the trivial iteration due to the SAD guess.
+The algorithm takes 10 true iterations to converge the energy and density to 
+1.0E-8, plus the trivial iteration due to the SAD guess.
 The energy on the zero-th iteration is not variational due to the improper
 idempotence properties of the SAD guess, but the first true iteration is within
 2.0E-4 relative error of the final answer, highlighting the
@@ -194,10 +194,11 @@ option, and a call to ``energy('scf')``::
     energy('scf') 
 
 This will run a Restricted Hartree-Fock (RHF) on neutral singlet Helium in
-:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-8 energy
-and density convergence criteria, a PK ERI algorithm, symmetric
-orthogonalization, DIIS, and a core Hamiltonian guess. For more information on
-any of these options, see the relevant section below. 
+:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6
+energy and 1.0E-5 density convergence criteria (since single-point, see
+:ref:`SCF Convergence <table:conv_scf>`), a PK ERI algorithm, symmetric
+orthogonalization, DIIS, and a core Hamiltonian guess. For more
+information on any of these options, see the relevant section below.
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,29 +388,6 @@ convergence. This is particularly likely for large systems, metallic systems,
 multireference systems, open-shell systems, anions, and systems with diffuse
 basis sets. 
 
-.. _`table:conv_scf`:
-
-.. table:: SCF convergence criteria by calculation type
-
-    +--------------------+------------------+-------------------------+-------------------------+
-    | *Ab Initio* Method | Calculation Type | |scf__e_convergence|    | |scf__d_convergence|    |
-    +====================+==================+=========================+=========================+
-    | SCF of HF or DFT   | energy           | 6                       | 5                       |
-    +                    +------------------+-------------------------+-------------------------+
-    |                    | optimization     | 8                       | 6                       |
-    +                    +------------------+-------------------------+-------------------------+
-    |                    | frequency        | 8                       | 6                       |
-    +--------------------+------------------+-------------------------+-------------------------+
-    | SCF of post-HF     | energy           | 8                       | 6                       |
-    +                    +------------------+-------------------------+-------------------------+
-    |                    | optimization     | 10                      | 7                       |
-    +                    +------------------+-------------------------+-------------------------+
-    |                    | frequency        | 10                      | 7                       |
-    +                    +------------------+-------------------------+-------------------------+
-    |                    | CC property      | 10                      | 7                       |
-    +--------------------+------------------+-------------------------+-------------------------+
-
-
 For initial orbital selection, several options are available. These include:
 
 CORE [Default]
@@ -527,6 +505,41 @@ For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
+
+Convergence and Algorithm Defaults
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _`table:conv_scf`:
+
+.. table:: SCF convergence criteria by calculation type [#f1]_
+
+    +--------------------+--------------------+----------------------+----------------------+
+    | *Ab Initio* Method | Calculation Type   | |scf__e_convergence| | |scf__d_convergence| |
+    +====================+====================+======================+======================+
+    | SCF of HF or DFT   | energy             | 6                    | 5                    |
+    +                    +--------------------+----------------------+----------------------+
+    |                    | optimization       | 8                    | 6                    |
+    +                    +--------------------+----------------------+----------------------+
+    |                    | frequency          | 8                    | 6                    |
+    +--------------------+--------------------+----------------------+----------------------+
+    | SCF of post-HF     | energy             | 8                    | 6                    |
+    +                    +--------------------+----------------------+----------------------+
+    |                    | optimization       | 10                   | 7                    |
+    +                    +--------------------+----------------------+----------------------+
+    |                    | frequency          | 10                   | 7                    |
+    +                    +--------------------+----------------------+----------------------+
+    |                    | CC property [#f2]_ | 10                   | 7                    |
+    +--------------------+--------------------+----------------------+----------------------+
+
+
+.. rubric:: Footnotes
+
+.. [#f1] Note that this table applies only the SCF module,
+   not to the final convergence criteria for post-HF methods or to methods
+   that use an alternate starting point, like MCSCF.
+
+.. [#f2] This applies to properties computed through the :py:func:`~driver.property` function.
+
 
 Recommendations
 ~~~~~~~~~~~~~~~
