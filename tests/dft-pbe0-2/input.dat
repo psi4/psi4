@@ -22,7 +22,7 @@ set dft_spherical_points 302
 e_dhdft = energy('pbe0-2')
 print_variables()
 val = -152.648635492831                           #TEST
-compare_values(val, e_dhdft, 8, "PBE0-2: Water")  #TEST
+compare_values(val, e_dhdft, 6, "PBE0-2: Water")  #TEST
 
 clean()
 
