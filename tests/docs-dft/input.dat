@@ -194,6 +194,12 @@ fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
 fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
+fopt = open('autodoc_dft_opt.rst', 'w')
+fopt.write('\n.. _`table:opt_dft`:\n\n')
+fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
+
 for fctl in sorted(funcdict.iterkeys()):
 
     if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
@@ -232,6 +238,16 @@ for fctl in sorted(funcdict.iterkeys()):
     
         fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 
+        if not funcdict[fctl]['is_c_hybrid']:
+            if funcdict[fctl]['dispersion']:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+            else:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+        
+            fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+
 
 fall.write('\n')
 fall.close()
@@ -252,4 +268,6 @@ fdisp.close()
 
 fenergy.write('\n')
 fenergy.close()
+fopt.write('\n')
+fopt.close()
 
