@@ -376,10 +376,19 @@ mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using M
 mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
-omp2-1:       Spin component variations for OMP2
+omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
 
 
-omp3-1:       Spin-component scaled variations for OMP3.
+omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
