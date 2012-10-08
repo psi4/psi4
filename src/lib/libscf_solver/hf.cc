@@ -33,7 +33,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
-#include "pkintegrals.h"
 
 #include "hf.h"
 
