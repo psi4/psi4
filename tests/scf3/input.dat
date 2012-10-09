@@ -21,6 +21,7 @@ set globals {
     basis     6-31G**
     docc      [2, 0, 0, 1]
     socc      [1, 0, 1, 0]
+    scf_type  pk
 }
 
 # Delete file 32 for now, because UHF has a bug in reading old MOs right now

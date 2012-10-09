@@ -18,6 +18,7 @@ set global {
   e_convergence 10
   d_convergence 10
   dertype none
+  scf_type pk
 }
 
 thisenergy = optimize('scf')

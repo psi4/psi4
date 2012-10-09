@@ -169,6 +169,10 @@ def run_scf(name, **kwargs):
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])
 
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
     if lowername == 'df-scf':
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
     elif lowername == 'hf':
@@ -226,7 +230,12 @@ def run_scf_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['DF_BASIS_SCF'])
+        ['DF_BASIS_SCF'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     returnvalue = run_scf(name, **kwargs)
 
@@ -486,7 +495,13 @@ def run_dfmp2_gradient(name, **kwargs):
     """
     optstash = OptionsState(
         ['DF_BASIS_SCF'],
-        ['DF_BASIS_MP2'])
+        ['DF_BASIS_MP2'],
+        ['SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        #PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')  # insufficient b/c SCF option read in DFMP2
+        PsiMod.set_global_option('SCF_TYPE', 'DF')
 
     if not PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
         raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
@@ -670,7 +685,17 @@ def run_scf_property(name, **kwargs):
     since SCF properties all handled through oeprop.
 
     """
-    run_scf(name, **kwargs)
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    returnvalue = run_scf(name, **kwargs)
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_cc_property(name, **kwargs):
@@ -881,9 +906,14 @@ def run_dft(name, **kwargs):
     optstash = OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'REFERENCE'],
+        ['SCF', 'SCF_TYPE'],
         ['DF_BASIS_MP2'],
         ['DFMP2', 'MP2_OS_SCALE'],
         ['DFMP2', 'MP2_SS_SCALE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
@@ -940,7 +970,12 @@ def run_dft_gradient(name, **kwargs):
     """
     optstash = OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'])
+        ['SCF', 'REFERENCE'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
@@ -1044,11 +1079,14 @@ def run_dfmp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density-fitted MP2 calculation.
 
-    .. caution:: Get rid of madness-era restart file
-
     """
     optstash = OptionsState(
-        ['DF_BASIS_MP2'])
+        ['DF_BASIS_MP2'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
         raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
@@ -1212,6 +1250,12 @@ def run_sapt(name, **kwargs):
     a SAPT calculation of any level.
 
     """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     molecule = PsiMod.get_active_molecule()
     user_pg = molecule.schoenflies_symbol()
@@ -1314,6 +1358,7 @@ def run_sapt(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    optstash.restore()
     return e_sapt
 
 
@@ -1322,6 +1367,13 @@ def run_sapt_ct(name, **kwargs):
     a charge-transfer SAPT calcuation of any level.
 
     """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
     molecule = PsiMod.get_active_molecule()
     user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
@@ -1452,6 +1504,7 @@ def run_sapt_ct(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    optstash.restore()
     return e_sapt
 
 
@@ -1668,11 +1721,3 @@ def run_cepa(name, **kwargs):
     optstash.restore()
 
     return PsiMod.get_variable("CURRENT ENERGY")
-
-
-def run_property(name, **kwargs):
-    """General wrapper for property computations
-
-    """
-    junk = 1
-    return junk

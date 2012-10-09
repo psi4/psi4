@@ -12,3 +12,4 @@ molecule h2o {
 set basis cc-pVDZ
 energy('scf')
 
+# New (DF) number. where to put it? -76.0266327341067125  #TEST

@@ -9,6 +9,7 @@ Li
 
 set globals {
     reference rohf
+    scf_type pk
 }
 
 e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)

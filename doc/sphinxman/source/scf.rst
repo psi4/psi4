@@ -196,7 +196,7 @@ option, and a call to ``energy('scf')``::
 This will run a Restricted Hartree-Fock (RHF) on neutral singlet Helium in
 :math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6
 energy and 1.0E-5 density convergence criteria (since single-point, see
-:ref:`SCF Convergence <table:conv_scf>`), a PK ERI algorithm, symmetric
+:ref:`SCF Convergence & Algorithm <table:conv_scf>`), a PK ERI algorithm, symmetric
 orthogonalization, DIIS, and a core Hamiltonian guess. For more
 information on any of these options, see the relevant section below.
 
@@ -511,26 +511,25 @@ Convergence and Algorithm Defaults
 
 .. _`table:conv_scf`:
 
-.. table:: SCF convergence criteria by calculation type [#f1]_
+.. table:: SCF algorithm and convergence criteria defaults by calculation type [#f1]_
 
-    +--------------------+--------------------+----------------------+----------------------+
-    | *Ab Initio* Method | Calculation Type   | |scf__e_convergence| | |scf__d_convergence| |
-    +====================+====================+======================+======================+
-    | SCF of HF or DFT   | energy             | 6                    | 5                    |
-    +                    +--------------------+----------------------+----------------------+
-    |                    | optimization       | 8                    | 6                    |
-    +                    +--------------------+----------------------+----------------------+
-    |                    | frequency          | 8                    | 6                    |
-    +--------------------+--------------------+----------------------+----------------------+
-    | SCF of post-HF     | energy             | 8                    | 6                    |
-    +                    +--------------------+----------------------+----------------------+
-    |                    | optimization       | 10                   | 7                    |
-    +                    +--------------------+----------------------+----------------------+
-    |                    | frequency          | 10                   | 7                    |
-    +                    +--------------------+----------------------+----------------------+
-    |                    | CC property [#f2]_ | 10                   | 7                    |
-    +--------------------+--------------------+----------------------+----------------------+
-
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
+    | *Ab Initio* Method | Calculation Type   | |scf__e_convergence| | |scf__d_convergence| | |scf__scf_type| |
+    +====================+====================+======================+======================+=================+
+    | SCF of HF or DFT   | energy             | 6                    | 5                    | DF              |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | optimization       | 8                    | 6                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | frequency          | 8                    | 6                    |                 |
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
+    | SCF of post-HF     | energy             | 8                    | 6                    | PK [#f3]_       |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | optimization       | 10                   | 7                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | frequency          | 10                   | 7                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | CC property [#f2]_ | 10                   | 7                    |                 |
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
 
 .. rubric:: Footnotes
 
@@ -539,6 +538,9 @@ Convergence and Algorithm Defaults
    that use an alternate starting point, like MCSCF.
 
 .. [#f2] This applies to properties computed through the :py:func:`~driver.property` function.
+
+.. [#f3] Post-HF methods that do not rely upon the usual 4-index AO integrals use a density-
+   fitted SCF reference. That is, for DF-MP2 and SAPT, the default |scf__scf_type| is DF.
 
 
 Recommendations

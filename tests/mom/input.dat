@@ -45,6 +45,7 @@ basis cc-pvdz
 e_convergence 12
 d_convergence 10
 reference rhf
+scf_type pk
 }
 
 E = energy('scf')
