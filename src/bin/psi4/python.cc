@@ -48,6 +48,20 @@
 #include "../ccenergy/ccwave.h"
 #include "../mp2/mp2wave.h"
 
+
+#define MAKE_STANDALONE 1
+#ifdef MAKE_STANDALONE
+#include <libqt/qt.h>
+#include <libpsio/psio.h>
+#include <libmints/wavefunction.h>
+#include <psifiles.h>
+#include <libparallel/parallel.h>
+namespace psi {
+    int psi_start(int argc, char *argv[]);
+    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+}
+#endif
+
 using namespace psi;
 using namespace boost;
 using namespace boost::python;
@@ -1025,6 +1039,40 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_opt
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
+
+#ifdef MAKE_STANDALONE
+
+    // Setup the environment
+    Process::arguments.init(0, 0);
+    Process::environment.init(0);
+
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
+    // Initialize the world communicator
+    int tmp = 0;
+    WorldComm = boost::shared_ptr<worldcomm>(Init_Communicator(tmp, 0));
+
+    // There is only one timer:
+    timer_init();
+
+    // There should only be one of these in Psi4
+    Wavefunction::initialize_singletons();
+
+    // Create the scripting object
+    Script::language = boost::shared_ptr<Script>(new Python);
+    // Create base objects in the scripting language and initialize the language
+    Script::language->initialize();
+
+    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
+   
+    // Initialize the I/O library
+    psio_init();
+
+#endif
+
     docstring_options sphx_doc_options(true, true, false);
 
     enum_<PsiReturnType>("PsiReturnType", "docstring")
@@ -1033,6 +1081,7 @@ BOOST_PYTHON_MODULE(PsiMod)
             .value("Balk", Balk)
             .value("EndLoop", EndLoop)
             .export_values();
+
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");

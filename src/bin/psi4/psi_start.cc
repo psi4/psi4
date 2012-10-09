@@ -39,6 +39,7 @@
 #include <psiconfig.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
+#define MAKE_STANDALONE 1
 
 using namespace std;
 
@@ -232,6 +233,7 @@ int psi_start(int argc, char *argv[])
     /* default prefix is not assigned here yet because need to check input file first */
 
     /* open input and output files */
+#ifndef MAKE_STANDALONE
     if(ifname == "stdin") {
         infile=stdin;
         infile_directory = ".";
@@ -247,6 +249,7 @@ int psi_start(int argc, char *argv[])
         fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());
         return(PSI_RETURN_FAILURE);
     }
+#endif
 
     if(append) {
         if(ofname == "stdout")
@@ -269,6 +272,7 @@ int psi_start(int argc, char *argv[])
     if(debug) {
         setbuf(outfile,NULL);
     }
+
 
     // Initialize Yeti's env
     //yetiEnv.init(WorldComm->me(), ofname.c_str());
