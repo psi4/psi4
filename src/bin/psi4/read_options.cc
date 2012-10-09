@@ -2371,7 +2371,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("SOS_SCALE2",1.2);
-    /*- The solver will be used for simultaneous lineer equations. -*/
+    /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
@@ -2398,6 +2398,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
   }
   if (name == "OMP3"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
@@ -2454,7 +2458,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("OPT_METHOD","MSD","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
-    /*- The solver will be used for simultaneous lineer equations. -*/
+    /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- Do print OMP3 orbital energies? -*/
     options.add_bool("OMP3_ORBS_PRINT",false);
@@ -2474,6 +2478,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("MP3L_ENERGY",false);
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
