@@ -54,6 +54,7 @@ compare_values(-5.576243225099, get_variable('MP2.5 TOTAL ENERGY'), 7, "MP2.5 sp
 clean()
 
 banner('cbs()')
+set scf_type pk
 cbs('scf',scf_basis='cc-pvdz')
 compare_values(-5.55609846, get_variable('CBS TOTAL ENERGY'), 7, "cbs()")
 clean()

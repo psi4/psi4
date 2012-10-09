@@ -17,6 +17,7 @@ set globals {
   basis DZ
   e_convergence 10
   d_convergence 10
+  scf_type pk
 }
 
 thisenergy = optimize('scf')
