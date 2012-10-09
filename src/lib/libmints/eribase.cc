@@ -29,7 +29,27 @@ namespace {
 
     unsigned char ntypes[] = { 1, ERI_1DER_NTYPE, ERI_2DER_NTYPE };
 
-    static size_t fill_primitive_data(prim_data* PrimQuartet, Fjt* fjt, const ShellPair* p12, const ShellPair* p34, int am, int nprim1, int nprim2, int nprim3, int nprim4, bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
+    /**
+     * @brief Fills the primitive data structure used by libint/libderiv with information from the ShellPairs
+     * @param PrimQuartet The structure to hold the data.
+     * @param fjt Object used to compute the fundamental integrals.
+     * @param p12 ShellPair data structure for the left
+     * @param p34 ShellPair data structure for the right
+     * @param am Total angular momentum of this quartet
+     * @param nprim1 Number of primitives on center 1
+     * @param nprim2 Number of primitives on center 2
+     * @param nprim3 Number of primitives on center 3
+     * @param nprim4 Number of primitives on center 4
+     * @param sh1eqsh2 Is the shell on center 1 identical to that on center 2?
+     * @param sh3eqsh4 Is the shell on center 3 identical to that on center 4?
+     * @param deriv_lvl Derivitive level of the integral
+     * @return The total number of primitive combinations found. This is passed to libint/libderiv.
+     */
+    static size_t fill_primitive_data(prim_data* PrimQuartet, Fjt* fjt,
+                                      const ShellPair* p12, const ShellPair* p34,
+                                      int am,
+                                      int nprim1, int nprim2, int nprim3, int nprim4,
+                                      bool sh1eqsh2, bool sh3eqsh4, int deriv_lvl) {
         double zeta, eta, ooze, rho, poz, coef1, PQ[3], PQ2, W[3], o12, o34, T, *F;
         double a1, a2, a3, a4;
         int max_p2, max_p4, p1, p2, p3, p4, m, n, i;
@@ -1380,10 +1400,8 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
 void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
 {
-    if (deriv_ < 2) {
-        psi_error("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
-        abort();
-    }
+    if (deriv_ < 2)
+        throw PSIEXCEPTION("ERROR - ERI: ERI object not initialized to handle second derivatives.\n");
 
     // Need to ensure the ordering asked by the user is valid for libderiv.
     // compute_quartet_deriv2 does NOT check this. SEGFAULTS will likely occur
@@ -1446,7 +1464,7 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
         s1 = s3;
         s3 = temp;
 
-        temp = b2;
+        temp = s2;
         s2 = s4;
         s4 = temp;
 
@@ -1473,7 +1491,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
                 // (AB|CD) -> (DC|BA)
                 buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
                 buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
-            }else{
+            }
+            else{
                 // (AB|CD) -> (BA|DC)
                 buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
                 buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
@@ -1483,7 +1502,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
                 // (AB|CD) -> (CD|BA)
                 buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
                 buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
-            }else{
+            }
+            else{
                 // (AB|CD) -> (BA|CD)
                 buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
                 buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
@@ -1495,7 +1515,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
                 // (AB|CD) -> (DC|AB)
                 buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
                 buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
-            }else{
+            }
+            else{
                 // (AB|CD) -> (AB|DC)
                 buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
                 buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
@@ -1505,7 +1526,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
                 // (AB|CD) -> (CD|AB)
                 buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
                 buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
-            }else{
+            }
+            else{
                 // (AB|CD) -> (AB|CD)
                 buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
                 buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
@@ -1526,7 +1548,7 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
     }
 }
 
-void TwoElectronInt::compute_quartet_deriv2(int, int, int, int)
+void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
 {
     const GaussianShell& s1 = bs1_->shell(sh1);
     const GaussianShell& s2 = bs2_->shell(sh2);
@@ -1789,9 +1811,17 @@ void TwoElectronInt::compute_quartet_deriv2(int, int, int, int)
         memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
     }
 
+    // A A
+    if (buffer_offsets_[3] == 3 /*&& buffer_offsets_[3] == 3*/) {
+
+    }
+    else {
+
+    }
+
     // Transform the integrals to the spherical basis
     if (!force_cartesian_)
-        pure_transform(sh1, sh2, sh3, sh4, ERI_1DER_NTYPE);
+        pure_transform(sh1, sh2, sh3, sh4, ERI_2DER_NTYPE);
 
     // Results are in source_
 }
