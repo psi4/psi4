@@ -465,7 +465,17 @@ void export_mints()
             def("frequencies", &Wavefunction::frequencies, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
-            def("molecule", &Wavefunction::molecule, "docstring");
+            def("molecule", &Wavefunction::molecule, "docstring").
+            def("doccpi", &Wavefunction::doccpi, "docstring").
+            def("soccpi", &Wavefunction::soccpi, "docstring").
+            def("nsopi", &Wavefunction::nsopi, "docstring").
+            def("nmopi", &Wavefunction::nmopi, "docstring").
+            def("nalphapi", &Wavefunction::nalphapi, "docstring").
+            def("nbetapi", &Wavefunction::nbetapi, "docstring").
+            def("frzcpi", &Wavefunction::frzcpi, "docstring").
+            def("frzvpi", &Wavefunction::frzvpi, "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
