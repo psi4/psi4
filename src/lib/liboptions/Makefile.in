@@ -13,11 +13,11 @@ LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
-include $(LIBOBJ:%.o=%.d)
-endif
-
 install_inc:: $(INC)
 	$(MKDIRS) $(DESTDIR)$(incdir)/liboptions
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/liboptions
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
 

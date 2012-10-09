@@ -22,11 +22,11 @@ LIBOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
-include $(LIBOBJ:%.o=%.d)
-endif
-
 install_inc:: iwl.h iwl.hpp config.h
 	$(MKDIRS) $(DESTDIR)$(incdir)/libiwl
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libiwl
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
 
