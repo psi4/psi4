@@ -57,6 +57,8 @@ void Process::Environment::init(char **envp)
 
     // Go through user provided environment overwriting defaults if necessary
     int i=0;
+    if (envp == 0)
+        return;
     while (envp[i] != NULL) {
         std::vector<std::string> strs;
         boost::split(strs, envp[i], boost::is_any_of("="));
