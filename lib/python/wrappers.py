@@ -1536,6 +1536,9 @@ def complete_basis_set(name, **kwargs):
 
        - Need to add more extrapolation schemes
 
+       - Must specify conventional or density-fitted mp2 through kwargs 
+         with value 'conv-mp2' or 'df-mp2', not with c-side option.
+
     As represented in the equation below, a CBS energy method is defined in four
     sequential stages (scf, corl, delta, delta2) covering treatment of the
     reference total energy, the correlation energy, a delta correction to the
@@ -1688,13 +1691,13 @@ def complete_basis_set(name, **kwargs):
     >>> cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
     >>> # [5] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+    >>> cbs('conv-mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
 
     >>> # [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+    >>> cbs('conv-mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
 
     >>> # [7] cbs() coupled with database()
-    >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
+    >>> database('conv-mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
     """
     lowername = name.lower()
@@ -1721,24 +1724,24 @@ def complete_basis_set(name, **kwargs):
     VARH = {}
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
     VARH['df-scf'] = {      'scftot': 'SCF TOTAL ENERGY'}
-    VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY'}
+    VARH['conv-mp2'] = {    'scftot': 'SCF TOTAL ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY'}
     VARH['df-mp2'] = {      'scftot': 'SCF TOTAL ENERGY',
                         'df-mp2corl': 'DF-MP2 CORRELATION ENERGY'}
     VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc2corl': 'CC2 CORRELATION ENERGY'}
     VARH['ccsd'] = {        'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY'}
     VARH['bccd'] = {        'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'bccdcorl': 'CCSD CORRELATION ENERGY'}
     VARH['cc3'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc3corl': 'CC3 CORRELATION ENERGY'}
     VARH['ccsd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
@@ -1804,7 +1807,7 @@ def complete_basis_set(name, **kwargs):
         if 'delta_wfn_lesser' in kwargs:
             cbs_delta_wfn_lesser = kwargs['delta_wfn_lesser'].lower()
         else:
-            cbs_delta_wfn_lesser = 'mp2'
+            cbs_delta_wfn_lesser = 'conv-mp2'
         if not (cbs_delta_wfn_lesser in VARH.keys()):
             raise ValidationError('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
 
@@ -1818,7 +1821,7 @@ def complete_basis_set(name, **kwargs):
         if 'delta2_wfn_lesser' in kwargs:
             cbs_delta2_wfn_lesser = kwargs['delta2_wfn_lesser'].lower()
         else:
-            cbs_delta2_wfn_lesser = 'mp2'
+            cbs_delta2_wfn_lesser = 'conv-mp2'
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
             raise ValidationError('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 

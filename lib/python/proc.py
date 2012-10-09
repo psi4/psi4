@@ -402,6 +402,32 @@ def scf_helper(name, **kwargs):
     return e_scf
 
 
+def run_mp2_select(name, **kwargs):
+    """Function selecting the algorithm for a MP2 energy call
+    and directing toward the MP2 or the DFMP2 modules.
+
+    """
+    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
+        # PSI3 docs claimed to have an integral direct algorithm
+        #   but can't see it in the code.
+        return run_mp2(name, **kwargs)
+    else:
+        return run_dfmp2(name, **kwargs)
+
+
+def run_mp2_select_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP2 gradient call
+    and directing toward the MP2 or the DFMP2 modules.
+
+    """
+    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
+        # PSI3 docs claimed to have an integral direct algorithm
+        #   but can't see it in the code.
+        return run_mp2_gradient(name, **kwargs)
+    else:
+        return run_dfmp2_gradient(name, **kwargs)
+
+
 def run_mp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a MP2 calculation.
@@ -462,6 +488,9 @@ def run_dfmp2_gradient(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'])
 
+    if not PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
+
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
         # Rename the checkpoint file to be consistent with psi4's file system
@@ -507,7 +536,7 @@ def run_dfmp2_gradient(name, **kwargs):
 
     if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
 
 
@@ -1021,6 +1050,9 @@ def run_dfmp2(name, **kwargs):
     optstash = OptionsState(
         ['DF_BASIS_MP2'])
 
+    if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
+        raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
+
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
         # Rename the checkpoint file to be consistent with psi4's file system
@@ -1056,7 +1088,7 @@ def run_dfmp2(name, **kwargs):
 
     if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
 
 
