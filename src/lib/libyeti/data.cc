@@ -342,7 +342,7 @@ DiskBuffer::~DiskBuffer()
     ::remove(filename_.c_str());
 }
 
-uli
+size_t
 DiskBuffer::size() const
 {
     return size_;

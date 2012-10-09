@@ -195,7 +195,7 @@ class TensorIndexDescr :
 
         usi nindex() const;
 
-        uli size(const uli* indices, usi depth);
+        size_t size(const uli* indices, usi depth);
 
         ulli totalsize() const;
 
@@ -209,9 +209,9 @@ class TensorIndexDescr :
 
         size_t average_nelements_metadata() const;
 
-        uli max_nblocks_data() const;
+        size_t max_nblocks_data() const;
 
-        uli nblocks_tot_at_depth(usi depth) const;
+        size_t nblocks_tot_at_depth(usi depth) const;
 
         void print(std::ostream& os = std::cout) const;
 
