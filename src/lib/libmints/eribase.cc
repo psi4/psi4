@@ -1811,9 +1811,40 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
         memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
     }
 
-    // A A
-    if (buffer_offsets_[3] == 3 /*&& buffer_offsets_[3] == 3*/) {
+    /******* NOTE: 1st 12 elements of libderiv_.ABCD[] are the first derivatives *******/
 
+    // A A
+    //   Both centers A are found on the non-computed center B
+    //   Use translational invariance to obtain the data.
+    if (buffer_offsets_[3] == 3 /*&& buffer_offsets_[3] == 3*/) {
+        // Compute integrals via translation invariance to obtain
+        //  Ax Ax; Ax Ay; Ax Az; Ay Ay; Ay Az; Az Az
+
+        /*** Ax Ax ***/
+        // Bx Bx = Ax Ax + Ax Cx + Ax Dx +
+        //         Cx Ax + Cx Cx + Cx Dx +
+        //         Dx Ax + Dx Cx + Dx Dx
+        // Bx Bx = Ax Ax + Cx Cx + Dx Dx + 2 Ax Cx + 2 Ax Dx + 2 Cx Dx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[12],  1, source_+9*size, 1);  // Ax Ax
+        C_DAXPY(size, 2.0, libderiv_.ABCD[18],  1, source_+9*size, 1);  // 2 Ax Cx
+        C_DAXPY(size, 2.0, libderiv_.ABCD[21],  1, source_+9*size, 1);  // 2 Ax Dx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[90],  1, source_+9*size, 1);  // Cx Cx
+        C_DAXPY(size, 2.0, libderiv_.ABCD[93],  1, source_+9*size, 1);  // 2 Cx Dx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[129], 1, source_+9*size, 1);  // Dx Dx
+
+        /*** Ax Ay ***/
+        // Bx By = Ax Ay + Ax Cy + Ax Dy +
+        //         Ay Cx + Cx Cy + Cx Dy +
+        //         Ay Dx + Cy Dx + Dx Dy
+        C_DAXPY(size, 1.0, libderiv_.ABCD[13],  1, source_+10*size, 1);  // Ax Ay
+        C_DAXPY(size, 1.0, libderiv_.ABCD[19],  1, source_+10*size, 1);  // Ax Cy
+        C_DAXPY(size, 1.0, libderiv_.ABCD[22],  1, source_+10*size, 1);  // Ax Dy
+        C_DAXPY(size, 1.0, libderiv_.ABCD[30],  1, source_+10*size, 1);  // Ay Cx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[91],  1, source_+10*size, 1);  // Cx Cy
+        C_DAXPY(size, 1.0, libderiv_.ABCD[94],  1, source_+10*size, 1);  // Cx Dy
+        C_DAXPY(size, 1.0, libderiv_.ABCD[33],  1, source_+10*size, 1);  // Ay Dx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[105], 1, source_+10*size, 1);  // Cy Dx
+        C_DAXPY(size, 1.0, libderiv_.ABCD[130], 1, source_+10*size, 1);  // Dx Dy
     }
     else {
 
