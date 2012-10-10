@@ -32,7 +32,7 @@ install_inc:: $(DEPENDINCLUDE)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libtrans
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libtrans
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
 

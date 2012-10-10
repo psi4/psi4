@@ -24,10 +24,6 @@ LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
-include $(LIBOBJ:%.o=%.d)
-endif
-
 install_inc:: $(INC)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libpsio
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsio
@@ -35,4 +31,8 @@ install_inc:: $(INC)
 install_man:: libpsio.html
 	$(MKDIRS) $(DESTDIR)$(htmldir)
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
 
