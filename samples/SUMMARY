@@ -160,6 +160,9 @@ cc51:         EOM-CC3/cc-pVTZ on H2O
 cc52:         CCSD Response for H2O2
 
 
+cc54:         CCSD dipole with user-specified basis set
+
+
 cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
 
@@ -256,6 +259,9 @@ dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
 
+dft-pbe0-2:   Internal match to psi4, test to match to literature values in litref.in/litref.out
+
+
 dft1:         DFT Functional Test
 
 
@@ -266,6 +272,12 @@ dft2:         DFT Functional Test
 
 
 dft3:         DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation, using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
+
+
+dftd3-energy:  Exercises the various DFT-D corrections, both through python directly and through c++
+
+
+dftd3-grad:   DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN, calling Grimme's dftd3 program for -D2 gradients
 
 
 fci-dipole:   6-31G H2O Test FCI Energy Point
@@ -361,6 +373,12 @@ mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using M
 mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
+omp2-1:       Spin component variations for OMP2
+
+
+omp3-1:       Spin-component scaled variations for OMP3.
+
+
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
 
 
@@ -427,6 +445,9 @@ pywrap-alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and c
 pywrap-all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
 
 
+pywrap-basis:  SAPT calculation on bimolecular complex where monomers are unspecified so driver auto-fragments it. Basis set and auxiliary basis sets are assigned by atom type.
+
+
 pywrap-cbs1:  Various basis set extrapolation tests
 
 
@@ -434,6 +455,9 @@ pywrap-db1:   Database calculation, so no molecule section in input file. Portio
 
 
 pywrap-db2:   Database calculation, run in sow/reap mode.
+
+
+pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
