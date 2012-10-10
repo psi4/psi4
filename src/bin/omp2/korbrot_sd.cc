@@ -40,11 +40,54 @@ namespace psi{ namespace omp2wave{
 
 void OMP2Wave::korbrot_sd()
 { 
-      //fprintf(outfile,"\n korbrot_sd is starting... \n"); fflush(outfile);
+//fprintf(outfile,"\n korbrot_sd is starting... \n"); fflush(outfile);
 
-/********************************************************************************************/
-/************************** initialize to -grad *********************************************/
-/********************************************************************************************/ 
+if (reference == "RHF") {
+        // Get kappa
+	for(int x = 0; x < nidpA; x++) {
+	  int a = idprowA[x];
+	  int i = idpcolA[x];
+	  int h = idpirrA[x];
+	  double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
+	  kappaA->set(x, -wogA->get(x) / (2*value));
+	}
+
+        // find biggest_kappa 
+	biggest_kappaA=0;            
+	for (int i=0; i<nidpA;i++) { 
+	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
+	}
+
+        // Scale
+	if (biggest_kappaA > step_max) {   
+	    for (int i=0; i<nidpA;i++) kappaA->set(i, kappaA->get(i) *(step_max/biggest_kappaA));
+	}
+	 
+	 
+        // find biggest_kappa again 
+	if (biggest_kappaA > step_max)
+	{
+	  biggest_kappaA=0;            
+	  for (int i=0; i<nidpA;i++) 
+	  { 
+	      if (fabs(kappaA->get(i)) > biggest_kappaA)
+	      {
+		  biggest_kappaA = fabs(kappaA->get(i));
+	      }
+	  }
+	}
+	
+        // norm
+	rms_kappaA=0;
+	rms_kappaA = kappaA->rms();
+	
+        // print
+        if(print_ > 2) kappaA->print();
+ 
+}// end if (reference == "RHF") 
+
+else if (reference == "UHF") {
+        // Get kappa
 	// alpha
 	for(int x = 0; x < nidpA; x++) {
 	  int a = idprowA[x];
@@ -63,10 +106,7 @@ void OMP2Wave::korbrot_sd()
 	  kappaB->set(x, -wogB->get(x) / (2*value));
 	}
 
-
-/********************************************************************************************/
-/************************** find biggest_kappa ***********************************************/
-/********************************************************************************************/
+        // find biggest_kappa 
 	biggest_kappaA=0;            
 	for (int i=0; i<nidpA;i++) { 
 	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
@@ -77,20 +117,16 @@ void OMP2Wave::korbrot_sd()
 	    if (fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=fabs(kappaB->get(i));
 	}
 	
-/********************************************************************************************/
-/************************** scale array *****************************************************/
-/********************************************************************************************/	 	
-	 if (biggest_kappaA > step_max) {   
+        // Scale
+	if (biggest_kappaA > step_max) {   
 	    for (int i=0; i<nidpA;i++) kappaA->set(i, kappaA->get(i) *(step_max/biggest_kappaA));
-	 }
+	}
 	 
-	 if (biggest_kappaB > step_max) {   
+	if (biggest_kappaB > step_max) {   
 	    for (int i=0; i<nidpB;i++) kappaB->set(i, kappaB->get(i) *(step_max/biggest_kappaB));
-	 }
+	}
 	 
-/********************************************************************************************/
-/************************** find biggest_kappa after scaling *********************************/
-/********************************************************************************************/
+        // find biggest_kappa again 
 	if (biggest_kappaA > step_max)
 	{
 	  biggest_kappaA=0;            
@@ -115,24 +151,21 @@ void OMP2Wave::korbrot_sd()
 	  }
 	}
 
-/********************************************************************************************/
-/************************** norm ************************************************************/
-/********************************************************************************************/	 	
+        // norm
 	rms_kappaA=0;
 	rms_kappaB=0;
 	rms_kappaA = kappaA->rms();
 	rms_kappaB = kappaB->rms();
 	
-      if(print_ > 1){
-       kappaA->print();
-       kappaB->print();
-      }
+        // print
+        if(print_ > 2){
+          kappaA->print();
+          kappaB->print();
+        }
       
-    //fprintf(outfile,"\n korbrot_sd done. \n"); fflush(outfile);
-
+}// end if (reference == "UHF") 
+ //fprintf(outfile,"\n korbrot_sd done. \n"); fflush(outfile);
 	
-/********************************************************************************************/	
-/********************************************************************************************/	
-}
+}// end main
 }} // End Namespaces
 

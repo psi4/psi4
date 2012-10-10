@@ -177,3 +177,53 @@ Bibliography
    F. Wennmohs and F. Neese,
    *Chem. Phys.* **343**, 217-230 (2008).
 
+.. [Sherrill:1998:od]
+   C. D. Sherrill, A. I. Krylov, E. F. C. Byrd, and M. Head-Gordon,
+   *J. Chem. Phys.* **109**, 4171 (1998).
+
+.. [Krylov:2000:vod]
+   A. I. Krylov, C. D. Sherrill, and M. Head-Gordon,
+   *J. Chem. Phys.* **113**, 6509 (2000).
+
+.. [Kurlancek:2009]
+   W. Kurlancheek and M. Head-Gordon,
+   *Mol. Phys.* **107**, 1223 (2009).
+
+.. [Pedersen:1999:od]
+   T. B. Pedersen, H. Koch, and C. Hattig,
+   *J. Chem. Phys.* **110**, 8318 (1999).
+
+.. [Pedersen:2001:od]
+   T. B. Pedersen, B. Fernandez, and H. Koch,
+   *J. Chem. Phys.* **114**, 6983 (2001).
+
+.. [Bozkaya:2011:omp2]
+   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill
+   *J. Chem. Phys.* **135**, 104103 (2011).
+
+.. [Bozkaya:2011:omp3]
+   U. Bozkaya,
+   *J. Chem. Phys.* **135**, 224103 (2011).
+
+.. [Bozkaya:2012:odtl]
+   U. Bozkaya and H. F. Schaefer,
+   *J. Chem. Phys.* **136**, 204114 (2012).
+
+.. [Grimme:2004:1463]
+   S. Grimme, *J. Comp. Chem.* **25** 1463-1473 (2004).
+
+.. [Grimme:2006:1787]
+   S. Grimme, *J. Comp. Chem.* **27**, 1787-1799 (2006).
+
+.. [Grimme:2010:154104]
+   S. Grimme, J. Antony, S. Ehrlich, and H. Krieg,
+   *J. Chem. Phys.* **132**, 154104 (2010).
+
+.. [Grimme:2011:1456]
+   S. Grimme, S. Ehrlich, and L. Goerigk,
+   *J. Comput. Chem.* **32**, 1456 (2011).
+
+.. [Wu:2002:515]
+   Q. Wu and W. Yang,
+   *J. Chem. Phys.* **116**, 515 (2002).
+

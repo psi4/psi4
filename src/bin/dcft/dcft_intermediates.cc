@@ -16,8 +16,7 @@ DCFTSolver::build_intermediates()
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    dpdfile2 F_OO, F_oo, F_VV, F_vv;
-    dpdbuf4 I, L, G, T, F, Taa, Tab, Tbb, Laa, Lab, Lbb;
+    dpdbuf4 I, L, G, T, Taa, Tab, Tbb, Laa, Lab, Lbb;
 
     /*
      * G_ijab = <ij||ab>
@@ -383,10 +382,27 @@ DCFTSolver::build_intermediates()
 
     dpd_buf4_close(&Tbb);
 
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+        form_density_weighted_fock();
+    }
+    compute_F_intermediate();
+
+    dcft_timer_off("DCFTSolver::build_intermediates()");
+}
+
+void
+DCFTSolver::compute_F_intermediate() {
+
+    dpdfile2 F_OO, F_oo, F_VV, F_vv;
+    dpdbuf4 F, T, Laa, Lab, Lbb;
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     /*
-     * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
-     */
+    * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
+    */
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -416,7 +432,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-              ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     // Temp_IJAB = -lambda_KJAB F_IK
     dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_contract244(&F_OO, &Laa, &T, 1, 0, 0, -1.0, 0.0);
@@ -486,7 +502,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-              ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     // Temp_ijab = -lambda_kjab X_ik
     dpd_file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     dpd_contract244(&F_oo, &Lbb, &T, 1, 0, 0, -1.0, 0.0);
@@ -504,8 +520,199 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&F);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
+}
 
-    dcft_timer_off("DCFTSolver::build_intermediates()");
+void
+DCFTSolver::form_density_weighted_fock() {
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    dpdfile2 T_OO, T_oo, T_VV, T_vv, F_OO, F_oo, F_VV, F_vv;
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    // Copy Tau in MO basis from the DPD library
+    SharedMatrix a_tau_mo (new Matrix ("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_tau_mo (new Matrix ("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int p = 0 ; p < naoccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_OO.matrix[h][p][q];
+                a_tau_mo->set(h, p, q, value);
+                if (p != q) a_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_oo.matrix[h][p][q];
+                b_tau_mo->set(h, p, q, value);
+                if (p != q) b_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Alpha virtual
+        for(int p = 0 ; p < navirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_VV.matrix[h][p][q];
+                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
+                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
+            }
+        }
+
+        // Beta virtual
+        for(int p = 0 ; p < nbvirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_vv.matrix[h][p][q];
+                b_tau_mo->set(h, p + nboccpi_[h], q + nboccpi_[h], value);
+                if (p != q) b_tau_mo->set(h, q + nboccpi_[h], p + nboccpi_[h], value);
+            }
+        }
+    }
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    SharedMatrix a_evecs (new Matrix ("Tau Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_evecs (new Matrix ("Tau Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
+    SharedVector a_evals (new Vector ("Tau Eigenvalues (Alpha)", nirrep_, nmopi_));
+    SharedVector b_evals (new Vector ("Tau Eigenvalues (Beta)", nirrep_, nmopi_));
+
+    // Diagonalize Tau
+    a_tau_mo->diagonalize(a_evecs, a_evals);
+    a_tau_mo->zero();
+    a_tau_mo->set_diagonal(a_evals);
+    b_tau_mo->diagonalize(b_evecs, b_evals);
+    b_tau_mo->zero();
+    b_tau_mo->set_diagonal(b_evals);
+
+    // Transform the Fock matrix to NSO basis
+    SharedMatrix nso_Fa (new Matrix ("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix nso_Fb (new Matrix ("Beta Fock in the NSO basis", nirrep_, nmopi_, nmopi_));
+
+    // Alpha spin
+    nso_Fa->transform(moFa_, a_evecs);
+    // Beta spin
+    nso_Fb->transform(moFb_, b_evecs);
+
+    // Form density-weighted Fock matrix in the NSO basis
+
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int ip = 0 ; ip < naoccpi_[h]; ++ip){
+            for(int kp = 0 ; kp < naoccpi_[h]; ++kp){
+                double value = nso_Fa->get(h, ip, kp) / (1.0 + a_evals->get(h, ip) + a_evals->get(h, kp));
+                nso_Fa->set(h, ip, kp, value);
+            }
+        }
+
+        // Beta occupied
+        for(int ip = 0 ; ip < nboccpi_[h]; ++ip){
+            for(int kp = 0 ; kp < nboccpi_[h]; ++kp){
+                double value = nso_Fb->get(h, ip, kp) / (1.0 + b_evals->get(h, ip) + b_evals->get(h, kp));
+                nso_Fb->set(h, ip, kp, value);
+            }
+        }
+
+        // Alpha virtual
+        for(int ap = naoccpi_[h]; ap < nmopi_[h]; ++ap){
+            for(int dp = naoccpi_[h]; dp < nmopi_[h]; ++dp){
+                double value = nso_Fa->get(h, dp, ap) / (1.0 - a_evals->get(h, dp) - a_evals->get(h, ap));
+                nso_Fa->set(h, dp, ap, value);
+            }
+        }
+
+        // Beta virtual
+        for(int ap = nboccpi_[h]; ap < nmopi_[h]; ++ap){
+            for(int dp = nboccpi_[h]; dp < nmopi_[h]; ++dp){
+                double value = nso_Fb->get(h, dp, ap) / (1.0 - b_evals->get(h, dp) - b_evals->get(h, ap));
+                nso_Fb->set(h, dp, ap, value);
+            }
+        }
+    }
+
+    // Transform density-weighted density matrix back to the original basis
+
+    // Alpha spin
+    nso_Fa->back_transform(a_evecs);
+    // Beta spin
+    nso_Fb->back_transform(b_evecs);
+
+    dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    dpd_file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+    dpd_file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+    dpd_file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+
+    dpd_file2_mat_init(&F_OO);
+    dpd_file2_mat_init(&F_oo);
+    dpd_file2_mat_init(&F_VV);
+    dpd_file2_mat_init(&F_vv);
+
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int ip = 0 ; ip < naoccpi_[h]; ++ip){
+            for(int kp = 0 ; kp < naoccpi_[h]; ++kp){
+                F_OO.matrix[h][ip][kp] = nso_Fa->get(h, ip, kp);
+            }
+        }
+
+        // Beta occupied
+        for(int ip = 0 ; ip < nboccpi_[h]; ++ip){
+            for(int kp = 0 ; kp < nboccpi_[h]; ++kp){
+                F_oo.matrix[h][ip][kp] = nso_Fb->get(h, ip, kp);
+            }
+        }
+
+        // Alpha virtual
+        for(int ap = 0 ; ap < navirpi_[h]; ++ap){
+            for(int dp = 0 ; dp < navirpi_[h]; ++dp){
+                F_VV.matrix[h][ap][dp] = nso_Fa->get(h, ap + naoccpi_[h], dp + naoccpi_[h]);
+            }
+        }
+
+        // Beta virtual
+        for(int ap = 0 ; ap < nbvirpi_[h]; ++ap){
+            for(int dp = 0 ; dp < nbvirpi_[h]; ++dp){
+                F_vv.matrix[h][ap][dp] = nso_Fb->get(h, ap + nboccpi_[h], dp + nboccpi_[h]);
+            }
+        }
+
+    }
+
+    dpd_file2_mat_wrt(&F_OO);
+    dpd_file2_mat_wrt(&F_oo);
+    dpd_file2_mat_wrt(&F_VV);
+    dpd_file2_mat_wrt(&F_vv);
+
+    dpd_file2_close(&F_OO);
+    dpd_file2_close(&F_oo);
+    dpd_file2_close(&F_VV);
+    dpd_file2_close(&F_vv);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
 }
 
 }} // Namespaces

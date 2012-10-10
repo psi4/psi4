@@ -15,13 +15,6 @@ import sys
 from psiexceptions import *
 
 
-yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
-no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
-der0th = re.compile(r'^(0|none|energy)', re.IGNORECASE)
-der1st = re.compile(r'^(1|first|gradient)', re.IGNORECASE)
-der2nd = re.compile(r'^(2|second|hessian)', re.IGNORECASE)
-
-
 def bad_option_syntax(line):
     """Function to report bad syntax to screen and output file."""
     raise ValidationError('Unsupported syntax:\n\n%s\n\n' % (line))
@@ -667,6 +660,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from util import *\n'
     imports += 'from qmmm import *\n'
     imports += 'from frac import *\n'
+    imports += 'from diatomic import *\n'
     imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
     imports += 'from psifiles import *\n'

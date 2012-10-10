@@ -73,6 +73,7 @@ b2_freqs.set(0, 4, anal_freqs[20]) #TEST
 set globals {
   basis dz
   d_convergence 11
+  scf_type pk
 }
 
 frequencies('scf', dertype=1)

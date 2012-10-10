@@ -62,8 +62,8 @@ the iterations::
     @UHF iter   9:  -149.62730740326214   -1.07718e-11   1.80706e-07 DIIS
     @UHF iter  10:  -149.62730740326231   -1.70530e-13   2.19128e-08 DIIS
 
-The algorithm takes 10 true iterations to converge the energy and density to the
-default of 1.0E-8, plus the trivial iteration due to the SAD guess.
+The algorithm takes 10 true iterations to converge the energy and density to 
+1.0E-8, plus the trivial iteration due to the SAD guess.
 The energy on the zero-th iteration is not variational due to the improper
 idempotence properties of the SAD guess, but the first true iteration is within
 2.0E-4 relative error of the final answer, highlighting the
@@ -194,10 +194,11 @@ option, and a call to ``energy('scf')``::
     energy('scf') 
 
 This will run a Restricted Hartree-Fock (RHF) on neutral singlet Helium in
-:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-8 energy
-and density convergence criteria, a PK ERI algorithm, symmetric
-orthogonalization, DIIS, and a core Hamiltonian guess. For more information on
-any of these options, see the relevant section below. 
+:math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6
+energy and 1.0E-5 density convergence criteria (since single-point, see
+:ref:`SCF Convergence & Algorithm <table:conv_scf>`), a PK ERI algorithm, symmetric
+orthogonalization, DIIS, and a core Hamiltonian guess. For more
+information on any of these options, see the relevant section below.
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -277,6 +278,19 @@ actually,::
     }
 
     energy('scf')
+
+Broken Symmetry
+~~~~~~~~~~~~~~~
+
+For certain problems, such diradicals, allowing the spin-up and spin-down orbitals to differ in closed-shell computations can be advantageous; this is known as symmetry breaking.  The resulting wavefunction will often provide superior energetics, due to the increased flexibility, but will suffer non-physicical spin contamination from higher multiplicity states.  |PSIfour| can compute a high-spin triplet wavefunction and then use this as a guess for the broken-symmetry low spin state.  To do this, you request broken symmetry in the :py:func:`~driver.energy` call, using one of the following:::
+
+    energy('uhf', brokensymmetry=True)
+
+    or, equivalently
+
+    set reference uhf
+    energy('scf', brokensymmetry=True)
+
 
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
@@ -398,8 +412,8 @@ READ
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
-casting up to the true basis, This can be done by placing a ``cast_up =
-'SMALL_BASIS'`` modifier in the :py:func:`~driver.energy` procedure call. We recommend the
+casting up to the true basis. This can be done by adding  
+|scf__basis_guess| = SMALL_BASIS to the options list. We recommend the
 3-21G basis for the small basis due to its efficient mix of flexibility and
 compactness. An example of performing an RHF solution of water by SAD guessing
 in a 3-21G basis and then casting up to cc-pVTZ is shown below::
@@ -413,10 +427,11 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
     
     set {
     basis cc-pvtz 
+    basis_guess 3-21G
     guess sad
     }
     
-    energy('scf', cast_up = '3-21G')
+    energy('scf')
 
 With regard to convergence stabilization, Pulay's Direct Inversion of the
 Iterative Subspace (DIIS) extrapolation,  Gill's Maximum Overlap Method (MOM),
@@ -490,6 +505,43 @@ For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
+
+Convergence and Algorithm Defaults
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _`table:conv_scf`:
+
+.. table:: SCF algorithm and convergence criteria defaults by calculation type [#f1]_
+
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
+    | *Ab Initio* Method | Calculation Type   | |scf__e_convergence| | |scf__d_convergence| | |scf__scf_type| |
+    +====================+====================+======================+======================+=================+
+    | SCF of HF or DFT   | energy             | 6                    | 5                    | DF              |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | optimization       | 8                    | 6                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | frequency          | 8                    | 6                    |                 |
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
+    | SCF of post-HF     | energy             | 8                    | 6                    | PK [#f3]_       |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | optimization       | 10                   | 7                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | frequency          | 10                   | 7                    |                 |
+    +                    +--------------------+----------------------+----------------------+                 +
+    |                    | CC property [#f2]_ | 10                   | 7                    |                 |
+    +--------------------+--------------------+----------------------+----------------------+-----------------+
+
+.. rubric:: Footnotes
+
+.. [#f1] Note that this table applies only the SCF module,
+   not to the final convergence criteria for post-HF methods or to methods
+   that use an alternate starting point, like MCSCF.
+
+.. [#f2] This applies to properties computed through the :py:func:`~driver.property` function.
+
+.. [#f3] Post-HF methods that do not rely upon the usual 4-index AO integrals use a density-
+   fitted SCF reference. That is, for DF-MP2 and SAPT, the default |scf__scf_type| is DF.
+
 
 Recommendations
 ~~~~~~~~~~~~~~~

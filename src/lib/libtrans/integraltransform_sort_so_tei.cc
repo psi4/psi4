@@ -94,8 +94,6 @@ IntegralTransform::presort_so_tei()
         fflush(outfile);
     }
 
-    int soIntFile = PSIF_SO_TEI;
-
     dpdfile4 I;
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
     dpd_file4_init(&I, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
@@ -167,7 +165,7 @@ IntegralTransform::presort_so_tei()
 
         DPDFillerFunctor dpdfiller(&I,n,bucketMap,bucketOffset, false, true);
         NullFunctor null;
-        IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, tolerance_, 1, 1);
+        IWL *iwl = new IWL(psio_.get(), soIntTEIFile_, tolerance_, 1, 1);
         // In the functors below, we only want to build the Fock matrix on the first pass
         if(transformationType_ == Restricted){
             FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
@@ -195,8 +193,8 @@ IntegralTransform::presort_so_tei()
     } /* end loop over buckets/passes */
 
     /* Get rid of the input integral file */
-    psio_->open(soIntFile, PSIO_OPEN_OLD);
-    psio_->close(soIntFile, keepIwlSoInts_);
+    psio_->open(soIntTEIFile_, PSIO_OPEN_OLD);
+    psio_->close(soIntTEIFile_, keepIwlSoInts_);
 
     free_int_matrix(bucketMap);
 

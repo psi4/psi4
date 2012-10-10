@@ -71,6 +71,8 @@ void OMP2Wave::common_init()
 	read_mo_coeff=options_.get_str("MO_READ");
         lineq=options_.get_str("LINEQ_SOLVER"); 
 	level_shift=options_.get_str("DO_LEVEL_SHIFT");
+	scs_type_=options_.get_str("SCS_TYPE");
+	sos_type_=options_.get_str("SOS_TYPE");
 	
 	cutoff = pow(10.0,-exp_cutoff);
 	
@@ -79,6 +81,56 @@ void OMP2Wave::common_init()
         title();
 	get_moinfo();
 	
+if (reference == "RHF") {
+	// Memory allocation
+	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
+	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirreps, mopi, mopi));
+	gamma1corr = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha correlation OPDM", nirreps, mopi, mopi));
+	g1symm = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha OPDM", nirreps, mopi, mopi));
+	GFock = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha generalized Fock matrix", nirreps, mopi, mopi));
+	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirreps, mopi, mopi));
+	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirreps, mopi, mopi)); 
+	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirreps, mopi, mopi)); 
+	HG1 = boost::shared_ptr<Matrix>(new Matrix("h*g1symm", nirreps, mopi, mopi));
+	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirreps, mopi, mopi));
+	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirreps, aoccpiA, aoccpiA));
+	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
+
+        Molecule& mol = *reference_wavefunction_->molecule().get();
+        CharacterTable ct = mol.point_group()->char_table();
+        fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
+        fprintf(outfile, "\tIRREP   FC    OCC   VIR  FV \n");
+        fprintf(outfile, "\t==============================\n");                                                 
+        for(int h = 0; h < nirrep_; ++h){
+         fprintf(outfile, "\t %3s   %3d   %3d   %3d  %3d\n",
+                             ct.gamma(h).symbol(), frzcpi[h], aoccpiA[h], avirtpiA[h], frzvpi[h]);
+        }
+        fprintf(outfile,     "\t==============================\n"); 
+	fflush(outfile);
+
+    // Alloc ints
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::occ);
+    spaces.push_back(MOSpace::vir);
+
+    ints = new IntegralTransform(reference_wavefunction_, spaces, 
+                           IntegralTransform::Restricted,
+                           IntegralTransform::DPDOnly,
+                           IntegralTransform::QTOrder,
+                           IntegralTransform::None,
+                           false);
+                           
+                          
+    ints->set_print(0);
+    ints->set_dpd_id(0);
+    ints->set_keep_iwl_so_ints(true);
+    ints->set_keep_dpd_so_ints(true);           
+    ints->initialize();
+    dpd_set_default(ints->get_dpd_id());
+
+}  // end if (reference == "RHF") 
+
+else if (reference == "UHF") {
 	// Memory allocation
 	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
 	HmoB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirreps, mopi, mopi));
@@ -114,10 +166,9 @@ void OMP2Wave::common_init()
          fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d    %3d   %3d\n",
                              ct.gamma(h).symbol(), frzcpi[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi[h]);
         }
-        fprintf(outfile,     "\t==========================================\n\n");
+        fprintf(outfile,     "\t==========================================\n");
 	fflush(outfile);
 
-	
     // Alloc ints
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -138,7 +189,8 @@ void OMP2Wave::common_init()
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
-}//
+}// end if (reference == "UHF") 
+}// end common_init
 
 void OMP2Wave::title()
 {
@@ -148,18 +200,14 @@ void OMP2Wave::title()
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
-   fprintf(outfile,"              Program Written by Ugur Bozkaya\n") ; 
-   fprintf(outfile,"              Latest Revision August 20, 2012\n") ;
-   fprintf(outfile,"\n");
-   fprintf(outfile,"              U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer,  \n") ;
-   fprintf(outfile,"              and C. D. Sherrill, J. Chem. Phys. 135, 104103 (2011). \n") ;
+   fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
+   fprintf(outfile,"              Latest Revision October 08, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile,"\n");
    fflush(outfile);
-
 }//
 
 
@@ -176,7 +224,8 @@ double OMP2Wave::compute_energy()
 	
 	mo_optimized = 0;
         timer_on("trans_ints");
-	trans_ints();  
+	if (reference == "RHF") trans_ints_rhf();  
+	else if (reference == "UHF") trans_ints_uhf();  
         timer_off("trans_ints");
         timer_on("T2(1)");
 	t2_1st_sc();
@@ -191,8 +240,8 @@ double OMP2Wave::compute_energy()
         EcorrL=Emp2L-Escf;
 	Emp2L_old=Emp2;
 	
-	fprintf(outfile,"\n \n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Standard MP2)... \n"); 
+	fprintf(outfile,"\n"); 
+	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -211,9 +260,14 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
 	fflush(outfile);
-	Process::environment.globals["MP2 ENERGY"] = Emp2;
+	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
+	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+	Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+	Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MI-MP2 TOTAL ENERGY"] = Escsmimp2;
+	Process::environment.globals["SCS-MP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-MP2 TOTAL ENERGY"] = Esospimp2;
 
 	response_pdms();
 	GFockmo();
@@ -250,13 +304,12 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
 	fflush(outfile);
 
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\t================ FINAL OMP2 RESULTS ========================================== \n");
+	fprintf(outfile,"\t================ OMP2 FINAL RESULTS ========================================== \n");
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -278,25 +331,42 @@ double OMP2Wave::compute_energy()
 	Process::environment.globals["OMP2 TOTAL ENERGY"] = Emp2L;
 	Process::environment.globals["SCS-OMP2 TOTAL ENERGY"] =  Escsmp2;
 	Process::environment.globals["SOS-OMP2 TOTAL ENERGY"] =  Esosmp2;
+	Process::environment.globals["SCSN-OMP2 TOTAL ENERGY"] = Escsnmp2;
+	Process::environment.globals["SCS-MI-OMP2 TOTAL ENERGY"] = Escsmimp2;
+	Process::environment.globals["SCS-OMP2-VDW TOTAL ENERGY"] = Escsmp2vdw;
+	Process::environment.globals["SOS-PI-OMP2 TOTAL ENERGY"] = Esospimp2;
 	Process::environment.globals["CURRENT ENERGY"] = Emp2L;
 	Process::environment.globals["CURRENT REFERENCE ENERGY"] = Eref;
 	Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp2L-Escf;
-    
-	chkpt_->wt_etot(Emp2L);
-	chkpt_->wt_emp2(Emp2L);
-	chkpt_->wt_ecorr(Emp2L-Escf);
-	chkpt_->wt_eref(Eref);
-	
+
+        // if scs on	
 	if (do_scs == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
-	  chkpt_->wt_etot(Escsmp2);
-	  chkpt_->wt_ecorr(Escsmp2-Escf);
+	    if (scs_type_ == "SCS") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2;
+            }
+
+	    else if (scs_type_ == "SCSN") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsnmp2;
+            }
+
+	    else if (scs_type_ == "SCSMI") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmimp2;
+            }
+
+	    else if (scs_type_ == "SCSVDW") {
+	       Process::environment.globals["CURRENT ENERGY"] = Escsmp2vdw;
+            }
 	}
     
+        // else if sos on	
 	else if (do_sos == "TRUE") {
-	  Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
-	  chkpt_->wt_etot(Esosmp2);
-	  chkpt_->wt_ecorr(Esosmp2-Escf);
+	     if (sos_type_ == "SOS") {
+	         Process::environment.globals["CURRENT ENERGY"] = Esosmp2;
+             }
+
+	     else if (sos_type_ == "SOSPI") {
+	             Process::environment.globals["CURRENT ENERGY"] = Esospimp2;
+             }
 	}
  
 	if (natorb == "TRUE") nbo();
@@ -334,9 +404,7 @@ double OMP2Wave::compute_energy()
   }// end if (conver == 1)
 
         mem_release();
-	if (do_scs == "TRUE") return Escsmp2;
-	else if (do_sos == "TRUE") return Esosmp2;
-        else return Emp2L;
+        return Emp2L;
 
 } // end of compute_energy
 
@@ -346,6 +414,17 @@ void OMP2Wave::ref_energy()
 {
      double Ehf;     
      Ehf=0.0;
+
+ if (reference == "RHF") {
+    for (int h=0; h<nirreps; h++){
+      for (int i=0; i<occpiA[h];i++) {
+	Ehf+=HmoA->get(h,i,i) + FockA->get(h,i,i);
+      }
+    }         
+    Eref = Ehf + Enuc;
+ }// end rhf
+ 
+ else if (reference == "UHF") { 
      
      // alpha contribution
      for (int h=0; h<nirreps; h++){
@@ -361,18 +440,19 @@ void OMP2Wave::ref_energy()
       }
     }  
     
-    Eref=(0.5*Ehf)+Enuc; 
+    Eref = (0.5 * Ehf) + Enuc; 
+ }// end uhf
     
 } // end of ref_energy
 
 
 void OMP2Wave::mp2_energy()
 {
-     dpdbuf4 K, T;
-     
+     dpdbuf4 K, T, Tau, Tss;
+
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OMP2_DPD, PSIO_OPEN_OLD);
-     
+
      Ecorr = 0.0;
 
      Escsmp2AA = 0.0;
@@ -400,6 +480,44 @@ void OMP2Wave::mp2_energy()
      Esospimp2AB = 0.0;
      Esospimp2 = 0.0;
 
+ if (reference == "RHF") {
+     // Same-spin contribution
+     dpd_buf4_init(&Tss, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TAA <OO|VV>");
+     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+     Emp2AA = 0.5 * dpd_buf4_dot(&Tss, &K);     
+     dpd_buf4_close(&Tss);
+
+     Escsmp2AA = ss_scale * Emp2AA; 
+     Escsnmp2AA = 1.76 * Emp2AA; 
+     Escsmimp2AA = 1.29 * Emp2AA; 
+     Escsmp2vdwAA = 0.5 * Emp2AA; 
+
+     Emp2BB = Emp2AA;    
+     Escsmp2BB = ss_scale * Emp2BB;  
+     Escsnmp2BB = 1.76 * Emp2BB; 
+     Escsmimp2BB = 1.29 * Emp2BB; 
+     Escsmp2vdwBB = 0.50 * Emp2BB; 
+   
+     // Opposite-spin contribution
+     dpd_buf4_init(&T, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
+     Emp2AB = dpd_buf4_dot(&T, &K);     
+     dpd_buf4_close(&T);
+     dpd_buf4_close(&K);
+
+     Escsmp2AB = os_scale * Emp2AB;  
+     if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB; 
+     else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;  
+     Escsmimp2AB = 0.40 * Emp2AB; 
+     Escsmp2vdwAB = 1.28 * Emp2AB; 
+     Esospimp2AB = 1.40 * Emp2AB; 
+     
+ }// end rhf
+
+
+ else if (reference == "UHF") { 
 
      // Compute Energy
      // Alpha-Alpha spin contribution
@@ -407,11 +525,10 @@ void OMP2Wave::mp2_energy()
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
+     Emp2AA = 0.25 * dpd_buf4_dot(&T, &K);     
      dpd_buf4_close(&T);
      dpd_buf4_close(&K);
      
-     Emp2AA = Ecorr;    
      Escsmp2AA = ss_scale * Emp2AA; 
      Escsnmp2AA = 1.76 * Emp2AA; 
      Escsmimp2AA = 1.29 * Emp2AA; 
@@ -423,11 +540,10 @@ void OMP2Wave::mp2_energy()
                  ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-     Ecorr += dpd_buf4_dot(&T, &K);     
+     Emp2AB = dpd_buf4_dot(&T, &K);     
      dpd_buf4_close(&T);
      dpd_buf4_close(&K);
      
-     Emp2AB = Ecorr - Emp2AA;
      Escsmp2AB = os_scale * Emp2AB;  
      if (mo_optimized == 0) Esosmp2AB = sos_scale * Emp2AB; 
      else if (mo_optimized == 1) Esosmp2AB = sos_scale2 * Emp2AB;  
@@ -441,16 +557,18 @@ void OMP2Wave::mp2_energy()
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-     Ecorr += 0.25 * dpd_buf4_dot(&T, &K);     
+     Emp2BB = 0.25 * dpd_buf4_dot(&T, &K);     
      dpd_buf4_close(&T);
      dpd_buf4_close(&K);
      
-     Emp2BB = Ecorr - Emp2AA - Emp2AB;  
      Escsmp2BB = ss_scale * Emp2BB;  
      Escsnmp2BB = 1.76 * Emp2BB; 
      Escsmimp2BB = 1.29 * Emp2BB; 
      Escsmp2vdwBB = 0.50 * Emp2BB; 
      
+ }// end uhf
+
+     Ecorr = Emp2AA + Emp2AB + Emp2BB;
      Emp2 = Eref + Ecorr;
      Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
      Esosmp2 = Eref + Esosmp2AB;     
@@ -458,19 +576,52 @@ void OMP2Wave::mp2_energy()
      Escsmimp2 = Eref + Escsmimp2AA + Escsmimp2AB + Escsmimp2BB;
      Escsmp2vdw = Eref + Escsmp2vdwAA + Escsmp2vdwAB + Escsmp2vdwBB;
      Esospimp2 = Eref + Esospimp2AB;     
-     
+
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP2_DPD, 1);    
-     
-     Emp2=Eref+Ecorr;
-     
 } // end of mp2_energy
 
 
 void OMP2Wave::mp2l_energy()
 {      
-     //fprintf(outfile,"\n mp2l_energy is starting... \n"); fflush(outfile);
+    //fprintf(outfile,"\n mp2l_energy is starting... \n"); fflush(outfile);
+    dpdbuf4 G, K;
+    
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);  
+    psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD); 
+ 
+ if (reference == "RHF") {
+    // E += 2*G_ijkl <ij|kl>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"), 0, "MO Ints <OO|OO>");
+    dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+    Emp2_rdm += 2.0 * dpd_buf4_dot(&G, &K);     
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);    
+    
+    // E += 8*G_ijab <ij|ab>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+    Emp2_rdm += 8.0 * dpd_buf4_dot(&G, &K);   
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);    
+    
+    // E += 4*G_iajb <ia|jb>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&G);
+
+
+ }// end rhf
      
+ else if (reference == "UHF") {
      // One-electron contribution
      /*
      double Etpdm_oooo, Etpdm_oovv, Etpdm_ovov, Etpdm_vovo;
@@ -478,17 +629,13 @@ void OMP2Wave::mp2l_energy()
      HG1B->zero();
      HG1A->gemm(false, false, 1.0, HmoA, g1symmA, 0.0);
      HG1B->gemm(false, false, 1.0, HmoB, g1symmB, 0.0);
-     Emp2_adm = 0.0;
-     Emp2_adm = HG1A->trace() + HG1B->trace() + Enuc;
+     Emp2_rdm = 0.0;
+     Emp2_rdm = HG1A->trace() + HG1B->trace() + Enuc;
      Eopdm = HG1A->trace() + HG1B->trace();
      fprintf(outfile,"\n OPDM Contribution               : %12.14f\n", Eopdm); fflush(outfile);
      */
      
     // Two-electron contribution
-    dpdbuf4 G, K;
-    
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);  
-    psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD); 
     
     // OOOO-Block contribution
     // E += G_IJKL <IJ||KL>
@@ -496,7 +643,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-    Emp2_adm += dpd_buf4_dot(&G, &K);         
+    Emp2_rdm += dpd_buf4_dot(&G, &K);         
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);   
     
@@ -505,7 +652,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");
-    Emp2_adm += dpd_buf4_dot(&G, &K);  
+    Emp2_rdm += dpd_buf4_dot(&G, &K);  
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);  
     
@@ -514,10 +661,10 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");
-    Emp2_adm += 4.0 * dpd_buf4_dot(&G, &K); 
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K); 
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    //Etpdm_oooo = Emp2_adm - Enuc - Eopdm;   
+    //Etpdm_oooo = Emp2_rdm - Enuc - Eopdm;   
     //fprintf(outfile,"\n OOOO-Block Contribution         : %12.14f\n", Etpdm_oooo); fflush(outfile);
     
     
@@ -527,7 +674,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-    Emp2_adm += 2.0 * dpd_buf4_dot(&G, &K);   
+    Emp2_rdm += 2.0 * dpd_buf4_dot(&G, &K);   
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);    
     
@@ -536,7 +683,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "TPDM <oo|vv>");
-    Emp2_adm += 2.0 * dpd_buf4_dot(&G, &K);   
+    Emp2_rdm += 2.0 * dpd_buf4_dot(&G, &K);   
     dpd_buf4_close(&K);
     dpd_buf4_close(&G); 
     
@@ -545,10 +692,10 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "TPDM <Oo|Vv>");
-    Emp2_adm += 8.0 * dpd_buf4_dot(&G, &K);   
+    Emp2_rdm += 8.0 * dpd_buf4_dot(&G, &K);   
     dpd_buf4_close(&K);
     dpd_buf4_close(&G); 
-    //Etpdm_oovv = Emp2_adm - Enuc - Eopdm - Etpdm_oooo;
+    //Etpdm_oovv = Emp2_rdm - Enuc - Eopdm - Etpdm_oooo;
     //fprintf(outfile,"\n OOVV-Block Contribution         : %12.14f\n", Etpdm_oovv); fflush(outfile);
 
     
@@ -558,7 +705,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV||OV>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
-    Emp2_adm += 4.0 * dpd_buf4_dot(&G, &K);     
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     
@@ -567,7 +714,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov||ov>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
-    Emp2_adm += 4.0 * dpd_buf4_dot(&G, &K);     
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     
@@ -576,7 +723,7 @@ void OMP2Wave::mp2l_energy()
                   ID("[O,v]"), ID("[O,v]"), 0, "MO Ints <Ov|Ov>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");
-    Emp2_adm += 4.0 * dpd_buf4_dot(&G, &K);     
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
     
@@ -586,23 +733,23 @@ void OMP2Wave::mp2l_energy()
                   ID("[V,o]"), ID("[V,o]"), 0, "MO Ints <Vo|Vo>");
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>"); 
-    Emp2_adm += 4.0 * dpd_buf4_dot(&G, &K);     
+    Emp2_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
-    //Etpdm_ovov = Emp2_adm - Enuc - Eopdm - Etpdm_oooo - Etpdm_oovv;
+    //Etpdm_ovov = Emp2_rdm - Enuc - Eopdm - Etpdm_oooo - Etpdm_oovv;
     //fprintf(outfile,"\n OVOV-Block Contribution         : %12.14f\n", Etpdm_ovov); fflush(outfile);
     
+ }// end uhf
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);  
     psio_->close(PSIF_OMP2_DENSITY, 1);  
   
-    EcorrL=Emp2_adm-Escf;        
-    Emp2L=Emp2_adm;  
+    EcorrL=Emp2_rdm-Escf;        
+    Emp2L=Emp2_rdm;  
     DE = Emp2L - Emp2L_old;
     Emp2L_old = Emp2L;
     
-
-    //fprintf(outfile,"\n MP2 Total Energy via pdms       : %12.14f\n", Emp2_adm); fflush(outfile);    
+    //fprintf(outfile,"\n MP2 Total Energy via pdms       : %12.14f\n", Emp2_rdm); fflush(outfile);    
     //fprintf(outfile,"\n mp2l_energy is done... \n"); fflush(outfile);
     
 } // end of mp2l_energy
@@ -617,20 +764,39 @@ fprintf(outfile," ==============================================================
 fprintf(outfile,"\n Diagonalizing one-particle response density matrix... \n");
 fprintf(outfile,"\n");
 fflush(outfile);
- 
+
       SharedMatrix Udum = boost::shared_ptr<Matrix>(new Matrix("Udum", nirreps, mopi, mopi));
       SharedVector diag = boost::shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirreps, mopi));
 
       // Diagonalizing Alpha-OPDM
       Udum->zero();
-      
+
       //diag->zero();
       for(int h = 0; h < nirreps; h++){
 	  for(int i = 0; i < mopi[h]; i++){
 	    diag->set(h,i,0.0);
 	  }
 	}
-   
+ 
+ if (reference == "RHF") {
+      g1symm->diagonalize(Udum, diag);
+	
+      //trace
+      //sum=diag->trace();
+      sum=0.0;
+      for(int h = 0; h < nirreps; h++){
+	  for(int i = 0; i < mopi[h]; i++){
+	    sum+=diag->get(h,i);
+	  }
+	}
+      
+      
+      fprintf(outfile, "\n Trace of one-particle density matrix: %20.14f \n",  sum);
+      fprintf(outfile,"\n");
+      fflush(outfile);
+ }// end rhf
+
+ else if (reference == "UHF") {
       g1symmA->diagonalize(Udum, diag);
 	
       //trace
@@ -648,9 +814,6 @@ fflush(outfile);
 
       //print
       diag->print();      
-      
-      
-      
       
       // Diagonalizing Beta-OPDM
       Udum->zero();
@@ -677,9 +840,10 @@ fflush(outfile);
       fprintf(outfile,"\n");
       fflush(outfile);
 
+ }// end uhf
+
       //print
       diag->print(); 
-      
 } // end of nbo
 
 void OMP2Wave::mem_release()
@@ -687,55 +851,64 @@ void OMP2Wave::mem_release()
 
 	delete ints;
 	delete [] idprowA;
-	delete [] idprowB;
 	delete [] idpcolA;
-	delete [] idpcolB;
 	delete [] idpirrA;
-	delete [] idpirrB;
-	delete [] evalsA;
-	delete [] evalsB;
-	delete [] evals_c1A;
-	delete [] evals_c1B;
 	delete [] pitzer2symblk;
 	delete [] pitzer2symirrep;
-	delete [] c1topitzerA;
-	delete [] c1topitzerB;
-	delete [] pitzer2c1A;
-	delete [] pitzer2c1B;
 	delete [] PitzerOffset;
 	delete [] sosym;
 	delete [] mosym;
-	delete [] mosym_c1;
 	delete [] occ_offA;
-	delete [] occ_offB;
 	delete [] vir_offA;
-	delete [] vir_offB;
 	delete [] occ2symblkA;
-	delete [] occ2symblkB;
 	delete [] virt2symblkA;
-	delete [] virt2symblkB;
-	/*
-	delete [] c1toqtA;
-	delete [] c1toqtB;
-	delete [] qt2c1A;
-	delete [] qt2c1B;
-	*/
-
         delete wogA;
-	delete wogB;
 	delete kappaA;
-	delete kappaB;
 	delete kappa_barA;
+
+       if (reference == "UHF") {
+	delete [] idprowB;
+	delete [] idpcolB;
+	delete [] idpirrB;
+	delete [] occ_offB;
+	delete [] vir_offB;
+	delete [] occ2symblkB;
+	delete [] virt2symblkB;
+	delete wogB;
+	delete kappaB;
 	delete kappa_barB;
+      }
 	
 	if (opt_method == "DIIS") {
           delete vecsA;
           delete errvecsA;
-          delete vecsB;
-          delete errvecsB;
+          if (reference == "UHF") delete vecsB;
+          if (reference == "UHF") delete errvecsB;
 	}
 	
 	chkpt_.reset();
+
+      if (reference == "RHF") {
+	Ca_.reset();
+	Ca_ref.reset();
+	Hso.reset();
+	Tso.reset();
+	Vso.reset();
+	HmoA.reset();
+	FockA.reset();
+	gamma1corr.reset();
+	g1symm.reset();
+	GFock.reset();
+	UorbA.reset();
+	KorbA.reset();
+	KsqrA.reset();
+	HG1.reset();
+	WorbA.reset();
+	GooA.reset();
+	GvvA.reset();
+       }
+
+       else if (reference == "UHF") {
 	Ca_.reset();
 	Cb_.reset();
 	Ca_ref.reset();
@@ -767,11 +940,11 @@ void OMP2Wave::mem_release()
 	GooB.reset();
 	GvvA.reset();
 	GvvB.reset();
+       }
 
 	//fprintf(outfile,"\n mem_release done. \n"); fflush(outfile);
 
 }//
-
 
 } }
 

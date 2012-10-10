@@ -109,9 +109,9 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
             absd[1] = fabs(d->v_[1]);
             absd[2] = fabs(d->v_[2]);
             int axis0, axis1;
-            if (absd[0] < absd[1]) {
+            if ((absd[1] - absd[0]) > 1.0e-12) {
                 axis0 = 1;
-                if (absd[0] < absd[2]) {
+                if ((absd[2] - absd[0]) > 1.0e-12) {
                     axis1 = 2;
                 }
                 else {
@@ -120,7 +120,7 @@ inline Vector3 Vector3::perp_unit(const Vector3& v) const
             }
             else {
                 axis0 = 0;
-                if (absd[1] < absd[2]) {
+                if ((absd[2] - absd[1]) > 1.0e-12) {
                     axis1 = 2;
                 }
                 else {

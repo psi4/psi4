@@ -1,6 +1,5 @@
 import PsiMod
 import os
-import input
 import math
 from molutil import * 
 from driver import * 
@@ -537,7 +536,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
 
     if (IPr > kIPr):
         PsiMod.print_out('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
-        sys,exit(1)
+        sys.exit(1)
 
     omegas.append(omega_r)
     types.append('Right Limit')
@@ -588,7 +587,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
 
     if (IPl < kIPl):
         PsiMod.print_out('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
-        sys,exit(1)
+        sys.exit(1)
 
     omegas.append(omega_l)
     types.append('Left Limit')

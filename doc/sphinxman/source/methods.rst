@@ -19,6 +19,7 @@ A complete list of standard keywords is provided in Appendix
    scf
    dft
    dfmp2
+   ompn
    adc
    sapt
    cepa
@@ -27,4 +28,5 @@ A complete list of standard keywords is provided in Appendix
    mrcc
    detci
    optking
+   oeprop
 

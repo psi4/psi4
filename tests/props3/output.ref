@@ -1,0 +1,514 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev 354b53adb768af9b2e4e42df8299d57548284782
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  65055
+    PSI4DATADIR: /Users/andysim/programming/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials
+#! evaluated at the nuclear coordinates
+
+refs = {                                 #TEST
+ "QUADRUPOLE XX"     :     -23.4952157,  #TEST
+ "QUADRUPOLE YY"     :     -30.3835545,  #TEST
+ "QUADRUPOLE ZZ"     :     -23.4952156,  #TEST
+ "HEXADECAPOLE XXXX" :    -734.9573330,  #TEST
+ "HEXADECAPOLE XXYY" :    -173.3928642,  #TEST
+ "HEXADECAPOLE XXZZ" :    -244.9857786,  #TEST
+ "HEXADECAPOLE YYYY" :    -125.8099936,  #TEST
+ "HEXADECAPOLE YYZZ" :    -173.3928634,  #TEST
+ "HEXADECAPOLE ZZZZ" :    -734.9573332,  #TEST
+ "64-pole XXXXXX"    :  -21130.5034747,  #TEST
+ "64-pole XXXXYY"    :   -2311.6456652,  #TEST
+ "64-pole XXXXZZ"    :   -3874.2709600,  #TEST
+ "64-pole XXYYYY"    :    -719.9876535,  #TEST
+ "64-pole XXYYZZ"    :    -770.5485552,  #TEST
+ "64-pole XXZZZZ"    :   -4460.6538743,  #TEST
+ "64-pole YYYYYY"    :   -1078.4447403,  #TEST
+ "64-pole YYYYZZ"    :    -719.9876489,  #TEST
+ "64-pole YYZZZZ"    :   -2311.6456540,  #TEST
+ "64-pole ZZZZZZ"    :  -20544.1205697   #TEST
+}                                        #TEST
+esps =  [-14.719268873580, -14.719268873580, -14.719268878548, -14.719268873580, #TEST
+         -14.719268878548, -14.719268873580, -1.093963383542, -1.093963383542,   #TEST
+         -1.093963383542, -1.093963384104, -1.093963384104, -1.093963383542]     #TEST
+
+
+memory 250 mb
+ 
+molecule bz {
+    C          0.710500000000    0.000000000000   -1.230622098778
+    C          1.421000000000    0.000000000000    0.000000000000
+    C          0.710500000000    0.000000000000    1.230622098778
+    C         -0.710500000000    0.000000000000    1.230622098778
+    C         -0.710500000000    0.000000000000   -1.230622098778
+    C         -1.421000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000   -2.172857738095
+    H         -1.254500000000    0.000000000000    2.172857738095
+    H          2.509000000000    0.000000000000    0.000000000000
+    H          1.254500000000    0.000000000000    2.172857738095
+    H         -1.254500000000    0.000000000000   -2.172857738095
+    H         -2.509000000000    0.000000000000    0.000000000000
+}
+
+set {
+    basis cc-pVDZ
+    SCF_TYPE DF
+    REFERENCE RHF
+}
+
+
+energy('scf')
+
+oeprop("MULTIPOLES(7)", "ESP_AT_NUCLEI")
+
+for mpole,val in reversed(sorted(refs.iteritems())):    #TEST
+    compare_values(val, get_variable(mpole),  4, mpole) #TEST
+
+for n in range(1,13):                                   #TEST
+    st = "ESP AT CENTER %d" % n                         #TEST
+    compare_values(esps[n-1], get_variable(st),  4, st) #TEST
+    
+clean()
+
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+No DF_BASIS_SCF auxiliary basis selected, defaulting to cc-pvdz-jkfit
+
+
+*** tstart() called on quicksilver
+*** at Wed Sep 19 09:34:05 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D6h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          1.230622098778     0.000000000000    -0.710500000000
+           C          1.230622098778     0.000000000000     0.710500000000
+           C          0.000000000000     0.000000000000     1.421000000000
+           C         -1.230622098778    -0.000000000000     0.710500000000
+           C          0.000000000000    -0.000000000000    -1.421000000000
+           C         -1.230622098778    -0.000000000000    -0.710500000000
+           H          2.172857738095     0.000000000000    -1.254500000000
+           H         -2.172857738095    -0.000000000000     1.254500000000
+           H          2.172857738095     0.000000000000     1.254500000000
+           H          0.000000000000     0.000000000000     2.509000000000
+           H          0.000000000000    -0.000000000000    -2.509000000000
+           H         -2.172857738095    -0.000000000000    -1.254500000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =  200.195605727863153
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 42
+  Nalpha       = 21
+  Nbeta        = 21
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 54
+    Number of basis function: 114
+    Number of Cartesian functions: 120
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        24      24       0       0       0       0
+     B1g        6       6       0       0       0       0
+     B2g       18      18       0       0       0       0
+     B3g        9       9       0       0       0       0
+     Au         6       6       0       0       0       0
+     B1u       24      24       0       0       0       0
+     B2u        9       9       0       0       0       0
+     B3u       18      18       0       0       0       0
+   -------------------------------------------------------
+    Total     114     114      21      21      21       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                  12
+      Number of AO shells:              54
+      Number of SO shells:              18
+      Number of primitives:            162
+      Number of atomic orbitals:       120
+      Number of basis functions:       114
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  24    6   18    9    6   24    9   18 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: cc-pvdz-jkfit
+    Number of shells: 198
+    Number of basis function: 558
+    Number of Cartesian functions: 636
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 4.2589241517E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:  -177.91422543283443
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:  -195.39002923992484   -1.74758e+01   0.00000e+00 
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     7,    0,    4,    0,    0,    6,    0,    4 ]
+
+   @RHF iter   2:  -191.80553202626345    3.58450e+00   1.98686e+00 DIIS
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     6,    1,    3,    1,    0,    5,    1,    4 ]
+
+   @RHF iter   3:  -230.25664092128534   -3.84511e+01   2.01979e+00 DIIS
+   @RHF iter   4:  -230.69330712542671   -4.36666e-01   1.48172e-02 DIIS
+   @RHF iter   5:  -230.71481371143670   -2.15066e-02   5.12653e-03 DIIS
+   @RHF iter   6:  -230.71545457311606   -6.40862e-04   1.02857e-03 DIIS
+   @RHF iter   7:  -230.71558001959670   -1.25446e-04   3.98301e-04 DIIS
+   @RHF iter   8:  -230.71558738237763   -7.36278e-06   7.33474e-05 DIIS
+   @RHF iter   9:  -230.71558747328208   -9.09045e-08   8.94987e-06 DIIS
+   @RHF iter  10:  -230.71558747418914   -9.07050e-10   1.24811e-06 DIIS
+   @RHF iter  11:  -230.71558747420715   -1.80194e-11   1.25374e-07 DIIS
+   @RHF iter  12:  -230.71558747420733   -1.70530e-13   2.31710e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1Ag   -11.247634     1B1u  -11.247148     1B3u  -11.247148  
+	   2Ag   -11.246091     1B2g  -11.246091     2B1u  -11.245576  
+	   3Ag    -1.132493     3B1u   -1.004435     2B3u   -1.004435  
+	   2B2g   -0.817366     4Ag    -0.817366     5Ag    -0.697387  
+	   4B1u   -0.646873     3B3u   -0.604853     5B1u   -0.581446  
+	   4B3u   -0.581446     6Ag    -0.491067     3B2g   -0.491067  
+	   1B2u   -0.488285     1B3g   -0.328994     1B1g   -0.328994  
+
+	Virtual:                                                              
+
+	   1Au     0.130576     2B2u    0.130576     7Ag     0.182843  
+	   5B3u    0.219803     6B1u    0.219803     4B2g    0.252708  
+	   8Ag     0.252708     7B1u    0.269087     2B3g    0.337206  
+	   5B2g    0.428284     9Ag     0.428284     8B1u    0.457301  
+	   6B3u    0.457301    10Ag     0.584665     7B3u    0.591051  
+	   9B1u    0.652292     3B2u    0.684913    11Ag     0.714223  
+	   6B2g    0.725063     7B2g    0.729278    12Ag     0.729278  
+	  10B1u    0.735121     8B3u    0.735121     3B3g    0.737511  
+	   2B1g    0.737511     2Au     0.822387     4B2u    0.822387  
+	  11B1u    0.854188     9B3u    0.854188    13Ag     0.881700  
+	   8B2g    0.881700     4B3g    0.904125    12B1u    0.966914  
+	  14Ag     0.996561     5B2u    1.055066    13B1u    1.095431  
+	  10B3u    1.095431     9B2g    1.100830     3B1g    1.143214  
+	  10B2g    1.197948    15Ag     1.197948    14B1u    1.229145  
+	  11B3u    1.229145     5B3g    1.235253     4B1g    1.235253  
+	  15B1u    1.290350     3Au     1.303746     6B2u    1.303746  
+	  16Ag     1.477522    17Ag     1.507126    11B2g    1.507126  
+	  12B3u    1.706818     4Au     1.729523     7B2u    1.729523  
+	   6B3g    1.753609    18Ag     1.790811    12B2g    1.849460  
+	  19Ag     1.849460    16B1u    1.866917    13B3u    1.866917  
+	   8B2u    1.900838    17B1u    1.943861    18B1u    1.946167  
+	  14B3u    1.946167     5B1g    1.950533     7B3g    1.950533  
+	   6B1g    2.065191     8B3g    2.065191    15B3u    2.102965  
+	  19B1u    2.123169    16B3u    2.123169    13B2g    2.131552  
+	  20Ag     2.131552    14B2g    2.157470     9B2u    2.250866  
+	   5Au     2.250866    15B2g    2.264185    21Ag     2.264185  
+	  20B1u    2.318649     6Au     2.460773     9B3g    2.533335  
+	  22Ag     2.700300    16B2g    2.714955    23Ag     2.714955  
+	  21B1u    2.762705    17B3u    2.762705    22B1u    2.911540  
+	  18B3u    2.911540    23B1u    2.980012    17B2g    3.088800  
+	  24Ag     3.217073    18B2g    3.217073    24B1u    3.932245  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     6,    1,    3,    1,    0,    5,    1,    4 ]
+
+  Energy converged.
+
+  @RHF Final Energy:  -230.71558747420733
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =        200.1956057278631533
+    One-Electron Energy =            -706.8300019604963609
+    Two-Electron Energy =             275.9188087584258255
+    DFT Functional Energy =             0.0000000000000000
+    Empirical Dispersion Energy =       0.0000000000000000
+    Total Energy =                   -230.7155874742073820
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on quicksilver at Wed Sep 19 09:34:15 2012
+Module time:
+	user time   =      10.48 seconds =       0.17 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
+Total time:
+	user time   =      10.48 seconds =       0.17 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+
+ Multipole Moments:
+
+ ------------------------------------------------------------------------------------
+     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)
+ ------------------------------------------------------------------------------------
+
+ L = 1.  Multiply by 2.5417462300 to convert to Debye
+ Dipole X            :          0.0000000            0.0000000            0.0000000
+ Dipole Y            :          0.0000000            0.0000000            0.0000000
+ Dipole Z            :          0.0000000           -0.0000000           -0.0000000
+
+ L = 2.  Multiply by 1.3450341749 to convert to Debye.ang
+ Quadrupole XX       :       -220.7307736          197.2355579          -23.4952157
+ Quadrupole XY       :          0.0000000            0.0000000            0.0000000
+ Quadrupole XZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole YY       :        -30.3835545            0.0000000          -30.3835545
+ Quadrupole YZ       :          0.0000000            0.0000000            0.0000000
+ Quadrupole ZZ       :       -220.7307736          197.2355579          -23.4952157
+
+ L = 3.  Multiply by 0.7117614302 to convert to Debye.ang^2
+ Octupole XXX        :          0.0000000            0.0000000            0.0000000
+ Octupole XXY        :          0.0000000           -0.0000000           -0.0000000
+ Octupole XXZ        :          0.0000000            0.0000000            0.0000000
+ Octupole XYY        :          0.0000000            0.0000000            0.0000000
+ Octupole XYZ        :          0.0000000            0.0000000            0.0000000
+ Octupole XZZ        :          0.0000000            0.0000000            0.0000000
+ Octupole YYY        :          0.0000000            0.0000000            0.0000000
+ Octupole YYZ        :          0.0000000            0.0000000            0.0000000
+ Octupole YZZ        :          0.0000000            0.0000000            0.0000000
+ Octupole ZZZ        :          0.0000000            0.0000000            0.0000000
+
+ L = 4.  Multiply by 0.3766479268 to convert to Debye.ang^3
+ Hexadecapole XXXX   :      -2573.9591470         1839.0018127         -734.9573343
+ Hexadecapole XXXY   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XXXZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XXYY   :       -173.3928639            0.0000000         -173.3928639
+ Hexadecapole XXYZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XXZZ   :       -857.9863823          613.0006042         -244.9857781
+ Hexadecapole XYYY   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XYYZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XYZZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole XZZZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole YYYY   :       -125.8099936            0.0000000         -125.8099936
+ Hexadecapole YYYZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole YYZZ   :       -173.3928639            0.0000000         -173.3928639
+ Hexadecapole YZZZ   :          0.0000000            0.0000000            0.0000000
+ Hexadecapole ZZZZ   :      -2573.9591469         1839.0018127         -734.9573343
+
+ L = 5.  Multiply by 0.1993134985 to convert to Debye.ang^4
+ 32-pole XXXXX       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXXXY       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXXXZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXXYY       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXXYZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXXZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXYYY       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXYYZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXYZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XXZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XYYYY       :          0.0000000            0.0000000            0.0000000
+ 32-pole XYYYZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XYYZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XYZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole XZZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYYYY       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYYYZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYYZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole YYZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole YZZZZ       :          0.0000000            0.0000000            0.0000000
+ 32-pole ZZZZZ       :          0.0000000           -0.0000000           -0.0000000
+
+ L = 6.  Multiply by 0.1054721608 to convert to Debye.ang^5
+ 64-pole XXXXXX      :     -44097.5673165        22967.0637886       -21130.5035279
+ 64-pole XXXXXY      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXXXZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXXYY      :      -2311.6456631            0.0000000        -2311.6456631
+ 64-pole XXXXYZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXXZZ      :     -11529.9588883         7655.6879295        -3874.2709588
+ 64-pole XXXYYY      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXYYZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXYZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXXZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXYYYY      :       -719.9876516            0.0000000         -719.9876516
+ 64-pole XXYYYZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXYYZZ      :       -770.5485544            0.0000000         -770.5485544
+ 64-pole XXYZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XXZZZZ      :      -7012.5498466         2551.8959765        -4460.6538701
+ 64-pole XYYYYY      :          0.0000000            0.0000000            0.0000000
+ 64-pole XYYYYZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XYYYZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XYYZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XYZZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole XZZZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole YYYYYY      :      -1078.4447403            0.0000000        -1078.4447403
+ 64-pole YYYYYZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole YYYYZZ      :       -719.9876516            0.0000000         -719.9876516
+ 64-pole YYYZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole YYZZZZ      :      -2311.6456631            0.0000000        -2311.6456631
+ 64-pole YZZZZZ      :          0.0000000            0.0000000            0.0000000
+ 64-pole ZZZZZZ      :     -48614.9763581        28070.8557416       -20544.1206165
+
+ L = 7.  Multiply by 0.0558134636 to convert to Debye.ang^6
+ 128-pole XXXXXXX    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXXXY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXXXZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXXYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXXYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXXZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXYYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXYYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXYZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXXZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXYYYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXYYYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXYYZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXYZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXXZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXYYYYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXYYYYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXYYYZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXYYZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXYZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XXZZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYYYYYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYYYYYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYYYYZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYYYZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYYZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XYZZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole XZZZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYYYYYY    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYYYYYZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYYYYZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYYYZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYYZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YYZZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole YZZZZZZ    :          0.0000000            0.0000000            0.0000000
+ 128-pole ZZZZZZZ    :          0.0000000            0.0000000            0.0000000
+
+ --------------------------------------------------------------------------------
+
+ Electrostatic potentials at the nuclear coordinates:
+ ---------------------------------------------
+   Center     Electrostatic Potential (a.u.)
+ ---------------------------------------------
+    1  C           -14.719268875663
+    2  C           -14.719268875663
+    3  C           -14.719268875668
+    4  C           -14.719268875663
+    5  C           -14.719268875668
+    6  C           -14.719268875663
+    7  H            -1.093963383355
+    8  H            -1.093963383355
+    9  H            -1.093963383355
+   10  H            -1.093963383356
+   11  H            -1.093963383356
+   12  H            -1.093963383355
+ ---------------------------------------------
+
+*** PSI4 exiting successfully. Buy a developer a beer!

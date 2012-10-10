@@ -20,11 +20,11 @@ LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
-include $(LIBOBJ:%.o=%.d)
-endif
-
 install_inc:: $(INC)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libmoinfo
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libmoinfo
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
 
