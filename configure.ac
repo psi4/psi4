@@ -1033,6 +1033,8 @@ AC_CONFIG_FILES([
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/psithon1/Makefile
+          tests/dftd3-energy/Makefile
+          tests/dftd3-grad/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
@@ -1128,7 +1130,11 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mints5/Makefile
           tests/omp2-1/Makefile
+          tests/omp2-2/Makefile
+          tests/omp2-3/Makefile
           tests/omp3-1/Makefile
+          tests/omp3-2/Makefile
+          tests/omp3-3/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
@@ -1142,6 +1148,7 @@ AC_CONFIG_FILES([
           tests/dft-pbe0-2/Makefile
           tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
+          tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs-psimod/Makefile
@@ -1149,6 +1156,9 @@ AC_CONFIG_FILES([
           tests/docs-bases/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
+          plugins/backtrans/Makefile
+          plugins/backtrans/backtrans.cc
+          plugins/backtrans/input.dat
           plugins/aointegrals/input.dat
           plugins/aointegrals/aointegrals.cc
           plugins/sointegrals/Makefile

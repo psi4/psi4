@@ -391,7 +391,9 @@ to the complete listing of all functionals of each class are presented below:
     only available with density-fitted, not conventional, mp2 algorithms.
 
 :ref:`-D Functionals <table:dft_disp>`
-    We have several -D2 functionals implemented, and will shortly be adding many
+    We have several -D2 functionals implemented, -D3 functionls are available
+    with the installation of Grimme's :ref:`DFTD3 program <sec:dftd3>`, and we
+    will shortly be adding many
     more combinations of -D2 and -D3 functionals. For now, the pure-GGA B97-D
     functional of Grimme is remarkably accurate, and the hybrid B3LYP-D
     functional is also quite reliable. 
@@ -408,7 +410,7 @@ Grid Selection
 |PSIfour| uses the standard Lebedev-Laikov spherical quadratures in concert with a
 number of radial quadratures and atomic partitioning schemes. Pruned grids are
 not yet available, but will be implemented by RC1 (in final debugging). The
-default grid in PSI4 is a Lebedev-Treutler (302,99) grid with a Treutler
+default grid in PSI4 is a Lebedev-Treutler (75,302) grid with a Treutler
 partition of the atomic weights. 
 
 Spherical grids are all of the extremely efficient Lebedev-Laikov type.
@@ -417,73 +419,73 @@ option, which may take one of the following values:
 
 .. _`table:lebedevorder`:
 
-    +--------+-------+
-    | Points | Order |
-    +========+=======+
-    | 6      | 3     |                                             
-    +--------+-------+
-    | 14     | 5     |                                             
-    +--------+-------+
-    | 26     | 7     |                                             
-    +--------+-------+
-    | 38     | 9     |                                             
-    +--------+-------+
-    | 50     | 11    |                                             
-    +--------+-------+
-    | 74     | 13    |                                             
-    +--------+-------+
-    | 86     | 15    |                                             
-    +--------+-------+
-    | 110    | 17    |                                             
-    +--------+-------+
-    | 146    | 19    |                                             
-    +--------+-------+
-    | 170    | 21    |                                             
-    +--------+-------+
-    | 194    | 23    |                                             
-    +--------+-------+
-    | 230    | 25    |                                             
-    +--------+-------+
-    | 266    | 27    |                                             
-    +--------+-------+
-    | 302    | 29    |                                             
-    +--------+-------+
-    | 350    | 31    |                                             
-    +--------+-------+
-    | 434    | 35    |                                             
-    +--------+-------+
-    | 590    | 41    |                                             
-    +--------+-------+
-    | 770    | 47    |                                             
-    +--------+-------+
-    | 974    | 53    |                                             
-    +--------+-------+
-    | 1202   | 59    |                                             
-    +--------+-------+
-    | 1454   | 65    |                                             
-    +--------+-------+
-    | 1730   | 71    |                                             
-    +--------+-------+
-    | 2030   | 77    |                                             
-    +--------+-------+
-    | 2354   | 83    |                                             
-    +--------+-------+
-    | 2702   | 89    |                                             
-    +--------+-------+
-    | 3074   | 95    |                                            
-    +--------+-------+
-    | 3470   | 101   |                                             
-    +--------+-------+
-    | 3890   | 107   |                                             
-    +--------+-------+
-    | 4334   | 113   |                                             
-    +--------+-------+
-    | 4802   | 119   |                                             
-    +--------+-------+
-    | 5294   | 125   |                                             
-    +--------+-------+
-    | 5810   | 131   |
-    +--------+-------+
+    +-----------------------------+-------+
+    | |scf__dft_spherical_points| | Order |
+    +=============================+=======+
+    | 6                           | 3     |                                             
+    +-----------------------------+-------+
+    | 14                          | 5     |                                             
+    +-----------------------------+-------+
+    | 26                          | 7     |                                             
+    +-----------------------------+-------+
+    | 38                          | 9     |                                             
+    +-----------------------------+-------+
+    | 50                          | 11    |                                             
+    +-----------------------------+-------+
+    | 74                          | 13    |                                             
+    +-----------------------------+-------+
+    | 86                          | 15    |                                             
+    +-----------------------------+-------+
+    | 110                         | 17    |                                             
+    +-----------------------------+-------+
+    | 146                         | 19    |                                             
+    +-----------------------------+-------+
+    | 170                         | 21    |                                             
+    +-----------------------------+-------+
+    | 194                         | 23    |                                             
+    +-----------------------------+-------+
+    | 230                         | 25    |                                             
+    +-----------------------------+-------+
+    | 266                         | 27    |                                             
+    +-----------------------------+-------+
+    | 302                         | 29    |                                             
+    +-----------------------------+-------+
+    | 350                         | 31    |                                             
+    +-----------------------------+-------+
+    | 434                         | 35    |                                             
+    +-----------------------------+-------+
+    | 590                         | 41    |                                             
+    +-----------------------------+-------+
+    | 770                         | 47    |                                             
+    +-----------------------------+-------+
+    | 974                         | 53    |                                             
+    +-----------------------------+-------+
+    | 1202                        | 59    |                                             
+    +-----------------------------+-------+
+    | 1454                        | 65    |                                             
+    +-----------------------------+-------+
+    | 1730                        | 71    |                                             
+    +-----------------------------+-------+
+    | 2030                        | 77    |                                             
+    +-----------------------------+-------+
+    | 2354                        | 83    |                                             
+    +-----------------------------+-------+
+    | 2702                        | 89    |                                             
+    +-----------------------------+-------+
+    | 3074                        | 95    |                                            
+    +-----------------------------+-------+
+    | 3470                        | 101   |                                             
+    +-----------------------------+-------+
+    | 3890                        | 107   |                                             
+    +-----------------------------+-------+
+    | 4334                        | 113   |                                             
+    +-----------------------------+-------+
+    | 4802                        | 119   |                                             
+    +-----------------------------+-------+
+    | 5294                        | 125   |                                             
+    +-----------------------------+-------+
+    | 5810                        | 131   |
+    +-----------------------------+-------+
 
 The spherical grids are rotated according to a common set of rules developed
 during the implementation of SG1. At the moment, the rules for tetrahedral,
@@ -641,6 +643,11 @@ it, and are interested in expanding this work. If you would like to publish
 results using this code, please contact Rob Parrish to make arrangements for
 collaboration. 
 
+Dispersion Corrections
+~~~~~~~~~~~~~~~~~~~~~~
+
+:ref:`Dispersion corrections are discussed at this link. <sec:dftd3>`
+
 Recommendations
 ~~~~~~~~~~~~~~~
 
@@ -658,7 +665,8 @@ Some rough guidelines for using the KS-DFT code are as follows,
 * |PSIfour| is a "tight" code, meaning we've set the default numerical cutoffs
   for integrals, grids, and convergence criteria in such a way that you will often
   get many more digits of precision than needed. You may be able to realize
-  additional speed gains by loosening some of these thresholds. 
+  additional speed gains by loosening some of these thresholds. See 
+  :ref:`SCF Convergence <table:conv_scf>` for default convergence criteria.
 * Read the literature to determine which functional technology to use. The world
   contains far too many papers using B3LYP on noncovalent interactions without a -D.
 

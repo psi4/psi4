@@ -37,106 +37,151 @@ namespace psi{ namespace omp3wave{
 
 void OMP3Wave::response_pdms()
 {   
-     //fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
-/********************************************************************************************/
-/************************** Initialize ******************************************************/
-/********************************************************************************************/ 
+        //fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
+
+        // Build G intermediates 
+        timer_on("G int");
+	G_int(); 
+        timer_off("G int");
+
+ if (reference == "RHF") {
+        // Initialize
+	gamma1corr->zero();
+	g1symm->zero();
+
+        // OPDM
+        timer_on("OPDM");
+	// OO-block alpha contrb.
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiA[h]; ++i){
+            for(int j = 0 ; j < aoccpiA[h]; ++j){
+                g1symm->set(h, i, j, GooA->get(h, i, j) + GooA->get(h, j, i));
+            }
+	  }
+	}
+
+	// VV-block alpha contrb.
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiA[h]; ++a){
+            for(int b = 0 ; b < avirtpiA[h]; ++b){
+                int aa = a + occpiA[h];
+                int bb = b + occpiA[h];
+                g1symm->set(h, aa, bb, GvvA->get(h, a, b) + GvvA->get(h, b, a));
+            }
+	  }
+	}
+
+	g1symm->scale(-1.0);
+	gamma1corr->copy(g1symm); // correlation opdm
+  
+        // REF contribution 
+	// alpha contrb.
+        #pragma omp parallel for
+	for(int h=0; h<nirreps; h++) {
+	  if (occpiA[h] != 0) {
+	    for (int i=0; i<occpiA[h];i++) {
+	      g1symm->add(h,i,i,2.0);
+	    }
+	  }
+	}
+        timer_off("OPDM");
+
+        //print
+        if (print_ > 1) {
+	  g1symm->print();
+        }
+
+        // TPDM
+        timer_on("V int");
+        V_2nd_order(); 
+        timer_off("V int");
+        timer_on("TPDM OOVV");
+	twopdm_oovv();
+        timer_off("TPDM OOVV");
+        timer_on("TPDM OOOO");
+	twopdm_oooo();
+        timer_off("TPDM OOOO");
+
+        if (twopdm_abcd_type == "COMPUTE") {
+           timer_on("TPDM VVVV");
+           twopdm_vvvv();
+           timer_off("TPDM VVVV");
+        }
+
+        timer_on("TPDM OVOV");
+        twopdm_ovov();
+        timer_off("TPDM OVOV");
+        timer_on("TPDM REF");
+	twopdm_ref(); 
+        timer_off("TPDM REF");
+        timer_on("TPDM CORR OPDM");
+	twopdm_corr_opdm();
+        timer_off("TPDM CORR OPDM");
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
+        // Initialize
 	gamma1corrA->zero();
 	gamma1corrB->zero();
 	g1symmA->zero();
 	g1symmB->zero();
 
-/********************************************************************************************/
-/************************** Build G intermediates *******************************************/
-/********************************************************************************************/  
-        timer_on("G int");
-	G_int(); 
-        timer_off("G int");
-   
-/********************************************************************************************/
-/************************** (OO) Block whole ************************************************/
-/********************************************************************************************/ 
+        // OPDM
         timer_on("OPDM");
-	// alpha contrb.
-	for (int i=nfrzc; i<nooA;i++) {
-	  for (int j=nfrzc; j<nooA;j++) { 
-	    int i2 = c1topitzerA[i];
-	    int j2 = c1topitzerA[j];
-	    int i_sym = pitzer2symblk[i2];
-	    int j_sym = pitzer2symblk[j2];
-	    int h1=mosym[i2];
-	    int h2=mosym[j2];
-	    if (h1 == h2){
-	      int i3 = i_sym - frzcpi[h1];
-	      int j3 = j_sym - frzcpi[h1];
-	      g1symmA->set(h1,i_sym,j_sym,GooA->get(h1,i3,j3) + GooA->get(h1,j3,i3));
-	    }
+	// OO-block alpha contrb.
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiA[h]; ++i){
+            for(int j = 0 ; j < aoccpiA[h]; ++j){
+                g1symmA->set(h, i, j, GooA->get(h, i, j) + GooA->get(h, j, i));
+            }
 	  }
 	}
-	
-	// beta contrb.
-	for (int i=nfrzc; i<nooB;i++) {
-	  for (int j=nfrzc; j<nooB;j++) { 
-	    int i2 = c1topitzerB[i];
-	    int j2 = c1topitzerB[j];
-	    int i_sym = pitzer2symblk[i2];
-	    int j_sym = pitzer2symblk[j2];
-	    int h1=mosym[i2];
-	    int h2=mosym[j2];
-	    if (h1 == h2){
-	      int i3 = i_sym - frzcpi[h1];
-	      int j3 = j_sym - frzcpi[h1];
-	      g1symmB->set(h1,i_sym,j_sym,GooB->get(h1,i3,j3) + GooB->get(h1,j3,i3));
-	    }
+
+	// OO-block beta contrb.
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiB[h]; ++i){
+            for(int j = 0 ; j < aoccpiB[h]; ++j){
+                g1symmB->set(h, i, j, GooB->get(h, i, j) + GooB->get(h, j, i));
+            }
 	  }
 	}
-	
-/********************************************************************************************/
-/************************** (VV) Block whole ************************************************/
-/********************************************************************************************/ 
-	 // alpha contrb.
-	 for (int a=nooA; a<npop;a++) {
-	  for (int b=nooA; b<npop;b++) { 
-	    int a2 = c1topitzerA[a];
-	    int b2 = c1topitzerA[b];
-	    int a_sym = pitzer2symblk[a2];
-	    int b_sym = pitzer2symblk[b2];
-	    int h1=mosym[a2];
-	    int h2=mosym[b2];
-	    if (h1 == h2){
-	      int a3 = a_sym - occpiA[h1];
-	      int b3 = b_sym - occpiA[h1];
-	      g1symmA->set(h1,a_sym,b_sym,GvvA->get(h1,a3,b3) + GvvA->get(h1,b3,a3));
-	    }
+
+	// VV-block alpha contrb.
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiA[h]; ++a){
+            for(int b = 0 ; b < avirtpiA[h]; ++b){
+                int aa = a + occpiA[h];
+                int bb = b + occpiA[h];
+                g1symmA->set(h, aa, bb, GvvA->get(h, a, b) + GvvA->get(h, b, a));
+            }
 	  }
-	 }
-	 
-	 // beta contrb.
-	 for (int a=nooB; a<npop;a++) {
-	  for (int b=nooB; b<npop;b++) { 
-	    int a2 = c1topitzerB[a];
-	    int b2 = c1topitzerB[b];
-	    int a_sym = pitzer2symblk[a2];
-	    int b_sym = pitzer2symblk[b2];
-	    int h1=mosym[a2];
-	    int h2=mosym[b2];
-	    if (h1 == h2){
-	      int a3 = a_sym - occpiB[h1];
-	      int b3 = b_sym - occpiB[h1];
-	      g1symmB->set(h1,a_sym,b_sym,GvvB->get(h1,a3,b3) + GvvB->get(h1,b3,a3));
-	    }
+	}
+
+        // VV-block beta contrb.
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiB[h]; ++a){
+            for(int b = 0 ; b < avirtpiB[h]; ++b){
+                int aa = a + occpiB[h];
+                int bb = b + occpiB[h];
+                g1symmB->set(h, aa, bb, GvvB->get(h, a, b) + GvvB->get(h, b, a));
+            }
 	  }
-	 }
-	 
+	}
+
 	g1symmA->scale(-0.5);
 	g1symmB->scale(-0.5);
 	gamma1corrA->copy(g1symmA); // correlation opdm
 	gamma1corrB->copy(g1symmB); // correlation opdm
-   
-/********************************************************************************************/
-/************************** HF Contribution *************************************************/
-/********************************************************************************************/
+  
+        // REF contribution 
 	// alpha contrb.
+        #pragma omp parallel for
 	for(int h=0; h<nirreps; h++) {
 	  if (occpiA[h] != 0) {
 	    for (int i=0; i<occpiA[h];i++) {
@@ -146,6 +191,7 @@ void OMP3Wave::response_pdms()
 	}
 	
 	// beta contrb.
+        #pragma omp parallel for
 	for(int h=0; h<nirreps; h++) {
 	  if (occpiB[h] != 0) {
 	    for (int i=0; i<occpiB[h];i++) {
@@ -155,9 +201,13 @@ void OMP3Wave::response_pdms()
 	}
         timer_off("OPDM");
 
-/********************************************************************************************/
-/************************** TPDMs ***********************************************************/
-/********************************************************************************************/ 
+        //print
+        if (print_ > 1) {
+	  g1symmA->print();
+	  g1symmB->print();
+        }
+
+        // TPDM
         timer_on("V int");
         V_2nd_order(); 
         timer_off("V int");
@@ -190,14 +240,11 @@ void OMP3Wave::response_pdms()
 	twopdm_corr_opdm();
         timer_off("TPDM CORR OPDM");
 
-/********************************************************************************************/
-/************************** Print ***********************************************************/
-/********************************************************************************************/  
-      if (print_ > 1) {
-	g1symmA->print();
-	g1symmB->print();
-      }
-      //fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
+
+
+ }// end if (reference == "UHF") 
+
+  //fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
 
 } // end of response_pdms
 
@@ -207,11 +254,31 @@ void OMP3Wave::response_pdms()
 /*=======================*/
 void OMP3Wave::twopdm_oovv()
 {      
-    dpdbuf4 G, T;
+
+    dpdbuf4 G, T, V, Tau;
     
     psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);  
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
-    
+
+ if (reference == "RHF") {
+    // G (IJ,AB) = 1/4 V(IB,AJ)  
+    dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[V,O]"),
+                  ID("[O,V]"), ID("[V,O]"), 0, "V_2 <OV|VO>");
+    dpd_buf4_sort(&V, PSIF_OMP3_DENSITY , psrq, ID("[O,O]"), ID("[V,V]"), "TPDM <OO|VV>");
+    dpd_buf4_close(&V);
+
+    // G (IJ,AB) += 1/4 (2T_IJ^AB - T_JI^AB)
+    dpd_buf4_init(&Tau, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+    dpd_buf4_axpy(&Tau, &G, 1.0); // 1.0*Tau + G -> G
+    dpd_buf4_close(&Tau);
+    dpd_buf4_scm(&G, 0.25);
+    dpd_buf4_close(&G);
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
     // Alpha-Alpha spin case
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
@@ -263,7 +330,8 @@ void OMP3Wave::twopdm_oovv()
       dpd_buf4_close(&G);
     }    
     
-    
+ }// end if (reference == "UHF") 
+
     psio_->close(PSIF_OMP3_DPD, 1);  
     psio_->close(PSIF_OMP3_DENSITY, 1);
 
@@ -280,6 +348,20 @@ void OMP3Wave::twopdm_oooo()
      
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
     
+ if (reference == "RHF") {
+    // G(IJ,KL) = 1/8 (V_IJKL +  V_ILKJ)
+    dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "V_2 <OO|OO>");
+    dpd_buf4_sort(&V, PSIF_OMP3_DENSITY , psrq, ID("[O,O]"), ID("[O,O]"), "TPDM <OO|OO>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+    dpd_buf4_axpy(&V, &G, 1.0); // 1.0*V + G -> G
+    dpd_buf4_close(&V);
+    dpd_buf4_scm(&G, 0.125);
+    dpd_buf4_close(&G);
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
     // Alpha-Alpha spin case
     dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "V_2 <OO|OO>");
@@ -313,6 +395,7 @@ void OMP3Wave::twopdm_oooo()
     dpd_buf4_scm(&G, 0.25);
     dpd_buf4_close(&G);
     
+ }// end if (reference == "UHF") 
     
     psio_->close(PSIF_OMP3_DENSITY, 1);
 
@@ -331,6 +414,33 @@ void OMP3Wave::twopdm_vvvv()
     psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD); 
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
    
+ if (reference == "RHF") {
+    // NOTE: A VVVV-sort takes too long time, hence I will not symmetrize the 
+    // TPDM VVVV-block. However, in future for analytical gradients 
+    // I need to symmetrize it.
+    
+    // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_init(&L, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau_1 <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+    dpd_contract444(&L, &T, &G, 1, 1, 0.5, 0.0);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&L);
+    dpd_buf4_close(&G);
+
+    //Print 
+    if (print_ > 3) {
+      dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
+      dpd_buf4_print(&G, outfile, 1);
+      dpd_buf4_close(&G);
+    }  
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
     // Alpha-Alpha spin case
     // G_ABCD(2) = 1/8 \sum_{M,N} T_MN^CD(1) L_AB^MN(1) = 1/8 \sum_{M,N} T_MN^AB(1) T_MN^CD(1)
     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -389,6 +499,7 @@ void OMP3Wave::twopdm_vvvv()
       dpd_buf4_print(&G, outfile, 1);
       dpd_buf4_close(&G);
     }    
+ }// end if (reference == "UHF") 
     
     psio_->close(PSIF_OMP3_DENSITY, 1);
     psio_->close(PSIF_OMP3_DPD, 1);
@@ -405,6 +516,34 @@ void OMP3Wave::twopdm_ovov()
      
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
     
+ if (reference == "RHF") {
+    // Fully-symmetric
+    // G(IA,JB) = -1/4 (V_IAJB +  V_IBJA)
+    dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "V_2 <OV|OV>");
+    dpd_buf4_sort(&V, PSIF_OMP3_DENSITY , psrq, ID("[O,V]"), ID("[O,V]"), "TPDM <OV|OV>");
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+    dpd_buf4_axpy(&V, &G, 1.0); // 1.0*V + G -> G
+    dpd_buf4_close(&V);
+    dpd_buf4_scm(&G, -0.25);
+    dpd_buf4_close(&G);
+
+    /*
+    // Partially-symmetric
+    // G(IA,JB) = -1/2 V_IAJB 
+    dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "V_2 <OV|OV>");
+    dpd_buf4_copy(&V, PSIF_OMP3_DENSITY , "TPDM <OV|OV>");
+    dpd_buf4_close(&V);
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+    dpd_buf4_scm(&G, -0.5);
+    dpd_buf4_close(&G);
+    */
+ }// end if (reference == "RHF") 
+
+ else if (reference == "UHF") {
     // Build G_IAJB
     dpd_buf4_init(&V, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "V_2 <OV|OV>");
@@ -438,6 +577,7 @@ void OMP3Wave::twopdm_ovov()
     dpd_buf4_scm(&G, -0.5);
     dpd_buf4_close(&G);
     
+ }// end if (reference == "UHF") 
     psio_->close(PSIF_OMP3_DENSITY, 1);
 
 } // end of twopdm_ovov
@@ -524,13 +664,41 @@ void OMP3Wave::twopdm_ref()
     dpdbuf4 G;
     
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
+
+ if (reference == "RHF") {
+    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+      for(int h = 0; h < nirreps; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+	dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
+        for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            for(int kl = 0; kl < G.params->coltot[h]; ++kl){
+                int k = G.params->colorb[h][kl][0];
+                int l = G.params->colorb[h][kl][1];
+		if (i == k && j == l) G.matrix[h][ij][kl] += 1.0;
+		if (i == l && j == k) G.matrix[h][ij][kl] -= 0.25;
+		if (i == j && k == l) G.matrix[h][ij][kl] -= 0.25;
+            }
+        }
+        dpd_buf4_mat_irrep_wrt(&G, h);
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     
+    dpd_buf4_close(&G);
+    
+ }// end RHF 
+
+ else if (reference == "UHF") {
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -553,6 +721,7 @@ void OMP3Wave::twopdm_ref()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -575,6 +744,7 @@ void OMP3Wave::twopdm_ref()
       for(int h = 0; h < nirreps; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
+        #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
             int i = G.params->roworb[h][ij][0];
             int j = G.params->roworb[h][ij][1];
@@ -589,10 +759,11 @@ void OMP3Wave::twopdm_ref()
     }    
     dpd_buf4_close(&G);
     
+ }// end UHF 
+
     psio_->close(PSIF_OMP3_DENSITY, 1);
     
 } // end of twopdm_ref
-
 
 }} // End Namespaces
 

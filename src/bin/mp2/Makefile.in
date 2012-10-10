@@ -18,12 +18,8 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
-
-install_man:: mp2.1
-	$(MKDIRS) $(DESTDIR)$(mandir)/man1
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
 

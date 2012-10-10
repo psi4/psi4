@@ -40,45 +40,22 @@ namespace psi{ namespace omp3wave{
 void OMP3Wave::semi_canonic()
 {
 
-/********************************************************************************************/
-/************************** memalloc ********************************************************/
-/********************************************************************************************/ 
 	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
 	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
 	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
 	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
 	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiA));
-	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiB));
 	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiA));
-	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiB));
-      
-/********************************************************************************************/
-/************************** Initialize ******************************************************/
-/********************************************************************************************/
+
 	UooA->zero();
-	UooB->zero();
 	UvvA->zero();
-	UvvB->zero();
 	FockooA->zero();
-	FockooB->zero();
 	FockvvA->zero();
-	FockvvB->zero();
-	
+     	
 	// OCC-OCC 
 	for(int h = 0; h < nirreps; h++){
 	  for(int i = 0; i < aoccpiA[h]; i++){
 	    eigooA->set(h,i,0.0);
-	  }
-	}
-	
-	// occ-occ 
-	for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < aoccpiB[h]; i++){
-	    eigooB->set(h,i,0.0);
 	  }
 	}
 	
@@ -88,103 +65,34 @@ void OMP3Wave::semi_canonic()
 	    eigvvA->set(h,i,0.0);
 	  }
 	}
-	
-	// vir-vir
-	for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < avirtpiB[h]; i++){
-	    eigvvB->set(h,i,0.0);
-	  }
-	}
-	
-/********************************************************************************************/
-/************************** Fockoo & Fockvv *************************************************/
-/********************************************************************************************/
-	// Fockoo alpha spin case
-	for(int i = nfrzc; i < nooA; i++){
-	  for(int j = nfrzc; j < nooA; j++){
-	    int i2 = c1topitzerA[i];
-	    int j2 = c1topitzerA[j];
-	    int i3 = pitzer2symblk[i2];
-	    int j3 = pitzer2symblk[j2];
-	    int hi=mosym[i2];
-	    int hj=mosym[j2];
-	    
-	    if (hi == hj) {
-	      int i4 = i3 - frzcpi[hi];
-	      int j4 = j3 - frzcpi[hj];
-	      FockooA->set(hi,i4,j4,FockA->get(hi,i3,j3)); 
-	    }     
-	  }
-	}
-	
-	// Fockoo beta spin case
-	for(int i = nfrzc; i < nooB; i++){
-	  for(int j = nfrzc; j < nooB; j++){
-	    int i2 = c1topitzerB[i];
-	    int j2 = c1topitzerB[j];
-	    int i3 = pitzer2symblk[i2];
-	    int j3 = pitzer2symblk[j2];
-	    int hi=mosym[i2];
-	    int hj=mosym[j2];
-	    
-	    if (hi == hj) {
-	      int i4 = i3 - frzcpi[hi];
-	      int j4 = j3 - frzcpi[hj];
-	      FockooB->set(hi,i4,j4,FockB->get(hi,i3,j3)); 
-	    }     
+
+       // Fockoo alpha spin case
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiA[h]; ++i){
+            for(int j = 0 ; j < aoccpiA[h]; ++j){
+                FockooA->set(h, i, j, FockA->get(h, i, j));
+            }
 	  }
 	}
 	
 	// Fockvv alpha spin case
-	for(int a = nooA; a < npop; a++){
-	  for(int b = nooA; b < npop; b++){
-	    int a2 = c1topitzerA[a];
-	    int b2 = c1topitzerA[b];
-	    int a3 = pitzer2symblk[a2];
-	    int b3 = pitzer2symblk[b2];
-	    int ha=mosym[a2];
-	    int hb=mosym[b2];
-	    
-	    if (ha == hb) {
-	      int a4 = a3 - occpiA[ha];
-	      int b4 = b3 - occpiA[hb];
-	      FockvvA->set(ha,a4,b4,FockA->get(ha,a3,b3)); 
-	    }
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiA[h]; ++a){
+            for(int b = 0 ; b < avirtpiA[h]; ++b){
+                int aa = a + occpiA[h];
+                int bb = b + occpiA[h];
+                FockvvA->set(h, a, b, FockA->get(h, aa, bb));
+            }
 	  }
 	}
-	
-	// Fockvv beta spin case
-	for(int a = nooB; a < npop; a++){
-	  for(int b = nooB; b < npop; b++){
-	    int a2 = c1topitzerB[a];
-	    int b2 = c1topitzerB[b];
-	    int a3 = pitzer2symblk[a2];
-	    int b3 = pitzer2symblk[b2];
-	    int ha=mosym[a2];
-	    int hb=mosym[b2];
-	    
-	    if (ha == hb) {
-	      int a4 = a3 - occpiB[ha];
-	      int b4 = b3 - occpiB[hb];
-	      FockvvB->set(ha,a4,b4,FockB->get(ha,a3,b3)); 
-	    }
-	  }
-	}
-	
-/********************************************************************************************/
-/************************** Diagonalize Fockoo & Fockvv *************************************/
-/********************************************************************************************/
-	// Diagonalize Fockoo  
-	FockooA->diagonalize(UooA, eigooA);
-	FockooB->diagonalize(UooB, eigooB);
-	
-	// Diagonalize Fockvv  
-	FockvvA->diagonalize(UvvA, eigvvA);
-	FockvvB->diagonalize(UvvB, eigvvB);
 
-/********************************************************************************************/
-/************************** OMP3 Alpha Orbital Energies *************************************/
-/********************************************************************************************/
+	// Diagonalize Fock  
+	FockooA->diagonalize(UooA, eigooA);
+	FockvvA->diagonalize(UvvA, eigvvA);
+
+        // Print orbital energies
 	if (omp3_orb_energy == "TRUE" && mo_optimized == 1) {
 	  fprintf(outfile,"\n\n\t  OMP3 Alpha Orbital Energies (a.u.) \n"); 
 	  fprintf(outfile,"\t  ---------------------------------- \n"); 
@@ -218,12 +126,111 @@ void OMP3Wave::semi_canonic()
 	  }// end loop over h
 	  
 	}// end main if
+
+        // Build U	
+	UorbA->zero();
 	
+	//set to identity
+	UorbA->identity();
 	
-/********************************************************************************************/
-/************************** OMP3 Beta Orbital Energies **************************************/
-/********************************************************************************************/
-	if (omp3_orb_energy == "TRUE" && mo_optimized == 1) {
+	// Uoo contribution alpha spin case
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiA[h]; ++i){
+            for(int j = 0 ; j < aoccpiA[h]; ++j){
+                UorbA->set(h, i, j, UooA->get(h, i, j));
+            }
+	  }
+	}
+	
+	// Uvv contribution alpha spin case
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiA[h]; ++a){
+            for(int b = 0 ; b < avirtpiA[h]; ++b){
+                int aa = a + occpiA[h];
+                int bb = b + occpiA[h];
+                UorbA->set(h, aa, bb, UvvA->get(h, a, b));
+            }
+	  }
+	}
+
+        // Get new MOs
+        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirreps, sopi, mopi));
+	Ca_new->zero();
+	Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0); 
+	Ca_->zero();
+	Ca_->copy(Ca_new);
+	Ca_new.reset();
+
+	if (print_ > 2) {
+	  UorbA->print();
+	  Ca_->print();
+	}
+
+        UooA.reset();
+	UvvA.reset();
+	FockooA.reset();
+	FockvvA.reset();
+	eigooA.reset();
+	eigvvA.reset();
+
+     // UHF REFERENCE
+     if (reference == "UHF") {
+	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
+	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
+	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
+	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
+	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiB));
+	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiB));
+
+	UooB->zero();
+	UvvB->zero();
+	FockooB->zero();
+	FockvvB->zero();
+
+	// occ-occ 
+	for(int h = 0; h < nirreps; h++){
+	  for(int i = 0; i < aoccpiB[h]; i++){
+	    eigooB->set(h,i,0.0);
+	  }
+	}
+	
+	// vir-vir
+	for(int h = 0; h < nirreps; h++){
+	  for(int i = 0; i < avirtpiB[h]; i++){
+	    eigvvB->set(h,i,0.0);
+	  }
+	}
+
+	// Fockoo beta spin case
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiB[h]; ++i){
+            for(int j = 0 ; j < aoccpiB[h]; ++j){
+                FockooB->set(h, i, j, FockB->get(h, i, j));
+            }
+	  }
+	}
+
+	// Fockvv beta spin case
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiB[h]; ++a){
+            for(int b = 0 ; b < avirtpiB[h]; ++b){
+                int aa = a + occpiB[h];
+                int bb = b + occpiB[h];
+                FockvvB->set(h, a, b, FockB->get(h, aa, bb));
+            }
+	  }
+	}
+
+	// Diagonalize Fock  
+	FockooB->diagonalize(UooB, eigooB);
+	FockvvB->diagonalize(UvvB, eigvvB);
+
+        // print orbital energies
+	if (omp3_orb_energy == "TRUE" && mo_optimized == 1 && reference == "UHF") {
 	  fprintf(outfile,"\n\n\t  OMP3 Beta Orbital Energies (a.u.) \n"); 
 	  fprintf(outfile,"\t  --------------------------------- \n"); 
 	  fflush(outfile);
@@ -257,111 +264,55 @@ void OMP3Wave::semi_canonic()
 	  }// end loop over h
 	  
 	}// end main if
-
-/********************************************************************************************/
-/************************** Uorbrot *********************************************************/
-/********************************************************************************************/
-	UorbA->zero();
+     	
+        // Build U
 	UorbB->zero();
-	
-	//set to identity
-	UorbA->identity();
 	UorbB->identity();
 	
-	// Fockoo contribution alpha spin case
-	for(int i = nfrzc; i < nooA; i++){
-	  for(int j = nfrzc; j < nooA; j++){
-	    int i2 = c1topitzerA[i];
-	    int j2 = c1topitzerA[j];
-	    int i3 = pitzer2symblk[i2];
-	    int j3 = pitzer2symblk[j2];
-	    int hi=mosym[i2];
-	    int hj=mosym[j2];
-	    
-	    if (hi == hj) {
-	      int i4 = i3 - frzcpi[hi];
-	      int j4 = j3 - frzcpi[hj];
-	      UorbA->set(hi,i3,j3,UooA->get(hi,i4,j4)); 
-	    }
-	  }
-	}
-	
-	// Fockoo contribution beta spin case
-	for(int i = nfrzc; i < nooB; i++){
-	  for(int j = nfrzc; j < nooB; j++){
-	    int i2 = c1topitzerB[i];
-	    int j2 = c1topitzerB[j];
-	    int i3 = pitzer2symblk[i2];
-	    int j3 = pitzer2symblk[j2];
-	    int hi=mosym[i2];
-	    int hj=mosym[j2];
-	    
-	    if (hi == hj) {
-	      int i4 = i3 - frzcpi[hi];
-	      int j4 = j3 - frzcpi[hj];
-	      UorbB->set(hi,i3,j3,UooB->get(hi,i4,j4)); 
-	    }
-	  }
-	}
-	
-	// Fockvv contribution alpha spin case
-	for(int a = nooA; a < npop; a++){
-	  for(int b = nooA; b < npop; b++){
-	    int a2 = c1topitzerA[a];
-	    int b2 = c1topitzerA[b];
-	    int a3 = pitzer2symblk[a2];
-	    int b3 = pitzer2symblk[b2];
-	    int ha=mosym[a2];
-	    int hb=mosym[b2];
-	    
-	    if (ha == hb) {
-	      int a4 = a3 - occpiA[ha];
-	      int b4 = b3 - occpiA[hb];
-	      UorbA->set(ha,a3,b3,UvvA->get(ha,a4,b4)); 
-	    }
-	  }
-	}
-	
-	// Fockvv contribution beta spin case
-	for(int a = nooB; a < npop; a++){
-	  for(int b = nooB; b < npop; b++){
-	    int a2 = c1topitzerB[a];
-	    int b2 = c1topitzerB[b];
-	    int a3 = pitzer2symblk[a2];
-	    int b3 = pitzer2symblk[b2];
-	    int ha=mosym[a2];
-	    int hb=mosym[b2];
-	    
-	    if (ha == hb) {
-	      int a4 = a3 - occpiB[ha];
-	      int b4 = b3 - occpiB[hb];
-	      UorbB->set(ha,a3,b3,UvvB->get(ha,a4,b4)); 
-	    }
+	// Uoo contribution beta spin case
+        #pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < aoccpiB[h]; ++i){
+            for(int j = 0 ; j < aoccpiB[h]; ++j){
+                UorbB->set(h, i, j, UooB->get(h, i, j));
+            }
 	  }
 	}
 
-/********************************************************************************************/
-/************************** Build new MO coeff. *********************************************/
-/********************************************************************************************/
-        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirreps, sopi, mopi));
+	// Uvv contribution beta spin case
+	#pragma omp parallel for
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < avirtpiB[h]; ++a){
+            for(int b = 0 ; b < avirtpiB[h]; ++b){
+                int aa = a + occpiB[h];
+                int bb = b + occpiB[h];
+                UorbB->set(h, aa, bb, UvvB->get(h, a, b));
+            }
+	  }
+	}
+
+        // Get new MOs
 	Cb_new = boost::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirreps, sopi, mopi));
-	Ca_new->zero();
 	Cb_new->zero();
-	Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0); 
 	Cb_new->gemm(false, false, 1.0, Cb_, UorbB, 0.0); 
-	Ca_->zero();
 	Cb_->zero();
-	Ca_->copy(Ca_new);
 	Cb_->copy(Cb_new);
-	Ca_new.reset();
 	Cb_new.reset();
 
-	if (print_ > 1) {
-	  UorbA->print();
+	if (print_ > 2) {
           UorbB->print();
-	  Ca_->print();
 	  Cb_->print();
 	}
+
+	UooB.reset();
+	UvvB.reset();
+	FockooB.reset();
+	FockvvB.reset();
+	eigooB.reset();
+	eigvvB.reset();
+     }// end uhf	
+
+        
 
 /********************************************************************************************/
 /************************** Save MO coefficients to Chkpt file ******************************/
@@ -374,25 +325,6 @@ void OMP3Wave::semi_canonic()
 	free_block(C_pitzerA);
 	free_block(C_pitzerB);
 	*/
-	
-/********************************************************************************************/
-/************************** free array ******************************************************/
-/********************************************************************************************/
-        UooA.reset();
-	UooB.reset();
-	UvvA.reset();
-	UvvB.reset();
-	FockooA.reset();
-	FockooB.reset();
-	FockvvA.reset();
-	FockvvB.reset();
-	eigooA.reset();
-	eigooB.reset();
-	eigvvA.reset();
-	eigvvB.reset();
-
-/********************************************************************************************/ 
-/********************************************************************************************/ 	
 
 }
 }} // End Namespaces
