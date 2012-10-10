@@ -30,7 +30,6 @@ import os
 import psi4
 from psiexceptions import *
 
-
 basisfamily_list = []
 
 
