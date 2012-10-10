@@ -25,6 +25,7 @@ install_inc:: $(DEPENDINCLUDE)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libyeti
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libyeti
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
+

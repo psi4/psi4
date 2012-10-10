@@ -150,6 +150,11 @@ void HF::common_init()
             doccpi_[i] = 0;
     }
 
+    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+        name_ = "DFT";
+    else
+        name_ = "SCF";
+
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
