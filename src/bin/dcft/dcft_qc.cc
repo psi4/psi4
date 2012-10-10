@@ -118,6 +118,9 @@ DCFTSolver::compute_orbital_gradient(){
     }
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
     build_tau();
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+        refine_tau();
+    }
     transform_tau();
     // Copy core hamiltonian into the Fock matrix array: F = H
     Fa_->copy(so_h_);
