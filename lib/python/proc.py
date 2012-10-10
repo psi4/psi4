@@ -1537,7 +1537,7 @@ def run_mrcc(name, **kwargs):
         # Delete unless we're told not to
         if (keep == False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
-    except OSerror as e:
+    except OSError as e:
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 

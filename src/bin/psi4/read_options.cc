@@ -886,9 +886,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Fail if we reach maxiter without converging? -*/
     options.add_bool("FAIL_ON_MAXITER",true);
 
-    /*- Convergence criterion for SCF energy. -*/
+    /*- Convergence criterion for SCF energy. See Table 
+    :ref:`SCF Convergence <table:conv_scf>` for default convergence 
+    criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. -*/
+    /*- Convergence criterion for SCF density. In practice, the SCF energy
+    will be good to 1-4 more than this number of digits. (This means that
+    |scf__d_convergence| = 11 is overkill and will approach machine
+    precision.) See Table :ref:`SCF Convergence <table:conv_scf>` for 
+    default convergence criteria for different calculation types. -*/
     options.add_double("D_CONVERGENCE", 1e-8);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A

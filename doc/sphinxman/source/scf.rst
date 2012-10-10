@@ -387,6 +387,29 @@ convergence. This is particularly likely for large systems, metallic systems,
 multireference systems, open-shell systems, anions, and systems with diffuse
 basis sets. 
 
+.. _`table:conv_scf`:
+
+.. table:: SCF convergence criteria by calculation type
+
+    +--------------------+------------------+-------------------------+-------------------------+
+    | *Ab Initio* Method | Calculation Type | |scf__e_convergence|    | |scf__d_convergence|    |
+    +====================+==================+=========================+=========================+
+    | SCF of HF or DFT   | energy           | 6                       | 5                       |
+    +                    +------------------+-------------------------+-------------------------+
+    |                    | optimization     | 8                       | 6                       |
+    +                    +------------------+-------------------------+-------------------------+
+    |                    | frequency        | 8                       | 6                       |
+    +--------------------+------------------+-------------------------+-------------------------+
+    | SCF of post-HF     | energy           | 8                       | 6                       |
+    +                    +------------------+-------------------------+-------------------------+
+    |                    | optimization     | 10                      | 7                       |
+    +                    +------------------+-------------------------+-------------------------+
+    |                    | frequency        | 10                      | 7                       |
+    +                    +------------------+-------------------------+-------------------------+
+    |                    | CC property      | 10                      | 7                       |
+    +--------------------+------------------+-------------------------+-------------------------+
+
+
 For initial orbital selection, several options are available. These include:
 
 CORE [Default]
@@ -411,8 +434,8 @@ READ
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
-casting up to the true basis, This can be done by placing a ``cast_up =
-'SMALL_BASIS'`` modifier in the :py:func:`~driver.energy` procedure call. We recommend the
+casting up to the true basis. This can be done by adding  
+|scf__guess_basis| = SMALL_BASIS to the options list. We recommend the
 3-21G basis for the small basis due to its efficient mix of flexibility and
 compactness. An example of performing an RHF solution of water by SAD guessing
 in a 3-21G basis and then casting up to cc-pVTZ is shown below::
@@ -426,10 +449,11 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
     
     set {
     basis cc-pvtz 
+    basis_guess 3-21G
     guess sad
     }
     
-    energy('scf', cast_up = '3-21G')
+    energy('scf')
 
 With regard to convergence stabilization, Pulay's Direct Inversion of the
 Iterative Subspace (DIIS) extrapolation,  Gill's Maximum Overlap Method (MOM),

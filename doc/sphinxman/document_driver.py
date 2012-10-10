@@ -32,7 +32,7 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
 
-    if basename not in ['inpsight', 'pep8', 'sampmod', 'psifiles']:
+    if basename not in ['inpsight', 'pep8', 'sampmod', 'psifiles', 'diatomic_fits']:
 
         pts('driver', basename)
         fdriver.write(basename + '\n')
@@ -50,6 +50,10 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
             fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
         elif basename == 'physconst':
             fdriver.write('\n.. literalinclude:: %slib/python/%s\n' % (IncludePath, filename))
+        elif basename == 'diatomic':
+            fdriver.write('   :exclude-members: diatomic_anharmonicity\n')
+        elif basename == 'molutil':
+            fdriver.write('   :exclude-members: run_dftd3\n')
 
     fdriver.write('\n')
 
