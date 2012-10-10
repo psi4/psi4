@@ -606,9 +606,9 @@ void DiskJK::compute_JK()
 
                 for (int N = 0; N < J_.size(); N++) {
 
-                    SharedMatrix J = J_[N];
-                    SharedMatrix K = K_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* J = J_[N].get();
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = J->symmetry();
 
@@ -779,8 +779,8 @@ void DiskJK::compute_JK()
                 // Coulomb terms
                 for (int N = 0; N < J_.size(); N++) {
 
-                    SharedMatrix J = J_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* J = J_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = J->symmetry();
 
@@ -836,8 +836,8 @@ void DiskJK::compute_JK()
                 // Exchange terms
                 for (int N = 0; N < K_.size(); N++) {
 
-                    SharedMatrix K = K_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = K->symmetry();
 
@@ -968,8 +968,8 @@ void DiskJK::compute_JK()
                 // Exchange terms
                 for (int N = 0; N < wK_.size(); N++) {
 
-                    SharedMatrix wK = wK_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* wK = wK_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = wK->symmetry();
 
