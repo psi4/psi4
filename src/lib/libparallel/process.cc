@@ -57,19 +57,19 @@ void Process::Environment::init(char **envp)
 
     // Go through user provided environment overwriting defaults if necessary
     int i=0;
-    if (envp == 0)
-        return;
-    while (envp[i] != NULL) {
-        std::vector<std::string> strs;
-        boost::split(strs, envp[i], boost::is_any_of("="));
-        environment_[strs[0]] = strs[1];
+    if (envp) {
+        while (envp[i] != NULL) {
+            std::vector<std::string> strs;
+            boost::split(strs, envp[i], boost::is_any_of("="));
+            environment_[strs[0]] = strs[1];
 
-        // I'm tired of having to (re)set PSIDATADIR for PSI3/4
-        // If PSI4DATADIR is set it overrides PSIDATADIR
-        if (strs[0] == "PSI4DATADIR")
-            psi4datadir = strs[1];
+            // I'm tired of having to (re)set PSIDATADIR for PSI3/4
+            // If PSI4DATADIR is set it overrides PSIDATADIR
+            if (strs[0] == "PSI4DATADIR")
+                psi4datadir = strs[1];
 
-        ++i;
+            ++i;
+        }
     }
 
     if (psi4datadir.empty() == false)
@@ -80,21 +80,6 @@ void Process::Environment::init(char **envp)
 #ifdef _OPENMP
     nthread_ = omp_get_max_threads();
 #endif
-
-//    // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
-//    // that makes sense. (i.e. MPI or LOCAL)
-//#ifdef HAVE_MADNESS
-//    if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
-//         (Process::environment("COMMUNICATOR") != "LOCAL") )
-//    {
-//        environment_["COMMUNICATOR"] = "MADNESS";
-//        std::cout << "WARNING: COMMUNICATOR was changed to MADNESS" << std::endl;
-//    }
-//#else
-//    if (Process::environment("COMMUNICATOR") != "LOCAL") {
-//        environment_["COMMUNICATOR"] = "LOCAL";
-//    }
-//#endif
 }
 
 void Process::Environment::set_n_threads(int nthread)
