@@ -95,6 +95,7 @@ madness::Void Distributed_Matrix::print_tile_tij(const int &tij, const madness::
         }
         fprintf(outfile,"\n\n");        }
 
+    fflush(outfile);
     print_mutex_->unlock();
 
 }

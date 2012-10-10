@@ -25,9 +25,10 @@ set globals {
     scf_type      df
     puream        true
     print         1
+    basis_guess   true
 }
 
-energy('sapt0-ct',cast_up=True)
+energy('sapt0-ct')
 
 ECT = PsiMod.get_variable("SAPT CT ENERGY")
 

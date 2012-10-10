@@ -19,8 +19,6 @@ DCFTSolver::run_qc_dcft()
 
     int cycle = 0;
 
-    if (options_.get_str("DERTYPE") == "FIRST") throw PSIEXCEPTION ("Analytic gradients are not available for QC DCFT yet. Please choose a different algorithm");
-
     // Allocate the memory
     qc_dcft_init();
 
@@ -120,6 +118,9 @@ DCFTSolver::compute_orbital_gradient(){
     }
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
     build_tau();
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+        refine_tau();
+    }
     transform_tau();
     // Copy core hamiltonian into the Fock matrix array: F = H
     Fa_->copy(so_h_);
@@ -1885,14 +1886,10 @@ DCFTSolver::run_davidson() {
 
     // Create a set of guess orthonormal expansion vectors b_ (identity matrix)
     davidson_guess();
-
     bool converged = false;
     int count = 0;
 
     // Create a matrix with the Hessian diagonal for convenience
-    SharedMatrix Hd(new Matrix("Diagonal part of the Hessian", nidp_, nidp_));
-    Hd->set_diagonal(Hd_);
-
     fprintf(outfile, "\tStability analysis of DCFT solution \n");
     SharedVector Evals;
     SharedMatrix Evecs;
@@ -1916,7 +1913,10 @@ DCFTSolver::run_davidson() {
         }
         // Add the diagonal contribution
         SharedMatrix temp(new Matrix("Temp matrix", b_dim_, nidp_));
-        temp->gemm(false, false, 1.0, b_, Hd, 0.0);
+        temp->copy(b_);
+        double **temp_p = temp->pointer();
+        for (int i = 0; i < nidp_; ++i) C_DSCAL(b_dim_, Hd_->get(i), &temp_p[0][i], nidp_);
+
         sigma_vector->add(temp);
 
         // Form G matrix and diagonalize it
@@ -1961,8 +1961,9 @@ DCFTSolver::run_davidson() {
         double max_rms = 0.0;
         int n_good = 0;
         int n_bad  = 0;
+        int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
         if (print_ > 1) fprintf(outfile, "\tEigenvalues:\n");
-        for (int k = 0; k < nevals_; ++k) {
+        for (int k = 0; k < nvecs; ++k) {
             double new_val = Evals->get(k);
             double ms = C_DDOT(b_dim_, r_p[k], 1, r_p[k], 1);
             double rms = sqrt(ms / (double) b_dim_);
@@ -2011,7 +2012,8 @@ DCFTSolver::run_davidson() {
     fprintf(outfile, "\tLowest %d eigenvalues of the electronic Hessian: \n", nevals_);
     int values_to_print = 5;
     int n_neg = 0;
-    for (int k = 0; k < nevals_; k++) {
+    int nvecs = nevals_ < b_dim_ ? nevals_ : b_dim_;
+    for (int k = 0; k < nvecs; k++) {
         double value = Evals->get(k);
         fprintf(outfile, "\t %10.6f \n", value);
         if (value < 0.0) {
@@ -2057,7 +2059,8 @@ void
 DCFTSolver::davidson_guess() {
 
     int count = 0;
-    while (count < nguess_) {
+    int dimension = nguess_ < nidp_ ? nguess_ : nidp_;
+    while (count < dimension) {
         Vector temp("Temp", nidp_);
         temp.set(count, 1.0);
         // To avoid singularity in the solution the second element is set to be non-zero

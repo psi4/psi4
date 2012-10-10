@@ -39,6 +39,236 @@ namespace psi{ namespace omp3wave{
 void OMP3Wave::t2_2nd_general()
 {   
      //fprintf(outfile,"\n t2_2nd_general is starting... \n"); fflush(outfile);
+
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+
+     dpdbuf4 K, T, Tau, Tnew, D, R, Tp, W, TAA, TAB, TBB, Ttemp;
+     dpdfile2 Fo,Fv;
+     int nElements;
+
+     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+     psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);
+
+    // Build T(IA,JB)    
+    // T_IJ^AB(2) = \sum_{M,E} Tau_IM^AE(1) W_MBEJ(1) => T(IA,JB)(2) = \sum_{M,E} Tau'(IA,ME) (ME|JB)
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "T2_2 (IA|JB)");
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Tau_1 (OV|OV)");
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    dpd_contract444(&Tp, &K, &T, 0, 0, 1.0, 0.0);
+    // T_IJ^AB(2) += \sum_{M,E} Tau_JM^BE(1) W_MAEI(1) => T(IA,JB)(2) = \sum_{M,E} Tau'(JB,ME) (ME|IA)
+    dpd_contract444(&K, &Tp, &T, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&Tp);
+    
+    // T_IJ^AB(2) -= \sum_{m,e} T_im^ae(1) W_mbje(1) => T(IA,JB)(2) -= \sum_{m,e} T'(ia,me) <me|jb>
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "T2_1 (OV|OV)");
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    dpd_contract444(&Tp, &K, &T, 0, 0, -1.0, 1.0);
+    // T_IJ^AB(2) -= \sum_{m,e} T_jm^be(1) W_maie(1) => T(IA,JB)(2) -= \sum_{m,e} T'(jb,me) <me|ia>
+    dpd_contract444(&K, &Tp, &T, 0, 0, -1.0, 1.0);
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&Tp);
+    
+    // T(IA,JB) => T_IJ^AB(2)
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "T2_2 <IJ|AB>");
+    dpd_buf4_close(&T);
+    
+    
+    
+    // Build T(JA,IB)    
+    // T_IJ^AB(2) = -\sum_{M,E} T_MJ^AE(1) W_MBIE(1) => T(JA,IB)(2) = -\sum_{M,E} T"(JA,ME) <ME|IB>
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "T2_2 (JA|IB)");
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "T2_1pp (OV|OV)");
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    dpd_contract444(&Tp, &K, &T, 0, 0, -1.0, 0.0);
+    // T_IJ^AB(2) = -\sum_{M,E} T_IM^EB(1) W_MAJE(1) => T(JA,IB)(2) = -\sum_{M,E} T"(ME,IB) <ME|JA>
+    dpd_contract444(&K, &Tp, &T, 1, 1, -1.0, 1.0);
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&Tp);
+    
+    // T(JA,IB) => T_IJ^AB(2)
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rpqs, ID("[O,O]"), ID("[V,V]"), "T2_2 (IJ|AB)");
+    dpd_buf4_close(&T);    
+    
+
+    // Build T2AAnew
+    // T_IJ^AB(2) = T(IA,JB)
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <IJ|AB>");
+    dpd_buf4_copy(&T, PSIF_OMP3_DPD, "T2_2new <OO|VV>");
+    dpd_buf4_close(&T); 
+    
+    // T_IJ^AB(2) += T(JA,IB)
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 (IJ|AB)");
+    dpd_buf4_axpy(&Tp, &T, 1.0); // 1.0*Tp + T -> T
+    dpd_buf4_close(&Tp); 
+    
+    // T_IJ^AB(2) += \sum_{M,N} T_MN^AB(1) W_MNIJ(1) = \sum_{M,N} T_MN^AB(1) <MN|IJ>
+    dpd_buf4_init(&TAA, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
+    dpd_contract444(&K, &TAA, &T, 1, 1, 1.0, 1.0);
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&T);
+   
+    // T_IJ^AB(2) += 1/2 \sum_{E,F} T_IJ^EF(1) <EF||AB> = \sum_{E,F} T_IJ^EF(1) <AB|EF>
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[V,V]"), ID("[O,O]"),
+                  ID("[V,V]"), ID("[O,O]"), 0, "Z2_2 <VV|OO>");
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
+    dpd_contract444(&K, &TAA, &T, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&K);
+    dpd_buf4_close(&TAA);
+    dpd_buf4_sort(&T, PSIF_OMP3_DPD , rspq, ID("[O,O]"), ID("[V,V]"), "Z2_2 <OO|VV>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Z2_2 <OO|VV>");
+    dpd_buf4_axpy(&Tp, &T, 1.0); // 1.0*Tp + T -> T
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&Tp);
+
+
+    // initalize Tnew and Told
+    dpd_buf4_init(&Tnew, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+    
+
+    // T_Ij^Ab = \sum_{e} T_Ij^Ae * F_be 
+    dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");  
+    dpd_contract424(&T, &Fv, &Tnew, 3, 1, 0, 1.0, 1.0); 
+
+    // T_Ij^Ab = \sum_{E} T_Ij^Eb * F_AE
+    dpd_contract244(&Fv, &T, &Tnew, 1, 2, 1, 1.0, 1.0); 
+    dpd_file2_close(&Fv);
+    
+    // T_Ij^Ab = -\sum_{m} T_Im^Ab * F_mj 
+    dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+    dpd_contract424(&T, &Fo, &Tnew, 1, 0, 1, -1.0, 1.0);
+
+    // T_Ij^Ab = - \sum_{M} T_Mj^Ab * F_MI
+    dpd_contract244(&Fo, &T, &Tnew, 0, 0, 0, -1.0, 1.0);
+    dpd_file2_close(&Fo);
+    dpd_buf4_close(&T);
+    
+    
+    // T_IJ^AB = T_IJ^AB / D_IJ^AB
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+    dpd_buf4_dirprd(&D, &Tnew);
+    dpd_buf4_close(&D);
+    if (print_ > 2) dpd_buf4_print(&Tnew, outfile, 1);
+    dpd_buf4_close(&Tnew);
+    
+
+    // Check convergence?
+    dpd_buf4_init(&Tnew, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2new <OO|VV>");
+    dpd_buf4_copy(&Tnew, PSIF_OMP3_DPD, "RT2_2 <OO|VV>");
+    dpd_buf4_init(&R, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "RT2_2 <OO|VV>");
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+    dpd_buf4_axpy(&T, &R, -1.0); // -1.0*T + R -> R
+    dpd_buf4_close(&T);
+    
+    nElements = 0;
+    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    rms_t2 = 0.0;
+    rms_t2 = dpd_buf4_dot_self(&R);
+    dpd_buf4_close(&R);
+    rms_t2 = sqrt(rms_t2) / nElements;
+    
+    // Reset
+    dpd_buf4_copy(&Tnew, PSIF_OMP3_DPD, "T2_2 <OO|VV>");
+    if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
+    dpd_buf4_close(&Tnew);
+
+
+    // Build T2 = T2(1) + T2(2)
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_copy(&T, PSIF_OMP3_DPD, "T2 <OO|VV>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+    dpd_buf4_axpy(&Tp, &T, 1.0); // 1.0*Tp + T -> T
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&Tp);
+
+     // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
+     // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
+     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+     dpd_buf4_copy(&T, PSIF_OMP3_DPD, "Tau_2 <OO|VV>");
+     dpd_buf4_copy(&T, PSIF_OMP3_DPD, "T2_2AA <OO|VV>");
+     dpd_buf4_sort(&T, PSIF_OMP3_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "T2_2jiab <OO|VV>");
+     dpd_buf4_close(&T);
+     dpd_buf4_init(&Tau, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau_2 <OO|VV>");
+     dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2AA <OO|VV>");
+     dpd_buf4_init(&Ttemp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_2jiab <OO|VV>");
+     dpd_buf4_scm(&Tau, 2.0);
+     dpd_buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
+     dpd_buf4_axpy(&Ttemp, &Tp, -1.0); // -1.0*Ttemp + Tp -> Tp
+     dpd_buf4_close(&Ttemp);
+     dpd_buf4_close(&Tp);
+     dpd_buf4_close(&Tau);
+
+     // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
+     // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
+     dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+     dpd_buf4_copy(&T, PSIF_OMP3_DPD, "Tau <OO|VV>");
+     dpd_buf4_copy(&T, PSIF_OMP3_DPD, "T2AA <OO|VV>");
+     dpd_buf4_sort(&T, PSIF_OMP3_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "T2jiab <OO|VV>");
+     dpd_buf4_close(&T);
+     dpd_buf4_init(&Tau, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+     dpd_buf4_init(&Tp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2AA <OO|VV>");
+     dpd_buf4_init(&Ttemp, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2jiab <OO|VV>");
+     dpd_buf4_scm(&Tau, 2.0);
+     dpd_buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
+     dpd_buf4_axpy(&Ttemp, &Tp, -1.0); // -1.0*Ttemp + Tp -> Tp
+     dpd_buf4_close(&Ttemp);
+     dpd_buf4_close(&Tp);
+     dpd_buf4_close(&Tau);
+ 
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_OMP3_DPD, 1);
+
+}// end if (reference == "RHF") 
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
      
 /********************************************************************************************/
 /************************** Build W intermediates *******************************************/
@@ -697,7 +927,8 @@ void OMP3Wave::t2_2nd_general()
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OMP3_DPD, 1);
     
-    //fprintf(outfile,"\n t2_2nd_general done. \n"); fflush(outfile);
+}// end if (reference == "UHF") 
+ //fprintf(outfile,"\n t2_2nd_general done. \n"); fflush(outfile);
 
 } // end t2_2nd_general
 }} // End Namespaces

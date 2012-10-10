@@ -12,17 +12,32 @@
 
   - ``'small'``
   - ``'large'``
-  - ``'<subset>'`` <members_description>
+  - ``'alkenes'`` 
+  - ``'alkanes'`` 
+  - ``'acenes'`` 
+  - ``'thiophenes'`` 
+  - ``'h2o_size'`` 
+  - ``'h2o_shape'`` 
+  - ``'atoms'`` 
+  - ``'S22_HB'`` 
+  - ``'S22_MX'`` 
+  - ``'S22_DD'`` 
 
 """
 import re
-import input
+import qcdb
 
 # <<< BENCH12 Database Module >>>
 dbse = 'BENCH12'
 
 # <<< Database Members >>>
-HRXN = ['acene1', 'acene2', 'alka10', 'alka2', 'alka4', 'alka6', 'alka8', 'alke10', 'alke2', 'alke4', 'alke6', 'alke8', 'Ar', 'bag', 'boat1', 'boat2', 'book1', 'book2', 'cage', 'cyclic', 'h2o', 'h2o2', 'h2o3', 'h2o4', 'h2o5', 'h2o6', 'Kr', 'Ne', 'prism', 'S22_DD_bz_2_pd', 'S22_DD_bz_2_t', 'S22_DD_bz_me', 'S22_DD_ch4_2', 'S22_HB_formamide_2', 'S22_HB_formic_2', 'S22_HB_h2o_2', 'S22_HB_nh3_2', 'S22_MX_bz_h2o', 'S22_MX_bz_hcn', 'S22_MX_bz_nh3', 'S22_MX_c2h2_c2h4', 'thio1', 'thio2', ]
+HRXN = ['acene1', 'acene2', 'alka10', 'alka2', 'alka4', 'alka6', 'alka8',
+    'alke10', 'alke2', 'alke4', 'alke6', 'alke8', 'Ar', 'bag', 'boat1',
+    'boat2', 'book1', 'book2', 'cage', 'cyclic', 'h2o', 'h2o2', 'h2o3',
+    'h2o4', 'h2o5', 'h2o6', 'Kr', 'Ne', 'prism', 'S22_DD_bz_2_pd',
+    'S22_DD_bz_2_t', 'S22_DD_bz_me', 'S22_DD_ch4_2', 'S22_HB_formamide_2',
+    'S22_HB_formic_2', 'S22_HB_h2o_2', 'S22_HB_nh3_2', 'S22_MX_bz_h2o',
+    'S22_MX_bz_hcn', 'S22_MX_bz_nh3', 'S22_MX_c2h2_c2h4', 'thio1', 'thio2', ]
 HRXN_SM = ['h2o', 'Ne']
 HRXN_LG = ['alka10']
 alkenes = ['alke2','alke4','alke6','alke8','alke10']
@@ -304,9 +319,10 @@ TAGL['%s-%s-reagent'    % (dbse, 'thio1'                 )] = """ """
 TAGL['%s-%s'            % (dbse, 'thio2'                 )] = """ """
 TAGL['%s-%s-reagent'    % (dbse, 'thio2'                 )] = """ """
 
-# <<< Molecule Specifications >>>
-BENCH12_acene1 = input.process_input("""
-molecule dimer {
+# <<< Geometry Specification Strings >>>
+GEOS = {}
+
+GEOS['%s-%s-reagent' % (dbse, 'acene1')] = qcdb.Molecule("""
 0 1
 C       -2.21210099    -1.64058681     0.00000000
 C       -0.81694099    -1.64058681     0.00000000
@@ -321,11 +337,9 @@ H       -0.26685699     1.72781619    -0.00125800
 H       -2.76200399     1.72787619    -0.00263100
 H       -4.00908699    -0.43242781    -0.00086200
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_acene2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'acene2')] = qcdb.Molecule("""
 0 1
 C        2.42369900     0.70669500     0.00000000
 C       -2.42369900    -0.70669500     0.00000000
@@ -346,11 +360,9 @@ H       -1.23863300    -2.48004900     0.00000000
 H       -3.36410000    -1.24169900     0.00000000
 H       -3.36498700     1.23929300     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alka10 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alka10')] = qcdb.Molecule("""
 0 1
 C        0.40267235     0.64977904     0.00000000
 H        1.06210212     0.66547832     0.87441225
@@ -385,11 +397,9 @@ H        0.36242574    -6.64019737     0.00000000
 H       -0.92798572    -5.82534568    -0.88054822
 H       -0.92798572    -5.82534568     0.88054822
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alka2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alka2')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000    -0.76370350
 H        0.00000000     1.01617586    -1.16095589
@@ -400,11 +410,9 @@ H        0.88003411     0.50808793     1.16095589
 H       -0.88003411     0.50808793     1.16095589
 H       -0.00000000    -1.01617586     1.16095589
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alka4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alka4')] = qcdb.Molecule("""
 0 1
 C        0.51479500    -0.56820117     0.00000000
 H        1.17232619    -0.45994153     0.88262758
@@ -421,11 +429,9 @@ H       -0.64293252     2.75572018     0.00000000
 H        0.75694888     2.10907685    -0.88899667
 H        0.75694888     2.10907685     0.88899667
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alka6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alka6')] = qcdb.Molecule("""
 0 1
 C        0.21092141     3.21935408     0.00000000
 C       -0.55072178     1.89187840     0.00000000
@@ -448,11 +454,9 @@ H       -0.85892441    -3.30920214     0.88746775
 H       -0.85892441    -3.30920214    -0.88746775
 H        0.47592852    -4.08118449     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alka8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alka8')] = qcdb.Molecule("""
 0 1
 C        0.25853799     4.49476029     0.00000000
 C       -0.54104699     3.18978676     0.00000000
@@ -481,11 +485,9 @@ H       -0.90886126    -4.56589543    -0.88746775
 H       -0.90886126    -4.56589543     0.88746775
 H        0.40318847    -5.37602789     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alke10 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alke10')] = qcdb.Molecule("""
 0 1
 H       -0.03635200     0.00000000    -0.09668700
 C       -0.05408000     0.00000000     0.99258700
@@ -510,11 +512,9 @@ H        3.80109500     0.00000000    10.18362400
 H        6.88001800     0.00000000     9.90236900
 H        5.88202300    -0.00000100    11.47168700
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alke2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alke2')] = qcdb.Molecule("""
 0 1
 C        0.00000000    -0.66757800    -2.12465900
 C        0.00000000     0.66757800    -2.12465900
@@ -523,11 +523,9 @@ H       -0.92362100    -1.23225300    -2.12618500
 H       -0.92362100     1.23225300    -2.12618500
 H        0.92362100     1.23225300    -2.12618500
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alke4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alke4')] = qcdb.Molecule("""
 0 1
 H       -0.02710600     0.00000000    -0.01429600
 C       -0.01998300     0.00000000     1.07543800
@@ -540,11 +538,9 @@ H        0.25621000     0.00000000     3.76824200
 H        3.32800800     0.00000000     3.42311700
 H        2.36537500     0.00000000     5.01429600
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alke6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alke6')] = qcdb.Molecule("""
 0 1
 H       -0.02920300     0.00000000    -0.04214200
 C       -0.03456600     0.00000000     1.04735400
@@ -561,11 +557,9 @@ H        1.44171700     0.00000000     5.90157200
 H        4.51700000     0.00000000     5.58686400
 H        3.53660600     0.00000000     7.16714200
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_alke8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'alke8')] = qcdb.Molecule("""
 0 1
 H       -0.03267500     0.00000000    -0.06940800
 C       -0.04516000     0.00000000     1.01994800
@@ -586,19 +580,15 @@ H        2.62194700     0.00000000     8.04129400
 H        5.69914000     0.00000000     7.74424900
 H        4.70921200     0.00000000     9.31940800
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_Ar = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'Ar')] = qcdb.Molecule("""
 0 1
 Ar       0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_bag = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'bag')] = qcdb.Molecule("""
 0 1
 O       -1.02199800     1.60831800    -0.45667800
 H       -0.03478700     1.69574200    -0.37604200
@@ -619,11 +609,9 @@ O       -1.33146000    -0.85096500    -1.80507500
 H       -1.32899000     0.06249800    -1.46551700
 H       -2.21752000    -0.99712800    -2.14635300
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_boat1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'boat1')] = qcdb.Molecule("""
 0 1
 O       -1.72674400    -1.94937300    -0.28696700
 H       -2.04961100    -1.02159300    -0.32910600
@@ -644,11 +632,9 @@ O        1.72692200     1.94930100    -0.28670600
 H        2.04959200     1.02146900    -0.32914400
 H        2.49505400     2.47567300    -0.05222900
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_boat2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'boat2')] = qcdb.Molecule("""
 0 1
 O       -1.38674411    -2.13681196    -0.37562259
 H       -0.48634999    -2.17895521     0.01536018
@@ -669,11 +655,9 @@ O        2.72621384    -0.22573640    -0.29553397
 H        3.06503646    -0.35951676    -1.18470419
 H        2.27360404     0.64531609    -0.32434222
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_book1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'book1')] = qcdb.Molecule("""
 0 1
 O        0.11761300     1.55200200     0.86493100
 H        0.96325100     1.52043000     0.35419900
@@ -694,11 +678,9 @@ O        2.28641700    -1.48073200    -0.44513000
 H        1.42583000    -1.57095100     0.03130600
 H        2.89873600    -2.05534300     0.02166200
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_book2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'book2')] = qcdb.Molecule("""
 0 1
 O        2.40320534     1.32706594    -0.42312413
 H        3.28247053     1.52755300    -0.09144602
@@ -719,11 +701,9 @@ O        0.08217709     1.35119088     1.13167187
 H        0.05811694     0.40256100     1.32906529
 H        0.92799546     1.46558737     0.65660106
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_cage = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'cage')] = qcdb.Molecule("""
 0 1
 O        0.86429700    -1.71381800    -0.47336700
 H        1.68527300    -1.20159100    -0.30198200
@@ -744,11 +724,9 @@ O       -2.89018000     0.01527900     0.06304800
 H       -2.25688400    -0.24808500     0.76309500
 H       -3.64752400    -0.56775600     0.15607900
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_cyclic = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'cyclic')] = qcdb.Molecule("""
 0 1
 O        0.00000000     2.69654700     0.13950200
 H       -0.12861000     3.23017500     0.92778900
@@ -769,21 +747,17 @@ O       -2.33527800     1.34827400    -0.13950200
 H       -2.86171800     1.50370800    -0.92778900
 H       -2.32857400     0.37155100    -0.02595300
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o')] = qcdb.Molecule("""
 0 1
 O        0.00000000     0.00000000    -0.12789657
 H        0.00000000    -1.42990030     1.01490567
 H        0.00000000     1.42990030     1.01490567
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o2')] = qcdb.Molecule("""
 0 1
 O       -1.55100700    -0.11452000     0.00000000
 H       -1.93425900     0.76250300     0.00000000
@@ -792,11 +766,9 @@ O        1.35062500     0.11146900     0.00000000
 H        1.68039800    -0.37374100    -0.75856100
 H        1.68039800    -0.37374100     0.75856100
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o3')] = qcdb.Molecule("""
 0 1
 O       -1.29527542    -0.95244604    -0.08439711
 H       -1.96684629    -1.20450472     0.55440905
@@ -808,11 +780,9 @@ O        1.47586351    -0.63755538    -0.07513260
 H        2.03414372    -1.07560919     0.57227133
 H        0.61081072    -1.08144807    -0.01749750
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o4')] = qcdb.Molecule("""
 0 1
 O        1.94056518    -0.00328371     0.03503401
 H        1.37319186     0.79405277    -0.01037782
@@ -827,11 +797,9 @@ O       -0.00328371    -1.94056518     0.03503401
 H        0.79405277    -1.37319186    -0.01037782
 H        0.16977815    -2.67990412    -0.55264726
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o5')] = qcdb.Molecule("""
 0 1
 O        0.71936714     2.21304547    -0.12177106
 H       -0.23169873     1.97440618    -0.09174602
@@ -849,11 +817,9 @@ O       -1.88242907     1.36802906    -0.12177106
 H       -1.94936513     0.38976808    -0.09174602
 H       -2.61034406     1.69127280     0.41416587
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_h2o6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'h2o6')] = qcdb.Molecule("""
 0 1
 O        0.00000000     2.69654700     0.13950200
 H       -0.12861000     3.23017500     0.92778900
@@ -874,27 +840,21 @@ O       -2.33527800     1.34827400    -0.13950200
 H       -2.86171800     1.50370800    -0.92778900
 H       -2.32857400     0.37155100    -0.02595300
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_Kr = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'Kr')] = qcdb.Molecule("""
 0 1
 Kr       0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_Ne = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'Ne')] = qcdb.Molecule("""
 0 1
 Ne       0.00000000     0.00000000     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_prism = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'prism')] = qcdb.Molecule("""
 0 1
 O       -1.50216900    -0.19135900     1.43492700
 H       -0.60105400    -0.59697200     1.55371800
@@ -915,11 +875,9 @@ O        2.00228000     1.05782400    -0.12450200
 H        1.14163700     1.53226600    -0.14012100
 H        2.67471600     1.73534200    -0.23799500
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_DD_bz_2_pd = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_DD_bz_2_pd')] = qcdb.Molecule("""
 0 1
 C       -1.04782520    -1.42167360     0.00000000
 C       -1.45450340    -0.85544590     1.20620480
@@ -946,11 +904,9 @@ H        3.30304220    -1.72327000     0.00000000
 H        2.58249430    -0.71630660    -2.14379770
 H        1.13385340     1.29205930    -2.14231500
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_DD_bz_2_t = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_DD_bz_2_t')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     1.05903530
 C        0.00000000    -1.20600840     1.75767420
@@ -977,11 +933,9 @@ H        2.47539950     0.00000000    -2.45032210
 H        1.23823210    -2.14356550    -2.45367640
 H       -1.23823210    -2.14356550    -2.45367640
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_DD_bz_me = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_DD_bz_me')] = qcdb.Molecule("""
 0 1
 C        1.39321780     0.03629130    -0.63328030
 C        0.72803640    -1.18840150    -0.63330170
@@ -1001,11 +955,9 @@ H       -1.01931890     0.08916380     3.44637720
 H        0.00000000     0.00000000     1.99666970
 H        0.43244130    -0.92733800     3.44637720
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_DD_ch4_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_DD_ch4_2')] = qcdb.Molecule("""
 0 1
 C        0.00000000    -0.00014000     1.85916100
 H       -0.88855100     0.51306000     1.49468500
@@ -1018,11 +970,9 @@ H       -0.88855100    -0.51306000    -1.49468500
 H        0.88855100    -0.51306000    -1.49468500
 H        0.00000000     1.02633900    -1.49486800
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_HB_formamide_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_HB_formamide_2')] = qcdb.Molecule("""
 0 1
 C       -2.01864900     0.05288300     0.00000000
 O       -1.45220000     1.14363400     0.00000000
@@ -1037,11 +987,9 @@ H        1.96459600     1.97703600     0.00000000
 H        0.38724400     1.20778200     0.00000000
 H        3.11706100     0.01370100     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_HB_formic_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_HB_formic_2')] = qcdb.Molecule("""
 0 1
 C       -1.88889600    -0.17969200     0.00000000
 O       -1.49328000     1.07368900     0.00000000
@@ -1054,11 +1002,9 @@ O        1.17043500     1.16659000     0.00000000
 H        2.97948800     0.25882900     0.00000000
 H        0.49883300    -1.10719500     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_HB_h2o_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_HB_h2o_2')] = qcdb.Molecule("""
 0 1
 O       -1.55100700    -0.11452000     0.00000000
 H       -1.93425900     0.76250300     0.00000000
@@ -1067,11 +1013,9 @@ O        1.35062500     0.11146900     0.00000000
 H        1.68039800    -0.37374100    -0.75856100
 H        1.68039800    -0.37374100     0.75856100
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_HB_nh3_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_HB_nh3_2')] = qcdb.Molecule("""
 0 1
 N       -1.57871800    -0.04661100     0.00000000
 H       -2.15862100     0.13639600    -0.80956500
@@ -1082,11 +1026,9 @@ H        2.15862100    -0.13639600    -0.80956500
 H        0.84947100    -0.65819300     0.00000000
 H        2.15862100    -0.13639600     0.80956500
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_MX_bz_h2o = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_MX_bz_h2o')] = qcdb.Molecule("""
 0 1
 C        0.78061170    -0.60988750    -1.20754260
 C        0.47840390     0.75104060    -1.20790400
@@ -1104,11 +1046,9 @@ O       -2.78852700    -0.27448540     0.00000000
 H       -2.62291140    -1.21908310     0.00000000
 H       -1.90151030     0.09791100     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_MX_bz_hcn = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_MX_bz_hcn')] = qcdb.Molecule("""
 0 1
 C       -0.70977410    -0.99042300     1.20770180
 C       -1.40653400    -0.96535290     0.00000000
@@ -1126,11 +1066,9 @@ N       -0.00341180     3.53539260     0.00000000
 C        0.07519630     2.37070400     0.00000000
 H        0.14762950     1.30528470     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_MX_bz_nh3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_MX_bz_nh3')] = qcdb.Molecule("""
 0 1
 C       -0.73928100     0.51587850    -1.20710790
 C       -1.42614420     0.39654550     0.00000000
@@ -1149,11 +1087,9 @@ H        0.75954950    -3.14594770    -0.80607290
 H        0.75954950    -3.14594770     0.80607290
 H        0.04441670    -1.94493990     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_S22_MX_c2h2_c2h4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'S22_MX_c2h2_c2h4')] = qcdb.Molecule("""
 0 1
 C        0.00000000    -0.66757800    -2.12465900
 C        0.00000000     0.66757800    -2.12465900
@@ -1166,11 +1102,9 @@ C        0.00000000     0.00000000     1.69324000
 H        0.00000000     0.00000000     0.62735200
 H        0.00000000     0.00000000     3.96392900
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_thio1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'thio1')] = qcdb.Molecule("""
 0 1
 S        0.00000000     0.00000000     0.00000000
 C        0.00000000     0.00000000     1.72529600
@@ -1182,11 +1116,9 @@ H       -3.32270915     0.00043325     1.39397066
 C       -1.72454170    -0.00024064    -0.05102823
 H       -2.23765332    -0.00041661    -0.99748803
 units angstrom
-}
-""", 0)
+""")
 
-BENCH12_thio2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-reagent' % (dbse, 'thio2')] = qcdb.Molecule("""
 0 1
 S       -1.85234617    -1.20349129     0.00000000
 C       -3.20012435    -0.12541479     0.00000000
@@ -1205,14 +1137,54 @@ C        3.20012435     0.12541479     0.00000000
 H        4.20210000     0.51938625     0.00000000
 S        1.85234617     1.20349129     0.00000000
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
-for rxn in HRXN:
-    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+#########################################################################
 
-        molname = rxnpattern.match(rgt)
-        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-acene1-reagent'         ] =     203.03074821
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-acene2-reagent'         ] =     459.00031332
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alka10-reagent'         ] =     517.65426800
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alka2-reagent'          ] =      42.25682230
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alka4-reagent'          ] =     129.94702250
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alka6-reagent'          ] =     243.14655161
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alka8-reagent'          ] =     372.80535495
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alke10-reagent'         ] =     410.15510014
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alke2-reagent'          ] =      33.35807208
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alke4-reagent'          ] =     103.30484039
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alke6-reagent'          ] =     193.23408852
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-alke8-reagent'          ] =     296.61426771
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-Ar-reagent'             ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-bag-reagent'            ] =     293.56471166
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-boat1-reagent'          ] =     271.49594450
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-boat2-reagent'          ] =     271.85423444
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-book1-reagent'          ] =     285.13855152
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-book2-reagent'          ] =     287.81114181
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-cage-reagent'           ] =     300.50508521
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-cyclic-reagent'         ] =     269.20185434
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o-reagent'            ] =       4.81054384
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o2-reagent'           ] =      36.66284785
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o3-reagent'           ] =      84.61922565
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o4-reagent'           ] =     140.74689978
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o5-reagent'           ] =     201.54404786
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-h2o6-reagent'           ] =     269.20185434
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-Kr-reagent'             ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-Ne-reagent'             ] =       0.00000000
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-prism-reagent'          ] =     304.90931419
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_DD_bz_2_pd-reagent' ] =     628.97205684
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_DD_bz_2_t-reagent'  ] =     592.41664529
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_DD_bz_me-reagent'   ] =     272.46182028
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_DD_ch4_2-reagent'   ] =      41.00026380
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_HB_formamide_2-reagent'] =     230.79485521
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_HB_formic_2-reagent'] =     235.94662032
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_HB_h2o_2-reagent'   ] =      36.66284785
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_HB_nh3_2-reagent'   ] =      40.31423984
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_MX_bz_h2o-reagent'  ] =     273.32942470
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_MX_bz_hcn-reagent'  ] =     303.28139752
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_MX_bz_nh3-reagent'  ] =     273.27961438
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-S22_MX_c2h2_c2h4-reagent'] =      85.18906420
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-thio1-reagent'          ] =     202.68555759
+DATA['NUCLEAR REPULSION ENERGY']['BENCH12-thio2-reagent'          ] =     632.02291528

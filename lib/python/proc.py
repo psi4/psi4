@@ -9,7 +9,6 @@ import shutil
 import os
 import subprocess
 import re
-import input
 import physconst
 from molutil import *
 from text import *
@@ -58,22 +57,105 @@ def run_omp2(name, **kwargs):
     an orbital-optimized MP2 computation
 
     """
-    oldref = PsiMod.get_global_option('REFERENCE')
-    PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.omp2()
-    PsiMod.set_global_option('REFERENCE', oldref)
+
+
+def run_scs_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-component scaled OMP2 computation
+
+    """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of scs?
+    if (lowername == 'scs-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCS')
+    elif (lowername == 'scsn-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSN')
+    elif (lowername == 'scs-mi-omp2'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSMI')
+    elif (lowername == 'scs-omp2-vdw'):
+        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSVDW')
+
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP2', 'DO_SCS', 'TRUE')
+    return PsiMod.omp2()
+
+
+def run_sos_omp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-opposite scaled OMP2 computation
+
+    """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of sos?
+    if (lowername == 'sos-omp2'):
+        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOS')
+    elif (lowername == 'sos-pi-omp2'):
+        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOSPI')
+
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP2', 'DO_SOS', 'TRUE')
+    return PsiMod.omp2()
+
 
 def run_omp3(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an orbital-optimized MP3 computation
 
     """
-    oldref = PsiMod.get_global_option('REFERENCE')
-    PsiMod.set_global_option('REFERENCE', 'UHF')
+    #oldref = PsiMod.get_global_option('REFERENCE')
+    #PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
     return PsiMod.omp3()
-    PsiMod.set_global_option('REFERENCE', oldref)    
+    #PsiMod.set_global_option('REFERENCE', oldref)    
+
+
+def run_scs_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-component scaled OMP3 computation
+
+    """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of scs?
+    if (lowername == 'scs-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCS')
+    elif (lowername == 'scsn-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSN')
+    elif (lowername == 'scs-mi-omp3'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSMI')
+    elif (lowername == 'scs-omp3-vdw'):
+        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSVDW')
+
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP3', 'DO_SCS', 'TRUE')
+    return PsiMod.omp3()
+
+
+def run_sos_omp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a spin-opposite scaled OMP3 computation
+
+    """
+    # Get calls method
+    lowername = name.lower()
+ 
+    # what type of sos?
+    if (lowername == 'sos-omp3'):
+        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOS')
+    elif (lowername == 'sos-pi-omp3'):
+        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOSPI')
+
+    PsiMod.scf()
+    PsiMod.set_local_option('OMP3', 'DO_SOS', 'TRUE')
+    return PsiMod.omp3()
+
 
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -86,6 +168,10 @@ def run_scf(name, **kwargs):
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     if lowername == 'df-scf':
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
@@ -117,9 +203,9 @@ def run_scf(name, **kwargs):
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
-
+   
     returnvalue = scf_helper(name, **kwargs)
-
+    
     optstash.restore()
     return returnvalue
 
@@ -130,7 +216,12 @@ def run_scf_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['DF_BASIS_SCF'])
+        ['DF_BASIS_SCF'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     returnvalue = run_scf(name, **kwargs)
 
@@ -198,7 +289,7 @@ def scf_helper(name, **kwargs):
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'])
-    
+
     # if the df_basis_scf basis is not set, pick a sensible one.
     if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
         if PsiMod.get_global_option('DF_BASIS_SCF') == '':
@@ -214,26 +305,40 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'])
-    
+
+    # sort out cast_up settings. no need to stash these since only read, never reset
     cast = False
-    if 'cast_up' in kwargs:
-        cast = kwargs.pop('cast_up')
-        if input.yes.match(str(cast)):
+    if PsiMod.has_option_changed('SCF', 'BASIS_GUESS'):
+        cast = PsiMod.get_option('SCF', 'BASIS_GUESS')
+        if yes.match(str(cast)):
             cast = True
-        elif input.no.match(str(cast)):
+        elif no.match(str(cast)):
             cast = False
-        
+
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
             castdf = True
         else:
             castdf = False
-    
-        if 'cast_up_df' in kwargs:
-            castdf = kwargs.pop('cast_up_df')
-            if input.yes.match(str(castdf)):
+
+        if PsiMod.has_option_changed('SCF', 'DF_BASIS_GUESS'):
+            castdf = PsiMod.get_option('SCF', 'DF_BASIS_GUESS')
+            if yes.match(str(castdf)):
                 castdf = True
-            elif input.no.match(str(castdf)):
+            elif no.match(str(castdf)):
                 castdf = False
+
+    # sort out broken_symmetry settings.
+    if 'brokensymmetry' in kwargs:
+        molecule = PsiMod.get_active_molecule()
+        multp = molecule.multiplicity()
+        if multp != 1:
+            raise ValidationError('Broken symmetry is only for singlets.')
+        #if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
+        if PsiMod.get_option('SCF','REFERENCE') != 'UHF':
+            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
+        do_broken = True
+    else:
+        do_broken = False
 
     precallback = None
     if 'precallback' in kwargs:
@@ -250,15 +355,24 @@ def scf_helper(name, **kwargs):
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
     PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
+    # broken set-up
+    if do_broken:
+        molecule.set_multiplicity(3)
+#        PsiMod.print_out("\n\n\tComputing high-spin triplet guess\n\n")
+        PsiMod.print_out('\n')
+        banner('  Computing high-spin triplet guess  ')
+        PsiMod.print_out('\n')
+
+    # cast set-up
     if (cast):
 
-        if input.yes.match(str(cast)):
+        if yes.match(str(cast)):
             guessbasis = '3-21G'
         else:
             guessbasis = cast
 
         if (castdf):
-            if input.yes.match(str(castdf)):
+            if yes.match(str(castdf)):
                 guessbasisdf = corresponding_jkfit(guessbasis)
             else:
                 guessbasisdf = castdf
@@ -279,8 +393,21 @@ def scf_helper(name, **kwargs):
         banner('Guess SCF, %s Basis' % (guessbasis))
         PsiMod.print_out('\n')
 
+    # the FIRST scf call
+    if cast or do_broken:
         # Perform the guess scf
         PsiMod.scf()
+
+    # broken clean-up
+    if do_broken:
+        molecule.set_multiplicity(1)
+        PsiMod.set_local_option('SCF', 'GUESS', 'READ')
+        PsiMod.print_out('\n')
+        banner('  Computing broken symmetry solution from high-spin triplet guess  ')
+        PsiMod.print_out('\n')
+
+    # cast clean-up
+    if (cast):
 
         # Move files to proper namespace
         PsiMod.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
@@ -295,14 +422,38 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
-        # Do the full scf
-        e_scf = PsiMod.scf(precallback, postcallback)
 
-    else:
-        e_scf = PsiMod.scf(precallback, postcallback)
+    # the SECOND scf call
+    e_scf = PsiMod.scf(precallback, postcallback)
 
     optstash.restore()
     return e_scf
+
+
+def run_mp2_select(name, **kwargs):
+    """Function selecting the algorithm for a MP2 energy call
+    and directing toward the MP2 or the DFMP2 modules.
+
+    """
+    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
+        # PSI3 docs claimed to have an integral direct algorithm
+        #   but can't see it in the code.
+        return run_mp2(name, **kwargs)
+    else:
+        return run_dfmp2(name, **kwargs)
+
+
+def run_mp2_select_gradient(name, **kwargs):
+    """Function selecting the algorithm for a MP2 gradient call
+    and directing toward the MP2 or the DFMP2 modules.
+
+    """
+    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
+        # PSI3 docs claimed to have an integral direct algorithm
+        #   but can't see it in the code.
+        return run_mp2_gradient(name, **kwargs)
+    else:
+        return run_dfmp2_gradient(name, **kwargs)
 
 
 def run_mp2(name, **kwargs):
@@ -316,8 +467,8 @@ def run_mp2(name, **kwargs):
         ['MP2', 'WFN'])
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -347,7 +498,6 @@ def run_mp2_gradient(name, **kwargs):
         ['MP2', 'WFN'],
         ['DERTYPE'])
 
-
     PsiMod.set_global_option('DERTYPE', 'FIRST')
     run_mp2(name, **kwargs)
 
@@ -364,7 +514,16 @@ def run_dfmp2_gradient(name, **kwargs):
     """
     optstash = OptionsState(
         ['DF_BASIS_SCF'],
-        ['DF_BASIS_MP2'])
+        ['DF_BASIS_MP2'],
+        ['SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        #PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')  # insufficient b/c SCF option read in DFMP2
+        PsiMod.set_global_option('SCF_TYPE', 'DF')
+
+    if not PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        raise ValidationError('DF-MP2 gradients need DF-SCF reference, for now.')
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
@@ -386,9 +545,9 @@ def run_dfmp2_gradient(name, **kwargs):
                 PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
                 PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
             else:
-                raise ValidationError('Keyword DF_BASIS_SCF is required.') 
+                raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-        run_scf('RHF', **kwargs)
+        scf_helper(name, **kwargs)
 
     PsiMod.print_out('\n')
     banner('DFMP2')
@@ -401,7 +560,7 @@ def run_dfmp2_gradient(name, **kwargs):
             PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
             PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     PsiMod.dfmp2grad()
     e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
@@ -411,9 +570,9 @@ def run_dfmp2_gradient(name, **kwargs):
 
     if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
-    
+
 
 def run_ccenergy(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -456,8 +615,8 @@ def run_ccenergy(name, **kwargs):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -507,8 +666,8 @@ def run_bccd(name, **kwargs):
 
     # Bypass routine scf if user did something special to get it to
     # converge
-    if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -540,8 +699,22 @@ def run_bccd_t(name, **kwargs):
 
 
 def run_scf_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    SCF calculations. This is a simple alias to :py:func:`~proc.run_scf`
+    since SCF properties all handled through oeprop.
 
-    run_scf(name, **kwargs)
+    """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    returnvalue = run_scf(name, **kwargs)
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_cc_property(name, **kwargs):
@@ -576,8 +749,7 @@ def run_cc_property(name, **kwargs):
             else:
                 invalid.append(prop)
     else:
-        print("The \"properties\" keyword is required with the property() function.")
-        exit(1)
+        raise ValidationError("The \"properties\" keyword is required with the property() function.")
 
     n_one = len(one)
     n_two = len(two)
@@ -589,12 +761,10 @@ def run_cc_property(name, **kwargs):
         print("The following properties are not currently supported: %s" % invalid)
 
     if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
-        print("Excited state CC properties require EOM-CC2 or EOM-CCSD.")
-        exit(1)
+        raise ValidationError("Excited state CC properties require EOM-CC2 or EOM-CCSD.")
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
-        print("Cannot (yet) compute response properties for excited states.")
-        exit(1)
+        raise ValidationError("Cannot (yet) compute response properties for excited states.")
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("Computing both density- and response-based properties.")
@@ -651,8 +821,7 @@ def run_cc_property(name, **kwargs):
         elif (name.lower() == 'eom-cc2'):
             PsiMod.set_global_option('WFN', 'EOM_CC2')
         else:
-            print("Unknown excited-state CC wave function.")
-            exit(1)
+            raise ValidationError("Unknown excited-state CC wave function.")
         PsiMod.set_global_option('DERTYPE', 'NONE')
         PsiMod.set_global_option('ONEPDM', 'TRUE')
         PsiMod.cceom()
@@ -756,9 +925,14 @@ def run_dft(name, **kwargs):
     optstash = OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'REFERENCE'],
+        ['SCF', 'SCF_TYPE'],
         ['DF_BASIS_MP2'],
         ['DFMP2', 'MP2_OS_SCALE'],
         ['DFMP2', 'MP2_SS_SCALE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
@@ -772,7 +946,7 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    returnvalue = run_scf(name, **kwargs) 
+    returnvalue = run_scf(name, **kwargs)
 
     for ssuper in superfunctional_list():
         if ssuper.name().lower() == name.lower():
@@ -788,17 +962,19 @@ def run_dft(name, **kwargs):
                 PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_MP2 is required.')
- 
+
         if dfun.is_c_scs_hybrid():
             PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
             PsiMod.dfmp2()
-            returnvalue += dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
 
         else:
             PsiMod.dfmp2()
-            returnvalue += dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
 
+        PsiMod.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
+        returnvalue += vdh
         PsiMod.set_variable('DFT TOTAL ENERGY', returnvalue)
         PsiMod.set_variable('CURRENT ENERGY', returnvalue)
 
@@ -813,7 +989,12 @@ def run_dft_gradient(name, **kwargs):
     """
     optstash = OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
-        ['SCF', 'REFERENCE'])
+        ['SCF', 'REFERENCE'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     PsiMod.set_local_option('SCF', 'DFT_FUNCTIONAL', name)
 
@@ -830,7 +1011,7 @@ def run_dft_gradient(name, **kwargs):
     if (PsiMod.get_option('SCF', 'SCF_TYPE') != 'DF'):
         raise ValidationError('SCF_TYPE must be DF for DFT gradient (for now).')
 
-    returnvalue = run_scf_gradient(name, **kwargs) 
+    returnvalue = run_scf_gradient(name, **kwargs)
 
     optstash.restore()
     return returnvalue
@@ -899,8 +1080,8 @@ def run_detci(name, **kwargs):
         pass
 
     # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf('scf', **kwargs)
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -917,11 +1098,17 @@ def run_dfmp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density-fitted MP2 calculation.
 
-    .. caution:: Get rid of madness-era restart file
-
     """
     optstash = OptionsState(
-        ['DF_BASIS_MP2'])
+        ['DF_BASIS_MP2'],
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
+        raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
@@ -936,7 +1123,7 @@ def run_dfmp2(name, **kwargs):
         if(PsiMod.me() == 0):
             shutil.copy(restartfile, targetfile)
     else:
-        run_scf('RHF', **kwargs)
+        scf_helper(name, **kwargs)
 
     PsiMod.print_out('\n')
     banner('DFMP2')
@@ -958,7 +1145,7 @@ def run_dfmp2(name, **kwargs):
 
     if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
 
 
@@ -972,13 +1159,14 @@ def run_psimrcc(name, **kwargs):
     e_psimrcc = PsiMod.get_variable("Current Energy")
     return e_psimrcc
 
+
 def run_psimrcc_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the SCF module
 
     """
 
-    run_scf(name, **kwargs)
+    scf_helper(name, **kwargs)
     PsiMod.psimrcc()
     e_psimrcc = PsiMod.get_variable("Current Energy")
     return e_psimrcc
@@ -1006,7 +1194,7 @@ def run_mp2c(name, **kwargs):
             PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
             PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
-            raise ValidationError('Keyword DF_BASIS_MP2 is required.') 
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     ri = PsiMod.get_option('SCF', 'SCF_TYPE')
     df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
@@ -1081,6 +1269,12 @@ def run_sapt(name, **kwargs):
     a SAPT calculation of any level.
 
     """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
     molecule = PsiMod.get_active_molecule()
     user_pg = molecule.schoenflies_symbol()
@@ -1088,9 +1282,9 @@ def run_sapt(name, **kwargs):
     molecule.fix_orientation(True)
     molecule.update_geometry()
 
-    nfrag = molecule.nfragments() 
-    if nfrag != 2: 
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
+    nfrag = molecule.nfragments()
+    if nfrag != 2:
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
@@ -1173,7 +1367,7 @@ def run_sapt(name, **kwargs):
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
             PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.') 
+            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
     PsiMod.print_out('\n')
     banner(name.upper())
@@ -1183,6 +1377,7 @@ def run_sapt(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    optstash.restore()
     return e_sapt
 
 
@@ -1191,15 +1386,22 @@ def run_sapt_ct(name, **kwargs):
     a charge-transfer SAPT calcuation of any level.
 
     """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
     molecule = PsiMod.get_active_molecule()
     user_pg = molecule.schoenflies_symbol()
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
 
-    nfrag = molecule.nfragments() 
-    if nfrag != 2: 
-        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag)) 
+    nfrag = molecule.nfragments()
+    if nfrag != 2:
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
 
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
@@ -1288,7 +1490,7 @@ def run_sapt_ct(name, **kwargs):
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
             PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
-            raise ValidationError('Keyword DF_BASIS_SAPT is required.') 
+            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
     PsiMod.print_out('\n')
     banner('Dimer Basis SAPT')
@@ -1321,6 +1523,7 @@ def run_sapt_ct(name, **kwargs):
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
 
+    optstash.restore()
     return e_sapt
 
 
@@ -1330,7 +1533,8 @@ def run_mrcc(name, **kwargs):
 
     """
     # TODO: Check to see if we really need to run the SCF code.
-    run_scf(name, **kwargs)
+    scf_helper(name, **kwargs)
+    vscf = PsiMod.get_variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
@@ -1423,12 +1627,16 @@ def run_mrcc(name, **kwargs):
         m = fields[1]
         try:
             e = float(fields[5])
-    	    PsiMod.set_variable(m + ' ENERGY', e)
+            if m == "MP(2)":
+                m = "MP2"
+            PsiMod.set_variable(m + ' TOTAL ENERGY', e)
+            PsiMod.set_variable(m + ' CORRELATION ENERGY', e - vscf)
         except ValueError:
             continue
 
     # The last 'e' in iface is the one the user requested.
     PsiMod.set_variable('CURRENT ENERGY', e)
+    PsiMod.set_variable('CURRENT CORRELATION ENERGY', e - vscf)
 
     # Load the iface file
     iface = open('iface', 'r')
@@ -1440,7 +1648,7 @@ def run_mrcc(name, **kwargs):
         # Delete unless we're told not to
         if (keep == False and not('path' in kwargs)):
             shutil.rmtree(mrcc_tmpdir)
-    except OSerror as e:
+    except OSError as e:
         print('Unable to remove MRCC temporary directory %s' % e, file=sys.stderr)
         exit(1)
 
@@ -1480,54 +1688,51 @@ def run_cepa(name, **kwargs):
         ['CEPA', 'CEPA_NO_SINGLES'])
 
     # override symmetry if integral direct
-    if PsiMod.get_option('CEPA','CEPA_VABCD_DIRECT'):
-       molecule = PsiMod.get_active_molecule()
-       molecule.update_geometry()
-       molecule.reset_point_group('c1')
-       #molecule.fix_orientation(1)
-       #molecule.update_geometry()
+    if PsiMod.get_option('CEPA', 'CEPA_VABCD_DIRECT'):
+        molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+        molecule.reset_point_group('c1')
+        #molecule.fix_orientation(1)
+        #molecule.update_geometry()
 
     # throw an exception for open-shells
-    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
-       PsiMod.print_out("\n")
-       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
-       PsiMod.print_out("\n")
-       sys.exit(1)
+    if (PsiMod.get_option('SCF', 'REFERENCE') != 'RHF'):
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     # what type of cepa?
     if (lowername == 'cepa(0)'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA0')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA0')
     if (lowername == 'cepa(1)'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA1')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA1')
     if (lowername == 'cepa(2)'):
-        #PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA2')
+        #PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA2')
         # throw an exception for cepa(2)
         PsiMod.print_out("\n")
-        PsiMod.print_out("Error: %s not implemented\n" % lowername )
+        PsiMod.print_out("Error: %s not implemented\n" % lowername)
         PsiMod.print_out("\n")
     if (lowername == 'cepa(3)'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CEPA3')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA3')
     if (lowername == 'sdci'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CISD')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CISD')
     if (lowername == 'dci'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'CISD')
-        PsiMod.set_local_option('CEPA','CEPA_NO_SINGLES', True)
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CISD')
+        PsiMod.set_local_option('CEPA', 'CEPA_NO_SINGLES', True)
     if (lowername == 'acpf'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'ACPF')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'ACPF')
     if (lowername == 'aqcc'):
-        PsiMod.set_local_option('CEPA','CEPA_LEVEL', 'AQCC')
+        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'AQCC')
 
-    PsiMod.set_local_option('TRANSQT2','WFN', 'CCSD')
-    run_scf('scf', **kwargs)
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+    scf_helper(name, **kwargs)
 
     # If the scf type is DF, then the AO integrals were never generated
-    if PsiMod.get_option('SCF','SCF_TYPE') == 'DF':
-       mints = PsiMod.MintsHelper()
-       mints.integrals()
-   
+    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        mints = PsiMod.MintsHelper()
+        mints.integrals()
+
     # only call transqt2() if (ac|bd) is not integral direct
-    if PsiMod.get_option('CEPA','CEPA_VABCD_DIRECT') == False:
-       PsiMod.transqt2()
+    if PsiMod.get_option('CEPA', 'CEPA_VABCD_DIRECT') == False:
+        PsiMod.transqt2()
 
     PsiMod.cepa()
 
@@ -1535,12 +1740,3 @@ def run_cepa(name, **kwargs):
     optstash.restore()
 
     return PsiMod.get_variable("CURRENT ENERGY")
-
-# General wrapper for property computations
-def run_property(name, **kwargs):
-
-    junk = 1
-    return junk
-
-
-

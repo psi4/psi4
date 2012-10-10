@@ -78,6 +78,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/
   options.add("PROPERTIES", new ArrayType());
+  /*- Either a set of 3 coordinates, or a string (see manual) describing the origin about which one-electron
+       properties are computed -*/
+  options.add("PROPERTIES_ORIGIN", new ArrayType());
 
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
@@ -94,7 +97,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Performs configuration interaction (CI)
     computations of various types, including restricted-active-space
     (RAS) CI, full CI, the CI component of multi-configuration
-    self-consistent-field (MCSCF) and complete-active-space 
+    self-consistent-field (MCSCF) and complete-active-space
     self-consistent-field (CASSCF) computations, and arbitrary-order
     perturbation theory and arbitrary-order coupled-cluster
     computations for small molecules. -*/
@@ -108,7 +111,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence criterion for CI residual vector in the Davidson 
+    /*- Convergence criterion for CI residual vector in the Davidson
     algorithm (RMS error).
     The default is 1e-4 for energies and 1e-7 for gradients. -*/
     options.add_double("R_CONVERGENCE", 1e-4);
@@ -147,7 +150,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
     options.add_bool("DETCI_FREEZE_CORE",true);
 
-    /*- Do calculate the value of $\langle S^2\rangle$ for each root? -*/
+    /*- Do calculate the value of $\langle S^2\rangle$ for each root? 
+    Only supported for |detci__icore| = 1. -*/
     options.add_bool("S_SQUARED",false);
 
     /*- Specifies how to handle buffering of CI vectors.  A value of 0
@@ -209,7 +213,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     The default is determined by the value of the multiplicity.  This is used
     for two things: (1) determining the phase of the redundant half of the CI
     vector when the $M@@s = 0$ component is used (i.e., |detci__ms0| = ``TRUE``), and (2) making
-    sure the guess vector has the desired value of $\langle S^2\rangle$ 
+    sure the guess vector has the desired value of $\langle S^2\rangle$
     (if |detci__s_squared| is ``TRUE`` and |detci__icore| = ``1``). -*/
     options.add_double("S", 0.0);
 
@@ -254,7 +258,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     excitation level |detci__ex_level|.  !expert -*/
     options.add_bool("MIXED4",true);
 
-    /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number 
+    /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number
     of strings required if MIXED4=true, as in a split-virutal CISD[TQ]
     computation.  If more than one electron is in RAS IV, then the
     holes in RAS I cannot exceed the number of particles in
@@ -435,7 +439,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     down to one vector per root. -*/
     options.add_bool("RESTART",false);
 
-    /*- Do invoke the FILTER_GUESS options that are used to filter out some 
+    /*- Do invoke the FILTER_GUESS options that are used to filter out some
     trial vectors which may not have the appropriate phase convention
     between two determinants?  This is useful to remove, e.g.,
     delta states when a sigma state is desired.  The user
@@ -632,7 +636,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     code is very slow with this option turned on. !expert -*/
     options.add_bool("REPL_OTF",false);
 
-    /*- Do use some routines based on the papers of Bendazzoli et al. 
+    /*- Do use some routines based on the papers of Bendazzoli et al.
     to calculate sigma?  Seems to be slower and not worthwhile; may disappear
     eventually.  Works only for full CI and I don't remember if I could see
     how their clever scheme might be extended to RAS in general. !expert -*/
@@ -640,13 +644,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
 
   if (name == "SAPT"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) 
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT)
     analysis to quantitatively analyze noncovalent interactions. -*/
 
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 
-    /*- Convergence criterion for energy (change) in the SAPT 
+    /*- Convergence criterion for energy (change) in the SAPT
     $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
 
     options.add_double("E_CONVERGENCE",1e-10);
@@ -657,17 +661,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
     $E@@{exch-ind}^{(20)}$ instead of their response-including coupterparts.
-    Only turn on this option if the induction energy is not going to be 
+    Only turn on this option if the induction energy is not going to be
     used. -*/
     options.add_bool("NO_RESPONSE",false);
 
     /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
-    Use may speed up the computation slightly at the cost of spawning an 
+    Use may speed up the computation slightly at the cost of spawning an
     additional thread. -*/
     options.add_bool("AIO_CPHF",false);
 
     /*- Do use asynchronous disk I/O in the formation of the DF integrals?
-    Use may speed up the computation slightly at the cost of spawning an 
+    Use may speed up the computation slightly at the cost of spawning an
     additional thread. -*/
     options.add_bool("AIO_DF_INTS",false);
 
@@ -695,7 +699,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
-    /*- Do force SAPT2 and higher to die if it thinks there isn't enough 
+    /*- Do force SAPT2 and higher to die if it thinks there isn't enough
     memory?  Turning this off is ill-advised. -*/
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- Primary basis set, describes the monomer molecular orbitals -*/
@@ -703,7 +707,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SAPT density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
     options.add_str("DF_BASIS_SAPT", "");
-    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
+    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting
     computations, may be important if heavier elements are involved.
     Defaults to |sapt__df_basis_sapt|. -*/
     options.add_str("DF_BASIS_ELST", "");
@@ -714,12 +718,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Denominator algorithm for PT methods. Laplace transformations
     are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations. 
-    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and 
+    /*- The scale factor used for opposite-spin pairs in SCS computations.
+    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and
     $E@@{exch-disp}^{(20)}$ terms. -*/
     options.add_double("SAPT_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ 
+    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$
     terms. -*/
     options.add_double("SAPT_SS_SCALE", 1.0/3.0);
     /*- The scope of core orbitals to freeze in evaluation of SAPT
@@ -728,13 +732,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
     /*- The amount of information to print to the output file for the sapt
     module. For 0, only the header and final results are printed. For 1,
-    (recommended for large calculations) some intermediate quantities are also 
+    (recommended for large calculations) some intermediate quantities are also
     printed. -*/
     options.add_int("PRINT", 1);
   }
 
   if(name == "DCFT"|| options.read_globals()) {
-      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
+      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
 
       /*- The algorithm to use for the density cumulant and orbital updates in the energy computation.
@@ -774,7 +778,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("AO_BASIS", "NONE", "NONE DISK");
       /*- The amount (percentage) of damping to apply to the orbital update procedure:
       0 will result in a full update, 100 will completely stall the
-      update. A value around 20 (which corresponds to 20\% of the previous 
+      update. A value around 20 (which corresponds to 20\% of the previous
       iteration's density being mixed into the current iteration)
       can help in cases where oscillatory convergence is observed. -*/
       options.add_double("DAMPING_PERCENTAGE",0.0);
@@ -821,18 +825,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- The maximum size of the subspace for the stability check. The program will terminate if this parameter is exceeded
           and the convergence (STABILITY_CONVERGENCE) is not satisfied !expert-*/
       options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
+      /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
+      options.add_bool("RELAX_TAU", true);
+      /*- Chooses appropriate DCFT method -*/
+      options.add_str("DCFT_FUNCTIONAL", "DCFT-06", "DCFT-06 DCFT-06X CEPA0");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
+      /*- MODULEDESCRIPTION Called at the beginning of SCF computations,
       whenever disk-based molecular integrals are required. -*/
 
       /*- Primary basis set -*/
       options.add_str("BASIS","");
+      /*- Omega scaling for Erf and Erfc.-*/
+      options.add_double("OMEGA_ERF", 0.20);
   }
   if (name == "SCF"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and 
-    Density Functional Theory) computations.  These are the starting 
+    /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and
+    Density Functional Theory) computations.  These are the starting
     points for most computations, so this code is called in most cases. -*/
 
     /*- SUBSECTION General Wavefunction Info -*/
@@ -843,10 +853,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SCF density fitting computations. 
+    /*- Auxiliary basis set for SCF density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
-    /*- What algorithm to use for the SCF computation -*/
+    /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default algorithm for
+    different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
@@ -854,7 +866,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCF_MEM_SAFETY_FACTOR",0.75);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
-    /*- Minimum S matrix eigenvalue to be used before compensating for linear 
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear
     dependencies. -*/
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected. -*/
@@ -873,10 +885,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
-    /*- Convergence criterion for SCF energy. -*/
+    /*- Fail if we reach maxiter without converging? -*/
+    options.add_bool("FAIL_ON_MAXITER",true);
+
+    /*- Convergence criterion for SCF energy. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default convergence
+    criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
+    /*- Convergence criterion for SCF density. In practice, the SCF energy
+    will be good to 1-4 more than this number of digits. (This means that
+    |scf__d_convergence| = 11 is overkill and will approach machine
+    precision.) See Table :ref:`SCF Convergence & Algorithm
+    <table:conv_scf>` for default convergence criteria for different
+    calculation types. -*/
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -886,6 +908,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
         It is recommended to leave damping on until convergence, which is the default. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
+    /*- Accelerate convergence by performing a preliminary scf with
+    this small basis set followed by projection into the full target
+    basis. A value of ``TRUE`` turns on projection using the 3-21G
+    small basis set. -*/
+    options.add_str("BASIS_GUESS", "FALSE", "");
+    /*- When |scf__basis_guess| is active, run the preliminary scf in
+    density-fitted mode with this as fitting basis for the small basis
+    set. A value of ``TRUE`` turns on density fitting with the
+    cc-pVDZ-RI basis set (when available for all elements). -*/
+    options.add_str("DF_BASIS_GUESS", "FALSE", "");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -932,7 +964,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Size of the perturbation (applies only to dipole perturbations) -*/
     options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE");
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z EMBPOT SPHERE DX");
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
@@ -946,6 +978,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("THETA_POINTS", 360);
     /*- Number of azimuthal grid points for sphereical potential integration -*/
     options.add_int("PHI_POINTS", 360);
+    /*- Read an external potential from the .dx file? -*/
+    options.add_bool("ONEPOT_GRID_READ", false);
 
 
     /*- SUBSECTION Parallel Runtime -*/
@@ -990,7 +1024,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
-    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a 
+    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a
         custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
     options.add_str("DFT_FUNCTIONAL", "");
     /*- A custom DFT functional object (built by Python or NULL/None) -*/
@@ -1002,7 +1036,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
-    options.add_int("DFT_RADIAL_POINTS", 99);
+    options.add_int("DFT_RADIAL_POINTS", 75);
     /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme. -*/
@@ -1023,10 +1057,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_BLOCK_MAX_POINTS",5000);
     /*- The minimum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MIN_POINTS",1000);
-    /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/ 
+    /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
+    /*- Parameters defining the dispersion correction. See Table 
+    :ref:`-D Functionals <table:dft_disp>` for default values and Table
+    :ref:`Dispersion Corrections <table:dashd>` for the order in which
+    parameters are to be specified in this array option. -*/
+    options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -1046,7 +1085,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_TRIPLETS", true);
     /*- Do explicit hamiltonian only? -*/
     options.add_bool("EXPLICIT_HAMILTONIAN", false);
-    /*- Minimum singles amplitude to print in 
+    /*- Minimum singles amplitude to print in
         CIS analysis
      -*/
     options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
@@ -1089,30 +1128,30 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      *  -Polarizability
      * -*/
     options.add("CPHF_TASKS", new ArrayType());
-    /*- The maximum number of integral threads (0 for omp_get_max_threads()) 
+    /*- The maximum number of integral threads (0 for omp_get_max_threads())
      -*/
     options.add_int("OMP_N_THREAD", 0);
-    /*- The schwarz cutoff value 
+    /*- The schwarz cutoff value
      -*/
     options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
-    /*- The maximum reciprocal condition allowed in the fitting metric 
+    /*- The maximum reciprocal condition allowed in the fitting metric
      -*/
     options.add_double("FITTING_CONDITION", 1.0E-12);
     /*- Fitting algorithm (0 for old, 1 for new)
      -*/
     options.add_int("FITTING_ALGORITHM", 0);
-    /*- SCF Type 
+    /*- SCF Type
      -*/
     options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
-    /*- Auxiliary basis for SCF 
+    /*- Auxiliary basis for SCF
      -*/
-    options.add_str("DF_BASIS_SCF", ""); 
+    options.add_str("DF_BASIS_SCF", "");
     /*- Solver maximum iterations
      -*/
     options.add_int("SOLVER_MAXITER",100);
     /*- Solver convergence threshold (max 2-norm). -*/
     options.add_double("SOLVER_CONVERGENCE",1.0E-6);
-    /*- DL Solver number of roots 
+    /*- DL Solver number of roots
      -*/
     options.add_int("SOLVER_N_ROOT",1);
     /*- DL Solver number of guesses
@@ -1121,7 +1160,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- DL Solver number of subspace vectors to collapse to
      -*/
     options.add_int("SOLVER_MIN_SUBSPACE",2);
-    /*- DL Solver maximum number of subspace vectors 
+    /*- DL Solver maximum number of subspace vectors
      -*/
     options.add_int("SOLVER_MAX_SUBSPACE",6);
     /*- DL Solver minimum corrector norm to add to subspace
@@ -1132,13 +1171,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SOLVER_PRECONDITION","JACOBI","SUBSPACE JACOBI NONE");
     /*- Solver type (for interchangeable solvers)
      -*/
-    options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH"); 
+    options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH");
     /*- Solver precondtion max steps
     -*/
     options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
     /*- Solver precondition step type
     -*/
-    options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");   
+    options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");
     /*- Solver residue or eigenvector delta
     -*/
     options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
@@ -1173,6 +1212,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("MP2_SS_SCALE", 1.0/3.0);
+    /*- What algorithm to use for the MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
@@ -2166,7 +2207,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- SUBSECTION Optimization Algorithm -*/
 
       /*- Maximum number of geometry optimization steps -*/
-      options.add_int("GEOM_MAXITER", 20);
+      options.add_int("GEOM_MAXITER", 50);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
@@ -2194,23 +2235,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- SUBSECTION Convergence Control -*/
 
-      /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE 
+      /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE
       or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
-      unless |optking__flexible_g_convergence| is also on. 
+      unless |optking__flexible_g_convergence| is also on.
       See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
       options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
-      /*- Convergence criterion for geometry optmization: maximum force 
+      /*- Convergence criterion for geometry optmization: maximum force
       (internal coordinates, atomic units). -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- Convergence criterion for geometry optmization: rms force 
+      /*- Convergence criterion for geometry optmization: rms force
       (internal coordinates, atomic units). -*/
       options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
       /*- Convergence criterion for geometry optmization: maximum energy change. -*/
       options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-      /*- Convergence criterion for geometry optmization: maximum displacement 
+      /*- Convergence criterion for geometry optmization: maximum displacement
       (internal coordinates, atomic units). -*/
       options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-      /*- Convergence criterion for geometry optmization: rms displacement 
+      /*- Convergence criterion for geometry optmization: rms displacement
       (internal coordinates, atomic units). -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Even if a user-defined threshold is set, allow for normal, flexible convergence criteria -*/
@@ -2259,7 +2300,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", false);
-      /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments? 
+      /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments?
       Otherwise, use $R@@{AB}$. -*/
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- Model Hessian to guess interfragment force constants -*/
@@ -2343,10 +2384,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
-    options.add_double("SOS_SCALE",1.3); 
+    options.add_double("SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
-    options.add_double("SOS_SCALE2",1.2); 
-    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_double("SOS_SCALE2",1.2);
+    /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
@@ -2356,23 +2397,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
+    options.add_str("OPT_METHOD","MSD","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- Do print OMP2 orbital energies? -*/
     options.add_bool("OMP2_ORBS_PRINT",false);
-    /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically. 
-     However, in order to perform geometry optimizations and frequency computations with SCS-OMP2, one needs to set 
+    /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SCS-OMP2, one needs to set
      'DO_SCS' to true -*/
     options.add_bool("DO_SCS",false);
-    /*- Do perform spin-opposite-scaled OMP2 (SOS-OMP2)? In all computation, SOS-OMP2 energy is computed automatically. 
-     However, in order to perform geometry optimizations and frequency computations with SOS-OMP2, one needs to set 
+    /*- Do perform spin-opposite-scaled OMP2 (SOS-OMP2)? In all computation, SOS-OMP2 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SOS-OMP2, one needs to set
      'DO_SOS' to true -*/
     options.add_bool("DO_SOS",false);
     /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
   }
   if (name == "OMP3"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
@@ -2411,34 +2456,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
-    options.add_double("SOS_SCALE",1.3);  
+    options.add_double("SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
-    options.add_double("SOS_SCALE2",1.2);  
+    options.add_double("SOS_SCALE2",1.2);
     /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
-    options.add_double("E3_SCALE",0.25); 
+    options.add_double("E3_SCALE",0.25);
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
-    The INDIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
-    options.add_str("TPDM_ABCD_TYPE","INDIRECT","INDIRECT COMPUTE");
+    options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
+    options.add_str("OPT_METHOD","MSD","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
-    /*- The solver will be used for simultaneous lineer equations. -*/
+    /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- Do print OMP3 orbital energies? -*/
     options.add_bool("OMP3_ORBS_PRINT",false);
-    /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically. 
-     However, in order to perform geometry optimizations and frequency computations with SCS-OMP3, one needs to set 
+    /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SCS-OMP3, one needs to set
      'DO_SCS' to true -*/
     options.add_bool("DO_SCS",false);
-    /*- Do perform spin-opposite-scaled OMP3 (SOS-OMP3)? In all computation, SOS-OMP3 energy is computed automatically. 
-     However, in order to perform geometry optimizations and frequency computations with SOS-OMP3, one needs to set 
+    /*- Do perform spin-opposite-scaled OMP3 (SOS-OMP3)? In all computation, SOS-OMP3 energy is computed automatically.
+     However, in order to perform geometry optimizations and frequency computations with SOS-OMP3, one needs to set
      'DO_SOS' to true -*/
     options.add_bool("DO_SOS",false);
     /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
@@ -2449,6 +2494,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("MP3L_ENERGY",false);
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
@@ -2538,7 +2587,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Same-spin scaling factor for SCS-CEPA. -*/
       options.add_double("CEPA_SCALE_SS",1.13);
       /*- Which coupled-pair method is called?  This parameter is
-      used internally by the python driver.  Changing its value 
+      used internally by the python driver.  Changing its value
       won't have any effect on the procedure. -*/
       options.add_str("CEPA_LEVEL","CEPA0");
       /*- Compute the dipole moment? Note that quadrupole moments
@@ -2549,9 +2598,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       doubles-only computations. -*/
       options.add_bool("CEPA_NO_SINGLES",false);
       /*- Use integral-direct implementation of the (ac|bd) t(ij,cd)
-      contraction? AO integrals will be generated on the fly. The 
-      CEPA iterations will be slower, but the AO->MO integral 
-      transform will be faster, and the out-of-core sort of the 
+      contraction? AO integrals will be generated on the fly. The
+      CEPA iterations will be slower, but the AO->MO integral
+      transform will be faster, and the out-of-core sort of the
       (AC|BD) integrals will be avoided. -*/
       options.add_bool("CEPA_VABCD_DIRECT",false);
   }

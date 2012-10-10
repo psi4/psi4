@@ -1,3 +1,5 @@
+#! CCSD dipole with user-specified basis set
+
 memory 250 mb
 
 molecule h2o {
@@ -12,7 +14,7 @@ set {
   freeze_core false
   onepdm_grid_dump = true
   onepdm_grid_cutoff = 1.0e-15
-  onepdm_grid_stepsize = 0.5
+  onepdm_grid_stepsize = 0.1
 }
 
 basis {
@@ -103,3 +105,4 @@ D 2 1.00
 }
 
 property('ccsd',properties=['dipole'])
+print_variables()

@@ -524,6 +524,10 @@ AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 ACX_MPI()
 ACX_MADNESS()
 ACX_ELEMENTAL()
+ACX_SCALAPACK()
+
+# Make sure we're back in C++
+AC_LANG([C++])
 
 ########
 ## Check for types
@@ -650,15 +654,23 @@ if test "x${have_boost}" == "x0"; then
     AC_SUBST(BOOST_THREAD_LIB)
 fi
 
+PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
-  AC_SUBST(PSICPPFLAGS)
+  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
+#  PSICPPFLAGS='-I. ${BOOST_CPPFLAGS} -I${top_objdir}/include -I${top_srcdir}/include -I${top_srcdir}/src/lib -I${top_objdir}/src/lib ${madinc}'
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
-else
-  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-  AC_SUBST(PSICPPFLAGS)
 fi
+if test "$HAVE_ELEMENTAL" = "1"; then
+  echo "we have elemental			:)"
+  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
+  echo "CPPFLAGS = "
+  echo ${PSICPPFLAGS}
+fi
+#else
+#  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+#fi
+AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
@@ -788,6 +800,9 @@ AX_OPENMP([
     CXXOTH="$CXXOTH $OPENMP_CXXFLAGS"
     LDFLAGS="$LDFLAGS $OPENMP_CXXFLAGS"
 ])
+echo $CXXOTH
+AC_SUBST([CXXOTH])
+AC_SUBST([LDFLAGS])
 
 # Check to see if the compiler supports __builtin_expect and __builtin_prefetch
 AX_BUILTINS()
@@ -835,6 +850,13 @@ case $withval in
      ;;
 esac
 ])
+
+# If compiling on Mac, disable position independent executable.
+case $target_os in
+    darwin*)
+        LDFLAGS="$LDFLAGS -Wl,-no_pie"
+        ;;
+esac
 
 # Adjust the flags dealing with strictness of the compilers.
 # The default is to disable strict language checks.
@@ -968,6 +990,7 @@ AC_CONFIG_FILES([
           tests/dcft3/Makefile
           tests/dcft4/Makefile
           tests/dcft5/Makefile
+          tests/dcft6/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile
@@ -998,16 +1021,20 @@ AC_CONFIG_FILES([
           tests/sapt4/Makefile
           tests/sapt5/Makefile
           tests/ghosts/Makefile
-          tests/dfmp2_1/Makefile
-          tests/dfmp2_2/Makefile
-          tests/dfmp2_3/Makefile
-          tests/pywrap_db1/Makefile
-          tests/pywrap_db2/Makefile
-          tests/pywrap_cbs1/Makefile
-          tests/pywrap_all/Makefile
-          tests/pywrap_alias/Makefile
+          tests/dfmp2-1/Makefile
+          tests/dfmp2-2/Makefile
+          tests/dfmp2-3/Makefile
+          tests/pywrap-db1/Makefile
+          tests/pywrap-db2/Makefile
+          tests/pywrap-cbs1/Makefile
+          tests/pywrap-all/Makefile
+          tests/pywrap-alias/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-basis/Makefile
+          tests/pywrap-db3/Makefile
+          tests/psithon1/Makefile
+          tests/dftd3-energy/Makefile
+          tests/dftd3-grad/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
@@ -1102,9 +1129,13 @@ AC_CONFIG_FILES([
           tests/mints3/Makefile
           tests/mints4/Makefile
           tests/mints5/Makefile
-          tests/omp2_1/Makefile
-          tests/omp3_1/Makefile
-          tests/mp2_1/Makefile
+          tests/omp2-1/Makefile
+          tests/omp2-2/Makefile
+          tests/omp2-3/Makefile
+          tests/omp3-1/Makefile
+          tests/omp3-2/Makefile
+          tests/omp3-3/Makefile
+          tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
           tests/props1/Makefile
@@ -1112,17 +1143,22 @@ AC_CONFIG_FILES([
           tests/props3/Makefile
           tests/dft1/Makefile
           tests/dft1-alt/Makefile
+          tests/dft3/Makefile
           tests/dft-b2plyp/Makefile
           tests/dft-pbe0-2/Makefile
           tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
+          tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
-          tests/docs_psimod/Makefile
-          tests/docs_dft/Makefile
-          tests/docs_bases/Makefile
+          tests/docs-psimod/Makefile
+          tests/docs-dft/Makefile
+          tests/docs-bases/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
+          plugins/backtrans/Makefile
+          plugins/backtrans/backtrans.cc
+          plugins/backtrans/input.dat
           plugins/aointegrals/input.dat
           plugins/aointegrals/aointegrals.cc
           plugins/sointegrals/Makefile

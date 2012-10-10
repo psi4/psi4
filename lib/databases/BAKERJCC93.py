@@ -16,16 +16,28 @@
 
 """
 import re
-import input
+import qcdb
 
 # <<< BAKERJCC93 Database Module >>>
 dbse = 'BAKERJCC93'
 isOS = 'true'
 
 # <<< Database Members >>>
-HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['1_3_5_trisilacyclohexane', '2_hydroxybicyclopentane', 'acetone', 'acetylene', 'allene', 'ammonia', 'benzene', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'hydroxysulphane', 'methylamine', 'neopentane', 'water']
-HRXN_LG = ['1_3_difluorobenzene', '1_3_5_trifluorobenzene', '1_5_difluoronaphthalene', 'ACANIL01', 'ACHTAR10', 'benzaldehyde', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'histidine', 'menthone', 'mesityl_oxide', 'naphthalene', 'pterin']
+HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane',
+    '1_3_difluorobenzene', '1_5_difluoronaphthalene',
+    '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10',
+    'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine',
+    'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol',
+    'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide',
+    'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
+HRXN_SM = ['1_3_5_trisilacyclohexane', '2_hydroxybicyclopentane',
+    'acetone', 'acetylene', 'allene', 'ammonia', 'benzene', 'disilyl_ether',
+    'ethane', 'ethanol', 'furan', 'hydroxysulphane', 'methylamine',
+    'neopentane', 'water']
+HRXN_LG = ['1_3_difluorobenzene', '1_3_5_trifluorobenzene',
+    '1_5_difluoronaphthalene', 'ACANIL01', 'ACHTAR10', 'benzaldehyde',
+    'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'histidine',
+    'menthone', 'mesityl_oxide', 'naphthalene', 'pterin']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -216,9 +228,10 @@ TAGL['%s-%s-reagent'    % (dbse, 'pterin'                )] = ''
 TAGL['%s-%s'            % (dbse, 'water'                 )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'water'                 )] = ''
 
-# <<< Molecule Specifications >>>
-BAKERJCC93_1_3_5_trifluorobenzene = input.process_input("""
-molecule {
+# <<< Geometry Specification Strings >>>
+GEOS = {}
+
+GEOS['%s-%s-reagent' % (dbse, '1_3_5_trifluorobenzene')] = qcdb.Molecule("""
 0 1
 F        4.45124771     2.56992907     0.00000000
 F       -4.45124771     2.56992907     0.00000000
@@ -233,11 +246,9 @@ H        4.04176646    -2.33351496     0.00000000
 H       -4.04176646    -2.33351496     0.00000000
 H        0.00000000     4.66702991     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_1_3_5_trisilacyclohexane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, '1_3_5_trisilacyclohexane')] = qcdb.Molecule("""
 0 1
 Si       2.87562701     1.66024403     0.50009833
 Si      -2.87562701     1.66024403     0.50009833
@@ -258,11 +269,9 @@ H       -2.91112385     1.68073814     3.29599415
 H        0.00000000    -3.36147627     3.29599415
 H        0.00000000    -5.94616795    -0.46837999
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_1_3_difluorobenzene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, '1_3_difluorobenzene')] = qcdb.Molecule("""
 0 1
 F        4.45098629     2.53075455     0.00000000
 F       -4.45098629     2.53075455     0.00000000
@@ -277,11 +286,9 @@ H       -4.04232694    -2.37256182     0.00000000
 H        0.00000000     4.62804882     0.00000000
 H        0.00000000    -4.70730774     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_1_5_difluoronaphthalene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, '1_5_difluoronaphthalene')] = qcdb.Molecule("""
 0 1
 F        5.77442810     0.00000000     0.00000000
 F       -5.77442810     0.00000000     0.00000000
@@ -302,11 +309,9 @@ H       -4.76445952     4.80069021     0.00000000
 H        3.24999844     4.13948522     0.00000000
 H       -3.24999844    -4.13948522     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_2_hydroxybicyclopentane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, '2_hydroxybicyclopentane')] = qcdb.Molecule("""
 0 1
 O        0.00000000     0.00000000     3.97630549
 C        0.61275612     1.71787828    -0.25674160
@@ -323,11 +328,9 @@ H       -3.90122993    -1.54049270    -0.53915310
 H       -0.93405780     0.26002983    -3.74579160
 H        1.51218168    -0.82620025     3.41020482
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_ACANIL01 = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'ACANIL01')] = qcdb.Molecule("""
 0 1
 O        6.74334167     0.00000000     0.00000000
 N        2.75125398    -0.91996681     0.00000000
@@ -349,11 +352,9 @@ H        5.95212032     4.66178191     0.00000000
 H        3.08214744     4.23491124     1.70076220
 H        3.08214744     4.23491124    -1.70076220
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_acetone = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'acetone')] = qcdb.Molecule("""
 0 1
 O        0.00000000     3.46695757     0.00000000
 C        0.00000000     1.14032594     0.00000000
@@ -366,22 +367,18 @@ H       -1.69360304    -1.50630994     2.66984804
 H        1.69360304    -1.50630994    -2.66984804
 H       -1.69360304    -1.50630994    -2.66984804
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_acetylene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'acetylene')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     1.13383600
 C        0.00000000     0.00000000    -1.13383600
 H        0.00000000     0.00000000     3.02356266
 H        0.00000000     0.00000000    -3.02356266
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_ACHTAR10 = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'ACHTAR10')] = qcdb.Molecule("""
 0 1
 O        0.00000000     0.00000000     3.93735249
 O        1.79875939     0.00000000    -0.09531034
@@ -400,11 +397,9 @@ H        5.73529679    -1.04410557     2.94759034
 H        4.08562680    -3.90736002     2.21955987
 H        3.86856770    -2.56921447     5.31306580
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_allene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'allene')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     0.00000000
 C        0.00000000     2.49419295     0.00000000
@@ -414,22 +409,18 @@ H       -1.76772016    -3.51503166     0.00000000
 H        0.00000000     3.51503166     1.76772016
 H        0.00000000     3.51503166    -1.76772016
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_ammonia = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'ammonia')] = qcdb.Molecule("""
 0 1
 N        0.00000000     0.00000000     0.47690250
 H        1.55848945     0.89979432    -0.15896750
 H       -1.55848945     0.89979432    -0.15896750
 H        0.00000000    -1.79958864    -0.15896750
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_benzaldehyde = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'benzaldehyde')] = qcdb.Molecule("""
 0 1
 O        6.11695944     0.00000000     0.00000000
 C       -0.42811838    -2.25953622     0.00000000
@@ -446,11 +437,9 @@ H       -5.40516702     1.77808408     0.00000000
 H       -1.92653663     4.89495992     0.00000000
 H        2.49151439     3.47033786     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_benzene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'benzene')] = qcdb.Molecule("""
 0 1
 C        0.00000000     2.63452745     0.00000000
 C        0.00000000    -2.63452745     0.00000000
@@ -465,11 +454,9 @@ H       -4.04944088     2.33794578     0.00000000
 H        4.04944088    -2.33794578     0.00000000
 H       -4.04944088    -2.33794578     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_benzidine = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'benzidine')] = qcdb.Molecule("""
 0 1
 N        0.00000000     0.00000000     9.17973038
 N        0.00000000     0.00000000    -9.17973038
@@ -498,11 +485,9 @@ H       -1.67837252     0.43031314    10.04483176
 H        1.67837252     0.43031314   -10.04483176
 H       -1.67837252    -0.43031314   -10.04483176
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_caffeine = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'caffeine')] = qcdb.Molecule("""
 0 1
 O       -1.35796495    -4.55968346     0.00000000
 O        6.00359465     0.00000000     0.00000000
@@ -529,12 +514,10 @@ H       -8.34003564    -0.38023773     0.00000000
 H       -6.44634525    -2.62051420     1.68782779
 H       -6.44634525    -2.62051420    -1.68782779
 units bohr
-}
-set { guess gwh }
-""", 0)
+""")
+#set { guess gwh """)
 
-BAKERJCC93_difuropyrazine = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'difuropyrazine')] = qcdb.Molecule("""
 0 1
 O        5.24048162     0.00000000     0.00000000
 O       -5.24048162     0.00000000     0.00000000
@@ -553,11 +536,9 @@ H       -7.52697788    -3.41239127     0.00000000
 H        3.34537092     6.12657010     0.00000000
 H       -3.34537092    -6.12657010     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_dimethylpentane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'dimethylpentane')] = qcdb.Molecule("""
 0 1
 C       -1.90302142     1.79989214    -3.12819161
 C        0.68098191     1.17008149    -1.92744962
@@ -583,11 +564,9 @@ H       -0.60282164    -4.20392129     1.96624261
 H       -2.79329149    -2.82201336    -0.17320237
 H        0.07519864    -4.15853702    -1.30499111
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_disilyl_ether = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'disilyl_ether')] = qcdb.Molecule("""
 0 1
 Si       0.00000000    -0.06571048     3.03636189
 Si       0.00000000    -0.06571048    -3.03636189
@@ -599,11 +578,9 @@ H        0.00000000    -2.19565412    -4.54756839
 H        2.12290049     1.35272566    -3.58475023
 H       -2.12290049     1.35272566    -3.58475023
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_ethane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'ethane')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     1.45478763
 C        0.00000000     0.00000000    -1.45478763
@@ -614,11 +591,9 @@ H       -1.68084455    -0.97043609    -2.14455455
 H        0.00000000    -1.94087219     2.14455455
 H        0.00000000     1.94087219    -2.14455455
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_ethanol = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'ethanol')] = qcdb.Molecule("""
 0 1
 O        2.94951269     0.00000000     0.00000000
 C        0.42864361     0.89070972     0.00000000
@@ -630,11 +605,9 @@ H       -1.36184741    -2.46035674     1.67199009
 H       -1.36184741    -2.46035674    -1.67199009
 H       -3.38002050    -0.38513679     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_furan = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'furan')] = qcdb.Molecule("""
 0 1
 O        0.00000000    -2.71155703     0.00000000
 C        1.30409645     1.35600277     0.00000000
@@ -646,11 +619,9 @@ H       -2.51639050     2.99782755     0.00000000
 H        3.99399875    -1.84934869     0.00000000
 H       -3.99399875    -1.84934869     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_histidine = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'histidine')] = qcdb.Molecule("""
 0 1
 O        3.93683911     0.00000000     5.02858545
 O        0.00000000     0.00000000     6.75548572
@@ -673,22 +644,18 @@ H       -1.09297021    -4.24259361     3.21643716
 H       -1.09919371    -3.74001070     0.16810497
 H        0.98612615     0.24935257     8.25422581
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_hydroxysulphane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'hydroxysulphane')] = qcdb.Molecule("""
 0 1
 S        0.00000000     0.00000000     1.64344454
 O        1.55643788     0.00000000    -0.78417924
 H        0.70878977    -0.98889634    -2.04698233
 H       -2.26522765     0.98889634     1.18771703
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_menthone = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'menthone')] = qcdb.Molecule("""
 0 1
 O        0.00000000     0.00000000     4.83502957
 C       -5.06597212    -1.27592091     0.49885049
@@ -720,11 +687,9 @@ H        4.52277834     5.01677786     0.95132487
 H        1.98900684     4.13531008     2.97264568
 H        1.40402606     4.85096335    -0.25821233
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_mesityl_oxide = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'mesityl_oxide')] = qcdb.Molecule("""
 0 1
 O        4.30492455     0.00000000     0.00000000
 C        0.05024721    -3.82629843     0.00000000
@@ -744,12 +709,10 @@ H        2.56758840     5.33389639     1.69384111
 H        2.56758840     5.33389639    -1.69384111
 H        5.38985873     4.60732325     0.00000000
 units bohr
-}
-set { guess gwh }
-""", 0)
+""")
+#set { guess gwh """)
 
-BAKERJCC93_methylamine = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'methylamine')] = qcdb.Molecule("""
 0 1
 N        1.59169309     0.00000000     0.00000000
 C       -1.10781247    -0.03073718     0.00000000
@@ -759,11 +722,9 @@ H        2.57804913     1.64911594     0.00000000
 H       -1.92979635    -0.95990875     1.69695191
 H       -1.92979635    -0.95990875    -1.69695191
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_naphthalene = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'naphthalene')] = qcdb.Molecule("""
 0 1
 C        1.31500993     4.56625993     0.00000000
 C       -1.31500993     4.56625993     0.00000000
@@ -784,11 +745,9 @@ H       -4.69449351     2.36375141     0.00000000
 H        4.69449351    -2.36375141     0.00000000
 H       -4.69449351    -2.36375141     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_neopentane = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'neopentane')] = qcdb.Molecule("""
 0 1
 C        0.00000000     0.00000000     0.00000000
 C        1.68781269    -1.68781269     1.68781269
@@ -808,11 +767,9 @@ H       -2.93275937     2.93275937     0.55961452
 H       -2.93275937    -2.93275937    -0.55961452
 H        2.93275937     2.93275937    -0.55961452
 units bohr
-}
-""", 0)
+""")
 
-BAKERJCC93_pterin = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'pterin')] = qcdb.Molecule("""
 0 1
 O        5.40068710     0.00000000     0.00000000
 N        1.67450469    -4.01224809     0.00000000
@@ -832,25 +789,50 @@ H        3.70204141     4.43045951     0.00000000
 H       -2.96601438     6.68621706     0.00000000
 H        0.40817199     7.60076128     0.00000000
 units bohr
-}
-set { guess gwh }
-""", 0)
+""")
+#set { guess gwh """)
 
-BAKERJCC93_water = input.process_input("""
-molecule {
+GEOS['%s-%s-reagent' % (dbse, 'water')] = qcdb.Molecule("""
 0 1
 O        0.00000000    -0.69801390     0.00000000
 H        1.48150016     0.34900695     0.00000000
 H       -1.48150016     0.34900695     0.00000000
 units bohr
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
-GEOS = {}
-for rxn in HRXN:
-    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+#########################################################################
 
-        molname = rxnpattern.match(rgt)
-        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-1_3_5_trifluorobenzene-reagent'  ] =     422.92396136
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-1_3_5_trisilacyclohexane-reagent'] =     458.36587183
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-1_3_difluorobenzene-reagent'     ] =     342.91092587
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-1_5_difluoronaphthalene-reagent' ] =     646.43123032
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-2_hydroxybicyclopentane-reagent' ] =     242.19428832
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-ACANIL01-reagent'                ] =     482.21477925
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-acetone-reagent'                 ] =     117.95076939
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-acetylene-reagent'               ] =      25.27722466
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-ACHTAR10-reagent'                ] =     308.80224696
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-allene-reagent'                  ] =      58.87417679
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-ammonia-reagent'                 ] =      11.96515487
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-benzaldehyde-reagent'            ] =     318.78609908
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-benzene-reagent'                 ] =     203.68596051
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-benzidine-reagent'               ] =     792.45947768
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-caffeine-reagent'                ] =     906.96430213
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-difuropyrazine-reagent'          ] =     627.88695998
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-dimethylpentane-reagent'         ] =     329.98386705
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-disilyl_ether-reagent'           ] =     159.72016132
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-ethane-reagent'                  ] =      42.23178002
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-ethanol-reagent'                 ] =      81.36264622
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-furan-reagent'                   ] =     160.13552808
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-histidine-reagent'               ] =     593.28835805
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-hydroxysulphane-reagent'         ] =      61.30095938
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-menthone-reagent'                ] =     661.81731171
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-mesityl_oxide-reagent'           ] =     286.76670258
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-methylamine-reagent'             ] =      42.02150992
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-naphthalene-reagent'             ] =     460.06217417
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-neopentane-reagent'              ] =     196.29453370
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-pterin-reagent'                  ] =     650.63929481
+DATA['NUCLEAR REPULSION ENERGY']['BAKERJCC93-water-reagent'                   ] =       9.15711319

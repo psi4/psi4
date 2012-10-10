@@ -5,6 +5,7 @@
 
 // Handy mints timer macros, requires libqt to be included
 #ifdef MINTS_TIMER
+#   include <libqt/qt.h>
 #   define mints_timer_on(a) timer_on((a));
 #   define mints_timer_off(a) timer_off((a));
 #else
@@ -44,6 +45,7 @@ class SOBasisSet;
 class SphericalTransform;
 class Vector;
 class Vector3;
+class Wavefunction;
 
 // objects from other libraries
 class Chkpt;

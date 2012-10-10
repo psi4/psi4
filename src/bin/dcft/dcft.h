@@ -48,6 +48,7 @@ protected:
     void build_lambda();
     void init();
     void compute_dcft_energy();
+    void compute_cepa0_energy();
     void update_lambda_from_residual();
     void compute_scf_energy();
     void mp2_guess();
@@ -115,8 +116,12 @@ protected:
     void update_cumulant_and_orbitals();
     void run_davidson();
     void davidson_guess();
-    bool augment_b(double *vec, double tol);
+    // Exact Tau
+    void refine_tau();
+    void compute_F_intermediate();
+    void form_density_weighted_fock();
 
+    bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update

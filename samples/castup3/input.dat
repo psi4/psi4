@@ -22,8 +22,14 @@ energy('scf')
 clean()
 
 set scf scf_type pk
+set basis_guess on
+set df_basis_guess yes
 banner('ITEM 2')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 
 set scf scf_type df
@@ -32,8 +38,14 @@ energy('scf')
 clean()
 
 set scf scf_type df
+set basis_guess true
+set df_basis_guess true
 banner('ITEM 4')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 
 set scf scf_type pk
@@ -43,9 +55,15 @@ energy('scf')
 clean()
 
 set scf scf_type pk
+set basis_guess true
+set df_basis_guess true
 set puream true
 banner('ITEM 6')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 
 set scf scf_type df
@@ -55,9 +73,15 @@ energy('scf')
 clean()
 
 set scf scf_type df
+set basis_guess true
+set df_basis_guess true
 set puream true
 banner('ITEM 8')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 
 set scf scf_type pk
@@ -67,9 +91,15 @@ energy('scf')
 clean()
 
 set scf scf_type pk
+set basis_guess true
+set df_basis_guess true
 set puream false
 banner('ITEM 10')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 
 set scf scf_type df
@@ -79,8 +109,14 @@ energy('scf')
 clean()
 
 set scf scf_type df
+set basis_guess true
+set df_basis_guess true
 set puream false
 banner('ITEM 12')
-energy('scf', cast_up=True, cast_up_df=True)
+energy('scf')
+set basis_guess false
+set df_basis_guess false
+revoke_local_option_changed('SCF', 'BASIS_GUESS')
+revoke_local_option_changed('SCF', 'DF_BASIS_GUESS')
 clean()
 

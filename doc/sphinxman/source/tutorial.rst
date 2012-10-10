@@ -41,10 +41,10 @@ a final restricted Hartree--Fock energy in a section like this::
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02665366589162
+  @RHF Final Energy:   -76.02663273410671
 
-By default, the energy should be converged to about :math:`1.0 \times 10^{-8}`, so agreement
-is only expected for about the first 8 digits after the decimal.  If the
+By default, the energy should be converged to about :math:`1.0 \times 10^{-6}`, so agreement
+is only expected for about the first 6 digits after the decimal.  If the
 computation does not complete, there is probably a problem with the
 compilation or installation of the program (see the installation
 instructions in Sec. :ref:`sec:installFile`).

@@ -6,7 +6,6 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 import PsiMod
 import re
 import os
-import input
 import math
 import warnings
 import pickle
@@ -142,10 +141,8 @@ def auto_fragments(name, **kwargs):
         new_geom = new_geom + F[j].lstrip() + """\n"""
     new_geom = new_geom + """units angstrom\n"""
 
-    new_mol = PsiMod.Molecule.create_molecule_from_string(new_geom)
-    new_mol.update_geometry()
+    new_mol = geometry(new_geom)
     new_mol.print_out()
-    activate(new_mol)
     PsiMod.print_out("Exiting auto_fragments\n")
 
 #######################
@@ -619,7 +616,7 @@ def cp(name, **kwargs):
     if (func is db):
         raise ValidationError('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
 
-    if 'check_bsse' in kwargs and input.yes.match(str(kwargs['check_bsse'])):
+    if 'check_bsse' in kwargs and yes.match(str(kwargs['check_bsse'])):
         check_bsse = True
     else:
         check_bsse = False
@@ -943,6 +940,10 @@ def database(name, db_name, **kwargs):
         BIND = database.BIND
         TAGL = database.TAGL
         GEOS = database.GEOS
+        try:
+            DATA = database.DATA
+        except AttributeError:
+            DATA = {}
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_global_option('BASIS')
@@ -974,7 +975,7 @@ def database(name, db_name, **kwargs):
         except AttributeError:
             pass
         else:
-            if input.yes.match(str(database.isOS)):
+            if yes.match(str(database.isOS)):
                 openshell_override = 1
                 PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF/UKS as needed.\n' % (db_name))
 
@@ -985,17 +986,14 @@ def database(name, db_name, **kwargs):
         db_symm = kwargs['symm']
 
     symmetry_override = 0
-    if input.no.match(str(db_symm)):
+    if no.match(str(db_symm)):
         symmetry_override = 1
-    elif input.yes.match(str(db_symm)):
+    elif yes.match(str(db_symm)):
         pass
     else:
         raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
-    #db_mode = 'continuous'
-    #if(kwargs.has_key('mode')):
-    #    db_mode = kwargs['mode']
     if not('db_mode' in kwargs):
         if ('mode' in kwargs):
             kwargs['db_mode'] = kwargs['mode']
@@ -1021,14 +1019,14 @@ def database(name, db_name, **kwargs):
     if 'cp' in kwargs:
         db_cp = kwargs['cp']
 
-    if input.yes.match(str(db_cp)):
+    if yes.match(str(db_cp)):
         try:
             database.ACTV_CP
         except AttributeError:
             raise ValidationError('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
             ACTV = database.ACTV_CP
-    elif input.no.match(str(db_cp)):
+    elif no.match(str(db_cp)):
         pass
     else:
         raise ValidationError('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
@@ -1038,8 +1036,8 @@ def database(name, db_name, **kwargs):
     if 'rlxd' in kwargs:
         db_rlxd = kwargs['rlxd']
 
-    if input.yes.match(str(db_rlxd)):
-        if input.yes.match(str(db_cp)):
+    if yes.match(str(db_rlxd)):
+        if yes.match(str(db_cp)):
             try:
                 database.ACTV_CPRLX
                 database.RXNM_CPRLX
@@ -1048,14 +1046,14 @@ def database(name, db_name, **kwargs):
             else:
                 ACTV = database.ACTV_CPRLX
                 RXNM = database.RXNM_CPRLX
-        elif input.no.match(str(db_cp)):
+        elif no.match(str(db_cp)):
             try:
                 database.ACTV_RLX
             except AttributeError:
                 raise ValidationError('Deformation correction mode \'yes\' invalid for database %s.' % (db_name))
             else:
                 ACTV = database.ACTV_RLX
-    elif input.no.match(str(db_rlxd)):
+    elif no.match(str(db_rlxd)):
         pass
     else:
         raise ValidationError('Deformation correction mode \'%s\' not valid.' % (db_rlxd))
@@ -1065,9 +1063,9 @@ def database(name, db_name, **kwargs):
     if 'zpe' in kwargs:
         db_zpe = kwargs['zpe']
 
-    if input.yes.match(str(db_zpe)):
+    if yes.match(str(db_zpe)):
         raise ValidationError('Zero-point-correction mode \'yes\' not yet implemented.')
-    elif input.no.match(str(db_zpe)):
+    elif no.match(str(db_zpe)):
         pass
     else:
         raise ValidationError('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
@@ -1187,7 +1185,7 @@ def database(name, db_name, **kwargs):
         VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
-        exec(GEOS[rgt])
+        exec(format_molecule_for_input(GEOS[rgt]))
         molecule = PsiMod.get_active_molecule()
 
         # build string of title banner
@@ -1251,12 +1249,18 @@ def database(name, db_name, **kwargs):
         # reap: opens individual reagent output file, collects results into a dictionary
         if (db_mode.lower() == 'continuous'):
             exec(banners)
-            exec(GEOS[rgt])
+            exec(format_molecule_for_input(GEOS[rgt]))
             exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             PsiMod.set_variable('NATOM', molecule.natom())
-            ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
+            PsiMod.set_variable('NUCLEAR REPULSION ENERGY', molecule.nuclear_repulsion_energy())
+            if re.match(r'^verify', lowername):
+                compare_values(DATA['NUCLEAR REPULSION ENERGY'][rgt], PsiMod.get_variable('NUCLEAR REPULSION ENERGY'), 
+                    4, '%s  %.4f' % (rgt, PsiMod.get_variable('NUCLEAR REPULSION ENERGY')))
+                ERGT[rgt] = 7.0
+            else:
+                ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
             exec(actives)
@@ -1269,7 +1273,8 @@ def database(name, db_name, **kwargs):
             freagent = open('%s.in' % (rgt), 'w')
             freagent.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
             freagent.write(banners)
-            freagent.write(GEOS[rgt])
+            freagent.write(format_molecule_for_input(GEOS[rgt]))
+
             freagent.write(commands)
             freagent.write('''\npickle_kw = ("""''')
             pickle.dump(kwargs, freagent)
@@ -1531,6 +1536,9 @@ def complete_basis_set(name, **kwargs):
 
        - Need to add more extrapolation schemes
 
+       - Must specify conventional or density-fitted mp2 through kwargs 
+         with value 'conv-mp2' or 'df-mp2', not with c-side option.
+
     As represented in the equation below, a CBS energy method is defined in four
     sequential stages (scf, corl, delta, delta2) covering treatment of the
     reference total energy, the correlation energy, a delta correction to the
@@ -1683,13 +1691,13 @@ def complete_basis_set(name, **kwargs):
     >>> cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
     >>> # [5] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+    >>> cbs('conv-mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
 
     >>> # [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+    >>> cbs('conv-mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
 
     >>> # [7] cbs() coupled with database()
-    >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
+    >>> database('conv-mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
     """
     lowername = name.lower()
@@ -1716,24 +1724,24 @@ def complete_basis_set(name, **kwargs):
     VARH = {}
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
     VARH['df-scf'] = {      'scftot': 'SCF TOTAL ENERGY'}
-    VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY'}
+    VARH['conv-mp2'] = {    'scftot': 'SCF TOTAL ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY'}
     VARH['df-mp2'] = {      'scftot': 'SCF TOTAL ENERGY',
                         'df-mp2corl': 'DF-MP2 CORRELATION ENERGY'}
     VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc2corl': 'CC2 CORRELATION ENERGY'}
     VARH['ccsd'] = {        'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY'}
     VARH['bccd'] = {        'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'bccdcorl': 'CCSD CORRELATION ENERGY'}
     VARH['cc3'] = {         'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc3corl': 'CC3 CORRELATION ENERGY'}
     VARH['ccsd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
-                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                      'conv-mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
@@ -1799,7 +1807,7 @@ def complete_basis_set(name, **kwargs):
         if 'delta_wfn_lesser' in kwargs:
             cbs_delta_wfn_lesser = kwargs['delta_wfn_lesser'].lower()
         else:
-            cbs_delta_wfn_lesser = 'mp2'
+            cbs_delta_wfn_lesser = 'conv-mp2'
         if not (cbs_delta_wfn_lesser in VARH.keys()):
             raise ValidationError('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
 
@@ -1813,7 +1821,7 @@ def complete_basis_set(name, **kwargs):
         if 'delta2_wfn_lesser' in kwargs:
             cbs_delta2_wfn_lesser = kwargs['delta2_wfn_lesser'].lower()
         else:
-            cbs_delta2_wfn_lesser = 'mp2'
+            cbs_delta2_wfn_lesser = 'conv-mp2'
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
             raise ValidationError('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 

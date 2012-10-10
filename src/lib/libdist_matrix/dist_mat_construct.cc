@@ -22,7 +22,7 @@ namespace psi {
     }
 
     // constructor
-    Distributed_Matrix::Distributed_Matrix(const process_grid<2> &pgrid,
+    Distributed_Matrix::Distributed_Matrix(const process_grid &pgrid,
                                            const int &nrows, const int &ncols,
                                            const int &tile_sz,
                                            const std::string &name) :
@@ -48,7 +48,7 @@ namespace psi {
     }
 
     // initialize the distributed matrix
-    void Distributed_Matrix::initialize(const process_grid<2> &pgrid,
+    void Distributed_Matrix::initialize(const process_grid &pgrid,
                                          const int &nrows, const int &ncols,
                                          const int &tile_sz,
                                          const std::string &name)
