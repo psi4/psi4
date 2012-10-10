@@ -1355,24 +1355,28 @@ void Molecule::print_in_input_format() const
 {
     if (WorldComm->me() == 0) {
         if (nallatom()) {
-            // It's only worth echoing these if the user either input some variables,
-            // or they used a Z matrix for input
-            if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
-                    || geometry_variables_.size()){
-                fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
-                        units_==Angstrom ? "Angstrom" : "bohr");
-                for(int i = 0; i < nallatom(); ++i){
-                    full_atoms_[i]->print_in_input_format();
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+
+            for(int i = 0; i < nallatom(); ++i){
+                if (fZ(i) || (fsymbol(i) == "X")) {
+                    fprintf(outfile, "    %-8s", fsymbol(i).c_str());
+                } else {
+                    std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
+                    fprintf(outfile, "    %-8s", stmp.c_str());
                 }
-                fprintf(outfile,"\n");
-                fflush(outfile);
-                if(geometry_variables_.size()){
-                    std::map<std::string, double>::const_iterator iter;
-                    for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
-                        fprintf(outfile, "\t%-10s=%16.10f\n", iter->first.c_str(), iter->second);
-                    }
-                    fprintf(outfile, "\n");
+                full_atoms_[i]->print_in_input_format();
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+            if(geometry_variables_.size()){
+                std::map<std::string, double>::const_iterator iter;
+                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                    fprintf(outfile, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
                 }
+                fprintf(outfile, "\n");
             }
         }
     }

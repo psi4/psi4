@@ -21,6 +21,7 @@ install_inc:: $(DEPENDINCLUDE)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libmints
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libmints
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
+

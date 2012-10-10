@@ -48,8 +48,10 @@ protected:
     void get_moinfo();
     void title();
     void semi_canonic();
-    void trans_ints();
-    void denominators();
+    void trans_ints_rhf();
+    void trans_ints_uhf();
+    void denominators_rhf();
+    void denominators_uhf();
     void ref_energy();
     void Fockmo_alpha();
     void Fockmo_beta();
@@ -121,7 +123,7 @@ protected:
      double Ecorr;
      double EcorrL;
      double Ecorrnew;
-     double Emp2_adm;
+     double Emp2_rdm;
      double Escsmp2;
      double Escsmp2BB;
      double Escsmp2AA;
@@ -201,7 +203,8 @@ protected:
      string do_sos;		// Spin-Opposite-Scaling
      string write_mo_coeff;	// Write CmoA to CmoA.psi and CmoB to CmoB.psi
      string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
-     string swap_mo;		// Swap phi_i with phi_j
+     string scs_type_;		
+     string sos_type_;		
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -288,6 +291,7 @@ protected:
      SharedMatrix FsoB;
      SharedMatrix FockA;
      SharedMatrix FockB;
+     SharedMatrix GFock;
      SharedMatrix GFockA;
      SharedMatrix GFockB;
      SharedMatrix UorbA;
@@ -298,12 +302,16 @@ protected:
      SharedMatrix KorbB;
      SharedMatrix KsqrA;
      SharedMatrix KsqrB;
+     SharedMatrix HG1;
      SharedMatrix HG1A;
      SharedMatrix HG1B;
+     SharedMatrix gamma1corr;
      SharedMatrix gamma1corrA;
      SharedMatrix gamma1corrB;
+     SharedMatrix g1symm;
      SharedMatrix g1symmA;
      SharedMatrix g1symmB;
+     SharedMatrix Worb;
      SharedMatrix WorbA;
      SharedMatrix WorbB;
      SharedMatrix HCA;

@@ -38,10 +38,36 @@ namespace psi{ namespace omp3wave{
   
 void OMP3Wave::W_1st_order()
 {   
+
      dpdbuf4 K, W;
      
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
      psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD);
+
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+    // W_mbej => W(me,jb) = <mb|ej> = (me|jb)
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    dpd_buf4_copy(&K, PSIF_OMP3_DPD, "W_1 (OV|OV)");
+    dpd_buf4_close(&K);
+    
+    // W_mbje => W'(me,jb) = <mb|je> = <me|jb>
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    dpd_buf4_copy(&K, PSIF_OMP3_DPD, "W_1 <OV|OV>");
+    dpd_buf4_close(&K);
+    
+}// end if (reference == "RHF") 
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
+
      
     /*
     // W_MNIJ = <MN||IJ>
@@ -133,13 +159,6 @@ void OMP3Wave::W_1st_order()
     dpd_buf4_close(&K);
     dpd_buf4_close(&W);    
     
-    //Print 
-    if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "W_1 (OV|OV)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
-    }
     
     // W_mbej => W(me,jb) = <mb||ej> = (me|jb) - <me|jb>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
@@ -154,27 +173,12 @@ void OMP3Wave::W_1st_order()
     dpd_buf4_close(&K);
     dpd_buf4_close(&W);
     
-    //Print 
-    if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "W_1 (ov|ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
-    }
     
     // W_MbEj => W(ME,jb) = <Mb||Ej> = (ME|jb)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
     dpd_buf4_copy(&K, PSIF_OMP3_DPD, "W_1 (OV|ov)");
     dpd_buf4_close(&K);
-    
-    //Print 
-    if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                  ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
-    }
     
     
     // W_MbeJ => W(Me,Jb) = <Mb||eJ> = -(MJ|be)
@@ -187,14 +191,6 @@ void OMP3Wave::W_1st_order()
     dpd_buf4_scm(&W, -1.0);
     dpd_buf4_close(&W);
     
-    //Print 
-    if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,v]"), ID("[O,v]"),
-                  ID("[O,v]"), ID("[O,v]"), 0, "W_1 (Ov|Ov)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
-    }
-      
     
     // W_mBEj => W(mE,jB) = <mB||Ej> = -(BE|mj)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,o]"),
@@ -206,13 +202,6 @@ void OMP3Wave::W_1st_order()
     dpd_buf4_scm(&W, -1.0);
     dpd_buf4_close(&W);
     
-    //Print 
-    if (print_ > 3) {
-      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,V]"), ID("[o,V]"),
-                  ID("[o,V]"), ID("[o,V]"), 0, "W_1 (oV|oV)");
-      dpd_buf4_print(&W, outfile, 1);
-      dpd_buf4_close(&W);
-    }
     
     // it is unnecessary for omp3, but i will create it so that can use DPD with OOC
     // W_mBeJ => W(me,JB) = <mB||eJ> = (JB|me) = W(JB,me) = W_JeBm
@@ -221,7 +210,37 @@ void OMP3Wave::W_1st_order()
     dpd_buf4_sort(&W, PSIF_OMP3_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "W_1 (ov|OV)");
     dpd_buf4_close(&W);
     
+    //Print 
+    if (print_ > 3) {
+      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "W_1 (OV|OV)");
+      dpd_buf4_print(&W, outfile, 1);
+      dpd_buf4_close(&W);
+
+      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "W_1 (ov|ov)");
+      dpd_buf4_print(&W, outfile, 1);
+      dpd_buf4_close(&W);
+
+      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                  ID("[O,V]"), ID("[o,v]"), 0, "W_1 (OV|ov)");
+      dpd_buf4_print(&W, outfile, 1);
+      dpd_buf4_close(&W);
+
+      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+                  ID("[O,v]"), ID("[O,v]"), 0, "W_1 (Ov|Ov)");
+      dpd_buf4_print(&W, outfile, 1);
+      dpd_buf4_close(&W);
+
+      dpd_buf4_init(&W, PSIF_OMP3_DPD, 0, ID("[o,V]"), ID("[o,V]"),
+                  ID("[o,V]"), ID("[o,V]"), 0, "W_1 (oV|oV)");
+      dpd_buf4_print(&W, outfile, 1);
+      dpd_buf4_close(&W);
+    }
     
+
+}// end if (reference == "UHF") 
+
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP3_DPD, 1);
 

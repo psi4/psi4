@@ -41,6 +41,13 @@ desires to see or modify the internal coordinates being used, then one can set
 definitions are provided in the file named "intco.dat".  See the :ref:`sec:optkingExamples`
 section for more detail.
 
+.. warning:: For the present, file ``intco.dat`` is lodged in the submission
+   directory and defines the internal coordinates for an optimization.
+   Thus, it is unsafe to run multiple optimizations from a single
+   directory. Also, ``intco.dat`` can linger, so, unless you've
+   deliberately constructed it, be sure to clear it out before starting a
+   new optimization.
+
 The ongoing development of optking is providing for unique treatment of
 coordinates which connect distinct molecular fragments.  Thus, several keywords
 relate to "interfragment modes", though many of these capabilities are

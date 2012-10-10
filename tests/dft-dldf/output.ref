@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta2+ Driver
 
-               Git: Rev 90242fffbb26f67d308d4eda80670ae1909d397f
+               Git: Rev 189d2a088ff48a7ae7856d8ee182965f824a4556
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  22628
+    Process ID:  31232
     PSI4DATADIR: /theoryfs2/ds/cook/psi4_23JULY2012/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -44,6 +44,8 @@ memory 500 mb
 
 set basis aug-cc-pvdz
 set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
 
 edft = energy('dldf+d')
 val = -153.8044099603441168
@@ -65,15 +67,15 @@ clean()
 No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
 
-*** tstart() called on ds5
-*** at Thu Aug  9 22:37:48 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:36:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -212,8 +214,8 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               357
     Algorithm:                Core
     Integral Cache:           NONE
@@ -239,19 +241,19 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
                         Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:  -138.74042095529472   -2.14385e+01   0.00000e+00 
-   @RKS iter   2:  -132.12779958757449    6.61262e+00   7.50361e-01 DIIS
-   @RKS iter   3:  -152.28054128263699   -2.01527e+01   7.49345e-01 DIIS
-   @RKS iter   4:  -153.41657741204691   -1.13604e+00   8.48359e-03 DIIS
-   @RKS iter   5:  -153.78498324160978   -3.68406e-01   7.16296e-03 DIIS
-   @RKS iter   6:  -153.80168916638715   -1.67059e-02   2.12454e-03 DIIS
-   @RKS iter   7:  -153.80423978179985   -2.55062e-03   5.84862e-04 DIIS
-   @RKS iter   8:  -153.80439834938684   -1.58568e-04   1.30601e-04 DIIS
-   @RKS iter   9:  -153.80440986915676   -1.15198e-05   4.57702e-05 DIIS
-   @RKS iter  10:  -153.80440995789641   -8.87397e-08   4.76853e-06 DIIS
-   @RKS iter  11:  -153.80440996012342   -2.22701e-09   1.01307e-06 DIIS
-   @RKS iter  12:  -153.80440996034085   -2.17426e-10   2.36478e-07 DIIS
-   @RKS iter  13:  -153.80440996034415   -3.29692e-12   3.08275e-08 DIIS
+   @RKS iter   1:  -138.74042095529973   -2.14385e+01   0.00000e+00 
+   @RKS iter   2:  -132.12779958793379    6.61262e+00   7.50361e-01 DIIS
+   @RKS iter   3:  -152.28054128229010   -2.01527e+01   7.49345e-01 DIIS
+   @RKS iter   4:  -153.41657741186293   -1.13604e+00   8.48359e-03 DIIS
+   @RKS iter   5:  -153.78498324166716   -3.68406e-01   7.16296e-03 DIIS
+   @RKS iter   6:  -153.80168916638783   -1.67059e-02   2.12454e-03 DIIS
+   @RKS iter   7:  -153.80423978180235   -2.55062e-03   5.84862e-04 DIIS
+   @RKS iter   8:  -153.80439834938963   -1.58568e-04   1.30601e-04 DIIS
+   @RKS iter   9:  -153.80440986915980   -1.15198e-05   4.57702e-05 DIIS
+   @RKS iter  10:  -153.80440995789920   -8.87394e-08   4.76853e-06 DIIS
+   @RKS iter  11:  -153.80440996012675   -2.22755e-09   1.01307e-06 DIIS
+   @RKS iter  12:  -153.80440996034361   -2.16858e-10   2.36478e-07 DIIS
+   @RKS iter  13:  -153.80440996034693   -3.32534e-12   3.08275e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -298,17 +300,20 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
   Energy converged.
 
-  @RKS Final Energy:  -153.80440996034415
+  @RKS Final Energy:  -153.80440996034693
 
    => Energetics <=
 
     Nuclear Repulsion Energy =         36.6628478527552986
-    One-Electron Energy =            -282.6716139917752457
-    Two-Electron Energy =             100.8239547472991120
-    DFT Functional Energy =            -8.6159559530367904
+    One-Electron Energy =            -282.6716139917784858
+    Two-Electron Energy =             100.8239547472995667
+    DFT Functional Energy =            -8.6159559530367940
     Empirical Dispersion Energy =      -0.0036426155864924
-    Total Energy =                   -153.8044099603441168
+    Total Energy =                   -153.8044099603469022
 
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
@@ -326,28 +331,28 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds5 at Thu Aug  9 22:38:51 2012
+*** tstop() called on ds4 at Thu Oct  4 15:39:34 2012
 Module time:
-	user time   =     224.63 seconds =       3.74 minutes
-	system time =       6.26 seconds =       0.10 minutes
-	total time  =         63 seconds =       1.05 minutes
+	user time   =     303.10 seconds =       5.05 minutes
+	system time =       3.90 seconds =       0.07 minutes
+	total time  =        163 seconds =       2.72 minutes
 Total time:
-	user time   =     224.63 seconds =       3.74 minutes
-	system time =       6.26 seconds =       0.10 minutes
-	total time  =         63 seconds =       1.05 minutes
+	user time   =     303.10 seconds =       5.05 minutes
+	system time =       3.90 seconds =       0.07 minutes
+	total time  =        163 seconds =       2.72 minutes
 
 No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
 
-*** tstart() called on ds5
-*** at Thu Aug  9 22:38:51 2012
+*** tstart() called on ds4
+*** at Thu Oct  4 15:39:34 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -486,8 +491,8 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory (MB):               357
     Algorithm:                Core
     Integral Cache:           NONE
@@ -513,19 +518,19 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
                         Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:  -138.74066388861110   -2.14388e+01   0.00000e+00 
-   @RKS iter   2:  -132.12804252089086    6.61262e+00   7.50361e-01 DIIS
-   @RKS iter   3:  -152.28078421595336   -2.01527e+01   7.49345e-01 DIIS
-   @RKS iter   4:  -153.41682034536328   -1.13604e+00   8.48359e-03 DIIS
-   @RKS iter   5:  -153.78522617492615   -3.68406e-01   7.16296e-03 DIIS
-   @RKS iter   6:  -153.80193209970352   -1.67059e-02   2.12454e-03 DIIS
-   @RKS iter   7:  -153.80448271511622   -2.55062e-03   5.84862e-04 DIIS
-   @RKS iter   8:  -153.80464128270322   -1.58568e-04   1.30601e-04 DIIS
-   @RKS iter   9:  -153.80465280247313   -1.15198e-05   4.57702e-05 DIIS
-   @RKS iter  10:  -153.80465289121278   -8.87397e-08   4.76853e-06 DIIS
-   @RKS iter  11:  -153.80465289343979   -2.22701e-09   1.01307e-06 DIIS
-   @RKS iter  12:  -153.80465289365722   -2.17426e-10   2.36478e-07 DIIS
-   @RKS iter  13:  -153.80465289366052   -3.29692e-12   3.08275e-08 DIIS
+   @RKS iter   1:  -138.74066388861610   -2.14388e+01   0.00000e+00 
+   @RKS iter   2:  -132.12804252125017    6.61262e+00   7.50361e-01 DIIS
+   @RKS iter   3:  -152.28078421560647   -2.01527e+01   7.49345e-01 DIIS
+   @RKS iter   4:  -153.41682034517930   -1.13604e+00   8.48359e-03 DIIS
+   @RKS iter   5:  -153.78522617498353   -3.68406e-01   7.16296e-03 DIIS
+   @RKS iter   6:  -153.80193209970420   -1.67059e-02   2.12454e-03 DIIS
+   @RKS iter   7:  -153.80448271511872   -2.55062e-03   5.84862e-04 DIIS
+   @RKS iter   8:  -153.80464128270600   -1.58568e-04   1.30601e-04 DIIS
+   @RKS iter   9:  -153.80465280247617   -1.15198e-05   4.57702e-05 DIIS
+   @RKS iter  10:  -153.80465289121557   -8.87394e-08   4.76853e-06 DIIS
+   @RKS iter  11:  -153.80465289344312   -2.22755e-09   1.01307e-06 DIIS
+   @RKS iter  12:  -153.80465289365998   -2.16858e-10   2.36478e-07 DIIS
+   @RKS iter  13:  -153.80465289366330   -3.32534e-12   3.08275e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -572,17 +577,20 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
   Energy converged.
 
-  @RKS Final Energy:  -153.80465289366052
+  @RKS Final Energy:  -153.80465289366330
 
    => Energetics <=
 
     Nuclear Repulsion Energy =         36.6628478527552986
-    One-Electron Energy =            -282.6716139917752457
-    Two-Electron Energy =             100.8239547472991120
-    DFT Functional Energy =            -8.6159559530367904
+    One-Electron Energy =            -282.6716139917784858
+    Two-Electron Energy =             100.8239547472995667
+    DFT Functional Energy =            -8.6159559530367940
     Empirical Dispersion Energy =      -0.0038855489028651
-    Total Energy =                   -153.8046528936604886
+    Total Energy =                   -153.8046528936632740
 
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
@@ -600,14 +608,14 @@ No DF_BASIS_SCF auxiliary basis selected, defaulting to aug-cc-pvdz-jkfit
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds5 at Thu Aug  9 22:39:57 2012
+*** tstop() called on ds4 at Thu Oct  4 15:42:28 2012
 Module time:
-	user time   =     225.53 seconds =       3.76 minutes
-	system time =       6.50 seconds =       0.11 minutes
-	total time  =         66 seconds =       1.10 minutes
+	user time   =     322.51 seconds =       5.38 minutes
+	system time =       3.93 seconds =       0.07 minutes
+	total time  =        174 seconds =       2.90 minutes
 Total time:
-	user time   =     450.20 seconds =       7.50 minutes
-	system time =      12.76 seconds =       0.21 minutes
-	total time  =        129 seconds =       2.15 minutes
+	user time   =     625.66 seconds =      10.43 minutes
+	system time =       7.84 seconds =       0.13 minutes
+	total time  =        337 seconds =       5.62 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -33,7 +33,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
-#include "pkintegrals.h"
 
 #include "hf.h"
 
@@ -1702,6 +1701,19 @@ double HF::compute_energy()
             if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["SCF DIPOLE X"] =
+//  Process::environment.globals["SCF DIPOLE Y"] =
+//  Process::environment.globals["SCF DIPOLE Z"] =
+//  Process::environment.globals["SCF QUADRUPOLE XX"] =
+//  Process::environment.globals["SCF QUADRUPOLE XY"] =
+//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE YY"] =
+//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
+
         }
 
         save_information();
@@ -1741,28 +1753,34 @@ double HF::compute_energy()
 void HF::print_energies()
 {
     fprintf(outfile, "   => Energetics <=\n\n");
-    fprintf(outfile, "    Nuclear Repulsion Energy =    %24.16f\n", energies_["Nuclear"]);
-    fprintf(outfile, "    One-Electron Energy =         %24.16f\n", energies_["One-Electron"]);
-    fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
-    fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
-    fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
-    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + 
+    fprintf(outfile, "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
+    fprintf(outfile, "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
+    fprintf(outfile, "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
+    fprintf(outfile, "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
+    fprintf(outfile, "    Total Energy =                    %24.16f\n", energies_["Nuclear"] + 
         energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
     fprintf(outfile, "\n");
     
-    Process::environment.globals["NUCLEAR REPULSION ENERGY"] =      energies_["Nuclear"];
-    Process::environment.globals["ONE-ELECTRON ENERGY"] =           energies_["One-Electron"];
-    Process::environment.globals["TWO-ELECTRON ENERGY"] =           energies_["Two-Electron"];
+    Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
+    Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
+    Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
     if (fabs(energies_["XC"]) > 1.0e-14) {
-        Process::environment.globals["DFT FUNCTIONAL ENERGY"] =         energies_["XC"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] =   energies_["Nuclear"] + 
+        Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
-        Process::environment.globals["DFT TOTAL ENERGY"] =              energies_["Nuclear"] + 
+        Process::environment.globals["DFT TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
+    } else {
+        Process::environment.globals["HF TOTAL ENERGY"] = energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"];
     }
     if (fabs(energies_["-D"]) > 1.0e-14) {
-        Process::environment.globals["DISPERSION CORRECTION ENERGY"] =  energies_["-D"];
+        Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+//  Comment so that autodoc utility will find this PSI variable
+//     It doesn't really belong here but needs to be linked somewhere
+//  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
 }
 
 void HF::print_occupation()

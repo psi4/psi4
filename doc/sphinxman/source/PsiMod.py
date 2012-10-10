@@ -229,7 +229,7 @@ class Dispersion():
         pass
 
     @staticmethod
-    def build(sstr, ffloat):
+    def build(sstr, ffloat, ffloat1, ffloat2, ffloat3):
         return Dispersion()
   
 

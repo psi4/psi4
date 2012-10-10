@@ -19,6 +19,16 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <boost/shared_ptr.hpp>
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
+#include <liboptions/liboptions.h>
+
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     }
 
 using namespace boost;
 using namespace std;
@@ -31,13 +41,26 @@ Dispersion::Dispersion()
 Dispersion::~Dispersion()
 {
 }
-boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double s6)
+boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double s6, double p1, double p2, double p3)
 {
+    Options& options = Process::environment.options;
+    if (options["DFT_DISPERSION_PARAMETERS"].has_changed()) {
+        int temp = options["DFT_DISPERSION_PARAMETERS"].size();
+        if (temp > 0) { s6 = options["DFT_DISPERSION_PARAMETERS"][0].to_double(); }
+        if (temp > 1) { p1 = options["DFT_DISPERSION_PARAMETERS"][1].to_double(); }
+        if (temp > 2) { p2 = options["DFT_DISPERSION_PARAMETERS"][2].to_double(); }
+        if (temp > 3) { p3 = options["DFT_DISPERSION_PARAMETERS"][3].to_double(); }
+        if (temp > 4) {
+            throw PSIEXCEPTION("DFT_DISPERSION_PARAMETERS takes no more than four elements.");
+        }
+    }
+
     if (boost::to_upper_copy(name) == "-D1") {
         boost::shared_ptr<Dispersion> disp(new Dispersion());
         disp->name_ = "-D1";
         disp->description_ = "    Grimme's -D1 Dispersion Correction\n";
         disp->citation_ = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473\n";
+        disp->bibtex_ = "Grimme:2004:1463";
         disp->s6_ = s6;
         disp->d_ = 23.0;
         disp->C6_ = C6_D1_;
@@ -50,6 +73,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->name_ = "-D2";
         disp->description_ = "    Grimme's -D2 Dispersion Correction\n";
         disp->citation_ = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799\n";
+        disp->bibtex_ = "Grimme:2006:1787";
         disp->s6_ = s6;
         disp->d_ = 20.0;
         disp->C6_ = C6_D2_;
@@ -62,6 +86,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->name_ = "-CHG";
         disp->description_ = "    Chai and Head-Gordon Dispersion Correction\n";
         disp->citation_ = "    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620\n";
+        disp->bibtex_ = "Chai:2010:6615";
         disp->s6_ = s6;
         disp->d_ = 6.0;
         disp->C6_ = C6_D2_;
@@ -74,6 +99,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->name_ = "-DAS2009";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Pernal, K.; Podeszwa, R.; Patkowski, K.; Szalewicz, K. (2009), Phys. Rev. Lett., 103: 263201\n";
+        disp->bibtex_ = "Pernal:2009:263201";
         disp->s6_ = s6;  
         disp->C6_ = C6_Das2009_;
         disp->C8_ = C8_Das2009_;
@@ -89,6 +115,7 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->name_ = "-DAS2010";
         disp->description_ = "    Podeszwa and Szalewicz Dispersion Correction\n";
         disp->citation_ = "    Podeszwa, R.; Pernal, K.; Patkowski, K.; Szalewicz, K. (2010), J. Phys. Chem. Lett., 1: 550\n";
+        disp->bibtex_ = "Podeszwa:2010:550";
         disp->s6_ = s6;  
         disp->C6_ = C6_Das2010_;
         disp->C8_ = C8_Das2010_;
@@ -97,6 +124,37 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         disp->C8_type_ = C8_geom;
         disp->Damping_type_ = Damping_TT;
         disp->Spherical_type_ = Spherical_zero;
+        return disp;
+    } else if (boost::to_upper_copy(name) == "-D2GR") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-D2GR";
+        disp->description_ = "    Grimme's -D2 Dispersion Correction\n";
+        disp->citation_ = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799\n";
+        disp->bibtex_ = "Grimme:2006:1787";
+        disp->s6_ = s6;
+        disp->d_ = p1;
+        return disp;
+    } else if (boost::to_upper_copy(name) == "-D3ZERO") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-D3ZERO";
+        disp->description_ = "    Grimme's -D3 (zero-damping) Dispersion Correction\n";
+        disp->citation_ = "    Grimme S.; Antony J.; Ehrlich S.; Krieg H. (2010), J. Chem. Phys., 132: 154104\n";
+        disp->bibtex_ = "Grimme:2010:154104";
+        disp->s6_ = s6;
+        disp->s8_ = p1;
+        disp->sr6_ = p2;
+        disp->d_ = p3;
+        return disp;
+    } else if (boost::to_upper_copy(name) == "-D3BJ") {
+        boost::shared_ptr<Dispersion> disp(new Dispersion());
+        disp->name_ = "-D3BJ";
+        disp->description_ = "    Grimme's -D3 (BJ-damping) Dispersion Correction\n";
+        disp->citation_ = "    Grimme S.; Ehrlich S.; Goerigk L. (2011), J. Comput. Chem., 32: 1456\n";
+        disp->bibtex_ = "Grimme:2011:1456";
+        disp->s6_ = s6;
+        disp->s8_ = p1;
+        disp->a1_ = p2;
+        disp->a2_ = p3;
         return disp;
     } else {
         throw PSIEXCEPTION("Dispersion: Unknown -D type specified");
@@ -114,7 +172,14 @@ void Dispersion::print(FILE* out, int level) const
     fprintf(out, "%s", citation_.c_str());
     fprintf(out, "\n");
 
-    fprintf(out, "    S6 = %14.6E\n", s6_);
+    fprintf(out, "    S6  = %14.6E\n", s6_);
+    if ((name_ == "-D3ZERO") || (name_ == "-D3BJ")) { fprintf(out, "    S8  = %14.6E\n", s8_); }
+    if (name_ == "-D3ZERO") { fprintf(out, "    SR6 = %14.6E\n", sr6_); }
+    if (name_ == "-D3BJ") { fprintf(out, "    A1  = %14.6E\n", a1_); }
+    if (name_ == "-D3BJ") { fprintf(out, "    A2  = %14.6E\n", a2_); }
+    if ((name_ == "-D1") || (name_ == "-D2") || (name_ == "-CHG") || (name_ == "-D2GR") || (name_ == "-D3ZERO")) {
+        fprintf(out, "    A6  = %14.6E\n", d_);
+    }
     fprintf(out, "\n");
 }
 std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
@@ -188,7 +253,49 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
 {
     double E = 0.0;
 
-    if (Damping_type_ == Damping_TT) {
+    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ")) {
+        if (Py_IsInitialized()) {
+            try {
+                // Grab run_dftd3 off of the Python plane
+                PyObject *molutil;
+                PY_TRY(molutil, PyImport_ImportModule("molutil") );
+                PyObject *grimme;
+                PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
+                PyObject *pargs;
+                if (name_ == "-D2GR") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", NULL, NULL, "d2gr", 
+                        "s6", s6_, "alpha6", d_, 0));
+                } else if (name_ == "-D3ZERO") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3zero", 
+                        "s6", s6_, "sr6", sr6_, "s8", s8_, "alpha6", d_, 0));
+                } else if (name_ == "-D3BJ") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3bj", 
+                        "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 0));
+                }
+                PyObject *ret;
+                PY_TRY(ret, PyEval_CallObject(grimme, pargs));
+
+                // Extract the Dispersion Energy
+                E = boost::python::extract<double>(ret);
+    
+                // Decref Python env pointers
+                Py_DECREF(ret);
+                Py_DECREF(pargs);
+                Py_DECREF(grimme);
+                Py_DECREF(molutil);
+            }
+            catch (boost::python::error_already_set const& e)
+            {
+                PyErr_Print();
+                exit(1);
+            }
+        }
+        else {
+            throw PSIEXCEPTION("Unable to parse run_dftd3.\n");
+        }
+        return E;
+    }
+    else if (Damping_type_ == Damping_TT) {
 
         // -DAS dispersion only involves inter-fragment terms
         if (m->nactive_fragments() == 1) return 0.0;
@@ -214,9 +321,9 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
         double * blist_p = blist->pointer();
 
         for (int i = 0; i < monoA->natom(); i++) {
-            if ( (int)monoA->fZ(i) == 0 ) continue;
+            if ( (int)monoA->Z(i) == 0 ) continue;
             for (int j = 0; j < monoB->natom(); j++) {
-                if ( (int)monoB->fZ(j) == 0 ) continue;
+                if ( (int)monoB->Z(j) == 0 ) continue;
     
                 double C6, C8, Rm6, Rm8, f_6, f_8, g, beta;
     
@@ -267,7 +374,7 @@ double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
             }
         }
     }
-     else {
+    else {
         boost::shared_ptr<Vector> atom_list = set_atom_list(m);
         double * atom_list_p = atom_list->pointer();
         for (int i = 0; i < m->natom(); i++) {
@@ -318,70 +425,112 @@ SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
     SharedMatrix G(new Matrix("Dispersion Gradient", m->natom(), 3));
     double** Gp = G->pointer();
 
-    for (int i = 0; i < m->natom(); i++) {
-        for (int j = 0; j < i; j++) {
+    if ((name_ == "-D2GR") || (name_ == "-D3ZERO") || (name_ == "-D3BJ")) {
+        if (Py_IsInitialized()) {
+            try {
+                // Grab run_dftd3 off of the Python plane
+                PyObject *molutil;
+                PY_TRY(molutil, PyImport_ImportModule("molutil") );
+                PyObject *grimme;
+                PY_TRY(grimme, PyObject_GetAttrString(molutil, "run_dftd3"));
+                PyObject *pargs;
+                if (name_ == "-D2GR") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f} i)", NULL, NULL, "d2gr", 
+                        "s6", s6_, "alpha6", d_, 1));
+                } else if (name_ == "-D3ZERO") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3zero", 
+                        "s6", s6_, "sr6", sr6_, "s8", s8_, "alpha6", d_, 1));
+                } else if (name_ == "-D3BJ") {
+                    PY_TRY(pargs, Py_BuildValue("(s s s {s:f,s:f,s:f,s:f} i)", NULL, NULL, "d3bj", 
+                        "s6", s6_, "a1", a1_, "s8", s8_, "a2", a2_, 1));
+                }
+                PyObject *ret;
+                PY_TRY(ret, PyEval_CallObject(grimme, pargs));
 
-            double C6, Rm6, f;
-            double C6_R, Rm6_R, f_R;
-    
-            double R; 
-            double R_xi, R_yi, R_zi;
-            double R_xj, R_yj, R_zj;
+                // Extract the Dispersion Gradient
+                G = boost::python::extract<boost::shared_ptr<psi::Matrix> >(ret);
 
-            double dx = m->x(j) - m->x(i);
-            double dy = m->y(j) - m->y(i);
-            double dz = m->z(j) - m->z(i);
-    
-            double R2 = dx * dx + dy * dy + dz * dz;
-            R = sqrt(R2);
-
-            R_xi = - dx / R;
-            R_xj =   dx / R;
-            R_yi = - dy / R;
-            R_yj =   dy / R;
-            R_zi = - dz / R;
-            R_zj =   dz / R;
-
-            double R6 = R2 * R2 * R2;
-            Rm6 = 1.0 / R6;
-            Rm6_R = -6.0 * Rm6 / R;
-
-            double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
-
-            if (C6_type_ == C6_arit) {
-                C6 = 2.0 * C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)] / (C6_[(int)m->Z(i)] + C6_[(int)m->Z(j)]);
-                C6_R = 0.0;
-            } else if (C6_type_ == C6_geom) {
-                C6 = sqrt(C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)]);
-                C6_R = 0.0;
-            } else {
-                throw PSIEXCEPTION("Unrecognized C6 Type");
-            } 
-            if (Damping_type_ == Damping_D1) {
-                f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1.0)));
-                f_R = - f * f * exp(-d_ * (R / RvdW - 1.0)) * (-d_ / RvdW); 
-            } else if (Damping_type_ == Damping_CHG) {
-                f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));
-                f_R = - f * f * d_ * (-12.0) * pow((R / RvdW), -13.0) * (1.0 / RvdW);
-            } else if (Damping_type_ == Damping_TT) {
-                throw PSIEXCEPTION("+Das Gradients not yet implemented");
-            } else {
-                throw PSIEXCEPTION("Unrecognized Damping Function");
+                // Decref Python env pointers
+                Py_DECREF(ret);
+                Py_DECREF(pargs);
+                Py_DECREF(grimme);
+                Py_DECREF(molutil);
             }
-
-            double E_R = C6_R * Rm6 * f + C6 * Rm6_R * f + C6 * Rm6 * f_R;
-
-            Gp[i][0] += E_R * R_xi; 
-            Gp[i][1] += E_R * R_yi; 
-            Gp[i][2] += E_R * R_zi; 
-            Gp[j][0] += E_R * R_xj; 
-            Gp[j][1] += E_R * R_yj; 
-            Gp[j][2] += E_R * R_zj; 
+            catch (boost::python::error_already_set const& e)
+            {
+                PyErr_Print();
+                exit(1);
+            }
         }
-    } 
+        else {
+            throw PSIEXCEPTION("Unable to parse run_dftd3.\n");
+        }
+    }
+    else {
+        for (int i = 0; i < m->natom(); i++) {
+            for (int j = 0; j < i; j++) {
 
-    G->scale(-s6_);
-    
+                double C6, Rm6, f;
+                double C6_R, Rm6_R, f_R;
+        
+                double R; 
+                double R_xi, R_yi, R_zi;
+                double R_xj, R_yj, R_zj;
+
+                double dx = m->x(j) - m->x(i);
+                double dy = m->y(j) - m->y(i);
+                double dz = m->z(j) - m->z(i);
+        
+                double R2 = dx * dx + dy * dy + dz * dz;
+                R = sqrt(R2);
+
+                R_xi = - dx / R;
+                R_xj =   dx / R;
+                R_yi = - dy / R;
+                R_yj =   dy / R;
+                R_zi = - dz / R;
+                R_zj =   dz / R;
+
+                double R6 = R2 * R2 * R2;
+                Rm6 = 1.0 / R6;
+                Rm6_R = -6.0 * Rm6 / R;
+
+                double RvdW = RvdW_[(int)m->Z(i)] + RvdW_[(int)m->Z(j)];
+
+                if (C6_type_ == C6_arit) {
+                    C6 = 2.0 * C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)] / (C6_[(int)m->Z(i)] + C6_[(int)m->Z(j)]);
+                    C6_R = 0.0;
+                } else if (C6_type_ == C6_geom) {
+                    C6 = sqrt(C6_[(int)m->Z(i)] * C6_[(int)m->Z(j)]);
+                    C6_R = 0.0;
+                } else {
+                    throw PSIEXCEPTION("Unrecognized C6 Type");
+                } 
+                if (Damping_type_ == Damping_D1) {
+                    f = 1.0 / (1.0 + exp(-d_ * (R / RvdW - 1.0)));
+                    f_R = - f * f * exp(-d_ * (R / RvdW - 1.0)) * (-d_ / RvdW); 
+                } else if (Damping_type_ == Damping_CHG) {
+                    f = 1.0 / (1.0 + d_ * pow((R / RvdW),-12.0));
+                    f_R = - f * f * d_ * (-12.0) * pow((R / RvdW), -13.0) * (1.0 / RvdW);
+                } else if (Damping_type_ == Damping_TT) {
+                    throw PSIEXCEPTION("+Das Gradients not yet implemented");
+                } else {
+                    throw PSIEXCEPTION("Unrecognized Damping Function");
+                }
+
+                double E_R = C6_R * Rm6 * f + C6 * Rm6_R * f + C6 * Rm6 * f_R;
+
+                Gp[i][0] += E_R * R_xi; 
+                Gp[i][1] += E_R * R_yi; 
+                Gp[i][2] += E_R * R_zi; 
+                Gp[j][0] += E_R * R_xj; 
+                Gp[j][1] += E_R * R_yj; 
+                Gp[j][2] += E_R * R_zj; 
+            }
+        } 
+
+        G->scale(-s6_);
+    } 
     return G;
 }
 SharedMatrix Dispersion::compute_hessian(boost::shared_ptr<Molecule> m)
