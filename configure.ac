@@ -1033,6 +1033,8 @@ AC_CONFIG_FILES([
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/psithon1/Makefile
+          tests/dftd3-energy/Makefile
+          tests/dftd3-grad/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
