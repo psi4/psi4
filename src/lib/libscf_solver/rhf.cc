@@ -54,6 +54,8 @@
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
+#include <libefp_solver/efp_solver.h>
+
 #include "rhf.h"
 
 using namespace boost;

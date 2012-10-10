@@ -5,8 +5,9 @@
  */
 
 // TODO: add -I to compilation
-//#include"/Users/loriab/linux/libefp/src/efp.h"
-#include "../../../libefp/install/include/efp.h"
+#include<libmints/molecule.h>
+
+struct efp;
 
 namespace psi{
   class Options;
@@ -51,6 +52,7 @@ class EFP {
         boost::shared_ptr<Matrix> modify_Fock();
 };
 
-}}
+}
+}
 
 #endif

@@ -32,7 +32,6 @@
 #include <liboptions/liboptions.h>
 #include <exception.h>
 #include <libmints/typedefs.h>
-#include <libefp_solver/efp_solver.h>
 
 namespace psi {
 
@@ -51,6 +50,9 @@ class Molecule;
 class Wavefunction;
 class PointGroup;
 class ExternalPotential;
+namespace efp {
+    class EFP;
+}
 
 class Process
 {
@@ -99,9 +101,9 @@ public:
         boost::shared_ptr<Vector> frequencies() const { return frequencies_; }
 
         /// Set EFP 
-        void set_efp(const boost::shared_ptr<efp::EFP>& efp) { efp_ = efp; }
+        void set_efp(const boost::shared_ptr<psi::efp::EFP>& efp);
         /// Get EFP 
-        boost::shared_ptr<efp::EFP> get_efp() const { return efp_; }
+        boost::shared_ptr<psi::efp::EFP> get_efp() const;
 
         /// Map containing current energies
         std::map<std::string, double> globals;

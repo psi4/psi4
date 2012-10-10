@@ -2,8 +2,18 @@ LIBEFP_VERSION = 0.1
 srcdir = @srcdir@
 libefp_install_dir = $(CURDIR)/install
 
-all:
+all: default
+default: efp.compiled
+
+install:
+
+clean:
+
+dclean:
+
+efp.compiled:
 	tar xf $(srcdir)/libefp-$(LIBEFP_VERSION).tar.gz && \
 	cd libefp-$(LIBEFP_VERSION) && \
 	./configure --disable-efpmd --prefix=$(libefp_install_dir) && \
 	make && make install
+	touch efp.compiled
