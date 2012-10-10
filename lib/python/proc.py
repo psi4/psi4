@@ -204,20 +204,6 @@ def run_scf(name, **kwargs):
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
    
-    if 'brokensymmetry' in kwargs:
-        molecule = PsiMod.get_active_molecule()
-        multp = molecule.multiplicity()
-        if multp != 1:
-            raise ValidationError('Broken symmetry is only for singlets.')
-        if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
-            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
-        molecule.set_multiplicity(3)
-        PsiMod.print_out("\n\n\tComputing high-spin triplet guess\n\n")
-        scf_helper(name, **kwargs)
-        molecule.set_multiplicity(1)
-        PsiMod.set_local_option('SCF', 'GUESS', 'READ')
-        PsiMod.print_out("\n\n\tComputing broken symmetry solution from high-spin triplet guess\n\n")
-            
     returnvalue = scf_helper(name, **kwargs)
     
     optstash.restore()
@@ -341,6 +327,19 @@ def scf_helper(name, **kwargs):
             elif no.match(str(castdf)):
                 castdf = False
 
+    # sort out broken_symmetry settings.
+    if 'brokensymmetry' in kwargs:
+        molecule = PsiMod.get_active_molecule()
+        multp = molecule.multiplicity()
+        if multp != 1:
+            raise ValidationError('Broken symmetry is only for singlets.')
+        #if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
+        if PsiMod.get_option('SCF','REFERENCE') != 'UHF':
+            raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
+        do_broken = True
+    else:
+        do_broken = False
+
     precallback = None
     if 'precallback' in kwargs:
         precallback = kwargs.pop('precallback')
@@ -356,6 +355,15 @@ def scf_helper(name, **kwargs):
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
     PsiMod.set_global_option('PUREAM', PsiMod.MintsHelper().basisset().has_puream())
 
+    # broken set-up
+    if do_broken:
+        molecule.set_multiplicity(3)
+#        PsiMod.print_out("\n\n\tComputing high-spin triplet guess\n\n")
+        PsiMod.print_out('\n')
+        banner('  Computing high-spin triplet guess  ')
+        PsiMod.print_out('\n')
+
+    # cast set-up
     if (cast):
 
         if yes.match(str(cast)):
@@ -385,8 +393,21 @@ def scf_helper(name, **kwargs):
         banner('Guess SCF, %s Basis' % (guessbasis))
         PsiMod.print_out('\n')
 
+    # the FIRST scf call
+    if cast or do_broken:
         # Perform the guess scf
         PsiMod.scf()
+
+    # broken clean-up
+    if do_broken:
+        molecule.set_multiplicity(1)
+        PsiMod.set_local_option('SCF', 'GUESS', 'READ')
+        PsiMod.print_out('\n')
+        banner('  Computing broken symmetry solution from high-spin triplet guess  ')
+        PsiMod.print_out('\n')
+
+    # cast clean-up
+    if (cast):
 
         # Move files to proper namespace
         PsiMod.IO.change_file_namespace(180, (namespace + '.guess'), namespace)
@@ -401,11 +422,9 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
-        # Do the full scf
-        e_scf = PsiMod.scf(precallback, postcallback)
 
-    else:
-        e_scf = PsiMod.scf(precallback, postcallback)
+    # the SECOND scf call
+    e_scf = PsiMod.scf(precallback, postcallback)
 
     optstash.restore()
     return e_scf
