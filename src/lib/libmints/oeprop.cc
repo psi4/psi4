@@ -861,6 +861,7 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
+    fprintf(outfile, "\nProperties computed using the %s density matrix\n", wfn_->name().c_str());
     fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 

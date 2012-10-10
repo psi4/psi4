@@ -56,6 +56,7 @@ void KS::common_init()
 
     // Print the KS-specific stuff
     potential_->print_header();
+
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
