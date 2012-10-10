@@ -8,18 +8,10 @@ MAKE_LIBEFP=@BUILD_LIBEFP@
 default: all
 
 subdirs = boost
-
 ifeq ($(MAKE_MADNESS),1)
-  subdirs = boost madness/src/lib/world madness/src/lib/misc madness/src/lib/tensor lib include src
-else
-  subdirs = boost lib include src
+  subdirs += madness/src/lib/world madness/src/lib/misc madness/src/lib/tensor
 endif
-
-ifeq ($(MAKE_LIBEFP),1)
-  subdirs += libefp
-endif
-
-subdirs += lib include src
+subdirs += libefp lib include src
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@

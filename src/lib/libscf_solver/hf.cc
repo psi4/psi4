@@ -58,6 +58,7 @@
 #include "hf.h"
 
 #include <psi4-dec.h>
+#include <libefp_solver/efp_solver.h>
 
 #ifdef _OPENMP
 #include <omp.h>
