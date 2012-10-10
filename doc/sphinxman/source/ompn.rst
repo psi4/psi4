@@ -1,20 +1,29 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:omp3`:
-.. index:: Orbital-Optimized Methods,OMP3
+.. index:: 
+   single: Orbital-Optimized Methods, OMP2
+   single: Orbital-Optimized Methods, OMP3
 
 .. index::
    pair: Orbital-Optimized Methods; theory
+   pair: OMP2; theory
    pair: OMP3; theory
 
-OMP3: Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory 
-==========================
+.. _`sec:ompn`:
+
+OMP\ *n*\ : Orbital-Optimized M\ |o_slash|\ ller--Plesset Perturbation Theory 
+=============================================================================
 
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
 
+*Module:* :ref:`Keywords <apdx:omp2>`, :ref:`PSI Variables <apdx:omp2_psivar>`, :source:`OMP2 <src/bin/omp2>`
+
 *Module:* :ref:`Keywords <apdx:omp3>`, :ref:`PSI Variables <apdx:omp3_psivar>`, :source:`OMP3 <src/bin/omp3>`
+
+Introduction
+~~~~~~~~~~~~
 
 Orbital-optimized methods have several advantages over non-optimized counterparts. 
 Once the orbitals are optimized, the wave function will obey the Hellmann-Feynman theorem 
@@ -45,6 +54,9 @@ geometries [Bozkaya:2012:odtl]_. Bozkaya and Schaefer demonstrated that orbital-
 triple corrections, especially those of asymmetrics, provide significantly better potential energy curves than 
 CCSD based triples corrections.  
 
+Theory 
+~~~~~~
+
 What follows is a very basic description of orbital-optimized M\ |o_slash|\ ller--Plesset perturbation 
 theory as implemented in |Psifour|.  We will follow our previous presentations ([Bozkaya:2011:omp2]_, 
 [Bozkaya:2011:omp3]_, and [Bozkaya:2012:odtl]_)
@@ -73,6 +85,16 @@ The effect of the orbital rotations on the MO coefficients can be written as
 where :math:`{\bf C^{(0)}}` is the initial MO coefficient matrix and :math:`{\bf C({\bf \kappa})}` is the new 
 MO coefficient matrix as a function of :math:`{\bf \kappa}`. 
 Now, let us define a variational energy functional (Lagrangian) as a function of :math:`{\bf \kappa}`
+
+* OMP2
+
+.. math::
+   \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle \\
+   &+  \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}^{(1)}\big)_{c} | 0 \rangle \\
+   &+  \langle 0| \{\hat{\Lambda}_{2}^{(1)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
+   \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle
+    
+* OMP3
 
 .. math::
    \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle \\
@@ -114,6 +136,39 @@ yields
 
 This final equation corresponds to the usual Newton-Raphson step.
 
+Publications resulting from the use of the OMP2 code should cite the following publication(s): 
+
+[Bozkaya:2011:omp2]_.
+
+Publications resulting from the use of the OMP3 code should cite the following publications: 
+
+[Bozkaya:2011:omp2]_ and [Bozkaya:2011:omp3]_.
+
+Methods
+~~~~~~~
+
+The orbital-optimized MP2 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2 Methods <table:omp2_calls>`.
+
+    .. _`table:omp2_calls`:
+
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference |
+    +=========================+==============================================================+=========+==========+===========+
+    | omp2                    | Orbital-Optimized MP2                                        |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | sos-omp2                | Spin-Opposite Scaled Orbital-Optimized MP2                   |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | scsn-omp2               | A special version of SCS-OMP2 for nucleobase interactions    |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+    | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        |    Y    |     N    | RHF/UHF   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
+
 The orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
 
     .. _`table:omp3_calls`:
@@ -136,33 +191,32 @@ The orbital-optimized MP3 methods currently supported in |Psifour| are outlined 
     | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/UHF   |
     +-------------------------+--------------------------------------------------------------+---------+----------+-----------+
 
-Publications resulting from the use of the OMP3 code should cite the following publications: 
 
-[Bozkaya:2011:omp2]_ and [Bozkaya:2011:omp3]_.
 
-.. index:: OMP3; basic-keywords
+.. index:: OMP2; setting keywords
+.. index:: OMP3; setting keywords
 
-Basic OMP3 Keywords
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Basic Keywords
+~~~~~~~~~~~~~~
 
-.. include:: /autodir_options_c/omp3__e_convergence.rst
-.. include:: /autodir_options_c/omp3__r_convergence.rst
-.. include:: /autodir_options_c/omp3__rms_mograd_convergence.rst
-.. include:: /autodir_options_c/omp3__max_mograd_convergence.rst
-.. include:: /autodir_options_c/omp3__mo_maxiter.rst
+.. include:: /autodir_options_c/omp2__e_convergence.rst
+.. include:: /autodir_options_c/omp2__r_convergence.rst
+.. include:: /autodir_options_c/omp2__rms_mograd_convergence.rst
+.. include:: /autodir_options_c/omp2__max_mograd_convergence.rst
+.. include:: /autodir_options_c/omp2__mo_maxiter.rst
 
-.. index:: OMP3; advanced-keywords
-
-Advanced OMP3 Keywords
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. include:: /autodir_options_c/omp3__opt_method.rst
-.. include:: /autodir_options_c/omp3__diis_max_vecs.rst
-.. include:: /autodir_options_c/omp3__lineq_solver.rst
-.. include:: /autodir_options_c/omp3__orth_type.rst
-.. include:: /autodir_options_c/omp3__mp2_os_scale.rst
-.. include:: /autodir_options_c/omp3__mp2_ss_scale.rst
-.. include:: /autodir_options_c/omp3__sos_scale.rst
-.. include:: /autodir_options_c/omp3__sos_scale2.rst
-.. include:: /autodir_options_c/omp3__nat_orbs.rst
+Advanced Keywords
+~~~~~~~~~~~~~~~~~
+.. include:: /autodir_options_c/omp2__opt_method.rst
+.. include:: /autodir_options_c/omp2__diis_max_vecs.rst
+.. include:: /autodir_options_c/omp2__lineq_solver.rst
+.. include:: /autodir_options_c/omp2__orth_type.rst
+.. include:: /autodir_options_c/omp2__mp2_os_scale.rst
+.. include:: /autodir_options_c/omp2__mp2_ss_scale.rst
+.. include:: /autodir_options_c/omp2__sos_scale.rst
+.. include:: /autodir_options_c/omp2__sos_scale2.rst
+.. include:: /autodir_options_c/omp2__nat_orbs.rst
+.. include:: /autodir_options_c/omp2__omp2_orbs_print.rst
 .. include:: /autodir_options_c/omp3__omp3_orbs_print.rst
 .. include:: /autodir_options_c/omp3__tpdm_abcd_type.rst
+

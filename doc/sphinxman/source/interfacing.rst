@@ -12,9 +12,9 @@ for |PSIfour| to operate and may require additional licences, special
 platform capabilities, *etc*. 
 
 * :ref:`sec:mrcc` |PSIfour| can drive the MRCC program of M. K\ |a_acute|\ llay and J. Gauss
+* :ref:`sec:dftd3` |PSIfour| can drive the DFTD3 program of S. Grimme for DFT-D3 energies and gradients
 * MPI4Py
 * MADNESS
-* Grimme's dft-d3
 * MATLAB for new dft functionals
 
 .. toctree::

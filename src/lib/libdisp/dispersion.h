@@ -28,6 +28,7 @@ protected:
     std::string name_;
     std::string description_;
     std::string citation_;
+    std::string bibtex_;
 
     C6_type C6_type_;
     C8_type C8_type_;
@@ -36,6 +37,10 @@ protected:
 
     double s6_;
     double d_;
+    double sr6_;
+    double s8_;
+    double a1_;
+    double a2_;
     const double *RvdW_;
     const double *C6_;
     const double *C8_;
@@ -47,22 +52,33 @@ public:
     Dispersion();
     virtual ~Dispersion();
 
-    static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0);
+    static boost::shared_ptr<Dispersion> build(const std::string & type, double s6 = 0.0, 
+        double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
 
     std::string name() const { return name_; }
     std::string description() const { return description_; }
     std::string citation() const { return citation_; }
+    std::string bibtex() const { return bibtex_; }
     void set_name(const std::string & name) { name_ = name; }
     void set_description(const std::string & description) { description_ = description; }
     void set_citation(const std::string & citation) { citation_ = citation; }
+    void set_bibtex(const std::string & bibtex) { bibtex_ = bibtex; }
 
     boost::shared_ptr<Vector> set_atom_list(boost::shared_ptr<Molecule> mol);
 
     double get_d() const { return d_; }
     double get_s6() const { return s6_; }
+    double get_sr6() const { return sr6_; }
+    double get_s8() const { return s8_; }
+    double get_a1() const { return a1_; }
+    double get_a2() const { return a2_; }
 
     void set_d(double d) { d_ = d; }
     void set_s6(double s6) { s6_ = s6; }
+    void set_sr6(double sr6) { sr6_ = sr6; }
+    void set_s8(double s8) { s8_ = s8; }
+    void set_a1(double a1) { a1_ = a1; }
+    void set_a2(double a2) { a2_ = a2; }
 
     std::string print_energy(boost::shared_ptr<Molecule> m);
     std::string print_gradient(boost::shared_ptr<Molecule> m);

@@ -23,6 +23,7 @@ lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
 set {
     basis        sto-3g
     e_convergence   10
+    scf_type pk
 }
 
 energies = []

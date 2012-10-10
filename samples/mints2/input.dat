@@ -118,6 +118,7 @@ basis  {
 
  
 set d_convergence 11
+set scf_type pk
  
 scfenergy = energy('scf')
 

@@ -1,3 +1,5 @@
+#! CCSD dipole with user-specified basis set
+
 memory 250 mb
 
 molecule h2o {
@@ -103,3 +105,4 @@ D 2 1.00
 }
 
 property('ccsd',properties=['dipole'])
+print_variables()

@@ -21,7 +21,7 @@ CC: Coupled Cluster Methods
 
 *Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <src/bin/cctriples>`
 
-*Module:* :ref:`Keywords <apdx:ccdensity>`, :source:`CCDENSITY <src/bin/ccdensity>`
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <src/bin/ccdensity>`
 
 *Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <src/bin/cchbar>`
 

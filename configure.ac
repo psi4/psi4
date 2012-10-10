@@ -1033,6 +1033,8 @@ AC_CONFIG_FILES([
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/psithon1/Makefile
+          tests/dftd3-energy/Makefile
+          tests/dftd3-grad/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
@@ -1146,6 +1148,7 @@ AC_CONFIG_FILES([
           tests/dft-pbe0-2/Makefile
           tests/dft-dldf/Makefile
           tests/dft-grad/Makefile
+          tests/dft-psivar/Makefile
           tests/mom/Makefile
           tests/frac/Makefile
           tests/docs-psimod/Makefile
