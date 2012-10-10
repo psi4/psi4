@@ -19,7 +19,7 @@ install_inc:: $(DEPENDINCLUDE)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libsapt_solver
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libsapt_solver
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
 

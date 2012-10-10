@@ -13,10 +13,8 @@ BINOBJ = $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
-
-install_man::
 
