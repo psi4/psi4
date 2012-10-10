@@ -28,7 +28,7 @@ to data tables and text.
 import psi4
 import sys
 import re
-import physconst
+import p4const
 from psiexceptions import *
 
 
@@ -121,7 +121,7 @@ class Table(object):
         import copy
         return copy.deepcopy(self)
 
-    def absolute_to_relative(self, Factor=physconst.psi_hartree2kcalmol):
+    def absolute_to_relative(self, Factor=p4const.psi_hartree2kcalmol):
         """Function to shift the data of each column of the Table object
         such that the lowest value is zero. A scaling factor of *Factor* is applied.
 
@@ -142,7 +142,7 @@ class Table(object):
                 #print datarow[1][col]
                 datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
 
-    def scale(self, Factor=physconst.psi_hartree2kcalmol):
+    def scale(self, Factor=p4const.psi_hartree2kcalmol):
         """Function to apply a scaling factor *Factor* to the
         data of the Table object.
 

@@ -25,7 +25,7 @@ import os
 import sys
 import pickle
 import psi4
-import input
+import inputparser
 from psiexceptions import *
 
 
@@ -62,7 +62,7 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
 
 def format_molecule_for_input(mol):
     """Function to return a string of the output of
-    :py:func:`input.process_input` applied to the XYZ
+    :py:func:`inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
     geometry string *mol* or molecule instance *mol*.
     Used to capture molecule information from database
@@ -87,7 +87,7 @@ def format_molecule_for_input(mol):
 
         mol_name = mol.name()
 
-    commands = 'input.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
+    commands = 'inputparser.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
     return eval(commands)
 
 
