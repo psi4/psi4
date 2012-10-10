@@ -1,4 +1,4 @@
-# Internal match to psi4, test to match to literature values in litref.in/litref.out
+#! Internal match to psi4, test to match to literature values in litref.in/litref.out
 
 molecule water {
 0 1
@@ -19,8 +19,6 @@ set freeze_core true
 
 e_dhdft = energy('pbe0-2')
 print_variables()
-val = -152.648635492831
-compare_values(val, e_dhdft, 8, "PBE0-2: Water")
 
 clean()
 
