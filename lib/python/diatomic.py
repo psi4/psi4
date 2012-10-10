@@ -11,18 +11,13 @@ def diatomic_anharmonicity(rvals, energies):
        
        A dictionary with the following keys, which correspond to spectroscopic constants, is returned:
 
-       **Keywords**
-
        :type rvals: list
-       :param rvals:
-
-       The bond lengths (in Angstrom) for which energies are provided of length either 5 or 9
-       but must be the same length as the energies array
+       :param rvals: The bond lengths (in Angstrom) for which energies are 
+           provided of length either 5 or 9 but must be the same length as 
+           the energies array
 
        :type energies: list
-       :param energies:
-
-       The energies (Eh) computed at the bond lengths in the rvals list
+       :param energies: The energies (Eh) computed at the bond lengths in the rvals list
 
        :returns: (*dict*) Keys: "re", "r0", "we", "wexe", "nu", "ZPVE(harmonic)", "ZPVE(anharmonic)", "Be", "B0", "ae", "De"
                  corresponding to the spectroscopic constants in cm-1

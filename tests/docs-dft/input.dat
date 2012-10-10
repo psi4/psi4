@@ -24,6 +24,12 @@ for super in superfunctional_list():
             'dispersion_name'        : super.dispersion().name(),
             'dispersion_description' : super.dispersion().description().strip(),
             'dispersion_citation'    : super.dispersion().citation().strip(),
+            's6'                     : super.dispersion().s6(),
+            's8'                     : super.dispersion().s8(),
+            'sr6'                    : super.dispersion().sr6(),
+            'a1'                     : super.dispersion().a1(),
+            'a2'                     : super.dispersion().a2(),
+            'alpha6'                 : super.dispersion().d(),
             'is_gga'                 : super.is_gga(),
             'is_meta'                : super.is_meta(),
             'is_x_lrc'               : super.is_x_lrc(),
@@ -87,6 +93,15 @@ def tf2(rungbool, rungparam=0.0, rungparam2=0.0):
             return ' %8.6f / %8.6f' % (rungparam, rungparam2)
 
 
+def tf3(rungparam=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if abs(rungparam) > 1.0e-8 and abs(rungparam) < 1000.0:
+        return ' %8.5f ' % (rungparam)
+    else:
+        return '   ---    '
+
+
 def header(filep, label, caption):
     """Function to write reST table header."""
 
@@ -100,6 +115,22 @@ def header(filep, label, caption):
          'Dispersion?', 'Dispersion Description'))
     filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%20s=+=%60s=+\n' % 
         (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 20 * '=',
+         20 * '=', 60 * '='))
+
+
+def dispheader(filep, label, caption):
+    """Function to write reST table header."""
+
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    filep.write('\n.. table:: %s\n\n' % (caption))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 
+         20 * '-', 60 * '-'))
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' % 
+        ('Name', 'Description', 'S6', 'S8', 'SR6', 'ALPHA6', 'A1', 'A2',
+         'Dispersion?', 'Dispersion Description'))
+    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%60s=+\n' % 
+        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 
          20 * '=', 60 * '='))
 
 
@@ -126,6 +157,20 @@ def body(filep, funcdict, fctl):
          20 * '-', 60 * '-'))
 
 
+def dispbody(filep, funcdict, fctl):
+    """Function to write line of reST table."""
+
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' %
+        (funcdict[fctl]['name'], funcdict[fctl]['description'],
+         tf3(funcdict[fctl]['s6']), tf3(funcdict[fctl]['s8']), 
+         tf3(funcdict[fctl]['sr6']), tf3(funcdict[fctl]['alpha6']), 
+         tf3(funcdict[fctl]['a1']), tf3(funcdict[fctl]['a2']),
+         funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-', 60 * '-'))
+
+
 fall = open('autodoc_dft_all.rst', 'w')
 header(fall, 'all', 'DFT functionals available in |PSIfour|')
 fgga = open('autodoc_dft_gga.rst', 'w')
@@ -141,7 +186,7 @@ header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
 fscsdhybrid= open('autodoc_dft_scsdhybrid.rst', 'w')
 header(fscsdhybrid, 'scsdhybrid', 'Spin-Component-Scaled Double-Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
-header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
@@ -151,37 +196,41 @@ fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
 for fctl in sorted(funcdict.iterkeys()):
 
-    body(fall, funcdict, fctl)
+    if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
+        pass
 
-    if funcdict[fctl]['is_gga']:
-        body(fgga, funcdict, fctl)
-
-    if funcdict[fctl]['is_meta']:
-        body(fmeta, funcdict, fctl)
-
-    if funcdict[fctl]['is_x_lrc'] or funcdict[fctl]['is_c_lrc']:
-        body(flrc, funcdict, fctl)
-
-    if funcdict[fctl]['is_x_hybrid']:
-        body(fhybrid, funcdict, fctl)
-
-    if funcdict[fctl]['is_c_hybrid']:
-        body(fdhybrid, funcdict, fctl)
-
-    if funcdict[fctl]['is_c_scs_hybrid']:
-        body(fscsdhybrid, funcdict, fctl)
-
-    if funcdict[fctl]['dispersion']:
-        body(fdisp, funcdict, fctl)
-
-    if funcdict[fctl]['dispersion']:
-        fenergy.write('| %-27s | %-140s |\n' % 
-            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
     else:
-        fenergy.write('| %-27s | %-140s |\n' % 
-            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
-
-    fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+        body(fall, funcdict, fctl)
+    
+        if funcdict[fctl]['is_gga']:
+            body(fgga, funcdict, fctl)
+    
+        if funcdict[fctl]['is_meta']:
+            body(fmeta, funcdict, fctl)
+    
+        if funcdict[fctl]['is_x_lrc'] or funcdict[fctl]['is_c_lrc']:
+            body(flrc, funcdict, fctl)
+    
+        if funcdict[fctl]['is_x_hybrid']:
+            body(fhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['is_c_hybrid']:
+            body(fdhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['is_c_scs_hybrid']:
+            body(fscsdhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['dispersion']:
+            dispbody(fdisp, funcdict, fctl)
+    
+        if funcdict[fctl]['dispersion']:
+            fenergy.write('| %-27s | %-140s |\n' % 
+                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+        else:
+            fenergy.write('| %-27s | %-140s |\n' % 
+                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+    
+        fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 
 
 fall.write('\n')
