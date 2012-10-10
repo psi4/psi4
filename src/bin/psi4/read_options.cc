@@ -856,7 +856,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
-    /*- What algorithm to use for the SCF computation -*/
+    /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default algorithm for
+    different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
@@ -886,10 +888,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Fail if we reach maxiter without converging? -*/
     options.add_bool("FAIL_ON_MAXITER",true);
 
-    /*- Convergence criterion for SCF energy. -*/
+    /*- Convergence criterion for SCF energy. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default convergence
+    criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
+    /*- Convergence criterion for SCF density. In practice, the SCF energy
+    will be good to 1-4 more than this number of digits. (This means that
+    |scf__d_convergence| = 11 is overkill and will approach machine
+    precision.) See Table :ref:`SCF Convergence & Algorithm
+    <table:conv_scf>` for default convergence criteria for different
+    calculation types. -*/
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -1052,6 +1061,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
+    /*- Parameters defining the dispersion correction. See Table 
+    :ref:`-D Functionals <table:dft_disp>` for default values and Table
+    :ref:`Dispersion Corrections <table:dashd>` for the order in which
+    parameters are to be specified in this array option. -*/
+    options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -1198,6 +1212,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("MP2_SS_SCALE", 1.0/3.0);
+    /*- What algorithm to use for the MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
@@ -2191,7 +2207,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- SUBSECTION Optimization Algorithm -*/
 
       /*- Maximum number of geometry optimization steps -*/
-      options.add_int("GEOM_MAXITER", 20);
+      options.add_int("GEOM_MAXITER", 50);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/

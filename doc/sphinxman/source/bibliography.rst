@@ -209,3 +209,21 @@ Bibliography
    U. Bozkaya and H. F. Schaefer,
    *J. Chem. Phys.* **136**, 204114 (2012).
 
+.. [Grimme:2004:1463]
+   S. Grimme, *J. Comp. Chem.* **25** 1463-1473 (2004).
+
+.. [Grimme:2006:1787]
+   S. Grimme, *J. Comp. Chem.* **27**, 1787-1799 (2006).
+
+.. [Grimme:2010:154104]
+   S. Grimme, J. Antony, S. Ehrlich, and H. Krieg,
+   *J. Chem. Phys.* **132**, 154104 (2010).
+
+.. [Grimme:2011:1456]
+   S. Grimme, S. Ehrlich, and L. Goerigk,
+   *J. Comput. Chem.* **32**, 1456 (2011).
+
+.. [Wu:2002:515]
+   Q. Wu and W. Yang,
+   *J. Chem. Phys.* **116**, 515 (2002).
+

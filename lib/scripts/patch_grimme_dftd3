@@ -1,0 +1,35 @@
+--- Makefile_orig	2012-10-01 11:50:12.000000000 -0400
++++ Makefile	2012-10-01 11:55:37.000000000 -0400
+@@ -16,9 +16,11 @@
+ 
+ ifeq ($(OSTYPE),LINUXL)
+ # FC = lf95 
++# FC = gfortran  # tilde expansion doesn't work so ~/.dftd3par.<hostname> not accessible
+   FC = ifort 
+ # CC = gcc
+ # LINKER = lf95
++# LINKER = gfortran
+   LINKER = ifort   
+   PREFLAG = -E -P
+   CCFLAGS = -O -DLINUX
+--- dftd3.f_orig	2012-10-01 11:50:19.000000000 -0400
++++ dftd3.f	2012-09-29 00:23:49.000000000 -0400
+@@ -516,6 +516,7 @@
+       write(*,*) '-bj   (DFT-D3 with Becke-Johnson finite-damping)' 
+       write(*,*) '-tz (use special parameters for TZ-type calculations)'
+       write(*,*) 'variable parameters read from ~/.dftd3par.<hostname>'
++      write(*,*) '     else ./dftd3_parameters'
+       write(*,*) 'if -func is used, -zero or -bj or -old is required!"'
+       stop
+       end
+@@ -981,6 +982,10 @@
+       close(43,status='delete')
+       write(dtmp,'(''~/.dftd3par.'',a)')trim(ftmp)
+       inquire(file=dtmp,exist=ex)
++      if(.not.ex)then
++         write(dtmp,'(''./dftd3_parameters'')')
++         inquire(file=dtmp,exist=ex)
++      endif
+       s6 =0
+       s18=0
+       rs6=0

@@ -11,6 +11,7 @@ molecule N2 {
 set globals {
   basis 3-21G
   max_disp_g_convergence = 1e-5
+  scf_type pk
 }
 
 optimize('scf')

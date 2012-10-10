@@ -122,10 +122,10 @@ CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double
 
 void CartesianEntry::print_in_input_format()
 {
-    std::string xstr(variable_to_string(x_, 10));
-    std::string ystr(variable_to_string(y_, 10));
-    std::string zstr(variable_to_string(z_, 10));
-    fprintf(outfile, "\t%s %16s %16s %16s\n", symbol_.c_str(), xstr.c_str(), ystr.c_str(), zstr.c_str());
+    std::string xstr(variable_to_string(x_, 12));
+    std::string ystr(variable_to_string(y_, 12));
+    std::string zstr(variable_to_string(z_, 12));
+    fprintf(outfile, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
 const Vector3& CartesianEntry::compute()
@@ -225,14 +225,14 @@ void ZMatrixEntry::print_in_input_format()
         /*
          * The first atom
          */
-        fprintf(outfile, "\t%s\n", symbol_.c_str());
+        fprintf(outfile, "\n");
     }else if(ato_ == 0 && dto_ == 0){
         /*
          * The second atom
          */
         int rto = rto_->entry_number() + 1;
         std::string rval = variable_to_string(rval_, 6);
-        fprintf(outfile, "\t%s %5d %s\n", symbol_.c_str(), rto, rval.c_str());
+        fprintf(outfile, "  %5d %11s\n", rto, rval.c_str());
     }else if(dto_ == 0){
         /*
          * The third atom
@@ -241,7 +241,7 @@ void ZMatrixEntry::print_in_input_format()
         std::string rval = variable_to_string(rval_, 6);
         int ato = ato_->entry_number() + 1;
         std::string aval = variable_to_string(aval_, 6);
-        fprintf(outfile, "\t%s %5d %s %5d %s\n", symbol_.c_str(), rto, rval.c_str(), ato, aval.c_str());
+        fprintf(outfile, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
     }else{
         /*
          * Remaining atoms
@@ -252,8 +252,8 @@ void ZMatrixEntry::print_in_input_format()
         std::string aval = variable_to_string(aval_, 6);
         int dto = dto_->entry_number() + 1;
         std::string dval = variable_to_string(dval_, 6);
-        fprintf(outfile, "\t%s %5d %s %5d %s %5d %s\n",
-               symbol_.c_str(), rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
+        fprintf(outfile, "  %5d %11s  %5d %11s  %5d %11s\n",
+            rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
     }
 }
 /**
