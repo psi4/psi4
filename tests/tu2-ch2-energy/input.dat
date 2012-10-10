@@ -16,4 +16,4 @@ set basis 6-31G**
 set reference uhf
 energy ('scf')
 
-# New (DF) answer. where to put it? -38.9253346245799605  #TEST
+compare_values(-38.9253346245799605, get_variable('scf total energy'), 6, 'SCF energy')  #TEST
