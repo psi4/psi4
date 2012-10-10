@@ -232,13 +232,13 @@ void JK::compute_D()
         D_[N]->zero();
         for (int h = 0; h < D_[N]->nirrep(); ++h) {
 
-            int nsol = C_left_[N]->rowspi()[h];
+            int nsol = C_left_[N]->rowspi()[h^C_left_[N]->symmetry()];
             int nocc = C_left_[N]->colspi()[h];
             int nsor = C_right_[N]->rowspi()[h^symm];
 
             if (!nsol || !nsor || !nocc) continue;
 
-            double** Dp = D_[N]->pointer(h);
+            double** Dp = D_[N]->pointer(h^symm);
             double** Clp = C_left_[N]->pointer(h);
             double** Crp = C_right_[N]->pointer(h^symm);
 
