@@ -1727,6 +1727,27 @@ def build_blypd3bj_superfunctional(name, npoints, deriv):
 
     return sup
 
+def build_blypd1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BLYP-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.2, 0.0, 0.0, 0.0))
+
+    return sup
+
+
+def build_b3lypd1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
+
+    return sup
+
 
 def build_b3lypchg_superfunctional(name, npoints, deriv):
 
@@ -1832,6 +1853,17 @@ def build_b3lyp5d3bj_superfunctional(name, npoints, deriv):
 
     return sup
 
+def build_bp86d1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BP86-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
+
+    return sup
+
+
 
 def build_bp86d2p4_superfunctional(name, npoints, deriv):
 
@@ -1875,6 +1907,18 @@ def build_bp86d3bj_superfunctional(name, npoints, deriv):
     sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('bp86', 'd3bj')))
 
     return sup
+
+
+def build_pbed1_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 0.75, 0.0, 0.0, 0.0))
+
+    return sup
+
 
 
 def build_pbed2p4_superfunctional(name, npoints, deriv):
@@ -3056,10 +3100,12 @@ superfunctionals = {
         'hcth120-d3bj'    : build_hcth120d3bj_superfunctional,
         'hcth147'         : build_hcth147_superfunctional,
         'hcth407'         : build_hcth407_superfunctional,
+        'blyp-d1'       : build_blypd1_superfunctional,
         'blyp-d2p4'       : build_blypd2p4_superfunctional,
         'blyp-d2gr'       : build_blypd2gr_superfunctional,
         'blyp-d3zero'     : build_blypd3zero_superfunctional,
         'blyp-d3bj'       : build_blypd3bj_superfunctional,
+        'pbe-d1'        : build_pbed1_superfunctional,
         'pbe-d2p4'        : build_pbed2p4_superfunctional,
         'pbe-d2gr'        : build_pbed2gr_superfunctional,
         'pbe-d3zero'      : build_pbed3zero_superfunctional,
@@ -3068,6 +3114,7 @@ superfunctionals = {
         'pbe0-d2gr'       : build_pbe0d2gr_superfunctional,
         'pbe0-d3zero'     : build_pbe0d3zero_superfunctional,
         'pbe0-d3bj'       : build_pbe0d3bj_superfunctional,
+        'bp86-d1'       : build_bp86d1_superfunctional,
         'bp86-d2p4'       : build_bp86d2p4_superfunctional,
         'bp86-d2gr'       : build_bp86d2gr_superfunctional,
         'bp86-d3zero'     : build_bp86d3zero_superfunctional,
@@ -3081,6 +3128,7 @@ superfunctionals = {
         'b3lyp-d3zero'    : build_b3lypd3zero_superfunctional,
         'b3lyp-d3bj'      : build_b3lypd3bj_superfunctional,
         'b3lyp-chg'       : build_b3lypchg_superfunctional,
+        'b3lyp-d1'       : build_b3lypd1_superfunctional,
 #        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,  # broken
 #        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,  # broken
 #        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,  # broken
