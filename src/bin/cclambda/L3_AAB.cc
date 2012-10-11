@@ -61,7 +61,7 @@
 #include <cmath>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 
 namespace psi { namespace cclambda {
 
