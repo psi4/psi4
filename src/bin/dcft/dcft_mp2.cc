@@ -1,6 +1,6 @@
 #include "dcft.h"
 #include "defines.h"
-#include "ccfiles.h"
+#include <psifiles.h>
 #include <vector>
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.hpp>

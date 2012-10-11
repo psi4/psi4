@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <libdpd/dpd.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
