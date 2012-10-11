@@ -1156,6 +1156,9 @@ AC_CONFIG_FILES([
           tests/docs-bases/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
+          plugins/backtrans/Makefile
+          plugins/backtrans/backtrans.cc
+          plugins/backtrans/input.dat
           plugins/aointegrals/input.dat
           plugins/aointegrals/aointegrals.cc
           plugins/sointegrals/Makefile

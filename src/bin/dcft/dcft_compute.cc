@@ -30,6 +30,9 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
 
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X")
+        fprintf(outfile, "\n\n\tUsing QC algorithm for DCFT-06X with approximate DCFT-06 Hessian");
+
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                      "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                      "\t*---------------------------------------------------------------------------------*\n");
@@ -43,7 +46,7 @@ DCFTSolver::compute_energy()
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "ALGORITHM = QC", __FILE__, __LINE__);
+//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "ALGORITHM = QC", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
 
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
@@ -445,7 +448,7 @@ DCFTSolver::compute_energy()
     }
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT ENERGY"] = new_total_energy_;
+    Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
     Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;

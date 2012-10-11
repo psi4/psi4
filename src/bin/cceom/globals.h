@@ -2,7 +2,7 @@
     \ingroup CCEOM
     \brief Enter brief description of file here 
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <libdpd/dpd.h>
 
 namespace psi { 
