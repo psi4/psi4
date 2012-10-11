@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <libciomr/libciomr.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <libdpd/dpd.h>
 
 namespace psi{ namespace mp2{
