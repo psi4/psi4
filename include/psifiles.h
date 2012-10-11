@@ -22,6 +22,8 @@
 #define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/
 
 #define PSIF_OPTKING           1    /*-  -*/
+#define PSIF_FILE11            11   /*- geometry optimization, geometry, and gradient -*/
+#define PSIF_INTCO             12   /*- internal coordinates file, formerly intco.dat -*/
 #define PSIF_DSCF              31   /*-  -*/
 #define PSIF_SO_TEI            33   /*-  -*/
 #define PSIF_SO_PK             34   /*-  -*/
