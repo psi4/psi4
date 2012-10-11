@@ -1,6 +1,6 @@
 #include <cstdio>
 #include <cstring>
-#include <ccfiles.h>
+#include <psifiles.h>
 
 /* A simple function to convert coupled cluster code file names to
 ** unit numbers, since I can only seem to remember the former.  

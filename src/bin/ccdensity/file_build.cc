@@ -7,7 +7,6 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
-#include <ccfiles.h>
 #include <libdpd/dpd.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"

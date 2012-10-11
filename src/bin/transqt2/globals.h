@@ -7,7 +7,6 @@
 #define _psi_src_bin_transqt2_globals_h
 
 #include <psifiles.h>
-#include <ccfiles.h>
 
 #include "MOInfo.h"
 #include "Params.h"

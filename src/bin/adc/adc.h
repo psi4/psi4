@@ -5,10 +5,9 @@
 #include <libmints/vector.h>
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include <psifiles.h>
 
 #define ID(x) _ints->DPD_ID(x)
-#define PSIF_ADC       260
-#define PSIF_ADC_SEM   261
 
 #define DEBUG_         false
 #define ANGL_TOL_      50.0
