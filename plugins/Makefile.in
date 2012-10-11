@@ -1,7 +1,7 @@
 
 .PHONY: default all install clean tests
 
-subdirs = aointegrals mointegrals sointegrals mp2 efp
+subdirs = aointegrals backtrans mointegrals sointegrals mp2 efp
 
 all: default
 

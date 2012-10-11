@@ -24,7 +24,7 @@ def run_@plugin@(name, **kwargs):
     # Your plugin's PsiMod run sequence goes here
     PsiMod.set_global_option('BASIS', 'sto-3g')
     PsiMod.set_local_option('@PLUGIN@', 'PRINT', 1)
-    energy('scf', **kwargs)
+    scf_helper(name, **kwargs)
     returnvalue = PsiMod.plugin('@plugin@.so')
 
     return returnvalue

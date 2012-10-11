@@ -232,13 +232,13 @@ void JK::compute_D()
         D_[N]->zero();
         for (int h = 0; h < D_[N]->nirrep(); ++h) {
 
-            int nsol = C_left_[N]->rowspi()[h];
+            int nsol = C_left_[N]->rowspi()[h^C_left_[N]->symmetry()];
             int nocc = C_left_[N]->colspi()[h];
             int nsor = C_right_[N]->rowspi()[h^symm];
 
             if (!nsol || !nsor || !nocc) continue;
 
-            double** Dp = D_[N]->pointer(h);
+            double** Dp = D_[N]->pointer(h^symm);
             double** Clp = C_left_[N]->pointer(h);
             double** Crp = C_right_[N]->pointer(h^symm);
 
@@ -606,9 +606,9 @@ void DiskJK::compute_JK()
 
                 for (int N = 0; N < J_.size(); N++) {
 
-                    SharedMatrix J = J_[N];
-                    SharedMatrix K = K_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* J = J_[N].get();
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = J->symmetry();
 
@@ -779,8 +779,8 @@ void DiskJK::compute_JK()
                 // Coulomb terms
                 for (int N = 0; N < J_.size(); N++) {
 
-                    SharedMatrix J = J_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* J = J_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = J->symmetry();
 
@@ -836,8 +836,8 @@ void DiskJK::compute_JK()
                 // Exchange terms
                 for (int N = 0; N < K_.size(); N++) {
 
-                    SharedMatrix K = K_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = K->symmetry();
 
@@ -968,8 +968,8 @@ void DiskJK::compute_JK()
                 // Exchange terms
                 for (int N = 0; N < wK_.size(); N++) {
 
-                    SharedMatrix wK = wK_[N];
-                    SharedMatrix D = D_[N];
+                    Matrix* wK = wK_[N].get();
+                    Matrix* D = D_[N].get();
 
                     int sym = wK->symmetry();
 
