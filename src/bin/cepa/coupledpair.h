@@ -22,7 +22,8 @@ class CoupledPair{
     Options & options_;
 
     CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
-    ~CoupledPair();
+    virtual ~CoupledPair();
+    void common_init();
 
     /**
       * Flag to indicate if t2 is stored in core memory or 
@@ -62,14 +63,14 @@ class CoupledPair{
     /**
       * this function solves the CEPA equations (requires a minimum of 3o^2v^2 memory)
      */
-    PsiReturnType CEPAIterations(Options&options);
+    virtual PsiReturnType CEPAIterations();
   
-    void WriteBanner(Options&options);
+    virtual void WriteBanner();
 
     /**
       * allocate memory, define tiling of gigantic diragrams
      */
-    void AllocateMemory(Options&options);
+    void AllocateMemory(long int extramemory);
 
     /**
       * some CC diagrams.  these were "easy" ones that i used to
@@ -88,30 +89,23 @@ class CoupledPair{
       */
     void CPU_I2p_abci_refactored_term1(CepaTaskParams params);
 
-    /**
-      * Update t1
-      */
-    void UpdateT1(long int iter);
+    /// update t1
+    virtual void UpdateT1(long int iter);
 
-    /**
-      * Update t2
-      */
-    void UpdateT2(long int iter);
-    /**
-      * Get the energy for that iteration. If there is a diis extrapolation,
-      * the energy is evaluated after that step.
-      */
-    double CheckEnergy();
+    /// update t2
+    virtual void UpdateT2(long int iter);
 
-    /**
-      * what level of cepa? 0,1,2,3.  default 0
-      */
+    /// evaluate the energy
+    virtual double compute_energy();
+    virtual bool same_a_b_orbs() const { return false; }
+    virtual bool same_a_b_dens() const { return false; }
+
+    /// which cepa level
     int cepa_level;
+    /// string version of cepa_level
     char*cepa_type;
 
-    /**
-      * construct an array of pair energies
-      */
+    /// construct an array of pair energies
     void PairEnergy();
     double*pair_energy;
 
@@ -163,7 +157,7 @@ class CoupledPair{
     /**
       * define tiling.
       */
-    void DefineTilingCPU();
+    void DefineTilingCPU(long int extra);
     long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
     long int tilesize,lasttile,maxelem;
     long int ntiles,novtiles,nov2tiles;

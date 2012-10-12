@@ -24,6 +24,9 @@ namespace psi{ namespace cepa{
 CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options):
   options_(options), wfn_(wfn)
 {
+  common_init();
+}
+void CoupledPair::common_init(){
   if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
      nirreps = wfn_->nirrep();
@@ -61,24 +64,24 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
   scale_t = 1.0;
 
   // get paramters from input 
-  conv    = options.get_double("R_CONVERGENCE");
-  maxiter = options.get_int("MAXITER");
-  maxdiis = options.get_int("DIIS_MAX_VECS");
+  conv    = options_.get_double("R_CONVERGENCE");
+  maxiter = options_.get_int("MAXITER");
+  maxdiis = options_.get_int("DIIS_MAX_VECS");
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CEPA
-  emp2_os_fac = options.get_double("MP2_SCALE_OS");
-  emp2_ss_fac = options.get_double("MP2_SCALE_SS");
-  ecepa_os_fac = options.get_double("CEPA_SCALE_OS");
-  ecepa_ss_fac = options.get_double("CEPA_SCALE_SS");
+  emp2_os_fac = options_.get_double("MP2_SCALE_OS");
+  emp2_ss_fac = options_.get_double("MP2_SCALE_SS");
+  ecepa_os_fac = options_.get_double("CEPA_SCALE_OS");
+  ecepa_ss_fac = options_.get_double("CEPA_SCALE_SS");
 
   // which cepa level? 0,1,2,3
   // also, -1 = cisd
   // also, -2 = acpf
   // also, -3 = aqcc
-  std::string cepa = options.get_str("CEPA_LEVEL");
+  std::string cepa = options_.get_str("CEPA_LEVEL");
   if (cepa == "CEPA0") cepa_level = 0;
   if (cepa == "CEPA1") cepa_level = 1;
   if (cepa == "CEPA2") cepa_level = 2;
@@ -108,11 +111,11 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
   // orbital energies
   // NOTE: when using libtrans, the Fock matrix will be in Pitzer order, 
   // regardless of the ordering specified in the constructor.
-  if (!wfn->isCIM() && options.get_bool("CEPA_VABCD_DIRECT")){
+  if (!wfn_->isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")){
      // pitzer
      int* aQT = (int*)malloc((ndocc+nvirt+nfzc)*sizeof(int));
      double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
-     reorder_qt(wfn->doccpi(), wfn->soccpi(), wfn->frzcpi(), wfn->frzvpi(), aQT, wfn->nmopi(), nirreps);
+     reorder_qt(wfn_->doccpi(), wfn_->soccpi(), wfn_->frzcpi(), wfn_->frzvpi(), aQT, wfn_->nmopi(), nirreps);
      int count=0;
      eps_test = wfn_->epsilon_a();
      for (int h=0; h<nirreps; h++){
@@ -126,7 +129,7 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
      }
      free(tmp);
      free(aQT);
-  }else if (!wfn->isCIM()){
+  }else if (!wfn_->isCIM()){
      // qt
      eps = (double*)malloc(nmo*sizeof(double));
      int count=0;
@@ -175,36 +178,36 @@ CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&option
 CoupledPair::~CoupledPair()
 {}
 
-void CoupledPair::WriteBanner(Options&options){
+void CoupledPair::WriteBanner(){
   fflush(outfile);
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile, "        *                                                     *\n");
-  if (options.get_str("CEPA_LEVEL")=="CEPA0"){
+  if (options_.get_str("CEPA_LEVEL")=="CEPA0"){
      fprintf(outfile, "        *                       CEPA(0)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  else if (options.get_str("CEPA_LEVEL")=="CEPA1"){
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA1"){
      fprintf(outfile, "        *                       CEPA(1)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  else if (options.get_str("CEPA_LEVEL")=="CEPA2"){
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA2"){
      fprintf(outfile, "        *                       CEPA(2)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  if (options.get_str("CEPA_LEVEL")=="CEPA3"){
+  if (options_.get_str("CEPA_LEVEL")=="CEPA3"){
      fprintf(outfile, "        *                       CEPA(3)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  else if (options.get_str("CEPA_LEVEL")=="ACPF"){
+  else if (options_.get_str("CEPA_LEVEL")=="ACPF"){
      fprintf(outfile, "        *                        ACPF                         *\n");
      fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
   }
-  else if (options.get_str("CEPA_LEVEL")=="AQCC"){
+  else if (options_.get_str("CEPA_LEVEL")=="AQCC"){
      fprintf(outfile, "        *                        AQCC                         *\n");
      fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
   }
-  else if (options.get_str("CEPA_LEVEL")=="CISD"){
+  else if (options_.get_str("CEPA_LEVEL")=="CISD"){
      fprintf(outfile, "        *                        CISD                         *\n");
      fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
   }
@@ -223,7 +226,7 @@ void CoupledPair::WriteBanner(Options&options){
   solve cepa equations
 
 ===================================================================*/
-PsiReturnType CoupledPair::CEPAIterations(Options&options){
+PsiReturnType CoupledPair::CEPAIterations(){
 
   // timer stuff:
   struct tms total_tmstime;
@@ -292,7 +295,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
       // update the amplitudes and check the energy
       Eold = ecepa;
       PairEnergy();
-      if (!options.get_bool("CEPA_NO_SINGLES")){
+      if (!options_.get_bool("CEPA_NO_SINGLES")){
          UpdateT1(iter);
       }
       UpdateT2(iter);
@@ -309,11 +312,11 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
          else                   DIIS(diisvec,maxdiis,arraysize+o*v);
          DIISNewAmplitudes(diis_iter);
          // if cepa_no_singles, zero t1 just to be safe after extrapolation
-         if (options.get_bool("CEPA_NO_SINGLES")){
+         if (options_.get_bool("CEPA_NO_SINGLES")){
             memset((void*)t1,'\0',o*v*sizeof(double));
          }
       }
-      ecepa = CheckEnergy();
+      ecepa = compute_energy();
 
       if (diis_iter<=maxdiis) diis_iter++;
       else if (replace_diis_iter<maxdiis) replace_diis_iter++;
@@ -360,7 +363,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
   fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
   if (cepa_level>=0){
-     if (options.get_bool("SCS_CEPA")){
+     if (options_.get_bool("SCS_CEPA")){
         fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_os);
         fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_ss);
         fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
@@ -372,7 +375,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
      fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,ecepa);
      fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,ecepa+escf);
   }else{
-     if (options.get_bool("SCS_CEPA")){
+     if (options_.get_bool("SCS_CEPA")){
         fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os);
         fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_ss);
         fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
@@ -394,6 +397,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
   fprintf(outfile,"                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
   fflush(outfile);
 
+  free(pair_energy);
   return Success;
 }
 
@@ -401,10 +405,11 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
 
   determine tiling for vabcd and vabci diagrams for the cpu
   this determines the size of blocks of integrals that 
-  can be read into cpu memory.
+  can be read into cpu memory. extra memory accounts for any 
+  differences in memory requirements for derived classes (p2rdm)
 
 ===================================================================*/
-void CoupledPair::DefineTilingCPU(){
+void CoupledPair::DefineTilingCPU(long int extra){
   long int i,v = nvirt;
   long int o = ndoccact;
   long int ov2 = o*v*v;
@@ -414,7 +419,7 @@ void CoupledPair::DefineTilingCPU(){
   // number of doubles in total memory
   long int ndoubles = memory/8L;
   // minus storage for other necessary buffers 
-  ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
+  ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v)+extra;
   if (t2_on_disk){
      ndoubles += o*o*v*v;
   }else{
@@ -491,21 +496,21 @@ void CoupledPair::DefineTilingCPU(){
   allocate cpu memory
 
 ===================================================================*/
-void CoupledPair::AllocateMemory(Options&options){
+void CoupledPair::AllocateMemory(long int extramemory){
 
   long int i,o=ndoccact;
   long int v=nvirt;
   long int dim;
   long int vv = v*v;
-  if (options.get_bool("CEPA_VABCD_DIRECT")) vv = nso*nso;
+  if (options_.get_bool("CEPA_VABCD_DIRECT")) vv = nso*nso;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  available memory =                        %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
   fprintf(outfile,"  minimum memory requirements for %s =    %9.2lf mb\n",cepa_type,
-         8./1024./1024.*(o*o*v*v+2.*(o*o*vv+o*v)+2.*o*v+2.*v*v+o+v));
+         8./1024./1024.*(o*o*v*v+2.*(o*o*vv+o*v)+2.*o*v+2.*v*v+o+v+extramemory));
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
-  DefineTilingCPU();
+  DefineTilingCPU(extramemory);
 
 
   dim = 0;
@@ -520,7 +525,7 @@ void CoupledPair::AllocateMemory(Options&options){
      fprintf(outfile,"\n");
      fflush(outfile);
      t2_on_disk = true;
-     DefineTilingCPU();
+     DefineTilingCPU(extramemory);
      dim = 0;
      if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
      if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
@@ -958,7 +963,7 @@ void CoupledPair::PairEnergy(){
 
   psio.reset();
 }
-double CoupledPair::CheckEnergy(){
+double CoupledPair::compute_energy(){
 
   long int v = nvirt;
   long int o = ndoccact;
