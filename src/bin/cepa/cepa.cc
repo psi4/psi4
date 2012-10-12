@@ -41,9 +41,9 @@ void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
   // solve cepa equations
   tstart();
-  cepa->WriteBanner(options);
-  cepa->AllocateMemory(options);
-  status = cepa->CEPAIterations(options);
+  cepa->WriteBanner();
+  cepa->AllocateMemory(0L);
+  status = cepa->CEPAIterations();
   tstop();
 
   // mp2 energy
