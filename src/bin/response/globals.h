@@ -2,7 +2,7 @@
     \ingroup RESPONSE
     \brief Enter brief description of file here 
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 
 namespace psi { namespace response {
 
