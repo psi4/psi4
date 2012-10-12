@@ -29,46 +29,121 @@ namespace {
 
     unsigned char ntypes[] = { 1, ERI_1DER_NTYPE, ERI_2DER_NTYPE };
 
+    /**
+     * @brief Takes care of the changing the results buffer for any reordering done for libderiv.
+     * @param buffer_offsets_ Computed elsewhere this is the reordering array.
+     * @param libderiv_ The libderiv buffer that contains the integrals
+     * @param source_ The destination for the integrals.
+     * @param size Total number of integrals computed.
+     */
     static void handle_reordering1(unsigned char* buffer_offsets_, Libderiv_t& libderiv_, double* source_, size_t size) {
-#if 0
-        int A, B, C, D;
-        for(int i = 0; i < 4; ++i){
-           if(buffer_offsets_[i] == 0) A = i;
-           if(buffer_offsets_[i] == 3) B = i;
-           if(buffer_offsets_[i] == 6) C = i;
-           if(buffer_offsets_[i] == 9) D = i;
-        }
+#if 1
+    int A, B, C, D;
+    for(int i = 0; i < 4; ++i) {
+        if(buffer_offsets_[i] == 0) A = i;
+        if(buffer_offsets_[i] == 3) B = i;
+        if(buffer_offsets_[i] == 6) C = i;
+        if(buffer_offsets_[i] == 9) D = i;
+    }
 
+    if(buffer_offsets_[1]==0) {
+        //Ax
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+0*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+0*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+0*size, 1);
+        //Ay
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+1*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+1*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+1*size, 1);
+        //Az
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+2*size, 1);
+        //Cx
+        memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+        //Cy
+        memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+        //Cz
+        memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+        //Dx
+        memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+        //Dy
+        memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+        //Dz
+        memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+    }
+    else if(buffer_offsets_[1]==6) {
         //Ax
         memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
         //Ay
         memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
         //Az
         memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
-        //Bx
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+3*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+3*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+3*size, 1);
-        //By
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+4*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+4*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+4*size, 1);
-        //Bz
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+5*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+5*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+5*size, 1);
         //Cx
-        memcpy(source_+6*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+3*size, 1);
         //Cy
-        memcpy(source_+7*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+4*size, 1);
         //Cz
-        memcpy(source_+8*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+5*size, 1);
         //Dx
-        memcpy(source_+9*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+        memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
         //Dy
-        memcpy(source_+10*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+        memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
         //Dz
-        memcpy(source_+11*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+        memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+    }
+    else if(buffer_offsets_[1]==9) {
+        //Ax
+        memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+        //Ay
+        memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+        //Az
+        memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+        //Cx
+        memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+        //Cy
+        memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+        //Cz
+        memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+        //Dx
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+6*size, 1);
+        //Dy
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+7*size, 1);
+        //Dz
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+8*size, 1);
+    }
+    else {
+        //Ax
+        memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+        //Ay
+        memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+        //Az
+        memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+        //Cx
+        memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+        //Cy
+        memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+        //Cz
+        memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+        //Dx
+        memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+        //Dy
+        memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+        //Dz
+        memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+    }
 #else
     // A
     if (buffer_offsets_[0] == 3) {
@@ -139,6 +214,688 @@ namespace {
         memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
     }
 #endif
+    }
+
+    /**
+     * @brief Takes care of the changing the results buffer for any reordering done for libderiv.
+     * @param buffer_offsets_ Computed elsewhere this is the reordering array.
+     * @param libderiv_ The libderiv buffer that contains the integrals
+     * @param source_ The destination for the integrals.
+     * @param size Total number of integrals computed.
+     */
+    static void handle_reordering12(unsigned char* buffer_offsets_, Libderiv_t& libderiv_, double* source_, size_t size)
+    {
+
+        int A, B, C, D;
+        for(int i = 0; i < 4; ++i){
+            if(buffer_offsets_[i] == 0) A = i;
+            if(buffer_offsets_[i] == 3) B = i;
+            if(buffer_offsets_[i] == 6) C = i;
+            if(buffer_offsets_[i] == 9) D = i;
+        }
+
+            int count = 0;
+        if(buffer_offsets_[1]==0){
+            //Ax
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+0*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+0*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+0*size, 1);
+            //Ay
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+1*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+1*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+1*size, 1);
+            //Az
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+2*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+2*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+2*size, 1);
+            //Cx
+            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            //Cy
+            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            //Cz
+            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            //Dx
+            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            //Dy
+            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            //Dz
+            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+
+
+            //AxAx
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+0)*(3*B+0+1)/2+12], 1, source_+9*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+0+1)/2+12], 1, source_+9*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+0+1)/2+12], 1, source_+9*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], 1, source_+9*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+0)*(3*D+0+1)/2+12], 1, source_+9*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], 1, source_+9*size, 1);
+            //AxAy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+0+1)/2+12], 1, source_+10*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+1+1)/2+12], 1, source_+10*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+1+1)/2+12], 1, source_+10*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], 1, source_+10*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+0)*(3*D+1+1)/2+12], 1, source_+10*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], 1, source_+10*size, 1);
+            //AxAz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+0+1)/2+12], 1, source_+11*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+2+1)/2+12], 1, source_+11*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+2+1)/2+12], 1, source_+11*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], 1, source_+11*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+0)*(3*D+2+1)/2+12], 1, source_+11*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], 1, source_+11*size, 1);
+            //AxCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+0+1)/2+12], 1, source_+12*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], 1, source_+12*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+0+1)/2+12], 1, source_+12*size, 1);
+            //AxCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+1+1)/2+12], 1, source_+13*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], 1, source_+13*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+0+1)/2+12], 1, source_+13*size, 1);
+            //AxCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+2+1)/2+12], 1, source_+14*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], 1, source_+14*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+0+1)/2+12], 1, source_+14*size, 1);
+            //AxDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+0+1)/2+12], 1, source_+15*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+0+1)/2+12], 1, source_+15*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], 1, source_+15*size, 1);
+            //AxDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+1+1)/2+12], 1, source_+16*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+1+1)/2+12], 1, source_+16*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], 1, source_+16*size, 1);
+            //AxDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+2+1)/2+12], 1, source_+17*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+2+1)/2+12], 1, source_+17*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], 1, source_+17*size, 1);
+            //AyAy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+1+1)/2+12], 1, source_+18*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*C+1+1)/2+12], 1, source_+18*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*D+1+1)/2+12], 1, source_+18*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], 1, source_+18*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+1)*(3*D+1+1)/2+12], 1, source_+18*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], 1, source_+18*size, 1);
+            //AyAz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+1+1)/2+12], 1, source_+19*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*C+2+1)/2+12], 1, source_+19*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*D+2+1)/2+12], 1, source_+19*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], 1, source_+19*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+1)*(3*D+2+1)/2+12], 1, source_+19*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], 1, source_+19*size, 1);
+            //AyCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+0+1)/2+12], 1, source_+20*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+1+1)/2+12], 1, source_+20*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+1+1)/2+12], 1, source_+20*size, 1);
+            //AyCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+1+1)/2+12], 1, source_+21*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], 1, source_+21*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+1+1)/2+12], 1, source_+21*size, 1);
+            //AyCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+2+1)/2+12], 1, source_+22*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], 1, source_+22*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+1+1)/2+12], 1, source_+22*size, 1);
+            //AyDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+0+1)/2+12], 1, source_+23*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+0+1)/2+12], 1, source_+23*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+1+1)/2+12], 1, source_+23*size, 1);
+            //AyDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+1+1)/2+12], 1, source_+24*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+1+1)/2+12], 1, source_+24*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], 1, source_+24*size, 1);
+            //AyDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+2+1)/2+12], 1, source_+25*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+2+1)/2+12], 1, source_+25*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], 1, source_+25*size, 1);
+            //AzAz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+2+1)/2+12], 1, source_+26*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+2)*(3*C+2+1)/2+12], 1, source_+26*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+2)*(3*D+2+1)/2+12], 1, source_+26*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], 1, source_+26*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*C+2)*(3*D+2+1)/2+12], 1, source_+26*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], 1, source_+26*size, 1);
+            //AzCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+0+1)/2+12], 1, source_+27*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+2+1)/2+12], 1, source_+27*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*D+2+1)/2+12], 1, source_+27*size, 1);
+            //AzCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+1+1)/2+12], 1, source_+28*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+2+1)/2+12], 1, source_+28*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*D+2+1)/2+12], 1, source_+28*size, 1);
+            //AzCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+2+1)/2+12], 1, source_+29*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], 1, source_+29*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+2+1)/2+12], 1, source_+29*size, 1);
+            //AzDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+0+1)/2+12], 1, source_+30*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+0+1)/2+12], 1, source_+30*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+2+1)/2+12], 1, source_+30*size, 1);
+            //AzDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+1+1)/2+12], 1, source_+31*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+1+1)/2+12], 1, source_+31*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+2+1)/2+12], 1, source_+31*size, 1);
+            //AzDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+2+1)/2+12], 1, source_+32*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*D+2+1)/2+12], 1, source_+32*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], 1, source_+32*size, 1);
+            //CxCx
+            memcpy(source_+33*size, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCy
+            memcpy(source_+34*size, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCz
+            memcpy(source_+35*size, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxDx
+            memcpy(source_+36*size, libderiv_.ABCD[(3*C+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CxDy
+            memcpy(source_+37*size, libderiv_.ABCD[(3*C+0)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CxDz
+            memcpy(source_+38*size, libderiv_.ABCD[(3*C+0)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CyCy
+            memcpy(source_+39*size, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyCz
+            memcpy(source_+40*size, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyDx
+            memcpy(source_+41*size, libderiv_.ABCD[(3*C+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CyDy
+            memcpy(source_+42*size, libderiv_.ABCD[(3*C+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CyDz
+            memcpy(source_+43*size, libderiv_.ABCD[(3*C+1)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CzCz
+            memcpy(source_+44*size, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //CzDx
+            memcpy(source_+45*size, libderiv_.ABCD[(3*C+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CzDy
+            memcpy(source_+46*size, libderiv_.ABCD[(3*C+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CzDz
+            memcpy(source_+47*size, libderiv_.ABCD[(3*C+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //DxDx
+            memcpy(source_+48*size, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDy
+            memcpy(source_+49*size, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDz
+            memcpy(source_+50*size, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DyDy
+            memcpy(source_+51*size, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DyDz
+            memcpy(source_+52*size, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DzDz
+            memcpy(source_+53*size, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+        }else if(buffer_offsets_[1]==6){
+            //Ax
+            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            //Ay
+            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            //Az
+            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            //Cx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+3*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+3*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+3*size, 1);
+            //Cy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+4*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+4*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+4*size, 1);
+            //Cz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+5*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+5*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+5*size, 1);
+            //Dx
+            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            //Dy
+            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            //Dz
+            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+
+
+            //AxAx
+            memcpy(source_+9*size, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAy
+            memcpy(source_+10*size, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAz
+            memcpy(source_+11*size, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], 1, source_+12*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+0+1)/2+12], 1, source_+12*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+0+1)/2+12], 1, source_+12*size, 1);
+            //AxCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], 1, source_+13*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+1+1)/2+12], 1, source_+13*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+1+1)/2+12], 1, source_+13*size, 1);
+            //AxCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], 1, source_+14*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+2+1)/2+12], 1, source_+14*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+2+1)/2+12], 1, source_+14*size, 1);
+            //AxDx
+            memcpy(source_+15*size, libderiv_.ABCD[(3*A+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AxDy
+            memcpy(source_+16*size, libderiv_.ABCD[(3*A+0)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AxDz
+            memcpy(source_+17*size, libderiv_.ABCD[(3*A+0)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //AyAy
+            memcpy(source_+18*size, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyAz
+            memcpy(source_+19*size, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+1+1)/2+12], 1, source_+20*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+0+1)/2+12], 1, source_+20*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+0+1)/2+12], 1, source_+20*size, 1);
+            //AyCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], 1, source_+21*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+1+1)/2+12], 1, source_+21*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+1+1)/2+12], 1, source_+21*size, 1);
+            //AyCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], 1, source_+22*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+2+1)/2+12], 1, source_+22*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+2+1)/2+12], 1, source_+22*size, 1);
+            //AyDx
+            memcpy(source_+23*size, libderiv_.ABCD[(3*A+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AyDy
+            memcpy(source_+24*size, libderiv_.ABCD[(3*A+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AyDz
+            memcpy(source_+25*size, libderiv_.ABCD[(3*A+1)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //AzAz
+            memcpy(source_+26*size, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], sizeof(double) * size);
+            //AzCx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+2+1)/2+12], 1, source_+27*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+0+1)/2+12], 1, source_+27*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+0+1)/2+12], 1, source_+27*size, 1);
+            //AzCy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+2+1)/2+12], 1, source_+28*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+1+1)/2+12], 1, source_+28*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+1+1)/2+12], 1, source_+28*size, 1);
+            //AzCz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], 1, source_+29*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+2+1)/2+12], 1, source_+29*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+2+1)/2+12], 1, source_+29*size, 1);
+            //AzDx
+            memcpy(source_+30*size, libderiv_.ABCD[(3*A+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AzDy
+            memcpy(source_+31*size, libderiv_.ABCD[(3*A+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AzDz
+            memcpy(source_+32*size, libderiv_.ABCD[(3*A+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CxCx
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], 1, source_+33*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+0+1)/2+12], 1, source_+33*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*D+0+1)/2+12], 1, source_+33*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+0)*(3*B+0+1)/2+12], 1, source_+33*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+0+1)/2+12], 1, source_+33*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], 1, source_+33*size, 1);
+            //CxCy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], 1, source_+34*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+1+1)/2+12], 1, source_+34*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*D+1+1)/2+12], 1, source_+34*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+0+1)/2+12], 1, source_+34*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+1+1)/2+12], 1, source_+34*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], 1, source_+34*size, 1);
+            //CxCz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], 1, source_+35*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+2+1)/2+12], 1, source_+35*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*D+2+1)/2+12], 1, source_+35*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+0+1)/2+12], 1, source_+35*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*D+2+1)/2+12], 1, source_+35*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], 1, source_+35*size, 1);
+            //CxDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+0+1)/2+12], 1, source_+36*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+0+1)/2+12], 1, source_+36*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], 1, source_+36*size, 1);
+            //CxDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+1+1)/2+12], 1, source_+37*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+1+1)/2+12], 1, source_+37*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], 1, source_+37*size, 1);
+            //CxDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*D+2+1)/2+12], 1, source_+38*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*D+2+1)/2+12], 1, source_+38*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], 1, source_+38*size, 1);
+            //CyCy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], 1, source_+39*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*B+1+1)/2+12], 1, source_+39*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*D+1+1)/2+12], 1, source_+39*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+1+1)/2+12], 1, source_+39*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*D+1+1)/2+12], 1, source_+39*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], 1, source_+39*size, 1);
+            //CyCz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], 1, source_+40*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*B+2+1)/2+12], 1, source_+40*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*D+2+1)/2+12], 1, source_+40*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+1+1)/2+12], 1, source_+40*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*D+2+1)/2+12], 1, source_+40*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], 1, source_+40*size, 1);
+            //CyDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+0+1)/2+12], 1, source_+41*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+0+1)/2+12], 1, source_+41*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+1+1)/2+12], 1, source_+41*size, 1);
+            //CyDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+1+1)/2+12], 1, source_+42*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+1+1)/2+12], 1, source_+42*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], 1, source_+42*size, 1);
+            //CyDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*D+2+1)/2+12], 1, source_+43*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*D+2+1)/2+12], 1, source_+43*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], 1, source_+43*size, 1);
+            //CzCz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], 1, source_+44*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+2)*(3*B+2+1)/2+12], 1, source_+44*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+2)*(3*D+2+1)/2+12], 1, source_+44*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+2+1)/2+12], 1, source_+44*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+2)*(3*D+2+1)/2+12], 1, source_+44*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], 1, source_+44*size, 1);
+            //CzDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+0+1)/2+12], 1, source_+45*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+0+1)/2+12], 1, source_+45*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+0)*(3*D+2+1)/2+12], 1, source_+45*size, 1);
+            //CzDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+1+1)/2+12], 1, source_+46*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+1+1)/2+12], 1, source_+46*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+1)*(3*D+2+1)/2+12], 1, source_+46*size, 1);
+            //CzDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*D+2+1)/2+12], 1, source_+47*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*D+2+1)/2+12], 1, source_+47*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], 1, source_+47*size, 1);
+            //DxDx
+            memcpy(source_+48*size, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDy
+            memcpy(source_+49*size, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDz
+            memcpy(source_+50*size, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DyDy
+            memcpy(source_+51*size, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DyDz
+            memcpy(source_+52*size, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DzDz
+            memcpy(source_+53*size, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+        }else if(buffer_offsets_[1]==9){
+            //Ax
+            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            //Ay
+            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            //Az
+            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            //Cx
+            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            //Cy
+            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            //Cz
+            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            //Dx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+6*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+6*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+6*size, 1);
+            //Dy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+7*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+7*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+7*size, 1);
+            //Dz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+8*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+8*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+8*size, 1);
+
+
+            //AxAx
+            memcpy(source_+9*size, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAy
+            memcpy(source_+10*size, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAz
+            memcpy(source_+11*size, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxCx
+            memcpy(source_+12*size, libderiv_.ABCD[(3*A+0)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AxCy
+            memcpy(source_+13*size, libderiv_.ABCD[(3*A+0)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AxCz
+            memcpy(source_+14*size, libderiv_.ABCD[(3*A+0)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AxDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], 1, source_+15*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+0+1)/2+12], 1, source_+15*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+0+1)/2+12], 1, source_+15*size, 1);
+            //AxDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], 1, source_+16*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+1+1)/2+12], 1, source_+16*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+1+1)/2+12], 1, source_+16*size, 1);
+            //AxDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], 1, source_+17*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*B+2+1)/2+12], 1, source_+17*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+2+1)/2+12], 1, source_+17*size, 1);
+            //AyAy
+            memcpy(source_+18*size, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyAz
+            memcpy(source_+19*size, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyCx
+            memcpy(source_+20*size, libderiv_.ABCD[(3*A+1)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AyCy
+            memcpy(source_+21*size, libderiv_.ABCD[(3*A+1)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AyCz
+            memcpy(source_+22*size, libderiv_.ABCD[(3*A+1)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AyDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+1+1)/2+12], 1, source_+23*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+0+1)/2+12], 1, source_+23*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+0+1)/2+12], 1, source_+23*size, 1);
+            //AyDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], 1, source_+24*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+1+1)/2+12], 1, source_+24*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+1+1)/2+12], 1, source_+24*size, 1);
+            //AyDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], 1, source_+25*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*B+2+1)/2+12], 1, source_+25*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+2+1)/2+12], 1, source_+25*size, 1);
+            //AzAz
+            memcpy(source_+26*size, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], sizeof(double) * size);
+            //AzCx
+            memcpy(source_+27*size, libderiv_.ABCD[(3*A+2)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AzCy
+            memcpy(source_+28*size, libderiv_.ABCD[(3*A+2)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AzCz
+            memcpy(source_+29*size, libderiv_.ABCD[(3*A+2)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AzDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*A+2+1)/2+12], 1, source_+30*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+0+1)/2+12], 1, source_+30*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+0+1)/2+12], 1, source_+30*size, 1);
+            //AzDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*A+2+1)/2+12], 1, source_+31*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+1+1)/2+12], 1, source_+31*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+1+1)/2+12], 1, source_+31*size, 1);
+            //AzDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], 1, source_+32*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*B+2+1)/2+12], 1, source_+32*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+2+1)/2+12], 1, source_+32*size, 1);
+            //CxCx
+            memcpy(source_+33*size, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCy
+            memcpy(source_+34*size, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCz
+            memcpy(source_+35*size, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+0+1)/2+12], 1, source_+36*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+0+1)/2+12], 1, source_+36*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], 1, source_+36*size, 1);
+            //CxDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+0+1)/2+12], 1, source_+37*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+0+1)/2+12], 1, source_+37*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], 1, source_+37*size, 1);
+            //CxDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+0+1)/2+12], 1, source_+38*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+0+1)/2+12], 1, source_+38*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], 1, source_+38*size, 1);
+            //CyCy
+            memcpy(source_+39*size, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyCz
+            memcpy(source_+40*size, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+1+1)/2+12], 1, source_+41*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+1+1)/2+12], 1, source_+41*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+1+1)/2+12], 1, source_+41*size, 1);
+            //CyDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+1+1)/2+12], 1, source_+42*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+1+1)/2+12], 1, source_+42*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], 1, source_+42*size, 1);
+            //CyDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+1+1)/2+12], 1, source_+43*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+1+1)/2+12], 1, source_+43*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], 1, source_+43*size, 1);
+            //CzCz
+            memcpy(source_+44*size, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //CzDx
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+0)*(3*C+2+1)/2+12], 1, source_+45*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+0)*(3*C+2+1)/2+12], 1, source_+45*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+0)*(3*C+2+1)/2+12], 1, source_+45*size, 1);
+            //CzDy
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+1)*(3*C+2+1)/2+12], 1, source_+46*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+1)*(3*C+2+1)/2+12], 1, source_+46*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+1)*(3*C+2+1)/2+12], 1, source_+46*size, 1);
+            //CzDz
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*A+2)*(3*C+2+1)/2+12], 1, source_+47*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*B+2)*(3*C+2+1)/2+12], 1, source_+47*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], 1, source_+47*size, 1);
+            //DxDx
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], 1, source_+48*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+0+1)/2+12], 1, source_+48*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*C+0+1)/2+12], 1, source_+48*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+0)*(3*B+0+1)/2+12], 1, source_+48*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+0+1)/2+12], 1, source_+48*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], 1, source_+48*size, 1);
+            //DxDy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], 1, source_+49*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+1+1)/2+12], 1, source_+49*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*C+1+1)/2+12], 1, source_+49*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+0+1)/2+12], 1, source_+49*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+1+1)/2+12], 1, source_+49*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], 1, source_+49*size, 1);
+            //DxDz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], 1, source_+50*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*B+2+1)/2+12], 1, source_+50*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+0)*(3*C+2+1)/2+12], 1, source_+50*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+0+1)/2+12], 1, source_+50*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+0)*(3*C+2+1)/2+12], 1, source_+50*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], 1, source_+50*size, 1);
+            //DyDy
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], 1, source_+51*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*B+1+1)/2+12], 1, source_+51*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*C+1+1)/2+12], 1, source_+51*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+1)*(3*B+1+1)/2+12], 1, source_+51*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*C+1+1)/2+12], 1, source_+51*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], 1, source_+51*size, 1);
+            //DyDz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], 1, source_+52*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*B+2+1)/2+12], 1, source_+52*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+1)*(3*C+2+1)/2+12], 1, source_+52*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+1+1)/2+12], 1, source_+52*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+1)*(3*C+2+1)/2+12], 1, source_+52*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], 1, source_+52*size, 1);
+            //DzDz
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], 1, source_+53*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+2)*(3*B+2+1)/2+12], 1, source_+53*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*A+2)*(3*C+2+1)/2+12], 1, source_+53*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*B+2)*(3*B+2+1)/2+12], 1, source_+53*size, 1);
+            C_DAXPY(size, 1.0, libderiv_.ABCD[(3*B+2)*(3*C+2+1)/2+12], 1, source_+53*size, 1);
+            C_DAXPY(size, 2.0, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], 1, source_+53*size, 1);
+        }else{
+            //Ax
+            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            //Ay
+            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            //Az
+            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            //Cx
+            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            //Cy
+            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            //Cz
+            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            //Dx
+            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            //Dy
+            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            //Dz
+            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+
+
+            //AxAx
+            memcpy(source_+9*size, libderiv_.ABCD[(3*A+0)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAy
+            memcpy(source_+10*size, libderiv_.ABCD[(3*A+1)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxAz
+            memcpy(source_+11*size, libderiv_.ABCD[(3*A+2)*(3*A+0+1)/2+12], sizeof(double) * size);
+            //AxCx
+            memcpy(source_+12*size, libderiv_.ABCD[(3*A+0)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AxCy
+            memcpy(source_+13*size, libderiv_.ABCD[(3*A+0)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AxCz
+            memcpy(source_+14*size, libderiv_.ABCD[(3*A+0)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AxDx
+            memcpy(source_+15*size, libderiv_.ABCD[(3*A+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AxDy
+            memcpy(source_+16*size, libderiv_.ABCD[(3*A+0)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AxDz
+            memcpy(source_+17*size, libderiv_.ABCD[(3*A+0)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //AyAy
+            memcpy(source_+18*size, libderiv_.ABCD[(3*A+1)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyAz
+            memcpy(source_+19*size, libderiv_.ABCD[(3*A+2)*(3*A+1+1)/2+12], sizeof(double) * size);
+            //AyCx
+            memcpy(source_+20*size, libderiv_.ABCD[(3*A+1)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AyCy
+            memcpy(source_+21*size, libderiv_.ABCD[(3*A+1)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AyCz
+            memcpy(source_+22*size, libderiv_.ABCD[(3*A+1)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AyDx
+            memcpy(source_+23*size, libderiv_.ABCD[(3*A+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AyDy
+            memcpy(source_+24*size, libderiv_.ABCD[(3*A+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AyDz
+            memcpy(source_+25*size, libderiv_.ABCD[(3*A+1)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //AzAz
+            memcpy(source_+26*size, libderiv_.ABCD[(3*A+2)*(3*A+2+1)/2+12], sizeof(double) * size);
+            //AzCx
+            memcpy(source_+27*size, libderiv_.ABCD[(3*A+2)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //AzCy
+            memcpy(source_+28*size, libderiv_.ABCD[(3*A+2)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //AzCz
+            memcpy(source_+29*size, libderiv_.ABCD[(3*A+2)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //AzDx
+            memcpy(source_+30*size, libderiv_.ABCD[(3*A+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //AzDy
+            memcpy(source_+31*size, libderiv_.ABCD[(3*A+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //AzDz
+            memcpy(source_+32*size, libderiv_.ABCD[(3*A+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CxCx
+            memcpy(source_+33*size, libderiv_.ABCD[(3*C+0)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCy
+            memcpy(source_+34*size, libderiv_.ABCD[(3*C+1)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxCz
+            memcpy(source_+35*size, libderiv_.ABCD[(3*C+2)*(3*C+0+1)/2+12], sizeof(double) * size);
+            //CxDx
+            memcpy(source_+36*size, libderiv_.ABCD[(3*C+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CxDy
+            memcpy(source_+37*size, libderiv_.ABCD[(3*C+0)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CxDz
+            memcpy(source_+38*size, libderiv_.ABCD[(3*C+0)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CyCy
+            memcpy(source_+39*size, libderiv_.ABCD[(3*C+1)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyCz
+            memcpy(source_+40*size, libderiv_.ABCD[(3*C+2)*(3*C+1+1)/2+12], sizeof(double) * size);
+            //CyDx
+            memcpy(source_+41*size, libderiv_.ABCD[(3*C+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CyDy
+            memcpy(source_+42*size, libderiv_.ABCD[(3*C+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CyDz
+            memcpy(source_+43*size, libderiv_.ABCD[(3*C+1)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //CzCz
+            memcpy(source_+44*size, libderiv_.ABCD[(3*C+2)*(3*C+2+1)/2+12], sizeof(double) * size);
+            //CzDx
+            memcpy(source_+45*size, libderiv_.ABCD[(3*C+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //CzDy
+            memcpy(source_+46*size, libderiv_.ABCD[(3*C+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //CzDz
+            memcpy(source_+47*size, libderiv_.ABCD[(3*C+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+            //DxDx
+            memcpy(source_+48*size, libderiv_.ABCD[(3*D+0)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDy
+            memcpy(source_+49*size, libderiv_.ABCD[(3*D+1)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DxDz
+            memcpy(source_+50*size, libderiv_.ABCD[(3*D+2)*(3*D+0+1)/2+12], sizeof(double) * size);
+            //DyDy
+            memcpy(source_+51*size, libderiv_.ABCD[(3*D+1)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DyDz
+            memcpy(source_+52*size, libderiv_.ABCD[(3*D+2)*(3*D+1+1)/2+12], sizeof(double) * size);
+            //DzDz
+            memcpy(source_+53*size, libderiv_.ABCD[(3*D+2)*(3*D+2+1)/2+12], sizeof(double) * size);
+        }
     }
 
     /**
