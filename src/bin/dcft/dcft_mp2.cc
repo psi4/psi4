@@ -123,7 +123,8 @@ DCFTSolver::mp2_guess()
     fprintf(outfile, "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
     fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
-    Process::environment.globals["MP2 ENERGY"] = new_total_energy_;
+    Process::environment.globals["MP2 TOTAL ENERGY"] = new_total_energy_;
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = eAA + eAB + eBB;
 
     std::string guess = options_.get_str("DCFT_GUESS");
     if(guess == "CC" || guess == "BCC"){

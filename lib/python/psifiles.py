@@ -2,6 +2,8 @@
 # script, from psi4topdir/include/psifiles.h
 PSIF_CHKPT                  =   32  # new libpsio checkpoint file number
 PSIF_OPTKING                =    1  # 
+PSIF_FILE11                 =   11  # geometry optimization, geometry, and gradient
+PSIF_INTCO                  =   12  # internal coordinates file, formerly intco.dat
 PSIF_DSCF                   =   31  # 
 PSIF_SO_TEI                 =   33  # 
 PSIF_SO_PK                  =   34  # 
