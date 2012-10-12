@@ -5,6 +5,8 @@
 #include<psifiles.h>
 #include<sys/times.h>
 #include<libqt/qt.h>
+#include<libciomr/libciomr.h>
+#include <libmints/dimension.h>
 #ifdef _OPENMP
     #include<omp.h>
 #endif
@@ -14,54 +16,52 @@
 
 using namespace psi;
 
-namespace psi{namespace cepa{
+namespace psi{ namespace cepa{
   long int Position(long int i,long int j);
+  void TransformIntegrals(boost::shared_ptr<Wavefunction>wfn,Options&options);
+  void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool isdirect,bool islocal);
   void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2,double*temp,int o);
 }}
 
 namespace psi{ namespace cepa{
 
-CoupledPair::CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options):
-  options_(options), wfn_(wfn)
+CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
 {
-  common_init();
+    reference_wavefunction_ = reference_wavefunction;
+    common_init();
 }
+
+CoupledPair::~CoupledPair()
+{
+}
+
 void CoupledPair::common_init(){
-  if (wfn_.get() !=NULL){
-     escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-     nirreps = wfn_->nirrep();
-     sorbs   = wfn_->nsopi();
-     orbs    = wfn_->nmopi();
-     docc    = wfn_->doccpi();
-     fzc     = wfn_->frzcpi();
-     fzv     = wfn_->frzvpi();
-  }
-  if (nirreps>1){
-     //throw PsiException("cepa requires symmetry c1",__FILE__,__LINE__);
-  }
+  escf    = Process::environment.globals["SCF TOTAL ENERGY"];
+
+  doccpi_ = reference_wavefunction_->doccpi();
+  soccpi_ = reference_wavefunction_->soccpi();
+  frzcpi_ = reference_wavefunction_->frzcpi();
+  frzvpi_ = reference_wavefunction_->frzvpi();
+  nmopi_  = reference_wavefunction_->nmopi();
+
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-  long int full=0;
-  for (long int h=0; h<nirreps; h++){
-      nfzc   += fzc[h];
-      nfzv   += fzv[h];
-      nso    += sorbs[h];
-      full   += orbs[h];
-      nmo    += orbs[h]-fzc[h]-fzv[h];
-      ndocc  += docc[h];//-fzc[h];
+  for (int h=0; h<nirrep_; h++){
+      nfzc   += frzcpi_[h];
+      nfzv   += frzvpi_[h];
+      nso    += nsopi_[h];
+      nmo    += nmopi_[h]-frzcpi_[h]-frzvpi_[h];
+      ndocc  += doccpi_[h];
   }
-  if (wfn_->isCIM()){
-     ndoccact = wfn_->CIMActiveOccupied();
-     nvirt = wfn_->CIMActiveVirtual();
-     nfzc = ndocc - ndoccact;
-     nmo = ndoccact + nvirt;
+  if (reference_wavefunction_->isCIM()){
+     ndoccact = reference_wavefunction_->CIMActiveOccupied();
+     nvirt    = reference_wavefunction_->CIMActiveVirtual();
+     nfzc     = ndocc - ndoccact;
+     nmo      = ndoccact + nvirt;
   }else{
      ndoccact = ndocc - nfzc;
-     nvirt  = nmo - ndoccact;
+     nvirt    = nmo - ndoccact;
   }
-
-  // for triples, we use nvirt_no in case we've truncated the virtual space:
-  nvirt_no = nvirt;
-  scale_t = 1.0;
 
   // get paramters from input 
   conv    = options_.get_double("R_CONVERGENCE");
@@ -72,8 +72,8 @@ void CoupledPair::common_init(){
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CEPA
-  emp2_os_fac = options_.get_double("MP2_SCALE_OS");
-  emp2_ss_fac = options_.get_double("MP2_SCALE_SS");
+  emp2_os_fac  = options_.get_double("MP2_SCALE_OS");
+  emp2_ss_fac  = options_.get_double("MP2_SCALE_SS");
   ecepa_os_fac = options_.get_double("CEPA_SCALE_OS");
   ecepa_ss_fac = options_.get_double("CEPA_SCALE_SS");
 
@@ -111,15 +111,15 @@ void CoupledPair::common_init(){
   // orbital energies
   // NOTE: when using libtrans, the Fock matrix will be in Pitzer order, 
   // regardless of the ordering specified in the constructor.
-  if (!wfn_->isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")){
+  if (!reference_wavefunction_->isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")){
      // pitzer
      int* aQT = (int*)malloc((ndocc+nvirt+nfzc)*sizeof(int));
      double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
-     reorder_qt(wfn_->doccpi(), wfn_->soccpi(), wfn_->frzcpi(), wfn_->frzvpi(), aQT, wfn_->nmopi(), nirreps);
+     reorder_qt(reference_wavefunction_->doccpi(), reference_wavefunction_->soccpi(), reference_wavefunction_->frzcpi(), reference_wavefunction_->frzvpi(), aQT, reference_wavefunction_->nmopi(), nirrep_);
      int count=0;
-     eps_test = wfn_->epsilon_a();
-     for (int h=0; h<nirreps; h++){
-         for (int norb = 0; norb<orbs[h]; norb++){
+     eps_test = reference_wavefunction_->epsilon_a();
+     for (int h=0; h<nirrep_; h++){
+         for (int norb = 0; norb<nmopi_[h]; norb++){
              tmp[aQT[count++]] = eps_test->get(h,norb);
          }
      }
@@ -129,19 +129,19 @@ void CoupledPair::common_init(){
      }
      free(tmp);
      free(aQT);
-  }else if (!wfn_->isCIM()){
+  }else if (!reference_wavefunction_->isCIM()){
      // qt
      eps = (double*)malloc(nmo*sizeof(double));
      int count=0;
-     for (int h=0; h<nirreps; h++){
-         eps_test = wfn_->epsilon_a();
-         for (int norb = fzc[h]; norb<docc[h]; norb++){
+     for (int h=0; h<nirrep_; h++){
+         eps_test = reference_wavefunction_->epsilon_a();
+         for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
              eps[count++] = eps_test->get(h,norb);
          }
      }
-     for (int h=0; h<nirreps; h++){
-         eps_test = wfn_->epsilon_a();
-         for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+     for (int h=0; h<nirrep_; h++){
+         eps_test = reference_wavefunction_->epsilon_a();
+         for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
              eps[count++] = eps_test->get(h,norb);
          }
      }
@@ -149,7 +149,7 @@ void CoupledPair::common_init(){
      // cim
      long int count = 0;
      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     eps_test = wfn_->CIMOrbitalEnergies();
+     eps_test = reference_wavefunction_->CIMOrbitalEnergies();
      for (int i = 0; i < ndoccact + nvirt; i ++){
          eps[i] = eps_test->get(0,i+nfzc);
      }
@@ -158,15 +158,15 @@ void CoupledPair::common_init(){
   // old way where the orbitals are in QT ordering
   //eps = (double*)malloc(nmo*sizeof(double));
   //int count=0;
-  //for (int h=0; h<nirreps; h++){
-  //    eps_test = wfn_->epsilon_a();
-  //    for (int norb = fzc[h]; norb<docc[h]; norb++){
+  //for (int h=0; h<nirrep_; h++){
+  //    eps_test = reference_wavefunction_->epsilon_a();
+  //    for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
   //        eps[count++] = eps_test->get(h,norb);
   //    }
   //}
-  //for (int h=0; h<nirreps; h++){
-  //    eps_test = wfn_->epsilon_a();
-  //    for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+  //for (int h=0; h<nirrep_; h++){
+  //    eps_test = reference_wavefunction_->epsilon_a();
+  //    for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
   //        eps[count++] = eps_test->get(h,norb);
   //    }
   //}
@@ -175,8 +175,91 @@ void CoupledPair::common_init(){
   t2_on_disk = false;
 }
 
-CoupledPair::~CoupledPair()
-{}
+
+// the cepa procedure, including integral sorting
+double CoupledPair::compute_energy(){
+  PsiReturnType status;
+
+  // integral transformation.  only needed if not cim or integral direct
+  if ( !isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")) {
+     tstart();
+     TransformIntegrals(reference_wavefunction_,options_);
+     tstop();
+  }
+
+  // integral sort
+  tstart();
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_.get_bool("CEPA_VABCD_DIRECT"),isCIM());
+  tstop();
+
+  // solve cepa equations
+  tstart();
+  WriteBanner();
+  AllocateMemory(0L);
+  status = CEPAIterations();
+  tstop();
+
+  // mp2 energy
+  Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
+  Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
+
+  // cepa energy
+  char*cepatype = (char*)malloc(100*sizeof(char));
+  if (cepa_level == 0){
+     Process::environment.globals["CEPA(0) CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["CEPA(0) TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == 1){
+     Process::environment.globals["CEPA(1) CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["CEPA(1) TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == 2){
+     Process::environment.globals["CEPA(2) CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["CEPA(2) TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == 3){
+     Process::environment.globals["CEPA(3) CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["CEPA(3) TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == -1){
+     Process::environment.globals["CISD CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["CISD TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == -2){
+     Process::environment.globals["ACPF CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["ACPF TOTAL ENERGY"] = ecepa + escf;
+  }
+  if (cepa_level == -3){
+     Process::environment.globals["AQCC CORRELATION ENERGY"] = ecepa;
+     Process::environment.globals["AQCC TOTAL ENERGY"] = ecepa + escf;
+  }
+  Process::environment.globals["CURRENT ENERGY"] = ecepa + escf;
+  Process::environment.globals["CURRENT CORRELATION ENERGY"] = ecepa;
+
+  // dipole moments for CISD, ACPF, or AQCC
+  if (options_.get_bool("DIPMOM")){
+     if (cepa_level>0)
+        throw PsiException("coupled-pair dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
+     OPDM();
+  }
+
+  // free memory
+  free(integrals);
+  free(tempt);
+  free(tempv);
+  if (!t2_on_disk){
+     free(tb);
+  }
+  free(w1);
+  free(t1);
+  free(I1);
+  free(I1p);
+  free(diisvec);
+
+  free(cepatype);
+
+  return ecepa+escf;
+}
 
 void CoupledPair::WriteBanner(){
   fflush(outfile);
@@ -316,7 +399,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
             memset((void*)t1,'\0',o*v*sizeof(double));
          }
       }
-      ecepa = compute_energy();
+      ecepa = CheckEnergy();
 
       if (diis_iter<=maxdiis) diis_iter++;
       else if (replace_diis_iter<maxdiis) replace_diis_iter++;
@@ -341,7 +424,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
   }
 
   // is this a cim-cepa computation?
-  if (wfn_->isCIM()){
+  if (reference_wavefunction_->isCIM()){
      Local_SCS_CEPA();
      ecepa = ecepa_os/ecepa_os_fac + ecepa_ss/ecepa_ss_fac;
   }
@@ -790,7 +873,7 @@ void CoupledPair::Local_SCS_CEPA(){
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
 
-  SharedMatrix Rii = wfn_->CIMTransformationMatrix();
+  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
   double**Rii_pointer = Rii->pointer();
   // transform E2iajb back from quasi-canonical basis
   for (i=0; i<o; i++){
@@ -830,7 +913,7 @@ void CoupledPair::Local_SCS_CEPA(){
       }
   }
 
-  SharedVector factor = wfn_->CIMOrbitalFactors();
+  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
   double*factor_pointer = factor->pointer();
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
@@ -963,7 +1046,7 @@ void CoupledPair::PairEnergy(){
 
   psio.reset();
 }
-double CoupledPair::compute_energy(){
+double CoupledPair::CheckEnergy(){
 
   long int v = nvirt;
   long int o = ndoccact;
@@ -1335,7 +1418,7 @@ void CoupledPair::Vabcd_so(CepaTaskParams params){
   }
 
   // transform t(ab,ij) to the SO basis:
-  boost::shared_ptr<Matrix> Ca = wfn_->Ca();
+  boost::shared_ptr<Matrix> Ca = reference_wavefunction_->Ca();
   double**Ca_pointer = Ca->pointer();
   double*trans = (double*)malloc(nso*v*sizeof(double));
   for (int i=0; i<nso; i++){
@@ -1360,7 +1443,7 @@ void CoupledPair::Vabcd_so(CepaTaskParams params){
   F_DGEMM('n','n',o*o*nso,nso,v,1.0,tempt,o*o*nso,trans,v,0.0,tempv,o*o*nso);
 
   // integral-direct contraction.  result is in tempt
-  Vabcd_direct(wfn_->basisset(),nso,tempv,tempt,integrals,o);
+  Vabcd_direct(reference_wavefunction_->basisset(),nso,tempv,tempt,integrals,o);
 
   // transform result from so to mo basis:
   // transform t2(a_so,b_so,i,j) -> t2(a_mo,b_so,i,j)
