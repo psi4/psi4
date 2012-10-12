@@ -3,7 +3,6 @@
 #include <libtrans/integraltransform.h>
 #include <libmints/mints.h>
 #include <libtrans/mospace.h>
-#include "ccfiles.h"
 #include "adc.h"
 
 namespace psi{ namespace adc {

@@ -4,7 +4,7 @@
 #include <math.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 
 namespace psi {
 namespace cctriples {

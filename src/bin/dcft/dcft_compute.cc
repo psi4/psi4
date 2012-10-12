@@ -448,7 +448,7 @@ DCFTSolver::compute_energy()
     }
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT ENERGY"] = new_total_energy_;
+    Process::environment.globals["DCFT TOTAL ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
     Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;
