@@ -1,6 +1,8 @@
 #ifndef CEPA_H
 #define CEPA_H
 
+#include<libmints/wavefunction.h>
+
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -9,26 +11,22 @@ template<class T> class shared_ptr;
 
 namespace psi{ namespace cepa{
 
-class CoupledPair{
-  public:
-    /*
-     * wavefunction.  pass explicitly so we can pass weird ones like cim.
-     */
-    boost::shared_ptr<psi::Wavefunction> wfn_;
+class CoupledPair: public Wavefunction
+{
 
-    /*
-     * options
-     */
-    Options & options_;
-
-    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
-    virtual ~CoupledPair();
     void common_init();
 
-    /**
-      * Flag to indicate if t2 is stored in core memory or 
-      * needs to be read from disk.  Default false.
-      */
+public:
+    CoupledPair(boost::shared_ptr<psi::Wavefunction> reference_wavefunction,Options&options);
+    virtual ~CoupledPair();
+
+    virtual double compute_energy();
+    virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
+    virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
+
+protected:
+
+    /// is t2 stored on disk or in core?  default false
     bool t2_on_disk;
 
     /**
@@ -95,10 +93,8 @@ class CoupledPair{
     /// update t2
     virtual void UpdateT2(long int iter);
 
-    /// evaluate the energy
-    virtual double compute_energy();
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
+    /// compute the current energy
+    double CheckEnergy();
 
     /// which cepa level
     int cepa_level;
@@ -133,9 +129,9 @@ class CoupledPair{
     /**
       * basic parameters
       */
-    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
-    int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs,nvirt_no;
-    double conv,*oei,*tei,*Fock,*eps,scale_t;
+    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,memory;
+    int maxiter,nfzc,nfzv;
+    double conv,*oei,*tei,*Fock,*eps;
     boost::shared_ptr<Vector> eps_test;
     double escf,enuc,efzc,emp2,ecepa,et;
 
@@ -178,6 +174,9 @@ class CoupledPair{
       *  the CIM version of SCS_CEPA()
       */
     void Local_SCS_CEPA();
+
+    /// build the opdm for 1-electron properties
+    void OPDM();
 };
 
 }}
