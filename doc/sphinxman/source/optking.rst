@@ -48,6 +48,9 @@ section for more detail.
    deliberately constructed it, be sure to clear it out before starting a
    new optimization.
 
+.. warning:: Optimizations where the molecule is specified in Z-matrix format 
+   with dummy atoms do not work at present. Please avoid.
+
 The ongoing development of optking is providing for unique treatment of
 coordinates which connect distinct molecular fragments.  Thus, several keywords
 relate to "interfragment modes", though many of these capabilities are
