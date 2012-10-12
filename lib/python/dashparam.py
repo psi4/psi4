@@ -25,7 +25,7 @@ dashcoeff = {
         'bp86'        : {'s6': 1.05},  #IN
         'pbe'         : {'s6': 0.75},  #IN
         'pbe0'        : {'s6': 0.60},  #IN
-        'dsd-blyp'    : {'s6': 0.35},  # different btwn dftd3 and psi4
+        'dsd-blyp'    : {'s6': 0.35},  #IN but different btwn dftd3 and psi4 and variants need to be worked out
         'dsd-pbep86'  : {'s6': 0.29},  #IN
         'dsd-pbepbe'  : {'s6': 0.42},  #IN
         'b2plyp'      : {'s6': 0.55},  #IN
