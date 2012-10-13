@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <exception.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 
 namespace psi {
 extern FILE* outfile;
