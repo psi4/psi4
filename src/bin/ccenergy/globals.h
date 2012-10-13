@@ -6,7 +6,7 @@
 #ifndef _psi_src_bin_ccenergy_globals_h
 #define _psi_src_bin_ccenergy_globals_h
 
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <psi4-dec.h>
 #include <string>
 #include <libciomr/libciomr.h>

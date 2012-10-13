@@ -23,7 +23,7 @@ def run_plugin_mp2(name, **kwargs):
 
     # Your plugin's PsiMod run sequence goes here
     PsiMod.set_local_option('PLUGIN_MP2', 'PRINT', 1)
-    energy('scf', **kwargs)
+    scf_helper(name, **kwargs)
     returnvalue = PsiMod.plugin('plugin_mp2.so')
 
     return returnvalue
