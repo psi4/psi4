@@ -424,7 +424,8 @@ void export_mints()
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
             def("has_puream", &BasisSet::has_puream, "docstring").
-            def(self + self);
+            def("add", &BasisSet::add, "Adds two basis sets together.").
+            staticmethod("add");
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
