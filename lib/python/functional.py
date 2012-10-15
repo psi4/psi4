@@ -3159,7 +3159,7 @@ superfunctionals = {
         'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,
         'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,
         'pbe0-2'          : build_pbe0_2_superfunctional,
-#        'dsd-blyp'        : build_dsd_blyp_superfunctional,
+        'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added
         'dsd-pbep86'      : build_dsd_pbep86_superfunctional,
         'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,
     }

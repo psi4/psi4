@@ -38,17 +38,17 @@ set dcft_functional dcft-06
 energy('dcft')
 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
-compare_values(refmp2, get_variable("MP2 ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
 compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06 SCF Energy (two-step, ao_basis=none)");     #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 10, "DCFT-06 Energy (two-step, ao_basis=none)");                #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DCFT-06 Energy (two-step, ao_basis=none)");                #TEST
 
 set dcft_functional dcft-06x
 energy('dcft')
 
 compare_values(refdcftxscf, get_variable("DCFT SCF ENERGY"), 10, "DCFT-06X SCF Energy (two-step, ao_basis=none)");     #TEST
-compare_values(refdcftx, get_variable("DCFT ENERGY"), 10, "DCFT-06X Energy (two-step, ao_basis=none)");                #TEST
+compare_values(refdcftx, get_variable("DCFT TOTAL ENERGY"), 10, "DCFT-06X Energy (two-step, ao_basis=none)");                #TEST
 
 set dcft_functional cepa0
 energy('dcft')
 
-compare_values(refdcftcepa, get_variable("DCFT ENERGY"), 10, "CEPA0 Energy (two-step, ao_basis=none)");                #TEST
+compare_values(refdcftcepa, get_variable("DCFT TOTAL ENERGY"), 10, "CEPA0 Energy (two-step, ao_basis=none)");                #TEST
