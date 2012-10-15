@@ -292,6 +292,11 @@ public:
     friend class Gaussian94BasisSetParser;
     friend BasisSet operator +(const BasisSet& a, const BasisSet& b);
     friend boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
+
+    // Adds 2 shared basis set objects together
+    static boost::shared_ptr<BasisSet> add(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) {
+        return boost::shared_ptr<BasisSet>(new BasisSet(*a.get() + *b.get()));
+    }
 };
 
 inline
