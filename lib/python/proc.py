@@ -1107,8 +1107,8 @@ def run_dfmp2(name, **kwargs):
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
-        raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
+    #if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
+    #    raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
