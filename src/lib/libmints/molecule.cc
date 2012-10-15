@@ -495,9 +495,16 @@ Matrix Molecule::full_geometry() const
 void Molecule::set_geometry(double** geom)
 {
     lock_frame_ = false;
+    bool dummy_found = false;
+    for (int i=0; i<nallatom(); ++i){
+        if(full_atoms_[i]->symbol() == "X"){
+            dummy_found = true;
+            break;
+        }
+    }
     // We don't track the coordinates of the dummy atoms.  For now, just convert the entries
     // to Cartesians if the entry contains
-    if(natom() != nallatom()){
+    if(dummy_found){
         atoms_.clear();
         int count = 0;
         std::vector<int> fragment_changes;
