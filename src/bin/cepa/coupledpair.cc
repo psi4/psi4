@@ -83,10 +83,14 @@ void CoupledPair::common_init(){
   // also, -2 = acpf
   // also, -3 = aqcc
   std::string cepa = options_.get_str("CEPA_LEVEL");
-  if (cepa == "CEPA0") cepa_level = 0;
-  if (cepa == "CEPA1") cepa_level = 1;
-  if (cepa == "CEPA2") cepa_level = 2;
-  if (cepa == "CEPA3") cepa_level = 3;
+
+  // set the wavefunction name
+  name_ = cepa;
+
+  if (cepa == "CEPA(0)") cepa_level = 0;
+  if (cepa == "CEPA(1)") cepa_level = 1;
+  if (cepa == "CEPA(2)") cepa_level = 2;
+  if (cepa == "CEPA(3)") cepa_level = 3;
   if (cepa == "CISD") cepa_level = -1;
   if (cepa == "ACPF") cepa_level = -2;
   if (cepa == "AQCC") cepa_level = -3;
@@ -271,19 +275,19 @@ void CoupledPair::WriteBanner(){
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile, "        *                                                     *\n");
-  if (options_.get_str("CEPA_LEVEL")=="CEPA0"){
+  if (options_.get_str("CEPA_LEVEL")=="CEPA(0)"){
      fprintf(outfile, "        *                       CEPA(0)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  else if (options_.get_str("CEPA_LEVEL")=="CEPA1"){
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA(1)"){
      fprintf(outfile, "        *                       CEPA(1)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  else if (options_.get_str("CEPA_LEVEL")=="CEPA2"){
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA(2)"){
      fprintf(outfile, "        *                       CEPA(2)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }
-  if (options_.get_str("CEPA_LEVEL")=="CEPA3"){
+  if (options_.get_str("CEPA_LEVEL")=="CEPA(3)"){
      fprintf(outfile, "        *                       CEPA(3)                       *\n");
      fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
   }

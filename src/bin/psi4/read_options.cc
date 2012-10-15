@@ -2589,7 +2589,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Which coupled-pair method is called?  This parameter is
       used internally by the python driver.  Changing its value
       won't have any effect on the procedure. -*/
-      options.add_str("CEPA_LEVEL","CEPA0");
+      options.add_str("CEPA_LEVEL","CEPA(0)");
       /*- Compute the dipole moment? Note that quadrupole moments
       will also be computed if PRINT >= 2. -*/
       options.add_bool("DIPMOM",false);
