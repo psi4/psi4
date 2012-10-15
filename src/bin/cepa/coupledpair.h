@@ -1,33 +1,27 @@
 #ifndef CEPA_H
 #define CEPA_H
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
-//long int Position(long int i,long int j);
+#include<libmints/wavefunction.h>
 
 namespace psi{ namespace cepa{
 
-class CoupledPair{
-  public:
-    /*
-     * wavefunction.  pass explicitly so we can pass weird ones like cim.
-     */
-    boost::shared_ptr<psi::Wavefunction> wfn_;
+class CoupledPair:public Wavefunction
+{
+public:
 
-    /*
-     * options
-     */
-    Options & options_;
-
-    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn,Options&options);
+    CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     ~CoupledPair();
 
-    /**
-      * Flag to indicate if t2 is stored in core memory or 
-      * needs to be read from disk.  Default false.
-      */
+    double compute_energy();
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+
+protected:
+
+    void common_init();
+    void finalize();
+
+    /// is t2 stored on disk or in core?  default false
     bool t2_on_disk;
 
     /**
@@ -62,14 +56,14 @@ class CoupledPair{
     /**
       * this function solves the CEPA equations (requires a minimum of 3o^2v^2 memory)
      */
-    PsiReturnType CEPAIterations(Options&options);
+    PsiReturnType CEPAIterations();
   
-    void WriteBanner(Options&options);
+    void WriteBanner();
 
     /**
       * allocate memory, define tiling of gigantic diragrams
      */
-    void AllocateMemory(Options&options);
+    void AllocateMemory(long int extramemory);
 
     /**
       * some CC diagrams.  these were "easy" ones that i used to
@@ -88,30 +82,21 @@ class CoupledPair{
       */
     void CPU_I2p_abci_refactored_term1(CepaTaskParams params);
 
-    /**
-      * Update t1
-      */
+    /// update t1
     void UpdateT1(long int iter);
 
-    /**
-      * Update t2
-      */
+    /// update t2
     void UpdateT2(long int iter);
-    /**
-      * Get the energy for that iteration. If there is a diis extrapolation,
-      * the energy is evaluated after that step.
-      */
+
+    /// compute the current energy
     double CheckEnergy();
 
-    /**
-      * what level of cepa? 0,1,2,3.  default 0
-      */
+    /// which cepa level
     int cepa_level;
+    /// string version of cepa_level
     char*cepa_type;
 
-    /**
-      * construct an array of pair energies
-      */
+    /// construct an array of pair energies
     void PairEnergy();
     double*pair_energy;
 
@@ -139,10 +124,9 @@ class CoupledPair{
     /**
       * basic parameters
       */
-    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
-    int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs,nvirt_no;
-    double conv,*oei,*tei,*Fock,*eps,scale_t;
-    boost::shared_ptr<Vector> eps_test;
+    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,memory;
+    int maxiter,nfzc,nfzv;
+    double conv,*oei,*tei,*Fock,*eps;
     double escf,enuc,efzc,emp2,ecepa,et;
 
     /**
@@ -163,7 +147,7 @@ class CoupledPair{
     /**
       * define tiling.
       */
-    void DefineTilingCPU();
+    void DefineTilingCPU(long int extra);
     long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
     long int tilesize,lasttile,maxelem;
     long int ntiles,novtiles,nov2tiles;
@@ -184,6 +168,9 @@ class CoupledPair{
       *  the CIM version of SCS_CEPA()
       */
     void Local_SCS_CEPA();
+
+    /// build the opdm for 1-electron properties
+    void OPDM();
 };
 
 }}

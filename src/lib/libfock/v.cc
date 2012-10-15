@@ -221,7 +221,16 @@ void VBase::USO2AO()
     }
 
     // Allocate C_AO/D_AO if needed
+    bool allocate_C_AO_D_AO = false;
     if (C_AO_.size() != C_.size()) {
+        allocate_C_AO_D_AO = true;
+    }else{
+        for (int A = 0; A < C_.size(); A++) {
+            if (C_AO_[A]->nrow() != C_[0]->nrow()) allocate_C_AO_D_AO = true;
+            if (C_AO_[A]->ncol() != C_[0]->ncol()) allocate_C_AO_D_AO = true;
+        }
+    }
+    if (allocate_C_AO_D_AO) {
         C_AO_.clear();
         D_AO_.clear();
         for (int A = 0; A < C_.size(); A++) {
