@@ -539,8 +539,13 @@ void Molecule::set_geometry(double** geom)
                                            boost::shared_ptr<CoordValue>(new NumberValue(geom[count][1]/input_units_to_au_)),
                                            boost::shared_ptr<CoordValue>(new NumberValue(geom[count][2]/input_units_to_au_))
                                             ));
-            count++;
+            // Copy over all known basis sets
+            const std::map<std::string, std::string>& basissets = at->basissets();
+            std::map<std::string, std::string>::const_iterator bs = basissets.begin();
+            for(; bs != basissets.end(); ++bs)
+                new_atom->set_basisset(bs->second, bs->first);
             atoms_.push_back(new_atom);
+            count++;
         }
         full_atoms_.clear();
         for(int i = 0; i < atoms_.size(); ++i)
@@ -552,6 +557,7 @@ void Molecule::set_geometry(double** geom)
             cumulative_count += fragment_changes[frag];
             fragments_[frag].second -= cumulative_count;
         }
+        geometry_variables_.clear();
     }else{
         for (int i=0; i<natom(); ++i) {
             atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
