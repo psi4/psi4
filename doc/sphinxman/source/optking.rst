@@ -49,7 +49,7 @@ section for more detail.
    new optimization.
 
 .. warning:: Optimizations where the molecule is specified in Z-matrix format 
-   with dummy atoms do not work at present. Please avoid.
+   with dummy atoms will result in the molecule being converted to a Cartesian representation.
 
 The ongoing development of optking is providing for unique treatment of
 coordinates which connect distinct molecular fragments.  Thus, several keywords

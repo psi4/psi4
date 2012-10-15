@@ -199,6 +199,8 @@ public:
      * @returns the value from input.
      */
     const std::string& basisset(const std::string& type="BASIS") const;
+    const std::map<std::string, std::string>& basissets() const { return basissets_;}
+
 };
 
 class CartesianEntry : public CoordEntry{
