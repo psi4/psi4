@@ -240,12 +240,11 @@ double CoupledPair::compute_energy(){
   Process::environment.globals["CURRENT ENERGY"] = ecepa + escf;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ecepa;
 
-  // dipole moments for CISD, ACPF, or AQCC
-  if (options_.get_bool("DIPMOM")){
-     if (cepa_level>0)
-        throw PsiException("coupled-pair dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
-     OPDM();
+  // build opdm in case we want properties
+  if (cepa_level<=0) {
+      OPDM();
   }
+
   free(cepatype);
 
   finalize();

@@ -1732,7 +1732,12 @@ def run_cepa(name, **kwargs):
    
     # one-electron properties 
     if PsiMod.get_option('CEPA', 'DIPMOM'):
-        oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
+        if cepa_level == "CEPA(1)" or cepa_level == "CEPA(3)":
+            PsiMod.print_out("\n")
+            PsiMod.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
+            PsiMod.print_out("\n")
+        else:
+            oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
 
     # restore options ( transqt2/wfn, cepa/cepa_no_singles )
     optstash.restore()
