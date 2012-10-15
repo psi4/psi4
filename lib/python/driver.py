@@ -870,7 +870,7 @@ def optimize(name, **kwargs):
        new optimization.
     
     .. warning:: Optimizations where the molecule is specified in Z-matrix format 
-       with dummy atoms do not work at present. Please avoid.
+       with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
