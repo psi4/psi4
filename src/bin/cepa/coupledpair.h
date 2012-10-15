@@ -3,28 +3,23 @@
 
 #include<libmints/wavefunction.h>
 
-namespace boost {
-template<class T> class shared_ptr;
-}
-
-//long int Position(long int i,long int j);
-
 namespace psi{ namespace cepa{
 
-class CoupledPair: public Wavefunction
+class CoupledPair:public Wavefunction
 {
-
-    void common_init();
-
 public:
-    CoupledPair(boost::shared_ptr<psi::Wavefunction> reference_wavefunction,Options&options);
-    virtual ~CoupledPair();
 
-    virtual double compute_energy();
-    virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
-    virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
+    CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
+    ~CoupledPair();
+
+    double compute_energy();
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
 
 protected:
+
+    void common_init();
+    void finalize();
 
     /// is t2 stored on disk or in core?  default false
     bool t2_on_disk;
@@ -61,9 +56,9 @@ protected:
     /**
       * this function solves the CEPA equations (requires a minimum of 3o^2v^2 memory)
      */
-    virtual PsiReturnType CEPAIterations();
+    PsiReturnType CEPAIterations();
   
-    virtual void WriteBanner();
+    void WriteBanner();
 
     /**
       * allocate memory, define tiling of gigantic diragrams
@@ -88,10 +83,10 @@ protected:
     void CPU_I2p_abci_refactored_term1(CepaTaskParams params);
 
     /// update t1
-    virtual void UpdateT1(long int iter);
+    void UpdateT1(long int iter);
 
     /// update t2
-    virtual void UpdateT2(long int iter);
+    void UpdateT2(long int iter);
 
     /// compute the current energy
     double CheckEnergy();
@@ -132,7 +127,6 @@ protected:
     long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,memory;
     int maxiter,nfzc,nfzv;
     double conv,*oei,*tei,*Fock,*eps;
-    boost::shared_ptr<Vector> eps_test;
     double escf,enuc,efzc,emp2,ecepa,et;
 
     /**

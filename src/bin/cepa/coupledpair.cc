@@ -25,11 +25,12 @@ namespace psi{ namespace cepa{
 
 namespace psi{ namespace cepa{
 
-CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
-    : Wavefunction(options, _default_psio_lib_)
+CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
+        Wavefunction(options, _default_psio_lib_)
 {
     reference_wavefunction_ = reference_wavefunction;
     common_init();
+
 }
 
 CoupledPair::~CoupledPair()
@@ -37,8 +38,8 @@ CoupledPair::~CoupledPair()
 }
 
 void CoupledPair::common_init(){
-  escf    = Process::environment.globals["SCF TOTAL ENERGY"];
 
+  escf    = reference_wavefunction_->reference_energy();
   doccpi_ = reference_wavefunction_->doccpi();
   soccpi_ = reference_wavefunction_->soccpi();
   frzcpi_ = reference_wavefunction_->frzcpi();
@@ -68,7 +69,7 @@ void CoupledPair::common_init(){
   maxiter = options_.get_int("MAXITER");
   maxdiis = options_.get_int("DIIS_MAX_VECS");
 
-  // memory is from process::environment, but can override that
+  // memory is from process::environment
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CEPA
@@ -117,10 +118,10 @@ void CoupledPair::common_init(){
      double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
      reorder_qt(reference_wavefunction_->doccpi(), reference_wavefunction_->soccpi(), reference_wavefunction_->frzcpi(), reference_wavefunction_->frzvpi(), aQT, reference_wavefunction_->nmopi(), nirrep_);
      int count=0;
-     eps_test = reference_wavefunction_->epsilon_a();
+     boost::shared_ptr<Vector> tmpeps = reference_wavefunction_->epsilon_a();
      for (int h=0; h<nirrep_; h++){
          for (int norb = 0; norb<nmopi_[h]; norb++){
-             tmp[aQT[count++]] = eps_test->get(h,norb);
+             tmp[aQT[count++]] = tmpeps->get(h,norb);
          }
      }
      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
@@ -133,25 +134,24 @@ void CoupledPair::common_init(){
      // qt
      eps = (double*)malloc(nmo*sizeof(double));
      int count=0;
+     boost::shared_ptr<Vector> tmpeps = reference_wavefunction_->epsilon_a();
      for (int h=0; h<nirrep_; h++){
-         eps_test = reference_wavefunction_->epsilon_a();
          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-             eps[count++] = eps_test->get(h,norb);
+             eps[count++] = tmpeps->get(h,norb);
          }
      }
      for (int h=0; h<nirrep_; h++){
-         eps_test = reference_wavefunction_->epsilon_a();
          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-             eps[count++] = eps_test->get(h,norb);
+             eps[count++] = tmpeps->get(h,norb);
          }
      }
   }else{
      // cim
      long int count = 0;
      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
-     eps_test = reference_wavefunction_->CIMOrbitalEnergies();
+     boost::shared_ptr<Vector> tmpeps = reference_wavefunction_->CIMOrbitalEnergies();
      for (int i = 0; i < ndoccact + nvirt; i ++){
-         eps[i] = eps_test->get(0,i+nfzc);
+         eps[i] = tmpeps->get(0,i+nfzc);
      }
   }
 
@@ -181,7 +181,7 @@ double CoupledPair::compute_energy(){
   PsiReturnType status;
 
   // integral transformation.  only needed if not cim or integral direct
-  if ( !isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")) {
+  if ( !reference_wavefunction_->isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")) {
      tstart();
      TransformIntegrals(reference_wavefunction_,options_);
      tstop();
@@ -189,7 +189,7 @@ double CoupledPair::compute_energy(){
 
   // integral sort
   tstart();
-  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_.get_bool("CEPA_VABCD_DIRECT"),isCIM());
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_.get_bool("CEPA_VABCD_DIRECT"),reference_wavefunction_->isCIM());
   tstop();
 
   // solve cepa equations
@@ -242,8 +242,14 @@ double CoupledPair::compute_energy(){
         throw PsiException("coupled-pair dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
      OPDM();
   }
+  free(cepatype);
 
-  // free memory
+  finalize();
+
+  return ecepa+escf;
+}
+
+void CoupledPair::finalize(){
   free(integrals);
   free(tempt);
   free(tempv);
@@ -256,9 +262,8 @@ double CoupledPair::compute_energy(){
   free(I1p);
   free(diisvec);
 
-  free(cepatype);
-
-  return ecepa+escf;
+  // there is something weird with chkpt_ ... reset it
+  chkpt_.reset();
 }
 
 void CoupledPair::WriteBanner(){
