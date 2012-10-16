@@ -40,7 +40,7 @@ void CoupledPair::OPDM(){
   std::stringstream ss_a;
   ss_a << ss.str() << " alpha";
 
-  // pass opdm to oeprop
+  // one particle density matrix
   SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi()));
 
   // mapping array for D1(c1) -> D1(symmetry)
@@ -82,7 +82,7 @@ void CoupledPair::OPDM(){
       }
   }
 
-  // pass opdm to oeprop (should be symmetry-tolerant)
+  // make opdm symmetry tolerant
   for (int h=0; h<nirrep_; h++){
       double** opdmap = opdm_a->pointer(h);
       for (int i=0; i<nmopi_[h]; i++) {

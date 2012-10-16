@@ -19,7 +19,7 @@ public:
 protected:
 
     void common_init();
-    void finalize();
+    virtual void finalize();
 
     /// is t2 stored on disk or in core?  default false
     bool t2_on_disk;
