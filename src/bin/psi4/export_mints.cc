@@ -69,7 +69,16 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2)
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
+
+/* IntegralFactory overloads */
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(eri_overloads, IntegralFactory::eri, 0, 2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_overloads, IntegralFactory::f12, 1, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12g12_overloads, IntegralFactory::f12g12, 1, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_squared_overloads, IntegralFactory::f12_squared, 1, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_double_commutator_overloads, IntegralFactory::f12_double_commutator, 1, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_eri_overloads, IntegralFactory::erf_eri, 1, 3);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(erf_complement_eri_overloads, IntegralFactory::erf_complement_eri, 1, 3);
 
 void export_mints()
 {
@@ -265,12 +274,19 @@ void export_mints()
             def("next", &AOShellCombinationsIterator::next, "docstring").
             def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
 
+
     class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
             def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
             def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
             def(init<boost::shared_ptr<BasisSet> >()).
             def("shells_iterator", &IntegralFactory::shells_iterator_ptr, return_value_policy<manage_new_object>(), "docstring").
-            def("eri", &IntegralFactory::eri, return_value_policy<manage_new_object>(), "docstring");
+            def("eri", &IntegralFactory::eri, eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("f12", &IntegralFactory::f12, f12_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("f12g12", &IntegralFactory::f12g12, f12g12_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("f12_double_commutator", &IntegralFactory::f12_double_commutator, f12_double_commutator_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("f12_squared", &IntegralFactory::f12_squared, f12_squared_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("erf_eri", &IntegralFactory::erf_eri, erf_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("erf_complement_eri", &IntegralFactory::erf_complement_eri, erf_complement_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
 
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
