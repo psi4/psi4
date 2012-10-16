@@ -240,8 +240,8 @@ double CoupledPair::compute_energy(){
   Process::environment.globals["CURRENT ENERGY"] = ecepa + escf;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ecepa;
 
-  // build opdm in case we want properties
-  if (cepa_level<=0) {
+  // build opdm in case we want properties.  don't build if cim.
+  if ( cepa_level<=0 && !reference_wavefunction_->isCIM() ) {
       OPDM();
   }
 
