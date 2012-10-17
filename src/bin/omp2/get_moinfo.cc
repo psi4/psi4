@@ -32,8 +32,6 @@
 #include <libmints/factory.h>
 #include <libmints/wavefunction.h>
 
-#include "ccfiles.h"
-
 #include "omp2wave.h"
 #include "defines.h"
 
