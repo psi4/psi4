@@ -523,9 +523,8 @@ void export_mints()
             def("shell_to_basis_function", &BasisSet::shell_to_basis_function, "docstring").
             def("shell_to_center", &BasisSet::shell_to_center, "docstring").
             def("shell_to_ao_function", &BasisSet::shell_to_ao_function, "docstring").
-            def("function_to_ao_function", &BasisSet::function_to_ao_function, "Given a function number, return the number of the center it is on.").
             def("function_to_shell", &BasisSet::function_to_shell, "docstring").
-            def("function_to_center", &BasisSet::function_to_center, "docstring").
+            def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
             def("concatinate", ptrversion(&BasisSet::concatinate), "Concatinates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
