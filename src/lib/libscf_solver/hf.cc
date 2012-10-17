@@ -649,6 +649,7 @@ void HF::form_H()
           int zinc = 0;
           int num_steps = 0;
           int total;
+          double b2a3 = _bohr2angstroms * _bohr2angstroms * _bohr2angstroms;
 
           ifstream input;
           input.open("potential.dx");
@@ -665,9 +666,9 @@ void HF::form_H()
 
               if(data_ready && data_read <= total) { // data line
                 for(int i=0; i < tokens.size(); i++) {
-                  double x = xmin + xinc * xstep;
-                  double y = ymin + yinc * ystep;
-                  double z = zmin + zinc * zstep;
+                  double x = xmin + ((double) xinc) * xstep;
+                  double y = ymin + ((double) yinc) * ystep;
+                  double z = zmin + ((double) zinc) * zstep;
                   double pot_val = atof(tokens[i].c_str());
 
                   basisset_->compute_phi(phi_ao, x, y, z);
@@ -675,7 +676,7 @@ void HF::form_H()
                   C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
                   for(int i=0; i < nso; i++)
                     for(int j=0; j < nso; j++)
-                      V_eff[i][j] += pot_val * xstep * ystep * zstep * phi_so[i] * phi_so[j];
+                      V_eff[i][j] += pot_val * xstep * ystep * zstep * phi_so[i] * phi_so[j] / b2a3;
 
 //                  fprintf(outfile, "x = %f; y = %f; z = %f; v = %f\n", x, y, z, pot_val);
                   num_steps++;
