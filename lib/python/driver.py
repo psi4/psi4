@@ -110,7 +110,7 @@ procedures = {
             'df-mp2'        : run_dfmp2_gradient,
             'dfmp2'         : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
-            'dcft'          : run_dcft_gradient
+            'dcft'          : run_dcft_gradient,
             'omp2'          : run_omp2_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
