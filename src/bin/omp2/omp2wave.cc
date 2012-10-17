@@ -202,7 +202,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 12, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 17, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
