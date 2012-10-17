@@ -31,8 +31,6 @@ class TwoBodySOInt;
 class JK;
 namespace scf {
 
-class PKIntegrals;
-
 class HF : public Wavefunction {
 protected:
 
@@ -68,6 +66,9 @@ protected:
 
     /// Max number of iterations for HF
     int maxiter_;
+
+    /// Fail if we don't converge by maxiter?
+    bool fail_on_maxiter_;
 
     /// Current Iteration
     int iteration_;
@@ -110,8 +111,6 @@ protected:
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-    /// PK Matrix approach
-    boost::shared_ptr<PKIntegrals> pk_integrals_;
 
     /// Are we to do MOM?
     bool MOM_enabled_;

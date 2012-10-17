@@ -5,7 +5,6 @@
 #include <libiwl/iwl.hpp>
 #include <libmints/mints.h>
 #include <libmints/sointegral_twobody.h>
-#include "pkintegrals.h"
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 
@@ -22,7 +21,6 @@
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the J and K matrices.
- * void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) which is used in the PK algorithms.
  */
 
 
@@ -124,10 +122,6 @@ public:
         K_.push_back(K);
     }
 
-
-    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
-        pk_integrals->setup(J_[0], K_[0], D_, D_);
-    }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
                 int psym, int prel, int qsym, int qrel,
@@ -388,10 +382,6 @@ public:
     }
 
 
-    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
-        pk_integrals->setup(J_[0], Da_, Db_);
-    }
-
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
@@ -580,11 +570,6 @@ public:
 
     J_Ka_Kb_Functor& operator=(const J_Ka_Kb_Functor&) {
         return *this;
-    }
-
-
-    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
-        pk_integrals->setup(J_[0], Ka_[0], Kb_[0], Da_, Db_);
     }
 
 
@@ -811,13 +796,7 @@ void HF::process_tei(JKFunctor & functor)
         eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
     }else if(scf_type_ == "PK"){
-        functor.initialize(scf_type_);
-        functor(pk_integrals_);
-        if(functor.k_required())
-            pk_integrals_->compute_J_and_K();
-        else
-            pk_integrals_->compute_J();
-        functor.finalize();
+        throw PSIEXCEPTION("USE LIBFOCK INSTEAD!!");
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }

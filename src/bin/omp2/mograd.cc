@@ -40,16 +40,56 @@ void OMP2Wave::mograd()
 {
  
       double norm_wogA, norm_wogB;    
- 
-/********************************************************************************************/
-/************************** memalloc ********************************************************/
-/********************************************************************************************/
+
+if (reference == "RHF") {
+      // memalloc 
+      WorbA->zero();
+
+      // set W matrix
+      SharedMatrix temp(GFock->transpose());
+      WorbA->copy(GFock);
+      WorbA->subtract(temp);       
+      // DO NOT scale W since Fai (spin-free) = 2 * FAI
+      //WorbA->scale(2.0);
+      
+      // Form w vector
+      // Alpha
+      for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int h = idpirrA[x];
+	wogA->set(x, WorbA->get(h, a + occpiA[h], i));
+      }
+    
+    // find biggest_mograd 
+    biggest_mogradA=0;
+    for (int i=0; i<nidpA;i++){ 
+      if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
+    }
+      
+    // rms
+    rms_wogA=0;
+    for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
+    norm_wogA=sqrt(rms_wogA);
+    rms_wogA=sqrt(rms_wogA)/nidpA;  
+    
+    // print
+    if(print_ > 2){
+      for(int i = 0; i < nidpA; i++){
+        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
+	fflush(outfile);
+      }
+    }
+
+
+}// end if (reference == "RHF") 
+
+else if (reference == "UHF") {
+      // memalloc 
       WorbA->zero();
       WorbB->zero();
 
-/********************************************************************************************/
-/************************** wog0 ************************************************************/
-/********************************************************************************************/
+      // set W matrix
       SharedMatrix tempA(GFockA->transpose());
       WorbA->copy(GFockA);
       WorbA->subtract(tempA);       
@@ -60,9 +100,7 @@ void OMP2Wave::mograd()
       WorbB->subtract(tempB);       
       WorbB->scale(2.0);
 
-/********************************************************************************************/
-/****************** set wog *****************************************************************/
-/********************************************************************************************/
+      // Form w vector
       // Alpha
       for(int x = 0; x < nidpA; x++) {
 	int a = idprowA[x];
@@ -80,9 +118,7 @@ void OMP2Wave::mograd()
       }
       
     
-/********************************************************************************************/
-/************************** find biggest_mograd *********************************************/
-/********************************************************************************************/          
+    // find biggest_mograd 
     biggest_mogradA=0;
     for (int i=0; i<nidpA;i++){ 
       if (fabs(wogA->get(i)) > biggest_mogradA)  biggest_mogradA=fabs(wogA->get(i));
@@ -93,9 +129,7 @@ void OMP2Wave::mograd()
       if (fabs(wogB->get(i)) > biggest_mogradB)  biggest_mogradB=fabs(wogB->get(i));
     }
       
-/********************************************************************************************/
-/************************** RMS *************************************************************/
-/********************************************************************************************/	  
+    // rms
     rms_wogA=0;
     for (int i=0; i<nidpA;i++) rms_wogA += wogA->get(i) * wogA->get(i);
     norm_wogA=sqrt(rms_wogA);
@@ -106,10 +140,8 @@ void OMP2Wave::mograd()
     norm_wogB=sqrt(rms_wogB);
     rms_wogB=sqrt(rms_wogB)/nidpB;  
     
-/********************************************************************************************/
-/************************** print ***********************************************************/
-/********************************************************************************************/
-    if(print_ > 1){
+    // print
+    if(print_ > 2){
       for(int i = 0; i < nidpA; i++){
         fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA, wogA: %3d %3d %3d %3d %20.14f\n", i, idpirrA[i], idprowA[i],idpcolA[i],wogA->get(i)); 
 	fflush(outfile);
@@ -121,8 +153,7 @@ void OMP2Wave::mograd()
       }
     }
 
-/********************************************************************************************/
-/********************************************************************************************/
+}// end if (reference == "UHF") 
 
 }// end of main
 }} // End Namespaces

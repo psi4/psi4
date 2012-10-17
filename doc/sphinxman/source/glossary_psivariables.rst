@@ -27,6 +27,51 @@ PSI Variables by Alpha
 
    Components of the coupled-cluster perturbative triples correction [H].
 
+.. psivar:: ACPF DIPOLE X
+   ACPF DIPOLE Y
+   ACPF DIPOLE Z
+
+   The three components of the dipole [Debye] for the 
+   averaged coupled-pair functional level of theory.
+
+.. psivar:: ACPF QUADRUPOLE XX
+   ACPF QUADRUPOLE XY
+   ACPF QUADRUPOLE XZ
+   ACPF QUADRUPOLE YY
+   ACPF QUADRUPOLE YZ
+   ACPF QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the 
+   averaged coupled-pair functional level of theory.
+
+.. psivar:: ACPF TOTAL ENERGY
+   ACPF CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the averaged coupled-pair functional level of theory.
+
+.. psivar:: AQCC DIPOLE X
+   AQCC DIPOLE Y
+   AQCC DIPOLE Z
+
+   The three components of the dipole [Debye] for the 
+   averaged quadratic coupled-cluster level of theory.
+
+.. psivar:: AQCC QUADRUPOLE XX
+   AQCC QUADRUPOLE XY
+   AQCC QUADRUPOLE XZ
+   AQCC QUADRUPOLE YY
+   AQCC QUADRUPOLE YZ
+   AQCC QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the 
+   averaged quadratic coupled-cluster level of theory.
+
+.. psivar:: AQCC TOTAL ENERGY
+   AQCC CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the averaged quadratic coupled-cluster level of theory.
 .. psivar:: BRUECKNER CONVERGED
 
    Value 1 (0) when the Brueckner orbitals have (have not) converged.
@@ -50,27 +95,130 @@ PSI Variables by Alpha
 
 .. psivar:: CC2 TOTAL ENERGY
    CC2 CORRELATION ENERGY
-
-   The total electronic energy [H] and correlation energy component [H]
-   for the CC2 level of theory.
-
-.. psivar:: CC3 TOTAL ENERGY
+   CC3 TOTAL ENERGY
    CC3 CORRELATION ENERGY
+   CC4 TOTAL ENERGY
+   CC4 CORRELATION ENERGY
+   CCnn TOTAL ENERGY
+   CCnn CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
-   for the CC3 level of theory.
+   for the requested approximate coupled-cluster (CC2, CC3, up to CC\ *nn*)
+   level of theory.
+
+.. psivar:: CC DIPOLE X
+   CC DIPOLE Y
+   CC DIPOLE Z
+
+   The three components of the dipole [Debye] for the requested
+   coupled cluster level of theory and root.
+
+.. psivar:: CC QUADRUPOLE XX
+   CC QUADRUPOLE XY
+   CC QUADRUPOLE XZ
+   CC QUADRUPOLE YY
+   CC QUADRUPOLE YZ
+   CC QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the requested
+   coupled cluster level of theory and root.
 
 .. psivar:: CCSD TOTAL ENERGY
    CCSD CORRELATION ENERGY
+   CCSDT TOTAL ENERGY
+   CCSDT CORRELATION ENERGY
+   CCSDTQ TOTAL ENERGY
+   CCSDTQ CORRELATION ENERGY
+   CCn TOTAL ENERGY
+   CCn CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
-   for the CCSD level of theory.
+   for the requested full coupled-cluster (CCSD, CCSDT, up to CC\ *n*) 
+   level of theory.
 
 .. psivar:: CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
+   CCSDT(Q) TOTAL ENERGY
+   CCSDT(Q) CORRELATION ENERGY
+   CC(n-1)(n) TOTAL ENERGY
+   CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
-   for the CCSD(T) level of theory.
+   for the perturbatively corrected coupled-cluster (CCSD(T), CCSDT(Q), 
+   up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
+
+.. psivar:: CCSDT-1a TOTAL ENERGY
+   CCSDT-1a CORRELATION ENERGY
+   CCSDTQ-1a TOTAL ENERGY
+   CCSDTQ-1a CORRELATION ENERGY
+   CCn-1a TOTAL ENERGY
+   CCn-1a CORRELATION ENERGY
+   
+   The total electronic energy [H] and correlation energy component [H]
+   for the approximate coupled-cluster (CCSD(T)-1a, CCSDT(Q)-1a, 
+   up to CC\ *n*\ -1a) level of theory.
+
+.. psivar:: CCSDT-1b TOTAL ENERGY
+   CCSDT-1b CORRELATION ENERGY
+   CCSDTQ-1b TOTAL ENERGY
+   CCSDTQ-1b CORRELATION ENERGY
+   CCn-1b TOTAL ENERGY
+   CCn-1b CORRELATION ENERGY
+   
+   The total electronic energy [H] and correlation energy component [H]
+   for the approximate coupled-cluster (CCSD(T)-1b, CCSDT(Q)-1b, 
+   up to CC\ *n*\ -1b) level of theory.
+
+.. psivar:: CCSDT-3 TOTAL ENERGY
+   CCSDT-3 CORRELATION ENERGY
+   CCSDTQ-3 TOTAL ENERGY
+   CCSDTQ-3 CORRELATION ENERGY
+   CCn-3 TOTAL ENERGY
+   CCn-3 CORRELATION ENERGY
+   
+   The total electronic energy [H] and correlation energy component [H]
+   for the approximate coupled-cluster (CCSD(T)-3, CCSDT(Q)-3, 
+   up to CC\ *n*\ -3) level of theory.
+
+.. psivar:: CCSD(T)_L TOTAL ENERGY
+   CCSD(T)_L CORRELATION ENERGY
+   CCSDT(Q)_L TOTAL ENERGY
+   CCSDT(Q)_L CORRELATION ENERGY
+   CC(n-1)(n)_L TOTAL ENERGY
+   CC(n-1)(n)_L CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the approximate coupled-cluster (CCSD(T)_L, CCSDT(Q)_L, 
+   up to CC(\ *n*\ -1)(\ *n*\ )L level of theory.
+
+.. psivar:: CEPA(0) DIPOLE X
+   CEPA(0) DIPOLE Y
+   CEPA(0) DIPOLE Z
+
+   The three components of the dipole [Debye] for the 
+   coupled electron pair approximation variant 0 level of theory.
+
+.. psivar:: CEPA(0) QUADRUPOLE XX
+   CEPA(0) QUADRUPOLE XY
+   CEPA(0) QUADRUPOLE XZ
+   CEPA(0) QUADRUPOLE YY
+   CEPA(0) QUADRUPOLE YZ
+   CEPA(0) QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the 
+   coupled electron pair approximation variant 0 level of theory.
+
+.. psivar:: CEPA(0) TOTAL ENERGY
+   CEPA(0) CORRELATION ENERGY
+   CEPA(1) TOTAL ENERGY
+   CEPA(1) CORRELATION ENERGY
+   CEPA(2) TOTAL ENERGY
+   CEPA(2) CORRELATION ENERGY
+   CEPA(3) TOTAL ENERGY
+   CEPA(3) CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the requested variant of coupled electron pair approximation level of theory.
 
 .. psivar:: CI DIPOLE X
    CI DIPOLE Y
@@ -143,6 +291,23 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the requested configuration interaction level of theory and root.
 
+.. psivar:: CISD DIPOLE X
+   CISD DIPOLE Y
+   CISD DIPOLE Z
+
+   The three components of the dipole [Debye] for the 
+   configuration interaction singles and doubles level of theory and root.
+
+.. psivar:: CISD QUADRUPOLE XX
+   CISD QUADRUPOLE XY
+   CISD QUADRUPOLE XZ
+   CISD QUADRUPOLE YY
+   CISD QUADRUPOLE YZ
+   CISD QUADRUPOLE ZZ
+
+   The six components of the quadrupole [Debye Ang] for the 
+   configuration interaction singles and doubles level of theory and root.
+
 .. psivar:: CISD TOTAL ENERGY
    CISD CORRELATION ENERGY
    CISDT TOTAL ENERGY
@@ -212,42 +377,66 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the density-fitted MP2 level of theory.
 
-.. psivar:: DFT FUNCTIONAL ENERGY
-
-   The functional energy contribution [H] to the total SCF energy (DFT only).
-   Quantity :math:`E_{xc}` in Eq. :eq:`SCFterms`.
-
 .. psivar:: DFT FUNCTIONAL TOTAL ENERGY
 
-   The total electronic energy [H] for the underlying functional
-   of the requested DFT method, without any dispersion correction,
-   the first four terms in Eq. :eq:`SCFterms`.
-   When the requested method includes a dispersion correction, this 
-   quantity is :math:`E_{\text{DFT}}` in Eq. :eq:`DFTDterms`.
-   Otherwise, quantity equal to :psivar:`DFT TOTAL ENERGY <DFTTOTALENERGY>`
-   and :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>`.
+   The total electronic energy [H] for the underlying functional of the
+   requested DFT method, without any dispersion correction; the first four
+   terms in Eq. :eq:`SCFterms` or :eq:`DFTterms`. Quantity
+   :math:`E_{\text{FCTL}}` in Eqs.  :eq:`SCFterms` and :eq:`DFTterms`.
+   Unless the method includes a dispersion correction, this quantity is
+   equal to :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>`.
 
 .. psivar:: DFT TOTAL ENERGY
 
    The total electronic energy [H] for the requested DFT method, 
-   :math:`E_{\text{SCF}}` in Eq. :eq:`SCFterms`.
-   When the method includes a dispersion correction, this quantity
-   is :math:`E_{\text{DFT-D}}` in Eq. :eq:`DFTDterms`.
+   :math:`E_{\text{DFT}}` in Eq. :eq:`DFTterms`.
+
+   .. math:: 
+      :nowrap:
+      :label: DFTterms
+
+         \begin{align*}
+            E_{\text{DFT}} & = E_{NN} + E_{1e^-} + E_{2e^-} + E_{xc} + E_{\text{-D}} + E_{\text{DH}} \\
+                           & = E_{\text{FCTL}} + E_{\text{-D}} + E_{\text{DH}} \\
+                           & = E_{\text{SCF}} + E_{\text{DH}}
+         \end{align*}
+
+   Unless the method is a DFT double-hybrid, this quantity is equal to
+   :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>`. If the method is neither a
+   double-hybrid, nor dispersion corrected, this quantity is equal to
+   :psivar:`DFT FUNCTIONAL TOTAL ENERGY <DFTFUNCTIONALTOTALENERGY>`.
+
+.. psivar:: DFT XC ENERGY
+
+   The functional energy contribution [H] to the total SCF energy (DFT only).
+   Quantity :math:`E_{xc}` in Eqs. :eq:`SCFterms` and :eq:`DFTterms`.
 
 .. psivar:: DISPERSION CORRECTION ENERGY
 
    The dispersion correction [H] appended to an underlying functional
    when a DFT-D method is requested. Quantity :math:`E_{\text{-D}}`
-   in Eqs. :eq:`DFTDterms` and :eq:`SCFterms`.
+   in Eqs. :eq:`SCFterms` and :eq:`DFTterms`.
 
-   .. math:: E_{\text{DFT-D}} = E_{\text{DFT}} + E_{\text{-D}}
-      :label: DFTDterms
+.. psivar:: DOUBLE-HYBRID CORRECTION ENERGY
+
+   The scaled MP2 correlation energy correction [H] appended to an 
+   underlying functional when a DH-DFT method is requested.
+   Quantity :math:`E_{\text{DH}}` in Eq. :eq:`DFTterms`.
 
 .. psivar:: FCI TOTAL ENERGY
    FCI CORRELATION ENERGY
 
    The total electronic energy [H] and correlation energy component [H]
    for the full configuration interaction level of theory.
+
+.. psivar:: HF TOTAL ENERGY
+
+   The total electronic energy [H] for the Hartree--Fock method, without
+   any dispersion correction; the first three (or four, since 
+   :math:`E_{xc} = 0`) terms in Eq. :eq:`SCFterms`. Quantity :math:`E_{\text{HF}}`
+   in Eq. :eq:`SCFterms`.
+..   Unless the method includes a dispersion correction, this quantity is
+   equal to :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>`.
 
 .. psivar:: LCC2 (+LMP2) TOTAL ENERGY
 
@@ -287,6 +476,9 @@ PSI Variables by Alpha
    The nuclear repulsion energy contribution [H] to the total SCF energy.
    Quantity :math:`E_{NN}` in Eq. :eq:`SCFterms`.
 
+   .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
+      :label: ENN
+
 .. psivar:: ONE-ELECTRON ENERGY
 
    The one-electron energy contribution [H] to the total SCF energy.
@@ -316,15 +508,43 @@ PSI Variables by Alpha
    The total electronic interaction energy [H] for the labeled SAPT level
    of theory.
 
+.. psivar:: SCF DIPOLE X
+   SCF DIPOLE Y
+   SCF DIPOLE Z
+
+   The three components of the SCF dipole [Debye].
+
+.. psivar:: SCF QUADRUPOLE XX
+   SCF QUADRUPOLE XY
+   SCF QUADRUPOLE XZ
+   SCF QUADRUPOLE YY
+   SCF QUADRUPOLE YZ
+   SCF QUADRUPOLE ZZ
+
+   The six components of the SCF quadrupole [Debye Ang].
+
 .. psivar:: SCF TOTAL ENERGY
 
    The total electronic energy [H] of the SCF stage of the calculation.
    The :psivar:`CORRELATION ENERGY` variables from subsequent stages of a
-   calculation are often the corresponding :psivar:`TOTAL ENERGY` variables
-   less this quantity. Constructed from Eq. :eq:`SCFterms`.
+   calculation are often the corresponding :psivar:`TOTAL ENERGY`
+   variables less this quantity. Constructed from Eq. :eq:`SCFterms`,
+   where this quantity is :math:`E_{\text{SCF}}`.
 
-   .. math:: E_{\text{SCF}} = E_{NN} + E_{1e^-} + E_{2e^-} + E_{xc} + E_{\text{-D}}
+   .. math:: 
+      :nowrap:
       :label: SCFterms
+
+         \begin{align*}
+            E_{\text{SCF}} & = E_{NN} + E_{1e^-} + E_{2e^-} + E_{xc} + E_{\text{-D}} \\
+                           & = E_{\text{FCTL/HF}} + E_{\text{-D}}
+         \end{align*}
+
+   Unless the method includes a dispersion correction, this quantity is
+   equal to :psivar:`HF TOTAL ENERGY <HFTOTALENERGY>` (for HF) or
+   :psivar:`DFT FUNCTIONAL TOTAL ENERGY <DFTFUNCTIONALTOTALENERGY>` (for
+   DFT). Unless the method is a DFT double-hybrid, this quantity is equal
+   to :psivar:`DFT TOTAL ENERGY <DFTTOTALENERGY>`.
 
 .. psivar:: TWO-ELECTRON ENERGY
 

@@ -33,7 +33,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
-#include "pkintegrals.h"
 
 #include "hf.h"
 
@@ -115,6 +114,9 @@ void HF::common_init()
     // Read information from input file
     maxiter_ = options_.get_int("MAXITER");
 
+    // Should we continue if we fail to converge?
+    fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
     int ndocc = 0, nsocc = 0;
@@ -147,6 +149,11 @@ void HF::common_init()
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
     }
+
+    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+        name_ = "DFT";
+    else
+        name_ = "SCF";
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
@@ -339,25 +346,13 @@ void HF::integrals()
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
+    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-        mints->integrals();
-        try {
-            if(scf_type_ == "PK")
-                pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
-                                                                               nsopi_, so2index_, so2symblk_));
-        }
-        catch (PsiException & err) {
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ = "OUT_OF_CORE";
-            pk_integrals_.reset();
-        }
+        // Don't do anything; the JK object will handle everything!
     }else if (scf_type_ == "DF"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         if (print_ && WorldComm->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
@@ -369,7 +364,7 @@ void HF::integrals()
     }
 
     // TODO: Relax the if statement. 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
         // Tell the JK to print
@@ -404,7 +399,6 @@ void HF::finalize()
     delete[] so2symblk_;
     delete[] so2index_;
 
-    pk_integrals_.reset();
     eri_.reset();
 
     // This will be the only one
@@ -1669,7 +1663,7 @@ double HF::compute_energy()
     compute_spin_contamination();
     frac_renormalize();
 
-    if (converged) {
+    if (converged || !fail_on_maxiter_) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
@@ -1678,8 +1672,13 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
-        if (WorldComm->me() == 0) {
+        if (WorldComm->me() == 0 && converged) {
             fprintf(outfile, "  Energy converged.\n\n");
+        }
+        if (WorldComm->me() == 0 && !converged) {
+            fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
+        }
+        if (WorldComm->me() == 0) {
             fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
@@ -1708,6 +1707,19 @@ double HF::compute_energy()
             if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["SCF DIPOLE X"] =
+//  Process::environment.globals["SCF DIPOLE Y"] =
+//  Process::environment.globals["SCF DIPOLE Z"] =
+//  Process::environment.globals["SCF QUADRUPOLE XX"] =
+//  Process::environment.globals["SCF QUADRUPOLE XY"] =
+//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE YY"] =
+//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
+
         }
 
         save_information();
@@ -1747,28 +1759,34 @@ double HF::compute_energy()
 void HF::print_energies()
 {
     fprintf(outfile, "   => Energetics <=\n\n");
-    fprintf(outfile, "    Nuclear Repulsion Energy =    %24.16f\n", energies_["Nuclear"]);
-    fprintf(outfile, "    One-Electron Energy =         %24.16f\n", energies_["One-Electron"]);
-    fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
-    fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
-    fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
-    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + 
+    fprintf(outfile, "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
+    fprintf(outfile, "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
+    fprintf(outfile, "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
+    fprintf(outfile, "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
+    fprintf(outfile, "    Total Energy =                    %24.16f\n", energies_["Nuclear"] + 
         energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
     fprintf(outfile, "\n");
     
-    Process::environment.globals["NUCLEAR REPULSION ENERGY"] =      energies_["Nuclear"];
-    Process::environment.globals["ONE-ELECTRON ENERGY"] =           energies_["One-Electron"];
-    Process::environment.globals["TWO-ELECTRON ENERGY"] =           energies_["Two-Electron"];
+    Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
+    Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
+    Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
     if (fabs(energies_["XC"]) > 1.0e-14) {
-        Process::environment.globals["DFT FUNCTIONAL ENERGY"] =         energies_["XC"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] =   energies_["Nuclear"] + 
+        Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
-        Process::environment.globals["DFT TOTAL ENERGY"] =              energies_["Nuclear"] + 
+        Process::environment.globals["DFT TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
+    } else {
+        Process::environment.globals["HF TOTAL ENERGY"] = energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"];
     }
     if (fabs(energies_["-D"]) > 1.0e-14) {
-        Process::environment.globals["DISPERSION CORRECTION ENERGY"] =  energies_["-D"];
+        Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+//  Comment so that autodoc utility will find this PSI variable
+//     It doesn't really belong here but needs to be linked somewhere
+//  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
 }
 
 void HF::print_occupation()

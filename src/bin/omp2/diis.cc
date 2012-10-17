@@ -74,7 +74,7 @@ void OMP2Wave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_ne
           Bmat->set(i, nvar - 1, -1.0);
 	}
 	
-        Bmat->set(nvar - 1, nvar - 1, -1.0);
+        Bmat->set(nvar - 1, nvar - 1, 0.0);
 	
 	// scale Bmat
 	double scale_factor = 1 / Bmat->get(0, 0);

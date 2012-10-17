@@ -23,9 +23,22 @@ procedures = {
             'dcft'          : run_dcft,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
-            'mp2'           : run_mp2,
+            'conv-mp2'      : run_mp2,
+            'mp2'           : run_mp2_select,
             'omp2'          : run_omp2,
+            'scs-omp2'      : run_scs_omp2,
+            'scsn-omp2'     : run_scs_omp2,
+            'scs-mi-omp2'   : run_scs_omp2,
+            'scs-omp2-vdw'  : run_scs_omp2,
+            'sos-omp2'      : run_sos_omp2,
+            'sos-pi-omp2'   : run_sos_omp2,
             'omp3'          : run_omp3,
+            'scs-omp3'      : run_scs_omp3,
+            'scsn-omp3'     : run_scs_omp3,
+            'scs-mi-omp3'   : run_scs_omp3,
+            'scs-omp3-vdw'  : run_scs_omp3,
+            'sos-omp3'      : run_sos_omp3,
+            'sos-pi-omp3'   : run_sos_omp3,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -92,11 +105,13 @@ procedures = {
             'scf'           : run_scf_gradient,
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
-            'mp2'           : run_mp2_gradient,
+            'mp2'           : run_mp2_select_gradient,
+            'conv-mp2'      : run_mp2_gradient,
             'df-mp2'        : run_dfmp2_gradient,
             'dfmp2'         : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
-            'dcft'          : run_dcft_gradient
+            'dcft'          : run_dcft_gradient,
+            'omp2'          : run_omp2_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -118,8 +133,8 @@ for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
 
 for ssuper in superfunctional_list():
-    procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
-
+    if not ssuper.is_c_hybrid():
+        procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
@@ -172,6 +187,8 @@ def energy(name, **kwargs):
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -243,7 +260,15 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | scs-omp2                | spin-component scaled OMP2                                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sos-omp2                | spin-opposite scaled OMP2                                                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | omp3                    | orbital-optimized third order Moller--Plesset perturbation theory                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | scs-omp3                | spin-component scaled OMP3                                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sos-omp3                | spin-opposite scaled OMP3                                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -399,6 +424,10 @@ def energy(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    optstash = OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'])
+
     # Make sure the molecule the user provided is the active one
     if 'molecule' in kwargs:
         activate(kwargs['molecule'])
@@ -412,9 +441,24 @@ def energy(name, **kwargs):
         kwargs['level'] = level
 
     try:
-        return procedures['energy'][lowername](lowername, **kwargs)
+        # Set method-dependent scf convergence criteria
+        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 6)
+            else:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
+        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
+            else:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+        returnvalue = procedures['energy'][lowername](lowername, **kwargs)
+
     except KeyError:
         raise ValidationError('Energy method %s not available.' % (lowername))
+
+    optstash.restore()
+    return returnvalue
 
 
 def gradient(name, **kwargs):
@@ -425,6 +469,10 @@ def gradient(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     dertype = 1
+
+    optstash = OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'])
 
     # Order of precedence:
     #    1. Default for wavefunction
@@ -499,6 +547,18 @@ def gradient(name, **kwargs):
     else:
         raise ValidationError('Optimize execution mode \'%s\' not valid.' % (opt_mode))
 
+    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+    if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
+        else:
+            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
+    if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+        else:
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
@@ -508,7 +568,10 @@ def gradient(name, **kwargs):
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
         PsiMod.reference_wavefunction().energy()
+
+        optstash.restore()
         return PsiMod.get_variable('CURRENT ENERGY')
+
     else:
         # If not, perform finite difference of energies
 
@@ -648,6 +711,7 @@ def gradient(name, **kwargs):
 
         # S/R: Quit sow after writing files
         if (opt_mode.lower() == 'sow'):
+            optstash.restore()
             return 0.0
 
         if (opt_mode.lower() == 'reap'):
@@ -657,6 +721,7 @@ def gradient(name, **kwargs):
         PsiMod.fd_1_0(energies)
 
         # The last item in the list is the reference energy, return it
+        optstash.restore()
         return energies[-1]
 
 
@@ -711,6 +776,10 @@ def property(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    optstash = OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'])
+
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
@@ -725,9 +794,28 @@ def property(name, **kwargs):
         kwargs['level'] = level
 
     try:
-        return procedures['property'][lowername](lowername, **kwargs)
+        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+        #   SCF properties have been set as 6/5 so as to match those 
+        #       run normally through OEProp so subject to change
+        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 6)
+            else:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
+        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
+            else:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+
+        returnvalue = procedures['property'][lowername](lowername, **kwargs)
+
     except KeyError:
         raise ValidationError('Property method %s not available.' % (lowername))
+
+    optstash.restore()
+    return returnvalue
+
 
 ##  Aliases  ##
 prop = property
@@ -760,7 +848,13 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -768,6 +862,18 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. include:: autodoc_dft_opt.rst
+
+    .. warning:: For the present, file ``intco.dat`` is lodged in the submission
+       directory and defines the internal coordinates for an optimization.
+       Thus, it is unsafe to run multiple optimizations from a single
+       directory. Also, ``intco.dat`` can linger, so, unless you've
+       deliberately constructed it, be sure to clear it out before starting a
+       new optimization.
+    
+    .. warning:: Optimizations where the molecule is specified in Z-matrix format 
+       with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
@@ -884,6 +990,7 @@ def optimize(name, **kwargs):
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print('Optimizer: Optimization complete!')
+            PsiMod.print_out('\n    Final optimized geometry and variables:\n')
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (PsiMod.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False):
@@ -901,7 +1008,7 @@ def optimize(name, **kwargs):
             return thisenergy
 
         PsiMod.print_out('\n    Structure for next step:\n')
-        PsiMod.get_active_molecule().print_out_in_angstrom()
+        PsiMod.get_active_molecule().print_in_input_format()
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
@@ -1042,6 +1149,10 @@ def frequency(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    optstash = OptionsState(
+        ['SCF', 'E_CONVERGENCE'],
+        ['SCF', 'D_CONVERGENCE'])
+
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])
@@ -1079,10 +1190,23 @@ def frequency(name, **kwargs):
         else:
             dertype = 0
 
+    # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+    if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
+        else:
+            PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
+    if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+        if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+        else:
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+
     # Does an analytic procedure exist for the requested method?
     if (dertype == 2 and func_existed == False):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
+        optstash.restore()
         return PsiMod.reference_wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
@@ -1197,6 +1321,7 @@ def frequency(name, **kwargs):
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
         # The last item in the list is the reference energy, return it
+        optstash.restore()
         return energies[-1]
 
 ##  Aliases  ##

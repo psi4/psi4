@@ -46,9 +46,10 @@ LIBOBJ = $(TRUECSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
+
 
 install_inc:: libciomr.h
 	$(MKDIRS) $(DESTDIR)$(incdir)/libciomr

@@ -38,6 +38,7 @@ close DRIVER;
 my @temp = ();
 print_hash(\%Keywords);
 my @PSIMODULES = @temp;
+push(@PSIMODULES, "OEPROP");
 
 sub print_hash
 {

@@ -9,6 +9,7 @@ molecule h2o {
 }
 
 set basis cc-pVDZ
+set scf_type pk
 frequencies('scf')
 
 ref_freqs = PsiMod.Vector(3) #TEST

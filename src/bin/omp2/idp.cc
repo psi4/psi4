@@ -38,21 +38,74 @@ namespace psi{ namespace omp2wave{
 void OMP2Wave::idp()
 {
      int dim;
+
+if (reference == "RHF") {
+    // Form IDPs
+    nidpA=0;
+
+    // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
+    for(int h = 0; h < nirrep_; h++){
+      nidpA += virtpiA[h] * occpiA[h]; 
+    }
+
+    fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
+    fflush(outfile);  
+    
+    if (nidpA != 0) {
+      idp_returnA = 1;
+      wogA = new Array1d(nidpA, "Alpha MO grad vector");
+      kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
+      kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
+      wogA->zero();
+      kappaA->zero();
+      kappa_barA->zero();
+    }
+    
+    // allocate memory 
+    idprowA = new int[nidpA]; 
+    idpcolA = new int[nidpA];
+    idpirrA = new int[nidpA]; 
+    
+    // initialize 
+    memset(idprowA,0, sizeof(int)*nidpA);
+    memset(idpcolA,0, sizeof(int)*nidpA);
+    memset(idpirrA,0, sizeof(int)*nidpA);   
+
+    // set idpA 
+    dim=0;
+    for(int h = 0; h < nirrep_; h++){      
+      for(int a = 0; a < virtpiA[h]; a++){
+	for(int i = 0; i < occpiA[h]; i++){
+	  idprowA[dim]=a;
+	  idpcolA[dim]=i;
+	  idpirrA[dim]=h;
+	  dim++;  
+	}
+      }
+    }
+
+    if(print_ > 2){
+     for(int i = 0; i < nidpA; i++){
+        fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
+	fflush(outfile);
+      }
+    }
      
-/********************************************************************************************/
-/************************** Form IDPs *******************************************************/
-/********************************************************************************************/
+}// end if (reference == "RHF") 
+
+else if (reference == "UHF") {
+    // Form IDPs
     nidpA=0;
     nidpB=0;
 
     // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
-    for(int h = 0; h < nirreps; h++){
+    for(int h = 0; h < nirrep_; h++){
       nidpA += virtpiA[h] * occpiA[h]; 
       nidpB += virtpiB[h] * occpiB[h]; 
     }
 
     fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
-    fprintf(outfile,"\n\tNumber of beta independent-pairs :%3d\n", nidpB);
+    fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
     
     if (nidpA != 0) {
@@ -75,9 +128,6 @@ void OMP2Wave::idp()
       kappa_barB->zero();
     }
  
-/********************************************************************************************/
-/************************** form idprow & idpcol vectors ************************************/
-/********************************************************************************************/
     // allocate memory 
     idprowA = new int[nidpA]; 
     idpcolA = new int[nidpA];
@@ -96,7 +146,7 @@ void OMP2Wave::idp()
 
     // set idpA 
     dim=0;
-    for(int h = 0; h < nirreps; h++){      
+    for(int h = 0; h < nirrep_; h++){      
       for(int a = 0; a < virtpiA[h]; a++){
 	for(int i = 0; i < occpiA[h]; i++){
 	  idprowA[dim]=a;
@@ -109,7 +159,7 @@ void OMP2Wave::idp()
     
     // set idpB 
     dim=0;
-    for(int h = 0; h < nirreps; h++){
+    for(int h = 0; h < nirrep_; h++){
       for(int a = 0; a < virtpiB[h]; a++){
 	for(int i = 0; i < occpiB[h]; i++){
 	  idprowB[dim]=a;
@@ -120,7 +170,7 @@ void OMP2Wave::idp()
       }
     }
     
-    if(print_ > 1){
+    if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
         fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
@@ -132,9 +182,7 @@ void OMP2Wave::idp()
       }
     }
       
-
-/********************************************************************************************/
-/********************************************************************************************/  
+}// end if (reference == "UHF") 
 
 }// end of main
 }} // End Namespaces

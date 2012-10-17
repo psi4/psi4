@@ -1,3 +1,5 @@
+#! Test that Python Molecule class processes geometry like PsiMod Molecule class.
+
 import qcdb
 
 ref_nre = 268.617178206572646  #TEST

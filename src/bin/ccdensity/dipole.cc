@@ -73,9 +73,25 @@ void dipole(void)
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
 
-    oe->set_title("CC Density OPDM (Spin densities are not correct)");
+    // TODO: This section needs work to duplicate the generic CC DIPOLE X, etc.
+    //  into the exact method and/or root, like in DETCI
+    fprintf(outfile, "\nCC Density OPDM (Spin densities are not correct)\n\n");
+    oe->set_title("CC");
 
     oe->compute();
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["CC DIPOLE X"] =
+//  Process::environment.globals["CC DIPOLE Y"] =
+//  Process::environment.globals["CC DIPOLE Z"] =
+//  Process::environment.globals["CC QUADRUPOLE XX"] =
+//  Process::environment.globals["CC QUADRUPOLE XY"] =
+//  Process::environment.globals["CC QUADRUPOLE XZ"] =
+//  Process::environment.globals["CC QUADRUPOLE YY"] =
+//  Process::environment.globals["CC QUADRUPOLE YZ"] =
+//  Process::environment.globals["CC QUADRUPOLE ZZ"] =
+
 }
 
 }}

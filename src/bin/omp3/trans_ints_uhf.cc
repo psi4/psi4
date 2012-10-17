@@ -37,7 +37,7 @@ using namespace std;
 
 namespace psi{ namespace omp3wave{
 
-void OMP3Wave::trans_ints()
+void OMP3Wave::trans_ints_uhf()
 {    
     //fprintf(outfile,"\n trans_ints is starting... \n"); fflush(outfile);
 /********************************************************************************************/
@@ -736,7 +736,7 @@ void OMP3Wave::trans_ints()
       timer_off("Build Fock");
 
       timer_on("Build Denominators");
-      denominators();
+      denominators_uhf();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
       //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
@@ -745,7 +745,7 @@ void OMP3Wave::trans_ints()
 
 
 
-void OMP3Wave::denominators()
+void OMP3Wave::denominators_uhf()
 {
     //fprintf(outfile,"\n denominators is starting... \n"); fflush(outfile);
     dpdbuf4 D;

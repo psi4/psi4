@@ -39,7 +39,256 @@ namespace psi{ namespace omp3wave{
 
 void OMP3Wave::GFockmo()
 {
-        //fprintf(outfile,"\n GFockmo is starting... \n"); fflush(outfile);
+
+//fprintf(outfile,"\n GFockmo is starting... \n"); fflush(outfile);
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+
+	// Initialize
+	GFock->zero();
+
+        // 1e-part
+	HG1->zero();
+	HG1->gemm(false, false, 1.0, HmoA, g1symm, 0.0);
+	GFock->add(HG1);
+	Emp3_rdm=HG1->trace() + Enuc; // One-electron contribution to MP2L
+
+        // 2e-part
+	dpdbuf4 G, K, X, T;
+	dpdfile2 GF;
+	
+	psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+	psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
+        psio_->open(PSIF_OMP3_DPD, PSIO_OPEN_OLD); 
+
+
+   // Build X intermediate 
+   if (twopdm_abcd_type == "DIRECT" ) {
+        // With this algorithm cost changes to o2v4 + ov4 => o3v3 + o3v2, roughly v/o times faster 
+ 	// X_MNIC = 2\sum{E,F} t_MN^EF(1) * <IC|EF>   
+        dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
+        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+        dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+        dpd_contract444(&T, &K, &X, 0, 0, 2.0, 0.0);
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&T);
+	dpd_buf4_close(&X);
+    }
+
+
+	
+        /*
+	// Build Fij
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
+	
+	// Fij += 4 * \sum{m,n,k} <km|ni> * G_kmnj
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"), 0, "MO Ints <OO|OO>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+	dpd_contract442(&K, &G, &GF, 3, 3, 4.0, 0.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fij += 4 * \sum{e,m,f} <me|if> * G_mejf 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OV|OV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fij += 8 * \sum{e,m,f} <mi|ef> * G_mjef 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OO|VV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+	dpd_contract442(&K, &G, &GF, 1, 1, 8.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	dpd_file2_close(&GF);
+        */	
+	
+	// Build Fai
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>"); 
+	
+	// Fai += 4 * \sum{m,n,k} <km|na> * G_kmni
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OO|OV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
+	dpd_contract442(&K, &G, &GF, 3, 3, 4.0, 0.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fai += 4 * \sum{e,m,f} <me|af> * G_meif 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+	dpd_contract442(&K, &G, &GF, 1, 1, 8.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	dpd_file2_close(&GF);
+	
+	
+	// Build Fia
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
+	
+	// Fia += 4 * \sum{m,e,n} <mi|ne> * G_mane
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OO|OV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+	dpd_contract442(&K, &G, &GF, 1, 1, 4.0, 0.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fia += 8 * \sum{m,e,n} <nm|ie> * G_nmae
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OO|OV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+	dpd_contract442(&K, &G, &GF, 2, 2, 8.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+
+   if (twopdm_abcd_type == "DIRECT" ) {
+       	// Fia += \sum{m,n,c} X_mnic * (2t_mn^ac(1) - tmn^ca(1)) 
+        dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
+        dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau_1 <OO|VV>");
+	dpd_contract442(&X, &T, &GF, 2, 2, 1.0, 1.0); 
+	dpd_buf4_close(&X);
+	dpd_buf4_close(&T);
+	dpd_file2_close(&GF);
+   }
+
+   else if (twopdm_abcd_type == "COMPUTE" ) {
+       	// Fia += 4 * \sum{e,f,c} <ce|fi> * G_cefa = 4 * \sum{e,f,c} <if|ce> * G_afce 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+	dpd_contract442(&K, &G, &GF, 0, 0, 4.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	dpd_file2_close(&GF);
+   }
+
+	
+        /*	
+	// Build Fab
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>"); 
+	
+	// Fab += 4 * \sum{m,e,n} <ma|ne> * G_mbne
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
+                  ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OV|OV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
+	dpd_contract442(&K, &G, &GF, 1, 1, 4.0, 0.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	
+	// Fab += 8 * \sum{m,e,n} <nm|ae> * G_nmbe
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OO|VV>");
+	dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+	dpd_contract442(&K, &G, &GF, 2, 2, 8.0, 1.0); 
+	dpd_buf4_close(&K);
+	dpd_buf4_close(&G);
+	dpd_file2_close(&GF);
+        */	
+	
+	psio_->close(PSIF_LIBTRANS_DPD, 1);
+        psio_->close(PSIF_OMP3_DPD, 1);
+
+
+	// Load dpd_file2 to SharedMatrix (GFock)
+        /*	
+	// Load Fij
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
+	dpd_file2_mat_init(&GF);
+	dpd_file2_mat_rd(&GF);
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < occpi[h]; ++i){
+            for(int j = 0 ; j < occpi[h]; ++j){
+                GFock->add(h, i, j, GF.matrix[h][i][j]);
+            }
+	  }
+	}
+	dpd_file2_close(&GF);
+        */
+	
+	// Load Fai
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
+	dpd_file2_mat_init(&GF);
+	dpd_file2_mat_rd(&GF);
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < virtpiA[h]; ++a){
+            for(int i = 0 ; i < occpiA[h]; ++i){
+                GFock->add(h, a + occpiA[h], i, GF.matrix[h][a][i]);
+            }
+	  }
+	}
+	dpd_file2_close(&GF);
+	
+	// Load Fia
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
+	dpd_file2_mat_init(&GF);
+	dpd_file2_mat_rd(&GF);
+	for(int h = 0; h < nirreps; ++h){
+	  for(int i = 0 ; i < occpiA[h]; ++i){
+            for(int a = 0 ; a < virtpiA[h]; ++a){
+                GFock->add(h, i, a + occpiA[h], GF.matrix[h][i][a]);
+            }
+	  }
+	}
+	dpd_file2_close(&GF);
+
+        /*	
+	// Load Fab
+	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>");  
+	dpd_file2_mat_init(&GF);
+	dpd_file2_mat_rd(&GF);
+	for(int h = 0; h < nirreps; ++h){
+	  for(int a = 0 ; a < virtpi[h]; ++a){
+            for(int b = 0 ; b < virtpi[h]; ++b){
+                GFock->add(h, a + occpi[h], b + occpi[h], GF.matrix[h][a][b]);
+            }
+	  }
+	}
+	dpd_file2_close(&GF);
+        */
+	
+	psio_->close(PSIF_OMP3_DENSITY, 1);
+	if (print_ > 2) GFock->print();
+	
+}// end if (reference == "RHF") 
+
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
 
 /********************************************************************************************/
 /************************** Initialize ******************************************************/
@@ -71,7 +320,7 @@ void OMP3Wave::GFockmo()
 /********************************************************************************************/
 /************************** Build X intermediates *******************************************/
 /********************************************************************************************/ 
-   if (twopdm_abcd_type == "INDIRECT" ) {
+   if (twopdm_abcd_type == "DIRECT" ) {
         // With this algorithm cost changes to 3*o2v4 + 4*ov4 => 4*(o3v3 + o3v2), ~5-times faster 
  	// X_MNIC = \sum{E,F} t_MN^EF * <IC||EF> = 2\sum{E,F} t_MN^EF * <IC|EF>  
         dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
@@ -126,7 +375,7 @@ void OMP3Wave::GFockmo()
 /********************************************************************************************/
 /************************** OO-Block ********************************************************/
 /********************************************************************************************/ 
-#ifdef unnecessary
+/*
 	// NOTE: OO-Block may be incomplete!
 	// Build FIJ
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
@@ -249,7 +498,7 @@ void OMP3Wave::GFockmo()
 	
 	// Close 
 	dpd_file2_close(&GF);
-#endif
+*/
 
 /********************************************************************************************/
 /************************** VO-Block ********************************************************/
@@ -482,7 +731,7 @@ void OMP3Wave::GFockmo()
 	dpd_buf4_close(&G);
         */
 
-   if (twopdm_abcd_type == "INDIRECT" ) {
+   if (twopdm_abcd_type == "DIRECT" ) {
        	// FIB += 2 * \sum{E,F,C} <EF||CI> * G_EFCB = 1/4  \sum{M,N,C} X_MNIC * t_MN^BC 
         dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
@@ -515,7 +764,7 @@ void OMP3Wave::GFockmo()
 	dpd_buf4_close(&G);
 
 
-   if (twopdm_abcd_type == "INDIRECT" ) {
+   if (twopdm_abcd_type == "DIRECT" ) {
        	// FIB += 4 * \sum{e,F,c} <Fe|Ic> * G_FeBc =  \sum{M,n,C} X_MnIc * t_Mn^Bc 
         dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "X <Oo|Ov>");
@@ -592,7 +841,7 @@ void OMP3Wave::GFockmo()
 	dpd_buf4_close(&G);
         */
 
-   if (twopdm_abcd_type == "INDIRECT" ) {
+   if (twopdm_abcd_type == "DIRECT" ) {
        	// Fib += 2 * \sum{e,f,c} <ef||ci> * G_efcb = 1/4  \sum{m,n,c} X_mnic * t_mn^bc 
         dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "X <oo|ov>");
@@ -625,7 +874,7 @@ void OMP3Wave::GFockmo()
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-   if (twopdm_abcd_type == "INDIRECT" ) {
+   if (twopdm_abcd_type == "DIRECT" ) {
        	// Fib += 4 * \sum{E,f,C} <Ef|Ci> * G_EfCb =  \sum{M,n,C} X_MnCi * t_Mn^Cb 
         dpd_buf4_init(&X, PSIF_OMP3_DENSITY, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "X <Oo|Vo>");
@@ -680,7 +929,7 @@ void OMP3Wave::GFockmo()
 /********************************************************************************************/
 /************************** VV-Block ********************************************************/
 /********************************************************************************************/ 
-#ifdef unnecessary
+/*
         // NOTE: VV-Block may be incomplete!
 	// Build FAB
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>"); 
@@ -767,7 +1016,7 @@ void OMP3Wave::GFockmo()
 	
 	// Close
 	dpd_file2_close(&GF);
-#endif
+*/
 	
 	psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OMP3_DPD, 1);
@@ -775,7 +1024,7 @@ void OMP3Wave::GFockmo()
 /********************************************************************************************/
 /************************** Load dpd_file2 to SharedMatrix (GFock) **************************/
 /********************************************************************************************/ 
-#ifdef unnecessary
+/*
 	// Load FIJ
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
 	dpd_file2_mat_init(&GF);
@@ -801,7 +1050,7 @@ void OMP3Wave::GFockmo()
 	  }
 	}
 	dpd_file2_close(&GF);
-#endif
+*/
 	
 	// Load FAI
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
@@ -855,7 +1104,7 @@ void OMP3Wave::GFockmo()
 	}
 	dpd_file2_close(&GF);
 	
-#ifdef unnecessary
+/*
 	// Load FAB
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>");  
 	dpd_file2_mat_init(&GF);
@@ -881,7 +1130,7 @@ void OMP3Wave::GFockmo()
 	  }
 	}
 	dpd_file2_close(&GF);
-#endif
+*/
 	
 	psio_->close(PSIF_OMP3_DENSITY, 1);
 
@@ -891,8 +1140,9 @@ void OMP3Wave::GFockmo()
 	  GFockB->print();
 	}
 	
-	//fprintf(outfile,"\n GFockmo done. \n"); fflush(outfile);
+}// end if (reference == "UHF") 
+//fprintf(outfile,"\n GFockmo done. \n"); fflush(outfile);
 
-}
+} // End main
 }} // End Namespaces
 

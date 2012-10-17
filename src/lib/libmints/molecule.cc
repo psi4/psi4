@@ -495,10 +495,82 @@ Matrix Molecule::full_geometry() const
 void Molecule::set_geometry(double** geom)
 {
     lock_frame_ = false;
-    for (int i=0; i<natom(); ++i) {
-        atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
-                                   geom[i][1] / input_units_to_au_,
-                                   geom[i][2] / input_units_to_au_);
+    bool dummy_found = false;
+    for (int i=0; i<nallatom(); ++i){
+        if(full_atoms_[i]->symbol() == "X"){
+            dummy_found = true;
+            break;
+        }
+    }
+    // We don't track the coordinates of the dummy atoms.  For now, just convert the entries
+    // to Cartesians if the entry contains
+    if(dummy_found){
+        atoms_.clear();
+        int count = 0;
+        std::vector<int> fragment_changes;
+        for(int i = 0; i < fragments_.size(); ++i)
+            fragment_changes.push_back(0);
+        for (int i=0; i<nallatom(); ++i) {
+            boost::shared_ptr<CoordEntry> at = full_atoms_[i];
+
+            if(at->symbol() == "X"){
+                // Find out which fragment this atom is removed from, then bail
+                bool found = false;
+                for(int frag = 0; frag < fragments_.size(); ++frag){
+                    if(i >= fragments_[frag].first && i < fragments_[frag].second){
+                        found = true;
+                        fragment_changes[frag]++;
+                        break;
+                    }
+                }
+                if(!found)
+                    throw PSIEXCEPTION("Problem converting ZMatrix coordinates to Cartesians."
+                                       "Try again, without dummy atoms.");
+                continue;
+            }
+
+            int entrynum = at->entry_number();
+            double zval = at->Z();
+            double charge = at->charge();
+            double mass = at->mass();
+            std::string symbol = at->symbol();
+            std::string label = at->label();
+            boost::shared_ptr<CoordEntry> new_atom(
+                        new CartesianEntry(entrynum,
+                                           zval,
+                                           charge,
+                                           mass,
+                                           symbol,
+                                           label,
+                                           boost::shared_ptr<CoordValue>(new NumberValue(geom[count][0]/input_units_to_au_)),
+                                           boost::shared_ptr<CoordValue>(new NumberValue(geom[count][1]/input_units_to_au_)),
+                                           boost::shared_ptr<CoordValue>(new NumberValue(geom[count][2]/input_units_to_au_))
+                                            ));
+            // Copy over all known basis sets
+            const std::map<std::string, std::string>& basissets = at->basissets();
+            std::map<std::string, std::string>::const_iterator bs = basissets.begin();
+            for(; bs != basissets.end(); ++bs)
+                new_atom->set_basisset(bs->second, bs->first);
+            atoms_.push_back(new_atom);
+            count++;
+        }
+        full_atoms_.clear();
+        for(int i = 0; i < atoms_.size(); ++i)
+            full_atoms_.push_back(atoms_[i]);
+        // Now change the bounds of each fragment, to reflect the missing dummy atoms
+        int cumulative_count = 0;
+        for(int frag = 0; frag < fragments_.size(); ++frag){
+            fragments_[frag].first -= cumulative_count;
+            cumulative_count += fragment_changes[frag];
+            fragments_[frag].second -= cumulative_count;
+        }
+        geometry_variables_.clear();
+    }else{
+        for (int i=0; i<natom(); ++i) {
+            atoms_[i]->set_coordinates(geom[i][0] / input_units_to_au_,
+                                       geom[i][1] / input_units_to_au_,
+                                       geom[i][2] / input_units_to_au_);
+        }
     }
 }
 
@@ -515,21 +587,13 @@ void Molecule::set_full_geometry(double** geom)
 void Molecule::set_geometry(const Matrix& geom)
 {
     lock_frame_ = false;
-    for (int i=0; i<natom(); ++i) {
-        atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
-                                   geom.get(i,1) / input_units_to_au_,
-                                   geom.get(i,2) / input_units_to_au_);
-    }
+    set_geometry(geom.pointer());
 }
 
 void Molecule::set_full_geometry(const Matrix& geom)
 {
     lock_frame_ = false;
-    for (int i=0; i<nallatom(); ++i) {
-        full_atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
-                                        geom.get(i,1) / input_units_to_au_,
-                                        geom.get(i,2) / input_units_to_au_);
-    }
+    set_full_geometry(geom.pointer());
 }
 
 void Molecule::rotate(const Matrix& R)
@@ -1355,24 +1419,28 @@ void Molecule::print_in_input_format() const
 {
     if (WorldComm->me() == 0) {
         if (nallatom()) {
-            // It's only worth echoing these if the user either input some variables,
-            // or they used a Z matrix for input
-            if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
-                    || geometry_variables_.size()){
-                fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
-                        units_==Angstrom ? "Angstrom" : "bohr");
-                for(int i = 0; i < nallatom(); ++i){
-                    full_atoms_[i]->print_in_input_format();
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+
+            for(int i = 0; i < nallatom(); ++i){
+                if (fZ(i) || (fsymbol(i) == "X")) {
+                    fprintf(outfile, "    %-8s", fsymbol(i).c_str());
+                } else {
+                    std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
+                    fprintf(outfile, "    %-8s", stmp.c_str());
                 }
-                fprintf(outfile,"\n");
-                fflush(outfile);
-                if(geometry_variables_.size()){
-                    std::map<std::string, double>::const_iterator iter;
-                    for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
-                        fprintf(outfile, "\t%-10s=%16.10f\n", iter->first.c_str(), iter->second);
-                    }
-                    fprintf(outfile, "\n");
+                full_atoms_[i]->print_in_input_format();
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+            if(geometry_variables_.size()){
+                std::map<std::string, double>::const_iterator iter;
+                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                    fprintf(outfile, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
                 }
+                fprintf(outfile, "\n");
             }
         }
     }
