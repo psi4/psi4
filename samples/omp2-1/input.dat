@@ -1,3 +1,5 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+
 
 memory 250 mb
 
@@ -10,8 +12,6 @@ h 1 0.958 2 104.4776
 
 set {
   basis cc-pvdz
-  d_convergence 8
-  e_convergence 10
 }
 
 energy('omp2')

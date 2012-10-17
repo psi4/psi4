@@ -32,8 +32,6 @@
 #include <libmints/factory.h>
 #include <libmints/wavefunction.h>
 
-#include "ccfiles.h"
-
 #include "omp2wave.h"
 #include "defines.h"
 
@@ -46,162 +44,405 @@ namespace psi{ namespace omp2wave{
 void OMP2Wave::get_moinfo()
 {      
   //fprintf(outfile,"\n get_moinfo is starting... \n"); fflush(outfile);
-  
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+
+
 /********************************************************************************************/
 /************************** MO info *********************************************************/
 /********************************************************************************************/
 	// Read in mo info
-	nso = chkpt_->rd_nso();
-	nmo = chkpt_->rd_nmo();
+	/*
+	nso_ = chkpt_->rd_nso_();
+	nmo_ = chkpt_->rd_nmo_();
 	nao = chkpt_->rd_nao();
 	nfrzc = chkpt_->rd_nfzc();
 	nfrzv = chkpt_->rd_nfzv();
-	nirreps = chkpt_->rd_nirreps();
+	nirrep_ = chkpt_->rd_nirrep_();
 
 	irreplabels = chkpt_->rd_irr_labs();
-	sopi = chkpt_->rd_sopi();  
-	mopi = chkpt_->rd_orbspi(); 
-	doccpi = chkpt_->rd_clsdpi();
-	soccpi = chkpt_->rd_openpi();
-	frzcpi = chkpt_->rd_frzcpi();
-	frzvpi = chkpt_->rd_frzvpi();
+	nsopi_ = chkpt_->rd_nsopi_();  
+	nmopi_ = chkpt_->rd_orbspi(); 
+	doccpi_ = chkpt_->rd_clsdpi();
+	soccpi_ = chkpt_->rd_openpi();
+	frzcpi_ = chkpt_->rd_frzcpi_();
+	frzvpi_ = chkpt_->rd_frzvpi_();
+        */
+
+        nso_     = reference_wavefunction_->nso();
+        nirrep_ = reference_wavefunction_->nirrep();
+        nmo_     = reference_wavefunction_->nmo();
+        nmopi_    = reference_wavefunction_->nmopi();
+        nsopi_    = reference_wavefunction_->nsopi();
+        doccpi_  = reference_wavefunction_->doccpi();
+        soccpi_  = reference_wavefunction_->soccpi();
+        frzcpi_  = reference_wavefunction_->frzcpi();
+        frzvpi_  = reference_wavefunction_->frzvpi();
+
+
+        // get nfrzc and nfrzv
+        nfrzc = 0;
+        nfrzv = 0;
+        for(int h=0; h<nirrep_; h++) {
+	  nfrzc += frzcpi_[h];
+	  nfrzv += frzvpi_[h];
+	}
 	
 	// form occpi and virtpi
-	occpiA = init_int_array(nirreps);
-	occpiB = init_int_array(nirreps);
-	virtpiA = init_int_array(nirreps);
-	virtpiB = init_int_array(nirreps);
-	memset(occpiA,0, sizeof(int)*nirreps);
-	memset(occpiB,0, sizeof(int)*nirreps);
-	memset(virtpiA,0, sizeof(int)*nirreps);
-	memset(virtpiB,0, sizeof(int)*nirreps);
-	for(int h=0; h<nirreps; h++) {
-	  virtpiA[h] = mopi[h] - soccpi[h] - doccpi[h];
-	  virtpiB[h] = mopi[h] - doccpi[h];
-	  occpiB[h] = doccpi[h];
-	  occpiA[h] = doccpi[h] + soccpi[h];
+	occpiA = init_int_array(nirrep_);
+	virtpiA = init_int_array(nirrep_);
+	memset(occpiA,0, sizeof(int)*nirrep_);
+	memset(virtpiA,0, sizeof(int)*nirrep_);
+	for(int h=0; h<nirrep_; h++) {
+	  virtpiA[h] = nmopi_[h] - doccpi_[h];
+	  occpiA[h] = doccpi_[h];
 	}
 	
 	//active occ and virt
-	adoccpi = init_int_array(nirreps);
-	aoccpiA = init_int_array(nirreps);
-	aoccpiB = init_int_array(nirreps);
-	avirtpiA = init_int_array(nirreps);
-	avirtpiB = init_int_array(nirreps);
-	memset(adoccpi,0, sizeof(int)*nirreps);
-	memset(aoccpiA,0, sizeof(int)*nirreps);
-	memset(aoccpiB,0, sizeof(int)*nirreps);
-	memset(avirtpiA,0, sizeof(int)*nirreps);
-	memset(avirtpiB,0, sizeof(int)*nirreps);
-	for(int h=0; h<nirreps; h++) {
-	  adoccpi[h] = doccpi[h] - frzcpi[h];
-	  avirtpiA[h] = virtpiA[h] - frzvpi[h];
-	  avirtpiB[h] = virtpiB[h] - frzvpi[h];
-	  aoccpiB[h] = doccpi[h] - frzcpi[h];
-	  aoccpiA[h] = doccpi[h] + soccpi[h] - frzcpi[h];
+	adoccpi = init_int_array(nirrep_);
+	aoccpiA = init_int_array(nirrep_);
+	avirtpiA = init_int_array(nirrep_);
+	memset(adoccpi,0, sizeof(int)*nirrep_);
+	memset(aoccpiA,0, sizeof(int)*nirrep_);
+	memset(avirtpiA,0, sizeof(int)*nirrep_);
+	for(int h=0; h<nirrep_; h++) {
+	  adoccpi[h] = doccpi_[h] - frzcpi_[h];
+	  avirtpiA[h] = virtpiA[h] - frzvpi_[h];
+	  aoccpiA[h] = doccpi_[h] - frzcpi_[h];
 	}
 	
 	// Read in nuclear repulsion energy
-	Enuc = chkpt_->rd_enuc();
+	//Enuc = chkpt_->rd_enuc();
+	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
-	Escf=chkpt_->rd_escf();
+	//Escf=chkpt_->rd_escf();
+        Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
 	
 	/* Build mosym arrays */
-	mosym = new int [nmo];
-	memset(mosym,0,sizeof(int)*nmo);
-	for(int h=0, q=0; h < nirreps; h++){
-	  for(int p=0; p < mopi[h]; p++){
+	mosym = new int [nmo_];
+	memset(mosym,0,sizeof(int)*nmo_);
+	for(int h=0, q=0; h < nirrep_; h++){
+	  for(int p=0; p < nmopi_[h]; p++){
 	    mosym[q++] = h;
 	  }
 	}
 	
 	/* Build sosym arrays */
-	sosym = new int [nso];
-	memset(sosym,0,sizeof(int)*nmo);
-	for(int h=0, q=0; h < nirreps; h++){
-	  for(int p=0; p < sopi[h]; p++){
+	sosym = new int [nso_];
+	memset(sosym,0,sizeof(int)*nmo_);
+	for(int h=0, q=0; h < nirrep_; h++){
+	  for(int p=0; p < nsopi_[h]; p++){
+	    sosym[q++] = h;
+	  }
+	}
+
+	// find nooA
+	nooA=0;
+	for(int h=0; h < nirrep_; h++){
+	  for(int p=0; p < doccpi_[h]; p++){
+	    nooA++;
+	  }
+	}
+
+	// PitzerOffset 
+	PitzerOffset = new int[nirrep_];
+	memset(PitzerOffset,0,sizeof(int)*nirrep_);
+	for(int h=1; h < nirrep_; h++){
+	  PitzerOffset[h] = PitzerOffset[h-1] + nmopi_[h-1];
+	}
+	
+	nvoA=nmo_-nooA;   	// Number of virtual orbitals
+	nacooA=nooA-nfrzc; 	// Number of active occupied orbitals
+	nacso=nmo_-nfrzc-nfrzv; 	// Number of active  orbitals
+	nacvoA=nvoA-nfrzv; 	// Number of active virtual orbitals
+	npop=nmo_-nfrzv;         // Number of populated orbitals
+
+	ntri_so = 0.5*nso_*(nso_+1);
+        ntri = 0.5*nmo_*(nmo_+1);
+	dimtei = 0.5*ntri*(ntri+1);
+
+/********************************************************************************************/
+/************************** pitzer2symblk ***************************************************/
+/********************************************************************************************/
+      pitzer2symirrep = new int[nmo_];
+      pitzer2symblk = new int[nmo_];
+      occ2symblkA = new int[nooA];
+      virt2symblkA = new int[nvoA];
+      memset(pitzer2symirrep,0,sizeof(int)*nmo_);
+      memset(pitzer2symblk,0,sizeof(int)*nmo_);
+      memset(occ2symblkA,0,sizeof(int)*nooA);
+      memset(virt2symblkA,0,sizeof(int)*nvoA);
+
+      // pitzer2symblk
+      int ij,myoffset;
+      ij = 0;
+      myoffset = 0;
+      for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<nmopi_[h]; ++i) {
+            pitzer2symirrep[ij] = h;
+            pitzer2symblk[ij] = ij-myoffset;
+            ij++;
+        }
+        myoffset += nmopi_[h];
+      }
+      
+      // occ2symblkA
+      ij = 0;
+      myoffset = 0;
+      for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<occpiA[h]; ++i) {
+            occ2symblkA[ij] = ij-myoffset;
+            ij++;
+        }
+        myoffset += occpiA[h];
+      }
+      
+      
+      // vir2symblkA
+      ij = 0;
+      myoffset = 0;
+      for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<virtpiA[h]; ++i) {
+            virt2symblkA[ij] = ij-myoffset;
+            ij++;
+        }
+        myoffset += virtpiA[h];
+      }
+    
+/********************************************************************************************/
+/************************** occ_off & vir_off ***********************************************/
+/********************************************************************************************/ 
+    occ_offA = new int[nirrep_];
+    vir_offA = new int[nirrep_];
+    memset(occ_offA, 0, sizeof(int)*nirrep_);
+    memset(vir_offA, 0, sizeof(int)*nirrep_);
+    int ocountA = occpiA[0]; 
+    int vcountA = virtpiA[0];
+    for(int h=1; h < nirrep_; h++) {
+      occ_offA[h] = ocountA;
+      ocountA += occpiA[h];
+      vir_offA[h] = vcountA;
+      vcountA += virtpiA[h];
+    }
+      
+/********************************************************************************************/
+/************************** Read orbital coefficients ***************************************/
+/********************************************************************************************/
+        // read orbital coefficients from chkpt
+	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
+	
+	// read orbital coefficients from external files
+	if (read_mo_coeff == "TRUE"){
+	  fprintf(outfile,"\n\tReading MO coefficients in pitzer order from external files CmoA.psi...\n");  
+	  fflush(outfile);
+	  double **C_pitzerA = block_matrix(nso_,nmo_);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
+	
+	  // read binary data
+	  ifstream InFile1;
+	  InFile1.open("CmoA.psi", ios::in | ios::binary);
+	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
+	  InFile1.close();
+	  
+	  //set C_scf
+	  Ca_->set(C_pitzerA);
+	  free_block(C_pitzerA);
+        }
+        
+        // Build Reference MOs
+        Ca_ref->copy(Ca_);
+	
+	if(print_ > 1) {
+	  Ca_->print();
+	}
+
+/********************************************************************************************/
+/************************** Create all required matrice *************************************/
+/********************************************************************************************/
+        // Build Hso
+	Hso = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_));
+	Tso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirrep_, nsopi_, nsopi_));
+	Vso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirrep_, nsopi_, nsopi_));
+	Hso->zero();
+	Tso->zero();
+	Vso->zero();
+	
+	// Read SO-basis one-electron integrals
+	double *so_ints = init_array(ntri_so);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, so_ints, ntri_so, 0, 0, outfile);
+        Tso->set(so_ints);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, so_ints, ntri_so, 0, 0, outfile);
+        Vso->set(so_ints);
+        free(so_ints);
+	Hso->copy(Tso); 
+	Hso->add(Vso);
+	
+}// end if (reference == "RHF") 
+
+  
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
+
+
+/********************************************************************************************/
+/************************** MO info *********************************************************/
+/********************************************************************************************/
+	// Read in mo info
+	/*
+	nso_ = chkpt_->rd_nso_();
+	nmo_ = chkpt_->rd_nmo_();
+	nao = chkpt_->rd_nao();
+	nfrzc = chkpt_->rd_nfzc();
+	nfrzv = chkpt_->rd_nfzv();
+	nirrep_ = chkpt_->rd_nirrep_();
+
+	irreplabels = chkpt_->rd_irr_labs();
+	nsopi_ = chkpt_->rd_nsopi_();  
+	nmopi_ = chkpt_->rd_orbspi(); 
+	doccpi_ = chkpt_->rd_clsdpi();
+	soccpi_ = chkpt_->rd_openpi();
+	frzcpi_ = chkpt_->rd_frzcpi_();
+	frzvpi_ = chkpt_->rd_frzvpi_();
+        */
+
+        nirrep_ = reference_wavefunction_->nirrep();
+        nso_     = reference_wavefunction_->nso();
+        nmo_     = reference_wavefunction_->nmo();
+        nmopi_    = reference_wavefunction_->nmopi();
+        nsopi_    = reference_wavefunction_->nsopi();
+        doccpi_  = reference_wavefunction_->doccpi();
+        soccpi_  = reference_wavefunction_->soccpi();
+        frzcpi_  = reference_wavefunction_->frzcpi();
+        frzvpi_  = reference_wavefunction_->frzvpi();
+
+        // get nfrzc and nfrzv
+        nfrzc = 0;
+        nfrzv = 0;
+        for(int h=0; h<nirrep_; h++) {
+	  nfrzc += frzcpi_[h];
+	  nfrzv += frzvpi_[h];
+	}
+	
+	// form occpi and virtpi
+	occpiA = init_int_array(nirrep_);
+	occpiB = init_int_array(nirrep_);
+	virtpiA = init_int_array(nirrep_);
+	virtpiB = init_int_array(nirrep_);
+	memset(occpiA,0, sizeof(int)*nirrep_);
+	memset(occpiB,0, sizeof(int)*nirrep_);
+	memset(virtpiA,0, sizeof(int)*nirrep_);
+	memset(virtpiB,0, sizeof(int)*nirrep_);
+	for(int h=0; h<nirrep_; h++) {
+	  virtpiA[h] = nmopi_[h] - soccpi_[h] - doccpi_[h];
+	  virtpiB[h] = nmopi_[h] - doccpi_[h];
+	  occpiB[h] = doccpi_[h];
+	  occpiA[h] = doccpi_[h] + soccpi_[h];
+	}
+	
+	//active occ and virt
+	adoccpi = init_int_array(nirrep_);
+	aoccpiA = init_int_array(nirrep_);
+	aoccpiB = init_int_array(nirrep_);
+	avirtpiA = init_int_array(nirrep_);
+	avirtpiB = init_int_array(nirrep_);
+	memset(adoccpi,0, sizeof(int)*nirrep_);
+	memset(aoccpiA,0, sizeof(int)*nirrep_);
+	memset(aoccpiB,0, sizeof(int)*nirrep_);
+	memset(avirtpiA,0, sizeof(int)*nirrep_);
+	memset(avirtpiB,0, sizeof(int)*nirrep_);
+	for(int h=0; h<nirrep_; h++) {
+	  adoccpi[h] = doccpi_[h] - frzcpi_[h];
+	  avirtpiA[h] = virtpiA[h] - frzvpi_[h];
+	  avirtpiB[h] = virtpiB[h] - frzvpi_[h];
+	  aoccpiB[h] = doccpi_[h] - frzcpi_[h];
+	  aoccpiA[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
+	}
+
+
+	// Read in nuclear repulsion energy
+	//Enuc = chkpt_->rd_enuc();
+	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+	
+	// Read SCF energy
+	//Escf=chkpt_->rd_escf();
+        Escf=reference_wavefunction_->reference_energy();
+	Eref=Escf;
+	Eelec=Escf-Enuc;
+	
+	/* Build mosym arrays */
+	mosym = new int [nmo_];
+	memset(mosym,0,sizeof(int)*nmo_);
+	for(int h=0, q=0; h < nirrep_; h++){
+	  for(int p=0; p < nmopi_[h]; p++){
+	    mosym[q++] = h;
+	  }
+	}
+	
+	/* Build sosym arrays */
+	sosym = new int [nso_];
+	memset(sosym,0,sizeof(int)*nmo_);
+	for(int h=0, q=0; h < nirrep_; h++){
+	  for(int p=0; p < nsopi_[h]; p++){
 	    sosym[q++] = h;
 	  }
 	}
 
 	// find nooB
 	nooB=0;
-	for(int h=0; h < nirreps; h++){
-	  for(int p=0; p < doccpi[h]; p++){
+	for(int h=0; h < nirrep_; h++){
+	  for(int p=0; p < doccpi_[h]; p++){
 	    nooB++;
 	  }
 	}
 	
 	// find nooA 
 	nooA=nooB;
-	for(int h=0; h < nirreps; h++){
-	  for(int p=0; p < soccpi[h]; p++){
+	for(int h=0; h < nirrep_; h++){
+	  for(int p=0; p < soccpi_[h]; p++){
 	    nooA++;
 	  }
 	}
 	
 	
 	// PitzerOffset 
-	PitzerOffset = new int[nirreps];
-	memset(PitzerOffset,0,sizeof(int)*nirreps);
-	for(int h=1; h < nirreps; h++){
-	  PitzerOffset[h] = PitzerOffset[h-1] + mopi[h-1];
+	PitzerOffset = new int[nirrep_];
+	memset(PitzerOffset,0,sizeof(int)*nirrep_);
+	for(int h=1; h < nirrep_; h++){
+	  PitzerOffset[h] = PitzerOffset[h-1] + nmopi_[h-1];
 	}
 	
-	nvoA=nmo-nooA;   	// Number of virtual orbitals
-	nvoB=nmo-nooB;   	// Number of virtual orbitals
+	nvoA=nmo_-nooA;   	// Number of virtual orbitals
+	nvoB=nmo_-nooB;   	// Number of virtual orbitals
 	nacooA=nooA-nfrzc; 	// Number of active occupied orbitals
 	nacooB=nooB-nfrzc; 	// Number of active occupied orbitals
-	nacso=nmo-nfrzc-nfrzv; 	// Number of active  orbitals
+	nacso=nmo_-nfrzc-nfrzv; 	// Number of active  orbitals
 	nacvoA=nvoA-nfrzv; 	// Number of active virtual orbitals
 	nacvoB=nvoB-nfrzv; 	// Number of active virtual orbitals
-	npop=nmo-nfrzv;         // Number of populated orbitals
+	npop=nmo_-nfrzv;         // Number of populated orbitals
 
-	ntri_so = 0.5*nso*(nso+1);
-        ntri = 0.5*nmo*(nmo+1);
+	ntri_so = 0.5*nso_*(nso_+1);
+        ntri = 0.5*nmo_*(nmo_+1);
 	dimtei = 0.5*ntri*(ntri+1);
 
 /********************************************************************************************/
-/************************** Copy all required matrice from chk file *************************/
-/********************************************************************************************/	
-	//read orbital energies
-	evalsA = chkpt_->rd_alpha_evals(); 
-	evalsB = chkpt_->rd_beta_evals(); 
-	
-      // remove degeneracies
-      for (int p=1; p<nmo; p++){
-	for (int q=0; q<p; q++){
-	  if (evalsA[p] == evalsA[q]) {
-	    evalsA[p]+=1e-4;
-	    evalsA[q]-=1e-4;
-	  }
-	}
-      }  
-      
-      // remove degeneracies
-      for (int p=1; p<nmo; p++){
-	for (int q=0; q<p; q++){
-	  if (evalsB[p] == evalsB[q]) {
-	    evalsB[p]+=1e-4;
-	    evalsB[q]-=1e-4;
-	  }
-	}
-      }  
-	
-/********************************************************************************************/
 /************************** pitzer2symblk ***************************************************/
 /********************************************************************************************/
-      pitzer2symirrep = new int[nmo];
-      pitzer2symblk = new int[nmo];
+      pitzer2symirrep = new int[nmo_];
+      pitzer2symblk = new int[nmo_];
       occ2symblkA = new int[nooA];
       occ2symblkB = new int[nooB];
       virt2symblkA = new int[nvoA];
       virt2symblkB = new int[nvoB];
-      memset(pitzer2symirrep,0,sizeof(int)*nmo);
-      memset(pitzer2symblk,0,sizeof(int)*nmo);
+      memset(pitzer2symirrep,0,sizeof(int)*nmo_);
+      memset(pitzer2symblk,0,sizeof(int)*nmo_);
       memset(occ2symblkA,0,sizeof(int)*nooA);
       memset(occ2symblkB,0,sizeof(int)*nooB);
       memset(virt2symblkA,0,sizeof(int)*nvoA);
@@ -211,19 +452,19 @@ void OMP2Wave::get_moinfo()
       int ij,myoffset;
       ij = 0;
       myoffset = 0;
-      for (int h=0; h<nirreps; ++h) {
-        for (int i=0; i<mopi[h]; ++i) {
+      for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<nmopi_[h]; ++i) {
             pitzer2symirrep[ij] = h;
             pitzer2symblk[ij] = ij-myoffset;
             ij++;
         }
-        myoffset += mopi[h];
+        myoffset += nmopi_[h];
       }
       
       // occ2symblkA
       ij = 0;
       myoffset = 0;
-      for (int h=0; h<nirreps; ++h) {
+      for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<occpiA[h]; ++i) {
             occ2symblkA[ij] = ij-myoffset;
             ij++;
@@ -234,7 +475,7 @@ void OMP2Wave::get_moinfo()
       // occ2symblkB
       ij = 0;
       myoffset = 0;
-      for (int h=0; h<nirreps; ++h) {
+      for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<occpiB[h]; ++i) {
             occ2symblkB[ij] = ij-myoffset;
             ij++;
@@ -245,7 +486,7 @@ void OMP2Wave::get_moinfo()
       // vir2symblkA
       ij = 0;
       myoffset = 0;
-      for (int h=0; h<nirreps; ++h) {
+      for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<virtpiA[h]; ++i) {
             virt2symblkA[ij] = ij-myoffset;
             ij++;
@@ -256,7 +497,7 @@ void OMP2Wave::get_moinfo()
       // vir2symblkB
       ij = 0;
       myoffset = 0;
-      for (int h=0; h<nirreps; ++h) {
+      for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<virtpiB[h]; ++i) {
             virt2symblkB[ij] = ij-myoffset;
             ij++;
@@ -265,175 +506,21 @@ void OMP2Wave::get_moinfo()
       }
     
 /********************************************************************************************/
-/************************** c1topitzer ******************************************************/
-/********************************************************************************************/
-      c1topitzerA = new int[nmo];
-      c1topitzerB = new int[nmo];
-      pitzer2c1A = new int[nmo];
-      pitzer2c1B = new int[nmo];
-      memset(c1topitzerA,0,sizeof(int)*nmo);
-      memset(c1topitzerB,0,sizeof(int)*nmo);
-      memset(pitzer2c1A,0,sizeof(int)*nmo);
-      memset(pitzer2c1B,0,sizeof(int)*nmo);
-     
-      // form evals_c1
-      evals_c1A = new double[nmo];
-      evals_c1B = new double[nmo];
-      memset(evals_c1A,0,sizeof(double)*nmo);
-      memset(evals_c1B,0,sizeof(double)*nmo);
-      for(int p=0; p<nmo; p++) {
-	evals_c1A[p] = evalsA[p];
-	evals_c1B[p] = evalsB[p];
-      }
-      
-      // sort evals A
-      for(int p=0; p<nmo; p++) {
-	for(int q=nmo-1; q>p; q--) {
-	  if (evals_c1A[q-1] > evals_c1A[q]) {
-	    double dum = evals_c1A[q-1];    
-	    evals_c1A[q-1] = evals_c1A[q];    
-	    evals_c1A[q] = dum;
-	  }
-	}
-      }
-     
-      //set to reg order  
-      for (int p=0; p<nmo; p++){
-	for (int q=0; q<nmo; q++){
-	  if (evalsA[p] == evals_c1A[q]) {
-	    pitzer2c1A[p]=q;
-	    c1topitzerA[q]=p;
-	  }
-	}
-      }  
-      
-      // sort evals B
-      for(int p=0; p<nmo; p++) {
-	for(int q=nmo-1; q>p; q--) {
-	  if (evals_c1B[q-1] > evals_c1B[q]) {
-	    double dum = evals_c1B[q-1];    
-	    evals_c1B[q-1] = evals_c1B[q];    
-	    evals_c1B[q] = dum;
-	  }
-	}
-      }
-     
-      //set to reg order  
-      for (int p=0; p<nmo; p++){
-	for (int q=0; q<nmo; q++){
-	  if (evalsB[p] == evals_c1B[q]) {
-	    pitzer2c1B[p]=q;
-	    c1topitzerB[q]=p;
-	  }
-	}
-      }  
-      
-  
-/********************************************************************************************/
-/************************** c1toqt **********************************************************/
-/********************************************************************************************/ 
-      /*
-      // c1 to qt
-      c1toqtA = new int[nmo];
-      c1toqtB = new int[nmo];
-      qt2c1A = new int[nmo];
-      qt2c1B = new int[nmo];
-      memset(c1toqtA,0,sizeof(int)*nmo);
-      memset(c1toqtB,0,sizeof(int)*nmo);
-      memset(qt2c1A,0,sizeof(int)*nmo);
-      memset(qt2c1B,0,sizeof(int)*nmo);
-      
-      // Alpha spin case
-      
-      //frzc
-      int itemp=0;
-      if (nfrzc != 0){
-      for(int h=0; h<nirreps; h++){ 
-	if (h > 0) itemp+=frzcpi[h-1];
-	for (int p=0; p<frzcpi[h]; p++){
-	  if (frzcpi[h] != 0){
-	    int pp = p + PitzerOffset[h];  // convert sym-block order to pitzer order
-	    int p2 = pitzer2c1A[pp];
-	    c1toqtA[p2]=p+itemp;
-	    qt2c1A[p+itemp]=p2;
-	  }
-	}
-      }  
-      }      
-      
-      //adocc
-      itemp=nfrzc;
-      for(int h=0; h<nirreps; h++){ 
-	if (h > 0) itemp+=adoccpiA[h-1];
-	for (int p=0; p<adoccpiA[h]; p++){
-	  if (aoccpiA[h] != 0){
-	    int pp = p + PitzerOffset[h] + frzcpi[h];  // convert sym-block order to pitzer order
-	    int p2 = pitzer2c1A[pp];
-	    c1toqtA[p2]=p+itemp;
-	    qt2c1A[p+itemp]=p2;
-	  }
-	}
-      }         
-      
-      //avirt
-      itemp=nooA;
-      for(int h=0; h<nirreps; h++){ 
-	if (h > 0) itemp+=avirtpiA[h-1];
-	for (int p=0; p<avirtpiA[h]; p++){
-	   if (avirtpiA[h] != 0){
-	      int pp = p + PitzerOffset[h] + doccpi[h];  // convert sym-block order to pitzer order
-	      int p2 = pitzer2c1A[pp];
-	      c1toqtA[p2]=p+itemp;
-	      qt2c1A[p+itemp]=p2;
-	   }
-	}
-      }  
-      
-      
-      //frzv
-      if (nfrzv != 0){
-      itemp=npop;
-      for(int h=0; h<nirreps; h++){ 
-	if (h > 0) itemp+=frzvpi[h-1];
-	for (int p=0; p<frzvpi[h]; p++){
-	   if (frzvpi[h] != 0){
-	      int pp = p + PitzerOffset[h] + avirtpi[h] + doccpi[h];  // convert sym-block order to pitzer order
-	      int p2 = pitzer2c1[pp];
-	      c1toqt[p2]=p+itemp;
-	      qt2c1[p+itemp]=p2;
-	   }
-	}
-      } 
-      }
-      */
-      
-/********************************************************************************************/
-/************************** mosym_c1 ********************************************************/
-/********************************************************************************************/ 
-	/* Build mosym arrays */
-	mosym_c1 = new int [nmo];
-	memset(mosym_c1,0,sizeof(int)*nmo);
-	for(int p=0; p<nmo; p++) {
-	  int p2 = c1topitzerA[p];
-	  mosym_c1[p] = mosym[p2];
-	}
-
-/********************************************************************************************/
 /************************** occ_off & vir_off ***********************************************/
 /********************************************************************************************/ 
-    occ_offA = new int[nirreps];
-    occ_offB = new int[nirreps];
-    vir_offA = new int[nirreps];
-    vir_offB = new int[nirreps];
-    memset(occ_offA, 0, sizeof(int)*nirreps);
-    memset(occ_offB, 0, sizeof(int)*nirreps);
-    memset(vir_offA, 0, sizeof(int)*nirreps);
-    memset(vir_offB, 0, sizeof(int)*nirreps);
+    occ_offA = new int[nirrep_];
+    occ_offB = new int[nirrep_];
+    vir_offA = new int[nirrep_];
+    vir_offB = new int[nirrep_];
+    memset(occ_offA, 0, sizeof(int)*nirrep_);
+    memset(occ_offB, 0, sizeof(int)*nirrep_);
+    memset(vir_offA, 0, sizeof(int)*nirrep_);
+    memset(vir_offB, 0, sizeof(int)*nirrep_);
     int ocountA = occpiA[0]; 
     int ocountB = occpiB[0]; 
     int vcountA = virtpiA[0];
     int vcountB = virtpiB[0];
-    for(int h=1; h < nirreps; h++) {
+    for(int h=1; h < nirrep_; h++) {
       occ_offA[h] = ocountA;
       occ_offB[h] = ocountB;
       ocountA += occpiA[h];
@@ -451,28 +538,28 @@ void OMP2Wave::get_moinfo()
         // read orbital coefficients from chkpt
 	Ca_ = SharedMatrix(reference_wavefunction_->Ca());
         Cb_ = SharedMatrix(reference_wavefunction_->Cb());
-	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirreps, sopi, mopi));
-	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirreps, sopi, mopi));
+	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirrep_, nsopi_, nmopi_));
+	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirrep_, nsopi_, nmopi_));
 	
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
 	  fprintf(outfile,"\n\tReading MO coefficients in pitzer order from external files CmoA.psi and CmoB.psi...\n");  
 	  fflush(outfile);
-	  double **C_pitzerA = block_matrix(nso,nmo);
-	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
+	  double **C_pitzerA = block_matrix(nso_,nmo_);
+	  double **C_pitzerB = block_matrix(nso_,nmo_);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
+	  memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
 	
 	  // read binary data
 	  ifstream InFile1;
 	  InFile1.open("CmoA.psi", ios::in | ios::binary);
-	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso*nmo);
+	  InFile1.read( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  InFile1.close();
 	  
 	  // read binary data
 	  ifstream InFile2;
 	  InFile2.open("CmoB.psi", ios::in | ios::binary);
-	  InFile2.read( (char*)C_pitzerB[0], sizeof(double)*nso*nmo);
+	  InFile2.read( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
 	  InFile2.close();
 	
 	  //set C_scf
@@ -496,9 +583,9 @@ void OMP2Wave::get_moinfo()
 /************************** Create all required matrice *************************************/
 /********************************************************************************************/
         // Build Hso
-	Hso = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirreps, sopi, sopi));
-	Tso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirreps, sopi, sopi));
-	Vso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirreps, sopi, sopi));
+	Hso = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirrep_, nsopi_, nsopi_));
+	Tso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirrep_, nsopi_, nsopi_));
+	Vso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirrep_, nsopi_, nsopi_));
 	Hso->zero();
 	Tso->zero();
 	Vso->zero();
@@ -513,6 +600,8 @@ void OMP2Wave::get_moinfo()
 	Hso->copy(Tso); 
 	Hso->add(Vso);
 	
+}// end if (reference == "UHF") 
+
 	//fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
 
 /********************************************************************************************/

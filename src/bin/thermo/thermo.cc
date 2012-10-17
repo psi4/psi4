@@ -62,7 +62,7 @@ PsiReturnType thermo(Options &options) {
     rot_symm_num = 2*full_pg_n;
   else if (pg == "Sn")
     rot_symm_num = full_pg_n / 2;
-  else 
+  else
     throw PsiException("thermo(): Could not interpret molecular point group.", __FILE__, __LINE__);
 
   // Set number of vibrational frequencies.
@@ -116,17 +116,17 @@ and number of atoms.\n");
   Vector q_vib(nvib_freqs);
   Vector s_vib(nvib_freqs);
 
-  double ZPVE = 0, molecular_mass = 0;
-  double  Etrans,  Eelec,  Evib, Erot,  Etotal;
-  double Cvtrans, Cvelec, Cvvib, Cvrot, Cvtotal;
-  double  qtrans,  qelec,  qvib, qrot,  qtotal;
-  double  Strans,  Selec,  Svib, Srot,  Stotal;
+  double ZPVE = 0.0, molecular_mass = 0;
+  double  Etrans = 0.0,  Eelec = 0.0,  Evib = 0.0, Erot = 0.0,  Etotal = 0.0;
+  double Cvtrans = 0.0, Cvelec = 0.0, Cvvib = 0.0, Cvrot = 0.0, Cvtotal = 0.0;
+  double  qtrans = 0.0,  qelec = 0.0,  qvib = 0.0, qrot = 0.0,  qtotal = 0.0;
+  double  Strans = 0.0,  Selec = 0.0,  Svib = 0.0, Srot = 0.0,  Stotal = 0.0;
 
   for(int i=0; i < Natom; i++)
     molecular_mass += mol->mass(i);
 
   const double kT = _kb * T;
-  double phi_A, phi_B, phi_C;
+  double phi_A = 0.0, phi_B = 0.0, phi_C = 0.0;
 
   // variables Etrans, Cvtrans, and Strans are divided by R
   Etrans = 1.5 * T;
@@ -141,7 +141,7 @@ and number of atoms.\n");
   Selec = log(qelec);
 
   // rotational part
-  if(rot_type == 6) { // atom 
+  if(rot_type == 6) { // atom
     Erot = Cvrot = Srot = 0;
   }
   else if(rot_type == 3) { // linear molecule
@@ -151,7 +151,7 @@ and number of atoms.\n");
     Srot = 1.0 + log(qrot);
   }
   else {
-    Erot = 1.5 * T; 
+    Erot = 1.5 * T;
     Cvrot = 1.5;
     phi_A = rot_const[0] * 100 * _h * _c / _kb;
     phi_B = rot_const[1] * 100 * _h * _c / _kb;

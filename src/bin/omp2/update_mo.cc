@@ -41,7 +41,174 @@ namespace psi{ namespace omp2wave{
 
 void OMP2Wave::update_mo()
 {
-      //fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
+//fprintf(outfile,"\n update_mo is starting... \n"); fflush(outfile);     
+//===========================================================================================
+//========================= RHF =============================================================
+//===========================================================================================
+if (reference == "RHF") {
+
+/********************************************************************************************/
+/************************** initialize array ************************************************/
+/********************************************************************************************/	
+	UorbA->zero();
+	KorbA->zero();
+	
+/********************************************************************************************/
+/************************** Build kappa_bar *************************************************/
+/********************************************************************************************/ 
+        kappa_barA->add(kappaA);        
+
+/********************************************************************************************/
+/************************ DO DIIS ***********************************************************/
+/********************************************************************************************/
+if (opt_method == "DIIS") {
+  
+        // Form Diis Error Vector & Extrapolant Alpha Spin Case
+	if (itr_occ <= num_vecs) {  
+	  for(int i = 0; i < nidpA; i++){
+	    errvecsA->set(itr_occ-1, i, wogA->get(i));
+	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
+	  }  
+	}
+	
+	
+	if (itr_occ > num_vecs) {  
+	  for(int j = 0; j < (num_vecs-1); j++){
+	    for(int i = 0; i < nidpA; i++){
+	      errvecsA->set(j, i, errvecsA->get(j+1, i));
+	      vecsA->set(j, i, vecsA->get(j+1, i));
+	    }  
+	  }
+	  
+	  for(int i = 0; i < nidpA; i++){
+	    errvecsA->set(num_vecs-1, i, wogA->get(i));
+	    vecsA->set(num_vecs-1, i, kappa_barA->get(i));
+	  }    
+	}
+	
+        // Extrapolate 
+        if (itr_occ >= num_vecs) {
+	  diis(nidpA, vecsA, errvecsA, kappa_barA);
+	}
+	
+}// end if (opt_method == "DIIS") {
+
+/********************************************************************************************/
+/************************** Construct Korb **************************************************/
+/********************************************************************************************/
+	// alpha
+	for(int x = 0; x < nidpA; x++) {
+	  int a = idprowA[x];
+	  int i = idpcolA[x];
+	  int h = idpirrA[x];
+	  KorbA->set(h, a + occpiA[h], i, kappa_barA->get(x));
+	  KorbA->set(h, i, a + occpiA[h], -kappa_barA->get(x));
+	}
+	
+/********************************************************************************************/
+/************************** Construct Uorb **************************************************/
+/********************************************************************************************/	
+	//set to identity
+	UorbA->identity();
+	
+	// K contribution
+	UorbA->add(KorbA);
+	
+	//form K^2
+	KsqrA->gemm(false, false, 1.0, KorbA, KorbA, 0.0); 
+	KsqrA->scale(0.5);
+	
+	// 0.5*K^2 contribution
+	UorbA->add(KsqrA);
+
+/********************************************************************************************/
+/************************** Orthogonalize U matrix ******************************************/
+/********************************************************************************************/
+if (orth_type == "MGS") {;
+    double rmgs1a,rmgs2a,rmgs1b,rmgs2b;
+    
+    // loop-over nirrep_
+    for (int h=0; h<nirrep_; h++) {
+      
+      // loop-1
+      for (int k = 0; k < nmopi_[h]; k++) {
+	rmgs1a=0.0;
+	
+	// loop-1a
+	for (int i=0; i < nmopi_[h]; i++) {  
+	  rmgs1a += UorbA->get(h, i, k) * UorbA->get(h, i, k);
+	}// end 1a
+	
+	rmgs1a=sqrt(rmgs1a);
+	  
+	// loop-1b
+	for (int i=0; i < nmopi_[h]; i++) {  
+	  UorbA->set(h, i, k, UorbA->get(h, i, k) / rmgs1a);
+	}// end 1b
+	
+	// loop-2
+	for (int j=(k+1); j < nmopi_[h]; j++) {
+	  rmgs2a=0; 
+	  
+	  // loop-2a
+	  for (int i=0; i < nmopi_[h]; i++) {  
+	    rmgs2a += UorbA->get(h, i, k) * UorbA->get(h, i, j);
+	  }// end 2a
+	  
+	  // loop-2b
+	  for (int i=0; i < nmopi_[h]; i++) {  
+	    UorbA->set(h, i, j, UorbA->get(h, i, j) - (rmgs2a * UorbA->get(h, i, k)));
+	  }// end 2b
+	  
+	}// end 2
+      }// end 1
+    }// end loop-over nirrep_
+}// end main if
+
+
+else if (orth_type == "GS") {
+    int rowA = UorbA->nrow();
+    int colA = UorbA->ncol();
+    
+    double **AdumA = block_matrix(rowA, colA);
+    memset(AdumA[0], 0, sizeof(double)*rowA*colA);
+    AdumA = UorbA->to_block_matrix();    
+    schmidt(AdumA, rowA, colA, outfile);  
+    UorbA->set(AdumA);    
+    free_block(AdumA);
+}
+   
+/********************************************************************************************/
+/************************** Build new MO coeff. *********************************************/
+/********************************************************************************************/
+	Ca_->gemm(false, false, 1.0, Ca_ref, UorbA, 0.0); 
+
+       	if (print_ > 1) {
+	  UorbA->print();
+	  Ca_->print();
+	}
+
+/********************************************************************************************/
+/************************** Save MO coefficients to Chkpt file ******************************/
+/********************************************************************************************/	 
+        /*
+	C_pitzerA = Ca_->to_block_matrix();    
+	C_pitzerB = Cb_->to_block_matrix();    
+	chkpt_->wt_alpha_scf(C_pitzerA);
+	chkpt_->wt_beta_scf(C_pitzerB);
+	free_block(C_pitzerA);
+	free_block(C_pitzerB);
+        */
+
+}// end if (reference == "RHF") 
+
+
+
+
+//===========================================================================================
+//========================= UHF =============================================================
+//===========================================================================================
+else if (reference == "UHF") {
 
 /********************************************************************************************/
 /************************** initialize array ************************************************/
@@ -49,7 +216,7 @@ void OMP2Wave::update_mo()
 	UorbA->zero();
 	UorbB->zero();
 	KorbA->zero();
-	KorbB->zero();
+	KorbB->zero();    
 	
 /********************************************************************************************/
 /************************** Build kappa_bar *************************************************/
@@ -165,16 +332,16 @@ if (opt_method == "DIIS") {
 if (orth_type == "MGS") {;
     double rmgs1a,rmgs2a,rmgs1b,rmgs2b;
     
-    // loop-over nirreps
-    for (int h=0; h<nirreps; h++) {
+    // loop-over nirrep_
+    for (int h=0; h<nirrep_; h++) {
       
       // loop-1
-      for (int k = 0; k < mopi[h]; k++) {
+      for (int k = 0; k < nmopi_[h]; k++) {
 	rmgs1a=0.0;
 	rmgs1b=0.0;
 	
 	// loop-1a
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  rmgs1a += UorbA->get(h, i, k) * UorbA->get(h, i, k);
 	  rmgs1b += UorbB->get(h, i, k) * UorbB->get(h, i, k);
 	}// end 1a
@@ -183,31 +350,31 @@ if (orth_type == "MGS") {;
 	rmgs1b=sqrt(rmgs1b);
 	  
 	// loop-1b
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  UorbA->set(h, i, k, UorbA->get(h, i, k) / rmgs1a);
 	  UorbB->set(h, i, k, UorbB->get(h, i, k) / rmgs1b);
 	}// end 1b
 	
 	// loop-2
-	for (int j=(k+1); j < mopi[h]; j++) {
+	for (int j=(k+1); j < nmopi_[h]; j++) {
 	  rmgs2a=0; 
 	  rmgs2b=0; 
 	  
 	  // loop-2a
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    rmgs2a += UorbA->get(h, i, k) * UorbA->get(h, i, j);
 	    rmgs2b += UorbB->get(h, i, k) * UorbB->get(h, i, j);
 	  }// end 2a
 	  
 	  // loop-2b
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    UorbA->set(h, i, j, UorbA->get(h, i, j) - (rmgs2a * UorbA->get(h, i, k)));
 	    UorbB->set(h, i, j, UorbB->get(h, i, j) - (rmgs2b * UorbB->get(h, i, k)));
 	  }// end 2b
 	  
 	}// end 2
       }// end 1
-    }// end loop-over nirreps
+    }// end loop-over nirrep_
 }// end main if
 
 
@@ -249,16 +416,17 @@ else if (orth_type == "GS") {
 /********************************************************************************************/
 /************************** Save MO coefficients to Chkpt file ******************************/
 /********************************************************************************************/	 
+        /*
 	C_pitzerA = Ca_->to_block_matrix();    
 	C_pitzerB = Cb_->to_block_matrix();    
 	chkpt_->wt_alpha_scf(C_pitzerA);
 	chkpt_->wt_beta_scf(C_pitzerB);
 	free_block(C_pitzerA);
 	free_block(C_pitzerB);
+        */
 
-/********************************************************************************************/
-/********************************************************************************************/	
+}// end if (reference == "UHF") 
 
-}
+}// end main
 }} // End Namespaces
 

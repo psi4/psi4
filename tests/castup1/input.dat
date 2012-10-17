@@ -16,6 +16,7 @@ set globals {
 basis cc-pvdz
 reference rhf
 guess sad
+scf_type pk
 basis_guess 3-21g
 }
 

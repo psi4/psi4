@@ -424,7 +424,8 @@ void export_mints()
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
             def("has_puream", &BasisSet::has_puream, "docstring").
-            def(self + self);
+            def("add", &BasisSet::add, "Adds two basis sets together.").
+            staticmethod("add");
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -465,7 +466,17 @@ void export_mints()
             def("frequencies", &Wavefunction::frequencies, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
-            def("molecule", &Wavefunction::molecule, "docstring");
+            def("molecule", &Wavefunction::molecule, "docstring").
+            def("doccpi", &Wavefunction::doccpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("soccpi", &Wavefunction::soccpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nsopi", &Wavefunction::nsopi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nmopi", &Wavefunction::nmopi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nalphapi", &Wavefunction::nalphapi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nbetapi", &Wavefunction::nbetapi, return_value_policy<copy_const_reference>(), "docstring").
+            def("frzcpi", &Wavefunction::frzcpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("frzvpi", &Wavefunction::frzvpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);

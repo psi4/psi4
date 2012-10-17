@@ -12,7 +12,6 @@
 #include <psiconfig.h>
 #include <cstdio>
 
-
 // Define the default parallel environment. In general, developers should just use this type.
 #if !defined(HAVE_MADNESS) && !defined(HAVE_ELEMENTAL)
 #include <libparallel/local.h>
@@ -40,5 +39,7 @@ namespace psi {
     worldcomm* Init_Communicator(int &argc, char **argv);
 
 }
+
+#include "threaded_storage.h"
 
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */

@@ -2,7 +2,7 @@
     \ingroup STABLE
     \brief Enter brief description of file here 
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <psi4-dec.h>
 
 namespace psi { namespace stable {

@@ -91,15 +91,23 @@ void export_functional()
         def("name", &Dispersion::name, "docstring").
         def("description", &Dispersion::description, "docstring").
         def("citation", &Dispersion::citation, "docstring").
+        def("bibtex", &Dispersion::bibtex, "Get the BibTeX key for the literature reference.").
         def("set_name", &Dispersion::set_name, "docstring").
         def("set_description", &Dispersion::set_description, "docstring").
         def("set_citation", &Dispersion::set_citation, "docstring").
+        def("set_bibtex", &Dispersion::set_bibtex, "Set the BibTeX key for the literature reference.").
         def("print_energy", &Dispersion::print_energy, "docstring").
         def("print_gradient", &Dispersion::print_gradient, "docstring").
         def("print_hessian", &Dispersion::print_hessian, "docstring").
         def("compute_energy", &Dispersion::compute_energy, "docstring").
         def("compute_gradient", &Dispersion::compute_gradient, "docstring").
         def("compute_hessian", &Dispersion::compute_hessian, "docstring").
+        def("d", &Dispersion::get_d, "docstring").
+        def("s6", &Dispersion::get_s6, "docstring").
+        def("sr6", &Dispersion::get_sr6, "docstring").
+        def("s8", &Dispersion::get_s8, "docstring").
+        def("a1", &Dispersion::get_a1, "docstring").
+        def("a2", &Dispersion::get_a2, "docstring").
         def("print_out",&Dispersion::py_print, "docstring");
 
 }

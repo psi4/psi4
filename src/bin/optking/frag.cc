@@ -104,13 +104,22 @@ void FRAG::print_geom_grad(FILE *fp, const int id, bool print_masses) {
   fflush(fp);
 }
 
+#if defined(OPTKING_PACKAGE_QCHEM)
 void FRAG::print_geom(FILE *fp_geom) {
   for (int i=0; i<natom; ++i)
     fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
       Z_to_symbol[(int) Z[i]], geom[i][0], geom[i][1], geom[i][2]);
   fflush(fp_geom);
 }
-
+#elif defined(OPTKING_PACKAGE_PSI)
+void FRAG::print_geom(FILE *fp_geom) {
+  for (int i=0; i<natom; ++i)
+    fprintf(fp_geom, "\t  %3s  %15.10lf%15.10lf%15.10lf\n",
+      Z_to_symbol[(int) Z[i]], geom[i][0] * _bohr2angstroms, 
+      geom[i][1] * _bohr2angstroms, geom[i][2] * _bohr2angstroms);
+  fflush(fp_geom);
+}
+#endif
 
 void FRAG::print_intcos(FILE *fp, int atom_offset) {
   fprintf(fp,"\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");

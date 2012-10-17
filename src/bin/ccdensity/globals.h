@@ -2,7 +2,7 @@
     \ingroup CCDENSITY
     \brief Enter brief description of file here
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <libdpd/dpd.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>

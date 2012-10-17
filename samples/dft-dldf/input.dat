@@ -18,6 +18,8 @@ memory 500 mb
 
 set basis aug-cc-pvdz
 set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
 
 edft = energy('dldf+d')
 val = -153.8044099603441168

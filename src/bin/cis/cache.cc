@@ -5,8 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <ccfiles.h>
-#include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

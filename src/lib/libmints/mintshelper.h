@@ -80,8 +80,8 @@ public:
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
-    void integrals_erf();
-    void integrals_erfc();
+    void integrals_erf(double w = -1.0);
+    void integrals_erfc(double w = -1.0);
 
     /// Standard one electron integrals (just like oeints used to do)
     void one_electron_integrals();
