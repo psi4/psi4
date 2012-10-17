@@ -57,6 +57,10 @@ protected:
     void Fockmo_beta();
     void idp();
     void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
+    void coord_grad();
+    void dump_ints();
+    void dump_pdms();
+    void GFockmo_diag();
     
      class IntegralTransform *ints;
      int nmo;		// Number of MOs
@@ -104,10 +108,8 @@ protected:
      int nidpB;
      int conver;
      int mo_optimized; 		// if 0 MOs are NOT optimized, if 1 MOs are optimized.
-     int swap_mo_i;
-     int swap_mo_j;
-
      
+
      double Enuc;
      double sum;
      double Etotal;
