@@ -373,13 +373,13 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     temp.refresh();
 
     // Sort by AM in each center
-    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-                  shell_sorter_am);
-    }
+//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+//                  shell_sorter_am);
+//    }
 
-    temp.refresh();
+//    temp.refresh();
 
     return temp;
 }

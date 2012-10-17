@@ -871,26 +871,39 @@ BasisSet BasisSet::add(const BasisSet& b) const {
     temp.molecule_ = molecule();
 
     // Copy a's shells to temp
-    temp.shells_ = shells_;
+//    temp.shells_ = shells_;
 
     // Append b's shells to temp
-    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+//    std::vector<GaussianShell>::const_iterator iter = b.shells_.begin();
+//    for (; iter != b.shells_.end(); iter++)
+//        temp.shells_.push_back(*iter);
+
+//    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Loop over atoms
+    for (int atom=0; atom<molecule()->natom(); ++atom) {
+        for (int shella=0; shella<nshell_on_center(atom); ++shella)
+            temp.shells_.push_back(shell(atom, shella));
+
+        for (int shellb=0; shellb<b.nshell_on_center(atom); ++shellb)
+            temp.shells_.push_back(b.shell(atom, shellb));
+    }
 
     // Call refresh to regenerate center_to_shell and center_to_nshell
     temp.refresh();
 
     // Sort by center number
-    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
+//    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
 
     // Call refresh to regenerate center_to_shell and center_to_nshell
-    temp.refresh();
+//    temp.refresh();
 
     // Sort by AM in each center
-    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-                  shell_sorter_am);
-    }
+//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+//                  shell_sorter_am);
+//    }
 
     return temp;
 }
