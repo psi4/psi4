@@ -44,7 +44,7 @@ if (reference == "RHF") {
     nidpA=0;
 
     // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
-    for(int h = 0; h < nirreps; h++){
+    for(int h = 0; h < nirrep_; h++){
       nidpA += virtpiA[h] * occpiA[h]; 
     }
 
@@ -73,7 +73,7 @@ if (reference == "RHF") {
 
     // set idpA 
     dim=0;
-    for(int h = 0; h < nirreps; h++){      
+    for(int h = 0; h < nirrep_; h++){      
       for(int a = 0; a < virtpiA[h]; a++){
 	for(int i = 0; i < occpiA[h]; i++){
 	  idprowA[dim]=a;
@@ -99,7 +99,7 @@ else if (reference == "UHF") {
     nidpB=0;
 
     // V-O: I exclude symmetry broken rotations from the list of IDPs since they already have zero gradient.
-    for(int h = 0; h < nirreps; h++){
+    for(int h = 0; h < nirrep_; h++){
       nidpA += virtpiA[h] * occpiA[h]; 
       nidpB += virtpiB[h] * occpiB[h]; 
     }
@@ -146,7 +146,7 @@ else if (reference == "UHF") {
 
     // set idpA 
     dim=0;
-    for(int h = 0; h < nirreps; h++){      
+    for(int h = 0; h < nirrep_; h++){      
       for(int a = 0; a < virtpiA[h]; a++){
 	for(int i = 0; i < occpiA[h]; i++){
 	  idprowA[dim]=a;
@@ -159,7 +159,7 @@ else if (reference == "UHF") {
     
     // set idpB 
     dim=0;
-    for(int h = 0; h < nirreps; h++){
+    for(int h = 0; h < nirrep_; h++){
       for(int a = 0; a < virtpiB[h]; a++){
 	for(int i = 0; i < occpiB[h]; i++){
 	  idprowB[dim]=a;
