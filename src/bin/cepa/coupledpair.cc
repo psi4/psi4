@@ -21,6 +21,7 @@ namespace psi{ namespace cepa{
   void TransformIntegrals(boost::shared_ptr<Wavefunction>wfn,Options&options);
   void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool isdirect,bool islocal);
   void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2,double*temp,int o);
+
 }}
 
 namespace psi{ namespace cepa{
@@ -386,9 +387,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
       // update the amplitudes and check the energy
       Eold = ecepa;
       PairEnergy();
-      if (!options_.get_bool("CEPA_NO_SINGLES")){
-         UpdateT1(iter);
-      }
+      UpdateT1(iter);
       UpdateT2(iter);
 
       // add vector to list for diis
@@ -402,10 +401,10 @@ PsiReturnType CoupledPair::CEPAIterations(){
          if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,arraysize+o*v);
          else                   DIIS(diisvec,maxdiis,arraysize+o*v);
          DIISNewAmplitudes(diis_iter);
-         // if cepa_no_singles, zero t1 just to be safe after extrapolation
-         if (options_.get_bool("CEPA_NO_SINGLES")){
-            memset((void*)t1,'\0',o*v*sizeof(double));
-         }
+      }
+      // if cepa_no_singles, zero t1
+      if (options_.get_bool("CEPA_NO_SINGLES")){
+         memset((void*)t1,'\0',o*v*sizeof(double));
       }
       ecepa = CheckEnergy();
 
@@ -605,7 +604,8 @@ void CoupledPair::AllocateMemory(long int extramemory){
 
 
   dim = 0;
-  if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
+  long int fulltile = v*(v+1L)/2L;
+  if (tilesize*fulltile > dim)  dim = tilesize*fulltile;
   if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
   if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
 
@@ -637,11 +637,15 @@ void CoupledPair::AllocateMemory(long int extramemory){
   if (t2_on_disk) total_memory = 1.*dim+2.*(o*o*vv+o*v)+2.*o*v+2.*v*v;
   total_memory *= 8./1024./1024.;
 
+  long int oovv = o*o*v*v;
+  if (options_.get_bool("CEPA_VABCD_DIRECT")) oovv = o*(o+1)*nso*nso;
+
+
   fprintf(outfile,"\n");
   fprintf(outfile,"  Allocate cpu memory (%9.2lf mb).....",total_memory);
   integrals = (double*)malloc(dim*sizeof(double));
-  tempt     = (double*)malloc((o*o*vv+o*v)*sizeof(double));
-  tempv     = (double*)malloc((o*o*vv+o*v)*sizeof(double));
+  tempt     = (double*)malloc((oovv+o*v)*sizeof(double));
+  tempv     = (double*)malloc((oovv+o*v)*sizeof(double));
 
   if (!t2_on_disk) tb = (double*)malloc(o*o*v*v*sizeof(double));
   w1        = (double*)malloc(o*v*sizeof(double));

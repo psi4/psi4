@@ -19,6 +19,13 @@ namespace psi{namespace cepa{
 
 void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2,double*temp,int o){
 
+    // schwarz sieve
+    //double cutoff = 1e-4;
+    //double cutoff2 = cutoff*cutoff;
+    //boost::shared_ptr<ERISieve> sieve(new ERISieve(primary,cutoff));
+    //const std::vector<std::pair<int,int> >& shell_pairs = sieve->shell_pairs();
+    //int npairs = shell_pairs.size();
+
     int nthreads = 1;
     #ifdef _OPENMP
         nthreads = omp_get_max_threads();
@@ -37,30 +44,31 @@ void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2
     }
     int nshell = primary->nshell();
 
+    long int nsotri = nso*(nso+1)/2;
     long int otri = o*(o+1)/2;
 
-    // pack c2+ into temp:
+    // pack c2+ into r2:
     for (int i = 0; i < o; i++) {
         for (int j = i; j < o; j++) {
             long int ij = Position(i,j);
             for (int a = 0; a < nso; a++) {
                 for (int b = a+1; b < nso; b++) {
-                    temp[Position(a,b)*otri+ij] =
+                    r2[Position(a,b)*otri+ij] =
                        c2[a*o*o*nso+b*o*o+i*o+j]+c2[b*o*o*nso+a*o*o+i*o+j];
                 }
-                temp[Position(a,a)*otri+ij] =
+                r2[Position(a,a)*otri+ij] =
                    c2[a*o*o*nso+a*o*o+i*o+j];
             }
         }
     }
-    // pack c2- into temp:
-    long int shift = nso*(nso+1)/2 * otri;
+    // pack c2- into r2:
+    long int shift1 = nsotri * otri;
     for (int i = 0; i < o; i++) {
         for (int j = i; j < o; j++) {
-            long int ij = Position(i,j) + shift;
+            long int ij = Position(i,j) + shift1;
             for (int a = 0; a < nso; a++) {
                 for (int b = a; b < nso; b++) {
-                    temp[Position(a,b)*otri+ij] =
+                    r2[Position(a,b)*otri+ij] =
                        c2[a*o*o*nso+b*o*o+i*o+j]-c2[b*o*o*nso+a*o*o+i*o+j];
                 }
             }
@@ -70,33 +78,47 @@ void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2
     // zero c2 - this is where the result will go
     memset((void*)c2,'\0',o*o*nso*nso*sizeof(double));
 
-    for (int C = 0; C < primary->nshell(); C++) {
-        int nc = primary->shell(C).nfunction();
-        int cstart = primary->shell(C).function_index();
+    long int shift2 = 0;
+    double * c2_plus  = r2;
+    double * c2_minus = r2 + shift1;
 
-        for (int D = C; D < primary->nshell(); D++) {
+    for (int A = 0; A < primary->nshell(); A++) {
 
-            int nd = primary->shell(D).nfunction();
-            int dstart = primary->shell(D).function_index();
+        int na = primary->shell(A).nfunction();
+        int astart = primary->shell(A).function_index();
 
-            // thread over A and B shells
+        for (int B = A; B < primary->nshell(); B++) {
+
+            int nb = primary->shell(B).nfunction();
+            int bstart = primary->shell(B).function_index();
+
+            long int shift3 = na*nb*nsotri;
+            double *temp_plus  = temp;
+            double *temp_minus = temp + shift3;
+            memset((void*)temp_plus,'\0',na*nb*nsotri*sizeof(double));
+            memset((void*)temp_minus,'\0',na*nb*nsotri*sizeof(double));
+
+            // thread over C and D shells, fill v(ab,cd)
             #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-            for (int AB = 0; AB < nshell*nshell; AB++) {
+            for (int CD = 0; CD < nshell*nshell; CD++) {
 
-                int B = AB % nshell;
-                int A = (AB - B)/nshell;
+                //s1 = omp_get_wtime();
 
-                if ( A > B ) continue;
+                int D = CD % nshell;
+                int C = (CD - D)/nshell;
+
+                if ( C > D ) continue;
 
                 int thread = 0;
                 #ifdef _OPENMP
                     thread = omp_get_thread_num();
                 #endif
 
-                int na = primary->shell(A).nfunction();
-                int astart = primary->shell(A).function_index();
-                int nb = primary->shell(B).nfunction();
-                int bstart = primary->shell(B).function_index();
+                int nc = primary->shell(C).nfunction();
+                int cstart = primary->shell(C).function_index();
+
+                int nd = primary->shell(D).nfunction();
+                int dstart = primary->shell(D).function_index();
 
                 // (AC|BD)
                 eri1[thread]->compute_shell(A,C,B,D);
@@ -104,14 +126,14 @@ void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2
                 // (AD|BC)
                 eri2[thread]->compute_shell(A,D,B,C);
 
+                //ints[thread] += omp_get_wtime() - s1;
+                //s1 = omp_get_wtime();
+
                 for (long int a = 0; a < na; a++) {
 
                     int bbegin = ( A == B ) ? a : 0;
 
                     for (long int b = bbegin; b < nb; b++) {
-
-                        double*myr2_plus  = c2 + Position(a+astart,b+bstart)*otri;
-                        double*myr2_minus = myr2_plus + shift;
 
                         for (long int c = 0; c < nc; c++) {
 
@@ -122,35 +144,77 @@ void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2
                                 double val1 = buffer1[thread][a*nc*nb*nd+c*nb*nd+b*nd+d];
                                 double val2 = buffer2[thread][a*nc*nb*nd+d*nb*nc+b*nc+c];
 
-                                double valplus  = val1 + val2;
-                                double valminus = val1 - val2;
-
-                                double * myc2_plus = temp + Position(c+cstart,d+dstart)*otri;
-
-                                if (fabs(valplus) > 1e-12){
-                                   F_DAXPY(otri,valplus,myc2_plus,1,myr2_plus,1);
-                                }
-                                if (fabs(valminus) > 1e-12){
-                                   double * myc2_minus = myc2_plus + shift;
-                                   F_DAXPY(otri,valminus,myc2_minus,1,myr2_minus,1);
-                                }
+                                long int cd = Position(c+cstart,d+dstart);
+                                temp_plus[(a*nb+b)*nsotri+cd]  = val1+val2;
+                                temp_minus[(a*nb+b)*nsotri+cd] = val1-val2;
                             }
                         }
                     }
                 }
 
-            }
+
+            } // end of CD ... v should be filled
+
+            // r(ab,ij) += t(cd,ij) v2(ab,cd)
+
+            double * r2_plus  = c2 + shift2;
+            double * r2_minus = c2 + nso*nso*otri+shift2;
+
+            F_DGEMM('n','n',otri,na*nb,nsotri,1.0,c2_plus,otri,temp_plus,nsotri,0.0,r2_plus,otri);
+            F_DGEMM('n','n',otri,na*nb,nsotri,1.0,c2_minus,otri,temp_minus,nsotri,0.0,r2_minus,otri);
+
+            shift2 += na*nb*otri;
         }
     }
 
-    // unpack r2+
+    // unpack into temp
+    shift2 = 0;
+    double *temp_plus  = temp;
+    double *temp_minus = temp + nso*nso*otri;
+
+    memset((void*)r2,'\0',o*o*nso*nso*sizeof(double));
+    memset((void*)temp_plus,'\0',nso*nso*otri*sizeof(double));
+    memset((void*)temp_minus,'\0',nso*nso*otri*sizeof(double));
+
+    for (int A = 0; A < primary->nshell(); A++) {
+
+        int na = primary->shell(A).nfunction();
+        int astart = primary->shell(A).function_index();
+
+        for (int B = A; B < primary->nshell(); B++) {
+
+            int nb = primary->shell(B).nfunction();
+            int bstart = primary->shell(B).function_index();
+
+            double * r2_plus  = c2 + shift2;
+            double * r2_minus = c2 + shift2 + nso*nso*otri;
+
+            for (int a = 0; a < na; a++) {
+
+                int absa = a + astart;
+
+                for (int b = 0; b < nb; b++) {
+
+                    int absb = b + bstart;
+
+                    if (absa > absb) continue;
+
+                    F_DCOPY(otri,r2_plus+ (a*nb+b)*otri,1,temp_plus+ (absa*nso+absb)*otri,1);
+                    F_DCOPY(otri,r2_minus+(a*nb+b)*otri,1,temp_minus+(absa*nso+absb)*otri,1);
+                }
+            }
+            shift2 += na*nb*otri;
+        }
+    }
+
     long int index;
+    // unpack r2+
     for (int a = 0, index = 0; a < nso; a++) {
         for (int b = 0; b < nso; b++) {
-            long int ab = Position(a,b)*otri;
+            long int ab = a < b ? (a*nso+b)*otri : (b*nso+a)*otri;
             for (int i = 0; i < o; i++) {
                 for (int j = 0; j < o; j++) {
-                    r2[index++] = 0.5*c2[ab+Position(i,j)];
+                    r2[index++] = 0.5*temp_plus[ab+Position(i,j)];
                 }
             }
         }
@@ -159,15 +223,16 @@ void Vabcd_direct(boost::shared_ptr<BasisSet>primary,int nso,double*c2,double*r2
     for (int a = 0, index = 0; a < nso; a++) {
         for (int b = 0; b < nso; b++) {
             int sg2 = a < b ? 1 : -1;
-            long int ab = Position(a,b)*otri + shift;
+            long int ab = a < b ? (a*nso+b)*otri : (b*nso+a)*otri;
             for (int i = 0; i < o; i++) {
                 for (int j = 0; j < o; j++) {
                     int sg = i < j ? sg2 : -sg2;
-                    r2[index++] += 0.5*sg*c2[ab+Position(i,j)];
-                }
+                    r2[index++] += 0.5*sg*temp_minus[ab+Position(i,j)];
+               }
             }
         }
     }
+
 }
 
 }}
