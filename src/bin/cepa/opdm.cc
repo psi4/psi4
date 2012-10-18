@@ -97,8 +97,6 @@ void CoupledPair::OPDM(){
   free(irrepoffset);
 
   // set Da_ for properties with oeprop ... note Da needs to be in so basis
-  Da_ = SharedMatrix(new Matrix("Da_so", Ca->rowspi(), Ca->rowspi(), opdm_a->symmetry()));
-
   int symm = opdm_a->symmetry();
   int nirrep = opdm_a->nirrep();
 
