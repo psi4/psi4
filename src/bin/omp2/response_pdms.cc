@@ -54,7 +54,7 @@ void OMP2Wave::response_pdms()
         timer_on("OPDM");
         // OO-block
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 g1symm->set(h, i, j, GooA->get(h, i, j) + GooA->get(h, j, i));
@@ -64,7 +64,7 @@ void OMP2Wave::response_pdms()
 
         // VV-Block	
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiA[h]; ++a){
             for(int b = 0 ; b < avirtpiA[h]; ++b){
                 int aa = a + occpiA[h];
@@ -78,7 +78,7 @@ void OMP2Wave::response_pdms()
 	gamma1corr->copy(g1symm); // correlation opdm
 
         // REF contribution 
-	for(int h=0; h<nirreps; h++) {
+	for(int h=0; h<nirrep_; h++) {
 	  if (occpiA[h] != 0) {
 	    for (int i=0; i<occpiA[h];i++) {
 	      g1symm->add(h,i,i,2.0);
@@ -119,7 +119,7 @@ void OMP2Wave::response_pdms()
         timer_on("OPDM");
 	// OO-block alpha contrb.
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 g1symmA->set(h, i, j, GooA->get(h, i, j) + GooA->get(h, j, i));
@@ -129,7 +129,7 @@ void OMP2Wave::response_pdms()
 
 	// OO-block beta contrb.
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
                 g1symmB->set(h, i, j, GooB->get(h, i, j) + GooB->get(h, j, i));
@@ -139,7 +139,7 @@ void OMP2Wave::response_pdms()
 
 	// VV-block alpha contrb.
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiA[h]; ++a){
             for(int b = 0 ; b < avirtpiA[h]; ++b){
                 int aa = a + occpiA[h];
@@ -151,7 +151,7 @@ void OMP2Wave::response_pdms()
 
         // VV-block beta contrb.
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiB[h]; ++a){
             for(int b = 0 ; b < avirtpiB[h]; ++b){
                 int aa = a + occpiB[h];
@@ -170,7 +170,7 @@ void OMP2Wave::response_pdms()
         // REF contribution 
 	// alpha contrb.
         #pragma omp parallel for
-	for(int h=0; h<nirreps; h++) {
+	for(int h=0; h<nirrep_; h++) {
 	  if (occpiA[h] != 0) {
 	    for (int i=0; i<occpiA[h];i++) {
 	      g1symmA->add(h,i,i,1.0);
@@ -180,7 +180,7 @@ void OMP2Wave::response_pdms()
 	
 	// beta contrb.
         #pragma omp parallel for
-	for(int h=0; h<nirreps; h++) {
+	for(int h=0; h<nirrep_; h++) {
 	  if (occpiB[h] != 0) {
 	    for (int i=0; i<occpiB[h];i++) {
 	      g1symmB->add(h,i,i,1.0);
@@ -253,7 +253,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&Go);
 	dpd_file2_mat_rd(&Go);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 GooA->set(h, i, j, Go.matrix[h][i][j]);
@@ -268,7 +268,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&Gv);
 	dpd_file2_mat_rd(&Gv);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 GvvA->set(h, i, j, Gv.matrix[h][i][j]);
@@ -373,7 +373,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 GooA->set(h, i, j, G.matrix[h][i][j]);
@@ -387,7 +387,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
                 GooB->set(h, i, j, G.matrix[h][i][j]);
@@ -404,7 +404,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 GvvA->set(h, i, j, G.matrix[h][i][j]);
@@ -418,7 +418,7 @@ void OMP2Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiB[h]; ++i){
             for(int j = 0 ; j < avirtpiB[h]; ++j){
                 GvvB->set(h, i, j, G.matrix[h][i][j]);
@@ -516,7 +516,7 @@ void OMP2Wave::twopdm_ref()
  if (reference == "RHF") {
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
@@ -542,7 +542,7 @@ void OMP2Wave::twopdm_ref()
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
@@ -564,7 +564,7 @@ void OMP2Wave::twopdm_ref()
     // Beta-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
@@ -586,7 +586,7 @@ void OMP2Wave::twopdm_ref()
     // Alpha-Beta spin case
      dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                  ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>"); 
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         #pragma omp parallel for
         for(int ij = 0; ij < G.params->rowtot[h]; ++ij){

@@ -62,6 +62,22 @@ def run_omp2(name, **kwargs):
     return PsiMod.omp2()
 
 
+def run_omp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP2 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    run_omp2(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
 def run_scs_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a spin-component scaled OMP2 computation

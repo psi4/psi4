@@ -64,13 +64,13 @@ void OMP2Wave::Fockmo_beta()
    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
    
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Gm=h^Gi;
 
           /* Loop over the orbitals of the target */
@@ -99,13 +99,13 @@ void OMP2Wave::Fockmo_beta()
    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");  
 
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Gm=h^Gi;
 
           /* Loop over the orbitals of the target */
@@ -149,13 +149,13 @@ void OMP2Wave::Fockmo_beta()
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov||ov>");
   
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
 	  int Gm = h^Ga;
 
@@ -186,13 +186,13 @@ void OMP2Wave::Fockmo_beta()
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "MO Ints <Ov|Ov>");
   
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
 	  int Gm = h^Ga;
 
@@ -240,13 +240,13 @@ void OMP2Wave::Fockmo_beta()
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo||ov>");
 
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi; int Gm = h^Gi;
 
 	  /* Loop over orbitals of the target */
@@ -276,13 +276,13 @@ void OMP2Wave::Fockmo_beta()
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "MO Ints <Oo|Ov>");
 
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi; int Gm = h^Gi;
 
 	  /* Loop over orbitals of the target */
@@ -320,7 +320,7 @@ void OMP2Wave::Fockmo_beta()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "Fock <o|o>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiB[h]; ++i){
             for(int j = 0 ; j < occpiB[h]; ++j){
 		FockB->set(h, i, j, F.matrix[h][i][j]);
@@ -333,7 +333,7 @@ void OMP2Wave::Fockmo_beta()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "Fock <v|v>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < virtpiB[h]; ++i){
             for(int j = 0 ; j < virtpiB[h]; ++j){
                FockB->set(h, i + occpiB[h], j + occpiB[h], F.matrix[h][i][j]);
@@ -346,7 +346,7 @@ void OMP2Wave::Fockmo_beta()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "Fock <o|v>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiB[h]; ++i){
             for(int j = 0 ; j < virtpiB[h]; ++j){
                FockB->set(h, i, j + occpiB[h], F.matrix[h][i][j]);

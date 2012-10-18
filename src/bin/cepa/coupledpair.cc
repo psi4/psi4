@@ -205,38 +205,54 @@ double CoupledPair::compute_energy(){
   tstop();
 
   // mp2 energy
-  Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
-  Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
+  Process::environment.globals["MP2 CORRELATION ENERGY"]               = emp2;
+  Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
+  Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"]     = emp2_ss;
+  Process::environment.globals["MP2 TOTAL ENERGY"]                     = emp2 + escf;
 
   // cepa energy
   char*cepatype = (char*)malloc(100*sizeof(char));
   if (cepa_level == 0){
-     Process::environment.globals["CEPA(0) CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["CEPA(0) TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == 1){
-     Process::environment.globals["CEPA(1) CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["CEPA(1) TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["CEPA(1) CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["CEPA(1) OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["CEPA(1) SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["CEPA(1) TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == 2){
-     Process::environment.globals["CEPA(2) CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["CEPA(2) TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["CEPA(2) CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["CEPA(2) OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["CEPA(2) SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["CEPA(2) TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == 3){
-     Process::environment.globals["CEPA(3) CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["CEPA(3) TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["CEPA(3) CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["CEPA(3) OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["CEPA(3) SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["CEPA(3) TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == -1){
-     Process::environment.globals["CISD CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["CISD TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["CISD CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["CISD OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["CISD SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["CISD TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == -2){
-     Process::environment.globals["ACPF CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["ACPF TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["ACPF CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["ACPF OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["ACPF SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["ACPF TOTAL ENERGY"]                     = ecepa + escf;
   }
   if (cepa_level == -3){
-     Process::environment.globals["AQCC CORRELATION ENERGY"] = ecepa;
-     Process::environment.globals["AQCC TOTAL ENERGY"] = ecepa + escf;
+     Process::environment.globals["AQCC CORRELATION ENERGY"]               = ecepa;
+     Process::environment.globals["AQCC OPPOSITE-SPIN CORRELATION ENERGY"] = ecepa_os;
+     Process::environment.globals["AQCC SAME-SPIN CORRELATION ENERGY"]     = ecepa_ss;
+     Process::environment.globals["AQCC TOTAL ENERGY"]                     = ecepa + escf;
   }
   Process::environment.globals["CURRENT ENERGY"] = ecepa + escf;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ecepa;
@@ -433,7 +449,7 @@ PsiReturnType CoupledPair::CEPAIterations(){
   // is this a cim-cepa computation?
   if (reference_wavefunction_->isCIM()){
      Local_SCS_CEPA();
-     ecepa = ecepa_os/ecepa_os_fac + ecepa_ss/ecepa_ss_fac;
+     ecepa = ecepa_os + ecepa_ss;
   }
   else{
      SCS_CEPA();
@@ -442,38 +458,38 @@ PsiReturnType CoupledPair::CEPAIterations(){
   fprintf(outfile,"\n");
   fprintf(outfile,"  %s iterations converged!\n",cepa_type);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os);
-  fprintf(outfile,"        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss);
-  fprintf(outfile,"        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os+emp2_ss);
-  fprintf(outfile,"      * SCS-MP2 total energy:              %20.12lf\n",emp2_os+emp2_ss+escf);
+  fprintf(outfile,"        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac);
+  fprintf(outfile,"        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss*emp2_ss_fac);
+  fprintf(outfile,"        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+  fprintf(outfile,"      * SCS-MP2 total energy:              %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS MP2 correlation energy:         %20.12lf\n",emp2_os/emp2_os_fac);
-  fprintf(outfile,"        SS MP2 correlation energy:         %20.12lf\n",emp2_ss/emp2_ss_fac);
+  fprintf(outfile,"        OS MP2 correlation energy:         %20.12lf\n",emp2_os);
+  fprintf(outfile,"        SS MP2 correlation energy:         %20.12lf\n",emp2_ss);
   fprintf(outfile,"        MP2 correlation energy:            %20.12lf\n",emp2);
   fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
   if (cepa_level>=0){
      if (options_.get_bool("SCS_CEPA")){
-        fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_os);
-        fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_ss);
-        fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
-        fprintf(outfile,"      * SCS-%s total energy:          %20.12lf\n",cepa_type,ecepa_os+ecepa_ss+escf);
+        fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac);
+        fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,ecepa_ss*ecepa_ss_fac);
+        fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac+ecepa_ss*ecepa_ss_fac);
+        fprintf(outfile,"      * SCS-%s total energy:          %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac+ecepa_ss*ecepa_ss_fac+escf);
         fprintf(outfile,"\n");
      }
-     fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
-     fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
+     fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_os);
+     fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_ss);
      fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,ecepa);
      fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,ecepa+escf);
   }else{
      if (options_.get_bool("SCS_CEPA")){
-        fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os);
-        fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_ss);
-        fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,ecepa_os+ecepa_ss);
-        fprintf(outfile,"      * SCS-%s total energy:             %20.12lf\n",cepa_type,ecepa_os+ecepa_ss+escf);
+        fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac);
+        fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,ecepa_ss*ecepa_ss_fac);
+        fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac+ecepa_ss*ecepa_ss_fac);
+        fprintf(outfile,"      * SCS-%s total energy:             %20.12lf\n",cepa_type,ecepa_os*ecepa_os_fac+ecepa_ss*ecepa_ss_fac+escf);
         fprintf(outfile,"\n");
      }
-     fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
-     fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
+     fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_os);
+     fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_ss);
      fprintf(outfile,"        %s correlation energy:           %20.12lf\n",cepa_type,ecepa);
      fprintf(outfile,"      * %s total energy:                 %20.12lf\n",cepa_type,ecepa+escf);
   }
@@ -941,8 +957,8 @@ void CoupledPair::Local_SCS_CEPA(){
           }
       }
   }
-  ecepa_os = ecepa_os_fac * osenergy;
-  ecepa_ss = ecepa_ss_fac * ssenergy;
+  ecepa_os = osenergy;
+  ecepa_ss = ssenergy;
 
   psio.reset();
 }
@@ -979,8 +995,8 @@ void CoupledPair::SCS_CEPA(){
           }
       }
   }
-  ecepa_os = ecepa_os_fac * osenergy;
-  ecepa_ss = ecepa_ss_fac * ssenergy;
+  ecepa_os = osenergy;
+  ecepa_ss = ssenergy;
 
   psio.reset();
 }
@@ -1016,8 +1032,8 @@ void CoupledPair::SCS_MP2(){
           }
       }
   }
-  emp2_os = emp2_os_fac * osenergy;
-  emp2_ss = emp2_ss_fac * ssenergy;
+  emp2_os = osenergy;
+  emp2_ss = ssenergy;
 
   psio.reset();
 }
