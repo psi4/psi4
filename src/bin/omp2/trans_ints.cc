@@ -402,7 +402,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -433,7 +433,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo||oo>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -466,7 +466,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -498,7 +498,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo||ov>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -531,7 +531,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
 	dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -562,7 +562,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
 	dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -595,7 +595,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -628,7 +628,7 @@ void OMP2Wave::trans_ints_uhf()
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
      dpd_buf4_init(&G, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-     for(int h = 0; h < nirreps; ++h){
+     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&K, h);
@@ -700,15 +700,15 @@ void OMP2Wave::denominators_rhf()
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
     
     //Diagonal elements of the Fock matrix
-    for(int h = 0; h < nirreps; ++h){
-        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi[h], i + frzcpi[h]);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi_[h], i + frzcpi_[h]);
         for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a); 
     }
     
     // Build denominators
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -743,10 +743,10 @@ void OMP2Wave::denominators_rhf()
     // Build Occupied-Occupied block
     dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_file2_mat_init(&Fo);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
-		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi[h], j + frzcpi[h]);
+		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi_[h], j + frzcpi_[h]);
 		else Fo.matrix[h][i][j] = 0.0;
             }
         }
@@ -758,7 +758,7 @@ void OMP2Wave::denominators_rhf()
     // Build Virtual-Virtual block
     dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     dpd_file2_mat_init(&Fv);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 if (i != j) Fv.matrix[h][i][j] = FockA->get(h, i + occpiA[h], j + occpiA[h]);
@@ -806,9 +806,9 @@ void OMP2Wave::denominators_uhf()
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
     
     //Diagonal elements of the Fock matrix
-    for(int h = 0; h < nirreps; ++h){
-        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi[h], i + frzcpi[h]);
-	for(int i = 0; i < aoccpiB[h]; ++i) bOccEvals[bOccCount++] = FockB->get(h, i + frzcpi[h], i + frzcpi[h]);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi_[h], i + frzcpi_[h]);
+	for(int i = 0; i < aoccpiB[h]; ++i) bOccEvals[bOccCount++] = FockB->get(h, i + frzcpi_[h], i + frzcpi_[h]);
         for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a); 
 	for(int a = 0; a < avirtpiB[h]; ++a) bVirEvals[bVirCount++] = FockB->get(h, occpiB[h] + a, occpiB[h] + a); 
     }
@@ -817,7 +817,7 @@ void OMP2Wave::denominators_uhf()
     // The alpha-alpha spin case
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -838,7 +838,7 @@ void OMP2Wave::denominators_uhf()
     // The beta-beta spin case 
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -859,7 +859,7 @@ void OMP2Wave::denominators_uhf()
     // The alpha-beta spin case 
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -914,10 +914,10 @@ void OMP2Wave::denominators_uhf()
     // The alpha-alpha spin case 
     dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_file2_mat_init(&Fo);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
-		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi[h], j + frzcpi[h]);
+		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi_[h], j + frzcpi_[h]);
 		else Fo.matrix[h][i][j] = 0.0;
             }
         }
@@ -929,10 +929,10 @@ void OMP2Wave::denominators_uhf()
     // The beta-beta spin case 
     dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     dpd_file2_mat_init(&Fo);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
-		if (i != j) Fo.matrix[h][i][j] = FockB->get(h, i + frzcpi[h], j + frzcpi[h]);
+		if (i != j) Fo.matrix[h][i][j] = FockB->get(h, i + frzcpi_[h], j + frzcpi_[h]);
 		else Fo.matrix[h][i][j] = 0.0;
             }
         }
@@ -945,7 +945,7 @@ void OMP2Wave::denominators_uhf()
     // The alpha-alpha spin case 
     dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     dpd_file2_mat_init(&Fv);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 if (i != j) Fv.matrix[h][i][j] = FockA->get(h, i + occpiA[h], j + occpiA[h]);
@@ -960,7 +960,7 @@ void OMP2Wave::denominators_uhf()
     // The beta-beta spin case 
     dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     dpd_file2_mat_init(&Fv);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < avirtpiB[h]; ++i){
             for(int j = 0 ; j < avirtpiB[h]; ++j){
                 if (i != j) Fv.matrix[h][i][j] = FockB->get(h, i + occpiB[h], j + occpiB[h]);
