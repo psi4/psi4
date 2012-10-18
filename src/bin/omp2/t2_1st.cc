@@ -242,7 +242,7 @@ if (reference == "RHF") {
     dpd_buf4_close(&T);
     
     nElements = 0;
-    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
     rms_t2 = 0.0;
     rms_t2 = dpd_buf4_dot_self(&R);
     dpd_buf4_close(&R);
@@ -401,7 +401,7 @@ else if (reference == "UHF") {
     dpd_buf4_close(&T);
     
     nElements = 0;
-    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
     rms_t2AA = 0.0;
     rms_t2AA = dpd_buf4_dot_self(&R);
     dpd_buf4_close(&R);
@@ -425,7 +425,7 @@ else if (reference == "UHF") {
     dpd_buf4_close(&T);
     
     nElements = 0;
-    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
     rms_t2BB = 0.0;
     rms_t2BB = dpd_buf4_dot_self(&R);
     dpd_buf4_close(&R);
@@ -449,7 +449,7 @@ else if (reference == "UHF") {
     dpd_buf4_close(&T);
     
     nElements = 0;
-    for(int h = 0; h < nirreps; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
+    for(int h = 0; h < nirrep_; h++) nElements += R.params->coltot[h] * R.params->rowtot[h];
     rms_t2AB = 0.0;
     rms_t2AB = dpd_buf4_dot_self(&R);
     dpd_buf4_close(&R);
