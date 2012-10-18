@@ -273,35 +273,6 @@ Taylor_Fjt::values(int l, double T)
     return F_;
 }
 
-Taylor_Fjt::ExpensiveMath::ExpensiveMath(int ifac, int idf)
-{
-    if (ifac >= 0) {
-        fac = new double[ifac+1];
-        fac[0] = 1.0;
-        for(int i=1; i<=ifac; i++) {
-            fac[i] = i*fac[i-1];
-        }
-    }
-
-    if (idf >= 0) {
-        df = new double[idf+1];
-        /* df[i] gives (i-1)!!, so that (-1)!! is defined... */
-        df[0] = 1.0;
-        if (idf >= 1) df[1] = 1.0;
-        if (idf >= 2) df[2] = 1.0;
-        for(int i=3; i<=idf; i++){
-            df[i] = (i-1)*df[i-2];
-        }
-    }
-
-}
-
-Taylor_Fjt::ExpensiveMath::~ExpensiveMath()
-{
-    delete[] fac;
-    delete[] df;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 
 /* Tablesize should always be at least 121. */
