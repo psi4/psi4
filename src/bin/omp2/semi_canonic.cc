@@ -40,12 +40,12 @@ namespace psi{ namespace omp2wave{
 void OMP2Wave::semi_canonic()
 {
 
-	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiA));
-	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiA));
+	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiA, aoccpiA));
+	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiA, avirtpiA));
+	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiA, aoccpiA));
+	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiA, avirtpiA));
+	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirrep_, aoccpiA));
+	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirrep_, avirtpiA));
 
 	UooA->zero();
 	UvvA->zero();
@@ -53,14 +53,14 @@ void OMP2Wave::semi_canonic()
 	FockvvA->zero();
      	
 	// OCC-OCC 
-	for(int h = 0; h < nirreps; h++){
+	for(int h = 0; h < nirrep_; h++){
 	  for(int i = 0; i < aoccpiA[h]; i++){
 	    eigooA->set(h,i,0.0);
 	  }
 	}
 	
 	// VIR-VIR
-	for(int h = 0; h < nirreps; h++){
+	for(int h = 0; h < nirrep_; h++){
 	  for(int i = 0; i < avirtpiA[h]; i++){
 	    eigvvA->set(h,i,0.0);
 	  }
@@ -68,7 +68,7 @@ void OMP2Wave::semi_canonic()
 
        // Fockoo alpha spin case
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 FockooA->set(h, i, j, FockA->get(h, i, j));
@@ -78,7 +78,7 @@ void OMP2Wave::semi_canonic()
 	
 	// Fockvv alpha spin case
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiA[h]; ++a){
             for(int b = 0 ; b < avirtpiA[h]; ++b){
                 int aa = a + occpiA[h];
@@ -104,7 +104,7 @@ void OMP2Wave::semi_canonic()
 	  
 	  // print occ orb energy
 	  fprintf(outfile, "\t  Alpha occupied orbitals\n");
-	  for (int h=0; h<nirreps; h++){
+	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < aoccpiA[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooA->get(h,i));
@@ -116,7 +116,7 @@ void OMP2Wave::semi_canonic()
 	  
 	  // print vir orb energy
 	  fprintf(outfile, "\n\t  Alpha virtual orbitals\n");
-	  for (int h=0; h<nirreps; h++){
+	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < avirtpiA[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvA->get(h,i));
@@ -135,7 +135,7 @@ void OMP2Wave::semi_canonic()
 	
 	// Uoo contribution alpha spin case
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 UorbA->set(h, i, j, UooA->get(h, i, j));
@@ -145,7 +145,7 @@ void OMP2Wave::semi_canonic()
 	
 	// Uvv contribution alpha spin case
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiA[h]; ++a){
             for(int b = 0 ; b < avirtpiA[h]; ++b){
                 int aa = a + occpiA[h];
@@ -156,7 +156,7 @@ void OMP2Wave::semi_canonic()
 	}
 
         // Get new MOs
-        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirreps, sopi, mopi));
+        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirrep_, nsopi_, nmopi_));
 	Ca_new->zero();
 	Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0); 
 	Ca_->zero();
@@ -177,12 +177,12 @@ void OMP2Wave::semi_canonic()
 
      // UHF REFERENCE
      if (reference == "UHF") {
-	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
-	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
-	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
-	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
-	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiB));
-	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiB));
+	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
+	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiB, avirtpiB));
+	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
+	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiB, avirtpiB));
+	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirrep_, aoccpiB));
+	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirrep_, avirtpiB));
 
 	UooB->zero();
 	UvvB->zero();
@@ -190,14 +190,14 @@ void OMP2Wave::semi_canonic()
 	FockvvB->zero();
 
 	// occ-occ 
-	for(int h = 0; h < nirreps; h++){
+	for(int h = 0; h < nirrep_; h++){
 	  for(int i = 0; i < aoccpiB[h]; i++){
 	    eigooB->set(h,i,0.0);
 	  }
 	}
 	
 	// vir-vir
-	for(int h = 0; h < nirreps; h++){
+	for(int h = 0; h < nirrep_; h++){
 	  for(int i = 0; i < avirtpiB[h]; i++){
 	    eigvvB->set(h,i,0.0);
 	  }
@@ -205,7 +205,7 @@ void OMP2Wave::semi_canonic()
 
 	// Fockoo beta spin case
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
                 FockooB->set(h, i, j, FockB->get(h, i, j));
@@ -215,7 +215,7 @@ void OMP2Wave::semi_canonic()
 
 	// Fockvv beta spin case
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiB[h]; ++a){
             for(int b = 0 ; b < avirtpiB[h]; ++b){
                 int aa = a + occpiB[h];
@@ -242,7 +242,7 @@ void OMP2Wave::semi_canonic()
 	  
 	  // print occ orb energy
 	  fprintf(outfile, "\t  Beta occupied orbitals\n");
-	  for (int h=0; h<nirreps; h++){
+	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < aoccpiB[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooB->get(h,i));
@@ -254,7 +254,7 @@ void OMP2Wave::semi_canonic()
 	  
 	  // print vir orb energy
 	  fprintf(outfile, "\n\t  Beta virtual orbitals\n");
-	  for (int h=0; h<nirreps; h++){
+	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
 	    for (int i = 0; i < avirtpiB[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvB->get(h,i));
@@ -271,7 +271,7 @@ void OMP2Wave::semi_canonic()
 	
 	// Uoo contribution beta spin case
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
                 UorbB->set(h, i, j, UooB->get(h, i, j));
@@ -281,7 +281,7 @@ void OMP2Wave::semi_canonic()
 
 	// Uvv contribution beta spin case
 	#pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < avirtpiB[h]; ++a){
             for(int b = 0 ; b < avirtpiB[h]; ++b){
                 int aa = a + occpiB[h];
@@ -292,7 +292,7 @@ void OMP2Wave::semi_canonic()
 	}
 
         // Get new MOs
-	Cb_new = boost::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirreps, sopi, mopi));
+	Cb_new = boost::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirrep_, nsopi_, nmopi_));
 	Cb_new->zero();
 	Cb_new->gemm(false, false, 1.0, Cb_, UorbB, 0.0); 
 	Cb_->zero();
