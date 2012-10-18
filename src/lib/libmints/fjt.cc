@@ -40,6 +40,14 @@ const double oon[] = {0.0, 1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0
 
 #define SOFT_ZERO 1e-6
 
+#ifndef M_SQRT_PI
+#define M_SQRT_PI	1.772453850905516027298167483341	/* sqrt(pi) */
+#endif
+
+#ifndef M_SQRT_PI_2
+#define M_SQRT_PI_2 1.2533141373155002512078826424055   // sqrt(Pi/2)
+#endif
+
 Fjt::Fjt() {}
 Fjt::~Fjt() {}
 
@@ -51,17 +59,16 @@ double Taylor_Fjt::relative_zero_(1e-6);
  ------------------------------------------------------*/
 Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
     cutoff_(accuracy), interp_order_(TAYLOR_INTERPOLATION_ORDER),
-    ExpMath_(interp_order_+1,2*(mmax + interp_order_ - 1)),
     F_(new double[mmax+1])
 {
-    const double sqrt_pi = std::sqrt(M_PI);
+    const double sqrt_pi = M_SQRT_PI;
 
     /*---------------------------------------
     We are doing Taylor interpolation with
     n=TAYLOR_ORDER terms here:
     error <= delT^n/(n+1)!
    ---------------------------------------*/
-    delT_ = 2.0*std::pow(cutoff_*ExpMath_.fac[interp_order_+1],
+    delT_ = 2.0*std::pow(cutoff_*fac[interp_order_+1],
                          1.0/interp_order_);
     oodelT_ = 1.0/delT_;
     max_m_ = mmax + interp_order_ - 1;
@@ -77,7 +84,7 @@ Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
       the interpolation
      ------------------------------------------*/
         double T = -log(cutoff_);
-        const double egamma = cutoff_ * sqrt_pi * ExpMath_.df[2*m]/std::pow(2.0,m);
+        const double egamma = cutoff_ * sqrt_pi * df[2*m]/std::pow(2.0,m);
         double T_new = T;
         double func;
         do {
@@ -173,7 +180,6 @@ Taylor_Fjt::~Taylor_Fjt()
 double *
 Taylor_Fjt::values(int l, double T)
 {
-    static const double sqrt_pio2 = std::sqrt(M_PI/2);
     const double two_T = 2.0*T;
 
     // since Tcrit grows with l, this condition only needs to be determined once
@@ -187,7 +193,7 @@ Taylor_Fjt::values(int l, double T)
         double pow_two_T_to_minusjp05 = std::pow(two_T,-l-0.5);
         for(int j=l; j>=jrecur; --j) {
             /*--- Asymptotic formula ---*/
-            F_[j] = ExpMath_.df[2*j] * sqrt_pio2 * pow_two_T_to_minusjp05;
+            F_[j] = df[2*j] * M_SQRT_PI_2 * pow_two_T_to_minusjp05;
             pow_two_T_to_minusjp05 *= two_T;
         }
     }
