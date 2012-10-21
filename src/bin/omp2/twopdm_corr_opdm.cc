@@ -46,7 +46,7 @@ void OMP2Wave::twopdm_corr_opdm()
     
     psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     // TPDM <OO|OO>
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
@@ -138,9 +138,9 @@ void OMP2Wave::twopdm_corr_opdm()
     }
     dpd_buf4_close(&G);
  
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
     // TPDM OOOO-Block 
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
@@ -390,7 +390,7 @@ void OMP2Wave::twopdm_corr_opdm()
     dpd_buf4_close(&G);
     */
 
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
     
     psio_->close(PSIF_OMP2_DENSITY, 1);
    
