@@ -74,15 +74,16 @@ void OMP2Wave::common_init()
 	scs_type_=options_.get_str("SCS_TYPE");
 	sos_type_=options_.get_str("SOS_TYPE");
 	dertype=options_.get_str("DERTYPE");
-	
+
+        if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
+        else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+
 	cutoff = pow(10.0,-exp_cutoff);
-	
-	
 	if (print_ > 0) options_.print();
         title();
 	get_moinfo();
 	
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 	// Memory allocation
 	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_));
 	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirrep_, nmopi_, nmopi_));
@@ -129,9 +130,9 @@ if (reference == "RHF") {
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
-}  // end if (reference == "RHF") 
+}  // end if (reference_ == "RESTRICTED") 
 
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 	// Memory allocation
 	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_));
 	HmoB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirrep_, nmopi_, nmopi_));
@@ -190,7 +191,7 @@ else if (reference == "UHF") {
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 }// end common_init
 
 void OMP2Wave::title()
@@ -202,7 +203,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 17, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 21, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -225,8 +226,8 @@ double OMP2Wave::compute_energy()
 	
 	mo_optimized = 0;
         timer_on("trans_ints");
-	if (reference == "RHF") trans_ints_rhf();  
-	else if (reference == "UHF") trans_ints_uhf();  
+	if (reference_ == "RESTRICTED") trans_ints_rhf();  
+	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
         timer_on("T2(1)");
 	t2_1st_sc();
@@ -374,34 +375,40 @@ double OMP2Wave::compute_energy()
 	if (omp2_orb_energy == "TRUE") semi_canonic(); 
 	
 	// Write MO coefficients to Cmo.psi
-        if (write_mo_coeff == "TRUE"){
-	  fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external files CmoA.psi and CmoB.psi...\n");  
+	if (write_mo_coeff == "TRUE"){
+	  fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");  
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
-	  double **C_pitzerB = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
-	  memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
     
 	  //set C_pitzer
 	  C_pitzerA = Ca_->to_block_matrix();    
-	  C_pitzerB = Cb_->to_block_matrix();    
 	
 	  // write binary data
 	  ofstream OutFile1;
 	  OutFile1.open("CmoA.psi", ios::out | ios::binary);
 	  OutFile1.write( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  OutFile1.close();
-	  
-	  // write binary data
-	  ofstream OutFile2;
-	  OutFile2.open("CmoB.psi", ios::out | ios::binary);
-	  OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
-	  OutFile2.close();  
-	  
 	  free_block(C_pitzerA);
-	  free_block(C_pitzerB);
-	}     
-	
+	 
+          if (reference_ == "UNRESTRICTED" ) { 
+	      fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");  
+	      fflush(outfile);
+	      double **C_pitzerB = block_matrix(nso_,nmo_);
+	      memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
+
+	      //set C_pitzer
+	      C_pitzerB = Cb_->to_block_matrix();    
+
+	      // write binary data
+	      ofstream OutFile2;
+	      OutFile2.open("CmoB.psi", ios::out | ios::binary);
+	      OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
+	      OutFile2.close();  
+	      free_block(C_pitzerB);
+          }
+	}
+
         // Compute Analytic Gradients
         if (dertype == "FIRST") coord_grad();
 
@@ -419,7 +426,7 @@ void OMP2Wave::ref_energy()
      double Ehf;     
      Ehf=0.0;
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     for (int h=0; h<nirrep_; h++){
       for (int i=0; i<occpiA[h];i++) {
 	Ehf+=HmoA->get(h,i,i) + FockA->get(h,i,i);
@@ -428,7 +435,7 @@ void OMP2Wave::ref_energy()
     Eref = Ehf + Enuc;
  }// end rhf
  
- else if (reference == "UHF") { 
+ else if (reference_ == "UNRESTRICTED") { 
      
      // alpha contribution
      for (int h=0; h<nirrep_; h++){
@@ -484,7 +491,7 @@ void OMP2Wave::mp2_energy()
      Esospimp2AB = 0.0;
      Esospimp2 = 0.0;
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
      // Same-spin contribution
      dpd_buf4_init(&Tss, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TAA <OO|VV>");
@@ -521,7 +528,7 @@ void OMP2Wave::mp2_energy()
  }// end rhf
 
 
- else if (reference == "UHF") { 
+ else if (reference_ == "UNRESTRICTED") { 
 
      // Compute Energy
      // Alpha-Alpha spin contribution
@@ -594,7 +601,7 @@ void OMP2Wave::mp2l_energy()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);  
     psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD); 
  
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     // E += 2*G_ijkl <ij|kl>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"), 0, "MO Ints <OO|OO>");
@@ -634,7 +641,7 @@ void OMP2Wave::mp2l_energy()
 
  }// end rhf
      
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
      // One-electron contribution
      /*
      double Etpdm_oooo, Etpdm_oovv, Etpdm_ovov, Etpdm_vovo;
@@ -791,7 +798,7 @@ fflush(outfile);
 	  }
 	}
  
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
       g1symm->diagonalize(Udum, diag);
 	
       //trace
@@ -809,7 +816,7 @@ fflush(outfile);
       fflush(outfile);
  }// end rhf
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
       g1symmA->diagonalize(Udum, diag);
 	
       //trace
@@ -879,7 +886,7 @@ void OMP2Wave::mem_release()
 	delete kappaA;
 	delete kappa_barA;
 
-       if (reference == "UHF") {
+       if (reference_ == "UNRESTRICTED") {
 	delete [] idprowB;
 	delete [] idpcolB;
 	delete [] idpirrB;
@@ -895,13 +902,13 @@ void OMP2Wave::mem_release()
 	if (opt_method == "DIIS") {
           delete vecsA;
           delete errvecsA;
-          if (reference == "UHF") delete vecsB;
-          if (reference == "UHF") delete errvecsB;
+          if (reference_ == "UNRESTRICTED") delete vecsB;
+          if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
 	
 	chkpt_.reset();
 
-      if (reference == "RHF") {
+      if (reference_ == "RESTRICTED") {
 	Ca_.reset();
 	Ca_ref.reset();
 	Hso.reset();
@@ -921,7 +928,7 @@ void OMP2Wave::mem_release()
 	GvvA.reset();
        }
 
-       else if (reference == "UHF") {
+       else if (reference_ == "UNRESTRICTED") {
 	Ca_.reset();
 	Cb_.reset();
 	Ca_ref.reset();

@@ -79,27 +79,29 @@ void OMP3Wave::common_init()
 	scs_type_=options_.get_str("SCS_TYPE");
 	sos_type_=options_.get_str("SOS_TYPE");
 
+        if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
+        else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+
 	cutoff = pow(10.0,-exp_cutoff);
-	
 	if (print_ > 0) options_.print();
         title();
 	get_moinfo();
 	
 
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 	// Memory allocation
-	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
-	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirreps, mopi, mopi));
-	gamma1corr = boost::shared_ptr<Matrix>(new Matrix("MO-basis correlation OPDM", nirreps, mopi, mopi));
-	g1symm = boost::shared_ptr<Matrix>(new Matrix("MO-basis OPDM", nirreps, mopi, mopi));
-	GFock = boost::shared_ptr<Matrix>(new Matrix("MO-basis generalized Fock matrix", nirreps, mopi, mopi));
-	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirreps, mopi, mopi));
-	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirreps, mopi, mopi)); 
-	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirreps, mopi, mopi)); 
-	HG1 = boost::shared_ptr<Matrix>(new Matrix("h*g1symm", nirreps, mopi, mopi));
-	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirreps, mopi, mopi));
-	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirreps, aoccpiA, aoccpiA));
-	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
+	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_));
+	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirrep_, nmopi_, nmopi_));
+	gamma1corr = boost::shared_ptr<Matrix>(new Matrix("MO-basis correlation OPDM", nirrep_, nmopi_, nmopi_));
+	g1symm = boost::shared_ptr<Matrix>(new Matrix("MO-basis OPDM", nirrep_, nmopi_, nmopi_));
+	GFock = boost::shared_ptr<Matrix>(new Matrix("MO-basis generalized Fock matrix", nirrep_, nmopi_, nmopi_));
+	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirrep_, nmopi_, nmopi_));
+	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirrep_, nmopi_, nmopi_)); 
+	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirrep_, nmopi_, nmopi_)); 
+	HG1 = boost::shared_ptr<Matrix>(new Matrix("h*g1symm", nirrep_, nmopi_, nmopi_));
+	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_));
+	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirrep_, aoccpiA, aoccpiA));
+	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA));
 
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
@@ -109,7 +111,7 @@ if (reference == "RHF") {
         fprintf(outfile, "\t==============================\n");                                                 
         for(int h = 0; h < nirrep_; ++h){
          fprintf(outfile, "\t %3s   %3d   %3d   %3d  %3d\n",
-                             ct.gamma(h).symbol(), frzcpi[h], aoccpiA[h], avirtpiA[h], frzvpi[h]);
+                             ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], avirtpiA[h], frzvpi_[h]);
         }
         fprintf(outfile,     "\t==============================\n"); 
 	fflush(outfile);
@@ -134,36 +136,36 @@ if (reference == "RHF") {
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
-}  // end if (reference == "RHF") 
+}  // end if (reference_ == "RESTRICTED") 
 
     
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 	// Memory allocation
-	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
-	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirreps, mopi, mopi));
-	gamma1corrA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha correlation OPDM", nirreps, mopi, mopi));
-	g1symmA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha OPDM", nirreps, mopi, mopi));
-	GFockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha generalized Fock matrix", nirreps, mopi, mopi));
-	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirreps, mopi, mopi));
-	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirreps, mopi, mopi)); 
-	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirreps, mopi, mopi)); 
-	HG1A = boost::shared_ptr<Matrix>(new Matrix("Alpha h*g1symm", nirreps, mopi, mopi));
-	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirreps, mopi, mopi));
-	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirreps, aoccpiA, aoccpiA));
-	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
+	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirrep_, nmopi_, nmopi_));
+	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirrep_, nmopi_, nmopi_));
+	gamma1corrA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha correlation OPDM", nirrep_, nmopi_, nmopi_));
+	g1symmA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_));
+	GFockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha generalized Fock matrix", nirrep_, nmopi_, nmopi_));
+	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirrep_, nmopi_, nmopi_));
+	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirrep_, nmopi_, nmopi_)); 
+	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirrep_, nmopi_, nmopi_)); 
+	HG1A = boost::shared_ptr<Matrix>(new Matrix("Alpha h*g1symm", nirrep_, nmopi_, nmopi_));
+	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirrep_, nmopi_, nmopi_));
+	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirrep_, aoccpiA, aoccpiA));
+	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA));
 
-	HmoB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirreps, mopi, mopi));
-	FockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta Fock matrix", nirreps, mopi, mopi));
-	gamma1corrB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta correlation OPDM", nirreps, mopi, mopi));
-	g1symmB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta OPDM", nirreps, mopi, mopi));
-	GFockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta generalized Fock matrix", nirreps, mopi, mopi));
-	UorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO rotation matrix", nirreps, mopi, mopi));
-	KorbB = boost::shared_ptr<Matrix>(new Matrix("K beta MO rotation", nirreps, mopi, mopi)); 
-	KsqrB = boost::shared_ptr<Matrix>(new Matrix("K^2 beta MO rotation", nirreps, mopi, mopi)); 
-	HG1B = boost::shared_ptr<Matrix>(new Matrix("Beta h*g1symm", nirreps, mopi, mopi));
-	WorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO gradient matrix", nirreps, mopi, mopi));
-	GooB = boost::shared_ptr<Matrix>(new Matrix("Beta Goo intermediate", nirreps, aoccpiB, aoccpiB));
-	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirreps, avirtpiB, avirtpiB));
+	HmoB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirrep_, nmopi_, nmopi_));
+	FockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta Fock matrix", nirrep_, nmopi_, nmopi_));
+	gamma1corrB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta correlation OPDM", nirrep_, nmopi_, nmopi_));
+	g1symmB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_));
+	GFockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta generalized Fock matrix", nirrep_, nmopi_, nmopi_));
+	UorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO rotation matrix", nirrep_, nmopi_, nmopi_));
+	KorbB = boost::shared_ptr<Matrix>(new Matrix("K beta MO rotation", nirrep_, nmopi_, nmopi_)); 
+	KsqrB = boost::shared_ptr<Matrix>(new Matrix("K^2 beta MO rotation", nirrep_, nmopi_, nmopi_)); 
+	HG1B = boost::shared_ptr<Matrix>(new Matrix("Beta h*g1symm", nirrep_, nmopi_, nmopi_));
+	WorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO gradient matrix", nirrep_, nmopi_, nmopi_));
+	GooB = boost::shared_ptr<Matrix>(new Matrix("Beta Goo intermediate", nirrep_, aoccpiB, aoccpiB));
+	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirrep_, avirtpiB, avirtpiB));
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
@@ -172,7 +174,7 @@ else if (reference == "UHF") {
         fprintf(outfile, "\t==========================================\n");                                                 
         for(int h = 0; h < nirrep_; ++h){
          fprintf(outfile, "\t %3s   %3d   %3d   %3d   %3d    %3d   %3d\n",
-                             ct.gamma(h).symbol(), frzcpi[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi[h]);
+                             ct.gamma(h).symbol(), frzcpi_[h], aoccpiA[h], aoccpiB[h], avirtpiA[h], avirtpiB[h], frzvpi_[h]);
         }
         fprintf(outfile,     "\t==========================================\n\n");
 	fflush(outfile);
@@ -199,7 +201,7 @@ else if (reference == "UHF") {
     ints->initialize();
     dpd_set_default(ints->get_dpd_id());
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 }// end common_init
 
 
@@ -215,7 +217,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 20, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 21, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -241,8 +243,8 @@ double OMP3Wave::compute_energy()
 	
 	mo_optimized = 0;
         timer_on("trans_ints");
-	if (reference == "RHF") trans_ints_rhf();  
-	else if (reference == "UHF") trans_ints_uhf();  
+	if (reference_ == "RESTRICTED") trans_ints_rhf();  
+	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
         timer_on("REF Energy");
 	ref_energy();
@@ -453,33 +455,39 @@ double OMP3Wave::compute_energy()
 	if (omp3_orb_energy == "TRUE") semi_canonic(); 
 	
 	// Write MO coefficients to Cmo.psi
-        if (write_mo_coeff == "TRUE"){
-	  fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external files CmoA.psi and CmoB.psi...\n");  
+	if (write_mo_coeff == "TRUE"){
+	  fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoA.psi...\n");  
 	  fflush(outfile);
-	  double **C_pitzerA = block_matrix(nso,nmo);
-	  double **C_pitzerB = block_matrix(nso,nmo);
-	  memset(C_pitzerA[0], 0, sizeof(double)*nso*nmo);
-	  memset(C_pitzerB[0], 0, sizeof(double)*nso*nmo);
+	  double **C_pitzerA = block_matrix(nso_,nmo_);
+	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
     
 	  //set C_pitzer
 	  C_pitzerA = Ca_->to_block_matrix();    
-	  C_pitzerB = Cb_->to_block_matrix();    
 	
 	  // write binary data
 	  ofstream OutFile1;
 	  OutFile1.open("CmoA.psi", ios::out | ios::binary);
-	  OutFile1.write( (char*)C_pitzerA[0], sizeof(double)*nso*nmo);
+	  OutFile1.write( (char*)C_pitzerA[0], sizeof(double)*nso_*nmo_);
 	  OutFile1.close();
-	  
-	  // write binary data
-	  ofstream OutFile2;
-	  OutFile2.open("CmoB.psi", ios::out | ios::binary);
-	  OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso*nmo);
-	  OutFile2.close();  
-	  
 	  free_block(C_pitzerA);
-	  free_block(C_pitzerB);
-	}     
+	 
+          if (reference_ == "UNRESTRICTED" ) { 
+	      fprintf(outfile,"\n\tWriting MO coefficients in pitzer order to external file CmoB.psi...\n");  
+	      fflush(outfile);
+	      double **C_pitzerB = block_matrix(nso_,nmo_);
+	      memset(C_pitzerB[0], 0, sizeof(double)*nso_*nmo_);
+
+	      //set C_pitzer
+	      C_pitzerB = Cb_->to_block_matrix();    
+
+	      // write binary data
+	      ofstream OutFile2;
+	      OutFile2.open("CmoB.psi", ios::out | ios::binary);
+	      OutFile2.write( (char*)C_pitzerB[0], sizeof(double)*nso_*nmo_);
+	      OutFile2.close();  
+	      free_block(C_pitzerB);
+          }
+	} 
 	
   }// end if (conver == 1)
 
@@ -497,8 +505,8 @@ void OMP3Wave::ref_energy()
      double Ehf;     
      Ehf=0.0;
 
- if (reference == "RHF") {
-    for (int h=0; h<nirreps; h++){
+ if (reference_ == "RESTRICTED") {
+    for (int h=0; h<nirrep_; h++){
       for (int i=0; i<occpiA[h];i++) {
 	Ehf+=HmoA->get(h,i,i) + FockA->get(h,i,i);
       }
@@ -506,16 +514,16 @@ void OMP3Wave::ref_energy()
     Eref = Ehf + Enuc;
  }// end rhf
  
- else if (reference == "UHF") { 
+ else if (reference_ == "UNRESTRICTED") { 
      // alpha contribution
-     for (int h=0; h<nirreps; h++){
+     for (int h=0; h<nirrep_; h++){
       for (int i=0; i<occpiA[h];i++) {
 	Ehf+=HmoA->get(h,i,i) + FockA->get(h,i,i);
       }
     }  
     
     // beta contribution
-     for (int h=0; h<nirreps; h++){
+     for (int h=0; h<nirrep_; h++){
       for (int i=0; i<occpiB[h];i++) {
 	Ehf+=HmoB->get(h,i,i) + FockB->get(h,i,i);
       }
@@ -564,7 +572,7 @@ void OMP3Wave::mp2_energy()
      Esospimp2AB = 0.0;
      Esospimp2 = 0.0;
      
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
      dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -604,7 +612,7 @@ void OMP3Wave::mp2_energy()
  
  }// end rhf
  
- else if (reference == "UHF") { 
+ else if (reference_ == "UNRESTRICTED") { 
      // Compute Energy
      // Alpha-Alpha spin contribution
      dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -684,7 +692,7 @@ void OMP3Wave::mp3_energy()
      
      Ecorr = 0.0;
  
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
      dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -705,7 +713,7 @@ void OMP3Wave::mp3_energy()
 
  }// end rhf
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
      // Compute Energy
      // Alpha-Alpha spin contribution
      dpd_buf4_init(&T, PSIF_OMP3_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -777,7 +785,7 @@ void OMP3Wave::mp3l_energy()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);  
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD); 
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     // OOOO-Block contribution
     // E += 2*G_ijkl <ij|kl>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
@@ -823,7 +831,7 @@ void OMP3Wave::mp3l_energy()
  
  }// end rhf
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
     // OOOO-Block contribution
     // E += G_IJKL <IJ||KL>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
@@ -1011,27 +1019,27 @@ fprintf(outfile,"\n Diagonalizing one-particle response density matrix... \n");
 fprintf(outfile,"\n");
 fflush(outfile);
 
-      SharedMatrix Udum = boost::shared_ptr<Matrix>(new Matrix("Udum", nirreps, mopi, mopi));
-      SharedVector diag = boost::shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirreps, mopi));
+      SharedMatrix Udum = boost::shared_ptr<Matrix>(new Matrix("Udum", nirrep_, nmopi_, nmopi_));
+      SharedVector diag = boost::shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirrep_, nmopi_));
 
       // Diagonalizing Alpha-OPDM
       Udum->zero();
 
       //diag->zero();
-      for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < mopi[h]; i++){
+      for(int h = 0; h < nirrep_; h++){
+	  for(int i = 0; i < nmopi_[h]; i++){
 	    diag->set(h,i,0.0);
 	  }
 	}
  
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
       g1symmA->diagonalize(Udum, diag);
 	
       //trace
       //sum=diag->trace();
       sum=0.0;
-      for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < mopi[h]; i++){
+      for(int h = 0; h < nirrep_; h++){
+	  for(int i = 0; i < nmopi_[h]; i++){
 	    sum+=diag->get(h,i);
 	  }
 	}
@@ -1042,14 +1050,14 @@ fflush(outfile);
       fflush(outfile);
  }// end rhf
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
       g1symmA->diagonalize(Udum, diag);
 	
       //trace
       //sum=diag->trace();
       sum=0.0;
-      for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < mopi[h]; i++){
+      for(int h = 0; h < nirrep_; h++){
+	  for(int i = 0; i < nmopi_[h]; i++){
 	    sum+=diag->get(h,i);
 	  }
 	}      
@@ -1065,8 +1073,8 @@ fflush(outfile);
       Udum->zero();
       
       //diag->zero();
-      for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < mopi[h]; i++){
+      for(int h = 0; h < nirrep_; h++){
+	  for(int i = 0; i < nmopi_[h]; i++){
 	    diag->set(h,i,0.0);
 	  }
 	}
@@ -1076,8 +1084,8 @@ fflush(outfile);
       //trace
       //sum=diag->trace();
       sum=0.0;
-      for(int h = 0; h < nirreps; h++){
-	  for(int i = 0; i < mopi[h]; i++){
+      for(int h = 0; h < nirrep_; h++){
+	  for(int i = 0; i < nmopi_[h]; i++){
 	    sum+=diag->get(h,i);
 	  }
 	}      
@@ -1116,7 +1124,7 @@ void OMP3Wave::mem_release()
 	delete kappaA;
 	delete kappa_barA;
 
-       if (reference == "UHF") {
+       if (reference_ == "UNRESTRICTED") {
 	delete [] idprowB;
 	delete [] idpcolB;
 	delete [] idpirrB;
@@ -1132,13 +1140,13 @@ void OMP3Wave::mem_release()
 	if (opt_method == "DIIS") {
           delete vecsA;
           delete errvecsA;
-          if (reference == "UHF") delete vecsB;
-          if (reference == "UHF") delete errvecsB;
+          if (reference_ == "UNRESTRICTED") delete vecsB;
+          if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
 	
 	chkpt_.reset();
 
-      if (reference == "RHF") {
+      if (reference_ == "RESTRICTED") {
 	Ca_.reset();
 	Ca_ref.reset();
 	Hso.reset();
@@ -1158,7 +1166,7 @@ void OMP3Wave::mem_release()
 	GvvA.reset();
        }
 
-       else if (reference == "UHF") {
+       else if (reference_ == "UNRESTRICTED") {
 	Ca_.reset();
 	Cb_.reset();
 	Ca_ref.reset();

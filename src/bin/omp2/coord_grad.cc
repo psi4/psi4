@@ -90,7 +90,7 @@ void OMP2Wave::dump_ints()
     dpd_file2_close(&H);
 
  // Write beta-integrals if ref is UHF
- if (reference == "UHF") {
+ if (reference_ == "UNRESTRICTED") {
     dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
     dpd_file2_mat_init(&H);
     for(int h = 0; h < nirrep_; ++h){
@@ -142,7 +142,7 @@ void OMP2Wave::dump_pdms()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
     dpdfile2 H;
     dpdbuf4 G, G2;
 
@@ -303,14 +303,14 @@ if (reference == "RHF") {
     iwl_buf_flush(&AA, 1);
     iwl_buf_close(&AA, 1);
 
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
     dpdfile2 H;
     dpdbuf4 G, G2;
@@ -683,7 +683,7 @@ else if (reference == "UHF") {
     iwl_buf_close(&AB, 1);
     iwl_buf_close(&BB, 1);
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
  //fprintf(outfile,"\n dump_pdms done. \n"); fflush(outfile);
 
 }// end of dump_pdms

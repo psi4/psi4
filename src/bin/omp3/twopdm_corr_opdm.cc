@@ -46,11 +46,11 @@ void OMP3Wave::twopdm_corr_opdm()
     
     psio_->open(PSIF_OMP3_DENSITY, PSIO_OPEN_OLD);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     // TPDM <OO|OO>
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -96,7 +96,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // TPDM <OO|VV>
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -129,7 +129,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // TPDM <OV|OV>
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -161,14 +161,14 @@ void OMP3Wave::twopdm_corr_opdm()
       dpd_buf4_close(&G);
     }
 
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
     // TPDM OOOO-Block 
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -204,7 +204,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Beta-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -240,7 +240,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Alpha-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                  ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");  
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h);
         #pragma omp parallel for
@@ -292,7 +292,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
         dpd_buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
@@ -318,7 +318,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Beta-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
@@ -344,7 +344,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Alpha-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
@@ -390,7 +390,7 @@ void OMP3Wave::twopdm_corr_opdm()
     // Alpha-Beta spin case
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");    
-      for(int h = 0; h < nirreps; ++h){
+      for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h); 
         #pragma omp parallel for
@@ -457,7 +457,7 @@ void OMP3Wave::twopdm_corr_opdm()
     dpd_buf4_close(&G);
     */
     
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
     psio_->close(PSIF_OMP3_DENSITY, 1);
    
 }

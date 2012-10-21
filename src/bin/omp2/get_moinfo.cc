@@ -1,9 +1,5 @@
 // p_so(pitzer) = p_symblk + PitzerOffset[h]; where h=mosym[p_symblk]
 // p_symblk = pitzer2symblk[p_so(pitzer)];
-// c1topitzer 
-// pitzer2c1 
-// c1toqt 
-// qt2c1 
 
 /** Standard library includes */
 #include <iostream>
@@ -47,30 +43,13 @@ void OMP2Wave::get_moinfo()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 
 
 /********************************************************************************************/
 /************************** MO info *********************************************************/
 /********************************************************************************************/
 	// Read in mo info
-	/*
-	nso_ = chkpt_->rd_nso_();
-	nmo_ = chkpt_->rd_nmo_();
-	nao = chkpt_->rd_nao();
-	nfrzc = chkpt_->rd_nfzc();
-	nfrzv = chkpt_->rd_nfzv();
-	nirrep_ = chkpt_->rd_nirrep_();
-
-	irreplabels = chkpt_->rd_irr_labs();
-	nsopi_ = chkpt_->rd_nsopi_();  
-	nmopi_ = chkpt_->rd_orbspi(); 
-	doccpi_ = chkpt_->rd_clsdpi();
-	soccpi_ = chkpt_->rd_openpi();
-	frzcpi_ = chkpt_->rd_frzcpi_();
-	frzvpi_ = chkpt_->rd_frzvpi_();
-        */
-
         nso_     = reference_wavefunction_->nso();
         nirrep_ = reference_wavefunction_->nirrep();
         nmo_     = reference_wavefunction_->nmo();
@@ -114,11 +93,9 @@ if (reference == "RHF") {
 	}
 	
 	// Read in nuclear repulsion energy
-	//Enuc = chkpt_->rd_enuc();
 	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
-	//Escf=chkpt_->rd_escf();
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
@@ -239,7 +216,7 @@ if (reference == "RHF") {
 	
 	// read orbital coefficients from external files
 	if (read_mo_coeff == "TRUE"){
-	  fprintf(outfile,"\n\tReading MO coefficients in pitzer order from external files CmoA.psi...\n");  
+	  fprintf(outfile,"\n\tReading MO coefficients in pitzer order from external file CmoA.psi...\n");  
 	  fflush(outfile);
 	  double **C_pitzerA = block_matrix(nso_,nmo_);
 	  memset(C_pitzerA[0], 0, sizeof(double)*nso_*nmo_);
@@ -283,36 +260,19 @@ if (reference == "RHF") {
 	Hso->copy(Tso); 
 	Hso->add(Vso);
 	
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
   
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
 
 /********************************************************************************************/
 /************************** MO info *********************************************************/
 /********************************************************************************************/
 	// Read in mo info
-	/*
-	nso_ = chkpt_->rd_nso_();
-	nmo_ = chkpt_->rd_nmo_();
-	nao = chkpt_->rd_nao();
-	nfrzc = chkpt_->rd_nfzc();
-	nfrzv = chkpt_->rd_nfzv();
-	nirrep_ = chkpt_->rd_nirrep_();
-
-	irreplabels = chkpt_->rd_irr_labs();
-	nsopi_ = chkpt_->rd_nsopi_();  
-	nmopi_ = chkpt_->rd_orbspi(); 
-	doccpi_ = chkpt_->rd_clsdpi();
-	soccpi_ = chkpt_->rd_openpi();
-	frzcpi_ = chkpt_->rd_frzcpi_();
-	frzvpi_ = chkpt_->rd_frzvpi_();
-        */
-
         nirrep_ = reference_wavefunction_->nirrep();
         nso_     = reference_wavefunction_->nso();
         nmo_     = reference_wavefunction_->nmo();
@@ -368,11 +328,9 @@ else if (reference == "UHF") {
 
 
 	// Read in nuclear repulsion energy
-	//Enuc = chkpt_->rd_enuc();
 	Enuc = Process::environment.molecule()->nuclear_repulsion_energy();
 	
 	// Read SCF energy
-	//Escf=chkpt_->rd_escf();
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
@@ -600,7 +558,7 @@ else if (reference == "UHF") {
 	Hso->copy(Tso); 
 	Hso->add(Vso);
 	
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
 	//fprintf(outfile,"\n get_moinfo is done. \n"); fflush(outfile);
 

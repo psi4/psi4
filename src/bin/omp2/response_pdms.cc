@@ -40,7 +40,7 @@ void OMP2Wave::response_pdms()
 {   
  //fprintf(outfile,"\n response_pdms is starting... \n"); fflush(outfile);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
         // initialize
 	gamma1corr->zero();
 	g1symm->zero();
@@ -101,9 +101,9 @@ void OMP2Wave::response_pdms()
 	twopdm_corr_opdm();
         timer_off("TPDM CORR OPDM");
 
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
         // Initialize
 	gamma1corrA->zero();
 	gamma1corrB->zero();
@@ -208,7 +208,7 @@ void OMP2Wave::response_pdms()
         timer_off("TPDM CORR OPDM");
 
 
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
 
   //fprintf(outfile,"\n response_pdms done... \n"); fflush(outfile);
 
@@ -219,7 +219,7 @@ void OMP2Wave::G_int()
 {  
         //fprintf(outfile,"\n G_int is starting... \n"); fflush(outfile);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
 	GooA->zero();
 	GvvA->zero();
 
@@ -286,9 +286,9 @@ void OMP2Wave::G_int()
 	  GvvA->print();
 	}
 
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
 	GooA->zero();
 	GooB->zero();
 	GvvA->zero();
@@ -437,7 +437,7 @@ void OMP2Wave::G_int()
 	  GvvB->print();
 	}
 	
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
 
   //fprintf(outfile,"\n G_int done... \n"); fflush(outfile);
 
@@ -451,7 +451,7 @@ void OMP2Wave::twopdm_oovv()
     psio_->open(PSIF_OMP2_DPD, PSIO_OPEN_OLD);  
     psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     dpd_buf4_init(&Tau, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
     dpd_buf4_copy(&Tau, PSIF_OMP2_DENSITY, "TPDM <OO|VV>");
@@ -464,7 +464,7 @@ void OMP2Wave::twopdm_oovv()
 
  }// end RHF 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
     // Alpha-Alpha spin case
     dpd_buf4_init(&T, PSIF_OMP2_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
@@ -513,7 +513,7 @@ void OMP2Wave::twopdm_ref()
     
     psio_->open(PSIF_OMP2_DENSITY, PSIO_OPEN_OLD);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
       for(int h = 0; h < nirrep_; ++h){
@@ -538,7 +538,7 @@ void OMP2Wave::twopdm_ref()
     
  }// end RHF 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
     // Alpha-Alpha spin case
     dpd_buf4_init(&G, PSIF_OMP2_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");

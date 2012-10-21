@@ -44,7 +44,7 @@ void OMP3Wave::GFockmo()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 
 	// Initialize
 	GFock->zero();
@@ -227,7 +227,7 @@ if (reference == "RHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpi[h]; ++i){
             for(int j = 0 ; j < occpi[h]; ++j){
                 GFock->add(h, i, j, GF.matrix[h][i][j]);
@@ -241,7 +241,7 @@ if (reference == "RHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiA[h]; ++a){
             for(int i = 0 ; i < occpiA[h]; ++i){
                 GFock->add(h, a + occpiA[h], i, GF.matrix[h][a][i]);
@@ -254,7 +254,7 @@ if (reference == "RHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpiA[h]; ++i){
             for(int a = 0 ; a < virtpiA[h]; ++a){
                 GFock->add(h, i, a + occpiA[h], GF.matrix[h][i][a]);
@@ -268,7 +268,7 @@ if (reference == "RHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpi[h]; ++a){
             for(int b = 0 ; b < virtpi[h]; ++b){
                 GFock->add(h, a + occpi[h], b + occpi[h], GF.matrix[h][a][b]);
@@ -281,14 +281,14 @@ if (reference == "RHF") {
 	psio_->close(PSIF_OMP3_DENSITY, 1);
 	if (print_ > 2) GFock->print();
 	
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
 /********************************************************************************************/
 /************************** Initialize ******************************************************/
@@ -1029,7 +1029,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('O'), "GF <O|O>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
                 GFockA->add(h, i, j, GF.matrix[h][i][j]);
@@ -1042,7 +1042,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('o'), ID('o'), "GF <o|o>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpiB[h]; ++i){
             for(int j = 0 ; j < occpiB[h]; ++j){
                 GFockB->add(h, i, j, GF.matrix[h][i][j]);
@@ -1056,7 +1056,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiA[h]; ++a){
             for(int i = 0 ; i < occpiA[h]; ++i){
                 GFockA->add(h, a + occpiA[h], i, GF.matrix[h][a][i]);
@@ -1069,7 +1069,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('v'), ID('o'), "GF <v|o>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiB[h]; ++a){
             for(int i = 0 ; i < occpiB[h]; ++i){
                 GFockB->add(h, a + occpiB[h], i, GF.matrix[h][a][i]);
@@ -1082,7 +1082,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpiA[h]; ++i){
             for(int a = 0 ; a < virtpiA[h]; ++a){
                 GFockA->add(h, i, a + occpiA[h], GF.matrix[h][i][a]);
@@ -1095,7 +1095,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('o'), ID('v'), "GF <o|v>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < occpiB[h]; ++i){
             for(int a = 0 ; a < virtpiB[h]; ++a){
                 GFockB->add(h, i, a + occpiB[h], GF.matrix[h][i][a]);
@@ -1109,7 +1109,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('V'), ID('V'), "GF <V|V>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiA[h]; ++a){
             for(int b = 0 ; b < virtpiA[h]; ++b){
                 GFockA->add(h, a + occpiA[h], b + occpiA[h], GF.matrix[h][a][b]);
@@ -1122,7 +1122,7 @@ else if (reference == "UHF") {
 	dpd_file2_init(&GF, PSIF_OMP3_DENSITY, 0, ID('v'), ID('v'), "GF <v|v>");  
 	dpd_file2_mat_init(&GF);
 	dpd_file2_mat_rd(&GF);
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int a = 0 ; a < virtpiB[h]; ++a){
             for(int b = 0 ; b < virtpiB[h]; ++b){
                 GFockB->add(h, a + occpiB[h], b + occpiB[h], GF.matrix[h][a][b]);
@@ -1140,7 +1140,7 @@ else if (reference == "UHF") {
 	  GFockB->print();
 	}
 	
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 //fprintf(outfile,"\n GFockmo done. \n"); fflush(outfile);
 
 } // End main
