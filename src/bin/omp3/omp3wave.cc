@@ -215,7 +215,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 08, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision October 20, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -779,9 +779,9 @@ void OMP3Wave::mp3l_energy()
 
  if (reference == "RHF") {
     // OOOO-Block contribution
-    // E += 4*G_ijkl <ij|kl>; where G_ijkl=
+    // E += 2*G_ijkl <ij|kl>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
-                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
+                  ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
     Emp3_rdm += 2.0 * dpd_buf4_dot(&G, &K);         
@@ -795,76 +795,29 @@ void OMP3Wave::mp3l_energy()
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    Emp3_rdm += 4.0 * dpd_buf4_dot(&G, &K);         
+    Emp3_rdm += 2.0 * dpd_buf4_dot(&G, &K);         
     dpd_buf4_close(&K);
     dpd_buf4_close(&G); 
     
-    // E += 4*G_AbCd <Ab||Cd>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),
-                  ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
-    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
-                  ID("[V,v]"), ID("[V,v]"), 0, "TPDM <Vv|Vv>");
-    Emp3_rdm += 4.0 * dpd_buf4_dot(&G, &K); 
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
- 
     
     // OOVV-Block contribution
-    // E += 2*G_IJAB <IJ||AB>
+    // E += 8*G_IJAB <IJ|AB>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
+                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-    Emp3_rdm += 4.0 * dpd_buf4_dot(&G, &K);   
+    Emp3_rdm += 8.0 * dpd_buf4_dot(&G, &K);   
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);    
     
-    // E += 8*G_IjAb <Ij||Ab>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "TPDM <Oo|Vv>");
-    Emp3_rdm += 8.0 * dpd_buf4_dot(&G, &K);   
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G); 
-
     
     // OVOV-Block contribution
-    // E += 4*G_IAJB <IA||JB>
+    // E += 4*G_IAJB <IA|JB>
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV||OV>");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
     dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
-    Emp3_rdm += 8.0 * dpd_buf4_dot(&G, &K);     
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
-    
-    // E += 4*G_IaJb <Ia||Jb>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,v]"),
-                  ID("[O,v]"), ID("[O,v]"), 0, "MO Ints <Ov|Ov>");
-    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
-                  ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");
     Emp3_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
-    
-    // VOVO-Block contribution
-    // E += 4*G_AiBj <Ai||Bj>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,ID("[V,o]"), ID("[V,o]"),
-                  ID("[V,o]"), ID("[V,o]"), 0, "MO Ints <Vo|Vo>");
-    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
-                  ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>"); 
-    Emp3_rdm += 4.0 * dpd_buf4_dot(&G, &K);     
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&G);
-    
-    // OVVO-Block contribution
-    // E += 8*G_IaBj <Ia||Bj>
-    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,ID("[O,v]"), ID("[V,o]"),
-                  ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");
-    dpd_buf4_init(&G, PSIF_OMP3_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
-                  ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>"); 
-    Emp3_rdm += 8.0 * dpd_buf4_dot(&G, &K);     
     dpd_buf4_close(&K);
     dpd_buf4_close(&G);
  
