@@ -68,7 +68,7 @@ fflush(outfile);
         vecsA->zero();
         errvecsA->zero();
 
-        if (reference == "UHF") {
+        if (reference_ == "UNRESTRICTED") {
             vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
             errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
             vecsB->zero();
@@ -100,8 +100,8 @@ do
 /************************** Transform TEI from SO to MO space *******************************/
 /********************************************************************************************/
         timer_on("trans_ints");
-	if (reference == "RHF") trans_ints_rhf();  
-	else if (reference == "UHF") trans_ints_uhf();  
+	if (reference_ == "RESTRICTED") trans_ints_rhf();  
+	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
  
 /********************************************************************************************/
@@ -142,7 +142,7 @@ do
 /********************************************************************************************/
 /************************** Print ***********************************************************/
 /********************************************************************************************/
-    if (reference == "RHF") {
+    if (reference_ == "RESTRICTED") {
 	nidp=nidpA;
 	rms_wog=rms_wogA;
 	biggest_mograd=biggest_mogradA;
@@ -150,7 +150,7 @@ do
 	biggest_kappa=biggest_kappaA;
     }
 
-    else if (reference == "UHF") {
+    else if (reference_ == "UNRESTRICTED") {
 	nidp=MAX0(nidpA,nidpB);
 	rms_wog=MAX0(rms_wogA,rms_wogB);
 	biggest_mograd=MAX0(biggest_mogradA,biggest_mogradB);

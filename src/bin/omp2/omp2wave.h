@@ -185,6 +185,7 @@ protected:
      
      string wfn;
      string reference;
+     string reference_;
      string jobtype;
      string dertype;
      string subgroup;
