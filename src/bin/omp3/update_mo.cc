@@ -45,7 +45,7 @@ void OMP3Wave::update_mo()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 
 /********************************************************************************************/
 /************************** initialize array ************************************************/
@@ -127,42 +127,42 @@ if (opt_method == "DIIS") {
 if (orth_type == "MGS") {;
     double rmgs1a,rmgs2a,rmgs1b,rmgs2b;
     
-    // loop-over nirreps
-    for (int h=0; h<nirreps; h++) {
+    // loop-over nirrep_
+    for (int h=0; h<nirrep_; h++) {
       
       // loop-1
-      for (int k = 0; k < mopi[h]; k++) {
+      for (int k = 0; k < nmopi_[h]; k++) {
 	rmgs1a=0.0;
 	
 	// loop-1a
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  rmgs1a += UorbA->get(h, i, k) * UorbA->get(h, i, k);
 	}// end 1a
 	
 	rmgs1a=sqrt(rmgs1a);
 	  
 	// loop-1b
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  UorbA->set(h, i, k, UorbA->get(h, i, k) / rmgs1a);
 	}// end 1b
 	
 	// loop-2
-	for (int j=(k+1); j < mopi[h]; j++) {
+	for (int j=(k+1); j < nmopi_[h]; j++) {
 	  rmgs2a=0; 
 	  
 	  // loop-2a
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    rmgs2a += UorbA->get(h, i, k) * UorbA->get(h, i, j);
 	  }// end 2a
 	  
 	  // loop-2b
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    UorbA->set(h, i, j, UorbA->get(h, i, j) - (rmgs2a * UorbA->get(h, i, k)));
 	  }// end 2b
 	  
 	}// end 2
       }// end 1
-    }// end loop-over nirreps
+    }// end loop-over nirrep_
 }// end main if
 
 
@@ -188,19 +188,7 @@ else if (orth_type == "GS") {
 	  Ca_->print();
 	}
 
-/********************************************************************************************/
-/************************** Save MO coefficients to Chkpt file ******************************/
-/********************************************************************************************/	 
-        /*
-	C_pitzerA = Ca_->to_block_matrix();    
-	C_pitzerB = Cb_->to_block_matrix();    
-	chkpt_->wt_alpha_scf(C_pitzerA);
-	chkpt_->wt_beta_scf(C_pitzerB);
-	free_block(C_pitzerA);
-	free_block(C_pitzerB);
-        */
-
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 
@@ -208,7 +196,7 @@ else if (orth_type == "GS") {
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
 /********************************************************************************************/
 /************************** initialize array ************************************************/
@@ -332,16 +320,16 @@ if (opt_method == "DIIS") {
 if (orth_type == "MGS") {;
     double rmgs1a,rmgs2a,rmgs1b,rmgs2b;
     
-    // loop-over nirreps
-    for (int h=0; h<nirreps; h++) {
+    // loop-over nirrep_
+    for (int h=0; h<nirrep_; h++) {
       
       // loop-1
-      for (int k = 0; k < mopi[h]; k++) {
+      for (int k = 0; k < nmopi_[h]; k++) {
 	rmgs1a=0.0;
 	rmgs1b=0.0;
 	
 	// loop-1a
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  rmgs1a += UorbA->get(h, i, k) * UorbA->get(h, i, k);
 	  rmgs1b += UorbB->get(h, i, k) * UorbB->get(h, i, k);
 	}// end 1a
@@ -350,31 +338,31 @@ if (orth_type == "MGS") {;
 	rmgs1b=sqrt(rmgs1b);
 	  
 	// loop-1b
-	for (int i=0; i < mopi[h]; i++) {  
+	for (int i=0; i < nmopi_[h]; i++) {  
 	  UorbA->set(h, i, k, UorbA->get(h, i, k) / rmgs1a);
 	  UorbB->set(h, i, k, UorbB->get(h, i, k) / rmgs1b);
 	}// end 1b
 	
 	// loop-2
-	for (int j=(k+1); j < mopi[h]; j++) {
+	for (int j=(k+1); j < nmopi_[h]; j++) {
 	  rmgs2a=0; 
 	  rmgs2b=0; 
 	  
 	  // loop-2a
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    rmgs2a += UorbA->get(h, i, k) * UorbA->get(h, i, j);
 	    rmgs2b += UorbB->get(h, i, k) * UorbB->get(h, i, j);
 	  }// end 2a
 	  
 	  // loop-2b
-	  for (int i=0; i < mopi[h]; i++) {  
+	  for (int i=0; i < nmopi_[h]; i++) {  
 	    UorbA->set(h, i, j, UorbA->get(h, i, j) - (rmgs2a * UorbA->get(h, i, k)));
 	    UorbB->set(h, i, j, UorbB->get(h, i, j) - (rmgs2b * UorbB->get(h, i, k)));
 	  }// end 2b
 	  
 	}// end 2
       }// end 1
-    }// end loop-over nirreps
+    }// end loop-over nirrep_
 }// end main if
 
 
@@ -413,19 +401,7 @@ else if (orth_type == "GS") {
 	  Cb_->print();
 	}
 
-/********************************************************************************************/
-/************************** Save MO coefficients to Chkpt file ******************************/
-/********************************************************************************************/	 
-        /*
-	C_pitzerA = Ca_->to_block_matrix();    
-	C_pitzerB = Cb_->to_block_matrix();    
-	chkpt_->wt_alpha_scf(C_pitzerA);
-	chkpt_->wt_beta_scf(C_pitzerB);
-	free_block(C_pitzerA);
-	free_block(C_pitzerB);
-        */
-
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
 }// end main
 }} // End Namespaces

@@ -132,6 +132,7 @@
 #define PSIF_3B_SAPT_CC_DF_INTS          229  /*-  -*/
 #define PSIF_3B_SAPT_AMPS                230  /*-  -*/
 
+#define PSIF_DCC_SORT_START    150  /*- CEPA/CC integral sort starting file number -*/
 #define PSIF_DCC_IJAK          251  /*- CEPA/CC (ij|ak) -*/
 #define PSIF_DCC_IJAK2         252  /*- CEPA/CC (ij|ak) -*/
 #define PSIF_DCC_ABCI3         253  /*- CEPA/CC (ia|bc) -*/

@@ -39,7 +39,7 @@ void OMP2Wave::idp()
 {
      int dim;
 
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
     // Form IDPs
     nidpA=0;
 
@@ -91,9 +91,9 @@ if (reference == "RHF") {
       }
     }
      
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
     // Form IDPs
     nidpA=0;
     nidpB=0;
@@ -182,7 +182,7 @@ else if (reference == "UHF") {
       }
     }
       
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
 }// end of main
 }} // End Namespaces
