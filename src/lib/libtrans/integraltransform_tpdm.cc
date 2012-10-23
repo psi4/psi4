@@ -8,7 +8,6 @@
 #include <ctype.h>
 #include <stdio.h>
 #include "psifiles.h"
-#include "ccfiles.h"
 #include "mospace.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>

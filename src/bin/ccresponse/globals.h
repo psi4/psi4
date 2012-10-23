@@ -2,7 +2,7 @@
     \ingroup ccresponse
     \brief Enter brief description of file here
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <cstdio>
 
 namespace psi {

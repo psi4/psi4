@@ -110,7 +110,8 @@ procedures = {
             'df-mp2'        : run_dfmp2_gradient,
             'dfmp2'         : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
-            'dcft'          : run_dcft_gradient
+            'dcft'          : run_dcft_gradient,
+            'omp2'          : run_omp2_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -186,6 +187,8 @@ def energy(name, **kwargs):
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -845,9 +848,13 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -857,6 +864,16 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
+
+    .. warning:: For the present, file ``intco.dat`` is lodged in the submission
+       directory and defines the internal coordinates for an optimization.
+       Thus, it is unsafe to run multiple optimizations from a single
+       directory. Also, ``intco.dat`` can linger, so, unless you've
+       deliberately constructed it, be sure to clear it out before starting a
+       new optimization.
+    
+    .. warning:: Optimizations where the molecule is specified in Z-matrix format 
+       with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.

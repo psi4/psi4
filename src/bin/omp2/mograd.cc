@@ -41,7 +41,7 @@ void OMP2Wave::mograd()
  
       double norm_wogA, norm_wogB;    
 
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
       // memalloc 
       WorbA->zero();
 
@@ -82,9 +82,9 @@ if (reference == "RHF") {
     }
 
 
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
       // memalloc 
       WorbA->zero();
       WorbB->zero();
@@ -153,7 +153,7 @@ else if (reference == "UHF") {
       }
     }
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
 }// end of main
 }} // End Namespaces

@@ -45,7 +45,7 @@ void OMP2Wave::Fockmo_alpha()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
 
 /************************************************************************************************/
 /*********************************** Build Fij **************************************************/
@@ -63,13 +63,13 @@ if (reference == "RHF") {
    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"), 0, "MO Ints <OO|OO>");
   // part-1
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Gm=h^Gi;
 
           /* Loop over the orbitals of the target */
@@ -98,9 +98,9 @@ if (reference == "RHF") {
       dpd_buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
           int Gj=Gi; 
-	  for(int Gm=0; Gm < nirreps; Gm++) {
+	  for(int Gm=0; Gm < nirrep_; Gm++) {
 
           /* Loop over the orbitals of the target */
           for(int i=0; i < occpiA[Gi]; i++) {
@@ -140,13 +140,13 @@ if (reference == "RHF") {
   /* Prepare the <OV|OV> integral buffers */
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OV|OV>");
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
 	  int Gm = h^Ga;
 
@@ -180,9 +180,9 @@ if (reference == "RHF") {
       dpd_buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
-	  for(int Gm=0; Gm < nirreps; Gm++) {
+	  for(int Gm=0; Gm < nirrep_; Gm++) {
 
 	  /* Loop over orbitals of the target */
 	  for(int a=0; a < virtpiA[Ga]; a++) {
@@ -225,13 +225,13 @@ if (reference == "RHF") {
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OO|OV>");
   // part-1
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi; int Gm = h^Gi;
 
 	  /* Loop over orbitals of the target */
@@ -260,9 +260,9 @@ if (reference == "RHF") {
       dpd_buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi;
-	  for(int Gm=0; Gm < nirreps; Gm++) {
+	  for(int Gm=0; Gm < nirrep_; Gm++) {
 
 	  /* Loop over orbitals of the target */
 	  for(int i=0; i < occpiA[Gi]; i++) {
@@ -299,7 +299,7 @@ if (reference == "RHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
 		FockA->set(h, i, j, F.matrix[h][i][j]);
@@ -312,7 +312,7 @@ if (reference == "RHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < virtpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
                FockA->set(h, i + occpiA[h], j + occpiA[h], F.matrix[h][i][j]);
@@ -325,7 +325,7 @@ if (reference == "RHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
                FockA->set(h, i, j + occpiA[h], F.matrix[h][i][j]);
@@ -344,13 +344,13 @@ if (reference == "RHF") {
 /************************************************************************************************/
 	if (print_ > 2) FockA->print();
 	
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
  
   // F(pq) = h(pq) + \sum_{m} <pm||qm> in spin-orbital form.
   
@@ -374,13 +374,13 @@ else if (reference == "UHF") {
    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
    
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Gm=h^Gi;
 
           /* Loop over the orbitals of the target */
@@ -409,13 +409,13 @@ else if (reference == "UHF") {
    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");  
 
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Gm=h^Gi;
 
           /* Loop over the orbitals of the target */
@@ -458,13 +458,13 @@ else if (reference == "UHF") {
   /* Prepare the <OV||OV> integral buffers */
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV||OV>");
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
 	  int Gm = h^Ga;
 
@@ -495,13 +495,13 @@ else if (reference == "UHF") {
    /* Prepare the <Vo|Vo> integral buffers */
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "MO Ints <Vo|Vo>");
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Ga=0; Ga < nirreps; Ga++) {
+      for(int Ga=0; Ga < nirrep_; Ga++) {
 	  int Gb = Ga; 
 	  int Gm = h^Ga;
 
@@ -550,13 +550,13 @@ else if (reference == "UHF") {
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
   
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi; int Gm = h^Gi;
 
 	  /* Loop over orbitals of the target */
@@ -586,13 +586,13 @@ else if (reference == "UHF") {
   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "MO Ints <Oo|Vo>");
   
-  for(int h=0; h < nirreps; h++) {
+  for(int h=0; h < nirrep_; h++) {
 
       dpd_buf4_mat_irrep_init(&K, h);
       dpd_buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
-      for(int Gi=0; Gi < nirreps; Gi++) {
+      for(int Gi=0; Gi < nirrep_; Gi++) {
 	  int Ga = Gi; int Gm = h^Gi;
 
 	  /* Loop over orbitals of the target */
@@ -630,7 +630,7 @@ else if (reference == "UHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
 		FockA->set(h, i, j, F.matrix[h][i][j]);
@@ -643,7 +643,7 @@ else if (reference == "UHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < virtpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
                FockA->set(h, i + occpiA[h], j + occpiA[h], F.matrix[h][i][j]);
@@ -656,7 +656,7 @@ else if (reference == "UHF") {
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
     dpd_file2_mat_init(&F);
     dpd_file2_mat_rd(&F);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
                FockA->set(h, i, j + occpiA[h], F.matrix[h][i][j]);
@@ -675,7 +675,7 @@ else if (reference == "UHF") {
 /************************************************************************************************/
 	if (print_ > 1) FockA->print();
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 	
 
 }// end of code

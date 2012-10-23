@@ -39,7 +39,7 @@ namespace psi{ namespace omp3wave{
 void OMP3Wave::V_2nd_order()
 {   
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
 
      dpdbuf4 T, Tau, V;     
      
@@ -112,9 +112,9 @@ void OMP3Wave::V_2nd_order()
      psio_->close(PSIF_OMP3_DENSITY, 1);
      psio_->close(PSIF_OMP3_DPD, 1);
 
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
 
      dpdbuf4 T, L, V, V1, V2;     
      
@@ -300,7 +300,7 @@ void OMP3Wave::V_2nd_order()
      psio_->close(PSIF_OMP3_DENSITY, 1);
      psio_->close(PSIF_OMP3_DPD, 1);
 
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
 
 } // end V_2nd_order
 }} // End Namespaces

@@ -3,11 +3,10 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-LDLIBS += $(LAPACK) $(BLAS) -lpthread
-
 PSITARGET = $(top_objdir)/lib/libPSI_cepa.a
 
-CXXSRC = blas.cc cepa.cc coupledpair.cc sortintegrals.cc opdm.cc transformintegrals.cc vabcd_direct.cc
+CXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
@@ -17,4 +16,3 @@ ifneq "$(MAKECMDGOALS)" "clean"
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
 include $(BINOBJ:%.o=%.d)
 endif
-

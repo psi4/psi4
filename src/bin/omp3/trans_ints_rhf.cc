@@ -215,15 +215,15 @@ void OMP3Wave::denominators_rhf()
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
     
     //Diagonal elements of the Fock matrix
-    for(int h = 0; h < nirreps; ++h){
-        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi[h], i + frzcpi[h]);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < aoccpiA[h]; ++i) aOccEvals[aOccCount++] = FockA->get(h, i + frzcpi_[h], i + frzcpi_[h]);
         for(int a = 0; a < avirtpiA[h]; ++a) aVirEvals[aVirCount++] = FockA->get(h, occpiA[h] + a, occpiA[h] + a); 
     }
     
     // Build denominators
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -265,10 +265,10 @@ void OMP3Wave::denominators_rhf()
     // The alpha-alpha spin case 
     dpd_file2_init(&Fo, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_file2_mat_init(&Fo);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
-		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi[h], j + frzcpi[h]);
+		if (i != j) Fo.matrix[h][i][j] = FockA->get(h, i + frzcpi_[h], j + frzcpi_[h]);
 		else Fo.matrix[h][i][j] = 0.0;
             }
         }
@@ -287,7 +287,7 @@ void OMP3Wave::denominators_rhf()
     // The alpha-alpha spin case 
     dpd_file2_init(&Fv, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     dpd_file2_mat_init(&Fv);
-    for(int h = 0; h < nirreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 if (i != j) Fv.matrix[h][i][j] = FockA->get(h, i + occpiA[h], j + occpiA[h]);

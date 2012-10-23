@@ -2,7 +2,7 @@
     \ingroup CCSORT
     \brief Enter brief description of file here
 */
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 

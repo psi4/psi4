@@ -16,6 +16,7 @@ from procutil import *
 from basislist import *
 from functional import *
 from optproc import *
+from util import *
 # never import driver, wrappers, or aliases into this file
 
 
@@ -59,6 +60,22 @@ def run_omp2(name, **kwargs):
     """
     PsiMod.scf()
     return PsiMod.omp2()
+
+
+def run_omp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP2 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    run_omp2(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
 
 
 def run_scs_omp2(name, **kwargs):
@@ -1107,8 +1124,8 @@ def run_dfmp2(name, **kwargs):
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
-        raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
+    #if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
+    #    raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
@@ -1680,7 +1697,9 @@ def run_cepa(name, **kwargs):
 
     """
     lowername = name.lower()
+    uppername = name.upper()
     kwargs = kwargs_lower(kwargs)
+
 
     # save user options
     optstash = OptionsState(
@@ -1700,27 +1719,18 @@ def run_cepa(name, **kwargs):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     # what type of cepa?
-    if (lowername == 'cepa(0)'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA0')
-    if (lowername == 'cepa(1)'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA1')
+    cepa_level = uppername
     if (lowername == 'cepa(2)'):
-        #PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA2')
+        #cepa_level = 'CEPA(2)'
         # throw an exception for cepa(2)
         PsiMod.print_out("\n")
         PsiMod.print_out("Error: %s not implemented\n" % lowername)
         PsiMod.print_out("\n")
-    if (lowername == 'cepa(3)'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CEPA3')
-    if (lowername == 'sdci'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CISD')
     if (lowername == 'dci'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'CISD')
-        PsiMod.set_local_option('CEPA', 'CEPA_NO_SINGLES', True)
-    if (lowername == 'acpf'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'ACPF')
-    if (lowername == 'aqcc'):
-        PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', 'AQCC')
+        cepa_level = 'CISD'
+    if (lowername == 'sdci'):
+        cepa_level = 'CISD'
+    PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', cepa_level)
 
     PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
     scf_helper(name, **kwargs)
@@ -1735,6 +1745,15 @@ def run_cepa(name, **kwargs):
         PsiMod.transqt2()
 
     PsiMod.cepa()
+   
+    # one-electron properties 
+    if PsiMod.get_option('CEPA', 'DIPMOM'):
+        if cepa_level == "CEPA(1)" or cepa_level == "CEPA(3)":
+            PsiMod.print_out("\n")
+            PsiMod.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
+            PsiMod.print_out("\n")
+        else:
+            oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
 
     # restore options ( transqt2/wfn, cepa/cepa_no_singles )
     optstash.restore()
