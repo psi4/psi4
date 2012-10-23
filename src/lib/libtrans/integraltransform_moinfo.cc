@@ -223,7 +223,7 @@ IntegralTransform::process_spaces()
                 }
                 if(transformationType_ != Restricted)
                     for(int n = 0; n < bOrbsPI[h]; ++n){
-                        bIndex[bOrbCount++] = (qt_order ? bQT_[aPitzerCount] : bPitzerCount);
+                        bIndex[bOrbCount++] = (qt_order ? bQT_[bPitzerCount] : bPitzerCount);
                         bPitzerCount++;
                     }
                 pitzerOffset += mopi_[h];

@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libdpd/dpd.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
 #define EXTERN
