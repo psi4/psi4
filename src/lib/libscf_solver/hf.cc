@@ -1735,7 +1735,7 @@ double HF::compute_energy()
         die_if_not_converged();
     }
 
-    // Orbitals are always saved, in case a dual basis is required later
+    // Orbitals are always saved, in case an MO guess is requested later
     save_orbitals();
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
