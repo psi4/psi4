@@ -13,6 +13,10 @@ set globals {
     g_convergence gau
 }
 
+set scf {
+    d_convergence 7
+}
+
 set mp2 scs on
 
 banner('gold standard')
