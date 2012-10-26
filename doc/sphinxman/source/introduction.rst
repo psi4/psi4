@@ -188,6 +188,13 @@ available in |PSIfour| are provided below.
   Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
 
+.. rubric:: OCEPA
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
 
 .. index:: architectures
 .. index:: compilers
@@ -314,6 +321,8 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | OMP2                    | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OMP3                    | Y         | N         | RHF/UHF/RKS/UKS      | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | OCEPA                   | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |

@@ -4,15 +4,17 @@
 .. index:: 
    single: Orbital-Optimized Methods, OMP2
    single: Orbital-Optimized Methods, OMP3
+   single: Orbital-Optimized Methods, OCEPA
 
 .. index::
    pair: Orbital-Optimized Methods; theory
    pair: OMP2; theory
    pair: OMP3; theory
+   pair: OCEPA; theory
 
 .. _`sec:ompn`:
 
-OMP\ *n*\ : Orbital-Optimized M\ |o_slash|\ ller--Plesset Perturbation Theory 
+OCC : Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
 =============================================================================
 
 .. codeauthor:: Ugur Bozkaya
@@ -21,6 +23,8 @@ OMP\ *n*\ : Orbital-Optimized M\ |o_slash|\ ller--Plesset Perturbation Theory
 *Module:* :ref:`Keywords <apdx:omp2>`, :ref:`PSI Variables <apdx:omp2_psivar>`, :source:`OMP2 <src/bin/omp2>`
 
 *Module:* :ref:`Keywords <apdx:omp3>`, :ref:`PSI Variables <apdx:omp3_psivar>`, :source:`OMP3 <src/bin/omp3>`
+
+*Module:* :ref:`Keywords <apdx:ocepa>`, :ref:`PSI Variables <apdx:ocepa_psivar>`, :source:`OCEPA <src/bin/ocepa>`
 
 Introduction
 ~~~~~~~~~~~~
@@ -107,14 +111,23 @@ Now, let us define a variational energy functional (Lagrangian) as a function of
    &+ \langle 0| \{\hat{\Lambda}_{2}^{(2)} \ \big(\hat{f}_{N}^{\kappa} \hat{T}_{2}^{(1)} 
    \ + \ \hat{W}_{N}^{\kappa} \big)_{c}\}_{c} | 0 \rangle  
     
-where :math:`\hat{H}^{\kappa}`, :math:`\hat{f}_{N}^{\kappa}`, and :math:`\hat{W}_{N}^{\kappa}` defined as
+* OCEPA
+
+.. math::
+   \widetilde{E}({\bf \kappa}) &= \langle 0| \hat{H}^{\kappa} | 0 \rangle 
+   \ + \ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}\big)_{c} | 0 \rangle \\
+   &+ \langle 0| \{\hat{\Lambda}_{2} \ \big(\hat{W}_{N}^{\kappa} \ + \ \hat{H}_{N}^{\kappa}\hat{T}_{2} \big)_{c}\}_{c}  | 0 \rangle
+
+where subscript c means only connected diagrams are allowed, and 
+:math:`\hat{H}^{\kappa}`, :math:`\hat{f}_{N}^{\kappa}`, and :math:`\hat{W}_{N}^{\kappa}` defined as
 
 .. math::
    \hat{H}^{\kappa} &=  e^{-\hat{K}} \hat{H} e^{\hat{K}} \\
    \hat{f}_{N}^{\kappa} &=  e^{-\hat{K}} \hat{f}_{N}^{d} e^{\hat{K}} \\
    \hat{W}_{N}^{\kappa} &=  e^{-\hat{K}} \hat{W}_{N} e^{\hat{K}} 
 
-and first and second derivatives of the energy with respect to the :math:`{\bf \kappa}` parameter at :math:`{\bf \kappa} = 0`
+where :math:`\hat{f}_{N}`, and :math:`\hat{W}_{N}` are the one- and two-electron components of normal-ordered Hamiltonian. Then, 
+first and second derivatives of the energy with respect to the :math:`{\bf \kappa}` parameter at :math:`{\bf \kappa} = 0`
 
 .. math::
    w_{pq} = \frac{\partial \widetilde{E}}{\partial \kappa_{pq}} 
@@ -191,10 +204,24 @@ The orbital-optimized MP3 methods currently supported in |Psifour| are outlined 
     | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
 
+The orbital-optimized CEPA methods currently supported in |Psifour| are outlined in Table :ref:`OCEPA Methods <table:ocepa_calls>`.
+
+    .. _`table:ocepa_calls`:
+
+    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference         |
+    +=========================+==============================================================+=========+==========+===================+
+    | ocepa                   | Orbital-Optimized CEPA                                       |    Y    |     Y    | RHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    | scs-ocepa               | Spin-Component Scaled Orbital-Optimized CEPA                 |    Y    |     N    | RHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  |    Y    |     N    | RHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
 
 
 .. index:: OMP2; setting keywords
 .. index:: OMP3; setting keywords
+.. index:: OCEPA; setting keywords
 
 Basic Keywords
 ~~~~~~~~~~~~~~
@@ -204,6 +231,7 @@ Basic Keywords
 .. include:: /autodir_options_c/omp2__rms_mograd_convergence.rst
 .. include:: /autodir_options_c/omp2__max_mograd_convergence.rst
 .. include:: /autodir_options_c/omp2__mo_maxiter.rst
+.. include:: /autodir_options_c/cepa__wfn_type.rst
 
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
