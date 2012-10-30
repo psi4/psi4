@@ -176,7 +176,7 @@ void OMP2Wave::semi_canonic()
 	eigvvA.reset();
 
      // UHF REFERENCE
-     if (reference == "UHF") {
+     if (reference_ == "UNRESTRICTED") {
 	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
 	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiB, avirtpiB));
 	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
@@ -230,7 +230,7 @@ void OMP2Wave::semi_canonic()
 	FockvvB->diagonalize(UvvB, eigvvB);
 
         // print orbital energies
-	if (omp2_orb_energy == "TRUE" && mo_optimized == 1 && reference == "UHF") {
+	if (omp2_orb_energy == "TRUE" && mo_optimized == 1 && reference_ == "UNRESTRICTED") {
 	  fprintf(outfile,"\n\n\t  OMP2 Beta Orbital Energies (a.u.) \n"); 
 	  fprintf(outfile,"\t  --------------------------------- \n"); 
 	  fflush(outfile);
