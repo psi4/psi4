@@ -15,6 +15,7 @@ from psifiles import *
 # never import wrappers or aliases into this file
 
 
+# test github commit
 # Procedure lookup tables
 procedures = {
         'energy': {
@@ -39,6 +40,7 @@ procedures = {
             'scs-omp3-vdw'  : run_scs_omp3,
             'sos-omp3'      : run_sos_omp3,
             'sos-pi-omp3'   : run_sos_omp3,
+            'ocepa'         : run_ocepa,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -111,7 +113,8 @@ procedures = {
             'dfmp2'         : run_dfmp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
-            'omp2'          : run_omp2_gradient
+            'omp2'          : run_omp2_gradient,
+            'ocepa'         : run_ocepa_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -269,6 +272,8 @@ def energy(name, **kwargs):
     | scs-omp3                | spin-component scaled OMP3                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sos-omp3                | spin-opposite scaled OMP3                                                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -849,6 +854,8 @@ def optimize(name, **kwargs):
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+

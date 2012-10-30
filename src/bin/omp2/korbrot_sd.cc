@@ -42,7 +42,7 @@ void OMP2Wave::korbrot_sd()
 { 
 //fprintf(outfile,"\n korbrot_sd is starting... \n"); fflush(outfile);
 
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
         // Get kappa
 	for(int x = 0; x < nidpA; x++) {
 	  int a = idprowA[x];
@@ -84,9 +84,9 @@ if (reference == "RHF") {
         // print
         if(print_ > 2) kappaA->print();
  
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
         // Get kappa
 	// alpha
 	for(int x = 0; x < nidpA; x++) {
@@ -163,7 +163,7 @@ else if (reference == "UHF") {
           kappaB->print();
         }
       
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
  //fprintf(outfile,"\n korbrot_sd done. \n"); fflush(outfile);
 	
 }// end main

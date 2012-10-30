@@ -47,6 +47,14 @@ void CoupledPair::common_init(){
   frzvpi_ = reference_wavefunction_->frzvpi();
   nmopi_  = reference_wavefunction_->nmopi();
 
+  Da_ = SharedMatrix(reference_wavefunction_->Da());
+  Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+  Fa_ = SharedMatrix(reference_wavefunction_->Fa());
+  epsilon_a_= boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
+  epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+  nalpha_ = reference_wavefunction_->nalpha();
+  nbeta_  = reference_wavefunction_->nbeta();
+
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
   for (int h=0; h<nirrep_; h++){
       nfzc   += frzcpi_[h];
@@ -123,10 +131,9 @@ void CoupledPair::common_init(){
      double* tmp = (double*)malloc((ndocc+nvirt+nfzc)*sizeof(double));
      reorder_qt(reference_wavefunction_->doccpi(), reference_wavefunction_->soccpi(), reference_wavefunction_->frzcpi(), reference_wavefunction_->frzvpi(), aQT, reference_wavefunction_->nmopi(), nirrep_);
      int count=0;
-     boost::shared_ptr<Vector> tmpeps = reference_wavefunction_->epsilon_a();
      for (int h=0; h<nirrep_; h++){
          for (int norb = 0; norb<nmopi_[h]; norb++){
-             tmp[aQT[count++]] = tmpeps->get(h,norb);
+             tmp[aQT[count++]] = epsilon_a_->get(h,norb);
          }
      }
      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
@@ -139,15 +146,14 @@ void CoupledPair::common_init(){
      // qt
      eps = (double*)malloc(nmo*sizeof(double));
      int count=0;
-     boost::shared_ptr<Vector> tmpeps = reference_wavefunction_->epsilon_a();
      for (int h=0; h<nirrep_; h++){
          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
-             eps[count++] = tmpeps->get(h,norb);
+             eps[count++] = epsilon_a_->get(h,norb);
          }
      }
      for (int h=0; h<nirrep_; h++){
          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
-             eps[count++] = tmpeps->get(h,norb);
+             eps[count++] = epsilon_a_->get(h,norb);
          }
      }
   }else{

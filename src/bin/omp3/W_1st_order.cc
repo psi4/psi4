@@ -47,7 +47,7 @@ void OMP3Wave::W_1st_order()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
     // W_mbej => W(me,jb) = <mb|ej> = (me|jb)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
@@ -60,13 +60,13 @@ if (reference == "RHF") {
     dpd_buf4_copy(&K, PSIF_OMP3_DPD, "W_1 <OV|OV>");
     dpd_buf4_close(&K);
     
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
      
     /*
@@ -239,7 +239,7 @@ else if (reference == "UHF") {
     }
     
 
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP3_DPD, 1);

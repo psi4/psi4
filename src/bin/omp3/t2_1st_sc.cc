@@ -42,7 +42,7 @@ void OMP3Wave::t2_1st_sc()
 //===========================================================================================
 //========================= RHF =============================================================
 //===========================================================================================
-if (reference == "RHF") {
+if (reference_ == "RESTRICTED") {
      dpdbuf4 K, T, D, Tau, Ttemp, Tss;
      
      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -158,13 +158,13 @@ if (reference == "RHF") {
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OMP3_DPD, 1);
 
-}// end if (reference == "RHF") 
+}// end if (reference_ == "RESTRICTED") 
 
 
 //===========================================================================================
 //========================= UHF =============================================================
 //===========================================================================================
-else if (reference == "UHF") {
+else if (reference_ == "UNRESTRICTED") {
 
 
      dpdbuf4 K, T, D;
@@ -288,7 +288,7 @@ else if (reference == "UHF") {
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OMP3_DPD, 1);
-}// end if (reference == "UHF") 
+}// end if (reference_ == "UNRESTRICTED") 
 
 } // end t2_1st_sc
 }} // End Namespaces

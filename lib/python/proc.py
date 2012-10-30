@@ -20,6 +20,7 @@ from util import *
 # never import driver, wrappers, or aliases into this file
 
 
+# test trac commit
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
@@ -172,6 +173,31 @@ def run_sos_omp3(name, **kwargs):
     PsiMod.scf()
     PsiMod.set_local_option('OMP3', 'DO_SOS', 'TRUE')
     return PsiMod.omp3()
+
+
+def run_ocepa(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized CEPA computation
+
+    """
+    PsiMod.scf()
+    return PsiMod.ocepa()
+
+
+def run_ocepa_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OCEPA gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    run_ocepa(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
 
 
 def run_scf(name, **kwargs):

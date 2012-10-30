@@ -39,7 +39,7 @@ void OMP3Wave::G_int()
 {  
  //fprintf(outfile,"\n G_int is starting... \n"); fflush(outfile);
 
- if (reference == "RHF") {
+ if (reference_ == "RESTRICTED") {
        // initialize
 	GooA->zero();
 	GvvA->zero();
@@ -99,7 +99,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 GooA->set(h, i, j, G.matrix[h][i][j]);
@@ -115,7 +115,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 GvvA->set(h, i, j, G.matrix[h][i][j]);
@@ -132,9 +132,9 @@ void OMP3Wave::G_int()
 	  GvvA->print();
 	}
 
- }// end if (reference == "RHF") 
+ }// end if (reference_ == "RESTRICTED") 
 
- else if (reference == "UHF") {
+ else if (reference_ == "UNRESTRICTED") {
         // initialize
 	GooA->zero();
 	GooB->zero();
@@ -291,7 +291,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiA[h]; ++i){
             for(int j = 0 ; j < aoccpiA[h]; ++j){
                 GooA->set(h, i, j, G.matrix[h][i][j]);
@@ -305,7 +305,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < aoccpiB[h]; ++i){
             for(int j = 0 ; j < aoccpiB[h]; ++j){
                 GooB->set(h, i, j, G.matrix[h][i][j]);
@@ -322,7 +322,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiA[h]; ++i){
             for(int j = 0 ; j < avirtpiA[h]; ++j){
                 GvvA->set(h, i, j, G.matrix[h][i][j]);
@@ -336,7 +336,7 @@ void OMP3Wave::G_int()
 	dpd_file2_mat_init(&G);
 	dpd_file2_mat_rd(&G);
         #pragma omp parallel for
-	for(int h = 0; h < nirreps; ++h){
+	for(int h = 0; h < nirrep_; ++h){
 	  for(int i = 0 ; i < avirtpiB[h]; ++i){
             for(int j = 0 ; j < avirtpiB[h]; ++j){
                 GvvB->set(h, i, j, G.matrix[h][i][j]);
@@ -354,7 +354,7 @@ void OMP3Wave::G_int()
 	  GvvA->print();
 	  GvvB->print();
 	}
- }// end if (reference == "UHF") 
+ }// end if (reference_ == "UNRESTRICTED") 
 	
   //fprintf(outfile,"\n G_int done... \n"); fflush(outfile);
 
