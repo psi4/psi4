@@ -14,8 +14,8 @@
 
 .. _`sec:ompn`:
 
-OCC : Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
-=============================================================================
+OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
+============================================================================================
 
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
@@ -235,7 +235,7 @@ Basic Keywords
 .. include:: /autodir_options_c/omp2__rms_mograd_convergence.rst
 .. include:: /autodir_options_c/omp2__max_mograd_convergence.rst
 .. include:: /autodir_options_c/omp2__mo_maxiter.rst
-.. include:: /autodir_options_c/cepa__wfn_type.rst
+.. include:: /autodir_options_c/ocepa__wfn_type.rst
 
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
