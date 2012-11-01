@@ -20,7 +20,6 @@ from util import *
 # never import driver, wrappers, or aliases into this file
 
 
-# test trac commit
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a density cumulant functional theory calculation.
