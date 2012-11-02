@@ -2357,7 +2357,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2397,7 +2397,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- Do print OMP2 orbital energies? -*/
@@ -2429,7 +2429,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2471,7 +2471,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- The solver will be used for simultaneous linear equations. -*/
@@ -2498,6 +2498,86 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+  }
+  if (name == "OCEPA"|| options.read_globals()) {
+    /*- Convergence criterion for energy. -*/
+    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-6);
+    /*- Convergence criterion for RMS orbital gradient. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
+    /*- Maximum number of iterations to determine the amplitudes -*/
+    options.add_int("CC_MAXITER",50);
+    /*- Maximum number of iterations to determine the orbitals -*/
+    options.add_int("MO_MAXITER",50);
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    options.add_int("CACHELEVEL",2);
+    /*- Number of vectors used in DIIS -*/
+    options.add_int("DIIS_MAX_VECS",4);
+    /*- Cutoff value for numerical procedures -*/
+    options.add_int("CUTOFF",14);
+
+    /*- Maximum step size in orbital-optimization procedure -*/
+    options.add_double("MO_STEP_MAX",0.5);
+    /*- Level shift to aid convergence -*/
+    options.add_double("LEVEL_SHIFT",0.02);
+    /*- MP2 opposite-spin scaling value -*/
+    options.add_double("MP2_OS_SCALE",6.0/5.0);
+    /*- MP2 same-spin scaling value -*/
+    options.add_double("MP2_SS_SCALE",1.0/3.0);
+    /*- MP2 Spin-opposite scaling (SOS) value -*/
+    options.add_double("MP2_SOS_SCALE",1.3);  
+    /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_OS_SCALE",1.27);
+    /*- CEPA same-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_SS_SCALE",1.13);
+    /*- CEPA Spin-opposite scaling (SOS) value -*/
+    options.add_double("CEPA_SOS_SCALE",1.3);  
+
+    /*- The optimization algorithm -*/
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
+    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
+    /*- The algorithm for orthogonalization of MOs -*/
+    options.add_str("ORTH_TYPE","MGS","GS MGS");
+    /*- Wavefunction type. The OCEPA option calls an OCEPA computation, while the CEPA option calls an CEPA run. -*/
+    options.add_str("WFN_TYPE","OCEPA","OCEPA CEPA");
+    /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
+    options.add_str("CEPA_TYPE","CEPA0","CEPA0");
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    Generalized-Fock Matrix. -*/
+    options.add_str("TPDM_ABCD_TYPE","COMPUTE","DIRECT COMPUTE");
+
+
+    /*- Do compute natural orbitals? -*/
+    options.add_bool("NAT_ORBS",false);
+    /*- Do apply level shifting? -*/
+    options.add_bool("DO_LEVEL_SHIFT",false);
+    /*- Do print OCEPA orbital energies? -*/
+    options.add_bool("OCEPA_ORBS_PRINT",false);
+    /*- Do perform spin-component-scaled OCEPA (SCS-OCEPA)? In all computation, SCS-OCEPA energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SCS-OCEPA, one needs to set 
+     'DO_SCS' to true -*/
+    options.add_bool("DO_SCS",false);
+    /*- Do perform spin-opposite-scaled OCEPA (SOS-OCEPA)? In all computation, SOS-OCEPA energy is computed automatically. 
+     However, in order to perform geometry optimizations and frequency computations with SOS-OCEPA, one needs to set 
+     'DO_SOS' to true -*/
+    options.add_bool("DO_SOS",false);
+    /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
+    options.add_bool("MO_WRITE",false);
+    /*- Do read coefficient matrices from external files of a previous OMPn computation? -*/
+    options.add_bool("MO_READ",false);
+    /*- Do compute cepa-l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
+    options.add_bool("CEPAL_ENERGY",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

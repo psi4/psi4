@@ -174,6 +174,31 @@ def run_sos_omp3(name, **kwargs):
     return PsiMod.omp3()
 
 
+def run_ocepa(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized CEPA computation
+
+    """
+    PsiMod.scf()
+    return PsiMod.ocepa()
+
+
+def run_ocepa_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OCEPA gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    run_ocepa(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.

@@ -26,7 +26,7 @@
 #include <libmints/factory.h>
 #include <libmints/wavefunction.h>
 
-#include "omp2wave.h"
+#include "ocepawave.h"
 #include "defines.h"
 #include "arrays.h"
 
@@ -36,9 +36,9 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace omp2wave{ 
+namespace psi{ namespace ocepawave{ 
 
-void OMP2Wave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new)
+void OCEPAWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new)
 { 
 
 /********************************************************************************************/
