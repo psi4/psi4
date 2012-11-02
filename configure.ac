@@ -972,6 +972,7 @@ AC_CONFIG_FILES([
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/omp3/Makefile
+          src/bin/ocepa/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1135,6 +1136,7 @@ AC_CONFIG_FILES([
           tests/omp3-1/Makefile
           tests/omp3-2/Makefile
           tests/omp3-3/Makefile
+          tests/ocepa1/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
