@@ -2357,7 +2357,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2397,7 +2397,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- Do print OMP2 orbital energies? -*/
@@ -2429,7 +2429,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2471,7 +2471,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
     /*- Type Hessian matrix will be used in orbital optimization procedure -*/
     options.add_str("HESS_TYPE","NONE","NONE");
     /*- The solver will be used for simultaneous linear equations. -*/
@@ -2507,7 +2507,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2543,7 +2543,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CEPA_SOS_SCALE",1.3);  
 
     /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD");
+    options.add_str("OPT_METHOD","DIIS","MSD DIIS");
     /*- The solver will be used for simultaneous lineer equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/

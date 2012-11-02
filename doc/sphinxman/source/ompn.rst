@@ -153,9 +153,9 @@ Publications resulting from the use of the OMP2 code should cite the following p
 
 [Bozkaya:2011:omp2]_.
 
-Publications resulting from the use of the OMP3 code should cite the following publications: 
+Publications resulting from the use of the OMP3 code should cite the following publication(s): 
 
-[Bozkaya:2011:omp2]_ and [Bozkaya:2011:omp3]_.
+[Bozkaya:2011:omp3]_.
 
 Publications resulting from the use of the OCEPA code should cite the following publication(s): 
 
