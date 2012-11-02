@@ -47,9 +47,8 @@ void OCEPAWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_n
         Array2d *Bmat = new Array2d(nvar, nvar, "DIIS B Matrix"); 
         Array1d *Cvec = new Array1d(nvar, "DIIS C Vector"); 
         Array1d *errvec_new = new Array1d(dimvec, "New Error Vector");
-        int d2 = errvecs->dim2();
-        Array1d *vrow = new Array1d(d2); 
-        Array1d *vcol = new Array1d(d2); 
+        Array1d *vrow = new Array1d(dimvec); 
+        Array1d *vcol = new Array1d(dimvec); 
         Bmat->zero(); 
         Cvec->zero(); 
         errvec_new->zero(); 
@@ -77,8 +76,8 @@ void OCEPAWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_n
         Bmat->set(nvar - 1, nvar - 1, 0.0);
 	
 	// scale Bmat
-	double scale_factor = 1 / Bmat->get(0, 0);
-        Bmat->scale(scale_factor);
+	//double scale_factor = 1 / Bmat->get(0, 0);
+        //Bmat->scale(scale_factor);
          
 	// level shift
 	if (level_shift == "TRUE") {
@@ -86,9 +85,7 @@ void OCEPAWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_n
 	  for(int i = 0; i < num_vecs; i++) Bmat->set(i, i, Bmat->get(i, i) * (1 + lshift_parameter) ); 
 	}
 	
-/********************************************************************************************/
-/************************** Form C vector ***************************************************/
-/********************************************************************************************/
+        // Form the c vector
 	Cvec->set(nvar - 1,  -1.0);
 	
 /********************************************************************************************/
@@ -112,13 +109,17 @@ void OCEPAWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_n
 /********************************************************************************************/
 /************************** Extrapolate *****************************************************/
 /********************************************************************************************/
-	for(int i = 0; i < num_vecs; i++){
-	  for(int j = 0; j < dimvec; j++){    
-	    vec_new->set(j, vec_new->get(j) + (Cvec->get(i) * vecs->get(i,j) ) );
-	    errvec_new->set(j, errvec_new->get(j) + ( Cvec->get(i) * errvecs->get(i,j)));
+	for(int i = 0; i < dimvec; i++){
+          double sum1 = 0.0;
+          double sum2 = 0.0;
+	  for(int j = 0; j < num_vecs; j++){    
+	    sum1 += Cvec->get(j) * vecs->get(j,i);
+            sum2 += Cvec->get(j) * errvecs->get(j,i);
 	  }  
-
+          vec_new->set(i, sum1);
+          errvec_new->set(i, sum2);
 	}
+ 
 
 	delete Bmat;
 	delete Cvec;

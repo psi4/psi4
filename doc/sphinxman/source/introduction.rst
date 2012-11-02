@@ -177,12 +177,6 @@ available in |PSIfour| are provided below.
 
 .. rubric:: OMP3
 
-* "Quadratically convergent algorithm for orbital optimization in the 
-  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
-  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
-  *J. Chem. Phys.* **135**, 104103 (2011).
-
 * "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
   Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
   Symmetry Breaking Problems," U. Bozkaya,

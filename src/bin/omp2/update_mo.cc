@@ -67,6 +67,7 @@ if (opt_method == "DIIS") {
 	if (itr_occ <= num_vecs) {  
 	  for(int i = 0; i < nidpA; i++){
 	    errvecsA->set(itr_occ-1, i, wogA->get(i));
+	    //errvecsA->set(itr_occ-1, i, kappaA->get(i));
 	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
 	  }  
 	}
@@ -82,6 +83,7 @@ if (opt_method == "DIIS") {
 	  
 	  for(int i = 0; i < nidpA; i++){
 	    errvecsA->set(num_vecs-1, i, wogA->get(i));
+	    //errvecsA->set(num_vecs-1, i, kappaA->get(i));
 	    vecsA->set(num_vecs-1, i, kappa_barA->get(i));
 	  }    
 	}
@@ -221,6 +223,7 @@ if (opt_method == "DIIS") {
 	if (itr_occ <= num_vecs) {  
 	  for(int i = 0; i < nidpA; i++){
 	    errvecsA->set(itr_occ-1, i, wogA->get(i));
+	    //errvecsA->set(itr_occ-1, i, kappaA->get(i));
 	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
 	  }  
 	}
@@ -236,6 +239,7 @@ if (opt_method == "DIIS") {
 	  
 	  for(int i = 0; i < nidpA; i++){
 	    errvecsA->set(num_vecs-1, i, wogA->get(i));
+	    //errvecsA->set(num_vecs-1, i, kappaA->get(i));
 	    vecsA->set(num_vecs-1, i, kappa_barA->get(i));
 	  }    
 	}
@@ -244,6 +248,7 @@ if (opt_method == "DIIS") {
 	if (itr_occ <= num_vecs) {  
 	  for(int i = 0; i < nidpB; i++){
 	    errvecsB->set(itr_occ-1, i, wogB->get(i));
+	    //errvecsB->set(itr_occ-1, i, kappaB->get(i));
 	    vecsB->set(itr_occ-1, i, kappa_barB->get(i));
 	  }  
 	}
@@ -259,6 +264,7 @@ if (opt_method == "DIIS") {
 	  
 	  for(int i = 0; i < nidpB; i++){
 	    errvecsB->set(num_vecs-1, i, wogB->get(i));
+	    //errvecsB->set(num_vecs-1, i, kappaB->get(i));
 	    vecsB->set(num_vecs-1, i, kappa_barB->get(i));
 	  }    
 	}
