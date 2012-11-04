@@ -203,7 +203,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 21, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 03, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -251,8 +251,6 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -261,6 +259,8 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fflush(outfile);
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
@@ -295,8 +295,6 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -305,6 +303,8 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fflush(outfile);
 
@@ -316,15 +316,15 @@ double OMP2Wave::compute_energy()
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
 	fprintf(outfile,"\tREF Energy (a.u.)                  : %12.14f\n", Eref);
-	fprintf(outfile,"\tOMP2 Correlation Energy (a.u.)     : %12.14f\n", Emp2L-Escf);
-	fprintf(outfile,"\tEomp2 - Eref (a.u.)                : %12.14f\n", Emp2L-Eref);
-	fprintf(outfile,"\tOMP2 Total Energy (a.u.)           : %12.14f\n", Emp2L);
 	fprintf(outfile,"\tSCS-OMP2 Total Energy (a.u.)       : %12.14f\n", Escsmp2);
 	fprintf(outfile,"\tSOS-OMP2 Total Energy (a.u.)       : %12.14f\n", Esosmp2);
 	fprintf(outfile,"\tSCSN-OMP2 Total Energy (a.u.)      : %12.14f\n", Escsnmp2);
 	fprintf(outfile,"\tSCS-MI-OMP2 Total Energy (a.u.)    : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-OMP2-VDW Total Energy (a.u.)   : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-OMP2 Total Energy (a.u.)    : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tOMP2 Correlation Energy (a.u.)     : %12.14f\n", Emp2L-Escf);
+	fprintf(outfile,"\tEomp2 - Eref (a.u.)                : %12.14f\n", Emp2L-Eref);
+	fprintf(outfile,"\tOMP2 Total Energy (a.u.)           : %12.14f\n", Emp2L);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);

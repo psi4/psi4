@@ -221,7 +221,7 @@ void OCEPAWave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 26, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 03, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -273,8 +273,6 @@ double OCEPAWave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -283,6 +281,8 @@ double OCEPAWave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -309,7 +309,8 @@ if (wfn_type_ == "OCEPA") {
   if (conver == 1) {
         ref_energy();
 	cepa_energy();
-
+        
+        /*
         fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing CEPA energy using optimized MOs... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
@@ -322,11 +323,12 @@ if (wfn_type_ == "OCEPA") {
 	fprintf(outfile,"\tSCS-CEPA(0) Total Energy (a.u.)    : %12.14f\n", Escscepa);
 	fprintf(outfile,"\tSOS-CEPA(0) Total Energy (a.u.)    : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\tCEPA(0) Correlation Energy (a.u.)  : %12.14f\n", Ecepa-Escf);
+	fprintf(outfile,"\tEcepa - Eref (a.u.)                : %12.14f\n", Ecepa-Eref);
 	fprintf(outfile,"\tCEPA(0) Total Energy (a.u.)        : %12.14f\n", Ecepa);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
-
+        */
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
@@ -335,11 +337,11 @@ if (wfn_type_ == "OCEPA") {
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
 	fprintf(outfile,"\tREF Energy (a.u.)                  : %12.14f\n", Eref);
+	fprintf(outfile,"\tSCS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Escscepa);
+	fprintf(outfile,"\tSOS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\tOCEPA(0) Correlation Energy (a.u.) : %12.14f\n", EcepaL-Escf);
 	fprintf(outfile,"\tEocepa - Eref (a.u.)               : %12.14f\n", EcepaL-Eref);
 	fprintf(outfile,"\tOCEPA(0) Total Energy (a.u.)       : %12.14f\n", EcepaL);
-	fprintf(outfile,"\tSCS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Escscepa);
-	fprintf(outfile,"\tSOS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);
@@ -687,8 +689,8 @@ void OCEPAWave::cepa_energy()
      
      Ecorr = EcepaAA + EcepaBB + EcepaAB;
      Ecepa = Eref + Ecorr;
-     Escscepa = (cepa_ss_scale_ * (EcepaAA + EcepaBB)) + (cepa_os_scale_ * EcepaAB);
-     Esoscepa = cepa_sos_scale_ * EcepaAB;
+     Escscepa = Eref + ((cepa_ss_scale_ * (EcepaAA + EcepaBB)) + (cepa_os_scale_ * EcepaAB));
+     Esoscepa = Eref + (cepa_sos_scale_ * EcepaAB);
      
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OCEPA_DPD, 1);    
@@ -1074,7 +1076,7 @@ void OCEPAWave::mem_release()
 	delete kappa_barB;
       }
 	
-	if (opt_method == "DIIS") {
+	if (opt_method == "DIIS" && wfn_type_ == "OCEPA") {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;
