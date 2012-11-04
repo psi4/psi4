@@ -2370,8 +2370,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",4);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
 
@@ -2442,8 +2442,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",4);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
 
@@ -2520,8 +2520,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",4);
+    /*- Minimum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MIN_VECS",2);
+    /*- Maximum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MAX_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
 

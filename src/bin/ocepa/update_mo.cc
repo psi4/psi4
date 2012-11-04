@@ -188,18 +188,6 @@ else if (orth_type == "GS") {
 	  Ca_->print();
 	}
 
-/********************************************************************************************/
-/************************** Save MO coefficients to Chkpt file ******************************/
-/********************************************************************************************/	 
-        /*
-	C_pitzerA = Ca_->to_block_matrix();    
-	C_pitzerB = Cb_->to_block_matrix();    
-	chkpt_->wt_alpha_scf(C_pitzerA);
-	chkpt_->wt_beta_scf(C_pitzerB);
-	free_block(C_pitzerA);
-	free_block(C_pitzerB);
-        */
-
 }// end if (reference_ == "RESTRICTED") 
 
 

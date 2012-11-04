@@ -132,8 +132,8 @@ class Array2d
   void cdgesv(double* Xvec); // solve lineq via acml
   void lineq_flin(Array1d* Xvec, double *det); // solve lineq via flin
   void lineq_flin(double* Xvec, double *det); // solve lineq via flin
-  void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
-  void lineq_pople(double* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
+  void lineq_pople(Array1d* Xvec, int mo_maxdiis_, double cutoff); // solve lineq via pople  
+  void lineq_pople(double* Xvec, int mo_maxdiis_, double cutoff); // solve lineq via pople  
   void gemm(bool transa, bool transb, double alpha, const Array2d* a, const Array2d* b, double beta);
   void level_shift(double value);
   void outer_product(const Array1d *x, const Array1d *y); // A = x * y' 

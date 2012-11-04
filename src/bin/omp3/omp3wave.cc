@@ -50,7 +50,7 @@ void OMP3Wave::common_init()
 	mo_maxiter=options_.get_int("MO_MAXITER");
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
-	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
 	
@@ -217,7 +217,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 03, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 04, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

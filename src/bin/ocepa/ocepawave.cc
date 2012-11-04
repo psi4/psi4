@@ -50,7 +50,9 @@ void OCEPAWave::common_init()
 	mo_maxiter=options_.get_int("MO_MAXITER");
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
-	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
+	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
+	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
 	
@@ -221,7 +223,7 @@ void OCEPAWave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 03, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 04, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -284,7 +286,6 @@ double OCEPAWave::compute_energy()
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
 	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
 	fflush(outfile);
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -1046,10 +1047,8 @@ fflush(outfile);
 /*=======================*/
 void OCEPAWave::mem_release()
 {   
+	chkpt_.reset();
 	delete ints;
-	delete [] idprowA;
-	delete [] idpcolA;
-	delete [] idpirrA;
 	delete [] pitzer2symblk;
 	delete [] pitzer2symirrep;
 	delete [] PitzerOffset;
@@ -1059,31 +1058,38 @@ void OCEPAWave::mem_release()
 	delete [] vir_offA;
 	delete [] occ2symblkA;
 	delete [] virt2symblkA;
+ 
+      if (wfn_type_ == "OCEPA") {
+	delete [] idprowA;
+	delete [] idpcolA;
+	delete [] idpirrA;
         delete wogA;
 	delete kappaA;
 	delete kappa_barA;
 
-       if (reference_ == "UNRESTRICTED") {
+        if (reference_ == "UNRESTRICTED") {
 	delete [] idprowB;
 	delete [] idpcolB;
 	delete [] idpirrB;
-	delete [] occ_offB;
-	delete [] vir_offB;
-	delete [] occ2symblkB;
-	delete [] virt2symblkB;
 	delete wogB;
 	delete kappaB;
 	delete kappa_barB;
-      }
-	
-	if (opt_method == "DIIS" && wfn_type_ == "OCEPA") {
+        }
+
+	if (opt_method == "DIIS") {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;
           if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
-	
-	chkpt_.reset();
+      }// end if ocepa 
+
+       if (reference_ == "UNRESTRICTED") {
+	delete [] occ_offB;
+	delete [] vir_offB;
+	delete [] occ2symblkB;
+	delete [] virt2symblkB;
+      }
 
       if (reference_ == "RESTRICTED") {
 	Ca_.reset();
