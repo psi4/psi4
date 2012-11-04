@@ -45,53 +45,52 @@ void OMP3Wave::trans_ints_uhf()
 /********************************************************************************************/  
     ints->update_orbitals();  
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
+    ints->set_keep_dpd_so_ints(1);
     
     // Trans (OO|OO)
     timer_on("Trans (OO|OO)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
     timer_off("Trans (OO|OO)");
     
     // Trans (OO|OV)
     timer_on("Trans (OO|OV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (OO|OV)");
     
+    // Trans (OO|VV)
+    timer_on("Trans (OO|VV)");
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
+    timer_off("Trans (OO|VV)");
+
     // Trans (OV|OO)
     timer_on("Trans (OV|OO)");
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ);
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
     timer_off("Trans (OV|OO)");
 
     // Trans (OV|OV)
     timer_on("Trans (OV|OV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (OV|OV)");
-    
-    // Trans (OO|VV)
-    timer_on("Trans (OO|VV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-    timer_off("Trans (OO|VV)");
-    
-    // Trans (VV|OO)
-    timer_on("Trans (VV|OO)");
-    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
-    timer_off("Trans (VV|OO)");
     
     // Trans (OV|VV)
     timer_on("Trans (OV|VV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
     timer_off("Trans (OV|VV)");
+
+    // Trans (VV|OO)
+    timer_on("Trans (VV|OO)");
+    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
+    timer_off("Trans (VV|OO)");
     
     // Trans (VV|OV)
     timer_on("Trans (VV|OV)");
-    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (VV|OV)");
-    
     
     // Trans (VV|VV)
     timer_on("Trans (VV|VV)");
-    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
     timer_off("Trans (VV|VV)");
-    
     
 /********************************************************************************************/
 /************************** sort chem -> phys ***********************************************/

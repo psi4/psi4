@@ -1,5 +1,5 @@
-#ifndef _psi_src_bin_omp3_arrays_h_
-#define _psi_src_bin_omp3_arrays_h_
+#ifndef _psi_src_bin_ocepa_arrays_h_
+#define _psi_src_bin_ocepa_arrays_h_
 
 /** Standard library includes */
 #include <iostream>
@@ -257,5 +257,5 @@ class Array3i
   int get(int h, int i, int j); 
 };
 }} // End Namespaces
-#endif // _psi_src_bin_omp3_arrays_h_
+#endif // _psi_src_bin_ocepa_arrays_h_
 
