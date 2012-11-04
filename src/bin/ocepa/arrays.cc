@@ -569,18 +569,18 @@ void Array2d::lineq_flin(double* Xvec, double *det)
 }//
  
 
-void Array2d::lineq_pople(Array1d* Xvec, int mo_maxdiis_, double cutoff)
+void Array2d::lineq_pople(Array1d* Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec->A1d_, dim1_, mo_maxdiis_, cutoff, outfile, 0);  
+	pople(A2d_, Xvec->A1d_, dim1_, num_vecs, cutoff, outfile, 0);  
       }
 }//
 
 
-void Array2d::lineq_pople(double* Xvec, int mo_maxdiis_, double cutoff)
+void Array2d::lineq_pople(double* Xvec, int num_vecs, double cutoff)
 {
       if (dim1_) {
-	pople(A2d_, Xvec, dim1_, mo_maxdiis_, cutoff, outfile, 0);  
+	pople(A2d_, Xvec, dim1_, num_vecs, cutoff, outfile, 0);  
       }
 }//
 
