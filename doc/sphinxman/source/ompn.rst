@@ -240,7 +240,7 @@ Basic Keywords
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
 .. include:: /autodir_options_c/omp2__opt_method.rst
-.. include:: /autodir_options_c/omp2__diis_max_vecs.rst
+.. include:: /autodir_options_c/omp2__mo_diis_num_vecs.rst
 .. include:: /autodir_options_c/omp2__lineq_solver.rst
 .. include:: /autodir_options_c/omp2__orth_type.rst
 .. include:: /autodir_options_c/omp2__mp2_os_scale.rst

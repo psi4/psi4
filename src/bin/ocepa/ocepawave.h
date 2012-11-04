@@ -3,6 +3,7 @@
 
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include <libdiis/diismanager.h>
 #include "arrays.h"
 
 using namespace std;
@@ -62,15 +63,17 @@ protected:
     void Fockmo_alpha();
     void Fockmo_beta();
     void idp();
-    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
     void W_int();
     void V_int();
     void coord_grad();
     void dump_ints();
     void dump_pdms();
     void GFockmo_diag();
+    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
     
      class IntegralTransform *ints;
+     DIISManager t2DiisManager;
+
      int nmo;		// Number of MOs
      int nao;		// Number of AOs
      int nso;		// Number of SOs
@@ -104,8 +107,6 @@ protected:
      int idp_return;
      int idp_returnA;
      int idp_returnB;
-     int num_vecs; 		// Number of vectors used in diis (diis order)
-     int nvar; 			// nvar = num_vecs +1;
      int memory; 
      int multp; 
      int charge;
@@ -117,6 +118,10 @@ protected:
      int conver;                // If 0 convergence = false, if 1 convergence = true
      int mo_optimized; 		// if 0 MOs are NOT optimized, if 1 MOs are optimized.
      int time4grad;             // If 0 it is not the time for grad, if 1 it is the time for grad
+     int cc_maxdiis_; 		// MAX Number of vectors used in CC diis
+     int cc_mindiis_; 		// MIN Number of vectors used in CC diis
+     int num_vecs; 		// Number of vectors used in diis (diis order)
+     int nvar; 			// nvar = num_vecs +1;
 
      
      double Enuc;

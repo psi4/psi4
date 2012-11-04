@@ -20,6 +20,7 @@
 #include <libqt/qt.h>
 #include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
+#include <libdiis/diismanager.h>
 
 /** Required libmints includes */
 #include <libmints/mints.h>
@@ -208,6 +209,17 @@ if (reference_ == "RESTRICTED") {
     if (print_ > 3) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
 
+    // DIIS
+    if (wfn_type_ == "CEPA") {
+    dpd_buf4_init(&R, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
+    dpd_buf4_init(&T, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    t2DiisManager.add_entry(2, &R, &T);
+    if (t2DiisManager.subspace_size() >= cc_mindiis_) t2DiisManager.extrapolate(1, &T);
+    dpd_buf4_close(&R);
+    dpd_buf4_close(&T);
+    }
 
      // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
      // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
@@ -796,6 +808,30 @@ else if (reference_ == "UNRESTRICTED") {
     if (print_ > 3) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
     
+    // DIIS
+    if (wfn_type_ == "CEPA") {
+    dpdbuf4 Raa, Rbb, Rab, Taa, Tbb, Tab;
+    dpd_buf4_init(&Raa, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
+    dpd_buf4_init(&Taa, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&Rbb, PSIF_OCEPA_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "RT2 <oo|vv>");
+    dpd_buf4_init(&Tbb, PSIF_OCEPA_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
+    dpd_buf4_init(&Rab, PSIF_OCEPA_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "RT2 <Oo|Vv>");
+    dpd_buf4_init(&Tab, PSIF_OCEPA_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
+    t2DiisManager.add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
+    if (t2DiisManager.subspace_size() >= cc_mindiis_) t2DiisManager.extrapolate(3, &Taa, &Tbb, &Tab);
+    dpd_buf4_close(&Raa);
+    dpd_buf4_close(&Rbb);
+    dpd_buf4_close(&Rab);
+    dpd_buf4_close(&Taa);
+    dpd_buf4_close(&Tbb);
+    dpd_buf4_close(&Tab);
+    }
 
     // Build amplitudes in chemist notation
     // T_IJ^AB => T(IA,JB)
