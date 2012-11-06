@@ -18,15 +18,15 @@
 #include <libqt/qt.h>
 #include <liboptions/python.h>
 #include <psifiles.h>
-#include<libmints/multipolesymmetry.h>
+#include <libmints/multipolesymmetry.h>
 #include <psi4-dec.h>
 
 #ifdef _OPENMP
-    #include <omp.h>
+#include <omp.h>
 #endif
 
 #include "efp_solver.h"
-#include "/Users/deprince/psi4-efp/objdir/libefp/install/include/efp.h"
+#include "../../libefp/install/include/efp.h"
 
 using namespace boost;
 using namespace std;
