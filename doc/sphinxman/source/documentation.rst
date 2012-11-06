@@ -88,12 +88,14 @@ this covers:
 * C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
 * Sample Inputs: input.dat files in :source:`samples`
 * PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
-* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories
+* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories (disabled at the moment)
+* PSI Files: scratch file names and numbers in :source:`include/psifiles.h`
 
 Some documentation is even extracted from Psi4 objects at runtime.
 
 * PsiMod: docstrings for the PsiMod built-in module constructed in :source:`src/bin/psi4`
 * DFT: functional availibility and characteristics as encoded in :source:`lib/python/functional.py`
+* BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`lib/python/basislistdunning.py` and :source:`lib/python/basislistother.py`
 
 Run ``make help`` to see choices for cleaning various stages of the build.
 Running ``make realclean`` clears out the built documentation. Building

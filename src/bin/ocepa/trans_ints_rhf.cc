@@ -45,30 +45,31 @@ void OCEPAWave::trans_ints_rhf()
 /********************************************************************************************/  
     ints->update_orbitals();  
     ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
+    ints->set_keep_dpd_so_ints(1);
     
     // Trans (OO|OO)
     timer_on("Trans (OO|OO)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
     timer_off("Trans (OO|OO)");
     
     // Trans (OO|OV)
     timer_on("Trans (OO|OV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (OO|OV)");
-    
-    // Trans (OV|OV)
-    timer_on("Trans (OV|OV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
-    timer_off("Trans (OV|OV)");
     
     // Trans (OO|VV)
     timer_on("Trans (OO|VV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
     timer_off("Trans (OO|VV)");
+
+    // Trans (OV|OV)
+    timer_on("Trans (OV|OV)");
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::MakeAndKeep);
+    timer_off("Trans (OV|OV)");
     
     // Trans (OV|VV)
     timer_on("Trans (OV|VV)");
-    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
     timer_off("Trans (OV|VV)");
     
     // Trans (VV|VV)
