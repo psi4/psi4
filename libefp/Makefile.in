@@ -15,5 +15,5 @@ efp.compiled:
 	tar xf $(srcdir)/libefp-$(LIBEFP_VERSION).tar.gz && \
 	cd libefp-$(LIBEFP_VERSION) && \
 	./configure --disable-efpmd --prefix=$(libefp_install_dir) && \
-	make && make install
+	$(MAKE) && $(MAKE) install
 	touch efp.compiled
