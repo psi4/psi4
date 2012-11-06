@@ -61,7 +61,8 @@ fflush(outfile);
       mu_ls = -lshift_parameter;
       conver = 1; // Assuming that the MOs will be optimized.
       mo_optimized = 0; 
-      
+
+      // Set-up DIIS for orbitals
       if (opt_method == "DIIS") {
 	nvar = num_vecs +1;
         vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
@@ -77,8 +78,44 @@ fflush(outfile);
         }
       }
 
-      
-// head of loop      
+ // DIIS
+ if (reference_ == "RESTRICTED") {  
+    dpdbuf4 T; 
+    psio_->open(PSIF_OCEPA_DPD, PSIO_OPEN_OLD);
+    dpd_buf4_init(&T, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    t2DiisManager = DIISManager(cc_maxdiis_, "OCEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager.set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
+    t2DiisManager.set_vector_size(1, DIISEntry::DPDBuf4, &T);
+    dpd_buf4_close(&T);
+    psio_->close(PSIF_OCEPA_DPD, 1);
+ }
+
+ else if (reference_ == "UNRESTRICTED") {  
+    dpdbuf4 Taa, Tbb, Tab; 
+    psio_->open(PSIF_OCEPA_DPD, PSIO_OPEN_OLD);
+    dpd_buf4_init(&Taa, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&Tbb, PSIF_OCEPA_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
+    dpd_buf4_init(&Tab, PSIF_OCEPA_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
+    t2DiisManager = DIISManager(cc_maxdiis_, "OCEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                           DIISEntry::DPDBuf4, &Tbb,
+                                           DIISEntry::DPDBuf4, &Tab);
+    t2DiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                     DIISEntry::DPDBuf4, &Tbb,
+                                     DIISEntry::DPDBuf4, &Tab);
+    dpd_buf4_close(&Taa);
+    dpd_buf4_close(&Tbb);
+    dpd_buf4_close(&Tab);
+    psio_->close(PSIF_OCEPA_DPD, 1);
+ }
+
+/********************************************************************************************/
+/************************** Head of loop ****************************************************/
+/********************************************************************************************/
 do
 {
        itr_occ++;

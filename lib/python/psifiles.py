@@ -69,6 +69,7 @@ PSIF_SAPT_BB_DF_INTS        =  125  # SAPT BB DF Ints
 PSIF_SAPT_AMPS              =  126  # SAPT Amplitudes
 PSIF_SAPT_TEMP              =  127  # SAPT Temporary worlds fastest code file
 PSIF_SAPT_LRINTS            =  128  # SAPT0 2-Body linear response LDA integrals
+PSIF_SCF_MOS                =  180  # Save SCF orbitals for re-use later as guess, etc.
 PSIF_DFMP2_AIA              =  181  # Unfitted three-index MO ints for DFMP2
 PSIF_DFMP2_QIA              =  182  # Fitted-three index MO ints for DFMP2
 PSIF_3B_SAPT_TRIMER         =  220  # SAPT Three-Body Trimer

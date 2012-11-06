@@ -94,7 +94,7 @@ void OCEPAWave::semi_canonic()
 
         // Print orbital energies
 	if (ocepa_orb_energy == "TRUE" && mo_optimized == 1) {
-	  fprintf(outfile,"\n\n\t  OMP3 Alpha Orbital Energies (a.u.) \n"); 
+	  fprintf(outfile,"\n\n\t  OCEPA Alpha Orbital Energies (a.u.) \n"); 
 	  fprintf(outfile,"\t  ---------------------------------- \n"); 
 	  fflush(outfile);
 	  
@@ -231,7 +231,7 @@ void OCEPAWave::semi_canonic()
 
         // print orbital energies
 	if (ocepa_orb_energy == "TRUE" && mo_optimized == 1 && reference_ == "UNRESTRICTED") {
-	  fprintf(outfile,"\n\n\t  OMP3 Beta Orbital Energies (a.u.) \n"); 
+	  fprintf(outfile,"\n\n\t  OCEPA Beta Orbital Energies (a.u.) \n"); 
 	  fprintf(outfile,"\t  --------------------------------- \n"); 
 	  fflush(outfile);
 	  

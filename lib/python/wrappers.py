@@ -19,7 +19,6 @@ from procutil import *
 # never import aliases into this file
 
 
-# test github commit as collaborator
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     r"""Function to make primary function call to energy(), opt(), etc.
@@ -1976,7 +1975,7 @@ def complete_basis_set(name, **kwargs):
     PsiMod.print_out(instructions)
 
     psioh = PsiMod.IOManager.shared_object()
-    psioh.set_specific_retention(PSIF_SCF_DB_MOS, True)
+    psioh.set_specific_retention(PSIF_SCF_MOS, True)
 
     # Run necessary computations
     for mc in JOBS:
@@ -2006,7 +2005,7 @@ def complete_basis_set(name, **kwargs):
 
         PsiMod.clean()
 
-    psioh.set_specific_retention(PSIF_SCF_DB_MOS, False)
+    psioh.set_specific_retention(PSIF_SCF_MOS, False)
 
     # Build string of title banner
     cbsbanners = ''
