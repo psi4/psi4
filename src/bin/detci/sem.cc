@@ -43,12 +43,12 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libqt/slaterdset.h>
-#include <physconst.h>
 #include "structs.h"
 #include "ci_tol.h"
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
+#include <physconst.h>
 
 namespace psi { namespace detci {
 

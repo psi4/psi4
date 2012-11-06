@@ -27,8 +27,6 @@
 #include <vector>
 #include <utility>
 
-#include <psifiles.h>
-#include <physconst.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -36,6 +34,9 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+#include <psifiles.h>
+#include <physconst.h>
+#include "integralfunctors.h"
 
 #include "cuhf.h"
 
