@@ -36,9 +36,9 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <math.h>
-#include <physconst.h>
 #include <psifiles.h>
 #include <psi4-dec.h>
+#include <physconst.h>
 
 namespace psi {
 
