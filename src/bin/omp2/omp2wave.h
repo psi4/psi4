@@ -33,7 +33,6 @@ protected:
     void GFockmo();
     void mograd();
     void update_mo();
-    void korbrot_sd();
     void occ_iterations();
     void t2_1st_sc(); 
     void t2_1st_general();
@@ -61,6 +60,10 @@ protected:
     void dump_ints();
     void dump_pdms();
     void GFockmo_diag();
+    void kappa_msd();
+    void kappa_orb_resp();
+    void orb_resp_pcg_rhf();
+    void orb_resp_pcg_uhf();
     
      class IntegralTransform *ints;
      int nmo;		// Number of MOs
@@ -108,6 +111,12 @@ protected:
      int nidpB;
      int conver;
      int mo_optimized; 		// if 0 MOs are NOT optimized, if 1 MOs are optimized.
+     int itr_pcg;
+     int idp_idx;
+     int pcg_maxiter;
+     int pcg_conver;
+     int do_diis_; 
+     int itr_diis;
      
 
      double Enuc;
@@ -180,8 +189,14 @@ protected:
      double ss_scale;
      double sos_scale;
      double sos_scale2;
-     double a_cg;
-     double b_cg;
+     double a_pcgA;
+     double a_pcgB;
+     double b_pcgA;
+     double b_pcgB;
+     double rms_pcgA;
+     double rms_pcgB;
+     double rms_pcg;
+     double tol_pcg;
      
      string wfn;
      string reference;
@@ -208,6 +223,7 @@ protected:
      string read_mo_coeff;	// Read CmoA from CmoA.psi and CmoB from CmoB.psi
      string scs_type_;		
      string sos_type_;		
+     string pcg_beta_type_;		
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -270,6 +286,26 @@ protected:
      Array1d *kappaB; 
      Array1d *kappa_barA; 
      Array1d *kappa_barB;   
+     Array1d *kappa_newA; 
+     Array1d *kappa_newB; 
+     Array1d *r_pcgA; 
+     Array1d *r_pcgB; 
+     Array1d *z_pcgA; 
+     Array1d *z_pcgB; 
+     Array1d *p_pcgA; 
+     Array1d *p_pcgB; 
+     Array1d *sigma_pcgA; 
+     Array1d *sigma_pcgB; 
+     Array1d *Minv_pcgA; 
+     Array1d *Minv_pcgB; 
+     Array1d *r_pcg_newA; 
+     Array1d *r_pcg_newB; 
+     Array1d *z_pcg_newA; 
+     Array1d *z_pcg_newB; 
+     Array1d *p_pcg_newA; 
+     Array1d *p_pcg_newB; 
+     Array1d *dr_pcgA; 
+     Array1d *dr_pcgB; 
      
      Array2d *vecsA;
      Array2d *vecsB;
@@ -279,7 +315,6 @@ protected:
 
      double **C_pitzerA;     
      double **C_pitzerB;     
-     char **irreplabels; 
      
      SharedMatrix Ca_new;	// New Alpha MO coeff. 
      SharedMatrix Cb_new;	// New Beta MO coeff. 

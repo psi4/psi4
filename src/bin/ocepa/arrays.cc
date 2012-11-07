@@ -294,7 +294,16 @@ void Array1d::column_vector(Array2d *A, int n)
   for (int i=0; i<dim; i++) A1d_[i] = A->get(i, n);
 }//
 
+void Array1d::dirprd(Array1d *a, Array1d *b)
+{
+  int dima = a->dim1();
+  int dimb = b->dim1();
 
+  if (dima == dimb && dima == dim1_) {
+      for (int i=0; i<dim1_; i++) A1d_[i] = a->get(i) * b->get(i);
+  }
+  else throw PSIEXCEPTION ("Vector dimensions do not match!");
+}//
 
 /********************************************************************************************/
 /************************** 2d array ********************************************************/
