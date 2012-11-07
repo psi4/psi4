@@ -63,12 +63,8 @@ fflush(outfile);
       mo_optimized = 0; 
       itr_diis = 0;
 
-      if (opt_method == "DIIS") do_diis_ = 1; // do diis
-      else if (opt_method == "MSD") do_diis_ = 0; // do NOT diis
-      else if (opt_method == "NR") do_diis_ = 0;
-
       // Set-up DIIS for orbitals
-      if (opt_method != "MSD") {
+      if (do_diis_ == 1) {
 	nvar = num_vecs +1;
         vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
         errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
@@ -171,7 +167,6 @@ do
 /********************************************************************************************/
         timer_on("kappa orb rot");
         if (opt_method == "NR") kappa_orb_resp();
-        else if (opt_method == "DIIS") kappa_msd();
         else if (opt_method == "MSD") kappa_msd();
         timer_off("kappa orb rot");
 

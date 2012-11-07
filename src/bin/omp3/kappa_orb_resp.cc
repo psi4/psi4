@@ -172,9 +172,7 @@ if (reference_ == "RESTRICTED") {
 	  kappaA->set(x, -wogA->get(x) / (2.0*value));
        }
      
-       // request diis
-       do_diis_ = 1;
-       fprintf(outfile,"\tPCG did NOT converged in %2d iterations!!! Switching to DIIS. \n", itr_pcg);
+       fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
        fflush(outfile);
     } // end if pcg_conver = 0
 
@@ -477,9 +475,7 @@ else if (reference_ == "UNRESTRICTED") {
 	  kappaB->set(x, -wogB->get(x) / (2.0*value));
 	}
 
-        // request diis
-        do_diis_ = 1; 
-        fprintf(outfile,"\tPCG did NOT converged in %2d iterations!!! Switching to DIIS. \n", itr_pcg);
+        fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
         fflush(outfile);
     }// en d if pcg_conver = 0
 
