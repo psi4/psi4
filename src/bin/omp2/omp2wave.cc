@@ -51,6 +51,8 @@ void OMP2Wave::common_init()
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
+        tol_pcg=options_.get_double("PCG_CONVERGENCE");
+        pcg_maxiter=options_.get_int("CC_MAXITER");
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -74,6 +76,7 @@ void OMP2Wave::common_init()
 	scs_type_=options_.get_str("SCS_TYPE");
 	sos_type_=options_.get_str("SOS_TYPE");
 	dertype=options_.get_str("DERTYPE");
+	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
@@ -203,7 +206,7 @@ void OMP2Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 04, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 06, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -884,6 +887,7 @@ void OMP2Wave::mem_release()
 	delete [] virt2symblkA;
         delete wogA;
 	delete kappaA;
+	delete kappa_newA;
 	delete kappa_barA;
 
        if (reference_ == "UNRESTRICTED") {
@@ -899,13 +903,36 @@ void OMP2Wave::mem_release()
 	delete kappa_barB;
       }
 	
-	if (opt_method == "DIIS") {
+	if (opt_method != "MSD") {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;
           if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
 	
+	if (opt_method == "NR") {
+          delete r_pcgA;
+          delete z_pcgA;
+          delete p_pcgA;
+          delete sigma_pcgA;
+          delete Minv_pcgA;
+          delete r_pcg_newA;
+          delete z_pcg_newA;
+          delete p_pcg_newA;
+          if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgA;
+          if(reference_ == "UNRESTRICTED") {
+             delete r_pcgB;
+             delete z_pcgB;
+             delete p_pcgB;
+             delete sigma_pcgB;
+             delete Minv_pcgB;
+             delete r_pcg_newB;
+             delete z_pcg_newB;
+             delete p_pcg_newB;
+             if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgB;
+          }
+	}
+
 	chkpt_.reset();
 
       if (reference_ == "RESTRICTED") {
