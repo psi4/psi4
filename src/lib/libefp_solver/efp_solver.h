@@ -25,7 +25,6 @@ class EFP {
     // proper efp options outside of common_init()
     Options & options_;
     protected:
-        char ** frag_name_;
         int nfrag_;
         struct efp * efp_;
         boost::shared_ptr<Molecule>molecule_;
@@ -50,6 +49,12 @@ class EFP {
 
         /// Returns EFP contribution to V
         boost::shared_ptr<Matrix> modify_Fock();
+
+	// Make list of frag names
+	char *make_name_list();
+
+	// Make list of .efp file names
+	char *make_potential_file_list(const char *, const char *, const char *);
 };
 
 }

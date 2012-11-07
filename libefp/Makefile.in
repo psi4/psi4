@@ -1,4 +1,4 @@
-LIBEFP_VERSION = 0.1
+LIBEFP_VERSION = 0.9.1
 srcdir = @srcdir@
 libefp_install_dir = $(CURDIR)/install
 
