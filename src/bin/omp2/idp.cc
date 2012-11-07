@@ -55,6 +55,7 @@ if (reference_ == "RESTRICTED") {
       idp_returnA = 1;
       wogA = new Array1d(nidpA, "Alpha MO grad vector");
       kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
+      kappa_newA = new Array1d(nidpA, "Alpha New orb rot params vector of current step");
       kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
       wogA->zero();
       kappaA->zero();
@@ -112,6 +113,7 @@ else if (reference_ == "UNRESTRICTED") {
       idp_returnA = 1;
       wogA = new Array1d(nidpA, "Alpha MO grad vector");
       kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
+      kappa_newA = new Array1d(nidpA, "Alpha New orb rot params vector of current step");
       kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
       wogA->zero();
       kappaA->zero();
@@ -122,6 +124,7 @@ else if (reference_ == "UNRESTRICTED") {
       idp_returnB = 1;
       wogB = new Array1d(nidpB, "Beta MO grad vector");
       kappaB = new Array1d(nidpB, "Beta orb rot params vector of current step");
+      kappa_newB = new Array1d(nidpB, "Beta New orb rot params vector of current step");
       kappa_barB = new Array1d(nidpB, "Beta orb rot params vector with respect to scf MOs");
       wogB->zero();
       kappaB->zero();
