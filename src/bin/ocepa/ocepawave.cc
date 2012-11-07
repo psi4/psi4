@@ -90,6 +90,9 @@ void OCEPAWave::common_init()
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
 
+        if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
+        else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
+
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
         title();
@@ -226,7 +229,7 @@ void OCEPAWave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 06, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 07, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -1081,7 +1084,7 @@ void OCEPAWave::mem_release()
 	delete kappa_barB;
         }
 
-	if (opt_method != "MSD") {
+	if (do_diis_ == 1) {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;

@@ -85,6 +85,9 @@ void OMP3Wave::common_init()
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
 
+        if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
+        else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
+
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
         title();
@@ -220,7 +223,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 06, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 07, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -1142,7 +1145,7 @@ void OMP3Wave::mem_release()
 	delete kappa_barB;
       }
 	
-	if (opt_method != "MSD") {
+	if (do_diis_ == 1) {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;

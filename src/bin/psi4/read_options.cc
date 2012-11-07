@@ -2360,7 +2360,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Number of vectors used in orbital DIIS -*/
-    options.add_int("MO_DIIS_NUM_VECS",4);
+    options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
@@ -2393,10 +2393,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- The optimization algorithm. MSD takes a Newton-Raphson (NR) step with a crude approximation to diagonal elements of MO Hessian.
-     NR option takes a NR step with the MO Hessian, in this case type of the MO Hessian is controlled by HESS_TYPE option.
-     DIIS uses MSD guess in extrapolations. -*/
-    options.add_str("OPT_METHOD","NR","MSD DIIS NR");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
     /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
     options.add_str("HESS_TYPE","SCF","SCF");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2424,6 +2424,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "OMP3"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
@@ -2466,7 +2468,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Number of vectors used in orbital DIIS -*/
-    options.add_int("MO_DIIS_NUM_VECS",4);
+    options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
@@ -2484,10 +2486,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
-    /*- The optimization algorithm. MSD takes a Newton-Raphson (NR) step with a crude approximation to diagonal elements of MO Hessian.
-     NR option takes a NR step with the MO Hessian, in this case type of the MO Hessian is controlled by HESS_TYPE option.
-     DIIS uses MSD guess in extrapolations. -*/
-    options.add_str("OPT_METHOD","NR","MSD DIIS NR");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
     /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
     options.add_str("HESS_TYPE","SCF","SCF");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2513,6 +2515,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("MP3L_ENERGY",false);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "OCEPA"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized CEPA computations. -*/
@@ -2530,7 +2534,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
     /*- Number of vectors used in orbital DIIS -*/
-    options.add_int("MO_DIIS_NUM_VECS",4);
+    options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Minimum number of vectors used in amplitude DIIS -*/
     options.add_int("CC_DIIS_MIN_VECS",2);
     /*- Maximum number of vectors used in amplitude DIIS -*/
@@ -2579,10 +2583,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","COMPUTE","DIRECT COMPUTE");
-    /*- The optimization algorithm. MSD takes a Newton-Raphson (NR) step with a crude approximation to diagonal elements of MO Hessian.
-     NR option takes a NR step with the MO Hessian, in this case type of the MO Hessian is controlled by HESS_TYPE option.
-     DIIS uses MSD guess in extrapolations. -*/
-    options.add_str("OPT_METHOD","NR","MSD DIIS NR");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
     /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
     options.add_str("HESS_TYPE","SCF","SCF");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2608,6 +2612,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_READ",false);
     /*- Do compute cepa-l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("CEPAL_ENERGY",true);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
