@@ -26,7 +26,7 @@
 #include <libmints/factory.h>
 #include <libmints/wavefunction.h>
 
-#include "ocepawave.h"
+#include "omp2wave.h"
 #include "defines.h"
 #include "arrays.h"
 
@@ -36,11 +36,11 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace ocepawave{ 
+namespace psi{ namespace omp2wave{ 
 
-void OCEPAWave::korbrot_sd()
+void OMP2Wave::kappa_msd()
 { 
-//fprintf(outfile,"\n korbrot_sd is starting... \n"); fflush(outfile);
+//fprintf(outfile,"\n kappa_msd is starting... \n"); fflush(outfile);
 
 if (reference_ == "RESTRICTED") {
         // Get kappa
@@ -82,7 +82,10 @@ if (reference_ == "RESTRICTED") {
 	rms_kappaA = kappaA->rms();
 	
         // print
-        if(print_ > 2) kappaA->print();
+        if(print_ > 2) {
+           kappaA->print();
+           kappa_barA->print();
+        }
  
 }// end if (reference_ == "RESTRICTED") 
 
@@ -164,7 +167,7 @@ else if (reference_ == "UNRESTRICTED") {
         }
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n korbrot_sd done. \n"); fflush(outfile);
+ //fprintf(outfile,"\n kappa_msd done. \n"); fflush(outfile);
 	
 }// end main
 }} // End Namespaces

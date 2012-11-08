@@ -77,15 +77,6 @@ private:
                                   for a given m and T_idx <= max_T_idx[m] use Taylor interpolation,
                                   for a given m and T_idx > max_T_idx[m] use the asymptotic formula */
     double *F_;                /* Here computed values of Fj(T) are stored */
-
-    class ExpensiveMath {
-    public:
-        ExpensiveMath(int ifac, int idf);
-        ~ExpensiveMath();
-        double *fac;
-        double *df;
-    };
-    ExpensiveMath ExpMath_;
 };
 
 /// "Old" intv3 code from Curt

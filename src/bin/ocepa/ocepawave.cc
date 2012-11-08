@@ -50,9 +50,13 @@ void OCEPAWave::common_init()
 	mo_maxiter=options_.get_int("MO_MAXITER");
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
-	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
+	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
+	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
+        tol_pcg=options_.get_double("PCG_CONVERGENCE");
+        pcg_maxiter=options_.get_int("CC_MAXITER");
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -81,9 +85,13 @@ void OCEPAWave::common_init()
 	//sos_type_=options_.get_str("SOS_TYPE");
 	wfn_type_=options_.get_str("WFN_TYPE");
 	dertype=options_.get_str("DERTYPE");
+	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+
+        if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
+        else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
@@ -221,7 +229,7 @@ void OCEPAWave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 26, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 07, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -273,8 +281,6 @@ double OCEPAWave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -283,8 +289,9 @@ double OCEPAWave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
-	fprintf(outfile,"\n"); 
 	fflush(outfile);
 	Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
 	Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -309,7 +316,8 @@ if (wfn_type_ == "OCEPA") {
   if (conver == 1) {
         ref_energy();
 	cepa_energy();
-
+        
+        /*
         fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing CEPA energy using optimized MOs... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
@@ -322,11 +330,12 @@ if (wfn_type_ == "OCEPA") {
 	fprintf(outfile,"\tSCS-CEPA(0) Total Energy (a.u.)    : %12.14f\n", Escscepa);
 	fprintf(outfile,"\tSOS-CEPA(0) Total Energy (a.u.)    : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\tCEPA(0) Correlation Energy (a.u.)  : %12.14f\n", Ecepa-Escf);
+	fprintf(outfile,"\tEcepa - Eref (a.u.)                : %12.14f\n", Ecepa-Eref);
 	fprintf(outfile,"\tCEPA(0) Total Energy (a.u.)        : %12.14f\n", Ecepa);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
-
+        */
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
@@ -335,11 +344,11 @@ if (wfn_type_ == "OCEPA") {
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
 	fprintf(outfile,"\tREF Energy (a.u.)                  : %12.14f\n", Eref);
+	fprintf(outfile,"\tSCS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Escscepa);
+	fprintf(outfile,"\tSOS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\tOCEPA(0) Correlation Energy (a.u.) : %12.14f\n", EcepaL-Escf);
 	fprintf(outfile,"\tEocepa - Eref (a.u.)               : %12.14f\n", EcepaL-Eref);
 	fprintf(outfile,"\tOCEPA(0) Total Energy (a.u.)       : %12.14f\n", EcepaL);
-	fprintf(outfile,"\tSCS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Escscepa);
-	fprintf(outfile,"\tSOS-OCEPA(0) Total Energy (a.u.)   : %12.14f\n", Esoscepa);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);
@@ -687,8 +696,8 @@ void OCEPAWave::cepa_energy()
      
      Ecorr = EcepaAA + EcepaBB + EcepaAB;
      Ecepa = Eref + Ecorr;
-     Escscepa = (cepa_ss_scale_ * (EcepaAA + EcepaBB)) + (cepa_os_scale_ * EcepaAB);
-     Esoscepa = cepa_sos_scale_ * EcepaAB;
+     Escscepa = Eref + ((cepa_ss_scale_ * (EcepaAA + EcepaBB)) + (cepa_os_scale_ * EcepaAB));
+     Esoscepa = Eref + (cepa_sos_scale_ * EcepaAB);
      
      psio_->close(PSIF_LIBTRANS_DPD, 1);
      psio_->close(PSIF_OCEPA_DPD, 1);    
@@ -1044,10 +1053,8 @@ fflush(outfile);
 /*=======================*/
 void OCEPAWave::mem_release()
 {   
+	chkpt_.reset();
 	delete ints;
-	delete [] idprowA;
-	delete [] idpcolA;
-	delete [] idpirrA;
 	delete [] pitzer2symblk;
 	delete [] pitzer2symirrep;
 	delete [] PitzerOffset;
@@ -1057,31 +1064,63 @@ void OCEPAWave::mem_release()
 	delete [] vir_offA;
 	delete [] occ2symblkA;
 	delete [] virt2symblkA;
+ 
+      if (wfn_type_ == "OCEPA") {
+	delete [] idprowA;
+	delete [] idpcolA;
+	delete [] idpirrA;
         delete wogA;
 	delete kappaA;
+	delete kappa_newA;
 	delete kappa_barA;
 
-       if (reference_ == "UNRESTRICTED") {
+        if (reference_ == "UNRESTRICTED") {
 	delete [] idprowB;
 	delete [] idpcolB;
 	delete [] idpirrB;
-	delete [] occ_offB;
-	delete [] vir_offB;
-	delete [] occ2symblkB;
-	delete [] virt2symblkB;
 	delete wogB;
 	delete kappaB;
+	delete kappa_newB;
 	delete kappa_barB;
-      }
-	
-	if (opt_method == "DIIS") {
+        }
+
+	if (do_diis_ == 1) {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;
           if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
-	
-	chkpt_.reset();
+
+	if (opt_method == "NR") {
+          delete r_pcgA;
+          delete z_pcgA;
+          delete p_pcgA;
+          delete sigma_pcgA;
+          delete Minv_pcgA;
+          delete r_pcg_newA;
+          delete z_pcg_newA;
+          delete p_pcg_newA;
+          if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgA;
+          if(reference_ == "UNRESTRICTED") {
+             delete r_pcgB;
+             delete z_pcgB;
+             delete p_pcgB;
+             delete sigma_pcgB;
+             delete Minv_pcgB;
+             delete r_pcg_newB;
+             delete z_pcg_newB;
+             delete p_pcg_newB;
+             if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgB;
+          }
+	}
+      }// end if ocepa 
+
+       if (reference_ == "UNRESTRICTED") {
+	delete [] occ_offB;
+	delete [] vir_offB;
+	delete [] occ2symblkB;
+	delete [] virt2symblkB;
+      }
 
       if (reference_ == "RESTRICTED") {
 	Ca_.reset();
