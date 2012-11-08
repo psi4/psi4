@@ -61,18 +61,20 @@ if (reference_ == "RESTRICTED") {
 /********************************************************************************************/
 /************************ DO DIIS ***********************************************************/
 /********************************************************************************************/
-if (opt_method == "DIIS") {
+if (do_diis_ == 1) {
   
+        // starting with itr = 1
+        itr_diis++;
+   
         // Form Diis Error Vector & Extrapolant Alpha Spin Case
-	if (itr_occ <= num_vecs) {  
+	if (itr_diis <= num_vecs) {  
 	  for(int i = 0; i < nidpA; i++){
-	    errvecsA->set(itr_occ-1, i, wogA->get(i));
-	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
+	    errvecsA->set(itr_diis-1, i, wogA->get(i));
+	    vecsA->set(itr_diis-1, i, kappa_barA->get(i));
 	  }  
 	}
 	
-	
-	if (itr_occ > num_vecs) {  
+	if (itr_diis > num_vecs) {  
 	  for(int j = 0; j < (num_vecs-1); j++){
 	    for(int i = 0; i < nidpA; i++){
 	      errvecsA->set(j, i, errvecsA->get(j+1, i));
@@ -87,11 +89,11 @@ if (opt_method == "DIIS") {
 	}
 	
         // Extrapolate 
-        if (itr_occ >= num_vecs) {
+        if (itr_diis >= num_vecs) {
 	  diis(nidpA, vecsA, errvecsA, kappa_barA);
 	}
 	
-}// end if (opt_method == "DIIS") {
+}// end if (do_diis_ == 1) 
 
 /********************************************************************************************/
 /************************** Construct Korb **************************************************/
@@ -188,18 +190,6 @@ else if (orth_type == "GS") {
 	  Ca_->print();
 	}
 
-/********************************************************************************************/
-/************************** Save MO coefficients to Chkpt file ******************************/
-/********************************************************************************************/	 
-        /*
-	C_pitzerA = Ca_->to_block_matrix();    
-	C_pitzerB = Cb_->to_block_matrix();    
-	chkpt_->wt_alpha_scf(C_pitzerA);
-	chkpt_->wt_beta_scf(C_pitzerB);
-	free_block(C_pitzerA);
-	free_block(C_pitzerB);
-        */
-
 }// end if (reference_ == "RESTRICTED") 
 
 
@@ -227,18 +217,21 @@ else if (reference_ == "UNRESTRICTED") {
 /********************************************************************************************/
 /************************ DO DIIS ***********************************************************/
 /********************************************************************************************/
-if (opt_method == "DIIS") {
+if (do_diis_ == 1) {
   
+        // starting with itr = 1
+        itr_diis++;
+
         // Form Diis Error Vector & Extrapolant Alpha Spin Case
-	if (itr_occ <= num_vecs) {  
+	if (itr_diis <= num_vecs) {  
 	  for(int i = 0; i < nidpA; i++){
-	    errvecsA->set(itr_occ-1, i, wogA->get(i));
-	    vecsA->set(itr_occ-1, i, kappa_barA->get(i));
+	    errvecsA->set(itr_diis-1, i, wogA->get(i));
+	    vecsA->set(itr_diis-1, i, kappa_barA->get(i));
 	  }  
 	}
 	
 	
-	if (itr_occ > num_vecs) {  
+	if (itr_diis > num_vecs) {  
 	  for(int j = 0; j < (num_vecs-1); j++){
 	    for(int i = 0; i < nidpA; i++){
 	      errvecsA->set(j, i, errvecsA->get(j+1, i));
@@ -253,15 +246,15 @@ if (opt_method == "DIIS") {
 	}
 	
         // Form Diis Error Vector & Extrapolant Beta Spin Case
-	if (itr_occ <= num_vecs) {  
+	if (itr_diis <= num_vecs) {  
 	  for(int i = 0; i < nidpB; i++){
-	    errvecsB->set(itr_occ-1, i, wogB->get(i));
-	    vecsB->set(itr_occ-1, i, kappa_barB->get(i));
+	    errvecsB->set(itr_diis-1, i, wogB->get(i));
+	    vecsB->set(itr_diis-1, i, kappa_barB->get(i));
 	  }  
 	}
 	
 	
-	if (itr_occ > num_vecs) {  
+	if (itr_diis > num_vecs) {  
 	  for(int j = 0; j < (num_vecs-1); j++){
 	    for(int i = 0; i < nidpB; i++){
 	      errvecsB->set(j, i, errvecsB->get(j+1, i));
@@ -277,12 +270,12 @@ if (opt_method == "DIIS") {
 	
 	
         // Extrapolate 
-        if (itr_occ >= num_vecs) {
+        if (itr_diis >= num_vecs) {
 	  diis(nidpA, vecsA, errvecsA, kappa_barA);
 	  diis(nidpB, vecsB, errvecsB, kappa_barB);
 	}
 	
-}// end if (opt_method == "DIIS") {
+}// end if (do_diis_ == 1) 
 
 /********************************************************************************************/
 /************************** Construct Korb **************************************************/
@@ -412,18 +405,6 @@ else if (orth_type == "GS") {
 	  Ca_->print();
 	  Cb_->print();
 	}
-
-/********************************************************************************************/
-/************************** Save MO coefficients to Chkpt file ******************************/
-/********************************************************************************************/	 
-        /*
-	C_pitzerA = Ca_->to_block_matrix();    
-	C_pitzerB = Cb_->to_block_matrix();    
-	chkpt_->wt_alpha_scf(C_pitzerA);
-	chkpt_->wt_beta_scf(C_pitzerB);
-	free_block(C_pitzerA);
-	free_block(C_pitzerB);
-        */
 
 }// end if (reference_ == "UNRESTRICTED") 
 

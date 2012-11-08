@@ -153,9 +153,9 @@ Publications resulting from the use of the OMP2 code should cite the following p
 
 [Bozkaya:2011:omp2]_.
 
-Publications resulting from the use of the OMP3 code should cite the following publications: 
+Publications resulting from the use of the OMP3 code should cite the following publication(s): 
 
-[Bozkaya:2011:omp2]_ and [Bozkaya:2011:omp3]_.
+[Bozkaya:2011:omp3]_.
 
 Publications resulting from the use of the OCEPA code should cite the following publication(s): 
 
@@ -240,7 +240,7 @@ Basic Keywords
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
 .. include:: /autodir_options_c/omp2__opt_method.rst
-.. include:: /autodir_options_c/omp2__diis_max_vecs.rst
+.. include:: /autodir_options_c/omp2__mo_diis_num_vecs.rst
 .. include:: /autodir_options_c/omp2__lineq_solver.rst
 .. include:: /autodir_options_c/omp2__orth_type.rst
 .. include:: /autodir_options_c/omp2__mp2_os_scale.rst

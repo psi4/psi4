@@ -1,8 +1,8 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-beta2+ Driver
+                              PSI 4.0.0-beta3+ Driver
 
-               Git: Rev 388170906a4d5c5826725fba82c1a21f40b6511c
+               Git: Rev 11fafa7f45e2a08128e36b06c672ad085c58ebba
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   2714
+    Process ID:   7686
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -58,7 +58,7 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
   Memory set to 250.000 MiB by Python script.
 
 *** tstart() called on ugur
-*** at Fri Oct  5 11:42:11 2012
+*** at Tue Nov  6 20:14:34 2012
 
 
          ---------------------------------------------------------
@@ -99,7 +99,7 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
   Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-08
+  Density threshold  = 1.00e-06
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
@@ -147,37 +147,43 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
       Computed 11412 non-zero two-electron integrals.
         Stored in file 33.
 
+	Batch   1 pq = [       0,     107] index = [             0,5778]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          0E+00
+
   Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.56332129244280
+  Initial RHF energy:   -58.56332129244274
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.87414405851885   -1.03108e+01   0.00000e+00 
+   @RHF iter   1:   -68.87414405851882   -1.03108e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
 
-   @RHF iter   2:   -69.94961388024055   -1.07547e+00   5.55252e-01 DIIS
+   @RHF iter   2:   -69.94961388024069   -1.07547e+00   5.55252e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
 
    @RHF iter   3:   -75.73691793435390   -5.78730e+00   5.22818e-01 DIIS
-   @RHF iter   4:   -76.00165601705402   -2.64738e-01   1.78444e-02 DIIS
-   @RHF iter   5:   -76.02647588165982   -2.48199e-02   8.31833e-03 DIIS
-   @RHF iter   6:   -76.02671906756567   -2.43186e-04   1.29848e-03 DIIS
-   @RHF iter   7:   -76.02675940507524   -4.03375e-05   4.58752e-04 DIIS
-   @RHF iter   8:   -76.02676100593217   -1.60086e-06   1.02501e-04 DIIS
-   @RHF iter   9:   -76.02676109481285   -8.88807e-08   1.72853e-05 DIIS
-   @RHF iter  10:   -76.02676109554534   -7.32484e-10   2.38367e-06 DIIS
-   @RHF iter  11:   -76.02676109559297   -4.76348e-11   4.54970e-07 DIIS
-   @RHF iter  12:   -76.02676109559437   -1.39266e-12   6.31903e-08 DIIS
-   @RHF iter  13:   -76.02676109559437    0.00000e+00   1.33221e-08 DIIS
+   @RHF iter   4:   -76.00165601705396   -2.64738e-01   1.78444e-02 DIIS
+   @RHF iter   5:   -76.02647588165979   -2.48199e-02   8.31833e-03 DIIS
+   @RHF iter   6:   -76.02671906756561   -2.43186e-04   1.29848e-03 DIIS
+   @RHF iter   7:   -76.02675940507527   -4.03375e-05   4.58752e-04 DIIS
+   @RHF iter   8:   -76.02676100593214   -1.60086e-06   1.02501e-04 DIIS
+   @RHF iter   9:   -76.02676109481288   -8.88807e-08   1.72853e-05 DIIS
+   @RHF iter  10:   -76.02676109554534   -7.32456e-10   2.38367e-06 DIIS
 
   ==> Post-Iterations <==
 
@@ -186,18 +192,18 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
 
 	Doubly Occupied:                                                      
 
-	   1A1   -20.550579     2A1    -1.336336     1B2    -0.698827  
-	   3A1    -0.566506     1B1    -0.493105  
+	   1A1   -20.550580     2A1    -1.336336     1B2    -0.698827  
+	   3A1    -0.566507     1B1    -0.493106  
 
 	Virtual:                                                              
 
-	   4A1     0.185436     2B2     0.256147     3B2     0.788656  
-	   5A1     0.853784     6A1     1.163587     2B1     1.200369  
-	   4B2     1.253383     7A1     1.444392     1A2     1.476182  
-	   3B1     1.674338     8A1     1.867382     5B2     1.934293  
-	   6B2     2.451040     9A1     2.488585     4B1     3.285193  
-	   2A2     3.338052    10A1     3.509722    11A1     3.864815  
-	   7B2     4.146867  
+	   4A1     0.185436     2B2     0.256147     3B2     0.788655  
+	   5A1     0.853783     6A1     1.163587     2B1     1.200369  
+	   4B2     1.253382     7A1     1.444391     1A2     1.476181  
+	   3B1     1.674338     8A1     1.867381     5B2     1.934293  
+	   6B2     2.451040     9A1     2.488584     4B1     3.285192  
+	   2A2     3.338052    10A1     3.509722    11A1     3.864814  
+	   7B2     4.146866  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -205,17 +211,22 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02676109559437
+  @RHF Final Energy:   -76.02676109554534
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =          9.1873864214775907
-    One-Electron Energy =            -123.1375893643539996
-    Two-Electron Energy =              37.9234418472820494
-    DFT Functional Energy =             0.0000000000000000
-    Empirical Dispersion Energy =       0.0000000000000000
-    Total Energy =                    -76.0267610955943667
+    Nuclear Repulsion Energy =              9.1873864214775907
+    One-Electron Energy =                -123.1375547021212071
+    Two-Electron Energy =                  37.9234071850982772
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0267610955453392
 
+
+Properties computed using the SCF density matrix
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
@@ -233,46 +244,75 @@ compare_values(refsosomp3, get_variable("SOS-OMP3 TOTAL ENERGY"), 6, "SOS-OMP3 T
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ugur at Fri Oct  5 11:42:11 2012
+*** tstop() called on ugur at Tue Nov  6 20:14:34 2012
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ugur
-*** at Fri Oct  5 11:42:11 2012
+*** at Tue Nov  6 20:14:34 2012
 
 
 
   Options:
   ----------------------------------------------------------------------------
-  BENCH                  => 0            CACHELEVEL             => 2          
-  CC_MAXITER             => 50           CUTOFF                 => 14         
-  DEBUG                  => 0            DERTYPE                => NONE       
-  DIE_IF_NOT_CONVERGED   => TRUE         DIIS_MAX_VECS          => 4          
-  DOCC                   => [  ]         DO_LEVEL_SHIFT         => FALSE      
-  DO_SCS                 => FALSE        DO_SOS                 => FALSE      
-  E3_SCALE               => 0.25         E_CONVERGENCE          => 1e-08      
-  FREEZE_CORE            => FALSE        FROZEN_DOCC            => [  ]       
-  FROZEN_UOCC            => [  ]         HESS_TYPE              => NONE       
-  LEVEL_SHIFT            => 0.02         LINEQ_SOLVER           => CDGESV     
-  MAT_NUM_COLUMN_PRINT   => 5            MAX_MOGRAD_CONVERGENCE => 0.0001     
-  MO_MAXITER             => 50           MO_READ                => FALSE      
-  MO_STEP_MAX            => 0.5          MO_WRITE               => FALSE      
-  MP2_OS_SCALE           => 1.2          MP2_SS_SCALE           => 0.333333   
-  MP3L_ENERGY            => FALSE        NAT_ORBS               => FALSE      
-  NUM_FROZEN_DOCC        => 0            NUM_FROZEN_UOCC        => 0          
-  OMP3_ORBS_PRINT        => FALSE        OPT_METHOD             => MSD        
-  ORTH_TYPE              => MGS          PRINT                  => 1          
-  PROPERTIES             => [  ]         PUREAM                 => TRUE       
-  RMS_MOGRAD_CONVERGENCE => 1e-05        R_CONVERGENCE          => 1e-05      
-  SOCC                   => [  ]         SOS_SCALE              => 1.3        
-  SOS_SCALE2             => 1.2          TPDM_ABCD_TYPE         => DIRECT     
-  UNITS                  => ANGSTROMS    WFN                    => SCF        
+  BENCH                  => 0                
+  CACHELEVEL             => 2                
+  CC_MAXITER             => 50               
+  CUTOFF                 => 14               
+  DEBUG                  => 0                
+  DERTYPE                => NONE             
+  DIE_IF_NOT_CONVERGED   => TRUE             
+  DOCC                   => [  ]             
+  DO_LEVEL_SHIFT         => FALSE            
+  DO_SCS                 => FALSE            
+  DO_SOS                 => FALSE            
+  E3_SCALE               => 0.25             
+  E_CONVERGENCE          => 1e-08            
+  FREEZE_CORE            => FALSE            
+  FROZEN_DOCC            => [  ]             
+  FROZEN_UOCC            => [  ]             
+  HESS_TYPE              => SCF              
+  LEVEL_SHIFT            => 0.02             
+  LINEQ_SOLVER           => CDGESV           
+  MAT_NUM_COLUMN_PRINT   => 5                
+  MAX_MOGRAD_CONVERGENCE => 0.001            
+  MO_DIIS_NUM_VECS       => 4                
+  MO_MAXITER             => 50               
+  MO_READ                => FALSE            
+  MO_STEP_MAX            => 0.5              
+  MO_WRITE               => FALSE            
+  MP2_OS_SCALE           => 1.2              
+  MP2_SS_SCALE           => 0.333333         
+  MP3L_ENERGY            => FALSE            
+  NAT_ORBS               => FALSE            
+  NUM_FROZEN_DOCC        => 0                
+  NUM_FROZEN_UOCC        => 0                
+  OMP3_ORBS_PRINT        => FALSE            
+  OPT_METHOD             => NR               
+  ORTH_TYPE              => MGS              
+  PCG_BETA_TYPE          => FLETCHER_REEVES  
+  PCG_CONVERGENCE        => 1e-06            
+  PCG_MAXITER            => 50               
+  PRINT                  => 1                
+  PROPERTIES             => [  ]             
+  PROPERTIES_ORIGIN      => [  ]             
+  PUREAM                 => TRUE             
+  RMS_MOGRAD_CONVERGENCE => 1e-05            
+  R_CONVERGENCE          => 1e-05            
+  SCS_TYPE               => SCS              
+  SOCC                   => [  ]             
+  SOS_SCALE              => 1.3              
+  SOS_SCALE2             => 1.2              
+  SOS_TYPE               => SOS              
+  TPDM_ABCD_TYPE         => DIRECT           
+  UNITS                  => ANGSTROMS        
+  WFN                    => SCF              
 
 
  ============================================================================== 
@@ -281,9 +321,7 @@ Total time:
 
                        OMP3 (OO-MP3)   
               Program Written by Ugur Bozkaya,
-              Latest Revision October 05, 2012.
-
-              U. Bozkaya, J. Chem. Phys. 135, 224103 (2011).
+              Latest Revision November 06, 2012.
 
  ============================================================================== 
  ============================================================================== 
@@ -302,41 +340,41 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
-	SCF Energy (a.u.)                  : -76.02676109559437
-	REF Energy (a.u.)                  : -76.02676109559437
-	Alpha-Alpha Contribution (a.u.)    : -0.02576501623328
-	Alpha-Beta Contribution (a.u.)     : -0.15248920679165
-	Beta-Beta Contribution (a.u.)      : -0.02576501623328
-	MP2 Correlation Energy (a.u.)      : -0.20401923925821
-	MP2 Total Energy (a.u.)            : -76.23078033485258
-	Scaled_SS Correlation Energy (a.u.): -0.01717667748885
-	Scaled_OS Correlation Energy (a.u.): -0.18298704814998
-	SCS-MP2 Total Energy (a.u.)        : -76.22692482123321
-	SOS-MP2 Total Energy (a.u.)        : -76.22499706442350
-	SCSN-MP2 Total Energy (a.u.)       : -76.11745395273553
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.15423052019291
-	SCS-MP2-VDW Total Energy (a.u.)    : -76.24771229652097
-	SOS-PI-MP2 Total Energy (a.u.)     : -76.24024598510267
+	SCF Energy (a.u.)                  : -76.02676109554534
+	REF Energy (a.u.)                  : -76.02676109559300
+	Alpha-Alpha Contribution (a.u.)    : -0.02576502002657
+	Alpha-Beta Contribution (a.u.)     : -0.15248922262718
+	Beta-Beta Contribution (a.u.)      : -0.02576502002657
+	Scaled_SS Correlation Energy (a.u.): -0.01717668001771
+	Scaled_OS Correlation Energy (a.u.): -0.18298706715261
+	SCS-MP2 Total Energy (a.u.)        : -76.22692484276332
+	SOS-MP2 Total Energy (a.u.)        : -76.22499708500834
+	SCSN-MP2 Total Energy (a.u.)       : -76.11745396608652
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.15423053631243
+	SCS-MP2-VDW Total Energy (a.u.)    : -76.24771232058237
+	SOS-PI-MP2 Total Energy (a.u.)     : -76.24024600727105
+	MP2 Correlation Energy (a.u.)      : -0.20401926268031
+	MP2 Total Energy (a.u.)            : -76.23078035827332
 	============================================================================== 
 
 
 	Computing MP3 energy using SCF MOs (Canonical MP3)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
-	SCF Energy (a.u.)                  : -76.02676109559437
-	REF Energy (a.u.)                  : -76.02676109559437
-	Alpha-Alpha Contribution (a.u.)    : -0.02386824219943
-	Alpha-Beta Contribution (a.u.)     : -0.16307021205372
-	Beta-Beta Contribution (a.u.)      : -0.02386824219943
-	3rd Order Energy (a.u.)            : -0.00678745719435
-	MP3 Correlation Energy (a.u.)      : -0.21080669645257
-	MP3 Total Energy (a.u.)            : -76.23756779204693
-	SCS-MP3 Total Energy (a.u.)        : -76.22862168553181
-	SOS-MP3 Total Energy (a.u.)        : -76.22669392872209
-	SCSN-MP3 Total Energy (a.u.)       : -76.11915081703413
-	SCS-MI-MP3 Total Energy (a.u.)     : -76.15592738449149
-	SCS-MP3-VDW Total Energy (a.u.)    : -76.24940916081957
-	SOS-PI-MP3 Total Energy (a.u.)     : -76.24194284940125
+	SCF Energy (a.u.)                  : -76.02676109554534
+	REF Energy (a.u.)                  : -76.02676109559300
+	Alpha-Alpha Contribution (a.u.)    : -0.02386824587573
+	Alpha-Beta Contribution (a.u.)     : -0.16307023251256
+	Beta-Beta Contribution (a.u.)      : -0.02386824587573
+	SCS-MP3 Total Energy (a.u.)        : -76.22862170815925
+	SOS-MP3 Total Energy (a.u.)        : -76.22669395040427
+	SCSN-MP3 Total Energy (a.u.)       : -76.11915083148244
+	SCS-MI-MP3 Total Energy (a.u.)     : -76.15592740170835
+	SCS-MP3-VDW Total Energy (a.u.)    : -76.24940918597829
+	SOS-PI-MP3 Total Energy (a.u.)     : -76.24194287266698
+	3rd Order Energy (a.u.)            : -0.00678746158371
+	MP3 Correlation Energy (a.u.)      : -0.21080672426403
+	MP3 Total Energy (a.u.)            : -76.23756781985703
 	============================================================================== 
 
 
@@ -350,12 +388,9 @@ Total time:
 	            --------------------------- 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS Korb      MAX Korb      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ----------    -----------   ----------  
-   1     -76.2381231644     -5.55e-04       2.86e-04         5.87e-03        3.16e-04      4.90e-03      1.67e-07 
-   2     -76.2381442924     -2.11e-05       5.84e-05         9.07e-04        6.35e-05      1.16e-03      3.45e-08 
-   3     -76.2381457272     -1.43e-06       2.21e-05         3.33e-04        2.09e-05      5.53e-04      1.05e-08 
-   4     -76.2381459238     -1.97e-07       8.73e-06         1.80e-04        7.82e-06      1.99e-04      3.74e-09 
-   5     -76.2381459669     -4.31e-08       5.27e-06         6.82e-05        4.15e-06      1.19e-04      1.87e-09 
-   6     -76.2381459750     -8.12e-09       2.59e-06         4.25e-05        1.86e-06      3.88e-05      7.83e-10 
+   1     -76.2381451917     -5.77e-04       3.61e-05         5.08e-04        3.86e-04      5.93e-03      2.06e-07 
+   2     -76.2381459709     -7.79e-07       1.57e-06         2.71e-05        1.43e-05      3.17e-04      7.85e-09 
+   3     -76.2381459786     -7.76e-09       3.44e-07         5.24e-06        9.78e-07      2.72e-05      5.08e-10 
 
  ============================================================================== 
  ======================== OMP3 ITERATIONS ARE CONVERGED ======================= 
@@ -364,41 +399,41 @@ Total time:
 	Computing MP2 energy using optimized MOs... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
-	SCF Energy (a.u.)                  : -76.02676109559437
-	REF Energy (a.u.)                  : -76.02617053271300
-	Alpha-Alpha Contribution (a.u.)    : -0.02591367715470
-	Alpha-Beta Contribution (a.u.)     : -0.15358645116488
-	Beta-Beta Contribution (a.u.)      : -0.02591367715470
-	MP2 Correlation Energy (a.u.)      : -0.21197544227009
-	MP2 Total Energy (a.u.)            : -76.23158433818728
-	Scaled_SS Correlation Energy (a.u.): -0.01727578476980
-	Scaled_OS Correlation Energy (a.u.): -0.18430374139785
-	SCS-MP2 Total Energy (a.u.)        : -76.22775005888064
-	SOS-MP2 Total Energy (a.u.)        : -76.22583291922733
-	SCSN-MP2 Total Energy (a.u.)       : -76.11738667629754
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.15446240023807
-	SCS-MP2-VDW Total Energy (a.u.)    : -76.24867486735874
-	SOS-PI-MP2 Total Energy (a.u.)     : -76.24119156434382
+	SCF Energy (a.u.)                  : -76.02676109554534
+	REF Energy (a.u.)                  : -76.02617008096991
+	Alpha-Alpha Contribution (a.u.)    : -0.02591374969729
+	Alpha-Beta Contribution (a.u.)     : -0.15358690631059
+	Beta-Beta Contribution (a.u.)      : -0.02591374969729
+	Scaled_SS Correlation Energy (a.u.): -0.01727583313153
+	Scaled_OS Correlation Energy (a.u.): -0.18430428757271
+	SCS-MP2 Total Energy (a.u.)        : -76.22775020167414
+	SOS-MP2 Total Energy (a.u.)        : -76.22583305917368
+	SCSN-MP2 Total Energy (a.u.)       : -76.11738647990438
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.15446231771315
+	SCS-MP2-VDW Total Energy (a.u.)    : -76.24867507074474
+	SOS-PI-MP2 Total Energy (a.u.)     : -76.24119174980473
+	MP2 Correlation Energy (a.u.)      : -0.21197589767283
+	MP2 Total Energy (a.u.)            : -76.23158448667509
 	============================================================================== 
 
 
 	Computing MP3 energy using optimized MOs... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
-	SCF Energy (a.u.)                  : -76.02676109559437
-	REF Energy (a.u.)                  : -76.02617053271300
-	Alpha-Alpha Contribution (a.u.)    : -0.02394056991228
-	Alpha-Beta Contribution (a.u.)     : -0.16409430244554
-	Beta-Beta Contribution (a.u.)      : -0.02394056991228
-	3rd Order Energy (a.u.)            : -0.00656163679581
-	MP3 Correlation Energy (a.u.)      : -0.21197544227009
-	MP3 Total Energy (a.u.)            : -76.23814597498308
-	SCS-MP3 Total Energy (a.u.)        : -76.22939046807960
-	SOS-MP3 Total Energy (a.u.)        : -76.22747332842629
-	SCSN-MP3 Total Energy (a.u.)       : -76.11902708549650
-	SCS-MI-MP3 Total Energy (a.u.)     : -76.15610280943703
-	SCS-MP3-VDW Total Energy (a.u.)    : -76.25031527655770
-	SOS-PI-MP3 Total Energy (a.u.)     : -76.24283197354278
+	SCF Energy (a.u.)                  : -76.02676109554534
+	REF Energy (a.u.)                  : -76.02617008096991
+	Alpha-Alpha Contribution (a.u.)    : -0.02394060395086
+	Alpha-Beta Contribution (a.u.)     : -0.16409468977111
+	Beta-Beta Contribution (a.u.)      : -0.02394060395086
+	SCS-MP3 Total Energy (a.u.)        : -76.22939057466606
+	SOS-MP3 Total Energy (a.u.)        : -76.22747343216560
+	SCSN-MP3 Total Energy (a.u.)       : -76.11902685289630
+	SCS-MI-MP3 Total Energy (a.u.)     : -76.15610269070507
+	SCS-MP3-VDW Total Energy (a.u.)    : -76.25031544373665
+	SOS-PI-MP3 Total Energy (a.u.)     : -76.24283212279664
+	3rd Order Energy (a.u.)            : -0.00656149196764
+	MP3 Correlation Energy (a.u.)      : -0.21197589767283
+	MP3 Total Energy (a.u.)            : -76.23814597864273
 	============================================================================== 
 
 
@@ -406,28 +441,28 @@ Total time:
 	================ OMP3 FINAL RESULTS ========================================== 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 9.18738642147759
-	SCF Energy (a.u.)                  : -76.02676109559437
-	REF Energy (a.u.)                  : -76.02617053271300
-	OMP3 Correlation Energy (a.u.)     : -0.21138487938872
-	Eomp3 - Eref (a.u.)                : -0.21197544227009
-	OMP3 Total Energy (a.u.)           : -76.23814597498308
-	SCS-OMP3 Total Energy (a.u.)       : -76.22939046807960
-	SOS-OMP3 Total Energy (a.u.)       : -76.22747332842629
-	SCSN-OMP3 Total Energy (a.u.)      : -76.11902708549650
-	SCS-MI-OMP3 Total Energy (a.u.)    : -76.15610280943703
-	SCS-OMP3-VDW Total Energy (a.u.    : -76.25031527655770
-	SOS-PI-OMP3 Total Energy (a.u.)    : -76.24283197354278
+	SCF Energy (a.u.)                  : -76.02676109554534
+	REF Energy (a.u.)                  : -76.02617008096991
+	SCS-OMP3 Total Energy (a.u.)       : -76.22939057466606
+	SOS-OMP3 Total Energy (a.u.)       : -76.22747343216560
+	SCSN-OMP3 Total Energy (a.u.)      : -76.11902685289630
+	SCS-MI-OMP3 Total Energy (a.u.)    : -76.15610269070507
+	SCS-OMP3-VDW Total Energy (a.u.    : -76.25031544373665
+	SOS-PI-OMP3 Total Energy (a.u.)    : -76.24283212279664
+	OMP3 Correlation Energy (a.u.)     : -0.21138488309740
+	Eomp3 - Eref (a.u.)                : -0.21197589767283
+	OMP3 Total Energy (a.u.)           : -76.23814597864273
 	============================================================================== 
 
 
-*** tstop() called on ugur at Fri Oct  5 11:42:12 2012
+*** tstop() called on ugur at Tue Nov  6 20:14:34 2012
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

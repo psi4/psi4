@@ -203,7 +203,7 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&W);
     
     
-    // it is unnecessary for omp3, but i will create it so that can use DPD with OOC
+    // it is unnecessary for ocepa, but i will create it so that can use DPD with OOC
     // W_mBeJ => W(me,JB) = <mB||eJ> = (JB|me) = W(JB,me) = W_JeBm
     dpd_buf4_init(&W, PSIF_OCEPA_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
