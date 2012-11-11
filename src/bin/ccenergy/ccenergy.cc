@@ -58,6 +58,7 @@ int converged(void);
 double diagnostic(void);
 double d1diag(void);
 double new_d1diag(void);
+double d2diag(void);
 void exit_io(void);
 void cleanup(void);
 void update(void);
@@ -254,14 +255,16 @@ PsiReturnType ccenergy(Options &options)
   taut_build();
   fprintf(outfile, "\t            Solving CC Amplitude Equations\n");
   fprintf(outfile, "\t            ------------------------------\n");
-  fprintf(outfile, "  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag\n");
-  fprintf(outfile, "  ----     ---------------------    ---------   ----------  ----------  ----------\n");
+  fprintf(outfile, "  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag\n");
+  fprintf(outfile, "  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
   moinfo.ecc = energy();
   pair_energies(&emp2_aa, &emp2_ab);
 
   moinfo.t1diag = diagnostic();
   moinfo.d1diag = d1diag();
   moinfo.new_d1diag = new_d1diag();
+  fflush(outfile);
+  moinfo.d2diag = d2diag();
   update();
   checkpoint();
   for(moinfo.iter=1; moinfo.iter <= params.maxiter; moinfo.iter++) {
@@ -365,6 +368,7 @@ PsiReturnType ccenergy(Options &options)
       moinfo.t1diag = diagnostic();
       moinfo.d1diag = d1diag();
       moinfo.new_d1diag = new_d1diag();
+      moinfo.d2diag = d2diag();
       sort_amps();
       update();
       fprintf(outfile, "\n\tIterations converged.\n");
@@ -381,6 +385,7 @@ PsiReturnType ccenergy(Options &options)
     moinfo.t1diag = diagnostic();
     moinfo.d1diag = d1diag();
     moinfo.new_d1diag = new_d1diag();
+    moinfo.d2diag = d2diag();
     update();
     checkpoint();
   }

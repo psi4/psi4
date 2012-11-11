@@ -19,7 +19,7 @@ set globals {
 
 thisenergy = optimize('scs-omp2')
 
-compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
 compare_values(refscsomp2, thisenergy, 6, "SCS-OMP2 Total Energy (a.u.)");                #TEST
 
