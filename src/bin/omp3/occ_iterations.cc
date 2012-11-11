@@ -61,8 +61,9 @@ fflush(outfile);
       mu_ls = -lshift_parameter;
       conver = 1; // Assuming that the MOs will be optimized.
       mo_optimized = 0; 
-      
-      if (opt_method == "DIIS") {
+      itr_diis = 0;
+
+      if (do_diis_ == 1) {
 	nvar = num_vecs +1;
         vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
         errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
@@ -76,9 +77,51 @@ fflush(outfile);
             errvecsB->zero();
         }
       }
-
       
-// head of loop      
+      if (opt_method == "NR") {
+          r_pcgA = new Array1d(nidpA, "Alpha PCG r vector");
+          z_pcgA = new Array1d(nidpA, "Alpha PCG z vector");
+          p_pcgA = new Array1d(nidpA, "Alpha PCG p vector");
+          r_pcg_newA = new Array1d(nidpA, "Alpha New PCG r vector");
+          z_pcg_newA = new Array1d(nidpA, "Alpha New PCG z vector");
+          p_pcg_newA = new Array1d(nidpA, "Alpha New PCG p vector");
+          sigma_pcgA = new Array1d(nidpA, "Alpha PCG sigma vector");
+          Minv_pcgA = new Array1d(nidpA, "Alpha PCG inverse of M matrix");
+          r_pcgA->zero();
+          z_pcgA->zero();
+          sigma_pcgA->zero();
+          p_pcgA->zero();
+          Minv_pcgA->zero();
+
+        if (pcg_beta_type_ == "POLAK_RIBIERE") {
+          dr_pcgA = new Array1d(nidpA, "Alpha PCG dr vector");
+          r_pcgA->zero();
+        }
+
+        if (reference_ == "UNRESTRICTED") {
+            r_pcgB = new Array1d(nidpB, "Beta PCG r vector");
+            z_pcgB = new Array1d(nidpB, "Beta PCG z vector");
+            p_pcgB = new Array1d(nidpB, "Beta PCG p vector");
+            r_pcg_newB = new Array1d(nidpB, "Beta New PCG r vector");
+            z_pcg_newB = new Array1d(nidpB, "Beta New PCG z vector");
+            p_pcg_newB = new Array1d(nidpB, "Beta New PCG p vector");
+            sigma_pcgB = new Array1d(nidpB, "Beta PCG sigma vector");
+            Minv_pcgB = new Array1d(nidpB, "Beta PCG inverse of M matrix");
+            r_pcgB->zero();
+            z_pcgB->zero();
+            sigma_pcgB->zero();
+            p_pcgB->zero();
+            Minv_pcgB->zero();
+            if (pcg_beta_type_ == "POLAK_RIBIERE") {
+                dr_pcgB = new Array1d(nidpB, "Alpha PCG dr vector");
+                r_pcgB->zero();
+            }
+        }
+      }
+ 
+/********************************************************************************************/
+/************************** Head of the Loop ************************************************/
+/********************************************************************************************/
 do
 {
        itr_occ++;
@@ -87,7 +130,8 @@ do
 /************************** New orbital step ************************************************/
 /********************************************************************************************/
         timer_on("kappa orb rot");
-        korbrot_sd();
+        if (opt_method == "NR") kappa_orb_resp();
+        else if (opt_method == "MSD") kappa_msd();
         timer_off("kappa orb rot");
 
 /********************************************************************************************/ 

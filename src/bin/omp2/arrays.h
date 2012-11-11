@@ -86,6 +86,7 @@ class Array1d
   void row_vector(Array2d *A, int n); // set A1d to nth row of A, dim1_ = A->dim2
   void column_vector(Array2d *A, int n); // set A1d to nth column of A, dim1_ = A->dim1
   int dim1() const { return dim1_; }
+  void dirprd(Array1d *a, Array1d *b);// A1d_i = a_i * b_i
   
   friend class Array2d;
   friend class Array3d;

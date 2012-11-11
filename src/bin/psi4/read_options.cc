@@ -2347,17 +2347,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "OMP2"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MP2 computations. -*/
 
-    //options.add_int("MEMORY", 256);
-    //options.add_str("REFERENCE", "UHF", "UHF");
-
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-8);
-    /*- Convergence criterion for amplitudes (residuals). -*/
-    options.add_double("R_CONVERGENCE",1e-5);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2370,11 +2359,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
+    /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
+    options.add_int("PCG_MAXITER",50);
 
+    /*- Convergence criterion for energy. -*/
+    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- Level shift to aid convergence -*/
@@ -2387,19 +2386,30 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("SOS_SCALE2",1.2);
+    /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
+    options.add_double("PCG_CONVERGENCE",1e-6);
+
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    //options.add_str("STABILITY","FALSE","TRUE FALSE");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
+    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
+    options.add_str("HESS_TYPE","SCF","SCF");
+    /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
+    options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
-    /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
-    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
-    options.add_str("HESS_TYPE","NONE","NONE");
     /*- Do print OMP2 orbital energies? -*/
     options.add_bool("OMP2_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
@@ -2414,10 +2424,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
-    /*- Type of the SCS method -*/
-    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
-    /*- Type of the SOS method -*/
-    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "OMP3"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
@@ -2429,24 +2437,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for RMS orbital gradient. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
-    /*- Maximum number of iterations to determine the amplitudes -*/
-    options.add_int("CC_MAXITER",50);
-    /*- Maximum number of iterations to determine the orbitals -*/
-    options.add_int("MO_MAXITER",50);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
-    integrals, and intermediates in the CC procedure. A value of 0 retains
-    no quantities in cache, while a level of 6 attempts to store all
-    quantities in cache.  For particularly large calculations, a value of
-    0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
-    options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
-    /*- Cutoff value for numerical procedures -*/
-    options.add_int("CUTOFF",14);
-
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- Level shift parameter -*/
@@ -2461,21 +2452,51 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOS_SCALE2",1.2);
     /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
     options.add_double("E3_SCALE",0.25);
+    /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
+    options.add_double("PCG_CONVERGENCE",1e-6);
+
+    /*- Maximum number of iterations to determine the amplitudes -*/
+    options.add_int("CC_MAXITER",50);
+    /*- Maximum number of iterations to determine the orbitals -*/
+    options.add_int("MO_MAXITER",50);
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
+    options.add_int("CACHELEVEL",2);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",6);
+    /*- Cutoff value for numerical procedures -*/
+    options.add_int("CUTOFF",14);
+    /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
+    options.add_int("PCG_MAXITER",50);
+
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
     The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
+    /*- The solver will be used for simultaneous linear equations. -*/
+    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
+    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
+    options.add_str("HESS_TYPE","SCF","SCF");
+    /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
+    options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
-    /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD DIIS");
-    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
-    options.add_str("HESS_TYPE","NONE","NONE");
-    /*- The solver will be used for simultaneous linear equations. -*/
-    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- Do print OMP3 orbital energies? -*/
     options.add_bool("OMP3_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically.
@@ -2494,20 +2515,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_LEVEL_SHIFT",false);
     /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("MP3L_ENERGY",false);
-    /*- Type of the SCS method -*/
-    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
-    /*- Type of the SOS method -*/
-    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "OCEPA"|| options.read_globals()) {
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-8);
-    /*- Convergence criterion for amplitudes (residuals). -*/
-    options.add_double("R_CONVERGENCE",1e-6);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    /*- MODULEDESCRIPTION Performs orbital-optimized CEPA computations. -*/
+
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2520,11 +2533,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",6);
+    /*- Minimum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MIN_VECS",2);
+    /*- Maximum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MAX_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
+    /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
+    options.add_int("PCG_MAXITER",50);
 
+   /*- Convergence criterion for energy. -*/
+    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-6);
+    /*- Convergence criterion for RMS orbital gradient. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- Level shift to aid convergence -*/
@@ -2541,9 +2568,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CEPA_SS_SCALE",1.13);
     /*- CEPA Spin-opposite scaling (SOS) value -*/
     options.add_double("CEPA_SOS_SCALE",1.3);  
+    /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
+    options.add_double("PCG_CONVERGENCE",1e-6);
 
-    /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","MSD","MSD");
     /*- The solver will be used for simultaneous lineer equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
@@ -2556,7 +2583,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","COMPUTE","DIRECT COMPUTE");
-
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
+    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
+    options.add_str("HESS_TYPE","SCF","SCF");
+    /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
+    options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
 
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
@@ -2578,6 +2612,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_READ",false);
     /*- Do compute cepa-l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
     options.add_bool("CEPAL_ENERGY",true);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -1364,7 +1364,7 @@ def build_b97d2p4_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_ss_gamma', 0.2)
     C.set_parameter('B97_ss_a0', 0.22340)
     C.set_parameter('B97_ss_a1', -1.56208)
-    C.set_parameter('B97_ss_a2', 3.25429)
+    C.set_parameter('B97_ss_a2', 1.94293)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)

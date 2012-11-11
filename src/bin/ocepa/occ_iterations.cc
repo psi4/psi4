@@ -61,8 +61,10 @@ fflush(outfile);
       mu_ls = -lshift_parameter;
       conver = 1; // Assuming that the MOs will be optimized.
       mo_optimized = 0; 
-      
-      if (opt_method == "DIIS") {
+      itr_diis = 0;
+
+      // Set-up DIIS for orbitals
+      if (do_diis_ == 1) {
 	nvar = num_vecs +1;
         vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
         errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
@@ -77,8 +79,85 @@ fflush(outfile);
         }
       }
 
-      
-// head of loop      
+ // DIIS
+ if (reference_ == "RESTRICTED") {  
+    dpdbuf4 T; 
+    psio_->open(PSIF_OCEPA_DPD, PSIO_OPEN_OLD);
+    dpd_buf4_init(&T, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    t2DiisManager = DIISManager(cc_maxdiis_, "OCEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager.set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
+    t2DiisManager.set_vector_size(1, DIISEntry::DPDBuf4, &T);
+    dpd_buf4_close(&T);
+    psio_->close(PSIF_OCEPA_DPD, 1);
+ }
+
+ else if (reference_ == "UNRESTRICTED") {  
+    dpdbuf4 Taa, Tbb, Tab; 
+    psio_->open(PSIF_OCEPA_DPD, PSIO_OPEN_OLD);
+    dpd_buf4_init(&Taa, PSIF_OCEPA_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&Tbb, PSIF_OCEPA_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
+    dpd_buf4_init(&Tab, PSIF_OCEPA_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
+    t2DiisManager = DIISManager(cc_maxdiis_, "OCEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                           DIISEntry::DPDBuf4, &Tbb,
+                                           DIISEntry::DPDBuf4, &Tab);
+    t2DiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+                                     DIISEntry::DPDBuf4, &Tbb,
+                                     DIISEntry::DPDBuf4, &Tab);
+    dpd_buf4_close(&Taa);
+    dpd_buf4_close(&Tbb);
+    dpd_buf4_close(&Tab);
+    psio_->close(PSIF_OCEPA_DPD, 1);
+ }
+
+      if (opt_method == "NR") {
+          r_pcgA = new Array1d(nidpA, "Alpha PCG r vector");
+          z_pcgA = new Array1d(nidpA, "Alpha PCG z vector");
+          p_pcgA = new Array1d(nidpA, "Alpha PCG p vector");
+          r_pcg_newA = new Array1d(nidpA, "Alpha New PCG r vector");
+          z_pcg_newA = new Array1d(nidpA, "Alpha New PCG z vector");
+          p_pcg_newA = new Array1d(nidpA, "Alpha New PCG p vector");
+          sigma_pcgA = new Array1d(nidpA, "Alpha PCG sigma vector");
+          Minv_pcgA = new Array1d(nidpA, "Alpha PCG inverse of M matrix");
+          r_pcgA->zero();
+          z_pcgA->zero();
+          sigma_pcgA->zero();
+          p_pcgA->zero();
+          Minv_pcgA->zero();
+
+        if (pcg_beta_type_ == "POLAK_RIBIERE") {
+          dr_pcgA = new Array1d(nidpA, "Alpha PCG dr vector");
+          r_pcgA->zero();
+        }
+
+        if (reference_ == "UNRESTRICTED") {
+            r_pcgB = new Array1d(nidpB, "Beta PCG r vector");
+            z_pcgB = new Array1d(nidpB, "Beta PCG z vector");
+            p_pcgB = new Array1d(nidpB, "Beta PCG p vector");
+            r_pcg_newB = new Array1d(nidpB, "Beta New PCG r vector");
+            z_pcg_newB = new Array1d(nidpB, "Beta New PCG z vector");
+            p_pcg_newB = new Array1d(nidpB, "Beta New PCG p vector");
+            sigma_pcgB = new Array1d(nidpB, "Beta PCG sigma vector");
+            Minv_pcgB = new Array1d(nidpB, "Beta PCG inverse of M matrix");
+            r_pcgB->zero();
+            z_pcgB->zero();
+            sigma_pcgB->zero();
+            p_pcgB->zero();
+            Minv_pcgB->zero();
+            if (pcg_beta_type_ == "POLAK_RIBIERE") {
+                dr_pcgB = new Array1d(nidpB, "Alpha PCG dr vector");
+                r_pcgB->zero();
+            }
+        }
+      }
+
+/********************************************************************************************/
+/************************** Head of loop ****************************************************/
+/********************************************************************************************/
 do
 {
        itr_occ++;
@@ -87,7 +166,8 @@ do
 /************************** New orbital step ************************************************/
 /********************************************************************************************/
         timer_on("kappa orb rot");
-        korbrot_sd();
+        if (opt_method == "NR") kappa_orb_resp();
+        else if (opt_method == "MSD") kappa_msd();
         timer_off("kappa orb rot");
 
 /********************************************************************************************/ 
