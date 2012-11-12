@@ -21,21 +21,27 @@ def write_version(version, branch):
             pass
 
 # Use Git to find the latest version number
-command = "git log -1 --pretty=%H"
-process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd = top_srcdir)
-(out, err) = process.communicate()
-version = str(out).rstrip()
-if process.returncode:
+try:
+    command = "git log -1 --pretty=%H"
+    process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd = top_srcdir)
+    (out, err) = process.communicate()
+    version = str(out).rstrip()
+    if process.returncode:
+        version = ""
+except:
     version = ""
 
 # Use Git to find current branch name
 #   Returns "refs/heads/BRANCHNAME"
 #   Use [11:] to skip refs/heads/
-command = "git symbolic-ref -q HEAD"
-process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd = top_srcdir)
-(out, err) = process.communicate()
-branch = str(out).rstrip()[11:]
-if process.returncode:
+try:
+    command = "git symbolic-ref -q HEAD"
+    process = subprocess.Popen(command.split(), stderr=subprocess.PIPE, stdout=subprocess.PIPE, cwd = top_srcdir)
+    (out, err) = process.communicate()
+    branch = str(out).rstrip()[11:]
+    if process.returncode:
+        branch = "detached?"
+except:
     branch = "detached?"
 
 write_version(version, branch)
