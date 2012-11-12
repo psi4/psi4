@@ -376,7 +376,7 @@ def scf_helper(name, **kwargs):
         if multp != 1:
             raise ValidationError('Broken symmetry is only for singlets.')
         #if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
-        if PsiMod.get_option('SCF','REFERENCE') != 'UHF':
+        if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and PsiMod.get_option('SCF','REFERENCE') != 'UKS':
             raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
         do_broken = True
     else:
