@@ -39,109 +39,109 @@ namespace {
     static void handle_reordering1(unsigned char* buffer_offsets_, Libderiv_t& libderiv_, double* source_, size_t size) {
 #if 1
         int A, B, C, D;
+
         for(int i = 0; i < 4; ++i){
-            if(buffer_offsets_[i] == 0) A = i;
-            if(buffer_offsets_[i] == 3) B = i;
-            if(buffer_offsets_[i] == 6) C = i;
-            if(buffer_offsets_[i] == 9) D = i;
+            if(buffer_offsets_[i] == 0) A = 3*i;
+            if(buffer_offsets_[i] == 3) B = 3*i;
+            if(buffer_offsets_[i] == 6) C = 3*i;
+            if(buffer_offsets_[i] == 9) D = 3*i;
         }
 
         if(buffer_offsets_[1]==0){
             //Ax
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+0*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+0*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+0*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+0], 1, source_+0*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+0], 1, source_+0*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+0], 1, source_+0*size, 1);
             //Ay
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+1*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+1*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+1*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+1], 1, source_+1*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+1], 1, source_+1*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+1], 1, source_+1*size, 1);
             //Az
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+2*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+2*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+2*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+2], 1, source_+2*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+2], 1, source_+2*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+2], 1, source_+2*size, 1);
             //Cx
-            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            memcpy(source_+3*size, libderiv_.ABCD[C+0], sizeof(double) * size);
             //Cy
-            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            memcpy(source_+4*size, libderiv_.ABCD[C+1], sizeof(double) * size);
             //Cz
-            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            memcpy(source_+5*size, libderiv_.ABCD[C+2], sizeof(double) * size);
             //Dx
-            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            memcpy(source_+6*size, libderiv_.ABCD[D+0], sizeof(double) * size);
             //Dy
-            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            memcpy(source_+7*size, libderiv_.ABCD[D+1], sizeof(double) * size);
             //Dz
-            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+            memcpy(source_+8*size, libderiv_.ABCD[D+2], sizeof(double) * size);
         }else if(buffer_offsets_[1]==6){
             //Ax
-            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            memcpy(source_+0*size, libderiv_.ABCD[A+0], sizeof(double) * size);
             //Ay
-            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            memcpy(source_+1*size, libderiv_.ABCD[A+1], sizeof(double) * size);
             //Az
-            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            memcpy(source_+2*size, libderiv_.ABCD[A+2], sizeof(double) * size);
             //Cx
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+3*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+3*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+0], 1, source_+3*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+0], 1, source_+3*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+0], 1, source_+3*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+0], 1, source_+3*size, 1);
             //Cy
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+4*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+4*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+1], 1, source_+4*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+1], 1, source_+4*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+1], 1, source_+4*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+1], 1, source_+4*size, 1);
             //Cz
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+5*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+5*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*D+2], 1, source_+5*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+2], 1, source_+5*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+2], 1, source_+5*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[D+2], 1, source_+5*size, 1);
             //Dx
-            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            memcpy(source_+6*size, libderiv_.ABCD[D+0], sizeof(double) * size);
             //Dy
-            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            memcpy(source_+7*size, libderiv_.ABCD[D+1], sizeof(double) * size);
             //Dz
-            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+            memcpy(source_+8*size, libderiv_.ABCD[D+2], sizeof(double) * size);
         }else if(buffer_offsets_[1]==9){
             //Ax
-            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            memcpy(source_+0*size, libderiv_.ABCD[A+0], sizeof(double) * size);
             //Ay
-            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            memcpy(source_+1*size, libderiv_.ABCD[A+1], sizeof(double) * size);
             //Az
-            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            memcpy(source_+2*size, libderiv_.ABCD[A+2], sizeof(double) * size);
             //Cx
-            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            memcpy(source_+3*size, libderiv_.ABCD[C+0], sizeof(double) * size);
             //Cy
-            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            memcpy(source_+4*size, libderiv_.ABCD[C+1], sizeof(double) * size);
             //Cz
-            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            memcpy(source_+5*size, libderiv_.ABCD[C+2], sizeof(double) * size);
             //Dx
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+0], 1, source_+6*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+0], 1, source_+6*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+0], 1, source_+6*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+0], 1, source_+6*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+0], 1, source_+6*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+0], 1, source_+6*size, 1);
             //Dy
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+1], 1, source_+7*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+1], 1, source_+7*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+1], 1, source_+7*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+1], 1, source_+7*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+1], 1, source_+7*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+1], 1, source_+7*size, 1);
             //Dz
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*A+2], 1, source_+8*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*B+2], 1, source_+8*size, 1);
-            C_DAXPY(size, -1.0, libderiv_.ABCD[3*C+2], 1, source_+8*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[A+2], 1, source_+8*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[B+2], 1, source_+8*size, 1);
+            C_DAXPY(size, -1.0, libderiv_.ABCD[C+2], 1, source_+8*size, 1);
         }else{
             //Ax
-            memcpy(source_+0*size, libderiv_.ABCD[3*A+0], sizeof(double) * size);
+            memcpy(source_+0*size, libderiv_.ABCD[A+0], sizeof(double) * size);
             //Ay
-            memcpy(source_+1*size, libderiv_.ABCD[3*A+1], sizeof(double) * size);
+            memcpy(source_+1*size, libderiv_.ABCD[A+1], sizeof(double) * size);
             //Az
-            memcpy(source_+2*size, libderiv_.ABCD[3*A+2], sizeof(double) * size);
+            memcpy(source_+2*size, libderiv_.ABCD[A+2], sizeof(double) * size);
             //Cx
-            memcpy(source_+3*size, libderiv_.ABCD[3*C+0], sizeof(double) * size);
+            memcpy(source_+3*size, libderiv_.ABCD[C+0], sizeof(double) * size);
             //Cy
-            memcpy(source_+4*size, libderiv_.ABCD[3*C+1], sizeof(double) * size);
+            memcpy(source_+4*size, libderiv_.ABCD[C+1], sizeof(double) * size);
             //Cz
-            memcpy(source_+5*size, libderiv_.ABCD[3*C+2], sizeof(double) * size);
+            memcpy(source_+5*size, libderiv_.ABCD[C+2], sizeof(double) * size);
             //Dx
-            memcpy(source_+6*size, libderiv_.ABCD[3*D+0], sizeof(double) * size);
+            memcpy(source_+6*size, libderiv_.ABCD[D+0], sizeof(double) * size);
             //Dy
-            memcpy(source_+7*size, libderiv_.ABCD[3*D+1], sizeof(double) * size);
+            memcpy(source_+7*size, libderiv_.ABCD[D+1], sizeof(double) * size);
             //Dz
-            memcpy(source_+8*size, libderiv_.ABCD[3*D+2], sizeof(double) * size);
+            memcpy(source_+8*size, libderiv_.ABCD[D+2], sizeof(double) * size);
         }
-
 #else
     // A
     if (buffer_offsets_[0] == 3) {
@@ -1938,8 +1938,8 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         }else{
             if(p13p24){
                 // (AB|CD) -> (CD|BA)
-                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
-                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
             }else{
                 // (AB|CD) -> (BA|CD)
                 buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
@@ -1950,8 +1950,8 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         if(p34){
             if(p13p24){
                 // (AB|CD) -> (DC|AB)
-                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
-                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
             }else{
                 // (AB|CD) -> (AB|DC)
                 buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
@@ -2298,8 +2298,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
         }else{
             if(p13p24){
                 // (AB|CD) -> (CD|BA)
-                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
-                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
             }
             else{
                 // (AB|CD) -> (BA|CD)
@@ -2311,8 +2311,8 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
         if(p34){
             if(p13p24){
                 // (AB|CD) -> (DC|AB)
-                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
-                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
             }
             else{
                 // (AB|CD) -> (AB|DC)
