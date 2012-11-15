@@ -20,7 +20,8 @@ class Options;
 }
 
 namespace psi {
-
+void dx_write(Options& options, double **D);
+void dx_read(double **V_eff, double *phi_ao, double *phi_so,int nao,int nso, double **u);
 int mat_in(FILE *fp, double **array, int width, int max_length, int *stat);
 void fill_sym_matrix(double **A, int size);
 double combinations(int n, int k);
