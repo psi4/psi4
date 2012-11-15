@@ -59,7 +59,7 @@ def run_omp2(name, **kwargs):
 
     """
     PsiMod.scf()
-    return PsiMod.omp2()
+    return PsiMod.occ()
 
 
 def run_omp2_gradient(name, **kwargs):
@@ -88,17 +88,17 @@ def run_scs_omp2(name, **kwargs):
  
     # what type of scs?
     if (lowername == 'scs-omp2'):
-        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCS')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp2'):
-        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSN')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif (lowername == 'scs-mi-omp2'):
-        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSMI')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp2-vdw'):
-        PsiMod.set_local_option('OMP2', 'SCS_TYPE', 'SCSVDW')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
     PsiMod.scf()
-    PsiMod.set_local_option('OMP2', 'DO_SCS', 'TRUE')
-    return PsiMod.omp2()
+    PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
+    return PsiMod.occ()
 
 
 def run_sos_omp2(name, **kwargs):
@@ -111,13 +111,13 @@ def run_sos_omp2(name, **kwargs):
  
     # what type of sos?
     if (lowername == 'sos-omp2'):
-        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOS')
+        PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif (lowername == 'sos-pi-omp2'):
-        PsiMod.set_local_option('OMP2', 'SOS_TYPE', 'SOSPI')
+        PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     PsiMod.scf()
-    PsiMod.set_local_option('OMP2', 'DO_SOS', 'TRUE')
-    return PsiMod.omp2()
+    PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
+    return PsiMod.occ()
 
 
 def run_omp3(name, **kwargs):
@@ -125,11 +125,9 @@ def run_omp3(name, **kwargs):
     an orbital-optimized MP3 computation
 
     """
-    #oldref = PsiMod.get_global_option('REFERENCE')
-    #PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.scf()
-    return PsiMod.omp3()
-    #PsiMod.set_global_option('REFERENCE', oldref)    
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    return PsiMod.occ()
 
 
 def run_scs_omp3(name, **kwargs):
@@ -142,16 +140,17 @@ def run_scs_omp3(name, **kwargs):
  
     # what type of scs?
     if (lowername == 'scs-omp3'):
-        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCS')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp3'):
-        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSN')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
     elif (lowername == 'scs-mi-omp3'):
-        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSMI')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp3-vdw'):
-        PsiMod.set_local_option('OMP3', 'SCS_TYPE', 'SCSVDW')
+        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
     PsiMod.scf()
-    PsiMod.set_local_option('OMP3', 'DO_SCS', 'TRUE')
+    PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     return PsiMod.omp3()
 
 
@@ -165,12 +164,13 @@ def run_sos_omp3(name, **kwargs):
  
     # what type of sos?
     if (lowername == 'sos-omp3'):
-        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOS')
+        PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
     elif (lowername == 'sos-pi-omp3'):
-        PsiMod.set_local_option('OMP3', 'SOS_TYPE', 'SOSPI')
+        PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
     PsiMod.scf()
-    PsiMod.set_local_option('OMP3', 'DO_SOS', 'TRUE')
+    PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
     return PsiMod.omp3()
 
 
@@ -180,6 +180,7 @@ def run_ocepa(name, **kwargs):
 
     """
     PsiMod.scf()
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
     return PsiMod.ocepa()
 
 

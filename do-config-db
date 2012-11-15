@@ -1,0 +1,1 @@
+../configure --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --without-opt --with-debug --with-plugins --with-max-am-eri=7 --with-max-am-deriv1=5 --with-blas="-L/opt/acml5.2.0/gfortran64_mp/lib -lacml_mp" --with-lapack="-L/opt/acml5.2.0/gfortran64_mp/lib -lacml_mp"
