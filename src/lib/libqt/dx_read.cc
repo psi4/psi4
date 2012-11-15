@@ -39,16 +39,17 @@ namespace psi {
 
 /*():Reads dx files
 **
-** KPH, November 2002
+** KPH, November 2012
 **
 ** \param V_eff      = matrix to diagonalize
 ** \param phi_ao      = dimension of A
 ** \param phi_so      = number of roots desired
-** \param nmo    = eigenvalues
-** \param nso      = eigenvectors
-** \param u = tolerance for convergence of eigenvalues
+** \param nmo    = # of molecule orbitals
+** \param nso      = # of symmetry orbitals
+** \param u = transformation matrix
 */
-void dx_read(double **V_eff, double *phi_ao,double *phi_so,int nao,int nso,double **u){
+         void dx_read(double **V_eff, double *phi_ao,double *phi_so,int nao,int nso,double **u){
+
           int delta_count = 0;
           boost::shared_ptr<BasisSet> basis;
           bool data_ready = false;
