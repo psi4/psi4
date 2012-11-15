@@ -214,8 +214,8 @@ if (reference_ == "RESTRICTED") {
                   ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    t2DiisManager.add_entry(2, &R, &T);
-    if (t2DiisManager.subspace_size() >= cc_mindiis_) t2DiisManager.extrapolate(1, &T);
+    t2DiisManager->add_entry(2, &R, &T);
+    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(1, &T);
     dpd_buf4_close(&R);
     dpd_buf4_close(&T);
     }
@@ -819,8 +819,8 @@ else if (reference_ == "UNRESTRICTED") {
                   ID("[O,o]"), ID("[V,v]"), 0, "RT2 <Oo|Vv>");
     dpd_buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    t2DiisManager.add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
-    if (t2DiisManager.subspace_size() >= cc_mindiis_) t2DiisManager.extrapolate(3, &Taa, &Tbb, &Tab);
+    t2DiisManager->add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
+    if (t2DiisManager->subspace_size() >= cc_mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
     dpd_buf4_close(&Raa);
     dpd_buf4_close(&Rbb);
     dpd_buf4_close(&Rab);

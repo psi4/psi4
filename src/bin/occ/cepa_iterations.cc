@@ -58,16 +58,16 @@ fflush(outfile);
 /********************************************************************************************/
       itr_occ = 0;
       conver = 1; // Assuming that the iterations will converge
-
  // DIIS
  if (reference_ == "RESTRICTED") {  
     dpdbuf4 T; 
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    t2DiisManager = DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    t2DiisManager.set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
-    t2DiisManager.set_vector_size(1, DIISEntry::DPDBuf4, &T);
+    t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    //DIISManager t2DiisManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
+    t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
     dpd_buf4_close(&T);
     psio_->close(PSIF_OCC_DPD, 1);
  }
@@ -81,11 +81,12 @@ fflush(outfile);
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
     dpd_buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    t2DiisManager = DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    t2DiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+    t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    //DIISManager t2DiisManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
+    t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
                                            DIISEntry::DPDBuf4, &Tbb,
                                            DIISEntry::DPDBuf4, &Tab);
-    t2DiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
+    t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa,
                                      DIISEntry::DPDBuf4, &Tbb,
                                      DIISEntry::DPDBuf4, &Tab);
     dpd_buf4_close(&Taa);
@@ -124,6 +125,9 @@ fflush(outfile);
 
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
+
+//delete
+delete t2DiisManager;
 
 if (conver == 1) {
 EcepaL = Ecepa;

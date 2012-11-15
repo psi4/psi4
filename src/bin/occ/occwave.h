@@ -105,7 +105,8 @@ protected:
     void cepa_energy();
     
      class IntegralTransform *ints;
-     class DIISManager t2DiisManager;
+     DIISManager *t2DiisManager;
+     //class DIISManager t2DiisManager;
 
      int nmo;		// Number of MOs
      int nao;		// Number of AOs
