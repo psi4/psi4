@@ -70,7 +70,7 @@ void OCCWave::common_init()
 	orth_type=options_.get_str("ORTH_TYPE");
 	opt_method=options_.get_str("OPT_METHOD");
 	hess_type=options_.get_str("HESS_TYPE");
-	occ_orb_energy=options_.get_str("OMP2_ORBS_PRINT");
+	occ_orb_energy=options_.get_str("OCC_ORBS_PRINT");
 	natorb=options_.get_str("NAT_ORBS");
 	reference=options_.get_str("REFERENCE");
 	do_scs=options_.get_str("DO_SCS");
@@ -223,7 +223,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 14, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 15, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");

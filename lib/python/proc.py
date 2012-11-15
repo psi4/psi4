@@ -151,7 +151,7 @@ def run_scs_omp3(name, **kwargs):
     PsiMod.scf()
     PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    return PsiMod.omp3()
+    return PsiMod.occ()
 
 
 def run_sos_omp3(name, **kwargs):
@@ -171,7 +171,7 @@ def run_sos_omp3(name, **kwargs):
     PsiMod.scf()
     PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    return PsiMod.omp3()
+    return PsiMod.occ()
 
 
 def run_ocepa(name, **kwargs):
@@ -181,7 +181,7 @@ def run_ocepa(name, **kwargs):
     """
     PsiMod.scf()
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    return PsiMod.ocepa()
+    return PsiMod.occ()
 
 
 def run_ocepa_gradient(name, **kwargs):
