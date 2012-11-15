@@ -1088,21 +1088,25 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         ++currentAtom;
     }
 
-    if(pubcheminput){
-        // The coordinates are a bit crude, so we symmetrize them
-        // First, populate the atom list
-        mol->reinterpret_coordentries();
-        double tol = 1.0e-3;
-        // Now, redetect the symmetry with a really crude tolerance
-        SharedMatrix frame = mol->symmetry_frame(tol);
-        // Put it on the center of mass and rotate
-        mol->move_to_com();
-        mol->rotate_full(*frame.get());
-        mol->set_point_group(mol->find_point_group(tol));
-        // Clean up the molecule, to make sure it actually has the correct symmetry
-        mol->symmetrize();
-    }
+    if(pubcheminput)
+        mol->symmetrize_to_abelian_group(1.0e-3);
+
     return mol;
+}
+
+void Molecule::symmetrize_to_abelian_group(double tol)
+{
+    // The coordinates are a bit crude, so we symmetrize them
+    // First, populate the atom list
+    reinterpret_coordentries();
+    // Now, redetect the symmetry with a really crude tolerance
+    SharedMatrix frame = symmetry_frame(tol);
+    // Put it on the center of mass and rotate
+    move_to_com();
+    rotate_full(*frame.get());
+    set_point_group(find_point_group(tol));
+    // Clean up the molecule, to make sure it actually has the correct symmetry
+    symmetrize();
 }
 
 void Molecule::reinterpret_coordentries()
