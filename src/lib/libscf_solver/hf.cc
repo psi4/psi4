@@ -1094,12 +1094,12 @@ void HF::guess()
 {
     //What does the user want?
     //Options will be:
-    // "READ"-try to read MOs from file100, projecting if needed
+    // "READ"-try to read MOs from guess file, projecting if needed
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     string guess_type = options_.get_str("GUESS");
-    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_DB_MOS)) {
+    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
         fprintf(outfile, "  SCF Guess was Projection but file not found.\n");
         fprintf(outfile, "  Switching over to SAD guess.\n\n");
         guess_type = "SAD";
@@ -1174,56 +1174,56 @@ void HF::guess()
 
 void HF::save_orbitals()
 {
-    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
+    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_DB_MOS);
+        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_MOS);
 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
+    psio_->write_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(nirrep_),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     char *basisname = strdup(options_.get_str("BASIS").c_str());
     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
+    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME",basisname,basislength*sizeof(char));
 
     // upon loading, need to know what value of puream was used
     int old_puream = (basisset_->has_puream() ? 1 : 0);
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),sizeof(int));
 
-    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
-    Ctemp_a->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    Ctemp_a->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
+    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, nsopi_, nbetapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nbetapi_[h]; i++)
                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
-    Ctemp_b->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    psio_->close(PSIF_SCF_DB_MOS,1);
+    psio_->close(PSIF_SCF_MOS,1);
     free(basisname);
 }
 
 void HF::load_orbitals()
 {
-    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
+    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
 
     int basislength, old_puream;
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",
+    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",
         (char *)(&basislength),sizeof(int));
     char *basisnamec = new char[basislength];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,
+    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,
         basislength*sizeof(char));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),
+    psio_->read_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),
         sizeof(int));
     bool old_forced_puream = (old_puream) ? true : false;
     std::string basisname(basisnamec);
@@ -1247,25 +1247,25 @@ void HF::load_orbitals()
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
+    psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
     int old_nirrep, old_nsopi[8];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(old_nirrep),sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
 
     if (old_nirrep != nirrep_)
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     for (int h = 0; h < nirrep_; h++) {
         doccpi_[h] = nbetapi_[h];
         soccpi_[h] = nalphapi_[h] - nbetapi_[h];
     }
 
-    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
-    Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+    Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     SharedMatrix Ca;
     if (basisname != options_.get_str("BASIS")) {
         Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
@@ -1277,8 +1277,8 @@ void HF::load_orbitals()
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ca_->set(h,m,i,Ca->get(h,m,i));
 
-    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
-    Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+    Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     SharedMatrix Cb;
     if (basisname != options_.get_str("BASIS")) {
         Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
@@ -1290,7 +1290,7 @@ void HF::load_orbitals()
             for (int i = 0; i<nbetapi_[h]; i++)
                 Cb_->set(h,m,i,Cb->get(h,m,i));
 
-    psio_->close(PSIF_SCF_DB_MOS,1);
+    psio_->close(PSIF_SCF_MOS,1);
     delete[] basisnamec;
 }
 
@@ -1648,7 +1648,7 @@ double HF::compute_energy()
         die_if_not_converged();
     }
 
-    // Orbitals are always saved, in case a dual basis is required later
+    // Orbitals are always saved, in case an MO guess is requested later
     save_orbitals();
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();

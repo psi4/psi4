@@ -116,7 +116,7 @@
 
 #define PSIF_SAPT_LRINTS       128  /*- SAPT0 2-Body linear response LDA integrals -*/
 
-#define PSIF_SCF_DB_MOS        180  /*- Dual basis set MOs for DB-SCF or Basis-2 Guesses -*/
+#define PSIF_SCF_MOS           180  /*- Save SCF orbitals for re-use later as guess, etc. -*/
 #define PSIF_DFMP2_AIA         181  /*- Unfitted three-index MO ints for DFMP2 -*/
 #define PSIF_DFMP2_QIA         182  /*- Fitted-three index MO ints for DFMP2 -*/
 

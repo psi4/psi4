@@ -50,9 +50,11 @@ void OMP3Wave::common_init()
 	mo_maxiter=options_.get_int("MO_MAXITER");
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
-	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
+        tol_pcg=options_.get_double("PCG_CONVERGENCE");
+        pcg_maxiter=options_.get_int("CC_MAXITER");
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -78,9 +80,13 @@ void OMP3Wave::common_init()
         twopdm_abcd_type=options_.get_str("TPDM_ABCD_TYPE");
 	scs_type_=options_.get_str("SCS_TYPE");
 	sos_type_=options_.get_str("SOS_TYPE");
+	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+
+        if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
+        else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
@@ -217,7 +223,7 @@ void OMP3Wave::title()
    fprintf(outfile,"\n");
    fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision October 21, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 07, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -265,8 +271,6 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -275,6 +279,8 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -305,15 +311,15 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp3AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp3AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp3BB);
-	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %12.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %12.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %12.14f\n", Escsnmp3);
 	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %12.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %12.14f\n", Esospimp3);
+	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %12.14f\n", Emp3-Emp2);
+	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -352,8 +358,6 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp2AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp2AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp2BB);
-	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\tScaled_SS Correlation Energy (a.u.): %12.14f\n", Escsmp2AA+Escsmp2BB);
 	fprintf(outfile,"\tScaled_OS Correlation Energy (a.u.): %12.14f\n", Escsmp2AB);
 	fprintf(outfile,"\tSCS-MP2 Total Energy (a.u.)        : %12.14f\n", Escsmp2);
@@ -362,6 +366,8 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -375,15 +381,15 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tAlpha-Alpha Contribution (a.u.)    : %12.14f\n", Emp3AA);
 	fprintf(outfile,"\tAlpha-Beta Contribution (a.u.)     : %12.14f\n", Emp3AB);
 	fprintf(outfile,"\tBeta-Beta Contribution (a.u.)      : %12.14f\n", Emp3BB);
-	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %12.14f\n", Emp3-Emp2);
-	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
-	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\tSCS-MP3 Total Energy (a.u.)        : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-MP3 Total Energy (a.u.)        : %12.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-MP3 Total Energy (a.u.)       : %12.14f\n", Escsnmp3);
 	fprintf(outfile,"\tSCS-MI-MP3 Total Energy (a.u.)     : %12.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-MP3-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-MP3 Total Energy (a.u.)     : %12.14f\n", Esospimp3);
+	fprintf(outfile,"\t3rd Order Energy (a.u.)            : %12.14f\n", Emp3-Emp2);
+	fprintf(outfile,"\tMP3 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
+	fprintf(outfile,"\tMP3 Total Energy (a.u.)            : %12.14f\n", Emp3);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n"); 
 	fflush(outfile);
@@ -396,15 +402,15 @@ double OMP3Wave::compute_energy()
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
 	fprintf(outfile,"\tREF Energy (a.u.)                  : %12.14f\n", Eref);
-	fprintf(outfile,"\tOMP3 Correlation Energy (a.u.)     : %12.14f\n", Emp3L-Escf);
-	fprintf(outfile,"\tEomp3 - Eref (a.u.)                : %12.14f\n", Emp3L-Eref);
-	fprintf(outfile,"\tOMP3 Total Energy (a.u.)           : %12.14f\n", Emp3L);
 	fprintf(outfile,"\tSCS-OMP3 Total Energy (a.u.)       : %12.14f\n", Escsmp3);
 	fprintf(outfile,"\tSOS-OMP3 Total Energy (a.u.)       : %12.14f\n", Esosmp3);
 	fprintf(outfile,"\tSCSN-OMP3 Total Energy (a.u.)      : %12.14f\n", Escsnmp3);
 	fprintf(outfile,"\tSCS-MI-OMP3 Total Energy (a.u.)    : %12.14f\n", Escsmimp3);
 	fprintf(outfile,"\tSCS-OMP3-VDW Total Energy (a.u.    : %12.14f\n", Escsmp3vdw);
 	fprintf(outfile,"\tSOS-PI-OMP3 Total Energy (a.u.)    : %12.14f\n", Esospimp3);
+	fprintf(outfile,"\tOMP3 Correlation Energy (a.u.)     : %12.14f\n", Emp3L-Escf);
+	fprintf(outfile,"\tEomp3 - Eref (a.u.)                : %12.14f\n", Emp3L-Eref);
+	fprintf(outfile,"\tOMP3 Total Energy (a.u.)           : %12.14f\n", Emp3L);
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\n");
 	fflush(outfile);
@@ -1122,6 +1128,7 @@ void OMP3Wave::mem_release()
 	delete [] virt2symblkA;
         delete wogA;
 	delete kappaA;
+	delete kappa_newA;
 	delete kappa_barA;
 
        if (reference_ == "UNRESTRICTED") {
@@ -1134,16 +1141,40 @@ void OMP3Wave::mem_release()
 	delete [] virt2symblkB;
 	delete wogB;
 	delete kappaB;
+	delete kappa_newB;
 	delete kappa_barB;
       }
 	
-	if (opt_method == "DIIS") {
+	if (do_diis_ == 1) {
           delete vecsA;
           delete errvecsA;
           if (reference_ == "UNRESTRICTED") delete vecsB;
           if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
-	
+
+	if (opt_method == "NR") {
+          delete r_pcgA;
+          delete z_pcgA;
+          delete p_pcgA;
+          delete sigma_pcgA;
+          delete Minv_pcgA;
+          delete r_pcg_newA;
+          delete z_pcg_newA;
+          delete p_pcg_newA;
+          if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgA;
+          if(reference_ == "UNRESTRICTED") {
+             delete r_pcgB;
+             delete z_pcgB;
+             delete p_pcgB;
+             delete sigma_pcgB;
+             delete Minv_pcgB;
+             delete r_pcg_newB;
+             delete z_pcg_newB;
+             delete p_pcg_newB;
+             if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgB;
+          }
+	}
+
 	chkpt_.reset();
 
       if (reference_ == "RESTRICTED") {

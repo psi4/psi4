@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta2+])
+define([psi_version],[4.0.0-beta3+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -972,6 +972,7 @@ AC_CONFIG_FILES([
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/omp3/Makefile
+          src/bin/ocepa/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
@@ -1135,6 +1136,7 @@ AC_CONFIG_FILES([
           tests/omp3-1/Makefile
           tests/omp3-2/Makefile
           tests/omp3-3/Makefile
+          tests/ocepa1/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
