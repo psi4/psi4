@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
+#include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
 #include <lib3index/3index.h>
@@ -202,6 +203,9 @@ void export_mints()
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
 
+    typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
@@ -227,6 +231,16 @@ void export_mints()
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
             def("ao_eri", &MintsHelper::ao_eri, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
+            def("ao_f12", &MintsHelper::ao_f12, "docstring").
+            def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
+            def("ao_f12g12", &MintsHelper::ao_f12g12, "docstring").
+            def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "docstring").
+            def("mo_eri", eri(&MintsHelper::mo_eri), "docstring").
+            def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "docstring").
+            def("mo_f12", &MintsHelper::mo_f12, "docstring").
+            def("mo_f12_squared", &MintsHelper::mo_f12_squared, "docstring").
+            def("mo_f12g12", &MintsHelper::mo_f12g12, "docstring").
+            def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "docstring").
             def("cdsalcs", &MintsHelper::cdsalcs, "docstring").
             def("petite_list", petite_list_0(&MintsHelper::petite_list), "docstring").
             def("petite_list1", petite_list_1(&MintsHelper::petite_list), "docstring").
@@ -252,7 +266,7 @@ void export_mints()
             def("getR", &PseudoTrial::getR, "docstring").
             def("getA", &PseudoTrial::getA, "docstring");
 
-    class_<Vector3>("Vector3", "docstring").
+    class_<Vector3>("Vector3", "Class for vectors of length three, often Cartesian coordinate vectors, and their common operations").
             def(init<double>()).
             def(init<double, double, double>()).
             def(init<const Vector3&>()).
@@ -263,13 +277,13 @@ void export_mints()
             def(self + self).
             def(self - self).
             def(-self).
-            def("dot", &Vector3::dot, "docstring").
-            def("distance", &Vector3::distance, "docstring").
-            def("normalize", &Vector3::normalize, "docstring").
-            def("norm", &Vector3::norm, "docstring").
-            def("cross", &Vector3::cross, "docstring").
-            def("__str__", &Vector3::to_string, "docstring").
-            def("__getitem__", &Vector3::get, "docstring");
+            def("dot", &Vector3::dot, "Returns dot product of arg1 and arg2").
+            def("distance", &Vector3::distance, "Returns distance between two points represented by arg1 and arg2").
+            def("normalize", &Vector3::normalize, "Returns vector of unit length and arg1 direction").
+            def("norm", &Vector3::norm, "Returns Euclidean norm of arg1").
+            def("cross", &Vector3::cross, "Returns cross product of arg1 and arg2").
+            def("__str__", &Vector3::to_string, "Returns a string representation of arg1, suitable for printing.").
+            def("__getitem__", &Vector3::get, "Returns the arg2-th element of arg1.");
 
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
@@ -319,74 +333,74 @@ void export_mints()
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
 
-    class_<Molecule, boost::shared_ptr<Molecule> >("Molecule", "docstring").
-            def("set_geometry", matrix_set_geometry(&Molecule::set_geometry), "docstring").
-            def("set_name", &Molecule::set_name, "docstring").
-            def("name", &Molecule::name, "docstring").
-            def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "docstring").
-            def("fix_orientation", &Molecule::set_orientation_fixed, "docstring").
+    class_<Molecule, boost::shared_ptr<Molecule> >("Molecule", "Class to store the elements, coordinates, fragmentation pattern, basis sets, charge, multiplicity, etc. of a molecule.").
+            def("set_geometry", matrix_set_geometry(&Molecule::set_geometry), "Sets the geometry, given a (Natom X 3) matrix arg2 of coordinates (in Bohr)").
+            def("set_name", &Molecule::set_name, "Sets molecule name").
+            def("name", &Molecule::name, "Gets molecule name").
+            def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "Do reinterpret coordinate entries during update_geometry().").
+            def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame").
             //def("fix_com", &Molecule::set_com_fixed).
-            def("init_with_checkpoint", &Molecule::init_with_chkpt, "docstring").
-            def("save_to_checkpoint", &Molecule::save_to_chkpt, "docstring").
-            def("init_with_io", &Molecule::init_with_psio, "docstring").
-            def("add_atom", &Molecule::add_atom, "docstring").
-            def("natom", &Molecule::natom, "docstring").
-            def("multiplicity", &Molecule::multiplicity, "docstring").
-            def("nfragments", &Molecule::nfragments, "docstring").
-            def("print_out", &Molecule::print, "docstring").
-            def("print_in_input_format", &Molecule::print_in_input_format, "docstring").
-            def("save_xyz", &Molecule::save_xyz, "docstring").
-            def("save_string_xyz", &Molecule::save_string_xyz, "docstring").
-            def("update_geometry", &Molecule::update_geometry, "docstring").
-            def("Z", &Molecule::Z, return_value_policy<copy_const_reference>(), "docstring").
-            def("x", &Molecule::x, "docstring").
-            def("y", &Molecule::y, "docstring").
-            def("z", &Molecule::z, "docstring").
+            def("init_with_checkpoint", &Molecule::init_with_chkpt, "Populate arg1 member data with information from checkpoint file arg2").
+            def("save_to_checkpoint", &Molecule::save_to_chkpt, "Saves molecule information to checkpoint file arg2 with prefix arg3").
+            def("init_with_io", &Molecule::init_with_psio, "Creates a new checkpoint file with information from arg2").
+            def("add_atom", &Molecule::add_atom, "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr (arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and lineno arg9 (optional)").
+            def("natom", &Molecule::natom, "Number of real atoms").
+            def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
+            def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
+            def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
+            def("save_xyz", &Molecule::save_xyz, "Saves an XYZ file to arg2").
+            def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2").
+            def("Z", &Molecule::Z, return_value_policy<copy_const_reference>(), "Nuclear charge of atom").
+            def("x", &Molecule::x, "x position of atom").
+            def("y", &Molecule::y, "y position of atom").
+            def("z", &Molecule::z, "z position of atom").
             //def("xyz", &Molecule::xyz).
-            def("center_of_mass", &Molecule::center_of_mass, "docstring").
-            def("translate", &Molecule::translate, "docstring").
-            def("move_to_com", &Molecule::move_to_com, "docstring").
-            def("mass", &Molecule::mass, "docstring").
-            def("symbol", &Molecule::symbol, "docstring").
-            def("label", &Molecule::label, "docstring").
-            def("charge", &Molecule::charge, "docstring").
-            def("molecular_charge", &Molecule::molecular_charge, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_1, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_2, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_3, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_4, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_5, "docstring").
-            def("extract_subsets", &Molecule::py_extract_subsets_6, "docstring").
-            def("activate_all_fragments", &Molecule::activate_all_fragments, "docstring").
-            def("deactivate_all_fragments", &Molecule::deactivate_all_fragments, "docstring").
-            def("set_active_fragments", &Molecule::set_active_fragments, "docstring").
-            def("set_active_fragment", &Molecule::set_active_fragment, "docstring").
-            def("set_ghost_fragments", &Molecule::set_ghost_fragments, "docstring").
-            def("set_ghost_fragment", &Molecule::set_ghost_fragment, "docstring").
-            def("atom_at_position", &Molecule::atom_at_position1, "docstring").
-            def("print_out", &Molecule::print, "docstring").
-            def("print_out_in_bohr", &Molecule::print_in_bohr, "docstring").
-            def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "docstring").
-            def("find_point_group", &Molecule::find_point_group, "docstring").
-            def("reset_point_group", &Molecule::reset_point_group, "docstring").
-            def("set_point_group", &Molecule::set_point_group, "docstring").
-            def("get_full_point_group", &Molecule::full_point_group, "docstring").
-            def("point_group", &Molecule::point_group, "docstring").
-            def("schoenflies_symbol", &Molecule::schoenflies_symbol, "docstring").
-            def("form_symmetry_information", &Molecule::form_symmetry_information, "docstring").
-            def("create_molecule_from_string", &Molecule::create_molecule_from_string, "docstring").
+            def("center_of_mass", &Molecule::center_of_mass, "Computes center of mass of molecule (does not translate molecule)").
+            def("translate", &Molecule::translate, "Translates molecule by arg2").
+            def("move_to_com", &Molecule::move_to_com, "Moves molecule to center of mass").
+            def("mass", &Molecule::mass, "Gets mass of atom arg2").
+            def("symbol", &Molecule::symbol, "Gets the cleaned up label of atom arg2 (C2 => C, H4 = H)").
+            def("label", &Molecule::label, "Gets the original label of the atom as given in the input file (C2, H4)").
+            def("charge", &Molecule::charge, "Gets charge of atom").
+            def("molecular_charge", &Molecule::molecular_charge, "Gets the molecular charge").
+            def("extract_subsets", &Molecule::py_extract_subsets_1, "Returns copy of arg1 with arg2 fragments Real and arg3 fragments Ghost").
+            def("extract_subsets", &Molecule::py_extract_subsets_2, "Returns copy of arg1 with arg2 fragments Real and arg3 fragment Ghost").
+            def("extract_subsets", &Molecule::py_extract_subsets_3, "Returns copy of arg1 with arg2 fragment Real and arg3 fragments Ghost").
+            def("extract_subsets", &Molecule::py_extract_subsets_4, "Returns copy of arg1 with arg2 fragment Real and arg3 fragment Ghost").
+            def("extract_subsets", &Molecule::py_extract_subsets_5, "Returns copy of arg1 with arg2 fragments Real").
+            def("extract_subsets", &Molecule::py_extract_subsets_6, "Returns copy of arg1 with arg2 fragment Real").
+            def("activate_all_fragments", &Molecule::activate_all_fragments, "Sets all fragments in the molecule to be active").
+            def("deactivate_all_fragments", &Molecule::deactivate_all_fragments, "Sets all fragments in the molecule to be inactive").
+            def("set_active_fragments", &Molecule::set_active_fragments, "Sets the specified list arg2 of fragments to be Real").
+            def("set_active_fragment", &Molecule::set_active_fragment, "Sets the specified fragment arg2 to be Real").
+            def("set_ghost_fragments", &Molecule::set_ghost_fragments, "Sets the specified list arg2 of fragments to be Ghost").
+            def("set_ghost_fragment", &Molecule::set_ghost_fragment, "Sets the specified fragment arg2 to be Ghost").
+            def("atom_at_position", &Molecule::atom_at_position1, "Tests to see if an atom is at the position arg2 with a given tolerance arg3").
+            def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units").
+            def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr").
+            def("print_out_in_angstrom", &Molecule::print_in_angstrom, "Prints the molecule in Cartesians in Angstroms").
+            def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "Computes nuclear repulsion energy").
+            def("find_point_group", &Molecule::find_point_group, "Finds computational molecular point group, user can override this with the symmetry keyword").
+            def("reset_point_group", &Molecule::reset_point_group, "Overrides symmetry from outside the molecule string").
+            def("set_point_group", &Molecule::set_point_group, "Sets the molecular point group to the point group object arg2").
+            def("get_full_point_group", &Molecule::full_point_group, "Gets point group name such as C3v or S8").
+            def("point_group", &Molecule::point_group, "Returns the current point group object").
+            def("schoenflies_symbol", &Molecule::schoenflies_symbol, "Returns the Schoenflies symbol").
+            def("form_symmetry_information", &Molecule::form_symmetry_information, "Uses the point group object obtain by calling point_group()").
+            def("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg1 in psi4 format").
             staticmethod("create_molecule_from_string").
-            def("is_variable", &Molecule::is_variable, "docstring").
-            def("set_variable", &Molecule::set_variable, "docstring").
-            def("get_variable", &Molecule::get_variable, "docstring").
-            def("update_geometry", &Molecule::update_geometry, "docstring").
-            def("set_molecular_charge", &Molecule::set_molecular_charge, "docstring").
-            def("set_multiplicity", &Molecule::set_multiplicity, "docstring").
-            def("set_basis_all_atoms", &Molecule::set_basis_all_atoms, "docstring").
-            def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "docstring").
-            def("set_basis_by_label", &Molecule::set_basis_by_label, "docstring").
-            def("set_basis_by_number", &Molecule::set_basis_by_number, "docstring").
-            def("clone", &Molecule::clone, "docstring");
+            def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
+            def("set_variable", &Molecule::set_variable, "Assigns the value arg3 to the variable arg2 in the list of geometry variables, then calls update_geometry()").
+            def("get_variable", &Molecule::get_variable, "Checks if variable arg2 is in the list, sets it to val and returns true if it is, and returns false if not").
+            def("update_geometry", &Molecule::update_geometry, "Reevaluates the geometry with current variable values, orientation directives, etc. Must be called after initial Molecule definition by string.").
+            def("set_molecular_charge", &Molecule::set_molecular_charge, "Sets the molecular charge").
+            def("set_multiplicity", &Molecule::set_multiplicity, "Sets the multiplicity (defined as 2Ms + 1)").
+            def("set_basis_all_atoms", &Molecule::set_basis_all_atoms, "Sets basis set arg2 to all atoms").
+            def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "Sets basis set arg3 to all atoms with symbol (e.g., H) arg2").
+            def("set_basis_by_label", &Molecule::set_basis_by_label, "Sets basis set arg3 to all atoms with label (e.g., H4) arg2").
+            def("set_basis_by_number", &Molecule::set_basis_by_number, "Sets basis set arg3 to atom number (1-indexed, incl. dummies) arg2").
+            def("clone", &Molecule::clone, "Returns a new Molecule identical to arg1").
+            def("geometry", &Molecule::geometry, "Gets the geometry as a (Natom X 3) matrix of coordinates (in Bohr)");
 
     class_<PetiteList, boost::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", "docstring", no_init).
             def("aotoso", &PetiteList::aotoso, "docstring").
@@ -410,7 +424,8 @@ void export_mints()
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
             def("has_puream", &BasisSet::has_puream, "docstring").
-            def(self + self);
+            def("add", &BasisSet::add, "Adds two basis sets together.").
+            staticmethod("add");
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -451,7 +466,17 @@ void export_mints()
             def("frequencies", &Wavefunction::frequencies, "docstring").
             def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
             def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
-            def("molecule", &Wavefunction::molecule, "docstring");
+            def("molecule", &Wavefunction::molecule, "docstring").
+            def("doccpi", &Wavefunction::doccpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("soccpi", &Wavefunction::soccpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nsopi", &Wavefunction::nsopi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nmopi", &Wavefunction::nmopi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nalphapi", &Wavefunction::nalphapi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nbetapi", &Wavefunction::nbetapi, return_value_policy<copy_const_reference>(), "docstring").
+            def("frzcpi", &Wavefunction::frzcpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("frzvpi", &Wavefunction::frzvpi, return_value_policy<copy_const_reference>(), "docstring").
+            def("nalpha", &Wavefunction::nalpha, "docstring").
+            def("nbeta", &Wavefunction::nbeta, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
@@ -469,4 +494,13 @@ void export_mints()
                 const boost::shared_ptr<IntegralFactory>&,
                 const boost::shared_ptr<MatrixFactory>&>()).
             def("create_matrices", &OperatorSymmetry::create_matrices, "docstring");
+
+    class_<CorrelationFactor, boost::shared_ptr<CorrelationFactor>, boost::noncopyable>("CorrelationFactor", "docstring", no_init).
+            def(init<unsigned int>()).
+            def(init<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> >()).
+            def("set_params", &CorrelationFactor::set_params, "docstring");
+    class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
+            def(init<double>()).
+            def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
 }

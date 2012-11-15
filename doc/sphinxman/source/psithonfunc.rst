@@ -25,6 +25,6 @@ extent |PSIfours| functionality.
    freq
    db
    cbs
+   diatomic
    intercalls
-   sowreap
 

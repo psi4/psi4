@@ -18,7 +18,7 @@ install_inc:: $(DEPENDINCLUDE)
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/lib3index
 
 
-ifneq ($(DODEPEND),no)
+ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
 

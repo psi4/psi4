@@ -107,7 +107,7 @@ boost::shared_ptr<JK> JK::build_JK()
         return boost::shared_ptr<JK>(jk);
 
     } else if (options.get_str("SCF_TYPE") == "PS") {
-    
+
         PSJK* jk = new PSJK(primary,options);
 
         if (options["INTS_TOLERANCE"].has_changed())
@@ -232,13 +232,13 @@ void JK::compute_D()
         D_[N]->zero();
         for (int h = 0; h < D_[N]->nirrep(); ++h) {
 
-            int nsol = C_left_[N]->rowspi()[h];
+            int nsol = C_left_[N]->rowspi()[h^C_left_[N]->symmetry()];
             int nocc = C_left_[N]->colspi()[h];
             int nsor = C_right_[N]->rowspi()[h^symm];
 
             if (!nsol || !nsor || !nocc) continue;
 
-            double** Dp = D_[N]->pointer(h);
+            double** Dp = D_[N]->pointer(h^symm);
             double** Clp = C_left_[N]->pointer(h);
             double** Crp = C_right_[N]->pointer(h^symm);
 
@@ -248,7 +248,7 @@ void JK::compute_D()
 }
 void JK::allocate_JK()
 {
-    // Allocate J/K in the case that the algorithm uses USOs, so AO2USO will not allocate. 
+    // Allocate J/K in the case that the algorithm uses USOs, so AO2USO will not allocate.
     bool same = true;
     if (J_.size() != D_.size()) {
         same = false;
@@ -260,9 +260,9 @@ void JK::allocate_JK()
     }
 
     if (!same) {
-        J_.clear();    
-        K_.clear();    
-        wK_.clear();    
+        J_.clear();
+        K_.clear();
+        wK_.clear();
         for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
             s << "J " << N << " (SO)";
@@ -303,9 +303,9 @@ void JK::USO2AO()
     }
 
     if (J_ao_.size() != D_.size()) {
-        J_ao_.clear();    
-        K_ao_.clear();    
-        wK_ao_.clear();    
+        J_ao_.clear();
+        K_ao_.clear();
+        wK_ao_.clear();
         D_ao_.clear();
         int nao = AO2USO_->rowspi()[0];
         for (int N = 0; N < D_.size() && do_J_; ++N) {
@@ -457,7 +457,7 @@ void JK::AO2USO()
     }
     delete[] temp;
 }
-void JK::initialize()
+void JK::   initialize()
 {
     preiterations();
 }
@@ -539,7 +539,7 @@ void DiskJK::print_header() const
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
@@ -548,6 +548,9 @@ void DiskJK::preiterations()
 {
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
     mints->integrals();
+    if(do_wK_)
+        mints->integrals_erf(omega_);
+
 
     boost::shared_ptr<SOBasisSet> bas = mints->sobasisset();
 
@@ -563,6 +566,7 @@ void DiskJK::preiterations()
         }
         offset += bas->dimension()[h];
     }
+    mints.reset();
 }
 void DiskJK::compute_JK()
 {
@@ -573,208 +577,492 @@ void DiskJK::compute_JK()
     int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
     double value;
     bool lastBuffer;
-    do{
-        lastBuffer = iwl->last_buffer();
-        for(int index = 0; index < iwl->buffer_count(); ++index){
-            labelIndex = 4*index;
-            pabs  = abs((int) lblptr[labelIndex++]);
-            qabs  = (int) lblptr[labelIndex++];
-            rabs  = (int) lblptr[labelIndex++];
-            sabs  = (int) lblptr[labelIndex++];
-            prel  = so2index_[pabs];
-            qrel  = so2index_[qabs];
-            rrel  = so2index_[rabs];
-            srel  = so2index_[sabs];
-            psym  = so2symblk_[pabs];
-            qsym  = so2symblk_[qabs];
-            rsym  = so2symblk_[rabs];
-            ssym  = so2symblk_[sabs];
-            value = (double) valptr[index];
+    if(J_.size() == K_.size()){
+        do{
+            lastBuffer = iwl->last_buffer();
+            for(int index = 0; index < iwl->buffer_count(); ++index){
+                labelIndex = 4*index;
+                pabs  = abs((int) lblptr[labelIndex++]);
+                qabs  = (int) lblptr[labelIndex++];
+                rabs  = (int) lblptr[labelIndex++];
+                sabs  = (int) lblptr[labelIndex++];
+                prel  = so2index_[pabs];
+                qrel  = so2index_[qabs];
+                rrel  = so2index_[rabs];
+                srel  = so2index_[sabs];
+                psym  = so2symblk_[pabs];
+                qsym  = so2symblk_[qabs];
+                rsym  = so2symblk_[rabs];
+                ssym  = so2symblk_[sabs];
+                value = (double) valptr[index];
 
-            int pqsym = psym ^ qsym;
-            int rssym = rsym ^ ssym;
-            int qrsym = qsym ^ rsym;
-            int pssym = psym ^ ssym;
-            int prsym = psym ^ rsym;
-            int qssym = qsym ^ ssym;
+                int pqsym = psym ^ qsym;
+                int rssym = rsym ^ ssym;
+                int qrsym = qsym ^ rsym;
+                int pssym = psym ^ ssym;
+                int prsym = psym ^ rsym;
+                int qssym = qsym ^ ssym;
 
 
-            for (int N = 0; N < J_.size(); N++) {
+                for (int N = 0; N < J_.size(); N++) {
 
-                SharedMatrix J = J_[N];
-                SharedMatrix K = K_[N];
-                SharedMatrix D = D_[N];
+                    Matrix* J = J_[N].get();
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
 
-                int sym = J->symmetry();
+                    int sym = J->symmetry();
 
-                /* (pq|rs) */
-                if(pqsym == rssym && pqsym == sym){
-                    J->add(rsym, rrel, srel, D->get(psym, prel, qrel) * value);
-                    PRINT_ME
-                }
-
-                if(qrsym == pssym && qrsym == sym){
-                    K->add(qsym, qrel, rrel, D->get(psym, prel, srel) * value);
-                    PRINT_ME
-                }
-
-                if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
-                    /* (pq|sr) */
-                    if(qssym == prsym && qssym == sym){
-                        K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (qp|rs) */
-                    if(rssym == pqsym && rssym == sym){
-                        J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
-                        PRINT_ME
-                    }
-
-                    if(prsym == qssym && prsym == sym){
-                        K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (qp|sr) */
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (rs|pq) */
+                    /* (pq|rs) */
                     if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
-                        PRINT_ME
+                        J->add(rsym, rrel, srel, D->get(psym, prel, qrel) * value);
                     }
 
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (sr|pq) */
-                    if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
-                        PRINT_ME
-                    }
-
-                    if(prsym == qssym && prsym == sym){
-                        K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (rs|qp) */
-                    if(qssym == prsym && qssym == sym){
-                        K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
-                        PRINT_ME
-                    }
-
-                    /* (sr|qp) */
                     if(qrsym == pssym && qrsym == sym){
-                        K->add(rsym, rrel, qrel, D->get(ssym, srel, prel) * value);
-                        PRINT_ME
-                    }
-                }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
-                    /* (pq|sr) */
-                    if(qssym == prsym && qssym == sym){
-                        K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
-                        PRINT_ME
-                    }
-                    /* (qp|rs) */
-                    if(rssym == pqsym && rssym == sym){
-                        J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
-                        PRINT_ME
-                    }
-                    if(prsym == qssym && prsym == sym){
-                        K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
-                        PRINT_ME
+                        K->add(qsym, qrel, rrel, D->get(psym, prel, srel) * value);
                     }
 
-                    /* (qp|sr) */
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
-                        PRINT_ME
-                    }
-                }else if(pabs!=qabs && rabs==sabs){
-                    /* (qp|rs) */
-                    if(rssym == pqsym && rssym == sym){
-                        J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
-                        PRINT_ME
-                    }
+                    if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
 
-                    if(prsym == qssym && prsym == sym){
-                        K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
-                        PRINT_ME
-                    }
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
 
-                    /* (rs|pq) */
-                    if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
-                        PRINT_ME
-                    }
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
 
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
-                        PRINT_ME
-                    }
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
 
-                    /* (rs|qp) */
-                    if(qssym == prsym && qssym == sym){
-                        K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
-                        PRINT_ME
-                    }
-                }else if(pabs==qabs && rabs!=sabs){
-                    /* (pq|sr) */
-                    if(qssym == prsym && qssym == sym){
-                        K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
-                        PRINT_ME
-                    }
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
 
-                    /* (rs|pq) */
-                    if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
-                        PRINT_ME
-                    }
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
 
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
-                        PRINT_ME
-                    }
+                        /* (sr|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
+                        }
 
-                    /* (sr|pq) */
-                    if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
-                        PRINT_ME
-                    }
+                        if(prsym == qssym && prsym == sym){
+                            K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
 
-                    if(prsym == qssym && prsym == sym){
-                        K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
-                        PRINT_ME
-                    }
-                }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
-                    /* (rs|pq) */
-                    if(pqsym == rssym && pqsym == sym){
-                        J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
-                        PRINT_ME
-                    }
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
 
-                    if(pssym == qrsym && pssym == sym){
-                        K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
-                        PRINT_ME
+                        /* (sr|qp) */
+                        if(qrsym == pssym && qrsym == sym){
+                            K->add(rsym, rrel, qrel, D->get(ssym, srel, prel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs==sabs){
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
+
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
+                    }else if(pabs==qabs && rabs!=sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+
+                        /* (sr|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
+                        }
+
+                        if(prsym == qssym && prsym == sym){
+                            K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
+                    }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
                     }
                 }
-            }
-        } /* end loop through current buffer */
-        if(!lastBuffer) iwl->fetch();
-    }while(!lastBuffer);
-    iwl->set_keep_flag(1);
+            } /* end loop through current buffer */
+            if(!lastBuffer) iwl->fetch();
+        }while(!lastBuffer);
 
-    for (int N = 0; N < J_.size(); N++) {
-        J_[N]->copy_lower_to_upper();
-        if (K_[N]->symmetry()) K_[N]->transpose_this();
+        for (int N = 0; N < J_.size(); N++) {
+            J_[N]->copy_lower_to_upper();
+            if (K_[N]->symmetry()) K_[N]->transpose_this();
+        }
+    }else{
+        // J and K to be handled separately
+        do{
+            lastBuffer = iwl->last_buffer();
+            for(int index = 0; index < iwl->buffer_count(); ++index){
+                labelIndex = 4*index;
+                pabs  = abs((int) lblptr[labelIndex++]);
+                qabs  = (int) lblptr[labelIndex++];
+                rabs  = (int) lblptr[labelIndex++];
+                sabs  = (int) lblptr[labelIndex++];
+                prel  = so2index_[pabs];
+                qrel  = so2index_[qabs];
+                rrel  = so2index_[rabs];
+                srel  = so2index_[sabs];
+                psym  = so2symblk_[pabs];
+                qsym  = so2symblk_[qabs];
+                rsym  = so2symblk_[rabs];
+                ssym  = so2symblk_[sabs];
+                value = (double) valptr[index];
+
+                int pqsym = psym ^ qsym;
+                int rssym = rsym ^ ssym;
+                int qrsym = qsym ^ rsym;
+                int pssym = psym ^ ssym;
+                int prsym = psym ^ rsym;
+                int qssym = qsym ^ ssym;
+                // Coulomb terms
+                for (int N = 0; N < J_.size(); N++) {
+
+                    Matrix* J = J_[N].get();
+                    Matrix* D = D_[N].get();
+
+                    int sym = J->symmetry();
+
+                    /* (pq|rs) */
+                    if(pqsym == rssym && pqsym == sym){
+                        J->add(rsym, rrel, srel, D->get(psym, prel, qrel) * value);
+                    }
+
+                    if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs==sabs){
+                        /* (qp|rs) */
+                        if(rssym == pqsym && rssym == sym){
+                            J->add(rsym, rrel, srel, D->get(qsym, qrel, prel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+                    }else if(pabs==qabs && rabs!=sabs){
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(ssym, srel, rrel) * value);
+                        }
+                    }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (rs|pq) */
+                        if(pqsym == rssym && pqsym == sym){
+                            J->add(psym, prel, qrel, D->get(rsym, rrel, srel) * value);
+                        }
+                    }
+                }
+
+                // Exchange terms
+                for (int N = 0; N < K_.size(); N++) {
+
+                    Matrix* K = K_[N].get();
+                    Matrix* D = D_[N].get();
+
+                    int sym = K->symmetry();
+
+                    /* (pq|rs) */
+                    if(qrsym == pssym && qrsym == sym){
+                        K->add(qsym, qrel, rrel, D->get(psym, prel, srel) * value);
+                    }
+
+                    if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(prsym == qssym && prsym == sym){
+                            K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
+                        /* (sr|qp) */
+                        if(qrsym == pssym && qrsym == sym){
+                            K->add(rsym, rrel, qrel, D->get(ssym, srel, prel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs==sabs){
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            K->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
+                    }else if(pabs==qabs && rabs!=sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            K->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(prsym == qssym && prsym == sym){
+                            K->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
+                    }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            K->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                    }
+                }
+            } /* end loop through current buffer */
+            if(!lastBuffer) iwl->fetch();
+        }while(!lastBuffer);
+
+        for (int N = 0; N < J_.size(); N++) {
+            J_[N]->copy_lower_to_upper();
+        }
+        for (int N = 0; N < K_.size(); N++) {
+            if (K_[N]->symmetry()) K_[N]->transpose_this();
+        }
     }
+    iwl->set_keep_flag(1);
+    delete iwl;
 
+    if(do_wK_){
+        iwl = new IWL(psio.get(), PSIF_SO_ERF_TEI, cutoff_, 1, 1);
+        lblptr = iwl->labels();
+        valptr = iwl->values();
+
+        do{
+            lastBuffer = iwl->last_buffer();
+            for(int index = 0; index < iwl->buffer_count(); ++index){
+                labelIndex = 4*index;
+                pabs  = abs((int) lblptr[labelIndex++]);
+                qabs  = (int) lblptr[labelIndex++];
+                rabs  = (int) lblptr[labelIndex++];
+                sabs  = (int) lblptr[labelIndex++];
+                prel  = so2index_[pabs];
+                qrel  = so2index_[qabs];
+                rrel  = so2index_[rabs];
+                srel  = so2index_[sabs];
+                psym  = so2symblk_[pabs];
+                qsym  = so2symblk_[qabs];
+                rsym  = so2symblk_[rabs];
+                ssym  = so2symblk_[sabs];
+                value = (double) valptr[index];
+
+                int pqsym = psym ^ qsym;
+                int rssym = rsym ^ ssym;
+                int qrsym = qsym ^ rsym;
+                int pssym = psym ^ ssym;
+                int prsym = psym ^ rsym;
+                int qssym = qsym ^ ssym;
+
+                // Exchange terms
+                for (int N = 0; N < wK_.size(); N++) {
+
+                    Matrix* wK = wK_[N].get();
+                    Matrix* D = D_[N].get();
+
+                    int sym = wK->symmetry();
+
+                    /* (pq|rs) */
+                    if(qrsym == pssym && qrsym == sym){
+                        wK->add(qsym, qrel, rrel, D->get(psym, prel, srel) * value);
+                    }
+
+                    if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            wK->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            wK->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(prsym == qssym && prsym == sym){
+                            wK->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            wK->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
+                        /* (sr|qp) */
+                        if(qrsym == pssym && qrsym == sym){
+                            wK->add(rsym, rrel, qrel, D->get(ssym, srel, prel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs!=sabs && pabs==rabs && qabs==sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            wK->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            wK->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (qp|sr) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(psym, prel, srel, D->get(qsym, qrel, rrel) * value);
+                        }
+                    }else if(pabs!=qabs && rabs==sabs){
+                        /* (qp|rs) */
+                        if(prsym == qssym && prsym == sym){
+                            wK->add(psym, prel, rrel, D->get(qsym, qrel, srel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (rs|qp) */
+                        if(qssym == prsym && qssym == sym){
+                            wK->add(ssym, srel, qrel, D->get(rsym, rrel, prel) * value);
+                        }
+                    }else if(pabs==qabs && rabs!=sabs){
+                        /* (pq|sr) */
+                        if(qssym == prsym && qssym == sym){
+                            wK->add(qsym, qrel, srel, D->get(psym, prel, rrel) * value);
+                        }
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                        /* (sr|pq) */
+                        if(prsym == qssym && prsym == sym){
+                            wK->add(rsym, rrel, prel, D->get(ssym, srel, qrel) * value);
+                        }
+                    }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
+                        /* (rs|pq) */
+                        if(pssym == qrsym && pssym == sym){
+                            wK->add(ssym, srel, prel, D->get(rsym, rrel, qrel) * value);
+                        }
+                    }
+                }
+            } /* end loop through current buffer */
+            if(!lastBuffer) iwl->fetch();
+        }while(!lastBuffer);
+
+        for (int N = 0; N < wK_.size(); N++) {
+            if (wK_[N]->symmetry()) wK_[N]->transpose_this();
+        }
+        iwl->set_keep_flag(1);
+        delete iwl;
+    }
 }
 void DiskJK::postiterations()
 {
@@ -794,7 +1082,7 @@ PKJK::~PKJK()
 
 void PKJK::common_init()
 {
-    pk_file_ = PSIF_SO_TEI;
+    pk_file_ = PSIF_SO_PK;
 }
 
 void PKJK::print_header() const
@@ -805,7 +1093,7 @@ void PKJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
@@ -817,9 +1105,15 @@ void PKJK::preiterations()
 {
     psio_ = _default_psio_lib_;
 
+    bool file_was_open = psio_->open_check(pk_file_);
+    if(!file_was_open);
+        psio_->open(pk_file_, PSIO_OPEN_NEW);
+
     // Start by generating conventional integrals on disk
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
     mints->integrals();
+    if(do_wK_)
+        mints->integrals_erf(omega_);
     mints.reset();
 
     int nso   = Process::environment.wavefunction()->nso();
@@ -880,9 +1174,8 @@ void PKJK::preiterations()
     }
 
     // TODO figure out a better scheme.  For now, use half of the memory
-    // N.B. we need to accomodate both p and k
-    // 32 comes from 2 (J and K) * 2 (use only half the mem) * 8 (bytes per double)
-    size_t memory = memory_ / 32;
+    // 32 comes from 2 (use only half the mem) * 8 (bytes per double)
+    size_t memory = memory_ / 16;
 
     int nbatches      = 0;
     size_t pq_incore  = 0;
@@ -913,7 +1206,7 @@ void PKJK::preiterations()
     nbatches++;
 
     for(int batch = 0; batch < nbatches; ++batch){
-        fprintf(outfile,"\tBatch %3d pq = [%8ld,%8ld] index = [%14ld,%14ld]\n",
+        fprintf(outfile,"\tBatch %3d pq = [%8zu,%8zu] index = [%14zu,%zu]\n",
                 batch + 1,
                 batch_pq_min_[batch],batch_pq_max_[batch],
                 batch_index_min_[batch],batch_index_max_[batch]);
@@ -1000,6 +1293,7 @@ void PKJK::preiterations()
             }
             if (!last_buffer) iwl->fetch();
         } while (!last_buffer);
+        delete iwl;
 
         // Halve the diagonal elements held in core
         for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
@@ -1015,11 +1309,104 @@ void PKJK::preiterations()
         psio_->write_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
         delete [] label;
 
-        delete iwl;
         delete [] j_block;
         delete [] k_block;
     } // End of loop over batches
+
+    /*
+     * For omega, we only need exchange and it's done separately from conventional terms, so we can
+     * use fewer batches in principle.  For now we just use the batching scheme that's already been
+     * computed for the conventional J/K combo, above
+     */
+    if(do_wK_){
+        for(int batch = 0; batch < nbatches; ++batch){
+            size_t min_index   = batch_index_min_[batch];
+            size_t max_index   = batch_index_max_[batch];
+            size_t batch_size = max_index - min_index;
+            double *wk_block = new double[batch_size];
+            ::memset(wk_block, '\0', batch_size * sizeof(double));
+
+            IWL *iwl = new IWL(psio_.get(), PSIF_SO_ERF_TEI, cutoff_, 1, 1);
+            Label *lblptr = iwl->labels();
+            Value *valptr = iwl->values();
+            int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+            size_t bra, ket, braket;
+            double value;
+            bool last_buffer;
+            do{
+                last_buffer = iwl->last_buffer();
+                for(int index = 0; index < iwl->buffer_count(); ++index){
+                    labelIndex = 4*index;
+                    pabs  = abs((int) lblptr[labelIndex++]);
+                    qabs  = (int) lblptr[labelIndex++];
+                    rabs  = (int) lblptr[labelIndex++];
+                    sabs  = (int) lblptr[labelIndex++];
+                    prel  = so2index_[pabs];
+                    qrel  = so2index_[qabs];
+                    rrel  = so2index_[rabs];
+                    srel  = so2index_[sabs];
+                    psym  = so2symblk_[pabs];
+                    qsym  = so2symblk_[qabs];
+                    rsym  = so2symblk_[rabs];
+                    ssym  = so2symblk_[sabs];
+                    value = (double) valptr[index];
+
+                    if ((psym == qsym) && (rsym == ssym)) {
+                        // K (2nd sort)
+                        if (build_k && (prel != qrel) && (rrel != srel)) {
+                            if ((psym == ssym) && (qsym == rsym)) {
+                                bra = INDEX2(prel, srel);
+                                ket = INDEX2(qrel, rrel);
+                                braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
+                                if((braket >= min_index) && (braket < max_index)){
+                                    if ((prel == srel) || (qrel == rrel)) {
+                                        wk_block[braket - min_index] += value;
+                                    } else {
+                                        wk_block[braket - min_index] += 0.5 * value;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // K (1st sort)
+                    if (build_k && (psym == rsym) && (qsym == ssym)) {
+                        bra = INDEX2(prel, rrel);
+                        ket = INDEX2(qrel, srel);
+                        braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
+                        if((braket >= min_index) && (braket < max_index)){
+                            if ((prel == rrel) || (qrel == srel)) {
+                                wk_block[braket - min_index] += value;
+                            } else {
+                                wk_block[braket - min_index] += 0.5 * value;
+                            }
+                        }
+                    }
+                }
+                if (!last_buffer) iwl->fetch();
+            } while (!last_buffer);
+            delete iwl;
+
+            // Halve the diagonal elements held in core
+            for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
+                size_t address = INDEX2(pq, pq) - min_index;
+                wk_block[address] *= 0.5;
+            }
+
+            char *label = new char[100];
+            sprintf(label, "wK Block (Batch %d)", batch);
+            psio_->write_entry(pk_file_, label, (char*) wk_block, batch_size * sizeof(double));
+            delete [] label;
+
+            delete [] wk_block;
+        } // End of loop over batches
+    }
+
     delete [] orb_offset;
+
+    if(!file_was_open);
+        psio_->close(pk_file_, 1);
+
 }
 
 void PKJK::compute_JK()
@@ -1027,17 +1414,100 @@ void PKJK::compute_JK()
     int nirreps = Process::environment.wavefunction()->nirrep();
     int *sopi   = Process::environment.wavefunction()->nsopi();
 
-
-    bool file_open_on_entry = psio_->open_check(pk_file_);
-    if(!file_open_on_entry)
+    bool file_was_open = psio_->open_check(pk_file_);
+    if(!file_was_open);
         psio_->open(pk_file_, PSIO_OPEN_OLD);
+
+
+    int nbatches = batch_pq_min_.size();
     std::vector<double*> J_vectors;
     std::vector<double*> K_vectors;
     std::vector<double*> D_vectors;
+
+    /*
+     * The J terms
+     */
     for(int N = 0; N < J_.size(); ++N){
         double *J_vector = new double[pk_pairs_];
         ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
         J_vectors.push_back(J_vector);
+        double *D_vector = new double[pk_pairs_];
+        ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
+        D_vectors.push_back(D_vector);
+        // The off-diagonal terms need to be doubled here
+        size_t pqval = 0;
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    if (p != q) {
+                        D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
+                    }else{
+                        D_vector[pqval] = D_[N]->get(h, p, q);
+                    }
+                    ++pqval;
+                }
+            }
+        }
+    }
+
+    if(J_.size()){
+        for(int batch = 0; batch < nbatches; ++batch){
+            size_t min_pq      = batch_pq_min_[batch];
+            size_t max_pq      = batch_pq_max_[batch];
+            size_t min_index   = batch_index_min_[batch];
+            size_t max_index   = batch_index_max_[batch];
+            size_t batch_size = max_index - min_index;
+            double *j_block = new double[batch_size];
+
+            char *label = new char[100];
+            sprintf(label, "J Block (Batch %d)", batch);
+            psio_->read_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
+
+            int nvectors = J_.size();
+            for(int N = 0; N < nvectors; ++N){
+                double *D_vector = D_vectors[N];
+                double *J_vector = J_vectors[N];
+                double *j_ptr = j_block;
+                for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                    double D_pq = D_vector[pq];
+                    double *D_rs = D_vector;
+                    double J_pq = 0.0;
+                    double *J_rs = J_vector;
+                    for (size_t rs = 0; rs <= pq; ++rs) {
+                        J_pq  += *j_ptr * (*D_rs);
+                        *J_rs += *j_ptr * D_pq;
+                        ++D_rs;
+                        ++J_rs;
+                        ++j_ptr;
+                    }
+                    J_vector[pq] += J_pq;
+                }
+            }
+            delete[] label;
+            delete[] j_block;
+        }
+    }
+
+    for(int N = 0; N < J_.size(); ++N){
+        // Copy the results from the vector to the buffer
+        double *J = J_vectors[N];
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    J_[N]->set(h, p, q, *J++);
+                }
+            }
+        }
+        J_[N]->copy_lower_to_upper();
+        delete [] D_vectors[N];
+        delete [] J_vectors[N];
+    }
+
+    /*
+     * The K terms
+     */
+    D_vectors.clear();
+    for(int N = 0; N < K_.size(); ++N){
         double *K_vector = new double[pk_pairs_];
         ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
         K_vectors.push_back(K_vector);
@@ -1060,79 +1530,142 @@ void PKJK::compute_JK()
         }
     }
 
-    int nbatches = batch_pq_min_.size();
-    for(int batch = 0; batch < nbatches; ++batch){
-        size_t min_pq      = batch_pq_min_[batch];
-        size_t max_pq      = batch_pq_max_[batch];
-        size_t min_index   = batch_index_min_[batch];
-        size_t max_index   = batch_index_max_[batch];
-        size_t batch_size = max_index - min_index;
-        size_t pqval = 0;
-        double *j_block = new double[batch_size];
-        double *k_block = new double[batch_size];
+    if(K_.size()){
+        for(int batch = 0; batch < nbatches; ++batch){
+            size_t min_pq      = batch_pq_min_[batch];
+            size_t max_pq      = batch_pq_max_[batch];
+            size_t min_index   = batch_index_min_[batch];
+            size_t max_index   = batch_index_max_[batch];
+            size_t batch_size = max_index - min_index;
+            double *k_block = new double[batch_size];
 
-        char *label = new char[100];
-        sprintf(label, "J Block (Batch %d)", batch);
-        psio_->read_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
-        sprintf(label, "K Block (Batch %d)", batch);
-        psio_->read_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
+            char *label = new char[100];
+            sprintf(label, "K Block (Batch %d)", batch);
+            psio_->read_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
 
-        int nvectors = J_.size();
-        for(int N = 0; N < nvectors; ++N){
-            double *D_vector = D_vectors[N];
-            double *J_vector = J_vectors[N];
-            double *K_vector = K_vectors[N];
-            double *j_ptr = j_block;
-            double *k_ptr = k_block;
-            for (size_t pq = min_pq; pq < max_pq; ++pq) {
-                double D_pq = D_vector[pq];
-                double *D_rs = D_vector;
-                double J_pq = 0.0;
-                double *J_rs = J_vector;
-                double K_pq = 0.0;
-                double *K_rs = K_vector;
-                for (size_t rs = 0; rs <= pq; ++rs) {
-                    J_pq  += *j_ptr * (*D_rs);
-                    *J_rs += *j_ptr * D_pq;
-                    K_pq  += *k_ptr * (*D_rs);
-                    *K_rs += *k_ptr * D_pq;
-                    ++D_rs;
-                    ++J_rs;
-                    ++K_rs;
-                    ++j_ptr;
-                    ++k_ptr;
+            int nvectors = K_.size();
+            for(int N = 0; N < nvectors; ++N){
+                double *D_vector = D_vectors[N];
+                double *K_vector = K_vectors[N];
+                double *k_ptr = k_block;
+                for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                    double D_pq = D_vector[pq];
+                    double *D_rs = D_vector;
+                    double K_pq = 0.0;
+                    double *K_rs = K_vector;
+                    for (size_t rs = 0; rs <= pq; ++rs) {
+                        K_pq  += *k_ptr * (*D_rs);
+                        *K_rs += *k_ptr * D_pq;
+                        ++D_rs;
+                        ++K_rs;
+                        ++k_ptr;
+                    }
+                    K_vector[pq] += K_pq;
                 }
-                J_vector[pq] += J_pq;
-                K_vector[pq] += K_pq;
             }
+            delete[] label;
+            delete[] k_block;
         }
-        delete[] label;
-        delete[] j_block;
-        delete[] k_block;
     }
 
-    for(int N = 0; N < J_.size(); ++N){
+    for(int N = 0; N < K_.size(); ++N){
         // Copy the results from the vector to the buffer
-        double *J = J_vectors[N];
         double *K = K_vectors[N];
         for (int h = 0; h < nirreps; ++h) {
             for (int p = 0; p < sopi[h]; ++p) {
                 for (int q = 0; q <= p; ++q) {
-                    J_[N]->set(h, p, q, *J++);
                     K_[N]->set(h, p, q, *K++);
                 }
             }
         }
-        J_[N]->copy_lower_to_upper();
         K_[N]->copy_lower_to_upper();
-
         delete [] D_vectors[N];
         delete [] K_vectors[N];
-        delete [] J_vectors[N];
     }
 
-    // Leave the file in the state we found it
-    if(!file_open_on_entry)
+    /*
+     * The wK terms
+     */
+    std::vector<double*> wK_vectors;
+    D_vectors.clear();
+    for(int N = 0; N < wK_.size(); ++N){
+        double *K_vector = new double[pk_pairs_];
+        ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
+        wK_vectors.push_back(K_vector);
+        double *D_vector = new double[pk_pairs_];
+        ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
+        D_vectors.push_back(D_vector);
+        // The off-diagonal terms need to be doubled here
+        size_t pqval = 0;
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    if (p != q) {
+                        D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
+                    }else{
+                        D_vector[pqval] = D_[N]->get(h, p, q);
+                    }
+                    ++pqval;
+                }
+            }
+        }
+    }
+
+    if(wK_.size()){
+        for(int batch = 0; batch < nbatches; ++batch){
+            size_t min_pq      = batch_pq_min_[batch];
+            size_t max_pq      = batch_pq_max_[batch];
+            size_t min_index   = batch_index_min_[batch];
+            size_t max_index   = batch_index_max_[batch];
+            size_t batch_size = max_index - min_index;
+            double *k_block = new double[batch_size];
+
+            char *label = new char[100];
+            sprintf(label, "wK Block (Batch %d)", batch);
+            psio_->read_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
+
+            int nvectors = wK_.size();
+            for(int N = 0; N < nvectors; ++N){
+                double *D_vector = D_vectors[N];
+                double *K_vector = wK_vectors[N];
+                double *k_ptr = k_block;
+                for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                    double D_pq = D_vector[pq];
+                    double *D_rs = D_vector;
+                    double K_pq = 0.0;
+                    double *K_rs = K_vector;
+                    for (size_t rs = 0; rs <= pq; ++rs) {
+                        K_pq  += *k_ptr * (*D_rs);
+                        *K_rs += *k_ptr * D_pq;
+                        ++D_rs;
+                        ++K_rs;
+                        ++k_ptr;
+                    }
+                    K_vector[pq] += K_pq;
+                }
+            }
+            delete[] label;
+            delete[] k_block;
+        }
+    }
+
+    for(int N = 0; N < wK_.size(); ++N){
+        // Copy the results from the vector to the buffer
+        double *K = wK_vectors[N];
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    wK_[N]->set(h, p, q, *K++);
+                }
+            }
+        }
+        wK_[N]->copy_lower_to_upper();
+
+        delete [] D_vectors[N];
+        delete [] wK_vectors[N];
+    }
+
+    if(!file_was_open);
         psio_->close(pk_file_, 1);
 }
 
@@ -1163,7 +1696,7 @@ void DirectJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
@@ -1368,8 +1901,8 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
         double** Cip = Ci->pointer(h);
         double** Cp = Ci_ao->pointer();
         double** Up = AO2USO_->pointer(h);
-        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nocc); 
-        offset += ni; 
+        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nocc);
+        offset += ni;
     }
 
     offset = 0;
@@ -1381,13 +1914,13 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
         double** Cp = Ca_ao->pointer();
         double** Up = AO2USO_->pointer(h);
         C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nvir);
-        offset += ni; 
+        offset += ni;
     }
 
-    // Memory size 
+    // Memory size
     int naux = auxiliary_->nbf();
     int maxrows = max_rows();
-    
+
     const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
     unsigned long int num_nm = function_pairs.size();
@@ -1433,7 +1966,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
         // Read block of (Q|mn) in
         int rows = (naux - Q <= maxrows ? naux - Q : maxrows);
         if (is_core()) {
-            Qmnp = &Qmn_->pointer()[Q]; 
+            Qmnp = &Qmn_->pointer()[Q];
         } else {
             Qmnp = Qmn_->pointer();
             psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*num_nm,addr,&addr);
@@ -1466,17 +1999,17 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
 
         // (ai|Q)
         C_DGEMM('T','N',nvir,nocc*(ULI)rows,nso,1.0,Crp[0],nvir,Elp[0],nocc*(ULI)rows,0.0,Erp[0],nocc*(ULI)rows);
-    
+
         // (ia|Q)(Q|ia)
         for (int i = 0; i < nocc; i++) {
             for (int a = 0; a < nvir; a++) {
                 double* Ep = &Erp[0][a * (ULI) nocc * rows + i * rows];
                 Iiap[i * nvir + a] += C_DDOT(rows, Ep, 1, Ep, 1);
             }
-        } 
-        
+        }
+
     }
-    
+
     // Free disk overhead
     if (!is_core()) {
         Qmn_.reset();
@@ -1489,14 +2022,14 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
     C_temp_.clear();
     Q_temp_.clear();
 
-    // SO-basis (ia|ia)    
+    // SO-basis (ia|ia)
     Dimension i_offsets(Ci->nirrep());
     Dimension a_offsets(Ci->nirrep());
     for (int h = 1; h < Ci->nirrep(); h++) {
         i_offsets[h] = i_offsets[h-1] + Ci->colspi()[h-1];
         a_offsets[h] = a_offsets[h-1] + Ca->colspi()[h-1];
     }
-    
+
     for (int symm = 0; symm < Ci->nirrep(); symm++) {
         offset = 0;
         for (int h = 0; h < Ci->nirrep(); h++) {
@@ -1523,7 +2056,7 @@ void DFJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
@@ -3204,7 +3737,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
     }
 }
 
-PSJK::PSJK(boost::shared_ptr<BasisSet> primary, 
+PSJK::PSJK(boost::shared_ptr<BasisSet> primary,
     Options& options) :
     JK(primary), options_(options)
 {
@@ -3232,7 +3765,7 @@ void PSJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
@@ -3245,7 +3778,7 @@ void PSJK::print_header() const
         fprintf(outfile, "   => Quadrature Grid <=\n\n");
         fprintf(outfile, "    Total Points:      %11d\n", grid_->rowspi()[0]);
         fprintf(outfile, "\n");
-        // TODO print grid algorithm details 
+        // TODO print grid algorithm details
 
         if (dealiasing_ == "DEALIAS") {
             fprintf(outfile, "   => Dealias Basis Set <=\n\n");
@@ -3263,7 +3796,7 @@ void PSJK::preiterations()
     build_QR();
 
     if (do_J_ || do_K_) {
-        build_Amn_disk(theta_,"(A|mn) JK");    
+        build_Amn_disk(theta_,"(A|mn) JK");
     }
 
     if (do_wK_) {
@@ -3278,8 +3811,8 @@ void PSJK::postiterations()
 }
 void PSJK::compute_JK()
 {
-    // Short Range 
-    build_JK_SR(); 
+    // Short Range
+    build_JK_SR();
 
     // Long Range
     build_JK_LR();
@@ -3289,9 +3822,9 @@ void PSJK::compute_JK()
 }
 void PSJK::build_QR()
 {
-    boost::shared_ptr<PseudospectralGrid> grid(new PseudospectralGrid(primary_->molecule(), 
+    boost::shared_ptr<PseudospectralGrid> grid(new PseudospectralGrid(primary_->molecule(),
         primary_, options_));
-    int npoints = grid->npoints(); 
+    int npoints = grid->npoints();
     int nbf = primary_->nbf();
     int max_points = grid->max_points();
     int max_functions = grid->max_functions();
@@ -3304,11 +3837,11 @@ void PSJK::build_QR()
     double* z = grid->z();
     double* w = grid->w();
     for (int P = 0; P < npoints; P++) {
-        gridp[P][0] = x[P]; 
-        gridp[P][1] = y[P]; 
-        gridp[P][2] = z[P]; 
-        gridp[P][3] = w[P]; 
-    } 
+        gridp[P][0] = x[P];
+        gridp[P][1] = y[P];
+        gridp[P][2] = z[P];
+        gridp[P][3] = w[P];
+    }
 
     // R (Collocation)
     R_ = SharedMatrix(new Matrix("R", nbf, npoints));
@@ -3327,13 +3860,13 @@ void PSJK::build_QR()
             int iglobal = funmap[i];
             C_DCOPY(nP,&phip[0][i],max_functions,&Rp[iglobal][offset],1);
         }
-        
+
         offset += nP;
     }
 
     points.reset();
     grid.reset();
-    
+
     // Q (Quadrature Rule)
     if (dealiasing_ == "QUADRATURE") {
         for (int P = 0; P < npoints; P++) {
@@ -3346,29 +3879,29 @@ void PSJK::build_QR()
             C_DSCAL(nbf,sqrt(gridp[P][3]),&Rp[0][P],npoints);
         }
 
-        bool warning;     
+        bool warning;
         SharedMatrix Rplus = R_->pseudoinverse(1.0E-10, &warning);
         if (warning) {
             fprintf(outfile, "    Warning, Renormalization had to be conditioned.\n\n");
-        } 
+        }
 
         boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
         boost::shared_ptr<OneBodyAOInt> ints(factory->ao_overlap());
         SharedMatrix S(new Matrix("S", nbf, nbf));
         ints->compute(S);
         ints.reset();
-        
+
         Q_ = SharedMatrix(R_->clone());
-        Q_->set_name("Q"); 
-        
+        Q_->set_name("Q");
+
         double** Qp = Q_->pointer();
         double** Rp = Rplus->pointer();
         double** Sp = S->pointer();
-        
+
         C_DGEMM('N','N',nbf,npoints,nbf,1.0,Sp[0],nbf,Rp[0],npoints,0.0,Qp[0],npoints);
 
     } else if (dealiasing_ == "DEALIAS") {
-        // TODO 
+        // TODO
         throw FeatureNotImplemented("PSJK", "Dealiasing", __FILE__, __LINE__);
     }
 }
@@ -3378,7 +3911,7 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
     std::vector<boost::shared_ptr<PseudospectralInt> > ints;
     for (int i = 0; i < df_ints_num_threads_; i++) {
         ints.push_back(boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(factory->ao_pseudospectral())));
-        ints[i]->set_omega(theta);        
+        ints[i]->set_omega(theta);
     }
 
     int maxrows = max_rows();
@@ -3394,7 +3927,7 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
 
     psio_->open(unit_,PSIO_OPEN_OLD);
     psio_address addr = PSIO_ZERO;
-    
+
     for (int Pstart = 0; Pstart < naux; Pstart += maxrows) {
         int nrows =  (Pstart + maxrows >= naux ? naux - Pstart : maxrows);
 
@@ -3407,12 +3940,12 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
             boost::shared_ptr<PseudospectralInt> eri = ints[thread];
             const double* buffer = eri->buffer();
             eri->set_point(Gp[row + Pstart][0], Gp[row + Pstart][1], Gp[row + Pstart][2]);
-            double* Amp = Amnp[row]; 
-            
+            double* Amp = Amnp[row];
+
             for (int ind = 0; ind < shell_pairs.size(); ind++) {
                 int M = shell_pairs[ind].first;
                 int N = shell_pairs[ind].second;
-                
+
                 eri->compute_shell(M,N);
 
                 int nM = primary_->shell(M).nfunction();
@@ -3424,7 +3957,7 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
                     for (int n = 0; n < nN; n++) {
                         int am = m + oM;
                         int an = n + oN;
-                        if (am >= an) { 
+                        if (am >= an) {
                             int mn = (am *(am + 1) >> 1) + an;
                             long int mn_local = function_pairs_r[mn];
                             if (mn >= 0) {
@@ -3440,14 +3973,14 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
 
     psio_->close(unit_, 1);
 }
-int PSJK::max_rows() 
+int PSJK::max_rows()
 {
     int ntri = sieve_->function_pairs().size();
     int naux = grid_->rowspi()[0];
     unsigned long int effective_memory = memory_ - memory_overhead();
     unsigned long int rows = effective_memory / ntri;
     rows = (rows > naux ? naux : rows);
-    rows = (rows < 1 ? 1 : rows);   
+    rows = (rows < 1 ? 1 : rows);
     return (int) rows;
 }
 void PSJK::block_J(double** Amnp, int Pstart, int nP, const std::vector<SharedMatrix>& J)
@@ -3464,7 +3997,7 @@ void PSJK::block_J(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
     double* J2p = J_temp_->pointer();
 
     for (int N = 0; N < D_ao_.size(); N++) {
-        
+
         double** Dp = D_ao_[N]->pointer();
         double** Jp = J[N]->pointer();
 
@@ -3512,8 +4045,8 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
                 int m = funmap[mn].first;
                 int n = funmap[mn].second;
                 double Aval = Arp[mn];
-                Wrp[m] += Aval * Vrp[n]; 
-                Wrp[n] += (m == n ? 0.0 : Aval * Vrp[m]); 
+                Wrp[m] += Aval * Vrp[n];
+                Wrp[n] += (m == n ? 0.0 : Aval * Vrp[m]);
             }
         }
 
@@ -3528,7 +4061,7 @@ void PSJK::build_JK_SR()
 
     double cutoff = sieve_->sieve();
     const std::vector<std::pair<int,int> >& shellmap = sieve_->shell_pairs();
-    int nTRI = shellmap.size(); 
+    int nTRI = shellmap.size();
     for (int MN = 0; MN < nTRI; MN++) {
         int M = shellmap[MN].first;
         int N = shellmap[MN].second;
@@ -3560,7 +4093,7 @@ void PSJK::build_JK_SR()
                             int ls = (l * (l + 1) >> 1) + s;
                             if (n > m || s > l || ls > mn) continue;
                             double val = buffer[index];
-                            
+
                             // J
                             if (do_J_) {
                                 for (int A = 0; A < D_.size(); A++) {
@@ -3602,7 +4135,7 @@ void PSJK::build_JK_SR()
                                         Jp[s][l] += val * Dp[m][n]; // (sl|mn)
                                         Jp[s][l] += val * Dp[n][m]; // (sl|nm)
                                     }
-                                }   
+                                }
                             }
                             // K
                             if (do_K_) {
@@ -3618,7 +4151,7 @@ void PSJK::build_JK_SR()
                                         Kp[l][m] += val * Dp[l][m]; // (ll|mm)
                                     } else if (m == n) {
                                         // (mm|ls)
-                                        Kp[m][s] += val * Dp[m][l]; // (mm|ls) 
+                                        Kp[m][s] += val * Dp[m][l]; // (mm|ls)
                                         Kp[m][l] += val * Dp[m][s]; // (mm|sl)
                                         Kp[l][m] += val * Dp[s][m]; // (ls|mm)
                                         Kp[s][m] += val * Dp[l][m]; // (sl|mm)
@@ -3645,14 +4178,14 @@ void PSJK::build_JK_SR()
                                         Kp[s][n] += val * Dp[l][m]; // (sl|mn)
                                         Kp[s][m] += val * Dp[l][n]; // (sl|nm)
                                     }
-                                }   
+                                }
                             }
                         }
-                    }   
+                    }
                 }
             }
         }
-    } 
+    }
 }
 void PSJK::build_JK_LR()
 {
@@ -3661,8 +4194,8 @@ void PSJK::build_JK_LR()
     int ntri = sieve_->function_pairs().size();
     int maxrows = max_rows();
 
-    SharedMatrix Amn(new Matrix("Amn",maxrows,ntri)); 
-    double** Amnp = Amn->pointer();    
+    SharedMatrix Amn(new Matrix("Amn",maxrows,ntri));
+    double** Amnp = Amn->pointer();
 
     V_ = SharedMatrix(new Matrix("V", maxrows,nbf));
     W_ = SharedMatrix(new Matrix("W", maxrows,nbf));
@@ -3674,7 +4207,7 @@ void PSJK::build_JK_LR()
         psio_address addr = PSIO_ZERO;
         for (int Pstart = 0; Pstart < naux; Pstart += maxrows) {
             int nrows = (naux - Pstart <= maxrows ? naux - Pstart : maxrows);
-            psio_->read(unit_,"(A|mn) JK", (char*) Amnp[0], sizeof(double)*nrows*ntri,addr,&addr); 
+            psio_->read(unit_,"(A|mn) JK", (char*) Amnp[0], sizeof(double)*nrows*ntri,addr,&addr);
             if (do_J_) {
                 block_J(Amnp,Pstart,nrows,J_ao_);
             }
@@ -3686,10 +4219,10 @@ void PSJK::build_JK_LR()
         if (lr_symmetric_ && do_K_) {
             for (int N = 0; N < D_.size(); N++) {
                 K_ao_[N]->hermitivitize();
-            }    
+            }
         }
     }
-    
+
     Amn.reset();
     V_.reset();
     W_.reset();
@@ -3700,12 +4233,12 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
 {
     if (do_J_) {
         for (int A = 0; A < D_.size(); A++) {
-            J_ao_[A]->zero();    
+            J_ao_[A]->zero();
         }
     }
     if (do_K_) {
         for (int A = 0; A < D_.size(); A++) {
-            K_ao_[A]->zero();    
+            K_ao_[A]->zero();
         }
     }
 
@@ -3713,9 +4246,9 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
     boost::shared_ptr<TwoBodyAOInt> eri;
     if (op == "") {
         eri = boost::shared_ptr<TwoBodyAOInt>(factory->eri());
-    } else if (op == "SR") { 
+    } else if (op == "SR") {
         eri = boost::shared_ptr<TwoBodyAOInt>(factory->erf_complement_eri(theta));
-    } else if (op == "LR") { 
+    } else if (op == "LR") {
         eri = boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(theta));
     } else {
         throw PSIEXCEPTION("What is this?");
@@ -3724,7 +4257,7 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
 
     double cutoff = sieve_->sieve();
     const std::vector<std::pair<int,int> >& shellmap = sieve_->shell_pairs();
-    int nTRI = shellmap.size(); 
+    int nTRI = shellmap.size();
     for (int MN = 0; MN < nTRI; MN++) {
         int M = shellmap[MN].first;
         int N = shellmap[MN].second;
@@ -3756,7 +4289,7 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
                             int ls = (l * (l + 1) >> 1) + s;
                             if (n > m || s > l || ls > mn) continue;
                             double val = buffer[index];
-                            
+
                             // J
                             if (do_J_) {
                                 for (int A = 0; A < D_.size(); A++) {
@@ -3798,7 +4331,7 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
                                         Jp[s][l] += val * Dp[m][n]; // (sl|mn)
                                         Jp[s][l] += val * Dp[n][m]; // (sl|nm)
                                     }
-                                }   
+                                }
                             }
                             // K
                             if (do_K_) {
@@ -3814,7 +4347,7 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
                                         Kp[l][m] += val * Dp[l][m]; // (ll|mm)
                                     } else if (m == n) {
                                         // (mm|ls)
-                                        Kp[m][s] += val * Dp[m][l]; // (mm|ls) 
+                                        Kp[m][s] += val * Dp[m][l]; // (mm|ls)
                                         Kp[m][l] += val * Dp[m][s]; // (mm|sl)
                                         Kp[l][m] += val * Dp[s][m]; // (ls|mm)
                                         Kp[s][m] += val * Dp[l][m]; // (sl|mm)
@@ -3841,14 +4374,14 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
                                         Kp[s][n] += val * Dp[l][m]; // (sl|mn)
                                         Kp[s][m] += val * Dp[l][n]; // (sl|nm)
                                     }
-                                }   
+                                }
                             }
                         }
-                    }   
+                    }
                 }
             }
         }
-    } 
+    }
 
     fprintf(outfile, "  ==> JK Debug %s, theta = %11.3E <==\n\n", op.c_str(), theta);
     for (int A = 0; A < D_.size(); A++) {

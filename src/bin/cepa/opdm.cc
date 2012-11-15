@@ -1,96 +1,93 @@
 #include<libmints/mints.h>
 #include<psifiles.h>
+#include <libqt/qt.h>
 #include"blas.h"
 #include"coupledpair.h"
 
 using namespace psi;
 
 namespace psi{ namespace cepa{
-void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options);
+
 double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level);
 void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*ta,double*tb,double c0,double*D1);
 
-void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options){
+void CoupledPair::OPDM(){
 
-  long int o = cepa->ndoccact;
-  long int v = cepa->nvirt;
+  long int o = ndoccact;
+  long int v = nvirt;
 
   // if t2 was stored on disk, grab it.
-  if (cepa->t2_on_disk){
+  if (t2_on_disk){
      boost::shared_ptr<PSIO> psio(new PSIO());
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&cepa->tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
-     cepa->tb = cepa->tempv;
+     tb = tempv;
   }
 
   // Normalize wave function and return leading coefficient 
-  double c0 = Normalize(o,v,cepa->t1,cepa->tb,cepa->cepa_level);
+  double c0 = Normalize(o,v,t1,tb,cepa_level);
 
   // Build 1-RDM
-  int nmo = o+v+cepa->nfzc+cepa->nfzv;
+  int nmo = o+v+nfzc+nfzv;
   double*D1 = (double*)malloc(nmo*nmo*sizeof(double));
-  BuildD1(cepa->nfzc,o,v,cepa->nfzv,cepa->t1,cepa->integrals,cepa->tb,c0,D1);
+  BuildD1(nfzc,o,v,nfzv,t1,integrals,tb,c0,D1);
 
-  // Call oeprop
-  boost::shared_ptr<OEProp> oe(new OEProp());
-  boost::shared_ptr<Wavefunction> wfn =
-    Process::environment.wavefunction();
-  boost::shared_ptr<Matrix> Ca = wfn->Ca();
+  boost::shared_ptr<Matrix> Ca = reference_wavefunction_->Ca();
 
   std::stringstream ss;
-  ss << cepa->cepa_type;
+  ss << cepa_type;
   std::stringstream ss_a;
   ss_a << ss.str() << " alpha";
 
-  // pass opdm to oeprop
+  // one particle density matrix
   SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi()));
 
   // mapping array for D1(c1) -> D1(symmetry)
-  int *irrepoffset = (int*)malloc(cepa->nirreps*sizeof(double));
+  int *irrepoffset = (int*)malloc(nirrep_*sizeof(double));
   irrepoffset[0] = 0;
-  for (int h=1; h<cepa->nirreps; h++){
-      irrepoffset[h] = irrepoffset[h-1] + cepa->orbs[h-1];
+  for (int h=1; h<nirrep_; h++){
+      irrepoffset[h] = irrepoffset[h-1] + nmopi_[h-1];
   }
   int *reorder = (int*)malloc(nmo*sizeof(int));
   int mo_offset = 0;
   int count = 0;
 
   // frozen core
-  for (int h=0; h<cepa->nirreps; h++){
-      int norbs = cepa->fzc[h];
+  for (int h=0; h<nirrep_; h++){
+      int norbs = frzcpi_[h];
       for (int i=0; i<norbs; i++){
           reorder[irrepoffset[h] + i] = count++;
       }
   }
   // active doubly occupied
-  for (int h=0; h<cepa->nirreps; h++){
-      int norbs = cepa->docc[h]-cepa->fzc[h];
+  for (int h=0; h<nirrep_; h++){
+      int norbs = doccpi_[h]-frzcpi_[h];
       for (int i=0; i<norbs; i++){
-          reorder[irrepoffset[h] + i + cepa->fzc[h]] = count++;
+          reorder[irrepoffset[h] + i + frzcpi_[h]] = count++;
       }
   }
   // active virtual
-  for (int h=0; h<cepa->nirreps; h++){
-      int norbs = cepa->orbs[h]-cepa->fzv[h]-cepa->docc[h];
+  for (int h=0; h<nirrep_; h++){
+      int norbs = nmopi_[h]-frzvpi_[h]-doccpi_[h];
       for (int i=0; i<norbs; i++){
-          reorder[irrepoffset[h] + i + cepa->docc[h]] = count++;
+          reorder[irrepoffset[h] + i + doccpi_[h]] = count++;
       }
   }
   // frozen virtual
-  for (int h=0; h<cepa->nirreps; h++){
-      int norbs = cepa->fzv[h];
+  for (int h=0; h<nirrep_; h++){
+      int norbs = frzvpi_[h];
       for (int i=0; i<norbs; i++){
-          reorder[irrepoffset[h] + i + cepa->orbs[h]-cepa->fzv[h]] = count++;
+          reorder[irrepoffset[h] + i + nmopi_[h]-frzvpi_[h]] = count++;
       }
   }
 
-  // pass opdm to oeprop (should be symmetry-tolerant)
-  for (int h=0; h<cepa->nirreps; h++){
+  // make opdm symmetry tolerant
+  for (int h=0; h<nirrep_; h++){
       double** opdmap = opdm_a->pointer(h);
-      for (int i=0; i<cepa->orbs[h]; i++) {
+      for (int i=0; i<nmopi_[h]; i++) {
           int ii = reorder[irrepoffset[h]+i];
-          for (int j=0; j<cepa->orbs[h]; j++){
+          for (int j=0; j<nmopi_[h]; j++){
               int jj = reorder[irrepoffset[h]+j];
               opdmap[i][j] = D1[ii*nmo+jj];
           }
@@ -99,200 +96,25 @@ void OPDM(boost::shared_ptr<psi::cepa::CoupledPair>cepa,Options&options){
   free(reorder);
   free(irrepoffset);
 
-  oe->set_Da_mo(opdm_a);
+  // set Da_ for properties with oeprop ... note Da needs to be in so basis
+  int symm = opdm_a->symmetry();
+  int nirrep = opdm_a->nirrep();
 
-  std::stringstream oeprop_label;
-  oeprop_label << cepa->cepa_type;
-  oe->set_title(oeprop_label.str());
-  oe->add("DIPOLE");
-  oe->add("MULLIKEN_CHARGES");
-  oe->add("NO_OCCUPATIONS");
-  if (options.get_int("PRINT") > 1) {
-      oe->add("QUADRUPOLE");
+  double* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
+  for (int h = 0; h < nirrep; h++) {
+      int nmol = Ca->colspi()[h];
+      int nmor = Ca->colspi()[h^symm];
+      int nsol = Ca->rowspi()[h];
+      int nsor = Ca->rowspi()[h^symm];
+      if (!nmol || !nmor || !nsol || !nsor) continue;
+      double** Clp = Ca->pointer(h);
+      double** Crp = Ca->pointer(h^symm);
+      double** Dmop = opdm_a->pointer(h^symm);
+      double** Dsop = Da_->pointer(h^symm);
+      C_DGEMM('N','T',nmol,nsor,nmor,1.0,Dmop[0],nmor,Crp[0],nmor,0.0,temp,nsor);
+      C_DGEMM('N','N',nsol,nsor,nmol,1.0,Clp[0],nmol,temp,nsor,0.0,Dsop[0],nsor);
   }
-   
-  fprintf(outfile, "\n");
-  fprintf(outfile, "  ==> Properties %s <==\n", ss.str().c_str());
-  oe->compute();
-
-  char*line = (char*)malloc(100*sizeof(char));
-
-  std::stringstream ss2;
-  ss2 << oeprop_label.str() << " DIPOLE X";
-  if (cepa->cepa_level == 0){
-     Process::environment.globals["CEPA(0) DIPOLE X"] =
-       Process::environment.globals[ss2.str()];
-  }
-  if (cepa->cepa_level == -1){
-     Process::environment.globals["CISD DIPOLE X"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -2){
-     Process::environment.globals["ACPF DIPOLE X"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -3){
-     Process::environment.globals["AQCC DIPOLE X"] =
-       Process::environment.globals[ss2.str()];
-  }
-
-  ss2.str(std::string());
-  ss2 << oeprop_label.str() << " DIPOLE Y";
-  if (cepa->cepa_level == 0){
-     Process::environment.globals["CEPA(0) DIPOLE Y"] =
-       Process::environment.globals[ss2.str()];
-  }
-  if (cepa->cepa_level == -1){
-     Process::environment.globals["CISD DIPOLE Y"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -2){
-     Process::environment.globals["ACPF DIPOLE Y"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -3){
-     Process::environment.globals["AQCC DIPOLE Y"] =
-       Process::environment.globals[ss2.str()];
-  }
-
-  ss2.str(std::string());
-  ss2 << oeprop_label.str() << " DIPOLE Z";
-  if (cepa->cepa_level == 0){
-     Process::environment.globals["CEPA(0) DIPOLE Z"] =
-       Process::environment.globals[ss2.str()];
-  }
-  if (cepa->cepa_level == -1){
-     Process::environment.globals["CISD DIPOLE Z"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -2){
-     Process::environment.globals["ACPF DIPOLE Z"] =
-       Process::environment.globals[ss2.str()];
-  }
-  else if (cepa->cepa_level == -3){
-     Process::environment.globals["AQCC DIPOLE Z"] =
-       Process::environment.globals[ss2.str()];
-  }
-
-  if (options.get_int("PRINT")>1){
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE XX";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE XX"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE XX"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE XX"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE XX"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE YY";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE YY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE YY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE YY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE YY"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE ZZ";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE ZZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE ZZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE ZZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE ZZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE XY";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE XY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE XY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE XY"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE XY"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE XZ";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE XZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE XZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE XZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE XZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-     ss2.str(std::string());
-     ss2 << oeprop_label.str() << " QUADRUPOLE YZ";
-     if (cepa->cepa_level == 0){
-        Process::environment.globals["CEPA(0) QUADRUPOLE YZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     if (cepa->cepa_level == -1){
-        Process::environment.globals["CISD QUADRUPOLE YZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -2){
-        Process::environment.globals["ACPF QUADRUPOLE YZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-     else if (cepa->cepa_level == -3){
-        Process::environment.globals["AQCC QUADRUPOLE YZ"] =
-          Process::environment.globals[ss2.str()];
-     }
-
-  }
+  delete[] temp;
 
   free(D1);
 }

@@ -33,7 +33,6 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
-#include "pkintegrals.h"
 
 #include "hf.h"
 
@@ -115,6 +114,9 @@ void HF::common_init()
     // Read information from input file
     maxiter_ = options_.get_int("MAXITER");
 
+    // Should we continue if we fail to converge?
+    fail_on_maxiter_ = options_.get_bool("FAIL_ON_MAXITER");
+
     // Read in DOCC and SOCC from memory
     int nirreps = factory_->nirrep();
     int ndocc = 0, nsocc = 0;
@@ -147,6 +149,11 @@ void HF::common_init()
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
     }
+
+    if(options_.get_str("REFERENCE") == "RKS" || options_.get_str("REFERENCE") == "UKS")
+        name_ = "DFT";
+    else
+        name_ = "SCF";
 
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
@@ -339,25 +346,13 @@ void HF::integrals()
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
+    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-        mints->integrals();
-        try {
-            if(scf_type_ == "PK")
-                pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
-                                                                               nsopi_, so2index_, so2symblk_));
-        }
-        catch (PsiException & err) {
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ = "OUT_OF_CORE";
-            pk_integrals_.reset();
-        }
+        // Don't do anything; the JK object will handle everything!
     }else if (scf_type_ == "DF"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->one_electron_integrals();
         if (print_ && WorldComm->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
@@ -369,7 +364,7 @@ void HF::integrals()
     }
 
     // TODO: Relax the if statement. 
-    if (scf_type_ == "DF" || scf_type_ == "PS") {
+    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
         // Tell the JK to print
@@ -404,7 +399,6 @@ void HF::finalize()
     delete[] so2symblk_;
     delete[] so2index_;
 
-    pk_integrals_.reset();
     eri_.reset();
 
     // This will be the only one
@@ -638,95 +632,8 @@ void HF::form_H()
 
         } // embpot
         else if(perturb_ == dx) {
-          int delta_count = 0;
-          bool data_ready = false;
-          int data_read = 0;
-          double xstep, ystep, zstep;
-          int xsteps, ysteps, zsteps;
-          double xmin, ymin, zmin;
-          int xinc = 0;
-          int yinc = 0;
-          int zinc = 0;
-          int num_steps = 0;
-          int total;
+          dx_read(V_eff, phi_ao, phi_so, nao, nso, u);             
 
-          ifstream input;
-          input.open("potential.dx");
-          if (!input.good()) throw PSIEXCEPTION("Error opening potential.dx.");
-          while (!input.eof())
-          {
-            char buf[512];
-            input.getline(buf, 512);
-            stringstream cppbuf(buf);
-            string token;
-            vector <string> tokens;
-            while(cppbuf >> token) tokens.push_back(token);
-            if(tokens.size()) { // skip blank lines
-
-              if(data_ready && data_read <= total) { // data line
-                for(int i=0; i < tokens.size(); i++) {
-                  double x = xmin + xinc * xstep;
-                  double y = ymin + yinc * ystep;
-                  double z = zmin + zinc * zstep;
-                  double pot_val = atof(tokens[i].c_str());
-
-                  basisset_->compute_phi(phi_ao, x, y, z);
-                  // Transform phi_ao to SO basis
-                  C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
-                  for(int i=0; i < nso; i++)
-                    for(int j=0; j < nso; j++)
-                      V_eff[i][j] += pot_val * xstep * ystep * zstep * phi_so[i] * phi_so[j];
-
-//                  fprintf(outfile, "x = %f; y = %f; z = %f; v = %f\n", x, y, z, pot_val);
-                  num_steps++;
-                  zinc++;
-                  if(zinc == zsteps) { yinc++; zinc = 0; }
-                  if(yinc == ysteps) { xinc++; yinc = 0; }
-                  if(xinc == xsteps) {
-                    fprintf(outfile, "Total points read: %d\n", num_steps);
-                    data_ready = false;
-                  }
-                }
-              }
-
-              if(tokens[0] == "#") // comment lines
-                fprintf(outfile, "%s\n", buf);
-              if(tokens[0] == "origin") {
-                xmin = atof(tokens[1].c_str());
-                ymin = atof(tokens[2].c_str());
-                zmin = atof(tokens[3].c_str());
-                fprintf(outfile, "%f %f %f\n", xmin, ymin, zmin);
-              }
-
-             if(tokens[0] == "delta") {
-               if(delta_count == 0) 
-                 xstep = atof(tokens[1].c_str());
-               else if(delta_count == 1) 
-                 ystep = atof(tokens[2].c_str());
-               else if(delta_count == 2) {
-                 zstep = atof(tokens[3].c_str());
-                 fprintf(outfile, "Step sizes: %f %f %f\n", xstep, ystep, zstep);
-               }
-               delta_count++;
-             }
-
-             if(tokens[0] == "object") {
-               if(tokens[1] == "1") {
-                 xsteps = atoi(tokens[5].c_str());
-                 ysteps = atoi(tokens[6].c_str());
-                 zsteps = atoi(tokens[7].c_str());
-                 fprintf(outfile, "%d %d %d\n", xsteps, ysteps, zsteps);
-               }              
-               else if(tokens[1] == "3") {
-                 total = atoi(tokens[9].c_str());
-                 fprintf(outfile, "%d\n", total);
-                 data_ready = true;
-               }
-             }
-
-            }
-          }
-          input.close();
         } // dx file
         else if(perturb_ == sphere) {
           radius_ = options_.get_double("RADIUS");
@@ -1187,12 +1094,12 @@ void HF::guess()
 {
     //What does the user want?
     //Options will be:
-    // "READ"-try to read MOs from file100, projecting if needed
+    // "READ"-try to read MOs from guess file, projecting if needed
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     string guess_type = options_.get_str("GUESS");
-    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_DB_MOS)) {
+    if (guess_type == "READ" && !psio_->exists(PSIF_SCF_MOS)) {
         fprintf(outfile, "  SCF Guess was Projection but file not found.\n");
         fprintf(outfile, "  Switching over to SAD guess.\n\n");
         guess_type = "SAD";
@@ -1267,56 +1174,56 @@ void HF::guess()
 
 void HF::save_orbitals()
 {
-    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
+    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_DB_MOS);
+        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_MOS);
 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
+    psio_->write_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(nirrep_),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     char *basisname = strdup(options_.get_str("BASIS").c_str());
     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
+    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"BASIS NAME",basisname,basislength*sizeof(char));
 
     // upon loading, need to know what value of puream was used
     int old_puream = (basisset_->has_puream() ? 1 : 0);
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),sizeof(int));
+    psio_->write_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),sizeof(int));
 
-    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
-    Ctemp_a->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    Ctemp_a->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
+    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, nsopi_, nbetapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nbetapi_[h]; i++)
                 Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
-    Ctemp_b->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    Ctemp_b->save(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
 
-    psio_->close(PSIF_SCF_DB_MOS,1);
+    psio_->close(PSIF_SCF_MOS,1);
     free(basisname);
 }
 
 void HF::load_orbitals()
 {
-    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
+    psio_->open(PSIF_SCF_MOS,PSIO_OPEN_OLD);
 
     int basislength, old_puream;
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",
+    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME LENGTH",
         (char *)(&basislength),sizeof(int));
     char *basisnamec = new char[basislength];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,
+    psio_->read_entry(PSIF_SCF_MOS,"BASIS NAME",basisnamec,
         basislength*sizeof(char));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB PUREAM",(char *)(&old_puream),
+    psio_->read_entry(PSIF_SCF_MOS,"PUREAM",(char *)(&old_puream),
         sizeof(int));
     bool old_forced_puream = (old_puream) ? true : false;
     std::string basisname(basisnamec);
@@ -1340,25 +1247,25 @@ void HF::load_orbitals()
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
+    psio_->read_entry(PSIF_SCF_MOS,"SCF ENERGY",(char *) &(E_),sizeof(double));
 
     int old_nirrep, old_nsopi[8];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(old_nirrep),sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NIRREP",(char *) &(old_nirrep),sizeof(int));
 
     if (old_nirrep != nirrep_)
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_MOS,"NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     for (int h = 0; h < nirrep_; h++) {
         doccpi_[h] = nbetapi_[h];
         soccpi_[h] = nalphapi_[h] - nbetapi_[h];
     }
 
-    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
-    Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    SharedMatrix Ctemp_a(new Matrix("ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+    Ctemp_a->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     SharedMatrix Ca;
     if (basisname != options_.get_str("BASIS")) {
         Ca = BasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
@@ -1370,8 +1277,8 @@ void HF::load_orbitals()
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ca_->set(h,m,i,Ca->get(h,m,i));
 
-    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
-    Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    SharedMatrix Ctemp_b(new Matrix("BETA MOS", nirrep_, old_nsopi, nbetapi_));
+    Ctemp_b->load(psio_, PSIF_SCF_MOS, Matrix::SubBlocks);
     SharedMatrix Cb;
     if (basisname != options_.get_str("BASIS")) {
         Cb = BasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
@@ -1383,7 +1290,7 @@ void HF::load_orbitals()
             for (int i = 0; i<nbetapi_[h]; i++)
                 Cb_->set(h,m,i,Cb->get(h,m,i));
 
-    psio_->close(PSIF_SCF_DB_MOS,1);
+    psio_->close(PSIF_SCF_MOS,1);
     delete[] basisnamec;
 }
 
@@ -1668,7 +1575,7 @@ double HF::compute_energy()
     compute_spin_contamination();
     frac_renormalize();
 
-    if (converged) {
+    if (converged || !fail_on_maxiter_) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
@@ -1677,8 +1584,13 @@ double HF::compute_energy()
         if(print_)
             print_orbitals();
 
-        if (WorldComm->me() == 0) {
+        if (WorldComm->me() == 0 && converged) {
             fprintf(outfile, "  Energy converged.\n\n");
+        }
+        if (WorldComm->me() == 0 && !converged) {
+            fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
+        }
+        if (WorldComm->me() == 0) {
             fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
@@ -1707,6 +1619,19 @@ double HF::compute_energy()
             if (WorldComm->me() == 0)
                 fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["SCF DIPOLE X"] =
+//  Process::environment.globals["SCF DIPOLE Y"] =
+//  Process::environment.globals["SCF DIPOLE Z"] =
+//  Process::environment.globals["SCF QUADRUPOLE XX"] =
+//  Process::environment.globals["SCF QUADRUPOLE XY"] =
+//  Process::environment.globals["SCF QUADRUPOLE XZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE YY"] =
+//  Process::environment.globals["SCF QUADRUPOLE YZ"] =
+//  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
+
         }
 
         save_information();
@@ -1723,7 +1648,7 @@ double HF::compute_energy()
         die_if_not_converged();
     }
 
-    // Orbitals are always saved, in case a dual basis is required later
+    // Orbitals are always saved, in case an MO guess is requested later
     save_orbitals();
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
@@ -1746,28 +1671,34 @@ double HF::compute_energy()
 void HF::print_energies()
 {
     fprintf(outfile, "   => Energetics <=\n\n");
-    fprintf(outfile, "    Nuclear Repulsion Energy =    %24.16f\n", energies_["Nuclear"]);
-    fprintf(outfile, "    One-Electron Energy =         %24.16f\n", energies_["One-Electron"]);
-    fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
-    fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
-    fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
-    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + 
+    fprintf(outfile, "    Nuclear Repulsion Energy =        %24.16f\n", energies_["Nuclear"]);
+    fprintf(outfile, "    One-Electron Energy =             %24.16f\n", energies_["One-Electron"]);
+    fprintf(outfile, "    Two-Electron Energy =             %24.16f\n", energies_["Two-Electron"]);
+    fprintf(outfile, "    DFT Exchange-Correlation Energy = %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    Empirical Dispersion Energy =     %24.16f\n", energies_["-D"]);
+    fprintf(outfile, "    Total Energy =                    %24.16f\n", energies_["Nuclear"] + 
         energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
     fprintf(outfile, "\n");
     
-    Process::environment.globals["NUCLEAR REPULSION ENERGY"] =      energies_["Nuclear"];
-    Process::environment.globals["ONE-ELECTRON ENERGY"] =           energies_["One-Electron"];
-    Process::environment.globals["TWO-ELECTRON ENERGY"] =           energies_["Two-Electron"];
+    Process::environment.globals["NUCLEAR REPULSION ENERGY"] = energies_["Nuclear"];
+    Process::environment.globals["ONE-ELECTRON ENERGY"] = energies_["One-Electron"];
+    Process::environment.globals["TWO-ELECTRON ENERGY"] = energies_["Two-Electron"];
     if (fabs(energies_["XC"]) > 1.0e-14) {
-        Process::environment.globals["DFT FUNCTIONAL ENERGY"] =         energies_["XC"];
-        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] =   energies_["Nuclear"] + 
+        Process::environment.globals["DFT XC ENERGY"] = energies_["XC"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
-        Process::environment.globals["DFT TOTAL ENERGY"] =              energies_["Nuclear"] + 
+        Process::environment.globals["DFT TOTAL ENERGY"] = energies_["Nuclear"] + 
             energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
+    } else {
+        Process::environment.globals["HF TOTAL ENERGY"] = energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"];
     }
     if (fabs(energies_["-D"]) > 1.0e-14) {
-        Process::environment.globals["DISPERSION CORRECTION ENERGY"] =  energies_["-D"];
+        Process::environment.globals["DISPERSION CORRECTION ENERGY"] = energies_["-D"];
     }
+//  Comment so that autodoc utility will find this PSI variable
+//     It doesn't really belong here but needs to be linked somewhere
+//  Process::environment.globals["DOUBLE-HYBRID CORRECTION ENERGY"]
 }
 
 void HF::print_occupation()

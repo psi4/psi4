@@ -1,4 +1,5 @@
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
@@ -860,6 +861,7 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
+    fprintf(outfile, "\nProperties computed using the %s density matrix\n", wfn_->name().c_str());
     fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 
@@ -930,6 +932,8 @@ void OEProp::compute()
         }
     }
     // print_header();  // Not by default, happens too often -CDS
+    if (tasks_.count("ESP_AT_NUCLEI"))
+        compute_esp_at_nuclei();
     if (tasks_.count("DIPOLE"))
         compute_dipole(false);
     if (tasks_.count("QUADRUPOLE"))
@@ -1024,6 +1028,12 @@ void OEProp::compute_multipoles(int order, bool transition)
             double tot = nuc + elec;
             fprintf(outfile, " %-20s: %18.7f   %18.7f   %18.7f\n",
                     name.c_str(), elec, nuc, tot);
+            std::string upper_name = boost::algorithm::to_upper_copy(name);
+            /*- Process::environment.globals["DIPOLE X"] -*/
+            /*- Process::environment.globals["DIPOLE Y"] -*/
+            /*- Process::environment.globals["32-POLE XXXXX"] -*/
+            /*- Process::environment.globals["32-POLE XXXXY"] -*/
+            Process::environment.globals[upper_name] = tot;
             ++address;
         }
         fprintf(outfile, "\n");
@@ -1034,6 +1044,48 @@ void OEProp::compute_multipoles(int order, bool transition)
     fflush(outfile);
 }
 
+void OEProp::compute_esp_at_nuclei()
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    boost::shared_ptr<ElectrostaticInt> epot(dynamic_cast<ElectrostaticInt*>(integral_->electrostatic()));
+
+    int nbf = basisset_->nbf();
+    int natoms = mol->natom();
+
+    SharedMatrix Dtot = Da_ao();
+    if (same_dens_) {
+        Dtot->scale(2.0);
+    }else{
+        Dtot->add(Db_ao());
+    }
+
+    Matrix dist = mol->distance_matrix();
+    fprintf(outfile, "\n Electrostatic potentials at the nuclear coordinates:\n");
+    fprintf(outfile, " ---------------------------------------------\n");
+    fprintf(outfile, "   Center     Electrostatic Potential (a.u.)\n");
+    fprintf(outfile, " ---------------------------------------------\n");
+    for(int atom1 = 0; atom1 < natoms; ++atom1){
+        std::stringstream s;
+        s << "ESP AT CENTER " << atom1+1;
+        SharedMatrix ints(new Matrix(s.str(), nbf, nbf));
+        epot->compute(ints, mol->xyz(atom1));
+        if(print_ > 2)
+            ints->print();
+        double elec = Dtot->vector_dot(ints);
+        double nuc = 0.0;
+        for(int atom2 = 0; atom2 < natoms; ++atom2){
+            if(atom1 == atom2)
+                continue;
+            nuc += mol->Z(atom2) / dist[0][atom1][atom2];
+        }
+        fprintf(outfile, "  %3d %2s           %16.12f\n",
+                atom1+1, mol->label(atom1).c_str(), nuc+elec);
+        /*- Process::environment.globals["ESP AT CENTER n"] -*/
+        Process::environment.globals[s.str()] = nuc+elec;
+    }
+    fprintf(outfile, " ---------------------------------------------\n");
+}
 
 void OEProp::compute_dipole(bool transition)
 {

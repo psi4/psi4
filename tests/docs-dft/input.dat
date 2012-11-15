@@ -1,0 +1,273 @@
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users. !nosample
+
+funcdict = {}
+
+for super in superfunctional_list():
+    sfname = super.name()
+
+    if super.dispersion():
+        funcdict[sfname] = {
+            'name'                   : super.name(),
+            'description'            : super.description().strip(),
+            'citation'               : super.citation().strip(),
+            'ansatz'                 : super.ansatz(),
+            'max_points'             : super.max_points(),
+            'deriv'                  : super.deriv(),
+            'x_omega'                : super.x_omega(),
+            'c_omega'                : super.c_omega(),
+            'x_alpha'                : super.x_alpha(),
+            'c_alpha'                : super.c_alpha(),
+            'c_ss_alpha'             : super.c_ss_alpha(),
+            'c_os_alpha'             : super.c_os_alpha(),
+            'dispersion'             : super.dispersion(),
+            'dispersion_name'        : super.dispersion().name(),
+            'dispersion_description' : super.dispersion().description().strip(),
+            'dispersion_citation'    : super.dispersion().citation().strip(),
+            's6'                     : super.dispersion().s6(),
+            's8'                     : super.dispersion().s8(),
+            'sr6'                    : super.dispersion().sr6(),
+            'a1'                     : super.dispersion().a1(),
+            'a2'                     : super.dispersion().a2(),
+            'alpha6'                 : super.dispersion().d(),
+            'is_gga'                 : super.is_gga(),
+            'is_meta'                : super.is_meta(),
+            'is_x_lrc'               : super.is_x_lrc(),
+            'is_c_lrc'               : super.is_c_lrc(),
+            'is_x_hybrid'            : super.is_x_hybrid(),
+            'is_c_hybrid'            : super.is_c_hybrid(),
+            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
+                           }
+
+    else:
+        funcdict[sfname] = {
+            'name'                   : super.name(),
+            'description'            : super.description().strip(),
+            'citation'               : super.citation().strip(),
+            'ansatz'                 : super.ansatz(),
+            'max_points'             : super.max_points(),
+            'deriv'                  : super.deriv(),
+            'x_omega'                : super.x_omega(),
+            'c_omega'                : super.c_omega(),
+            'x_alpha'                : super.x_alpha(),
+            'c_alpha'                : super.c_alpha(),
+            'c_ss_alpha'             : super.c_ss_alpha(),
+            'c_os_alpha'             : super.c_os_alpha(),
+            'dispersion'             : super.dispersion(),
+            'is_gga'                 : super.is_gga(),
+            'is_meta'                : super.is_meta(),
+            'is_x_lrc'               : super.is_x_lrc(),
+            'is_c_lrc'               : super.is_c_lrc(),
+            'is_x_hybrid'            : super.is_x_hybrid(),
+            'is_c_hybrid'            : super.is_c_hybrid(),
+            'is_c_scs_hybrid'        : super.is_c_scs_hybrid(),
+                           }
+
+    #print funcdict[sfname]
+    #print '\n\n'
+
+    super.print_detail(3)
+
+
+def tf(rungbool, rungparam=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if rungbool is False:
+        return '   ---    '
+    else:
+        if rungparam == 0.0:
+            return '    Y     '
+        else:
+            return ' %8.6f ' % (rungparam)
+
+
+def tf2(rungbool, rungparam=0.0, rungparam2=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if rungbool is False:
+        return '   ---              '
+    else:
+        if rungparam == 0.0 and rungparam2 == 0.0:
+            return '    Y               '
+        else:
+            return ' %8.6f / %8.6f' % (rungparam, rungparam2)
+
+
+def tf3(rungparam=0.0):
+    """Function to return reST formatted table cell from boolean/value info."""
+
+    if abs(rungparam) > 1.0e-8 and abs(rungparam) < 1000.0:
+        return ' %8.5f ' % (rungparam)
+    else:
+        return '   ---    '
+
+
+def header(filep, label, caption):
+    """Function to write reST table header."""
+
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    filep.write('\n.. table:: %s\n\n' % (caption))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-',
+         20 * '-', 60 * '-'))
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %20s | %60s |\n' % 
+        ('Name', 'Description', 'GGA?', 'Meta?', 'X_LRC?', 'X_Hybrid?', 'C_LRC?', 'C_Hybrid?', 'C_SCS? SS/OS',
+         'Dispersion?', 'Dispersion Description'))
+    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%20s=+=%60s=+\n' % 
+        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 20 * '=',
+         20 * '=', 60 * '='))
+
+
+def dispheader(filep, label, caption):
+    """Function to write reST table header."""
+
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    filep.write('\n.. table:: %s\n\n' % (caption))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 
+         20 * '-', 60 * '-'))
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' % 
+        ('Name', 'Description', 'S6', 'S8', 'SR6', 'ALPHA6', 'A1', 'A2',
+         'Dispersion?', 'Dispersion Description'))
+    filep.write('   +=%20s=+=%80s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%10s=+=%20s=+=%60s=+\n' % 
+        (20 * '=', 80 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 10 * '=', 
+         20 * '=', 60 * '='))
+
+
+def body(filep, funcdict, fctl):
+    """Function to write line of reST table."""
+
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s |' % 
+        (funcdict[fctl]['name'], funcdict[fctl]['description'],
+        tf(funcdict[fctl]['is_gga']), tf(funcdict[fctl]['is_meta']),
+        tf(funcdict[fctl]['is_x_lrc'], funcdict[fctl]['x_omega']),
+        tf(funcdict[fctl]['is_x_hybrid'], funcdict[fctl]['x_alpha']),
+        tf(funcdict[fctl]['is_c_lrc'], funcdict[fctl]['c_omega']),
+        tf(funcdict[fctl]['is_c_hybrid'], funcdict[fctl]['c_alpha']),
+        tf2(funcdict[fctl]['is_c_scs_hybrid'], funcdict[fctl]['c_ss_alpha'], funcdict[fctl]['c_os_alpha'])))
+
+    if funcdict[fctl]['dispersion']:
+        filep.write(' %20s | %60s |\n' %
+            (funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+    else:
+        filep.write(' %20s | %60s |\n' %
+            ('   ---    ', '   ---    '))
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-',
+         20 * '-', 60 * '-'))
+
+
+def dispbody(filep, funcdict, fctl):
+    """Function to write line of reST table."""
+
+    filep.write('   | %20s | %80s | %10s | %10s | %10s | %10s | %10s | %10s | %20s | %60s |\n' %
+        (funcdict[fctl]['name'], funcdict[fctl]['description'],
+         tf3(funcdict[fctl]['s6']), tf3(funcdict[fctl]['s8']), 
+         tf3(funcdict[fctl]['sr6']), tf3(funcdict[fctl]['alpha6']), 
+         tf3(funcdict[fctl]['a1']), tf3(funcdict[fctl]['a2']),
+         funcdict[fctl]['dispersion_name'], funcdict[fctl]['dispersion_description']))
+
+    filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
+        (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 20 * '-', 60 * '-'))
+
+
+fall = open('autodoc_dft_all.rst', 'w')
+header(fall, 'all', 'DFT functionals available in |PSIfour|')
+fgga = open('autodoc_dft_gga.rst', 'w')
+header(fgga, 'gga', 'GGA functionals available in |PSIfour|')
+fmeta= open('autodoc_dft_meta.rst', 'w')
+header(fmeta, 'meta', 'Meta functionals available in |PSIfour|')
+flrc= open('autodoc_dft_lrc.rst', 'w')
+header(flrc, 'lrc', 'Long-Range-Corrected functionals available in |PSIfour|')
+fhybrid= open('autodoc_dft_hybrid.rst', 'w')
+header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
+fdhybrid= open('autodoc_dft_dhybrid.rst', 'w')
+header(fdhybrid, 'dhybrid', 'Double-Hybrid functionals available in |PSIfour|')
+fscsdhybrid= open('autodoc_dft_scsdhybrid.rst', 'w')
+header(fscsdhybrid, 'scsdhybrid', 'Spin-Component-Scaled Double-Hybrid functionals available in |PSIfour|')
+fdisp= open('autodoc_dft_disp.rst', 'w')
+dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
+
+fenergy = open('autodoc_dft_energy.rst', 'w')
+fenergy.write('\n.. _`table:energy_dft`:\n\n')
+fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
+
+fopt = open('autodoc_dft_opt.rst', 'w')
+fopt.write('\n.. _`table:opt_dft`:\n\n')
+fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
+
+for fctl in sorted(funcdict.iterkeys()):
+
+    if fctl.lower().endswith(('-d2p4', '-d2gr', '-d2', '-d3zero')):
+        pass
+
+    else:
+        body(fall, funcdict, fctl)
+    
+        if funcdict[fctl]['is_gga']:
+            body(fgga, funcdict, fctl)
+    
+        if funcdict[fctl]['is_meta']:
+            body(fmeta, funcdict, fctl)
+    
+        if funcdict[fctl]['is_x_lrc'] or funcdict[fctl]['is_c_lrc']:
+            body(flrc, funcdict, fctl)
+    
+        if funcdict[fctl]['is_x_hybrid']:
+            body(fhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['is_c_hybrid']:
+            body(fdhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['is_c_scs_hybrid']:
+            body(fscsdhybrid, funcdict, fctl)
+    
+        if funcdict[fctl]['dispersion']:
+            dispbody(fdisp, funcdict, fctl)
+    
+        if funcdict[fctl]['dispersion']:
+            fenergy.write('| %-27s | %-140s |\n' % 
+                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+        else:
+            fenergy.write('| %-27s | %-140s |\n' % 
+                (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+    
+        fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+
+        if not funcdict[fctl]['is_c_hybrid']:
+            if funcdict[fctl]['dispersion']:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+            else:
+                fopt.write('| %-27s | %-140s |\n' % 
+                    (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+        
+            fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
+
+
+fall.write('\n')
+fall.close()
+fgga.write('\n')
+fgga.close()
+fmeta.write('\n')
+fmeta.close()
+flrc.write('\n')
+flrc.close()
+fhybrid.write('\n')
+fhybrid.close()
+fdhybrid.write('\n')
+fdhybrid.close()
+fscsdhybrid.write('\n')
+fscsdhybrid.close()
+fdisp.write('\n')
+fdisp.close()
+
+fenergy.write('\n')
+fenergy.close()
+fopt.write('\n')
+fopt.close()
+

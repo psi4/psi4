@@ -9,14 +9,14 @@ molecule O2 {
 0 3
 O
 O 1 R
-R = 1.200
+R = 1.230
 }
 
 set globals {
-    r_convergence            12
+    r_convergence            10
     algorithm                twostep
     response_algorithm       twostep
-    basis                    cc-pcvdz
+    basis                    dzp
     max_disp_g_convergence   1e-6
     rms_force_g_convergence  1e-6
     max_energy_g_convergence 1e-6
@@ -26,7 +26,7 @@ optimize('dcft')
 
 
 set response_algorithm simultaneous
-O2.R = 1.200
+O2.R = 1.232
 
 optimize('dcft')
 

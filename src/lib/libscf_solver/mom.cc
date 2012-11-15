@@ -23,7 +23,6 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "integralfunctors.h"
-#include "pkintegrals.h"
 
 #include <libmints/mints.h>
 

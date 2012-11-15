@@ -9,7 +9,6 @@ Place in this file quickly defined procedures such as
 import PsiMod
 import re
 import os
-import input
 import math
 import warnings
 from driver import *
@@ -22,7 +21,7 @@ from procutil import *
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 
-def sherrillgroup_gold_standard(name='mp2', **kwargs):
+def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
     the following expression. Two-point extrapolation of the correlation energy
@@ -45,7 +44,7 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
         kwargs['scf_scheme'] = highest_1
 
     if not ('corl_wfn' in kwargs):
-        kwargs['corl_wfn'] = 'mp2'
+        kwargs['corl_wfn'] = 'conv-mp2'
     if not ('corl_basis' in kwargs):
         kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
     if not ('corl_scheme' in kwargs):
@@ -54,7 +53,7 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
     if not ('delta_wfn' in kwargs):
         kwargs['delta_wfn'] = 'ccsd(t)'
     if not ('delta_wfn_lesser' in kwargs):
-        kwargs['delta_wfn_lesser'] = 'mp2'
+        kwargs['delta_wfn_lesser'] = 'conv-mp2'
     if not ('delta_basis' in kwargs):
         kwargs['delta_basis'] = 'aug-cc-pVTZ'
     if not ('delta_scheme' in kwargs):
@@ -123,38 +122,38 @@ def run_mp2_5(name, **kwargs):
 #     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
 #     but is an example of what to do for a more complicated procedure where different options 
 #     are set for different qc steps.
-def run_plugin_omega(name, **kwargs):
-    r"""Function encoding sequence of PSI module and plugin calls, as well
-    as typical options, to access Rob Parrish's omega plugin.
-
-    >>> energy('plugin_omega')
-
-    """
-    lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
-
-    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
-    PsiMod.plugin_load("%s" % (plugfile))
-
-    PsiMod.set_global_option('BASIS', 'AUG-CC-PVDZ')
-    PsiMod.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
-    PsiMod.set_global_option('REFERENCE', 'UHF')
-    PsiMod.set_global_option('SCF_TYPE', 'DF')
-    energy('scf', **kwargs)
-
-    PsiMod.set_global_option('dft_functional', 'wB97')
-    PsiMod.set_global_option('dft_order_spherical', 25)
-    PsiMod.set_global_option('dft_num_radial', 35)
-    PsiMod.set_global_option('omega_procedure', 'ip')
-    PsiMod.set_global_option('maxiter', 50)
-    PsiMod.set_global_option('d_convergence', 5)
-    PsiMod.set_global_option('e_convergence', 7)
-    PsiMod.plugin("plugin_omega.so")
-
-    return PsiMod.get_variable('SCF TOTAL ENERGY')
+#def run_plugin_omega(name, **kwargs):
+#    r"""Function encoding sequence of PSI module and plugin calls, as well
+#    as typical options, to access Rob Parrish's omega plugin.
+#
+#    >>> energy('plugin_omega')
+#
+#    """
+#    lowername = name.lower()
+#    kwargs = kwargs_lower(kwargs)
+#
+#    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
+#    PsiMod.plugin_load("%s" % (plugfile))
+#
+#    PsiMod.set_global_option('BASIS', 'AUG-CC-PVDZ')
+#    PsiMod.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
+#    PsiMod.set_global_option('REFERENCE', 'UHF')
+#    PsiMod.set_global_option('SCF_TYPE', 'DF')
+#    energy('scf', **kwargs)
+#
+#    PsiMod.set_global_option('dft_functional', 'wB97')
+#    PsiMod.set_global_option('dft_order_spherical', 25)
+#    PsiMod.set_global_option('dft_num_radial', 35)
+#    PsiMod.set_global_option('omega_procedure', 'ip')
+#    PsiMod.set_global_option('maxiter', 50)
+#    PsiMod.set_global_option('d_convergence', 5)
+#    PsiMod.set_global_option('e_convergence', 7)
+#    PsiMod.plugin("plugin_omega.so")
+#
+#    return PsiMod.get_variable('SCF TOTAL ENERGY')
 
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
-procedures['energy']['plugin_omega'] = run_plugin_omega
+#procedures['energy']['plugin_omega'] = run_plugin_omega

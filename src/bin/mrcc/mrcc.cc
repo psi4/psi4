@@ -877,3 +877,62 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
 
 }} // End Namespaces
 
+
+//  Comments so that autodoc utility will find these PSI variables
+//
+//  Process::environment.globals["MP2 TOTAL ENERGY"] =
+//  Process::environment.globals["MP2 CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSD TOTAL ENERGY"] =
+//  Process::environment.globals["CCSD CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDT TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDTQ TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDTQ CORRELATION ENERGY"] =
+//  Process::environment.globals["CCn TOTAL ENERGY"] =
+//  Process::environment.globals["CCn CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSD(T) TOTAL ENERGY"] =
+//  Process::environment.globals["CCSD(T) CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDT(Q) TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT(Q) CORRELATION ENERGY"] =
+//  Process::environment.globals["CC(n-1)(n) TOTAL ENERGY"] =
+//  Process::environment.globals["CC(n-1)(n) CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSD(T)_L TOTAL ENERGY"] =
+//  Process::environment.globals["CCSD(T)_L CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)_L TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT(Q)_L CORRELATION ENERGY"] =
+//  Process::environment.globals["CC(n-1)(n)_L TOTAL ENERGY"] =
+//  Process::environment.globals["CC(n-1)(n)_L CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSDT-1a TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT-1a CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDTQ-1a TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDTQ-1a CORRELATION ENERGY"] =
+//  Process::environment.globals["CCn-1a TOTAL ENERGY"] =
+//  Process::environment.globals["CCn-1a CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSDT-1b TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT-1b CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDTQ-1b TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDTQ-1b CORRELATION ENERGY"] =
+//  Process::environment.globals["CCn-1b TOTAL ENERGY"] =
+//  Process::environment.globals["CCn-1b CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CCSDT-3 TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDT-3 CORRELATION ENERGY"] =
+//  Process::environment.globals["CCSDTQ-3 TOTAL ENERGY"] =
+//  Process::environment.globals["CCSDTQ-3 CORRELATION ENERGY"] =
+//  Process::environment.globals["CCn-3 TOTAL ENERGY"] =
+//  Process::environment.globals["CCn-3 CORRELATION ENERGY"] =
+
+//  Process::environment.globals["CC2 TOTAL ENERGY"] =
+//  Process::environment.globals["CC2 CORRELATION ENERGY"] =
+//  Process::environment.globals["CC3 TOTAL ENERGY"] =
+//  Process::environment.globals["CC3 CORRELATION ENERGY"] =
+//  Process::environment.globals["CC4 TOTAL ENERGY"] =
+//  Process::environment.globals["CC4 CORRELATION ENERGY"] =
+//  Process::environment.globals["CCnn TOTAL ENERGY"] =
+//  Process::environment.globals["CCnn CORRELATION ENERGY"] =
+

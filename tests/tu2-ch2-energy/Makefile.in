@@ -2,6 +2,5 @@
 SRCDIR = @srcdir@
 
 include ../MakeVars
-PSIAUTOTEST = true
 include ../MakeRules
 

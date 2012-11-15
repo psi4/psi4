@@ -21,9 +21,10 @@
   - ``'HB'`` hydrogen-bonded systems
   - ``'MX'`` mixed-influence systems
   - ``'DD'`` dispersion-dominated systems
+  - ``'S11'`` smaller systems in S22
 
 """
-import input
+import qcdb
 
 # <<< S22 Database Module >>>
 dbse = 'S22'
@@ -35,6 +36,7 @@ HRXN_LG = [15]
 HB = [1, 2, 3, 4, 5, 6, 7]
 MX = [13, 15, 16, 17, 18, 19, 21, 22]
 DD = [8, 9, 10, 11, 12, 14, 20]
+S11 = [1, 2, 3, 4, 8, 9, 10, 16, 17, 18]
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -271,14 +273,10 @@ TAGL['%s-%s-monoB-CP'   % (dbse, 22)] =      'Phenol from Phenol Dimer'
 TAGL['%s-%s-monoA-unCP' % (dbse, 22)] =      'Phenol from Phenol Dimer'
 TAGL['%s-%s-monoB-unCP' % (dbse, 22)] =      'Phenol from Phenol Dimer'
 
-# <<< Molecule Specifications >>>
-monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
-monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
-monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+# <<< Geometry Specification Strings >>>
+GEOS = {}
 
-S22_1 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '1')] = qcdb.Molecule("""
 0 1
 N  -1.578718  -0.046611   0.000000
 H  -2.158621   0.136396  -0.809565
@@ -291,11 +289,9 @@ H   2.158621  -0.136396  -0.809565
 H   0.849471  -0.658193   0.000000
 H   2.158621  -0.136396   0.809565
 units angstrom
-}
-""", 0)
+""")
 
-S22_2 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '2')] = qcdb.Molecule("""
 0 1
 O  -1.551007  -0.114520   0.000000
 H  -1.934259   0.762503   0.000000
@@ -306,11 +302,9 @@ O   1.350625   0.111469   0.000000
 H   1.680398  -0.373741  -0.758561
 H   1.680398  -0.373741   0.758561
 units angstrom
-}
-""", 0)
+""")
 
-S22_3 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '3')] = qcdb.Molecule("""
 0 1
 C  -1.888896  -0.179692   0.000000
 O  -1.493280   1.073689   0.000000
@@ -325,11 +319,9 @@ O   1.170435   1.166590   0.000000
 H   2.979488   0.258829   0.000000
 H   0.498833  -1.107195   0.000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_4 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '4')] = qcdb.Molecule("""
 0 1
 C  -2.018649   0.052883   0.000000
 O  -1.452200   1.143634   0.000000
@@ -346,11 +338,9 @@ H   1.964596   1.977036   0.000000
 H   0.387244   1.207782   0.000000
 H   3.117061   0.013701   0.000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_5 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '5')] = qcdb.Molecule("""
 0 1
 O    -1.4663316    1.0121693    0.0000000
 C    -0.6281464    1.9142678    0.0000000
@@ -379,11 +369,9 @@ H    -1.0232515   -0.7061820    0.0000000
 H     1.9700268   -3.4323850    0.0000000
 H    -2.6690620   -2.3883417    0.0000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_6 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '6')] = qcdb.Molecule("""
 0 1
 O    -1.3976213   -1.8858368   -0.3673061
 N    -1.4642550    0.3641828    0.0192301
@@ -413,11 +401,9 @@ N     1.3883123   -1.9083038    0.4198149
 H     1.8694714   -2.7812773    0.2940385
 H     0.4089067   -1.9079942    0.1300860
 units angstrom
-}
-""", 0)
+""")
 
-S22_7 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '7')] = qcdb.Molecule("""
 0 1
 N     0.9350155   -0.0279801   -0.3788916
 C     1.6739638   -0.0357766    0.7424316
@@ -452,11 +438,9 @@ H    -4.4439282   -0.8302573    2.7695655
 H    -4.4267056    0.9186178    2.7530256
 H    -5.7883971    0.0505530    2.0247280
 units angstrom
-}
-""", 0)
+""")
 
-S22_8 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '8')] = qcdb.Molecule("""
 0 1
 C   0.000000  -0.000140   1.859161
 H  -0.888551   0.513060   1.494685
@@ -471,11 +455,9 @@ H  -0.888551  -0.513060  -1.494685
 H   0.888551  -0.513060  -1.494685
 H   0.000000   1.026339  -1.494868
 units angstrom
-}
-""", 0)
+""")
 
-S22_9 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '9')] = qcdb.Molecule("""
 0 1
 C  -0.471925  -0.471925  -1.859111
 C   0.471925   0.471925  -1.859111
@@ -492,11 +474,9 @@ H   0.872422  -0.872422   0.936125
 H  -0.870464   0.870464   2.783308
 H   0.870464  -0.870464   2.783308
 units angstrom
-}
-""", 0)
+""")
 
-S22_10 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '10')] = qcdb.Molecule("""
 0 1
 C     1.3932178    0.0362913   -0.6332803
 C     0.7280364   -1.1884015   -0.6333017
@@ -518,11 +498,9 @@ H    -1.0193189    0.0891638    3.4463772
 H     0.0000000    0.0000000    1.9966697
 H     0.4324413   -0.9273380    3.4463772
 units angstrom
-}
-""", 0)
+""")
 
-S22_11 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '11')] = qcdb.Molecule("""
 0 1
 C    -1.0478252   -1.4216736    0.0000000
 C    -1.4545034   -0.8554459    1.2062048
@@ -551,11 +529,9 @@ H     3.3030422   -1.7232700    0.0000000
 H     2.5824943   -0.7163066   -2.1437977
 H     1.1338534    1.2920593   -2.1423150
 units angstrom
-}
-""", 0)
+""")
 
-S22_12 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '12')] = qcdb.Molecule("""
 0 1
 C    -1.2471894   -1.1718212   -0.6961388
 C    -1.2471894   -1.1718212    0.6961388
@@ -580,11 +556,9 @@ H     1.3208583    1.0670610    2.0623986
 H     1.3208583    1.0670610   -2.0623986
 H    -0.8103758    2.3643033   -2.0618643
 units angstrom
-}
-""", 0)
+""")
 
-S22_13 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '13')] = qcdb.Molecule("""
 0 1
 N     2.0113587   -1.2132073   -0.0980673
 C     2.0257076   -0.6971797   -1.3644029
@@ -613,11 +587,9 @@ C    -1.6459909    0.4852113    1.0187267
 O    -1.5611090    0.9718061    2.1298059
 H    -2.1294635    2.2015046    0.0568134
 units angstrom
-}
-""", 0)
+""")
 
-S22_14 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '14')] = qcdb.Molecule("""
 0 1
 C    -0.0210742    1.5318615   -1.3639345
 C    -1.2746794    0.9741030   -1.6074097
@@ -650,11 +622,9 @@ H    -3.0389974   -1.3203846    1.1468400
 H     1.8075741   -2.0366963    0.2333038
 H     3.5028794   -0.3485344    0.9695233
 units angstrom
-}
-""", 0)
+""")
 
-S22_15 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '15')] = qcdb.Molecule("""
 0 1
 N     0.2793014    2.4068393   -0.6057517
 C    -1.0848570    2.4457461   -0.5511608
@@ -689,11 +659,9 @@ C     0.0684702   -0.1191762   -2.3763759
 O    -0.0397875    0.7227006   -3.2531083
 H     2.0853289   -0.2760176   -2.4454577
 units angstrom
-}
-""", 0)
+""")
 
-S22_16 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '16')] = qcdb.Molecule("""
 0 1
 C   0.000000  -0.667578  -2.124659
 C   0.000000   0.667578  -2.124659
@@ -708,11 +676,9 @@ C   0.000000   0.000000   1.693240
 H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 units angstrom
-}
-""", 0)
+""")
 
-S22_17 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '17')] = qcdb.Molecule("""
 0 1
 C     0.7806117   -0.6098875   -1.2075426
 C     0.4784039    0.7510406   -1.2079040
@@ -732,11 +698,9 @@ O    -2.7885270   -0.2744854    0.0000000
 H    -2.6229114   -1.2190831    0.0000000
 H    -1.9015103    0.0979110    0.0000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_18 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '18')] = qcdb.Molecule("""
 0 1
 C    -0.7392810    0.5158785   -1.2071079
 C    -1.4261442    0.3965455    0.0000000
@@ -757,11 +721,9 @@ H     0.7595495   -3.1459477   -0.8060729
 H     0.7595495   -3.1459477    0.8060729
 H     0.0444167   -1.9449399    0.0000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_19 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '19')] = qcdb.Molecule("""
 0 1
 C    -0.7097741   -0.9904230    1.2077018
 C    -1.4065340   -0.9653529    0.0000000
@@ -781,11 +743,9 @@ N    -0.0034118    3.5353926    0.0000000
 C     0.0751963    2.3707040    0.0000000
 H     0.1476295    1.3052847    0.0000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_20 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '20')] = qcdb.Molecule("""
 0 1
 C     0.0000000    0.0000000    1.0590353
 C     0.0000000   -1.2060084    1.7576742
@@ -814,11 +774,9 @@ H     2.4753995    0.0000000   -2.4503221
 H     1.2382321   -2.1435655   -2.4536764
 H    -1.2382321   -2.1435655   -2.4536764
 units angstrom
-}
-""", 0)
+""")
 
-S22_21 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '21')] = qcdb.Molecule("""
 0 1
 C     2.5118997    1.6250148    0.0000000
 C     2.7130094    0.9578537   -1.2082918
@@ -851,11 +809,9 @@ H    -2.8077570    3.0097859    0.0000000
 H    -4.7905991    1.5439372    0.0000000
 H    -4.5580187   -0.9142916    0.0000000
 units angstrom
-}
-""", 0)
+""")
 
-S22_22 = input.process_input("""
-molecule dimer {
+GEOS['%s-%s-dimer' % (dbse, '22')] = qcdb.Molecule("""
 0 1
 C    -2.0071056    0.7638459   -0.1083509
 O    -1.3885044    1.9298523   -0.4431206
@@ -886,15 +842,128 @@ H     3.8330227   -2.4811537   -0.8566666
 H     4.6137632   -1.1850101    1.1092635
 H     3.4598854    0.9030376    1.7569489
 units angstrom
-}
-""", 0)
+""")
 
-# <<< Geometry Specification Strings >>>
-GEOS = {}
+# <<< Derived Geometry Strings >>>
 for rxn in HRXN:
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1)
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2)
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(1, 2)
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = GEOS['%s-%s-dimer' % (dbse, rxn)].extract_fragments(2, 1)
 
-    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
-    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
-    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
-    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP
+#########################################################################
+
+# <<< Supplementary Quantum Chemical Results >>>
+DATA = {}
+
+DATA['NUCLEAR REPULSION ENERGY'] = {}
+DATA['NUCLEAR REPULSION ENERGY']['S22-1-dimer'] = 40.3142398391
+DATA['NUCLEAR REPULSION ENERGY']['S22-2-dimer'] = 36.6628478528
+DATA['NUCLEAR REPULSION ENERGY']['S22-3-dimer'] = 235.946620315
+DATA['NUCLEAR REPULSION ENERGY']['S22-4-dimer'] = 230.794855209
+DATA['NUCLEAR REPULSION ENERGY']['S22-5-dimer'] = 1032.28191174
+DATA['NUCLEAR REPULSION ENERGY']['S22-6-dimer'] = 812.288526081
+DATA['NUCLEAR REPULSION ENERGY']['S22-7-dimer'] = 1365.23227533
+DATA['NUCLEAR REPULSION ENERGY']['S22-8-dimer'] = 41.0002637953
+DATA['NUCLEAR REPULSION ENERGY']['S22-9-dimer'] = 102.165309277
+DATA['NUCLEAR REPULSION ENERGY']['S22-10-dimer'] = 272.461820278
+DATA['NUCLEAR REPULSION ENERGY']['S22-11-dimer'] = 628.972056837
+DATA['NUCLEAR REPULSION ENERGY']['S22-12-dimer'] = 654.132022225
+DATA['NUCLEAR REPULSION ENERGY']['S22-13-dimer'] = 1161.47069828
+DATA['NUCLEAR REPULSION ENERGY']['S22-14-dimer'] = 935.530103761
+DATA['NUCLEAR REPULSION ENERGY']['S22-15-dimer'] = 1542.1430487
+DATA['NUCLEAR REPULSION ENERGY']['S22-16-dimer'] = 85.1890641964
+DATA['NUCLEAR REPULSION ENERGY']['S22-17-dimer'] = 273.329424698
+DATA['NUCLEAR REPULSION ENERGY']['S22-18-dimer'] = 273.279614381
+DATA['NUCLEAR REPULSION ENERGY']['S22-19-dimer'] = 303.281397519
+DATA['NUCLEAR REPULSION ENERGY']['S22-20-dimer'] = 592.416645285
+DATA['NUCLEAR REPULSION ENERGY']['S22-21-dimer'] = 876.919230124
+DATA['NUCLEAR REPULSION ENERGY']['S22-22-dimer'] = 805.117733746
+DATA['NUCLEAR REPULSION ENERGY']['S22-1-monoA-unCP'] = 11.9474317239
+DATA['NUCLEAR REPULSION ENERGY']['S22-1-monoB-unCP'] = 11.9474317239
+DATA['NUCLEAR REPULSION ENERGY']['S22-2-monoA-unCP'] = 9.16383014597
+DATA['NUCLEAR REPULSION ENERGY']['S22-2-monoB-unCP'] = 9.1780389049
+DATA['NUCLEAR REPULSION ENERGY']['S22-3-monoA-unCP'] = 70.1157833033
+DATA['NUCLEAR REPULSION ENERGY']['S22-3-monoB-unCP'] = 70.1157833033
+DATA['NUCLEAR REPULSION ENERGY']['S22-4-monoA-unCP'] = 71.0728637475
+DATA['NUCLEAR REPULSION ENERGY']['S22-4-monoB-unCP'] = 71.0728637475
+DATA['NUCLEAR REPULSION ENERGY']['S22-5-monoA-unCP'] = 357.226773232
+DATA['NUCLEAR REPULSION ENERGY']['S22-5-monoB-unCP'] = 357.226773232
+DATA['NUCLEAR REPULSION ENERGY']['S22-6-monoA-unCP'] = 275.701873893
+DATA['NUCLEAR REPULSION ENERGY']['S22-6-monoB-unCP'] = 275.671980226
+DATA['NUCLEAR REPULSION ENERGY']['S22-7-monoA-unCP'] = 503.396306786
+DATA['NUCLEAR REPULSION ENERGY']['S22-7-monoB-unCP'] = 440.301569251
+DATA['NUCLEAR REPULSION ENERGY']['S22-8-monoA-unCP'] = 13.4480422656
+DATA['NUCLEAR REPULSION ENERGY']['S22-8-monoB-unCP'] = 13.4480422656
+DATA['NUCLEAR REPULSION ENERGY']['S22-9-monoA-unCP'] = 33.3602695815
+DATA['NUCLEAR REPULSION ENERGY']['S22-9-monoB-unCP'] = 33.3602695815
+DATA['NUCLEAR REPULSION ENERGY']['S22-10-monoA-unCP'] = 203.707991166
+DATA['NUCLEAR REPULSION ENERGY']['S22-10-monoB-unCP'] = 13.4855266506
+DATA['NUCLEAR REPULSION ENERGY']['S22-11-monoA-unCP'] = 203.71093056
+DATA['NUCLEAR REPULSION ENERGY']['S22-11-monoB-unCP'] = 203.71093056
+DATA['NUCLEAR REPULSION ENERGY']['S22-12-monoA-unCP'] = 208.639691163
+DATA['NUCLEAR REPULSION ENERGY']['S22-12-monoB-unCP'] = 208.626286711
+DATA['NUCLEAR REPULSION ENERGY']['S22-13-monoA-unCP'] = 357.160450068
+DATA['NUCLEAR REPULSION ENERGY']['S22-13-monoB-unCP'] = 357.160450068
+DATA['NUCLEAR REPULSION ENERGY']['S22-14-monoA-unCP'] = 203.669533561
+DATA['NUCLEAR REPULSION ENERGY']['S22-14-monoB-unCP'] = 401.143592213
+DATA['NUCLEAR REPULSION ENERGY']['S22-15-monoA-unCP'] = 503.365644851
+DATA['NUCLEAR REPULSION ENERGY']['S22-15-monoB-unCP'] = 440.147006891
+DATA['NUCLEAR REPULSION ENERGY']['S22-16-monoA-unCP'] = 33.3580720823
+DATA['NUCLEAR REPULSION ENERGY']['S22-16-monoB-unCP'] = 24.6979461028
+DATA['NUCLEAR REPULSION ENERGY']['S22-17-monoA-unCP'] = 203.633716029
+DATA['NUCLEAR REPULSION ENERGY']['S22-17-monoB-unCP'] = 9.16734256253
+DATA['NUCLEAR REPULSION ENERGY']['S22-18-monoA-unCP'] = 203.672752811
+DATA['NUCLEAR REPULSION ENERGY']['S22-18-monoB-unCP'] = 11.9610533611
+DATA['NUCLEAR REPULSION ENERGY']['S22-19-monoA-unCP'] = 203.595134421
+DATA['NUCLEAR REPULSION ENERGY']['S22-19-monoB-unCP'] = 23.6698792311
+DATA['NUCLEAR REPULSION ENERGY']['S22-20-monoA-unCP'] = 203.681438992
+DATA['NUCLEAR REPULSION ENERGY']['S22-20-monoB-unCP'] = 203.664080154
+DATA['NUCLEAR REPULSION ENERGY']['S22-21-monoA-unCP'] = 203.56582964
+DATA['NUCLEAR REPULSION ENERGY']['S22-21-monoB-unCP'] = 401.056606452
+DATA['NUCLEAR REPULSION ENERGY']['S22-22-monoA-unCP'] = 271.438700576
+DATA['NUCLEAR REPULSION ENERGY']['S22-22-monoB-unCP'] = 271.346177694
+DATA['NUCLEAR REPULSION ENERGY']['S22-1-monoA-CP'] = 11.9474317239
+DATA['NUCLEAR REPULSION ENERGY']['S22-1-monoB-CP'] = 11.9474317239
+DATA['NUCLEAR REPULSION ENERGY']['S22-2-monoA-CP'] = 9.16383014597
+DATA['NUCLEAR REPULSION ENERGY']['S22-2-monoB-CP'] = 9.1780389049
+DATA['NUCLEAR REPULSION ENERGY']['S22-3-monoA-CP'] = 70.1157833033
+DATA['NUCLEAR REPULSION ENERGY']['S22-3-monoB-CP'] = 70.1157833033
+DATA['NUCLEAR REPULSION ENERGY']['S22-4-monoA-CP'] = 71.0728637475
+DATA['NUCLEAR REPULSION ENERGY']['S22-4-monoB-CP'] = 71.0728637475
+DATA['NUCLEAR REPULSION ENERGY']['S22-5-monoA-CP'] = 357.226773232
+DATA['NUCLEAR REPULSION ENERGY']['S22-5-monoB-CP'] = 357.226773232
+DATA['NUCLEAR REPULSION ENERGY']['S22-6-monoA-CP'] = 275.701873893
+DATA['NUCLEAR REPULSION ENERGY']['S22-6-monoB-CP'] = 275.671980226
+DATA['NUCLEAR REPULSION ENERGY']['S22-7-monoA-CP'] = 503.396306786
+DATA['NUCLEAR REPULSION ENERGY']['S22-7-monoB-CP'] = 440.301569251
+DATA['NUCLEAR REPULSION ENERGY']['S22-8-monoA-CP'] = 13.4480422656
+DATA['NUCLEAR REPULSION ENERGY']['S22-8-monoB-CP'] = 13.4480422656
+DATA['NUCLEAR REPULSION ENERGY']['S22-9-monoA-CP'] = 33.3602695815
+DATA['NUCLEAR REPULSION ENERGY']['S22-9-monoB-CP'] = 33.3602695815
+DATA['NUCLEAR REPULSION ENERGY']['S22-10-monoA-CP'] = 203.707991166
+DATA['NUCLEAR REPULSION ENERGY']['S22-10-monoB-CP'] = 13.4855266506
+DATA['NUCLEAR REPULSION ENERGY']['S22-11-monoA-CP'] = 203.71093056
+DATA['NUCLEAR REPULSION ENERGY']['S22-11-monoB-CP'] = 203.71093056
+DATA['NUCLEAR REPULSION ENERGY']['S22-12-monoA-CP'] = 208.639691163
+DATA['NUCLEAR REPULSION ENERGY']['S22-12-monoB-CP'] = 208.626286711
+DATA['NUCLEAR REPULSION ENERGY']['S22-13-monoA-CP'] = 357.160450068
+DATA['NUCLEAR REPULSION ENERGY']['S22-13-monoB-CP'] = 357.160450068
+DATA['NUCLEAR REPULSION ENERGY']['S22-14-monoA-CP'] = 203.669533561
+DATA['NUCLEAR REPULSION ENERGY']['S22-14-monoB-CP'] = 401.143592213
+DATA['NUCLEAR REPULSION ENERGY']['S22-15-monoA-CP'] = 503.365644851
+DATA['NUCLEAR REPULSION ENERGY']['S22-15-monoB-CP'] = 440.147006891
+DATA['NUCLEAR REPULSION ENERGY']['S22-16-monoA-CP'] = 33.3580720823
+DATA['NUCLEAR REPULSION ENERGY']['S22-16-monoB-CP'] = 24.6979461028
+DATA['NUCLEAR REPULSION ENERGY']['S22-17-monoA-CP'] = 203.633716029
+DATA['NUCLEAR REPULSION ENERGY']['S22-17-monoB-CP'] = 9.16734256253
+DATA['NUCLEAR REPULSION ENERGY']['S22-18-monoA-CP'] = 203.672752811
+DATA['NUCLEAR REPULSION ENERGY']['S22-18-monoB-CP'] = 11.9610533611
+DATA['NUCLEAR REPULSION ENERGY']['S22-19-monoA-CP'] = 203.595134421
+DATA['NUCLEAR REPULSION ENERGY']['S22-19-monoB-CP'] = 23.6698792311
+DATA['NUCLEAR REPULSION ENERGY']['S22-20-monoA-CP'] = 203.681438992
+DATA['NUCLEAR REPULSION ENERGY']['S22-20-monoB-CP'] = 203.664080154
+DATA['NUCLEAR REPULSION ENERGY']['S22-21-monoA-CP'] = 203.56582964
+DATA['NUCLEAR REPULSION ENERGY']['S22-21-monoB-CP'] = 401.056606452
+DATA['NUCLEAR REPULSION ENERGY']['S22-22-monoA-CP'] = 271.438700576
+DATA['NUCLEAR REPULSION ENERGY']['S22-22-monoB-CP'] = 271.346177694

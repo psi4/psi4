@@ -7,7 +7,10 @@ import re
 import os
 import sys
 import math
+import string
+import copy
 from psiexceptions import *
+from dashparam import *
 
 
 ## ==> Functionals <== ##
@@ -493,31 +496,31 @@ def build_wpbe_x_functional(name):
     fun.set_omega(0.3)
 
     # Custom parameters
-    fun.set_parameter('A',  0.7572110)
+    fun.set_parameter('A', 0.7572110)
     fun.set_parameter('B', -0.1063640)
     fun.set_parameter('C', -0.1186490)
-    fun.set_parameter('D',  0.6096500)
+    fun.set_parameter('D', 0.6096500)
     fun.set_parameter('E', -0.0477963)
 
-    fun.set_parameter('Ha0',  0.0000000)
-    fun.set_parameter('Ha1',  0.0000000)
-    fun.set_parameter('Ha2',  0.0159941)
-    fun.set_parameter('Ha3',  0.0852995)
+    fun.set_parameter('Ha0', 0.0000000)
+    fun.set_parameter('Ha1', 0.0000000)
+    fun.set_parameter('Ha2', 0.0159941)
+    fun.set_parameter('Ha3', 0.0852995)
     fun.set_parameter('Ha4', -0.1603680)
-    fun.set_parameter('Ha5',  0.1526450)
+    fun.set_parameter('Ha5', 0.1526450)
     fun.set_parameter('Ha6', -0.0971263)
-    fun.set_parameter('Ha7',  0.0422061)
+    fun.set_parameter('Ha7', 0.0422061)
 
-    fun.set_parameter('Hb0',  1.0000000)
-    fun.set_parameter('Hb1',  5.3331900)
+    fun.set_parameter('Hb0', 1.0000000)
+    fun.set_parameter('Hb1', 5.3331900)
     fun.set_parameter('Hb2', -12.478000)
-    fun.set_parameter('Hb3',  11.098800)
+    fun.set_parameter('Hb3', 11.098800)
     fun.set_parameter('Hb4', -5.1101300)
-    fun.set_parameter('Hb5',  1.7146800)
+    fun.set_parameter('Hb5', 1.7146800)
     fun.set_parameter('Hb6', -0.6103800)
-    fun.set_parameter('Hb7',  0.3075550)
+    fun.set_parameter('Hb7', 0.3075550)
     fun.set_parameter('Hb8', -0.0770547)
-    fun.set_parameter('Hb9',  0.0334840)
+    fun.set_parameter('Hb9', 0.0334840)
 
     # => End User-Customization <= #
 
@@ -545,31 +548,31 @@ def build_wpbesol_x_functional(name):
     fun.set_omega(0.3)
 
     # Custom parameters
-    fun.set_parameter('A',  0.7572110)
+    fun.set_parameter('A', 0.7572110)
     fun.set_parameter('B', -0.1063640)
     fun.set_parameter('C', -0.1186490)
-    fun.set_parameter('D',  0.6096500)
+    fun.set_parameter('D', 0.6096500)
     fun.set_parameter('E', -0.0477963)
 
-    fun.set_parameter('Ha0',  0.0000000)
-    fun.set_parameter('Ha1',  0.0000000)
-    fun.set_parameter('Ha2',  0.0047333)
-    fun.set_parameter('Ha3',  0.0403304)
+    fun.set_parameter('Ha0', 0.0000000)
+    fun.set_parameter('Ha1', 0.0000000)
+    fun.set_parameter('Ha2', 0.0047333)
+    fun.set_parameter('Ha3', 0.0403304)
     fun.set_parameter('Ha4', -0.0574615)
-    fun.set_parameter('Ha5',  0.0435395)
+    fun.set_parameter('Ha5', 0.0435395)
     fun.set_parameter('Ha6', -0.0216251)
-    fun.set_parameter('Ha7',  0.0063721)
+    fun.set_parameter('Ha7', 0.0063721)
 
-    fun.set_parameter('Hb0',  1.00000)
-    fun.set_parameter('Hb1',  8.52056)
+    fun.set_parameter('Hb0', 1.00000)
+    fun.set_parameter('Hb1', 8.52056)
     fun.set_parameter('Hb2', -13.9885)
-    fun.set_parameter('Hb3',  9.28583)
+    fun.set_parameter('Hb3', 9.28583)
     fun.set_parameter('Hb4', -3.27287)
-    fun.set_parameter('Hb5',  0.843499)
+    fun.set_parameter('Hb5', 0.843499)
     fun.set_parameter('Hb6', -0.235543)
-    fun.set_parameter('Hb7',  0.0847074)
+    fun.set_parameter('Hb7', 0.0847074)
     fun.set_parameter('Hb8', -0.0171561)
-    fun.set_parameter('Hb9',  0.0050552)
+    fun.set_parameter('Hb9', 0.0050552)
 
     # => End User-Customization <= #
 
@@ -597,30 +600,30 @@ def build_wb88_x_functional(name):
     fun.set_omega(0.3)
 
     # Custom parameters
-    fun.set_parameter('A',  0.7572110)
+    fun.set_parameter('A', 0.7572110)
     fun.set_parameter('B', -0.1063640)
     fun.set_parameter('C', -0.1186490)
-    fun.set_parameter('D',  0.6096500)
+    fun.set_parameter('D', 0.6096500)
     fun.set_parameter('E', -0.0477963)
 
-    fun.set_parameter('Ha0',  0.0000000)
-    fun.set_parameter('Ha1',  0.0000000)
-    fun.set_parameter('Ha2',  0.0253933)
+    fun.set_parameter('Ha0', 0.0000000)
+    fun.set_parameter('Ha1', 0.0000000)
+    fun.set_parameter('Ha2', 0.0253933)
     fun.set_parameter('Ha3', -0.0673075)
-    fun.set_parameter('Ha4',  0.0891476)
+    fun.set_parameter('Ha4', 0.0891476)
     fun.set_parameter('Ha5', -0.0454168)
     fun.set_parameter('Ha6', -0.0076581)
-    fun.set_parameter('Ha7',  0.0142506)
+    fun.set_parameter('Ha7', 0.0142506)
 
-    fun.set_parameter('Hb0',  1.00000)
+    fun.set_parameter('Hb0', 1.00000)
     fun.set_parameter('Hb1', -2.65060)
-    fun.set_parameter('Hb2',  3.91108)
+    fun.set_parameter('Hb2', 3.91108)
     fun.set_parameter('Hb3', -3.31509)
-    fun.set_parameter('Hb4',  1.54485)
+    fun.set_parameter('Hb4', 1.54485)
     fun.set_parameter('Hb5', -0.198386)
     fun.set_parameter('Hb6', -0.136112)
-    fun.set_parameter('Hb7',  0.0647862)
-    fun.set_parameter('Hb8',  0.0159586)
+    fun.set_parameter('Hb7', 0.0647862)
+    fun.set_parameter('Hb8', 0.0159586)
     fun.set_parameter('Hb9', -2.45066E-4)
 
     # => End User-Customization <= #
@@ -1324,7 +1327,7 @@ def build_b972_superfunctional(name, npoints, deriv):
     return sup
 
 
-def build_b97d_superfunctional(name, npoints, deriv):
+def build_b97d2p4_superfunctional(name, npoints, deriv):
 
     # Call this first
     sup = PsiMod.SuperFunctional.blank()
@@ -1334,7 +1337,7 @@ def build_b97d_superfunctional(name, npoints, deriv):
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    sup.set_name('B97-D')
+    sup.set_name('B97-D2P4')
     # Tab in, trailing newlines
     sup.set_description('    B97-D Pure-GGA Exchange-Correlation Functional\n')
     # Tab in, trailing newlines
@@ -1361,13 +1364,13 @@ def build_b97d_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_ss_gamma', 0.2)
     C.set_parameter('B97_ss_a0', 0.22340)
     C.set_parameter('B97_ss_a1', -1.56208)
-    C.set_parameter('B97_ss_a2', 3.25429)
+    C.set_parameter('B97_ss_a2', 1.94293)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
 
     # => -D2 (s = 1.25) <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.25))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b97-d', 'd2p4')))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -1379,6 +1382,39 @@ def build_b97d_superfunctional(name, npoints, deriv):
 
     # Call this last
     sup.allocate()
+    return sup
+
+
+def build_b97d2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
+    sup.set_name('B97-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b97-d', 'd2gr')))
+
+    return sup
+
+
+def build_b97d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
+    sup.set_name('B97-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b97-d', 'd3zero')))
+
+    return sup
+
+
+def build_b97d3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_b97d2p4_superfunctional(name, npoints, deriv)
+    sup.set_name('B97-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b97-d', 'd3bj')))
+
     return sup
 
 
@@ -1504,6 +1540,28 @@ def build_hcth120_superfunctional(name, npoints, deriv):
     return sup
 
 
+def build_hcth120d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_hcth120_superfunctional(name, npoints, deriv)
+    sup.set_name('HCTH120-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('hcth120', 'd3zero')))
+
+    return sup
+
+
+def build_hcth120d3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_hcth120_superfunctional(name, npoints, deriv)
+    sup.set_name('HCTH120-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('hcth120', 'd3bj')))
+
+    return sup
+
+
 def build_hcth147_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1626,13 +1684,67 @@ def build_hcth407_superfunctional(name, npoints, deriv):
     return sup
 
 
-def build_blypd_superfunctional(name, npoints, deriv):
+def build_blypd2p4_superfunctional(name, npoints, deriv):
 
     sup = build_blyp_superfunctional(name, npoints, deriv)
-    sup.set_name('BLYP-D')
+    sup.set_name('BLYP-D2P4')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.20))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('blyp', 'd2p4')))
+
+    return sup
+
+
+def build_blypd2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_blyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BLYP-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('blyp', 'd2gr')))
+
+    return sup
+
+
+def build_blypd3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_blyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BLYP-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('blyp', 'd3zero')))
+
+    return sup
+
+
+def build_blypd3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_blyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BLYP-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('blyp', 'd3bj')))
+
+    return sup
+
+def build_blypd1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BLYP-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.2, 0.0, 0.0, 0.0))
+
+    return sup
+
+
+def build_b3lypd1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
 
     return sup
 
@@ -1643,50 +1755,256 @@ def build_b3lypchg_superfunctional(name, npoints, deriv):
     sup.set_name('B3LYP-CHG')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.00))
+    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.00, 0.0, 0.0, 0.0))
 
     return sup
 
-def build_b3lypd_superfunctional(name, npoints, deriv):
+
+def build_b3lypd2p4_superfunctional(name, npoints, deriv):
 
     sup = build_b3lyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP-D')
+    sup.set_name('B3LYP-D2P4')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd2p4')))
+    #sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd')))  # alternatively
+    #sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05, 0.0, 0.0, 0.0))  # alternatively
 
     return sup
 
 
-def build_b3lyp5d_superfunctional(name, npoints, deriv):
+def build_b3lypd2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd2gr')))
+    #sup.set_dispersion(PsiMod.Dispersion.build('-D2GR', 1.05, 20.0, 0.0, 0.0))  # alternatively
+
+    return sup
+
+
+def build_b3lypd3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd3zero')))
+    #sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd3')))  # alternatively
+    #sup.set_dispersion(PsiMod.Dispersion.build('-D3ZERO', 1.0, 1.261, 1.703, 14.0))  # alternatively
+
+    return sup
+
+
+def build_b3lypd3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd3bj')))
+    #sup.set_dispersion(PsiMod.Dispersion.build('-D3BJ', 1.000, 0.3981, 1.9889, 4.4211))  # alternatively
+
+    return sup
+
+
+def build_b3lyp5d2p4_superfunctional(name, npoints, deriv):
 
     sup = build_b3lyp5_superfunctional(name, npoints, deriv)
-    sup.set_name('B3LYP5-D')
+    sup.set_name('B3LYP5-D2P4')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd2p4')))
 
     return sup
 
 
-def build_bp86d_superfunctional(name, npoints, deriv):
+def build_b3lyp5d2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd2gr')))
+
+    return sup
+
+
+def build_b3lyp5d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd3zero')))
+
+    return sup
+
+
+def build_b3lyp5d3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp5_superfunctional(name, npoints, deriv)
+    sup.set_name('B3LYP5-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b3lyp', 'd3bj')))
+
+    return sup
+
+def build_bp86d1_superfunctional(name, npoints, deriv):
+
+    sup = build_b3lyp_superfunctional(name, npoints, deriv)
+    sup.set_name('BP86-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
+
+    return sup
+
+
+
+def build_bp86d2p4_superfunctional(name, npoints, deriv):
 
     sup = build_bp86_superfunctional(name, npoints, deriv)
-    sup.set_name('BP86-D')
+    sup.set_name('BP86-D2P4')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 1.05))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('bp86', 'd2p4')))
 
     return sup
 
 
-def build_pbed_superfunctional(name, npoints, deriv):
+def build_bp86d2gr_superfunctional(name, npoints, deriv):
 
-    sup = build_pbe_superfunctional(name, npoints, deriv)
-    sup.set_name('PBE-D')
+    sup = build_bp86_superfunctional(name, npoints, deriv)
+    sup.set_name('BP86-D2GR')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.75))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('bp86', 'd2gr')))
+
+    return sup
+
+
+def build_bp86d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_bp86_superfunctional(name, npoints, deriv)
+    sup.set_name('BP86-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('bp86', 'd3zero')))
+
+    return sup
+
+
+def build_bp86d3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_bp86_superfunctional(name, npoints, deriv)
+    sup.set_name('BP86-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('bp86', 'd3bj')))
+
+    return sup
+
+
+def build_pbed1_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D1')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 0.75, 0.0, 0.0, 0.0))
+
+    return sup
+
+
+
+def build_pbed2p4_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D2P4')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe', 'd2p4')))
+
+    return sup
+
+
+def build_pbed2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe', 'd2gr')))
+
+    return sup
+
+
+def build_pbed3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe', 'd3zero')))
+
+    return sup
+
+
+def build_pbed3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe', 'd3bj')))
+
+    return sup
+
+
+def build_pbe0d2p4_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe0_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE0-D2P4')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe0', 'd2p4')))
+
+    return sup
+
+
+def build_pbe0d2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe0_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE0-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe0', 'd2gr')))
+
+    return sup
+
+
+def build_pbe0d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe0_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE0-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe0', 'd3zero')))
+
+    return sup
+
+
+def build_pbe0d3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_pbe0_superfunctional(name, npoints, deriv)
+    sup.set_name('PBE0-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('pbe0', 'd3bj')))
 
     return sup
 
@@ -1964,6 +2282,7 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup
 
+
 def build_wb97xd_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1981,35 +2300,35 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.set_citation('    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n')
 
     # Add member functionals
-    alpha = 2.22036E-1;
-    omega = 0.2;
+    alpha = 2.22036E-1
+    omega = 0.2
     X = build_functional('wB97_X')
     X.set_name('wB97X_X')
     X.set_alpha(1.0 / (1.0 - alpha))
 
     X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0', 7.77964E-1)    # Table 1: c_{x\sigma,0}
-    X.set_parameter('B97_a1', 6.61160E-1)    # Table 1: c_{x\sigma,1}
-    X.set_parameter('B97_a2', 5.74541E-1)    # Table 1: c_{x\sigma,2}
-    X.set_parameter('B97_a3', -5.25671E0)    # Table 1: c_{x\sigma,3}
-    X.set_parameter('B97_a4', 1.16386E1)     # Table 1: c_{x\sigma,4}
+    X.set_parameter('B97_a0', 7.77964E-1)     # Table 1: c_{x\sigma,0}
+    X.set_parameter('B97_a1', 6.61160E-1)     # Table 1: c_{x\sigma,1}
+    X.set_parameter('B97_a2', 5.74541E-1)     # Table 1: c_{x\sigma,2}
+    X.set_parameter('B97_a3', -5.25671E0)     # Table 1: c_{x\sigma,3}
+    X.set_parameter('B97_a4', 1.16386E1)      # Table 1: c_{x\sigma,4}
 
     C = build_functional('B_C')
     C.set_name('wB97X_C')
 
     C.set_parameter('B97_os_gamma', 0.006)
-    C.set_parameter('B97_os_a0', 1.0)        # Table 1: c_{c\alpha\beta,0}
-    C.set_parameter('B97_os_a1', 1.79413E0)  # Table 1: c_{c\alpha\beta,1}
-    C.set_parameter('B97_os_a2', -1.20477E1) # Table 1: c_{c\alpha\beta,2}
-    C.set_parameter('B97_os_a3', 1.40847E1)  # Table 1: c_{c\alpha\beta,3}
-    C.set_parameter('B97_os_a4', -8.50809E0) # Table 1: c_{c\alpha\beta,4}
+    C.set_parameter('B97_os_a0', 1.0)         # Table 1: c_{c\alpha\beta,0}
+    C.set_parameter('B97_os_a1', 1.79413E0)   # Table 1: c_{c\alpha\beta,1}
+    C.set_parameter('B97_os_a2', -1.20477E1)  # Table 1: c_{c\alpha\beta,2}
+    C.set_parameter('B97_os_a3', 1.40847E1)   # Table 1: c_{c\alpha\beta,3}
+    C.set_parameter('B97_os_a4', -8.50809E0)  # Table 1: c_{c\alpha\beta,4}
 
     C.set_parameter('B97_ss_gamma', 0.2)
-    C.set_parameter('B97_ss_a0', 1.0)        # Table 1: c_{c\sigma\sigma,0}
-    C.set_parameter('B97_ss_a1', -6.90539E0) # Table 1: c_{c\sigma\sigma,1}
-    C.set_parameter('B97_ss_a2', 3.13343E1)  # Table 1: c_{c\sigma\sigma,2}
-    C.set_parameter('B97_ss_a3', -5.10533E1) # Table 1: c_{c\sigma\sigma,3}
-    C.set_parameter('B97_ss_a4', 2.64423E1)  # Table 1: c_{c\sigma\sigma,4}
+    C.set_parameter('B97_ss_a0', 1.0)         # Table 1: c_{c\sigma\sigma,0}
+    C.set_parameter('B97_ss_a1', -6.90539E0)  # Table 1: c_{c\sigma\sigma,1}
+    C.set_parameter('B97_ss_a2', 3.13343E1)   # Table 1: c_{c\sigma\sigma,2}
+    C.set_parameter('B97_ss_a3', -5.10533E1)  # Table 1: c_{c\sigma\sigma,3}
+    C.set_parameter('B97_ss_a4', 2.64423E1)   # Table 1: c_{c\sigma\sigma,4}
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -2021,7 +2340,7 @@ def build_wb97xd_superfunctional(name, npoints, deriv):
     sup.set_c_alpha(0.0)
 
     # => -D2 (CHG Damping Function) <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.0))
+    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 1.0, 0.0, 0.0, 0.0))
 
     # => End User-Customization <= #
 
@@ -2140,27 +2459,27 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE, special parameters because Truhlar is lazy
-    C1 = 3.36116E-3;
-    C2 = 4.49267E-3;
-    K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
-    k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0)  ;
-    kp = C1 / (C2 * K0);
-    mu = 4.0 * k0 * k0 * kp * C2;
-    X.set_parameter('PBE_kp', kp);
-    X.set_parameter('PBE_mu', mu);
+    C1 = 3.36116E-3
+    C2 = 4.49267E-3
+    K0 = 3.0 / 2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0 / 3.0)
+    k0 = math.pow(6.0 * math.pi * math.pi, 1.0 / 3.0)
+    kp = C1 / (C2 * K0)
+    mu = 4.0 * k0 * k0 * kp * C2
+    X.set_parameter('PBE_kp', kp)
+    X.set_parameter('PBE_mu', mu)
 
 # Meta Exchange type is insane mess of w power series expansion
-    X.set_parameter('Meta_a0' , 1.0)
-    X.set_parameter('Meta_a1' ,-0.56833)
-    X.set_parameter('Meta_a2' ,-1.30057)
-    X.set_parameter('Meta_a3' , 5.50070)
-    X.set_parameter('Meta_a4' , 9.06402)
-    X.set_parameter('Meta_a5' ,-32.21075)
-    X.set_parameter('Meta_a6' ,-23.73298)
-    X.set_parameter('Meta_a7' , 70.22996)
-    X.set_parameter('Meta_a8' , 29.88614)
-    X.set_parameter('Meta_a9' ,-60.25778)
-    X.set_parameter('Meta_a10',-13.22205)
+    X.set_parameter('Meta_a0', 1.0)
+    X.set_parameter('Meta_a1', -0.56833)
+    X.set_parameter('Meta_a2', -1.30057)
+    X.set_parameter('Meta_a3', 5.50070)
+    X.set_parameter('Meta_a4', 9.06402)
+    X.set_parameter('Meta_a5', -32.21075)
+    X.set_parameter('Meta_a6', -23.73298)
+    X.set_parameter('Meta_a7', 70.22996)
+    X.set_parameter('Meta_a8', 29.88614)
+    X.set_parameter('Meta_a9', -60.25778)
+    X.set_parameter('Meta_a10', -13.22205)
     X.set_parameter('Meta_a11', 15.23694)
 
     C = build_functional('M_C')
@@ -2172,16 +2491,16 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.00000)
     C.set_parameter('B97_os_a1', 1.09297)
-    C.set_parameter('B97_os_a2',-3.79171)
+    C.set_parameter('B97_os_a2', -3.79171)
     C.set_parameter('B97_os_a3', 2.82810)
-    C.set_parameter('B97_os_a4',-10.58909)
+    C.set_parameter('B97_os_a4', -10.58909)
 
     C.set_parameter('B97_ss_gamma', 0.06)
     C.set_parameter('B97_ss_a0', 1.00000)
-    C.set_parameter('B97_ss_a1',-3.05430)
+    C.set_parameter('B97_ss_a1', -3.05430)
     C.set_parameter('B97_ss_a2', 7.61854)
     C.set_parameter('B97_ss_a3', 1.47665)
-    C.set_parameter('B97_ss_a4',-11.92365)
+    C.set_parameter('B97_ss_a4', -11.92365)
 
     # Meta Correlation type is Becke metric, no parameters
 
@@ -2192,7 +2511,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.56) # Hartree-Fock exact exchange
+    sup.set_x_alpha(0.56)  # Hartree-Fock exact exchange
     sup.set_c_alpha(0.0)
 
     # => End User-Customization <= #
@@ -2200,6 +2519,29 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     # Call this last
     sup.allocate()
     return sup
+
+
+def build_m05d3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_m05_superfunctional(name, npoints, deriv)
+    sup.set_name('M05-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('m05', 'd3zero')))
+
+    return sup
+
+
+def build_m05_2xd3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_m05_2x_superfunctional(name, npoints, deriv)
+    sup.set_name('M05-2X-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('m05-2x', 'd3zero')))
+
+    return sup
+
 
 def build_dldf_superfunctional(name, npoints, deriv):
 
@@ -2212,9 +2554,9 @@ def build_dldf_superfunctional(name, npoints, deriv):
 
     # No spaces, keep it short and according to convention
     sup.set_name('dlDF')
-    # Tab in, trailing newlines 
+    # Tab in, trailing newlines
     sup.set_description('    Dispersionless Hybrid Meta-GGA XC Functional\n')
-    # Tab in, trailing newlines 
+    # Tab in, trailing newlines
     sup.set_citation('    Pernal et. al., Phys. Rev. Lett., 103, 263201, 2009\n')
 
     # Add member functionals
@@ -2225,17 +2567,17 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # LSDA Exchange type is Slater, no parameters
 
     # GGA Exchange type is PBE
-    kp = 4.8827323 
-    mu = 0.3511128 
-    X.set_parameter('PBE_kp', kp);
-    X.set_parameter('PBE_mu', mu);
+    kp = 4.8827323
+    mu = 0.3511128
+    X.set_parameter('PBE_kp', kp)
+    X.set_parameter('PBE_mu', mu)
 
 # Meta Exchange is a reparametrized truncation of Truhlar's functional
-    X.set_parameter('Meta_a0' , 1.0)
-    X.set_parameter('Meta_a1' ,-0.1637571)
-    X.set_parameter('Meta_a2' ,-0.1880028)
-    X.set_parameter('Meta_a3' ,-0.4490609)
-    X.set_parameter('Meta_a4' ,-0.0082359)
+    X.set_parameter('Meta_a0', 1.0)
+    X.set_parameter('Meta_a1', -0.1637571)
+    X.set_parameter('Meta_a2', -0.1880028)
+    X.set_parameter('Meta_a3', -0.4490609)
+    X.set_parameter('Meta_a4', -0.0082359)
 
     C = build_functional('M_C')
     C.set_name('dlDF_C')
@@ -2246,11 +2588,11 @@ def build_dldf_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_os_gamma', 0.0031 * 2.0)
     C.set_parameter('B97_os_a0', 1.00000)
     C.set_parameter('B97_os_a1', 5.9515308)
-    C.set_parameter('B97_os_a2',-11.1602877)
+    C.set_parameter('B97_os_a2', -11.1602877)
 
     C.set_parameter('B97_ss_gamma', 0.06)
     C.set_parameter('B97_ss_a0', 1.00000)
-    C.set_parameter('B97_ss_a1',-2.5960897)
+    C.set_parameter('B97_ss_a1', -2.5960897)
     C.set_parameter('B97_ss_a2', 2.2233793)
 
     # Meta Correlation type is Becke metric, no parameters
@@ -2262,7 +2604,7 @@ def build_dldf_superfunctional(name, npoints, deriv):
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.6144129) # Hartree-Fock exact exchange
+    sup.set_x_alpha(0.6144129)  # Hartree-Fock exact exchange
     sup.set_c_alpha(0.0)
 
     # => End User-Customization <= #
@@ -2278,7 +2620,7 @@ def build_dldfd09_superfunctional(name, npoints, deriv):
     sup.set_name('dlDF+D09')
 
     # => +D <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2009', 1.0))  # Does not have an s6, so set to 1.0
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2009', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
 
     return sup
 
@@ -2289,7 +2631,7 @@ def build_dldfd_superfunctional(name, npoints, deriv):
     sup.set_name('dlDF+D')
 
     # => +D <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0))  # Does not have an s6, so set to 1.0
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
 
     return sup
 
@@ -2303,7 +2645,7 @@ def build_hfd_superfunctional(name, npoints, deriv):
     sup.set_x_alpha(1.0)
 
     # => +D <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0))  # Does not have an s6, so set to 1.0
+    sup.set_dispersion(PsiMod.Dispersion.build('-DAS2010', 1.0, 0.0, 0.0, 0.0))  # Does not have an s6, so set to 1.0
 
     sup.allocate()
     return sup
@@ -2368,24 +2710,24 @@ def build_wb97x_2tqz_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0 / (1.0 - 0.636158))
 
     X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0',  3.15503E-1)
-    X.set_parameter('B97_a1',  1.04772E0)
+    X.set_parameter('B97_a0', 3.15503E-1)
+    X.set_parameter('B97_a1', 1.04772E0)
     X.set_parameter('B97_a2', -2.33506E0)
-    X.set_parameter('B97_a3',  3.19909E0)
+    X.set_parameter('B97_a3', 3.19909E0)
 
     C = build_functional('B_C')
     C.set_name('wB97X_C')
 
     C.set_parameter('B97_os_gamma', 0.006)
-    C.set_parameter('B97_os_a0',  5.18198E-1)
+    C.set_parameter('B97_os_a0', 5.18198E-1)
     C.set_parameter('B97_os_a1', -5.85956E-1)
-    C.set_parameter('B97_os_a2',  4.27080E0)
+    C.set_parameter('B97_os_a2', 4.27080E0)
     C.set_parameter('B97_os_a3', -6.48897E0)
 
     C.set_parameter('B97_ss_gamma', 0.2)
-    C.set_parameter('B97_ss_a0',  9.08460E-1)
+    C.set_parameter('B97_ss_a0', 9.08460E-1)
     C.set_parameter('B97_ss_a1', -2.80936E0)
-    C.set_parameter('B97_ss_a2',  6.02676E0)
+    C.set_parameter('B97_ss_a2', 6.02676E0)
     C.set_parameter('B97_ss_a3', -4.56981E0)
 
     sup.add_x_functional(X)
@@ -2428,24 +2770,24 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0 / (1.0 - 0.678792))
 
     X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0',  2.51767E-1)
-    X.set_parameter('B97_a1',  1.57375E0)
+    X.set_parameter('B97_a0', 2.51767E-1)
+    X.set_parameter('B97_a1', 1.57375E0)
     X.set_parameter('B97_a2', -5.26624E0)
-    X.set_parameter('B97_a3',  6.74313E0)
+    X.set_parameter('B97_a3', 6.74313E0)
 
     C = build_functional('B_C')
     C.set_name('wB97X_C')
 
     C.set_parameter('B97_os_gamma', 0.006)
-    C.set_parameter('B97_os_a0',  5.53261E-1)
+    C.set_parameter('B97_os_a0', 5.53261E-1)
     C.set_parameter('B97_os_a1', -1.16626E0)
-    C.set_parameter('B97_os_a2',  6.84409E0)
+    C.set_parameter('B97_os_a2', 6.84409E0)
     C.set_parameter('B97_os_a3', -8.90640E0)
 
     C.set_parameter('B97_ss_gamma', 0.2)
-    C.set_parameter('B97_ss_a0',  1.15698E0)
+    C.set_parameter('B97_ss_a0', 1.15698E0)
     C.set_parameter('B97_ss_a1', -3.31669E0)
-    C.set_parameter('B97_ss_a2',  6.27265E0)
+    C.set_parameter('B97_ss_a2', 6.27265E0)
     C.set_parameter('B97_ss_a3', -4.51464E0)
 
     sup.add_x_functional(X)
@@ -2468,176 +2810,210 @@ def build_wb97x_2lp_superfunctional(name, npoints, deriv):
 
 def build_pbe0_2_superfunctional(name, npoints, deriv):
 
-   # Call this first
-   sup = PsiMod.SuperFunctional.blank()
-   sup.set_max_points(npoints)
-   sup.set_deriv(deriv)
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
 
-   # => User-Customization <= #
+    # => User-Customization <= #
 
-   # No spaces, keep it short and according to convention
-   sup.set_name('PBE0-2')
-   # Tab in, trailing newlines
-   sup.set_description('    PBE0-2 Double Hydrid Exchange-Correlation Functional\n')
-   # Tab in, trailing newlines
-   sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
+    # No spaces, keep it short and according to convention
+    sup.set_name('PBE0-2')
+    # Tab in, trailing newlines
+    sup.set_description('    PBE0-2 Double Hydrid Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    J. Chai, Chem. Phys. Lett., 538, 121-125, 2012\n')
 
-   # Add member functionals
-   X = build_functional('PBE_X')
-   X.set_alpha(1.0)
-   sup.add_x_functional(X)
-   C = build_functional('PBE_C')
-   C.set_alpha(0.5)
-   sup.add_c_functional(C)
+    # Add member functionals
+    X = build_functional('PBE_X')
+    X.set_alpha(1.0)
+    sup.add_x_functional(X)
+    C = build_functional('PBE_C')
+    C.set_alpha(0.5)
+    sup.add_c_functional(C)
 
-   # Set GKS up after adding functionals
-   sup.set_x_omega(0.0)
-   sup.set_c_omega(0.0)
-   sup.set_x_alpha(0.793701)
-   sup.set_c_alpha(0.5)
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.793701)
+    sup.set_c_alpha(0.5)
 
-   # => End User-Customization <= #
+    # => End User-Customization <= #
 
-   # Call this last
-   sup.allocate()
-   return sup
+    # Call this last
+    sup.allocate()
+    return sup
 
 
 def build_dsd_blyp_superfunctional(name, npoints, deriv):
 
-   # Call this first
-   sup = PsiMod.SuperFunctional.blank()
-   sup.set_max_points(npoints)
-   sup.set_deriv(deriv)
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
 
-   # => User-Customization <= #
+    # => User-Customization <= #
 
-   # No spaces, keep it short and according to convention
-   sup.set_name('DSD-BLYP')
-   # Tab in, trailing newlines
-   sup.set_description('    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n')
-   # Tab in, trailing newlines
-   sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+    # No spaces, keep it short and according to convention
+    sup.set_name('DSD-BLYP')
+    # Tab in, trailing newlines
+    sup.set_description('    DSD-BLYP Dispersion-corrected SCS Double Hybrid XC Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
-   # Add member functionals
-   X = build_functional('B88_X')
-   X.set_alpha(1.0)
-   sup.add_x_functional(X)
-   C = build_functional('LYP_C')
-   C.set_alpha(0.55)
-   sup.add_c_functional(C)
+    # Add member functionals
+    X = build_functional('B88_X')
+    X.set_alpha(1.0)
+    sup.add_x_functional(X)
+    C = build_functional('LYP_C')
+    C.set_alpha(0.55)
+    sup.add_c_functional(C)
 
-   # Set GKS up after adding functionals
-   sup.set_x_omega(0.0)
-   sup.set_c_omega(0.0)
-   sup.set_x_alpha(0.71)
-   sup.set_c_alpha(1.0)
-   sup.set_c_os_alpha(0.46)
-   sup.set_c_ss_alpha(0.43)
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.71)
+    sup.set_c_alpha(1.0)
+    sup.set_c_os_alpha(0.46)
+    sup.set_c_ss_alpha(0.43)
 
-   # => -D2 <=
+    # => -D2 <=
 
-   sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.35))
+    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.35, 0.0, 0.0, 0.0))
 
-   # => End User-Customization <= #
+    # => End User-Customization <= #
 
-   # Call this last
-   sup.allocate()
-   return sup
+    # Call this last
+    sup.allocate()
+    return sup
 
 
 def build_dsd_pbep86_superfunctional(name, npoints, deriv):
 
-   # Call this first
-   sup = PsiMod.SuperFunctional.blank()
-   sup.set_max_points(npoints)
-   sup.set_deriv(deriv)
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
 
-   # => User-Customization <= #
+    # => User-Customization <= #
 
-   # No spaces, keep it short and according to convention
-   sup.set_name('DSD-PBEP86')
-   # Tab in, trailing newlines
-   sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (opt. for -D2)\n')
-   # Tab in, trailing newlines
-   sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+    # No spaces, keep it short and according to convention
+    sup.set_name('DSD-PBEP86')
+    # Tab in, trailing newlines
+    sup.set_description('    DSD-PBEP86 Dispersion-corrected SCS Double Hybrid XC Functional (opt. for -D2)\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
-   # Add member functionals
-   X = build_functional('PBE_X')
-   X.set_alpha(1.0)
-   sup.add_x_functional(X)
-   C = build_functional('P86_C')
-   C.set_alpha(0.45)
-   sup.add_c_functional(C)
+    # Add member functionals
+    X = build_functional('PBE_X')
+    X.set_alpha(1.0)
+    sup.add_x_functional(X)
+    C = build_functional('P86_C')
+    C.set_alpha(0.45)
+    sup.add_c_functional(C)
 
-   # Set GKS up after adding functionals
-   sup.set_x_omega(0.0)
-   sup.set_c_omega(0.0)
-   sup.set_x_alpha(0.68)
-   sup.set_c_alpha(1.0)
-   sup.set_c_ss_alpha(0.23)
-   sup.set_c_os_alpha(0.51)
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.68)
+    sup.set_c_alpha(1.0)
+    sup.set_c_ss_alpha(0.23)
+    sup.set_c_os_alpha(0.51)
 
-   # => -D2 <=
+    # => -D2 <=
 
-   sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.29))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('dsd-pbep86', 'd2p4')))
 
-   # => End User-Customization <= #
+    # => End User-Customization <= #
 
-   # Call this last
-   sup.allocate()
-   return sup
+    # Call this last
+    sup.allocate()
+    return sup
+
 
 def build_dsd_pbepbe_superfunctional(name, npoints, deriv):
 
-   # Call this first
-   sup = PsiMod.SuperFunctional.blank()
-   sup.set_max_points(npoints)
-   sup.set_deriv(deriv)
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
 
-   # => User-Customization <= #
+    # => User-Customization <= #
 
-   # No spaces, keep it short and according to convention
-   sup.set_name('DSD-PBEPBE')
-   # Tab in, trailing newlines
-   sup.set_description('    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional\n')
-   # Tab in, trailing newlines
-   sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
+    # No spaces, keep it short and according to convention
+    sup.set_name('DSD-PBEPBE')
+    # Tab in, trailing newlines
+    sup.set_description('    DSD-PBEPBE Dispersion-corrected SCS Double Hybrid XC Functional\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    S. Kozuch, Phys. Chem. Chem. Phys., 13, 20104, 2011\n')
 
-   # Add member functionals
-   X = build_functional('PBE_X')
-   X.set_alpha(1.0)
-   sup.add_x_functional(X)
-   C = build_functional('PBE_C')
-   C.set_alpha(0.51)
-   sup.add_c_functional(C)
+    # Add member functionals
+    X = build_functional('PBE_X')
+    X.set_alpha(1.0)
+    sup.add_x_functional(X)
+    C = build_functional('PBE_C')
+    C.set_alpha(0.51)
+    sup.add_c_functional(C)
 
-   # Set GKS up after adding functionals
-   sup.set_x_omega(0.0)
-   sup.set_c_omega(0.0)
-   sup.set_x_alpha(0.66)
-   sup.set_c_alpha(1.0)
-   sup.set_c_ss_alpha(0.12)
-   sup.set_c_os_alpha(0.53)
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.66)
+    sup.set_c_alpha(1.0)
+    sup.set_c_ss_alpha(0.12)
+    sup.set_c_os_alpha(0.53)
 
-   # => -D2 <=
+    # => -D2 <=
 
-   sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.42))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('dsd-pbepbe', 'd2p4')))
 
-   # => End User-Customization <= #
+    # => End User-Customization <= #
 
-   # Call this last
-   sup.allocate()
-   return sup
+    # Call this last
+    sup.allocate()
+    return sup
 
 
-def build_b2plypd_superfunctional(name, npoints, deriv):
+def build_b2plypd2p4_superfunctional(name, npoints, deriv):
 
     sup = build_b2plyp_superfunctional(name, npoints, deriv)
-    sup.set_name('B2PLYP-D')
+    sup.set_name('B2PLYP-D2P4')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D2', 0.55))
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b2plyp', 'd2p4')))
+
+    return sup
+
+
+def build_b2plypd2gr_superfunctional(name, npoints, deriv):
+
+    sup = build_b2plyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B2PLYP-D2GR')
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b2plyp', 'd2gr')))
+
+    return sup
+
+
+def build_b2plypd3zero_superfunctional(name, npoints, deriv):
+
+    sup = build_b2plyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B2PLYP-D3ZERO')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b2plyp', 'd3zero')))
+
+    return sup
+
+
+def build_b2plypd3bj_superfunctional(name, npoints, deriv):
+
+    sup = build_b2plyp_superfunctional(name, npoints, deriv)
+    sup.set_name('B2PLYP-D3BJ')
+
+    # => -D3 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build(*dash_server('b2plyp', 'd3bj')))
 
     return sup
 
@@ -2682,89 +3058,146 @@ def build_primitive_superfunctional(name, npoints, deriv):
 
 # Superfunctional lookup table
 superfunctionals = {
-        's_x'        : build_primitive_superfunctional,
-        'b88_x'      : build_primitive_superfunctional,
-        'b3_x'       : build_primitive_superfunctional,
-        'pbe_x'      : build_primitive_superfunctional,
-        'rpbe_x'     : build_primitive_superfunctional,
-        'sogga_x'    : build_primitive_superfunctional,
-        'pbesol_x'   : build_primitive_superfunctional,
-        'pw91_x'     : build_primitive_superfunctional,
-        'ws_x'       : build_ws_x_superfunctional,
-        'wpbe_x'     : build_wpbe_x_superfunctional,
-        'wpbesol_x'  : build_wpbesol_x_superfunctional,
-        'wb88_x'     : build_wb88_x_superfunctional,
-        'lyp_c'      : build_primitive_superfunctional,
-        'ft97b_x'    : build_primitive_superfunctional,
-        'pz81_c'     : build_primitive_superfunctional,
-        'p86_c'      : build_primitive_superfunctional,
-        'pw91_c'     : build_primitive_superfunctional,
-        'pw92_c'     : build_primitive_superfunctional,
-        'pbe_c'      : build_primitive_superfunctional,
-        'ft97_c'     : build_primitive_superfunctional,
-        'vwn5rpa_c'  : build_primitive_superfunctional,
-        'vwn5_c'     : build_primitive_superfunctional,
-        'vwn3rpa_c'  : build_primitive_superfunctional,
-        'vwn3_c'     : build_primitive_superfunctional,
-        'svwn'       : build_svwn_superfunctional,
-        'blyp'       : build_blyp_superfunctional,
-        'bp86'       : build_bp86_superfunctional,
-        'pw91'       : build_pw91_superfunctional,
-        'pbe'        : build_pbe_superfunctional,
-        'ft97'       : build_ft97_superfunctional,
-        'b3lyp'      : build_b3lyp_superfunctional,
-        'b3lyp5'     : build_b3lyp5_superfunctional,
-        'pbe0'       : build_pbe0_superfunctional,
-        'b97-0'      : build_b970_superfunctional,
-        'b97-1'      : build_b971_superfunctional,
-        'b97-2'      : build_b972_superfunctional,
-        'hcth'       : build_hcth_superfunctional,
-        'hcth120'    : build_hcth120_superfunctional,
-        'hcth147'    : build_hcth147_superfunctional,
-        'hcth407'    : build_hcth407_superfunctional,
-        'blyp-d'     : build_blypd_superfunctional,
-        'pbe-d'      : build_pbed_superfunctional,
-        'bp86-d'     : build_bp86d_superfunctional,
-        'b97-d'      : build_b97d_superfunctional,
-        'b3lyp-d'    : build_b3lypd_superfunctional,
-        'b3lyp-chg'  : build_b3lypchg_superfunctional,
-        'b3lyp5-d'   : build_b3lyp5d_superfunctional,
-        'wsvwn'      : build_wsvwn_superfunctional,
-        'wpbe'       : build_wpbe_superfunctional,
-        'wpbe0'      : build_wpbe0_superfunctional,
-        'wpbesol'    : build_wpbesol_superfunctional,
-        'wpbesol0'   : build_wpbesol0_superfunctional,
-        'wblyp'      : build_wblyp_superfunctional,
-        'wb97'       : build_wb97_superfunctional,
-        'wb97x'      : build_wb97x_superfunctional,
-        'wb97x-d'    : build_wb97xd_superfunctional,
-        'm05'        : build_m05_superfunctional,
-        'm05-2x'     : build_m05_2x_superfunctional,
-        'dldf'       : build_dldf_superfunctional,
-        'dldf+d09'   : build_dldfd09_superfunctional,
-        'dldf+d'     : build_dldfd_superfunctional,
-        'hf+d'       : build_hfd_superfunctional,
-        'sogga'      : build_sogga_superfunctional,
-        'b2plyp'     : build_b2plyp_superfunctional,
-        'b2plyp-d'   : build_b2plypd_superfunctional,
-        'wb97x-2(tqz)' : build_wb97x_2tqz_superfunctional,
-        'wb97x-2(lp)'  : build_wb97x_2lp_superfunctional,
-        'pbe0-2'     : build_pbe0_2_superfunctional,
-        'dsd-blyp'   : build_dsd_blyp_superfunctional,
-        'dsd-pbep86' : build_dsd_pbep86_superfunctional,
-        'dsd-pbepbe' : build_dsd_pbepbe_superfunctional,
+        's_x'             : build_primitive_superfunctional,
+        'b88_x'           : build_primitive_superfunctional,
+        'b3_x'            : build_primitive_superfunctional,
+        'pbe_x'           : build_primitive_superfunctional,
+        'rpbe_x'          : build_primitive_superfunctional,
+        'sogga_x'         : build_primitive_superfunctional,
+        'pbesol_x'        : build_primitive_superfunctional,
+        'pw91_x'          : build_primitive_superfunctional,
+        'ws_x'            : build_ws_x_superfunctional,
+        'wpbe_x'          : build_wpbe_x_superfunctional,
+        'wpbesol_x'       : build_wpbesol_x_superfunctional,
+        'wb88_x'          : build_wb88_x_superfunctional,
+        'lyp_c'           : build_primitive_superfunctional,
+        'ft97b_x'         : build_primitive_superfunctional,
+        'pz81_c'          : build_primitive_superfunctional,
+        'p86_c'           : build_primitive_superfunctional,
+        'pw91_c'          : build_primitive_superfunctional,
+        'pw92_c'          : build_primitive_superfunctional,
+        'pbe_c'           : build_primitive_superfunctional,
+        'ft97_c'          : build_primitive_superfunctional,
+        'vwn5rpa_c'       : build_primitive_superfunctional,
+        'vwn5_c'          : build_primitive_superfunctional,
+        'vwn3rpa_c'       : build_primitive_superfunctional,
+        'vwn3_c'          : build_primitive_superfunctional,
+        'svwn'            : build_svwn_superfunctional,
+        'blyp'            : build_blyp_superfunctional,
+        'bp86'            : build_bp86_superfunctional,
+        'pw91'            : build_pw91_superfunctional,
+        'pbe'             : build_pbe_superfunctional,
+        'ft97'            : build_ft97_superfunctional,
+        'b3lyp'           : build_b3lyp_superfunctional,
+#        'b3lyp5'          : build_b3lyp5_superfunctional,  # broken
+        'pbe0'            : build_pbe0_superfunctional,
+        'b97-0'           : build_b970_superfunctional,
+        'b97-1'           : build_b971_superfunctional,
+        'b97-2'           : build_b972_superfunctional,
+        'hcth'            : build_hcth_superfunctional,
+        'hcth120'         : build_hcth120_superfunctional,
+        'hcth120-d3zero'  : build_hcth120d3zero_superfunctional,
+        'hcth120-d3bj'    : build_hcth120d3bj_superfunctional,
+        'hcth147'         : build_hcth147_superfunctional,
+        'hcth407'         : build_hcth407_superfunctional,
+        'blyp-d1'       : build_blypd1_superfunctional,
+        'blyp-d2p4'       : build_blypd2p4_superfunctional,
+        'blyp-d2gr'       : build_blypd2gr_superfunctional,
+        'blyp-d3zero'     : build_blypd3zero_superfunctional,
+        'blyp-d3bj'       : build_blypd3bj_superfunctional,
+        'pbe-d1'        : build_pbed1_superfunctional,
+        'pbe-d2p4'        : build_pbed2p4_superfunctional,
+        'pbe-d2gr'        : build_pbed2gr_superfunctional,
+        'pbe-d3zero'      : build_pbed3zero_superfunctional,
+        'pbe-d3bj'        : build_pbed3bj_superfunctional,
+        'pbe0-d2p4'       : build_pbe0d2p4_superfunctional,
+        'pbe0-d2gr'       : build_pbe0d2gr_superfunctional,
+        'pbe0-d3zero'     : build_pbe0d3zero_superfunctional,
+        'pbe0-d3bj'       : build_pbe0d3bj_superfunctional,
+        'bp86-d1'       : build_bp86d1_superfunctional,
+        'bp86-d2p4'       : build_bp86d2p4_superfunctional,
+        'bp86-d2gr'       : build_bp86d2gr_superfunctional,
+        'bp86-d3zero'     : build_bp86d3zero_superfunctional,
+        'bp86-d3bj'       : build_bp86d3bj_superfunctional,
+        'b97-d2p4'        : build_b97d2p4_superfunctional,
+        'b97-d2gr'        : build_b97d2gr_superfunctional,
+        'b97-d3zero'      : build_b97d3zero_superfunctional,
+        'b97-d3bj'        : build_b97d3bj_superfunctional,
+        'b3lyp-d2p4'      : build_b3lypd2p4_superfunctional,
+        'b3lyp-d2gr'      : build_b3lypd2gr_superfunctional,
+        'b3lyp-d3zero'    : build_b3lypd3zero_superfunctional,
+        'b3lyp-d3bj'      : build_b3lypd3bj_superfunctional,
+        'b3lyp-chg'       : build_b3lypchg_superfunctional,
+        'b3lyp-d1'       : build_b3lypd1_superfunctional,
+#        'b3lyp5-d2p4'     : build_b3lyp5d2p4_superfunctional,  # broken
+#        'b3lyp5-d2gr'     : build_b3lyp5d2gr_superfunctional,  # broken
+#        'b3lyp5-d3zero'   : build_b3lyp5d3zero_superfunctional,  # broken
+#        'b3lyp5-d3bj'     : build_b3lyp5d3bj_superfunctional,  # broken
+        'wsvwn'           : build_wsvwn_superfunctional,
+        'wpbe'            : build_wpbe_superfunctional,
+        'wpbe0'           : build_wpbe0_superfunctional,
+        'wpbesol'         : build_wpbesol_superfunctional,
+        'wpbesol0'        : build_wpbesol0_superfunctional,
+        'wblyp'           : build_wblyp_superfunctional,
+        'wb97'            : build_wb97_superfunctional,
+        'wb97x'           : build_wb97x_superfunctional,
+        'wb97x-d'         : build_wb97xd_superfunctional,
+        'm05'             : build_m05_superfunctional,
+        'm05-2x'          : build_m05_2x_superfunctional,
+        'm05-d3zero'      : build_m05d3zero_superfunctional,
+        'm05-2x-d3zero'   : build_m05_2xd3zero_superfunctional,
+        'dldf'            : build_dldf_superfunctional,
+        'dldf+d09'        : build_dldfd09_superfunctional,
+        'dldf+d'          : build_dldfd_superfunctional,
+        'hf+d'            : build_hfd_superfunctional,
+        'sogga'           : build_sogga_superfunctional,
+        'b2plyp'          : build_b2plyp_superfunctional,
+        'b2plyp-d2p4'     : build_b2plypd2p4_superfunctional,
+        'b2plyp-d2gr'     : build_b2plypd2gr_superfunctional,
+        'b2plyp-d3zero'   : build_b2plypd3zero_superfunctional,
+        'b2plyp-d3bj'     : build_b2plypd3bj_superfunctional,
+        'wb97x-2(tqz)'    : build_wb97x_2tqz_superfunctional,
+        'wb97x-2(lp)'     : build_wb97x_2lp_superfunctional,
+        'pbe0-2'          : build_pbe0_2_superfunctional,
+        'dsd-blyp'        : build_dsd_blyp_superfunctional,  # -D variants still need to be added
+        'dsd-pbep86'      : build_dsd_pbep86_superfunctional,
+        'dsd-pbepbe'      : build_dsd_pbepbe_superfunctional,
     }
+
+# Insert -D/-D2/-D3 aliases into superfunctionals dict
+#for key in superfunctionals.keys():
+#    for al in dash_alias.keys():
+#        if key.endswith(dash_alias[al]):
+#            superfunctionals[string.replace(key, dash_alias[al], al)] = superfunctionals[key]
 
 
 def build_superfunctional(alias, npoints, deriv):
     name = alias.lower()
-    return superfunctionals[name](name, npoints, deriv)
+    try:
+        return superfunctionals[name](name, npoints, deriv)
+    except KeyError:
+        # Return -D/-D2/-D3 aliases
+        for al in dash_alias.keys():
+            if name.endswith(al):
+                aliasedname = string.replace(name, al, dash_alias[al])
+                sup = superfunctionals[aliasedname](aliasedname, npoints, deriv)
+                sup.set_name(name.upper())
+                return sup
+        raise KeyError
 
 
 def superfunctional_list():
     val = []
     for key in superfunctionals.keys():
-        val.append(superfunctionals[key](key, 1, 1))
+        sup = superfunctionals[key](key, 1, 1)
+        val.append(sup)
+
+        # Insert -D/-D2/-D3 aliases into superfunctional_list
+        for al in dash_alias.keys():
+            if key.endswith(dash_alias[al]):
+                sup2 = superfunctionals[key](key, 1, 1)
+                sup2.set_name(string.replace(key, dash_alias[al], al).upper())
+                val.append(sup2)
     return val
 
 

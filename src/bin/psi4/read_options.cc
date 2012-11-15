@@ -827,8 +827,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
-      /*- Controls whether to compute non-idempotent contribution to OPDM approximately or exactly -*/
-      options.add_str("TAU", "APPROXIMATE", "APPROXIMATE EXACT");
+      /*- Chooses appropriate DCFT method -*/
+      options.add_str("DCFT_FUNCTIONAL", "DCFT-06", "DCFT-06 DCFT-06X CEPA0");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -856,7 +856,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations.
     :ref:`Defaults <apdx:basisFamily>` to a JKFIT basis. -*/
     options.add_str("DF_BASIS_SCF", "");
-    /*- What algorithm to use for the SCF computation -*/
+    /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default algorithm for
+    different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
@@ -883,10 +885,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
-    /*- Convergence criterion for SCF energy. -*/
+    /*- Fail if we reach maxiter without converging? -*/
+    options.add_bool("FAIL_ON_MAXITER",true);
+
+    /*- Convergence criterion for SCF energy. See Table :ref:`SCF
+    Convergence & Algorithm <table:conv_scf>` for default convergence
+    criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
+    /*- Convergence criterion for SCF density. In practice, the SCF energy
+    will be good to 1-4 more than this number of digits. (This means that
+    |scf__d_convergence| = 11 is overkill and will approach machine
+    precision.) See Table :ref:`SCF Convergence & Algorithm
+    <table:conv_scf>` for default convergence criteria for different
+    calculation types. -*/
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -896,6 +908,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
         It is recommended to leave damping on until convergence, which is the default. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
+    /*- Accelerate convergence by performing a preliminary scf with
+    this small basis set followed by projection into the full target
+    basis. A value of ``TRUE`` turns on projection using the 3-21G
+    small basis set. -*/
+    options.add_str("BASIS_GUESS", "FALSE", "");
+    /*- When |scf__basis_guess| is active, run the preliminary scf in
+    density-fitted mode with this as fitting basis for the small basis
+    set. A value of ``TRUE`` turns on density fitting with the
+    cc-pVDZ-RI basis set (when available for all elements). -*/
+    options.add_str("DF_BASIS_GUESS", "FALSE", "");
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -1014,7 +1036,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of spherical points (A :ref:`Lebedev Points <table:lebedevorder>` number). -*/
     options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
-    options.add_int("DFT_RADIAL_POINTS", 99);
+    options.add_int("DFT_RADIAL_POINTS", 75);
     /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme. -*/
@@ -1039,6 +1061,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
+    /*- Parameters defining the dispersion correction. See Table 
+    :ref:`-D Functionals <table:dft_disp>` for default values and Table
+    :ref:`Dispersion Corrections <table:dashd>` for the order in which
+    parameters are to be specified in this array option. -*/
+    options.add("DFT_DISPERSION_PARAMETERS", new ArrayType());
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -1185,6 +1212,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("MP2_SS_SCALE", 1.0/3.0);
+    /*- What algorithm to use for the MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
@@ -2178,7 +2207,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- SUBSECTION Optimization Algorithm -*/
 
       /*- Maximum number of geometry optimization steps -*/
-      options.add_int("GEOM_MAXITER", 20);
+      options.add_int("GEOM_MAXITER", 50);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
@@ -2315,20 +2344,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
   }
-  if (name == "OMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs orbital-optimized MP2 computations. -*/
+  if (name == "OCC"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs orbital-optimized CC computations. -*/
 
-    //options.add_int("MEMORY", 256);
-    //options.add_str("REFERENCE", "UHF", "UHF");
-
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-8);
-    /*- Convergence criterion for amplitudes (residuals). -*/
-    options.add_double("R_CONVERGENCE",1e-5);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/
@@ -2341,11 +2359,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
     options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
+    /*- Number of vectors used in orbital DIIS -*/
+    options.add_int("MO_DIIS_NUM_VECS",6);
+    /*- Minimum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MIN_VECS",2);
+    /*- Maximum number of vectors used in amplitude DIIS -*/
+    options.add_int("CC_DIIS_MAX_VECS",6);
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
+    /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
+    options.add_int("PCG_MAXITER",50);
 
+    /*- Convergence criterion for energy. -*/
+    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for amplitudes (residuals). -*/
+    options.add_double("R_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-6);
+    /*- Convergence criterion for maximum orbital gradient -*/
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- Level shift to aid convergence -*/
@@ -2354,25 +2386,52 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MP2_OS_SCALE",6.0/5.0);
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
-    /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
-    options.add_double("SOS_SCALE",1.3);
+    /*- MP2 Spin-opposite scaling (SOS) value -*/
+    options.add_double("MP2_SOS_SCALE",1.3);  
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
-    options.add_double("SOS_SCALE2",1.2);
-    /*- The solver will be used for simultaneous lineer equations. -*/
+    options.add_double("MP2_SOS_SCALE2",1.2);
+    /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_OS_SCALE",1.27);
+    /*- CEPA same-spin scaling value from SCS-CCSD -*/
+    options.add_double("CEPA_SS_SCALE",1.13);
+    /*- CEPA Spin-opposite scaling (SOS) value -*/
+    options.add_double("CEPA_SOS_SCALE",1.3);
+    /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
+    options.add_double("E3_SCALE",0.25);
+    /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
+    options.add_double("PCG_CONVERGENCE",1e-6);
+
+    /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    //options.add_str("STABILITY","FALSE","TRUE FALSE");
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
+     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
+    options.add_str("OPT_METHOD","NR","MSD NR");
+    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
+    options.add_str("HESS_TYPE","SCF","SCF");
+    /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
+    options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
+    /*- Type of the SCS method -*/
+    options.add_str("SCS_TYPE","SCS","SCS SCSN SCSVDW SCSMI");
+    /*- Type of the SOS method -*/
+    options.add_str("SOS_TYPE","SOS","SOS SOSPI");
+    /*- Type of the wavefunction. -*/
+    options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA CEPA");
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    Generalized-Fock Matrix. -*/
+    options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
+    /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
+    options.add_str("CEPA_TYPE","CEPA0","CEPA0");
+
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- Do apply level shifting? -*/
     options.add_bool("DO_LEVEL_SHIFT",false);
-    /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
-    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
-    options.add_str("HESS_TYPE","NONE","NONE");
-    /*- Do print OMP2 orbital energies? -*/
-    options.add_bool("OMP2_ORBS_PRINT",false);
+    /*- Do print OCC orbital energies? -*/
+    options.add_bool("OCC_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
      However, in order to perform geometry optimizations and frequency computations with SCS-OMP2, one needs to set
      'DO_SCS' to true -*/
@@ -2385,82 +2444,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_WRITE",false);
     /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
     options.add_bool("MO_READ",false);
-  }
-  if (name == "OMP3"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs orbital-optimized MP3 computations. -*/
-
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-8);
-    /*- Convergence criterion for amplitudes (residuals). -*/
-    options.add_double("R_CONVERGENCE",1e-5);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
-    /*- Maximum number of iterations to determine the amplitudes -*/
-    options.add_int("CC_MAXITER",50);
-    /*- Maximum number of iterations to determine the orbitals -*/
-    options.add_int("MO_MAXITER",50);
-    /*- Cacheing level for libdpd governing the storage of amplitudes,
-    integrals, and intermediates in the CC procedure. A value of 0 retains
-    no quantities in cache, while a level of 6 attempts to store all
-    quantities in cache.  For particularly large calculations, a value of
-    0 may help with certain types of memory problems.  The default is 2,
-    which means that all four-index quantites with up to two virtual-orbital
-    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the cache. -*/
-    options.add_int("CACHELEVEL",2);
-    /*- Number of vectors used in DIIS -*/
-    options.add_int("DIIS_MAX_VECS",4);
-    /*- Cutoff value for numerical procedures -*/
-    options.add_int("CUTOFF",14);
-
-    /*- Maximum step size in orbital-optimization procedure -*/
-    options.add_double("MO_STEP_MAX",0.5);
-    /*- Level shift parameter -*/
-    options.add_double("LEVEL_SHIFT",0.02);
-    /*- MP2 opposite-spin scaling value -*/
-    options.add_double("MP2_OS_SCALE",6.0/5.0);
-    /*- MP2 same-spin scaling value -*/
-    options.add_double("MP2_SS_SCALE",1.0/3.0);
-    /*- Spin-opposite scaling (SOS) value for SCF orbitals -*/
-    options.add_double("SOS_SCALE",1.3);
-    /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
-    options.add_double("SOS_SCALE2",1.2);
-    /*- Scaling value for 3rd order energy correction (S. Grimme, Vol. 24, pp. 1529, J. Comput. Chem.) -*/
-    options.add_double("E3_SCALE",0.25);
-    /*- The algorithm for orthogonalization of MOs -*/
-    options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
-    The INDIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
-    Generalized-Fock Matrix. -*/
-    options.add_str("TPDM_ABCD_TYPE","INDIRECT","INDIRECT COMPUTE");
-
-    /*- Do compute natural orbitals? -*/
-    options.add_bool("NAT_ORBS",false);
-    /*- The optimization algorithm -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");
-    /*- Type Hessian matrix will be used in orbital optimization procedure -*/
-    options.add_str("HESS_TYPE","NONE","NONE");
-    /*- The solver will be used for simultaneous lineer equations. -*/
-    options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
-    /*- Do print OMP3 orbital energies? -*/
-    options.add_bool("OMP3_ORBS_PRINT",false);
-    /*- Do perform spin-component-scaled OMP3 (SCS-OMP3)? In all computation, SCS-OMP3 energy is computed automatically.
-     However, in order to perform geometry optimizations and frequency computations with SCS-OMP3, one needs to set
-     'DO_SCS' to true -*/
-    options.add_bool("DO_SCS",false);
-    /*- Do perform spin-opposite-scaled OMP3 (SOS-OMP3)? In all computation, SOS-OMP3 energy is computed automatically.
-     However, in order to perform geometry optimizations and frequency computations with SOS-OMP3, one needs to set
-     'DO_SOS' to true -*/
-    options.add_bool("DO_SOS",false);
-    /*- Do write coefficient matrices to external files for direct reading MOs in a subsequent job? -*/
-    options.add_bool("MO_WRITE",false);
-    /*- Do read coefficient matrices from external files of a previous OMP2 or OMP3 computation? -*/
-    options.add_bool("MO_READ",false);
-    /*- Do apply level shifting to aid convergence -*/
-    options.add_bool("DO_LEVEL_SHIFT",false);
-    /*- Do compute mp3l energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE COMPUTE" option. -*/
-    options.add_bool("MP3L_ENERGY",false);
+    /*- Do apply DIIS extrapolation? -*/
+    options.add_bool("DO_DIIS",true);
+    /*- Do compute CC Lambda energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE = COMPUTE" option. -*/
+    options.add_bool("CCL_ENERGY",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
@@ -2552,7 +2539,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Which coupled-pair method is called?  This parameter is
       used internally by the python driver.  Changing its value
       won't have any effect on the procedure. -*/
-      options.add_str("CEPA_LEVEL","CEPA0");
+      options.add_str("CEPA_LEVEL","CEPA(0)");
       /*- Compute the dipole moment? Note that quadrupole moments
       will also be computed if PRINT >= 2. -*/
       options.add_bool("DIPMOM",false);
