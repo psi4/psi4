@@ -19,8 +19,12 @@ extern double bc[MAX_BC][MAX_BC];
 #define MAX_FAC 100
 extern double fac[MAX_FAC];
 
+#if !defined( EXPLICIT_IOFF )
+#   define EXPLICIT_IOFF(i) ( (i) * ((i) + 1) / 2 )
+#endif
+
 #if !defined( INDEX2 )
-#   define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
+#   define INDEX2(i, j) ( (i) >= (j) ? EXPLICIT_IOFF(i) + (j) : EXPLICIT_IOFF(j) + (i) )
 #endif
 
 #if !defined( INDEX4 )

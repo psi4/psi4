@@ -1,0 +1,897 @@
+import qcdb
+
+geom_A = PsiMod.Matrix(4,3)
+geom_A.set(
+ [[    0.000000000000,     0.000000000000,     0.650000000000],
+  [    0.000000000000,     0.000000000000,    -0.650000000000],
+  [    0.000000000000,     0.000000000000,     1.750000000000],
+  [    0.000000000000,     0.000000000000,    -1.750000000000]])
+
+
+geom_B = PsiMod.Matrix(2,3)
+geom_B.set(
+ [[    0.000000000000,     0.000000000000,    -0.550000000000],
+  [    0.000000000000,     0.000000000000,     0.550000000000]])
+
+
+geom_C = PsiMod.Matrix(2,3)
+geom_C.set(
+ [[    0.000000000000,     0.000000000000,    -0.753922540200],
+  [    0.000000000000,     0.000000000000,     0.646077459800]])
+
+
+geom_D = PsiMod.Matrix(4,3)
+geom_D.set(
+ [[    0.000000000000,     0.000000000000,    -2.719188122301],
+  [    0.000000000000,     0.000000000000,    -1.719188122301],
+  [    0.000000000000,     0.000000000000,    -0.619188122301],
+  [    0.000000000000,     0.000000000000,     0.880811877699]])
+
+
+geom_E = PsiMod.Matrix(5,3)
+geom_E.set(
+ [[    0.251995331546,    -0.251226142375,    -1.228834841943],
+  [    0.251995331546,    -0.251226142375,    -0.228834841943],
+  [    0.251995331546,    -1.217151968664,     0.029984203160],
+  [    1.088511635284,     0.231736770769,     0.029984203160],
+  [   -0.584520972191,     0.231736770769,     0.029984203160]])
+
+
+geom_F = PsiMod.Matrix(5,3)
+geom_F.set(
+ [[   -0.588382367674,     0.890373072017,     0.000000000000],
+  [   -0.588382367674,    -0.109626927983,     0.000000000000],
+  [    0.377543458615,    -0.368445973085,     0.000000000000],
+  [   -1.071345280819,    -0.368445973085,     0.836516303738],
+  [   -1.071345280819,    -0.368445973085,    -0.836516303738]])
+
+
+geom_G = PsiMod.Matrix(3,3)
+geom_G.set(
+ [[   -1.074855537230,     1.371823577282,     0.000000000000],
+  [   -1.074855537230,     0.371823577282,     0.000000000000],
+  [    0.522621918106,    -0.209610666372,     0.000000000000]])
+
+
+geom_H = PsiMod.Matrix(12,3)
+geom_H.set(
+ [[    0.432781050498,     1.898774028282,     0.810337938486],
+  [   -1.658744642774,     0.805191018766,    -0.984829058337],
+  [    1.658744642774,    -0.805191018766,     0.984829058337],
+  [   -0.432781050498,    -1.898774028282,    -0.810337938486],
+  [   -0.317971784026,     2.532165941971,     2.640915161238],
+  [   -1.615729990528,     1.614062700629,    -2.881498569657],
+  [    1.615729990528,    -1.614062700629,     2.881498569657],
+  [    0.317971784026,    -2.532165941971,    -2.640915161238],
+  [   -4.852178875691,     1.024620478757,     0.190249941464],
+  [    4.852178875691,    -1.024620478757,    -0.190249941464],
+  [   -1.913713787211,    -3.739567959534,     0.258534542158],
+  [    1.913713787211,     3.739567959534,    -0.258534542158]])
+
+
+geom_I = PsiMod.Matrix(8,3)
+geom_I.set(
+ [[    0.991126228500,    -1.797922633300,     0.146518251500],
+  [    2.769109309500,    -1.348521864900,    -0.007155768400],
+  [    2.517803031100,     1.380837492300,    -0.115405801400],
+  [    3.288320045300,     1.830859509500,     1.475770682500],
+  [   -3.288320045300,    -1.830859509500,    -1.475770682500],
+  [   -2.517803031100,    -1.380837492300,     0.115405801400],
+  [   -2.769109309500,     1.348521864900,     0.007155768400],
+  [   -0.991126228500,     1.797922633300,    -0.146518251500]])
+
+
+geom_J = PsiMod.Matrix(4,3)
+geom_J.set(
+ [[   -0.657774170895,     0.990250821217,    -0.765560415408],
+  [   -0.134283313545,     0.737880743551,     0.048237265941],
+  [    0.134283313545,    -0.737880743551,     0.048237265941],
+  [    0.657774170895,    -0.990250821217,    -0.765560415408]])
+
+
+geom_K = PsiMod.Matrix(8,3)
+geom_K.set(
+ [[    0.000000000000,     0.000000000000,    -1.219526050935],  # Gh
+  [    0.000000000000,     0.000000000000,    -0.219526050935],
+  [    0.000000000000,    -1.477211629518,     0.040946215565],
+  [    1.279302797929,     0.738605814759,     0.040946215565],
+  [   -1.279302797929,     0.738605814759,     0.040946215565],
+  [    0.899871989900,    -1.767037453836,     0.366877793280],
+  [    1.080363329511,     1.662830730326,     0.366877793280],
+  [   -1.980235319411,     0.104206723511,     0.366877793280]])
+
+
+geom_L = PsiMod.Matrix(3,3)
+geom_L.set(
+ [[    0.000000000000,     0.816641555162,    -0.512554059234],
+  [    0.000000000000,     0.000000000000,     0.064591130803],
+  [    0.000000000000,    -0.816641555162,    -0.512554059234]])
+
+
+geom_M = PsiMod.Matrix(5,3)
+geom_M.set(
+ [[    0.000000000000,     0.000000000000,     1.089095845660],
+  [    0.000000000000,    -2.122315581200,    -0.459816147540],
+  [   -0.000000000000,     2.122315581200,    -0.459816147540],
+  [    1.708413985000,     0.000000000000,     2.184106800160],
+  [   -1.708413985000,    -0.000000000000,     2.184106800160]])
+
+
+geom_N = PsiMod.Matrix(5,3)
+geom_N.set(
+ [[    0.000000000000,    -1.071293777318,     0.000000000000],  # Gh
+  [    0.000000000000,    -0.071293777318,     0.000000000000],
+  [   -0.430496198842,     0.330193571336,    -0.745641288860],
+  [   -0.430496198842,     0.330193571336,     0.745641288860],
+  [    0.860992397685,     0.330193571336,     0.000000000000]])
+
+
+geom_O = PsiMod.Matrix(6,3)
+geom_O.set(
+ [[    0.000000000000,     0.000000000000,    -1.514287735691],
+  [    0.000000000000,     0.000000000000,     0.185712264309],
+  [    0.000000000000,    -1.700000000000,     0.185712264309],
+  [   -1.700000000000,     0.000000000000,     0.185712264309],
+  [    1.700000000000,     0.000000000000,     0.185712264309],
+  [    0.000000000000,     1.700000000000,     0.185712264309]])
+
+
+geom_P = PsiMod.Matrix(4,3)
+geom_P.set(
+ [[    0.000000000000,     0.700000000000,     0.000000000000],
+  [    0.000000000000,    -0.700000000000,     0.000000000000],
+  [   -0.642787609687,     1.466044443119,     0.000000000000],
+  [    0.642787609687,    -1.466044443119,     0.000000000000]])
+
+
+geom_Q = PsiMod.Matrix(8,3)
+geom_Q.set(
+ [[    0.000000000000,     0.000000000000,    -1.000000000000],  # Gh
+  [    0.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,    -1.500000000000,     0.000000000000],
+  [    1.299038105677,     0.750000000000,     0.000000000000],
+  [   -1.299038105677,     0.750000000000,     0.000000000000],
+  [    0.939692620786,    -1.842020143326,     0.000000000000],
+  [    1.125389928010,     1.734807753012,     0.000000000000],
+  [   -2.065082548796,     0.107212390313,     0.000000000000]])
+
+
+geom_R = PsiMod.Matrix(16,3)
+geom_R.set(
+ [[   -1.618188000000,    -0.437140000000,    -0.409373000000],
+  [   -1.394411000000,     0.896360000000,    -0.429596000000],
+  [   -0.896360000000,    -1.394411000000,     0.429596000000],
+  [   -0.437140000000,     1.618188000000,     0.409373000000],
+  [    0.437140000000,    -1.618188000000,     0.409373000000],
+  [    0.896360000000,     1.394411000000,     0.429596000000],
+  [    1.394411000000,    -0.896360000000,    -0.429596000000],
+  [    1.618188000000,     0.437140000000,    -0.409373000000],
+  [    2.147277000000,    -1.690111000000,    -1.235043000000],
+  [    1.690111000000,     2.147277000000,     1.235043000000],
+  [   -2.147277000000,     1.690111000000,    -1.235043000000],
+  [   -1.690111000000,    -2.147277000000,     1.235043000000],
+  [    0.878010000000,    -2.418132000000,     1.029595000000],
+  [   -2.418132000000,    -0.878010000000,    -1.029595000000],
+  [   -0.878010000000,     2.418132000000,     1.029595000000],
+  [    2.418132000000,     0.878010000000,    -1.029595000000]])
+
+
+geom_S = PsiMod.Matrix(16,3)
+geom_S.set(
+ [[    0.000000000000,     0.000000000000,    -1.000000000000],  # Gh
+  [    0.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,    -1.000000000000,     0.000000000000],  # Gh
+  [    0.000000000000,     0.000000000000,     1.000000000000],  # Gh
+  [   -1.497220431853,     0.000000000000,    -1.169756803119],
+  [    1.497220431853,     0.000000000000,    -1.169756803119],
+  [    0.000000000000,    -1.497220431853,     1.169756803119],
+  [    0.000000000000,     1.497220431853,     1.169756803119],
+  [   -1.565808146965,     0.498804253130,    -1.977713511362],
+  [   -2.264066335924,    -0.551608165437,    -1.068881676192],
+  [    1.565808146965,    -0.498804253130,    -1.977713511362],
+  [    2.264066335924,     0.551608165437,    -1.068881676192],
+  [   -0.498804253130,    -1.565808146965,     1.977713511362],
+  [    0.551608165437,    -2.264066335924,     1.068881676192],
+  [    0.498804253130,     1.565808146965,     1.977713511362],
+  [   -0.551608165437,     2.264066335924,     1.068881676192]])
+
+
+geom_T = PsiMod.Matrix(6,3)
+geom_T.set(
+ [[    0.000000000000,     0.000000000000,    -0.705000000000],
+  [    0.000000000000,     0.000000000000,     0.705000000000],
+  [    0.353742012310,     0.854008763700,    -1.282611998014],
+  [   -0.353742012310,    -0.854008763700,    -1.282611998014],
+  [   -0.353742012310,     0.854008763700,     1.282611998014],
+  [    0.353742012310,    -0.854008763700,     1.282611998014]])
+
+
+geom_U = PsiMod.Matrix(8,3)
+geom_U.set(
+ [[    1.092020143326,     0.163175911167,    -0.925416578398],
+  [    0.750000000000,     0.000000000000,     0.000000000000],
+  [   -0.750000000000,     0.000000000000,     0.000000000000],
+  [   -1.092020143326,    -0.163175911167,    -0.925416578398],
+  [   -1.092020143326,    -0.719846310393,     0.604022773555],
+  [   -1.092020143326,     0.883022221559,     0.321393804843],
+  [    1.092020143326,     0.719846310393,     0.604022773555],
+  [    1.092020143326,    -0.883022221559,     0.321393804843]])
+
+
+geom_V = PsiMod.Matrix(6,3)
+geom_V.set(
+ [[    0.000000000000,     0.000000000000,    -0.705000000000],
+  [    0.000000000000,     0.000000000000,     0.705000000000],
+  [    0.000000000000,     0.924372424811,    -1.282611998014],
+  [    0.000000000000,    -0.924372424811,    -1.282611998014],
+  [   -0.924372424811,     0.000000000000,     1.282611998014],
+  [    0.924372424811,     0.000000000000,     1.282611998014]])
+
+
+geom_W = PsiMod.Matrix(7,3)
+geom_W.set(
+ [[   -2.000000000000,    -0.707106781187,     0.707106781187],
+  [   -2.000000000000,     0.707106781187,    -0.707106781187],
+  [   -1.500000000000,    -0.000000000000,     0.000000000000],
+  [    0.000000000000,    -0.000000000000,     0.000000000000],
+  [    1.500000000000,     0.000000000000,     0.000000000000],
+  [    2.000000000000,     0.707106781187,     0.707106781187],
+  [    2.000000000000,    -0.707106781187,    -0.707106781187]])
+
+
+geom_X = PsiMod.Matrix(8,3)
+geom_X.set(
+ [[   -0.657774170895,     0.990250821217,    -0.813797681349],
+  [   -0.134283313545,     0.737880743551,     0.000000000000],
+  [    0.134283313545,    -0.737880743551,     0.000000000000],
+  [    0.657774170895,    -0.990250821217,    -0.813797681349],
+  [   -0.728988008574,    -1.242620898884,     0.000000000000],
+  [    0.657774170895,    -0.990250821217,     0.813797681349],
+  [   -0.657774170895,     0.990250821217,     0.813797681349],
+  [    0.728988008574,     1.242620898884,     0.000000000000]])
+
+
+geom_Y = PsiMod.Matrix(6,3)
+geom_Y.set(
+ [[    0.000000000000,     0.000000000000,    -0.705000000000],
+  [    0.000000000000,     0.000000000000,     0.705000000000],
+  [    0.000000000000,     0.924372424811,    -1.282611998014],
+  [    0.000000000000,    -0.924372424811,    -1.282611998014],
+  [    0.000000000000,     0.924372424811,     1.282611998014],
+  [    0.000000000000,    -0.924372424811,     1.282611998014]])
+
+
+geom_Z = PsiMod.Matrix(8,3)
+geom_Z.set(
+ [[    0.000000000000,     1.092020143326,    -0.939692620786],
+  [    0.000000000000,     0.750000000000,     0.000000000000],
+  [    0.000000000000,    -0.750000000000,     0.000000000000],
+  [    0.000000000000,    -1.092020143326,    -0.939692620786],
+  [    0.813797681349,    -1.092020143326,     0.469846310393],
+  [   -0.813797681349,    -1.092020143326,     0.469846310393],
+  [   -0.813797681349,     1.092020143326,     0.469846310393],
+  [    0.813797681349,     1.092020143326,     0.469846310393]])
+
+
+geom_AA = PsiMod.Matrix(6,3)
+geom_AA.set(
+ [[    0.000000000000,     0.000000000000,    -1.000000000000],  # Gh
+  [    0.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,    -1.000000000000,     0.000000000000],
+  [    1.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,     1.000000000000,     0.000000000000],
+  [   -1.000000000000,     0.000000000000,     0.000000000000]])
+
+
+geom_BB = PsiMod.Matrix(5,3)
+geom_BB.set(
+ [[    0.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,     0.889981273211,    -0.629311793417],
+  [    0.889981273211,     0.000000000000,     0.629311793417],
+  [   -0.889981273211,     0.000000000000,     0.629311793417],
+  [    0.000000000000,    -0.889981273211,    -0.629311793417]])
+
+
+geom_CC = PsiMod.Matrix(7,3)
+geom_CC.set(
+ [[    0.000000000000,     0.000000000000,    -1.800000000000],
+  [    0.000000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,    -1.800000000000,     0.000000000000],
+  [    1.800000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,     1.800000000000,     0.000000000000],
+  [   -1.800000000000,     0.000000000000,     0.000000000000],
+  [    0.000000000000,     0.000000000000,     1.800000000000]])
+
+
+geom_DD = PsiMod.Matrix(12,3)
+geom_DD.set(
+ [[   -0.000000000000,     1.000000000000,     1.618033988750],
+  [    0.000000000000,    -1.000000000000,     1.618033988750],
+  [   -0.000000000000,     1.000000000000,    -1.618033988750],
+  [    0.000000000000,    -1.000000000000,    -1.618033988750],
+  [    1.000000000000,     1.618033988750,     0.000000000000],
+  [   -1.000000000000,     1.618033988750,     0.000000000000],
+  [    1.000000000000,    -1.618033988750,     0.000000000000],
+  [   -1.000000000000,    -1.618033988750,     0.000000000000],
+  [    1.618033988750,     0.000000000000,     1.000000000000],
+  [    1.618033988750,     0.000000000000,    -1.000000000000],
+  [   -1.618033988750,    -0.000000000000,     1.000000000000],
+  [   -1.618033988750,    -0.000000000000,    -1.000000000000]])
+
+
+#! Tests to determine full point group symmetry.  Currently, these only matter
+#! for the rotational symmetry number in thermodynamic computations.
+
+memory 250 mb
+
+C2H2 = qcdb.Molecule("""
+  C 0 0  r1
+  C 0 0 -r1
+  H 0 0  r2
+  H 0 0 -r2
+  r1 = 0.65
+  r2 = 1.75
+""")
+C2H2.update_geometry()
+#print_out("\t" + C2H2.get_full_point_group() + "\n" )
+#compare_strings("D_inf_h", C2H2.get_full_point_group(), "D_inf_h point group");  #TEST
+geom_now = PsiMod.Matrix(4,3)
+geom_now.set(C2H2.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_A, geom_now, 6, "D_inf_h point group: geometry and orientation") #TEST
+
+
+N2 = qcdb.Molecule("""
+  N 0.0 0.0 0.0
+  N 0.0 0.0 r
+  r = 1.1
+""")
+N2.update_geometry()
+#print_out("\t" + N2.get_full_point_group() + "\n" )
+#compare_strings("D_inf_h", N2.get_full_point_group(), "D_inf_h point group");  #TEST
+geom_now = PsiMod.Matrix(2,3)
+geom_now.set(N2.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_B, geom_now, 6, "D_inf_h point group: geometry and orientation") #TEST
+
+
+CN  = qcdb.Molecule("""
+  0 2
+  C 0.0 0.0 0.0
+  N 0.0 0.0 r
+  r = 1.4
+""")
+CN.update_geometry()
+#print_out("\t" + CN.get_full_point_group() + "\n" )
+#compare_strings("C_inf_v", CN.get_full_point_group(), "C_inf_v point group");  #TEST
+geom_now = PsiMod.Matrix(2,3)
+geom_now.set(CN.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_C, geom_now, 6, "C_inf_v point group: geometry and orientation") #TEST
+
+
+HCCCl  = qcdb.Molecule("""
+  H  0 0 -1.0
+  C  0 0  0.0
+  C  0 0  1.1
+  Cl 0 0  2.6
+""")
+HCCCl.update_geometry()
+#print_out("\t" + HCCCl.get_full_point_group() + "\n" )
+#compare_strings("C_inf_v", HCCCl.get_full_point_group(), "C_inf_v point group");  #TEST
+geom_now = PsiMod.Matrix(4,3)
+geom_now.set(HCCCl.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_D, geom_now, 6, "C_inf_v point group: geometry and orientation") #TEST
+
+
+CHFClBr  = qcdb.Molecule("""
+  H
+  C  1 1.0
+  F  2 1.0 1 105.0
+  Cl 2 1.0 1 105.0 3  120.0
+  Br 2 1.0 1 105.0 3 -120.0
+""")
+CHFClBr.update_geometry()
+#print_out("\t" + CHFClBr.get_full_point_group() + "\n" )
+#compare_strings("C1", CHFClBr.get_full_point_group(), "C1 point group");  #TEST
+geom_now = PsiMod.Matrix(5,3)
+geom_now.set(CHFClBr.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_E, geom_now, 6, "C1 point group: geometry and orientation") #TEST
+
+
+CH2ClBr  = qcdb.Molecule("""
+  Cl
+  C  1 1.0
+  Br 2 1.0 1 105.0
+  H  2 1.0 1 105.0 3  120.0
+  H  2 1.0 1 105.0 3 -120.0
+""")
+CH2ClBr.update_geometry()
+#print_out("\t" + CH2ClBr.get_full_point_group() + "\n" )
+#compare_strings("Cs", CH2ClBr.get_full_point_group(), "Cs point group");  #TEST
+geom_now = PsiMod.Matrix(5,3)
+geom_now.set(CH2ClBr.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_F, geom_now, 6, "Cs point group: geometry and orientation") #TEST
+
+
+HOCl  = qcdb.Molecule("""
+  H
+  O 1 1.0
+  Cl 2 1.7 1 110.0
+""")
+HOCl.update_geometry()
+#print_out("\t" + HOCl.get_full_point_group() + "\n" )
+#compare_strings("Cs", HOCl.get_full_point_group(), "Cs point group");  #TEST
+geom_now = PsiMod.Matrix(3,3)
+geom_now.set(HOCl.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_G, geom_now, 6, "Cs point group: geometry and orientation") #TEST
+
+
+C4H4Cl2F2  = qcdb.Molecule("""
+  units    bohr
+  C     0.432781050498     1.898774028282     0.810337938486
+  C    -1.658744642774     0.805191018766    -0.984829058337
+  C     1.658744642774    -0.805191018766     0.984829058337
+  C    -0.432781050498    -1.898774028282    -0.810337938486
+  H    -0.317971784026     2.532165941971     2.640915161238
+  H    -1.615729990528     1.614062700629    -2.881498569657
+  H     1.615729990528    -1.614062700629     2.881498569657
+  H     0.317971784026    -2.532165941971    -2.640915161238
+  Cl   -4.852178875691     1.024620478757     0.190249941464
+  Cl    4.852178875691    -1.024620478757    -0.190249941464
+  F    -1.913713787211    -3.739567959534     0.258534542158
+  F     1.913713787211     3.739567959534    -0.258534542158
+""")
+C4H4Cl2F2.update_geometry()
+#print_out("\t" + C4H4Cl2F2.get_full_point_group() + "\n" )
+#compare_strings("Ci", C4H4Cl2F2.get_full_point_group(), "Ci point group");  #TEST
+geom_now = PsiMod.Matrix(12,3)
+geom_now.set(C4H4Cl2F2.geometry())
+#geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_H, geom_now, 6, "Ci point group: geometry and orientation") #TEST
+
+
+HOOH_dimer  = qcdb.Molecule("""
+  H   0.9911262285  -1.7979226333   0.1465182515
+  O   2.7691093095  -1.3485218649  -0.0071557684
+  O   2.5178030311   1.3808374923  -0.1154058014
+  H   3.2883200453   1.8308595095   1.4757706825
+  H  -3.2883200453  -1.8308595095  -1.4757706825
+  O  -2.5178030311  -1.3808374923   0.1154058014
+  O  -2.7691093095   1.3485218649   0.0071557684
+  H  -0.9911262285   1.7979226333  -0.1465182515
+""")
+HOOH_dimer.update_geometry()
+#print_out("\t" + HOOH_dimer.get_full_point_group() + "\n" )
+#compare_strings("Ci", HOOH_dimer.get_full_point_group(), "Ci point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(HOOH_dimer.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_I, geom_now, 6, "Ci point group: geometry and orientation") #TEST
+
+
+HOOH  = qcdb.Molecule("""
+  H
+  O 1 1.0 
+  O 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1 60.0
+""")
+HOOH.update_geometry()
+#print_out("\t" + HOOH.get_full_point_group() + "\n" )
+#compare_strings("C2", HOOH.get_full_point_group(), "C2 point group");  #TEST
+geom_now = PsiMod.Matrix(4,3)
+geom_now.set(HOOH.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_J, geom_now, 6, "C2 point group: geometry and orientation") #TEST
+
+
+NOHOHOH  = qcdb.Molecule("""
+  X
+  N 1 1.0
+  O 2 1.5 1 100.0
+  O 2 1.5 1 100.0  3  120.0
+  O 2 1.5 1 100.0  3 -120.0
+  H 3 1.0 2 110.0 4 0.0
+  H 4 1.0 2 110.0 5 0.0
+  H 5 1.0 2 110.0 3 0.0
+""")
+NOHOHOH.update_geometry()
+#print_out("\t" + NOHOHOH.get_full_point_group() + "\n" )
+#compare_strings("C3", NOHOHOH.get_full_point_group(), "C3 point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(NOHOHOH.full_geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_K, geom_now, 6, "C3 point group: geometry and orientation") #TEST
+
+
+H2O  = qcdb.Molecule("""
+  H
+  O 1 1.0
+  H 2 1.0 1 109.5
+""")
+H2O.update_geometry()
+#print_out("\t" + H2O.get_full_point_group() + "\n" )
+#compare_strings("C2v", H2O.get_full_point_group(), "C2v point group"); # TEST
+geom_now = PsiMod.Matrix(3,3)
+geom_now.set(H2O.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_L, geom_now, 6, "C2v point group: geometry and orientation") #TEST
+
+
+CH2F2  = qcdb.Molecule("""
+  units au
+  C     0.0000000000  -0.0000000000   1.0890958457
+  F     0.0000000000  -2.1223155812  -0.4598161475
+  F    -0.0000000000   2.1223155812  -0.4598161475
+  H     1.7084139850   0.0000000000   2.1841068002
+  H    -1.7084139850  -0.0000000000   2.1841068002
+""")
+CH2F2.update_geometry()
+#print_out("\t" + CH2F2.get_full_point_group() + "\n" )
+#compare_strings("C2v", CH2F2.get_full_point_group(), "C2v point group");  #TEST
+geom_now = PsiMod.Matrix(5,3)
+geom_now.set(CH2F2.geometry())
+#geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_M, geom_now, 6, "C2v point group: geometry and orientation") #TEST
+
+
+NH3  = qcdb.Molecule("""
+  X
+  N 1 1.0
+  H 2 rNH 1 aXNH
+  H 2 rNH 1 aXNH 3 120.0
+  H 2 rNH 1 aXNH 4 120.0
+
+  rNH = 0.95
+  aXNH = 115.0
+""")
+NH3.update_geometry()
+#print_out("\t" + NH3.get_full_point_group() + "\n" )
+#compare_strings("C3v", NH3.get_full_point_group(), "C3v point group");     #TEST
+geom_now = PsiMod.Matrix(5,3)
+geom_now.set(NH3.full_geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_N, geom_now, 6, "C3v point group: geometry and orientation") #TEST
+
+
+BrF5  = qcdb.Molecule("""
+ F
+ Br 1 r
+ F  2 r 1 90.0
+ F  2 r 3 90.0 1  90.0
+ F  2 r 3 90.0 1 -90.0
+ F  2 r 1 90.0 3 180.0
+ r = 1.7
+""")
+BrF5.update_geometry()
+#print_out("\t" + BrF5.get_full_point_group() + "\n" )
+#compare_strings("C4v", BrF5.get_full_point_group(), "C4v point group");     #TEST
+geom_now = PsiMod.Matrix(6,3)
+geom_now.set(BrF5.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_O, geom_now, 6, "C4v point group: geometry and orientation") #TEST
+
+
+N2H2  = qcdb.Molecule("""
+  N
+  N 1 rNN
+  H 1 rNH 2 aHNN
+  H 2 rNH 1 aHNN 3 180.0
+  rNH  = 1.0
+  rNN  = 1.4
+  aHNN = 140.0
+""")
+N2H2.update_geometry()
+#print_out("\t" + N2H2.get_full_point_group() + "\n" )
+#compare_strings("C2h", N2H2.get_full_point_group(), "C2h point group");  #TEST
+geom_now = PsiMod.Matrix(4,3)
+geom_now.set(N2H2.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_P, geom_now, 6, "C2h point group: geometry and orientation") #TEST
+
+
+NOHOHOH  = qcdb.Molecule("""
+  X
+  N 1 1.0
+  O 2 1.5 1 90.0
+  O 2 1.5 1 90.0  3  120.0
+  O 2 1.5 1 90.0  3 -120.0
+  H 3 1.0 2 110.0 4 0.0
+  H 4 1.0 2 110.0 5 0.0
+  H 5 1.0 2 110.0 3 0.0
+""")
+NOHOHOH.update_geometry()
+#print_out("\t" + NOHOHOH.get_full_point_group() + "\n" )
+#compare_strings("C3h", NOHOHOH.get_full_point_group(), "C3h point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(NOHOHOH.full_geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_Q, geom_now, 6, "C3h point group: geometry and orientation") #TEST
+
+
+# 1,3,5,7-tetrafluorocyclooctatetraene
+TFCOT  = qcdb.Molecule("""
+  C       -1.618188     -0.437140     -0.409373
+  C       -1.394411      0.896360     -0.429596
+  C       -0.896360     -1.394411      0.429596
+  C       -0.437140      1.618188      0.409373
+  C        0.437140     -1.618188      0.409373
+  C        0.896360      1.394411      0.429596
+  C        1.394411     -0.896360     -0.429596
+  C        1.618188      0.437140     -0.409373
+  F        2.147277     -1.690111     -1.235043
+  F        1.690111      2.147277      1.235043
+  F       -2.147277      1.690111     -1.235043
+  F       -1.690111     -2.147277      1.235043
+  H        0.878010     -2.418132      1.029595
+  H       -2.418132     -0.878010     -1.029595
+  H       -0.878010      2.418132      1.029595
+  H        2.418132      0.878010     -1.029595
+""")
+TFCOT.update_geometry()
+#print_out("\t" + TFCOT.get_full_point_group() + "\n" )
+#compare_strings("S4", TFCOT.get_full_point_group(), "S4 point group");  #TEST
+geom_now = PsiMod.Matrix(16,3)
+geom_now.set(TFCOT.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_R, geom_now, 6, "S4 point group: geometry and orientation") #TEST
+
+
+Li_H2O_4_p  = qcdb.Molecule("""
+   1 1
+   X
+   Li 1 1.0
+   X 2 1.0 1 90.0
+   X 2 1.0 3 90.0 1 180.0
+   O 2 oli 1 olix 3 -90.0
+   O 2 oli 1 olix 3 90.0
+   O 2 oli 4 olix 3 0.0
+   O 2 oli 4 olix 3 180.0
+   H 5 oh1 2 lioh1 1 xlioh1
+   H 5 oh2 2 lioh2 1 xlioh2
+   H 6 oh1 2 lioh1 1 xlioh1
+   H 6 oh2 2 lioh2 1 xlioh2
+   H 7 oh1 2 lioh1 4 -xlioh1
+   H 7 oh2 2 lioh2 4 -xlioh2
+   H 8 oh1 2 lioh1 4 -xlioh1
+   H 8 oh2 2 lioh2 4 -xlioh2
+   olix=52.0
+   oli=1.9
+   oh1=0.952
+   oh2=0.950
+   lioh1=125.4
+   lioh2=124.8
+   xlioh1=-40.0
+   xlioh2=135.0
+""")
+Li_H2O_4_p.update_geometry()
+#print_out("\t" + Li_H2O_4_p.get_full_point_group() + "\n" )
+#compare_strings("S4", Li_H2O_4_p.get_full_point_group(), "S4 point group");  #TEST
+geom_now = PsiMod.Matrix(16,3)
+geom_now.set(Li_H2O_4_p.full_geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_S, geom_now, 6, "S4 point group: geometry and orientation") #TEST
+
+
+ethylene_cation  = qcdb.Molecule("""
+  C1
+  C2 C1 rCC
+  H1 C1 rCH C2 aHCC
+  H2 C1 rCH C2 aHCC H1 180.0
+  H3 C2 rCH C1 aHCC H1 D
+  H4 C2 rCH C1 aHCC H3 180.0
+  rCC  = 1.41
+  rCH  = 1.09
+  aHCC = 122.0
+  D    = 45.0
+""")
+ethylene_cation.update_geometry()
+#print_out("\t" + ethylene_cation.get_full_point_group() + "\n" )
+#compare_strings("D2", ethylene_cation.get_full_point_group(), "D2 point group");  #TEST
+geom_now = PsiMod.Matrix(6,3)
+geom_now.set(ethylene_cation.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_T, geom_now, 6, "D2 point group: geometry and orientation") #TEST
+
+
+ethane_gauche  = qcdb.Molecule("""
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   20.0
+  H 3 1.0 2 110.0 1  140.0
+  H 3 1.0 2 110.0 1 -100.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+""")
+ethane_gauche.update_geometry()
+#print_out("\t" + ethane_gauche.get_full_point_group() + "\n" )
+#compare_strings("D3", ethane_gauche.get_full_point_group(), "D3 point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(ethane_gauche.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_U, geom_now, 6, "D3 point group: geometry and orientation") #TEST
+
+
+triplet_ethylene  = qcdb.Molecule("""
+  C1
+  C2 C1 rCC
+  H1 C1 rCH C2 aHCC
+  H2 C1 rCH C2 aHCC H1 180.0
+  H3 C2 rCH C1 aHCC H1 D
+  H4 C2 rCH C1 aHCC H3 180.0
+  rCC  = 1.41
+  rCH  = 1.09
+  aHCC = 122.0
+  D    = 90.0
+""")
+triplet_ethylene.update_geometry()
+#print_out("\t" + triplet_ethylene.get_full_point_group() + "\n" )
+#compare_strings("D2d", triplet_ethylene.get_full_point_group(), "D2d point group");  #TEST
+geom_now = PsiMod.Matrix(6,3)
+geom_now.set(triplet_ethylene.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_V, geom_now, 6, "D2d point group: geometry and orientation") #TEST
+
+
+allene  = qcdb.Molecule("""
+  H -2.0  0.0  1.0
+  H -2.0  0.0 -1.0
+  C -1.5  0.0  0.0
+  C  0.0  0.0  0.0
+  C  1.5  0.0  0.0
+  H  2.0  1.0  0.0
+  H  2.0 -1.0  0.0
+""")
+allene.update_geometry()
+#print_out("\t" + allene.get_full_point_group() + "\n" )
+#compare_strings("D2d", allene.get_full_point_group(), "D2d point group");  #TEST
+geom_now = PsiMod.Matrix(7,3)
+geom_now.set(allene.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_W, geom_now, 6, "D2d point group: geometry and orientation") #TEST
+
+
+ethane_staggered  = qcdb.Molecule("""
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   60.0
+  H 3 1.0 2 110.0 1  -60.0
+  H 3 1.0 2 110.0 1  180.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+""")
+ethane_staggered.update_geometry()
+#print_out("\t" + ethane_staggered.get_full_point_group() + "\n" )
+#compare_strings("D3d", ethane_staggered.get_full_point_group(), "D3d point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(ethane_staggered.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_X, geom_now, 6, "D3d point group: geometry and orientation") #TEST
+
+
+singlet_ethylene  = qcdb.Molecule("""
+    C1
+    C2 C1 rCC
+    H1 C1 rCH C2 aHCC
+    H2 C1 rCH C2 aHCC H1 180.0
+    H3 C2 rCH C1 aHCC H1 D
+    H4 C2 rCH C1 aHCC H3 180.0
+    rCC  = 1.41
+    rCH  = 1.09
+    aHCC = 122.0
+    D    = 0.0
+""")
+singlet_ethylene.update_geometry()
+#print_out("\t" + singlet_ethylene.get_full_point_group() + "\n" )
+#compare_strings("D2h", singlet_ethylene.get_full_point_group(), "D2h point group");  #TEST
+geom_now = PsiMod.Matrix(6,3)
+geom_now.set(singlet_ethylene.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_Y, geom_now, 6, "D2h point group: geometry and orientation") #TEST
+
+
+ethane_eclipsed  = qcdb.Molecule("""
+  H
+  C 1 1.0
+  C 2 1.5 1 110.0
+  H 3 1.0 2 110.0 1   00.0
+  H 3 1.0 2 110.0 1  120.0
+  H 3 1.0 2 110.0 1 -120.0
+  H 2 1.0 3 110.0 1  120.0
+  H 2 1.0 3 110.0 1 -120.0
+""")
+ethane_eclipsed.update_geometry()
+#print_out("\t" + ethane_eclipsed.get_full_point_group() + "\n" )
+#compare_strings("D3h", ethane_eclipsed.get_full_point_group(), "D3h point group");  #TEST
+geom_now = PsiMod.Matrix(8,3)
+geom_now.set(ethane_eclipsed.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_Z, geom_now, 6, "D3h point group: geometry and orientation") #TEST
+
+
+BH4p  = qcdb.Molecule("""
+ 1 1
+ X
+ B 1 1.0
+ H 2 1.0 1 90.0
+ H 2 1.0 1 90.0 3  90.0
+ H 2 1.0 1 90.0 3 180.0
+ H 2 1.0 1 90.0 3 -90.0
+""")
+BH4p.update_geometry()
+#print_out("\t" + BH4p.get_full_point_group() + "\n" )
+#compare_strings("D4h", BH4p.get_full_point_group(), "D4h point group");  #TEST
+geom_now = PsiMod.Matrix(6,3)
+geom_now.set(BH4p.full_geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_AA, geom_now, 6, "D4h point group: geometry and orientation") #TEST
+
+
+CH4  = qcdb.Molecule("""
+   C
+   H 1 r
+   H 1 r 2 TDA
+   H 1 r 2 TDA 3 120
+   H 1 r 2 TDA 4 120
+   r = 1.09
+""")
+CH4.update_geometry()
+#print_out("\t" + CH4.get_full_point_group() + "\n" )
+#compare_strings("Td", CH4.get_full_point_group(), "Td point group");  #TEST
+geom_now = PsiMod.Matrix(5,3)
+geom_now.set(CH4.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_BB, geom_now, 6, "Td point group: geometry and orientation") #TEST
+
+
+SF6  = qcdb.Molecule("""
+  F
+  S 1 r
+  F 2 r 1 90.0
+  F 2 r 1 90.0 3  90.0
+  F 2 r 1 90.0 3 180.0
+  F 2 r 1 90.0 3 -90.0
+  F 2 r 5 90.0 1 180.0 
+  r = 1.8
+""")
+SF6.update_geometry()
+#print_out("\t" + SF6.get_full_point_group() + "\n" )
+#compare_strings("Oh", SF6.get_full_point_group(), "Oh point group"); #TEST
+geom_now = PsiMod.Matrix(7,3)
+geom_now.set(SF6.geometry())
+geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_CC, geom_now, 6, "Oh point group: geometry and orientation") #TEST
+
+
+Ih  = qcdb.Molecule("""
+  unit = au
+  0 1
+  H   0   1   x
+  H   0  -1   x
+  H   0   1  -x
+  H   0  -1  -x
+  H   1   x   0
+  H  -1   x   0
+  H   1  -x   0
+  H  -1  -x   0
+  H   x   0   1
+  H   x   0  -1
+  H  -x   0   1
+  H  -x   0  -1
+  x = 1.618033988749894848
+""")
+Ih.update_geometry()
+#print_out("\t" + Ih.get_full_point_group() + "\n" )
+#compare_strings("Ih", Ih.get_full_point_group(), "Ih point group"); #TEST
+geom_now = PsiMod.Matrix(12,3)
+geom_now.set(Ih.geometry())
+#geom_now.scale(psi_bohr2angstroms)
+compare_matrices(geom_DD, geom_now, 6, "Ih point group: geometry and orientation") #TEST
+
+

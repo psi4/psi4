@@ -15,11 +15,11 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
 
-ifneq ($(DODEPEND),no)
-include $(LIBOBJ:%.o=%.d)
-endif
-
 install_inc:: $(INC)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+
+ifneq "$(MAKECMDGOALS)" "clean"
+include $(LIBOBJ:%.o=%.d)
+endif
 

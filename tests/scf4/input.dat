@@ -29,6 +29,7 @@ count = 0
 
 set basis cc-pvdz
 set scf e_convergence = 11
+set scf_type pk
 
 for R in Rvals:
     h2o.R = R

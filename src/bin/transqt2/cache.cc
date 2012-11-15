@@ -5,9 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <ccfiles.h>
 #include <exception.h>
-#include <psifiles.h>
 #define EXTERN
 #include "globals.h"
 

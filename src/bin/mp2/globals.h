@@ -8,7 +8,7 @@
 
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
-#include <ccfiles.h>
+#include <psifiles.h>
 #include <psi4-dec.h>
 #include "moinfo.h"
 #include "params.h"

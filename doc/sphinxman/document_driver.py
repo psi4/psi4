@@ -32,7 +32,7 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
 
-    if basename not in ['inpsight', 'pep8', 'sampmod']:
+    if basename not in ['inpsight', 'pep8', 'sampmod', 'psifiles', 'diatomic_fits']:
 
         pts('driver', basename)
         fdriver.write(basename + '\n')
@@ -50,7 +50,38 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
             fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
         elif basename == 'physconst':
             fdriver.write('\n.. literalinclude:: %slib/python/%s\n' % (IncludePath, filename))
+        elif basename == 'diatomic':
+            fdriver.write('   :exclude-members: diatomic_anharmonicity\n')
+        elif basename == 'molutil':
+            fdriver.write('   :exclude-members: run_dftd3\n')
 
+    fdriver.write('\n')
+
+
+# Python-only plugin modules in psi4/lib/python
+for basename in os.walk(DriverPath + '../../lib/python').next()[1]:
+    div = '=' * len(basename)
+
+    if basename not in []:
+
+        pts('driver', basename)
+        fdriver.write(basename + '\n')
+        fdriver.write(div + '\n\n')
+    
+        fdriver.write('.. automodule:: %s\n' % (basename))
+        fdriver.write('   :members:\n')
+        fdriver.write('   :undoc-members:\n')
+    
+        for pyfile in glob.glob(DriverPath + '../../lib/python/' + basename + '/*py'):
+            filename = os.path.split(pyfile)[1]
+            basename2 = os.path.splitext(filename)[0]
+            div = '=' * len(basename2)
+
+            fdriver.write('.. automodule:: qcdb.%s\n' % (basename2))
+            fdriver.write('   :members:\n')
+            fdriver.write('   :undoc-members:\n')
+    
+        fdriver.write('\n')
     fdriver.write('\n')
 fdriver.close()
 

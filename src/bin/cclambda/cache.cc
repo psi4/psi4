@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
-#include <ccfiles.h>
 #include <psifiles.h>
 #include <exception.h>
 

@@ -42,6 +42,8 @@ set basis cc-pvqz
 
 set reference rks
 set freeze_core false
+set dft_radial_points 99
+set dft_spherical_points 302
 
 activate(h2)
 eb2plyp = energy('dsd-pbep86')
