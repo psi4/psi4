@@ -632,7 +632,7 @@ void HF::form_H()
 
         } // embpot
         else if(perturb_ == dx) {
-          dx_read(V_eff,phi_ao,phi_so, nao, nso,u);             
+          dx_read(V_eff, phi_ao, phi_so, nao, nso, u);             
 
         } // dx file
         else if(perturb_ == sphere) {
