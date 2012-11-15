@@ -251,7 +251,7 @@ def process_basis_block(matchobj):
     spacing = str(matchobj.group(1))
     result = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
     result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
-    basislabel = re.compile(r'\s*\[([-*\(\)\w]+)\]\s*')
+    basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
     # Start by looking for assign lines, and remove them
     label_re = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
