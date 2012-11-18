@@ -166,7 +166,7 @@ if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") {
       for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Y, h);
         dpd_buf4_mat_irrep_rd(&Y, h);
-        #pragma omp parallel for
+        //#pragma omp parallel for
         for(int ma = 0; ma < Y.params->rowtot[h]; ++ma){
             int m = Y.params->roworb[h][ma][0];
             int a = Y.params->roworb[h][ma][1];
