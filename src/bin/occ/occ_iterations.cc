@@ -35,19 +35,22 @@
 
 using namespace boost;
 using namespace psi;
-using namespace std;
 
 
 namespace psi{ namespace occwave{
   
-void OCCWave::omp3_iterations()
+void OCCWave::occ_iterations()
 {
-  
-fprintf(outfile,"\n  \n");      
+   
+fprintf(outfile,"\n");      
 fprintf(outfile," ============================================================================== \n");    
-fprintf(outfile," ================ Performing OMP3 iterations... =============================== \n");  
+if (wfn_type_ == "OMP2") fprintf(outfile," ================ Performing OMP2 iterations... =============================== \n");  
+else if (wfn_type_ == "OMP3") fprintf(outfile," ================ Performing OMP3 iterations... =============================== \n");  
+else if (wfn_type_ == "OCEPA") fprintf(outfile," ================ Performing OCEPA iterations... ============================== \n");  
 fprintf(outfile," ============================================================================== \n");
-fprintf(outfile, "\t            Minimizing MP3-L Functional \n");
+if (wfn_type_ == "OMP2") fprintf(outfile, "\t            Minimizing MP2-L Functional \n");
+else if (wfn_type_ == "OMP3") fprintf(outfile, "\t            Minimizing MP3-L Functional \n");
+else if (wfn_type_ == "OCEPA") fprintf(outfile, "\t            Minimizing CEPA-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
 fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ---------- \n");
@@ -58,11 +61,12 @@ fflush(outfile);
 /************************** NR iterations **************************************************/
 /********************************************************************************************/
       itr_occ = 0;
-      mu_ls = -lshift_parameter;
+      mu_ls = 0;
       conver = 1; // Assuming that the MOs will be optimized.
       mo_optimized = 0; 
       itr_diis = 0;
 
+      // If diis?
       if (do_diis_ == 1) {
 	nvar = num_vecs +1;
         vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
@@ -77,8 +81,21 @@ fflush(outfile);
             errvecsB->zero();
         }
       }
-      
-      if (opt_method == "NR") {
+
+      // Set up the orb-resp algorithm
+      if (opt_method == "ORB_RESP") {
+
+       // Lineq
+       if (orb_resp_solver_ == "LINEQ") {
+         if (reference_ == "RESTRICTED") Aorb = new Array2d(nidpA, nidpA, "MO Hessian Matrix");
+         else if (reference_ == "UNRESTRICTED") {
+             nidp_tot = nidpA + nidpB;
+             kappa = new Array1d(nidp_tot, "Total orb rot params vector of current step");
+         }
+       }
+
+       // PCG
+       else if (orb_resp_solver_ == "PCG") {
           r_pcgA = new Array1d(nidpA, "Alpha PCG r vector");
           z_pcgA = new Array1d(nidpA, "Alpha PCG z vector");
           p_pcgA = new Array1d(nidpA, "Alpha PCG p vector");
@@ -117,8 +134,9 @@ fflush(outfile);
                 r_pcgB->zero();
             }
         }
-      }
- 
+       }// pcg if 
+      }// orb_resp if 
+      
 /********************************************************************************************/
 /************************** Head of the Loop ************************************************/
 /********************************************************************************************/
@@ -130,7 +148,10 @@ do
 /************************** New orbital step ************************************************/
 /********************************************************************************************/
         timer_on("kappa orb rot");
-        if (opt_method == "NR") kappa_orb_resp();
+        if (opt_method == "ORB_RESP") {
+           if (orb_resp_solver_ == "LINEQ") kappa_orb_resp();
+           else if (orb_resp_solver_ == "PCG") kappa_orb_resp_iter();
+        }
         else if (opt_method == "MSD") kappa_msd();
         timer_off("kappa orb rot");
 
@@ -152,18 +173,35 @@ do
 /********************************************************************************************/
 /************************** NEW amplitudes **************************************************/
 /********************************************************************************************/
+     if (wfn_type_ == "OMP2") {
+        timer_on("T2(1)");
+        omp2_t2_1st_general();  
+        timer_off("T2(1)");
+     }
+
+     else if (wfn_type_ == "OMP3") {
         timer_on("T2(1)");
         omp3_t2_1st_general();  
         timer_off("T2(1)");
         timer_on("T2(2)");
 	t2_2nd_general();  
         timer_off("T2(2)");
+     }
+
+     else if (wfn_type_ == "OCEPA") {
+        timer_on("T2");
+	t2_amps();  
+        timer_off("T2");
+     }
+
 
 /********************************************************************************************/
 /************************** One-particle and two-particle density matrices ******************/
 /********************************************************************************************/
         timer_on("Response PDMs");
-	omp3_response_pdms();
+	if (wfn_type_ == "OMP2") omp2_response_pdms();
+	else if (wfn_type_ == "OMP3") omp3_response_pdms();
+	else if (wfn_type_ == "OCEPA") ocepa_response_pdms();
         timer_off("Response PDMs");
 
 /********************************************************************************************/
@@ -176,6 +214,13 @@ do
 /********************************************************************************************/
 /************************** Compute Lagrangian Energy ***************************************/
 /********************************************************************************************/
+     if (wfn_type_ == "OMP2") {
+        timer_on("MP2L Energy");
+	ccl_energy();
+        timer_off("MP2L Energy");
+     }
+
+     else if (wfn_type_ == "OMP3") { 
         if (compute_ccl == "TRUE") {
            timer_on("MP3L Energy");
 	   ccl_energy();
@@ -194,6 +239,28 @@ do
            DE = Emp3L - Emp3L_old;
            Emp3L_old = Emp3L;
         }
+     }
+
+     else if (wfn_type_ == "OCEPA") { 
+        if (compute_ccl == "TRUE") {
+           timer_on("CEPAL Energy");
+	   ccl_energy();
+           timer_off("CEPAL Energy");
+        }
+       
+        else {
+           timer_on("REF Energy");
+           ref_energy();
+           timer_off("REF Energy");
+           timer_on("CEPA Energy");
+           cepa_energy();
+           timer_off("CEPA Energy");
+           EcepaL = Ecepa;
+           EcorrL = EcepaL-Escf;
+           DE = EcepaL - EcepaL_old;
+           EcepaL_old = EcepaL;
+        }
+     }
 
 /********************************************************************************************/
 /************************** new orbital gradient ********************************************/
@@ -223,10 +290,11 @@ do
 	rms_t2=MAX0(rms_t2,rms_t2AB);
     }
 	
-fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",
-	           itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+if(wfn_type_ == "OMP2") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "OMP3") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "OCEPA") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
 //fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e  %12.2e  %12.2e \n",
-//	           itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
+//	           itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
 fflush(outfile);
 
 /********************************************************************************************/
@@ -247,16 +315,19 @@ if (conver == 1) {
 mo_optimized = 1; 
 fprintf(outfile,"\n");
 fprintf(outfile," ============================================================================== \n");
-fprintf(outfile," ======================== OMP3 ITERATIONS ARE CONVERGED ======================= \n");
+if (wfn_type_ == "OMP2") fprintf(outfile," ======================== OMP2 ITERATIONS ARE CONVERGED ======================= \n");
+else if (wfn_type_ == "OMP3") fprintf(outfile," ======================== OMP3 ITERATIONS ARE CONVERGED ======================= \n");
+else if (wfn_type_ == "OCEPA") fprintf(outfile," ======================== OCEPA ITERATIONS ARE CONVERGED ====================== \n");
 fprintf(outfile," ============================================================================== \n");
 fflush(outfile);
 }
 
 else if (conver == 0) {
-  fprintf(outfile,"\n ======================== OMP3 IS NOT CONVERGED IN %2d ITERATIONS ============= \n", mo_maxiter);
+  if (wfn_type_ == "OMP2") fprintf(outfile,"\n ======================== OMP2 IS NOT CONVERGED IN %2d ITERATIONS ============= \n", mo_maxiter);
+  else if (wfn_type_ == "OMP3") fprintf(outfile,"\n ======================== OMP3 IS NOT CONVERGED IN %2d ITERATIONS ============= \n", mo_maxiter);
+  else if (wfn_type_ == "OCEPA") fprintf(outfile,"\n ======================== OCEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", mo_maxiter);
   fflush(outfile);
 }
-
         // Clean up!
 	delete [] idprowA;
 	delete [] idpcolA;
@@ -283,7 +354,16 @@ else if (conver == 0) {
           if (reference_ == "UNRESTRICTED") delete errvecsB;
 	}
 
-	if (opt_method == "NR") {
+        // Clean up the mess of ORB-RESP
+        if (opt_method == "ORB_RESP") {
+            if (orb_resp_solver_ == "LINEQ") {
+                if (reference_ == "UNRESTRICTED") {
+	            delete kappa;
+                 }
+            }
+
+         // PCG
+         else if (orb_resp_solver_ == "PCG") {
           delete r_pcgA;
           delete z_pcgA;
           delete p_pcgA;
@@ -304,10 +384,8 @@ else if (conver == 0) {
              delete p_pcg_newB;
              if (pcg_beta_type_ == "POLAK_RIBIERE") delete dr_pcgB;
           }
-	}
-
-/********************************************************************************************/
-/********************************************************************************************/
+	 }
+        }// end orb resp if
 
 }
 }} // End Namespaces

@@ -56,7 +56,7 @@ if (reference_ == "RESTRICTED") {
 	Ecc_rdm = HG1->trace() + Enuc; // One-electron contribution to MP2L
 
         // 2e-part
-	dpdbuf4 G, K, X, T;
+	dpdbuf4 G, K, X, T, Y;
 	dpdfile2 GF;
 	
 	psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -88,6 +88,22 @@ if (wfn_type_ != "OMP2") {
     }
 }// end if (wfn_type_ != "OMP2")  
 
+
+if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
+   // Build Y intermediate 
+   // Y_MAMI = 8*\sum{E,F} <MA|EF> * G_MIEF   
+   dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
+                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
+   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+   dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+   dpd_contract444(&K, &G, &Y, 0, 0, 8.0, 0.0);
+   dpd_buf4_close(&K);
+   dpd_buf4_close(&G);
+   dpd_buf4_close(&Y);
+} // end if (bypass_contract442_ == "TRUE") 
+
 	
 	// Build Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>"); 
@@ -101,6 +117,38 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
+if (wfn_type_ == "OMP2") { 
+        dpdfile2 G;
+
+        // Build Virtual-Virtual block of correlation OPDM
+        dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "CORR OPDM <V|V>");
+        dpd_file2_mat_init(&G);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0 ; i < avirtpiA[h]; ++i){
+                for(int j = 0 ; j < avirtpiA[h]; ++j){
+                    G.matrix[h][i][j] = gamma1corr->get(h, i + occpiA[h], j + occpiA[h]);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&G);
+        dpd_file2_close(&G);
+ 
+        // Sort
+        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                      ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
+        dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , qprs, ID("[V,O]"), ID("[V,V]"), "MO Ints (VO|VV)");
+	dpd_buf4_close(&K);
+ 
+	// Fai += 2 * \sum{e,f} (ai|ef) * Gcorr(e,f) 
+	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[V,O]"), ints->DPD_ID("[V,V]"),
+                  ints->DPD_ID("[V,O]"), ints->DPD_ID("[V,V]"), 0, "MO Ints (VO|VV)");
+        dpd_file2_init(&G, PSIF_OCC_DENSITY, 0, ID('V'), ID('V'), "CORR OPDM <V|V>");
+        dpd_contract422(&K, &G, &GF, 0, 0, 2.0, 1.0);
+	dpd_buf4_close(&K);
+        dpd_file2_close(&G);
+}// end if (wfn_type_ != "OMP2") 
+
+else { 
 	// Fai += 4 * \sum{e,m,f} <me|af> * G_meif 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
@@ -109,8 +157,37 @@ if (wfn_type_ != "OMP2") {
 	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-	
-	// Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
+}// end else 
+
+if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
+	// Fai += \sum{m} Y_mami 
+        dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
+                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
+      for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&Y, h);
+        dpd_buf4_mat_irrep_rd(&Y, h);
+        #pragma omp parallel for
+        for(int ma = 0; ma < Y.params->rowtot[h]; ++ma){
+            int m = Y.params->roworb[h][ma][0];
+            int a = Y.params->roworb[h][ma][1];
+	    int Ga = Y.params->qsym[a];
+	    int aa = a - Y.params->qoff[Ga] + occpiA[Ga];
+            for(int ki = 0; ki < Y.params->coltot[h]; ++ki){
+                int k = Y.params->colorb[h][ki][0];
+                int i = Y.params->colorb[h][ki][1];
+	        int Gi = Y.params->ssym[i];
+		int ii = i - Y.params->soff[Gi];
+		if (k == m) GFock->add(Ga, aa, ii, Y.matrix[h][ma][ki]);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&Y, h);
+    }
+	dpd_buf4_close(&Y);
+	dpd_file2_close(&GF);
+} // end if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE")
+
+else {
+        // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
 	dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
@@ -119,7 +196,7 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	dpd_file2_close(&GF);
-	
+}// end else
 	
 	// Build Fia
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  

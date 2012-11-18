@@ -51,7 +51,7 @@ void OCCWave::common_init()
 	exp_cutoff=options_.get_int("CUTOFF");
 	memory=options_.get_int("MEMORY"); 
         tol_pcg=options_.get_double("PCG_CONVERGENCE");
-        pcg_maxiter=options_.get_int("CC_MAXITER");
+        pcg_maxiter=options_.get_int("PCG_MAXITER");
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
 	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
@@ -69,7 +69,7 @@ void OCCWave::common_init()
 	
 	orth_type=options_.get_str("ORTH_TYPE");
 	opt_method=options_.get_str("OPT_METHOD");
-	hess_type=options_.get_str("HESS_TYPE");
+	//hess_type=options_.get_str("HESS_TYPE");
 	occ_orb_energy=options_.get_str("OCC_ORBS_PRINT");
 	natorb=options_.get_str("NAT_ORBS");
 	reference=options_.get_str("REFERENCE");
@@ -88,6 +88,8 @@ void OCCWave::common_init()
 	dertype=options_.get_str("DERTYPE");
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         compute_ccl=options_.get_str("CCL_ENERGY"); 
+        orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER"); 
+        bypass_contract442_=options_.get_str("BYPASS_CONTRACT442"); 
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
@@ -223,7 +225,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 15, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 17, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
