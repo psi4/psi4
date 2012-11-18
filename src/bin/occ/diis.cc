@@ -92,19 +92,16 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 /************************** Solve LINEQ *****************************************************/
 /********************************************************************************************/
          if (lineq == "CDGESV") Bmat->cdgesv(Cvec);
- 
          else if (lineq == "FLIN") {
             double det = 0.0;      
             Bmat->lineq_flin(Cvec, &det);
             if (fabs(det) < DIIS_MIN_DET) { 
-               fprintf(outfile, "Warning: diis matrix near-singular\n");
+               fprintf(outfile, "Warning!!! Diis matrix is near-singular\n");
                fprintf(outfile, "Determinant is %6.3E\n", det);
+               fflush(outfile);
             }
           }
- 
           else if (lineq == "POPLE") Bmat->lineq_pople(Cvec, num_vecs, cutoff);
-
-             
        
 /********************************************************************************************/
 /************************** Extrapolate *****************************************************/

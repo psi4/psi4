@@ -89,7 +89,7 @@ void OCCWave::omp2_manager()
 	gfock();
 	idp();
 	mograd();
-        omp2_iterations();
+        occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
 	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
@@ -295,7 +295,7 @@ void OCCWave::omp3_manager()
 	
 	idp();
 	mograd();
-        omp3_iterations();
+        occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
 	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
@@ -482,7 +482,7 @@ void OCCWave::ocepa_manager()
 	gfock();
 	idp();
 	mograd();
-        if (rms_wog > tol_grad) ocepa_iterations();
+        if (rms_wog > tol_grad) occ_iterations();
         else {
 	   fprintf(outfile,"\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
 	   fflush(outfile);

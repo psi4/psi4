@@ -1,5 +1,5 @@
-#ifndef _psi_src_bin_omp2_arrays_h_
-#define _psi_src_bin_omp2_arrays_h_
+#ifndef _psi_src_bin_occ_arrays_h_
+#define _psi_src_bin_occ_arrays_h_
 
 /** Standard library includes */
 #include <iostream>
@@ -131,6 +131,8 @@ class Array2d
   void davidson(int n_eigval, Array2d* eigvectors, Array1d* eigvalues, double cutoff, int print); 
   void cdgesv(Array1d* Xvec); // solve lineq via acml
   void cdgesv(double* Xvec); // solve lineq via acml
+  void cdgesv(Array1d* Xvec, int errcod);
+  void cdgesv(double* Xvec, int errcod);
   void lineq_flin(Array1d* Xvec, double *det); // solve lineq via flin
   void lineq_flin(double* Xvec, double *det); // solve lineq via flin
   void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
@@ -258,5 +260,5 @@ class Array3i
   int get(int h, int i, int j); 
 };
 }} // End Namespaces
-#endif // _psi_src_bin_omp2_arrays_h_
+#endif // _psi_src_bin_occ_arrays_h_
 

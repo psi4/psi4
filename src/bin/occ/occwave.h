@@ -45,6 +45,7 @@ protected:
     void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
     void kappa_msd();
     void kappa_orb_resp();
+    void kappa_orb_resp_iter();
     void orb_resp_pcg_rhf();
     void orb_resp_pcg_uhf();
     void dump_ints();
@@ -63,10 +64,10 @@ protected:
     void gfock_diag();
     void coord_grad();
     void dump_pdms();
+    void occ_iterations();
 
     // OMP2
     void omp2_g_int();
-    void omp2_iterations();
     void omp2_response_pdms();
     void omp2_t2_1st_sc(); 
     void omp2_t2_1st_general();
@@ -77,7 +78,6 @@ protected:
     // OMP3
     void omp3_manager();
     void omp3_response_pdms();
-    void omp3_iterations();
     void omp3_t2_1st_sc(); 
     void omp3_t2_1st_general();
     void omp3_tpdm_vvvv();
@@ -92,7 +92,6 @@ protected:
     // OCEPA
     void ocepa_manager();
     void cepa_manager();
-    void ocepa_iterations();
     void cepa_iterations();
     void ocepa_mp2_energy();
     void ocepa_t2_1st_sc(); 
@@ -149,6 +148,7 @@ protected:
      int print_;
      int cachelev; 
      int nidp;
+     int nidp_tot;             // nidpA + nidpB
      int nidpA;
      int nidpB;
      int conver;
@@ -308,6 +308,8 @@ protected:
      string twopdm_abcd_type;	// How to handle G_abcd
      string wfn_type_;
      string compute_ccl;
+     string orb_resp_solver_;
+     string bypass_contract442_;
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -368,6 +370,7 @@ protected:
      Array1d *wogB; 
      Array1d *kappaA; 
      Array1d *kappaB; 
+     Array1d *kappa;          // where kappa = kappaA + kappaB
      Array1d *kappa_barA; 
      Array1d *kappa_barB;   
      Array1d *kappa_newA; 
@@ -395,6 +398,10 @@ protected:
      Array2d *vecsB;
      Array2d *errvecsA;
      Array2d *errvecsB;
+     Array2d *AorbAA;
+     Array2d *AorbBB;
+     Array2d *AorbAB;
+     Array2d *Aorb;
 
 
      double **C_pitzerA;     

@@ -2368,7 +2368,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
-    options.add_int("PCG_MAXITER",50);
+    options.add_int("PCG_MAXITER",30);
 
     /*- Convergence criterion for energy. -*/
     options.add_double("E_CONVERGENCE",1e-8);
@@ -2406,11 +2406,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
-     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
-     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
-    options.add_str("OPT_METHOD","NR","MSD NR");
-    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
-    options.add_str("HESS_TYPE","SCF","SCF");
+     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation    
+     parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both methods a DIIS extrapolation
+     will be performed with the DO_DIIS = TRUE option. -*/
+    options.add_str("OPT_METHOD","ORB_RESP","MSD ORB_RESP");
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the 
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian 
+      explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
+    options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- Type of the SCS method -*/
@@ -2448,6 +2451,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_DIIS",true);
     /*- Do compute CC Lambda energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE = COMPUTE" option. -*/
     options.add_bool("CCL_ENERGY",false);
+    /*- Do bypass libdpd contract442 function in evaluation of the generalized-Fock matrix? -*/
+    options.add_bool("BYPASS_CONTRACT442",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

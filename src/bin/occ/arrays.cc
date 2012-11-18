@@ -551,6 +551,17 @@ void Array2d::cdgesv(Array1d* Xvec)
       }
 }//
 
+void Array2d::cdgesv(Array1d* Xvec, int errcod)
+{
+      if (dim1_) {
+	int *ipiv = init_int_array(dim1_);
+	memset(ipiv,0,sizeof(int)*dim1_);		
+	errcod=0;
+	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec->A1d_, dim2_);
+	delete [] ipiv;
+      }
+}//
+
 void Array2d::cdgesv(double* Xvec)
 {
       if (dim1_) {
@@ -563,6 +574,16 @@ void Array2d::cdgesv(double* Xvec)
       }
 }//
 
+void Array2d::cdgesv(double* Xvec, int errcod)
+{
+      if (dim1_) {
+	int *ipiv = init_int_array(dim1_);
+	memset(ipiv,0,sizeof(int)*dim1_);		
+	errcod=0;
+	errcod = C_DGESV(dim1_, 1, &(A2d_[0][0]), dim2_, &(ipiv[0]), Xvec, dim2_);
+	delete [] ipiv;
+      }
+}//
 
 void Array2d::lineq_flin(Array1d* Xvec, double *det)
 {
