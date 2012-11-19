@@ -76,9 +76,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace cepa { PsiReturnType cepa(Options&);}
     namespace stable     { PsiReturnType stability(Options&); }
-    namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
-    namespace omp3wave   { PsiReturnType omp3wave(Options&);  }
-    namespace ocepawave  { PsiReturnType ocepawave(Options&); }
+    namespace occwave   { PsiReturnType occwave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace thermo     { PsiReturnType thermo(Options&);       }
     namespace mrcc       {
@@ -184,30 +182,10 @@ int py_psi_deriv()
     return deriv::deriv(Process::environment.options);
 }
 
-double py_psi_omp2()
+double py_psi_occ()
 {
-    py_psi_prepare_options_for_module("OMP2");
-    if (omp2wave::omp2wave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-
-double py_psi_omp3()
-{
-    py_psi_prepare_options_for_module("OMP3");
-    if (omp3wave::omp3wave(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-
-double py_psi_ocepa()
-{
-    py_psi_prepare_options_for_module("OCEPA");
-    if (ocepawave::ocepawave(Process::environment.options) == Success) {
+    py_psi_prepare_options_for_module("OCC");
+    if (occwave::occwave(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -1127,9 +1105,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
-    def("omp2", py_psi_omp2, "Runs the orbital optimized MP2 code.");
-    def("omp3", py_psi_omp3, "Runs the orbital optimized MP3 code.");
-    def("ocepa", py_psi_ocepa, "Runs the orbital optimized CEPA code.");
+    def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
     def("thermo", py_psi_thermo, "Computes thermodynamic data.");
     def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
