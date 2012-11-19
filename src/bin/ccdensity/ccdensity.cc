@@ -22,7 +22,7 @@
 #include "Params.h"
 #include "Frozen.h"
 #include "globals.h"
-
+#include <libqt/qt.h>
 namespace psi { namespace ccdensity {
 
 void init_io(void);
@@ -94,8 +94,6 @@ void x_oe_intermediates_rhf(struct RHO_Params rho_params);
 void x_te_intermediates_rhf(void);
 void x_xi_intermediates(void);
 void V_build(void);
-void densgrid_RHF(Options& options);
-
 PsiReturnType ccdensity(Options& options)
 {
   int i;
@@ -257,7 +255,8 @@ PsiReturnType ccdensity(Options& options)
       fprintf(outfile, "  ==> Properties: Root %d <==\n\n", i);
       dipole();
 
-      if(params.onepdm_grid_dump) densgrid_RHF(options);
+      if(params.onepdm_grid_dump) dx_write(options, moinfo.opdm);
+ 
       dump_RHF(&OutBuf, rho_params[i]);
 
       iwl_buf_flush(&OutBuf, 1);

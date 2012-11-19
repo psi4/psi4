@@ -18,6 +18,7 @@
 #include <libdiis/diismanager.h>
 #include <libdiis/diisentry.h>
 #include <psi4-dec.h>
+#include <libqt/qt.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -175,7 +176,6 @@ protected:
     // Temporarily converting to virtual function for testing embedding
     // potentials.  TDC, 5/23/12.
     virtual void form_H();
-
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 

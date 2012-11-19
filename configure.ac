@@ -970,9 +970,7 @@ AC_CONFIG_FILES([
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
-          src/bin/omp2/Makefile
-          src/bin/omp3/Makefile
-          src/bin/ocepa/Makefile
+          src/bin/occ/Makefile
           src/bin/adc/Makefile
           src/bin/thermo/Makefile
 
