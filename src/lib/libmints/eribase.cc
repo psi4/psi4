@@ -2333,16 +2333,16 @@ void TwoElectronInt::compute_shell_deriv2(int sh1, int sh2, int sh3, int sh4)
         }
     }
 
+    // This handles computing the
     compute_quartet_deriv2(s1, s2, s3, s4);
 
-    // This only handles only first derivative parts.
     size_t size = n1 * n2 * n3 * n4;
     if (p12 || p34 || p13p24) {
-        for (int i=0; i < ERI_1DER_NTYPE; ++i)
+        for (int i=0; i < ERI_2DER_NTYPE; ++i)
             permute_target(source_+(i*size), target_+(i*size), s1, s2, s3, s4, p12, p34, p13p24);
     }
     else {
-        memcpy(target_, source_, ERI_1DER_NTYPE * size * sizeof(double));
+        memcpy(target_, source_, ERI_2DER_NTYPE * size * sizeof(double));
     }
 }
 
@@ -2525,128 +2525,7 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
     memset(source_, 0, sizeof(double) * size * ERI_2DER_NTYPE);
 
     // Copy results from libderiv into source_ (note libderiv only gives 3 of the centers)
-    // The libmints array returns the following integral derivatives:
-    //  0 -> A_x
-    //  1 -> A_y
-    //  2 -> A_z
-    //  3 -> C_x
-    //  4 -> C_y
-    //  5 -> C_z
-    //  6 -> D_x
-    //  7 -> D_y
-    //  8 -> D_z
-    // Center B can be determined by:
-    //  B_x = -(A_x + C_x + D_x)
-    //  B_y = -(A_y + C_y + D_y)
-    //  B_z = -(A_z + C_z + D_z)
-
-    // A
-    if (buffer_offsets_[0] == 3) {
-        // Ax
-        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_, 1);
-
-        // Ay
-        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+size, 1);
-
-        // Az
-        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+2*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+2*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+2*size, 1);
-    }
-    else {
-        memcpy(source_,        libderiv_.ABCD[buffer_offsets_[0]],    sizeof(double) * size);
-        memcpy(source_+size,   libderiv_.ABCD[buffer_offsets_[0]+1],  sizeof(double) * size);
-        memcpy(source_+2*size, libderiv_.ABCD[buffer_offsets_[0]+2],  sizeof(double) * size);
-    }
-
-    // C
-    if (buffer_offsets_[2] == 3) {
-        // Cx
-        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+3*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+3*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+3*size, 1);
-
-        // Cy
-        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+4*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+4*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+4*size, 1);
-
-        // Cz
-        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+5*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+5*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+5*size, 1);
-    }
-    else {
-        memcpy(source_+3*size, libderiv_.ABCD[buffer_offsets_[2]],    sizeof(double) * size);
-        memcpy(source_+4*size, libderiv_.ABCD[buffer_offsets_[2]+1],  sizeof(double) * size);
-        memcpy(source_+5*size, libderiv_.ABCD[buffer_offsets_[2]+2],  sizeof(double) * size);
-    }
-
-    // D
-    if (buffer_offsets_[3] == 3) {
-        // Dx
-        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+6*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+6*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+6*size, 1);
-
-        // Dy
-        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+7*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+7*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+7*size, 1);
-
-        // Dz
-        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+8*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+8*size, 1);
-        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+8*size, 1);
-    }
-    else {
-        memcpy(source_+6*size, libderiv_.ABCD[buffer_offsets_[3]],    sizeof(double) * size);
-        memcpy(source_+7*size, libderiv_.ABCD[buffer_offsets_[3]+1],  sizeof(double) * size);
-        memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
-    }
-
-    /******* NOTE: 1st 12 elements of libderiv_.ABCD[] are the first derivatives *******/
-
-    // A A
-    //   Both centers A are found on the non-computed center B
-    //   Use translational invariance to obtain the data.
-    if (buffer_offsets_[0] == 3 /*&& buffer_offsets_[0] == 3*/) {
-        // Compute integrals via translation invariance to obtain
-        //  Ax Ax; Ax Ay; Ax Az; Ay Ay; Ay Az; Az Az
-
-        /*** Ax Ax ***/
-        // Bx Bx = Ax Ax + Ax Cx + Ax Dx +
-        //         Cx Ax + Cx Cx + Cx Dx +
-        //         Dx Ax + Dx Cx + Dx Dx
-        // Bx Bx = Ax Ax + Cx Cx + Dx Dx + 2 Ax Cx + 2 Ax Dx + 2 Cx Dx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[12],  1, source_+9*size, 1);  // Ax Ax
-        C_DAXPY(size, 2.0, libderiv_.ABCD[18],  1, source_+9*size, 1);  // 2 Ax Cx
-        C_DAXPY(size, 2.0, libderiv_.ABCD[21],  1, source_+9*size, 1);  // 2 Ax Dx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[90],  1, source_+9*size, 1);  // Cx Cx
-        C_DAXPY(size, 2.0, libderiv_.ABCD[93],  1, source_+9*size, 1);  // 2 Cx Dx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[129], 1, source_+9*size, 1);  // Dx Dx
-
-        /*** Ax Ay ***/
-        // Bx By = Ax Ay + Ax Cy + Ax Dy +
-        //         Ay Cx + Cx Cy + Cx Dy +
-        //         Ay Dx + Cy Dx + Dx Dy
-        C_DAXPY(size, 1.0, libderiv_.ABCD[13],  1, source_+10*size, 1);  // Ax Ay
-        C_DAXPY(size, 1.0, libderiv_.ABCD[19],  1, source_+10*size, 1);  // Ax Cy
-        C_DAXPY(size, 1.0, libderiv_.ABCD[22],  1, source_+10*size, 1);  // Ax Dy
-        C_DAXPY(size, 1.0, libderiv_.ABCD[30],  1, source_+10*size, 1);  // Ay Cx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[91],  1, source_+10*size, 1);  // Cx Cy
-        C_DAXPY(size, 1.0, libderiv_.ABCD[94],  1, source_+10*size, 1);  // Cx Dy
-        C_DAXPY(size, 1.0, libderiv_.ABCD[33],  1, source_+10*size, 1);  // Ay Dx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[105], 1, source_+10*size, 1);  // Cy Dx
-        C_DAXPY(size, 1.0, libderiv_.ABCD[130], 1, source_+10*size, 1);  // Dx Dy
-    }
-    else {
-
-    }
+    handle_reordering12(buffer_offsets_, libderiv_, source_, size);
 
     // Transform the integrals to the spherical basis
     if (!force_cartesian_)
