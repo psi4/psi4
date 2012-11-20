@@ -61,6 +61,8 @@ ac_cv_boost_python,
  AC_LANG_CPLUSPLUS
  CPPFLAGS_SAVE="$CPPFLAGS"
  CPPFLAGS="$PYTHON_INCLUDE $CPPFLAGS"
+ LDFLAGS_SAVE="$LDFLAGS"
+ LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
  #include <boost/python/module.hpp>
  using namespace boost::python;
@@ -69,9 +71,11 @@ ac_cv_boost_python,
 			   ac_cv_boost_python=yes, ac_cv_boost_python=no)
  AC_LANG_RESTORE
  CPPFLAGS="$CPPFLAGS_SAVE"
+ LDFLAGS="$LDFLAGS_SAVE"
 ])
 if test "$ac_cv_boost_python" = "yes"; then
   AC_DEFINE(HAVE_BOOST_PYTHON,,[define if the Boost::Python library is available])
+  LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
   ax_python_lib=boost_python
   AC_ARG_WITH([boost-python],AS_HELP_STRING([--with-boost-python],[specify the boost python library or suffix to use]),
   [if test "x$with_boost_python" != "xno"; then
@@ -85,5 +89,6 @@ if test "$ac_cv_boost_python" = "yes"; then
     ac_cv_boost_python=no
   fi
   AC_SUBST(BOOST_PYTHON_LIB)
+  LDFLAGS="$LDFLAGS_SAVE"
 fi
 ])dnl
