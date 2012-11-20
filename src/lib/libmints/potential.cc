@@ -23,8 +23,8 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
     else
         throw PSIEXCEPTION("PotentialInt: deriv > 2 is not supported.");
 
-    int maxam1 = bs1_->max_am();
-    int maxam2 = bs2_->max_am();
+    const int maxam1 = bs1_->max_am();
+    const int maxam2 = bs2_->max_am();
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
@@ -39,8 +39,8 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
         maxnao1 *= 3*natom_;
     }
     else if (deriv == 2) {
-        set_chunks(9*natom_);  // x, y, z for A + x, y, z, for B
-        maxnao1 *= 9*natom_;
+        set_chunks(3*natom_ * 3*natom_);  // x, y, z for A + x, y, z, for B
+        maxnao1 *= 3*natom_ * 3*natom_;
     }
 
     buffer_ = new double[maxnao1*maxnao2];
@@ -332,8 +332,8 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
     const int am2 = s2.am();
     const int nprim1 = s1.nprimitive();
     const int nprim2 = s2.nprimitive();
-    const int ncenteri = s1.ncenter();
-    const int ncenterj = s2.ncenter();
+    const int center_i = s1.ncenter();
+    const int center_j = s2.ncenter();
 
     double A[3], B[3];
     A[0] = s1.center()[0];
@@ -345,29 +345,33 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
     // size of the length of a perturbation
     const size_t size = s1.ncartesian() * s2.ncartesian();
-    const int center_i = ncenteri * 3 * size;
-    const int center_j = ncenterj * 3 * size;
+//    const size_t center_i_start_x = center_i * 9 * size;
+//    const size_t center_j_start_x = center_j * 9 * size;
 
-    const int izm1 = 1;
-    const int iym1 = am1 + 1;
-    const int ixm1 = iym1 * iym1;
-    const int jzm1 = 1;
-    const int jym1 = am2 + 1;
-    const int jxm1 = jym1 * jym1;
-    const int izm2 = 1;
-    const int iym2 = am1 + 3;
-    const int ixm2 = iym2 * iym2;
-    const int jzm2 = 1;
-    const int jym2 = am2 + 3;
-    const int jxm2 = jym2 * jym2;
+    const int iz1 = 1;
+    const int iy1 = am1 + 1;
+    const int ix1 = iy1 * iy1;
+    const int jz1 = 1;
+    const int jy1 = am2 + 1;
+    const int jx1 = jy1 * jy1;
+    const int iz2 = 1;
+    const int iy2 = am1 + 3;
+    const int ix2 = iy2 * iy2;
+    const int jz2 = 1;
+    const int jy2 = am2 + 3;
+    const int jx2 = jy2 * jy2;
 
-    // compute intermediates
+//    fprintf(outfile, "il1 %d im1 %d in1 %d\n", ix1, iy1, iz1);
+//    fprintf(outfile, "jl1 %d jm1 %d jn1 %d\n", jx1, jy1, jz1);
+//    fprintf(outfile, "il2 %d im2 %d in2 %d\n", ix2, iy2, iz2);
+//    fprintf(outfile, "jl2 %d jm2 %d jn2 %d\n", jx2, jy2, jz2);
+
     double AB2 = 0.0;
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
+    memset(buffer_, 0, 3*3*natom_*natom_ * size * sizeof(double));
 
     double ***vi = potential_recur_->vi();
     double ***vx = potential_recur_->vx();
@@ -409,21 +413,17 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
             // molecule)
-            for (int atom=0; atom<ncharge; ++atom) {
+            for (int center_c=0; center_c<ncharge; ++center_c) {
                 double PC[3];
 
-                double Z = Zxyzp[atom][0];
+                double Z = Zxyzp[center_c][0];
 
-                PC[0] = P[0] - Zxyzp[atom][1];
-                PC[1] = P[1] - Zxyzp[atom][2];
-                PC[2] = P[2] - Zxyzp[atom][3];
+                PC[0] = P[0] - Zxyzp[center_c][1];
+                PC[1] = P[1] - Zxyzp[center_c][2];
+                PC[2] = P[2] - Zxyzp[center_c][3];
 
                 // Do recursion
                 potential_recur_->compute(PA, PB, PC, gamma, am1+2, am2+2);
-
-                for (int ii=0; ii<3; ++ii)
-                    for (int jj=0; jj<3; ++jj)
-                        fprintf(outfile, "vi %lf\n", vi[ii][jj][0]);
 
                 ao12 = 0;
                 for(int ii = 0; ii <= am1; ii++) {
@@ -439,32 +439,446 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 int n2 = ll;
 
                                 // Compute location in the recursion
-                                int iind = l1 * ixm2 + m1 * iym2 + n1 * izm2;
-                                int jind = l2 * jxm2 + m2 * jym2 + n2 * jzm2;
+                                int iind = l1 * ix2 + m1 * iy2 + n1 * iz2;
+                                int jind = l2 * jx2 + m2 * jy2 + n2 * jz2;
+
+//                                fprintf(outfile, "%d %d %d %d %d %d\n", l1, m1, n1, l2, m2, n2);
+//                                fprintf(outfile, "iind %d jind %d\n", iind, jind);
 
                                 const double pfac = over_pf * Z;
 
                                 double v_int = vi[iind][jind][0];
 
-                                // V_{\mu\nu}%{a_x a_x}
+                                //                                                x,y,z offset
+                                size_t a_x_start = 3 * natom_ * center_i * size + 0 * size;
+
+                                // V_{\mu\nu}^{a_x a_x}
                                 double temp = 0.0;
-
-                                temp += 4.0*a1*a1*vi[iind+ixm2+ixm2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
+                                temp += 4.0*a1*a1*vi[iind+ix2+ix2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
                                 if (l1 > 1)
-                                    temp += l1*(l1-1)*vi[iind-ixm2-ixm2][jind][0];
-                                //fprintf(outfile, "\tl %lf r %lf t %lf\n", 4.0*a1*a1*vi[iind+ixm2+ixm2][jind][0], 2.0*a1*(2*l1+1)*v_int, temp);
-                                buffer_[center_i+(0*size)+ao12] -= temp * pfac;
+                                    temp += l1*(l1-1)*vi[iind-ix2-ix2][jind][0];
+                                //      center ax   center ax              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 
+                                // V_{\mu\nu}^{a_x a_y}
                                 temp = 0.0;
-                                temp += 4.0*a1*a1*vi[iind+iym2+ixm2][jind][0];
+                                temp += 4.0*a1*a1*vi[iind+iy2+ix2][jind][0];
                                 if (l1)
-                                    temp -= 2.0*l1*a1*vi[iind-ixm2+iym2][jind][0];
+                                    temp -= 2.0*l1*a1*vi[iind-ix2+iy2][jind][0];
                                 if (m1)
-                                    temp -= 2.0*m1*a1*vi[iind+ixm2-iym2][jind][0];
+                                    temp -= 2.0*m1*a1*vi[iind+ix2-iy2][jind][0];
                                 if (l1 && m1)
-                                    temp += l1*m1*vi[iind-ixm2-iym2][jind][0];
-                                fprintf(outfile, "temp %lf\n", temp);
-                                buffer_[center_i+(1*size)+ao12] -= temp * pfac;
+                                    temp += l1*m1*vi[iind-ix2-iy2][jind][0];
+                                //      center ax   center ay              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_x a_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a1*vi[iind+iz2+ix2][jind][0];
+                                if (l1)
+                                    temp -= 2.0*l1*a1*vi[iind-ix2+iz2][jind][0];
+                                if (n1)
+                                    temp -= 2.0*n1*a1*vi[iind+ix2-iz2][jind][0];
+                                if (l1 && n1)
+                                    temp += l1*n1*vi[iind-ix2-iz2][jind][0];
+                                //      center ax   center az              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t a_y_start = 3 * natom_ * center_i * size + 1 * size;
+
+                                // V_{\mu\nu}^{a_y a_y}
+                                temp = 0.0;
+                                temp += 4.0*a1*a1*vi[iind+iy2+iy2][jind][0] - 2.0*a1*(2*m1+1)*v_int;
+                                if (m1 > 1)
+                                    temp += m1*(m1-1)*vi[iind-iy2-iy2][jind][0];
+                                //      center ay   center ay              x,y,z       ao offset
+                                buffer_[a_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_y a_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a1*vi[iind+iy2+iz2][jind][0];
+                                if (m1)
+                                    temp -= 2.0*m1*a1*vi[iind-iy2+iz2][jind][0];
+                                if (n1)
+                                    temp -= 2.0*n1*a1*vi[iind+iy2-iz2][jind][0];
+                                if (m1 && n1)
+                                    temp += m1*n1*vi[iind-iy2-iz2][jind][0];
+                                //      center ay   center az              x,y,z       ao offset
+                                buffer_[a_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t a_z_start = 3 * natom_ * center_i * size + 2 * size;
+
+                                // V_{\mu\nu}^{a_z a_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a1*vi[iind+iz2+iz2][jind][0] - 2.0*a1*(2*n1+1)*v_int;
+                                if (n1 > 1)
+                                    temp += n1*(n1-1)*vi[iind-iz2-iz2][jind][0];
+                                //      center az   center az              x,y,z       ao offset
+                                buffer_[a_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t b_x_start = 3 * natom_ * center_j * size + 0 * size;
+
+                                // V_{\mu\nu}^{b_x b_x}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jx2][0] - 2.0*a2*(2*l2+1)*v_int;
+                                if (l2 > 1)
+                                    temp += l2*(l2-1)*vi[iind][jind-jx2-jx2][0];
+                                //      center bx   center bx              x,y,z       ao offset
+                                buffer_[b_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{b_x b_y}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jy2][0];
+                                if (l2)
+                                    temp -= 2.0*l2*a2*vi[iind][jind-jx2+jy2][0];
+                                if (m2)
+                                    temp -= 2.0*m2*a2*vi[iind][jind+jx2-jy2][0];
+                                if (l2 && m2)
+                                    temp += l2*m2*vi[iind][jind-jx2-jy2][0];
+                                //      center bx   center by              x,y,z       ao offset
+                                buffer_[b_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{b_x b_z}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jx2+jz2][0];
+                                if (l2)
+                                    temp -= 2.0*l2*a2*vi[iind][jind-jx2+jz2][0];
+                                if (n2)
+                                    temp -= 2.0*n2*a2*vi[iind][jind+jx2-jz2][0];
+                                if (l2 && n2)
+                                    temp += l2*n2*vi[iind][jind-jx2-jz2][0];
+                                //      center bx   center bz              x,y,z       ao offset
+                                buffer_[b_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t b_y_start = 3 * natom_ * center_j * size + 1 * size;
+
+                                // V_{\mu\nu}^{b_y b_y}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jy2+jy2][0];
+                                if (m2 > 1)
+                                    temp -= m2*(m2-1)*vi[iind][jind-jy2-jy2][0];
+                                //      center by   center by              x,y,z       ao offset
+                                buffer_[b_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{b_y b_z}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jy2+jz2][0];
+                                if (m2)
+                                    temp -= 2.0*m2*a2*vi[iind][jind-jy2+jz2][0];
+                                if (n2)
+                                    temp -= 2.0*n2*a2*vi[iind][jind+jy2-jz2][0];
+                                if (m2 && n2)
+                                    temp += m2*n2*vi[iind][jind-jy2-jz2][0];
+                                //      center by   center bz              x,y,z       ao offset
+                                buffer_[b_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t b_z_start = 3 * natom_ * center_j * size + 2 * size;
+
+                                // V_{\mu\nu}^{b_z b_z}
+                                temp = 0.0;
+                                temp += 4.0*a2*a2*vi[iind][jind+jz2+jz2][0];
+                                if (n2 > 1)
+                                    temp -= n2*(n2-1)*vi[iind][jind-jz2-jz2][0];
+                                //      center by   center bz              x,y,z       ao offset
+                                buffer_[b_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_x b_x}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+ix1][jind+jx1][0];
+                                if (l1)
+                                    temp -= 2.0*a2*l1*vi[iind-ix1][jind+jx1][0];
+                                if (l2)
+                                    temp -= 2.0*a1*l2*vi[iind+ix1][jind-jx1][0];
+                                if (l1 && l2)
+                                    temp += l1*l2*vi[iind-ix1][jind-jx1][0];
+                                if (center_i == center_j)
+                                    temp *= 2.0;
+                                //      center ax   center bx              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_x b_y}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+ix1][jind+jy1][0];
+                                if (l1)
+                                    temp -= 2.0*a2*l1*vi[iind-ix1][jind+jy1][0];
+                                if (m2)
+                                    temp -= 2.0*a1*m2*vi[iind+ix1][jind-jy1][0];
+                                if (l1 && m2)
+                                    temp += l1*m2*vi[iind-ix1][jind-jy1][0];
+                                //      center ax   center by              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_x b_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+ix1][jind+jz1][0];
+                                if (l1)
+                                    temp -= 2.0*a2*l1*vi[iind-ix1][jind+jz1][0];
+                                if (n2)
+                                    temp -= 2.0*a1*n2*vi[iind+ix1][jind-jz1][0];
+                                if (l1 && n2)
+                                    temp += l1*n2*vi[iind-ix1][jind-jz1][0];
+                                //      center ax   center bz              x,y,z       ao offset
+                                buffer_[a_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_y b_x}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iy1][jind+jx1][0];
+                                if (m1)
+                                    temp -= 2.0*a2*m1*vi[iind-iy1][jind+jx1][0];
+                                if (l2)
+                                    temp -= 2.0*a1*l2*vi[iind+iy1][jind-jx1][0];
+                                if (m1 && l2)
+                                    temp += m1*l2*vi[iind-iy1][jind-jx1][0];
+                                //      center ay   center bx              x,y,z       ao offset
+                                buffer_[a_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_y b_y}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iy1][jind+jy1][0];
+                                if (m1)
+                                    temp -= 2.0*a2*m1*vi[iind-iy1][jind+jy1][0];
+                                if (m2)
+                                    temp -= 2.0*a1*m2*vi[iind+iy1][jind-jy1][0];
+                                if (m1 && m2)
+                                    temp += m1*m2*vi[iind-iy1][jind-jy1][0];
+                                if (center_i == center_j)
+                                    temp *= 2.0;
+                                //      center ay   center by              x,y,z       ao offset
+                                buffer_[a_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_y b_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iy1][jind+jz1][0];
+                                if (m1)
+                                    temp -= 2.0*a2*m1*vi[iind-iy1][jind+jz1][0];
+                                if (n2)
+                                    temp -= 2.0*a1*n2*vi[iind+iy1][jind-jz1][0];
+                                if (m1 && n2)
+                                    temp += m1*n2*vi[iind-iy1][jind-jz1][0];
+                                //      center ay   center bz              x,y,z       ao offset
+                                buffer_[a_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_z b_x}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iz1][jind+jx1][0];
+                                if (n1)
+                                    temp -= 2.0*a2*n1*vi[iind-iz1][jind+jx1][0];
+                                if (l2)
+                                    temp -= 2.0*a1*l2*vi[iind+iz1][jind-jx1][0];
+                                if (n1 && l2)
+                                    temp += n1*l2*vi[iind-iz1][jind-jx1][0];
+                                //      center az   center bx              x,y,z       ao offset
+                                buffer_[a_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_z b_y}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iz1][jind+jy1][0];
+                                if (n1)
+                                    temp -= 2.0*a2*n1*vi[iind-iz1][jind+jy1][0];
+                                if (m2)
+                                    temp -= 2.0*a1*m2*vi[iind+iz1][jind-jy1][0];
+                                if (n1 && m2)
+                                    temp += n1*m2*vi[iind-iz1][jind-jy1][0];
+                                //      center az   center by              x,y,z       ao offset
+                                buffer_[a_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{a_z b_z}
+                                temp = 0.0;
+                                temp += 4.0*a1*a2*vi[iind+iz1][jind+jz1][0];
+                                if (n1)
+                                    temp -= 2.0*a2*n1*vi[iind-iz1][jind+jz1][0];
+                                if (n2)
+                                    temp -= 2.0*a1*n2*vi[iind+iz1][jind-jz1][0];
+                                if (n1 && n2)
+                                    temp += n1*n2*vi[iind-iz1][jind-jz1][0];
+                                if (center_i == center_j)
+                                    temp *= 2.0;
+                                //      center az   center bz              x,y,z       ao offset
+                                buffer_[a_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t c_x_start = 3 * natom_ * center_c * size + 0 * size;
+
+                                // V_{\mu\nu}^{c_x a_x}
+                                temp = 0.0;
+                                temp += 2.0*a1*vx[iind+ix1][jind][0];
+                                if (l1)
+                                    temp -= l1*vx[iind-ix1][jind][0];
+                                if (center_i == center_c)
+                                    temp *= 2.0;
+                                //      center cx   center ax              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x a_y}
+                                temp = 0.0;
+                                temp += 2.0*a1*vx[iind+iy1][jind][0];
+                                if (m1)
+                                    temp -= m1*vx[iind-iy1][jind][0];
+                                //      center cx   center ax              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x a_z}
+                                temp = 0.0;
+                                temp += 2.0*a1*vx[iind+iz1][jind][0];
+                                if (n1)
+                                    temp -= n1*vx[iind-iz1][jind][0];
+                                //      center cx   center ax              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t c_y_start = 3 * natom_ * center_c * size + 1 * size;
+
+                                // V_{\mu\nu}^{c_y a_x}
+                                temp = 0.0;
+                                temp += 2.0*a1*vy[iind+ix1][jind][0];
+                                if (l1)
+                                    temp -= l1*vy[iind-ix1][jind][0];
+                                //      center cy   center ax              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_y a_y}
+                                temp = 0.0;
+                                temp += 2.0*a1*vy[iind+iy1][jind][0];
+                                if (m1)
+                                    temp -= m1*vy[iind-iy1][jind][0];
+                                if (center_i == center_c)
+                                    temp *= 2.0;
+                                //      center cy   center ay              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_y a_z}
+                                temp = 0.0;
+                                temp += 2.0*a1*vy[iind+iz1][jind][0];
+                                if (n1)
+                                    temp -= n1*vy[iind-iz1][jind][0];
+                                //      center cy   center az              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                //                                                x,y,z offset
+                                size_t c_z_start = 3 * natom_ * center_c * size + 2 * size;
+
+                                // V_{\mu\nu}^{c_z a_x}
+                                temp = 0.0;
+                                temp += 2.0*a1*vz[iind+ix1][jind][0];
+                                if (l1)
+                                    temp -= l1*vz[iind-ix1][jind][0];
+                                //      center cz   center ax              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_z a_y}
+                                temp = 0.0;
+                                temp += 2.0*a1*vz[iind+iy1][jind][0];
+                                if (m1)
+                                    temp -= m1*vz[iind-iy1][jind][0];
+                                //      center cz   center ay              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_z a_z}
+                                temp = 0.0;
+                                temp += 2.0*a1*vz[iind+iz1][jind][0];
+                                if (n1)
+                                    temp -= n1*vz[iind-iz1][jind][0];
+                                if (center_i == center_c)
+                                    temp *= 2.0;
+                                //      center cz   center az              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x b_x}
+                                temp = 0.0;
+                                temp += 2.0*a2*vx[iind][jind+jx1][0];
+                                if (l2)
+                                    temp -= l2*vx[iind][jind-jx1][0];
+                                if (center_j == center_c)
+                                    temp *= 2.0;
+                                //      center cx   center bx              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x b_y}
+                                temp = 0.0;
+                                temp += 2.0*a2*vx[iind][jind+jy1][0];
+                                if (m2)
+                                    temp -= m2*vx[iind][jind-jy1][0];
+                                //      center cx   center by              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x b_z}
+                                temp = 0.0;
+                                temp += 2.0*a2*vx[iind][jind+jz1][0];
+                                if (n2)
+                                    temp -= n2*vx[iind][jind-jz1][0];
+                                //      center cx   center bz              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_y b_x}
+                                temp = 0.0;
+                                temp += 2.0*a2*vy[iind][jind+jx1][0];
+                                if (l2)
+                                    temp -= l2*vy[iind][jind-jx1][0];
+                                //      center cy   center bx              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_y b_y}
+                                temp = 0.0;
+                                temp += 2.0*a2*vy[iind][jind+jy1][0];
+                                if (m2)
+                                    temp -= m2*vy[iind][jind-jy1][0];
+                                if (center_j == center_c)
+                                    temp *= 2.0;
+                                //      center cy   center by              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_y b_z}
+                                temp = 0.0;
+                                temp += 2.0*a2*vy[iind][jind+jz1][0];
+                                if (n2)
+                                    temp -= n2*vy[iind][jind-jz1][0];
+                                //      center cy   center bz              x,y,z       ao offset
+                                buffer_[c_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_z b_x}
+                                temp = 0.0;
+                                temp += 2.0*a2*vz[iind][jind+ix1][0];
+                                if (l2)
+                                    temp -= l2*vz[iind][jind-ix1][0];
+                                //      center cz   center bx              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_z b_y}
+                                temp = 0.0;
+                                temp += 2.0*a2*vz[iind][jind+jy1][0];
+                                if (m2)
+                                    temp -= m2*vz[iind][jind-jy1][0];
+                                //      center cz   center by              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_z b_z}
+                                temp = 0.0;
+                                temp += 2.0*a2*vz[iind][jind+jz1][0];
+                                if (n2)
+                                    temp -= n2*vz[iind][jind-jz1][0];
+                                if (center_j == center_c)
+                                    temp *= 2.0;
+                                //      center cz   center bz              x,y,z       ao offset
+                                buffer_[c_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
+
+                                // V_{\mu\nu}^{c_x c_x}
+                                //      center cz   center by              x,y,z       ao offset
+                                buffer_[c_x_start + (3 * center_c * size + 0 * size) + ao12     ] -= vxx[iind][jind][0] * pfac;
+                                // V_{\mu\nu}^{c_x c_y}
+                                buffer_[c_x_start + (3 * center_c * size + 1 * size) + ao12     ] -= vxy[iind][jind][0] * pfac;
+                                // V_{\mu\nu}^{c_x c_z}
+                                buffer_[c_x_start + (3 * center_c * size + 2 * size) + ao12     ] -= vxz[iind][jind][0] * pfac;
+                                // V_{\mu\nu}^{c_y c_y}
+                                buffer_[c_y_start + (3 * center_c * size + 1 * size) + ao12     ] -= vyy[iind][jind][0] * pfac;
+                                // V_{\mu\nu}^{c_y c_z}
+                                buffer_[c_y_start + (3 * center_c * size + 2 * size) + ao12     ] -= vyz[iind][jind][0] * pfac;
+                                // V_{\mu\nu}^{c_z c_z}
+                                buffer_[c_z_start + (3 * center_c * size + 2 * size) + ao12     ] -= vzz[iind][jind][0] * pfac;
 
                                 ao12++;
                             }
