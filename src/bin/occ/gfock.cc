@@ -17,7 +17,7 @@
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp> 
-#include <libiwl/iwl.h>
+#include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
@@ -88,22 +88,6 @@ if (wfn_type_ != "OMP2") {
     }
 }// end if (wfn_type_ != "OMP2")  
 
-
-if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
-   // Build Y intermediate 
-   // Y_MAMI = 8*\sum{E,F} <MA|EF> * G_MIEF   
-   dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
-                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
-   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-   dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-   dpd_contract444(&K, &G, &Y, 0, 0, 8.0, 0.0);
-   dpd_buf4_close(&K);
-   dpd_buf4_close(&G);
-   dpd_buf4_close(&Y);
-} // end if (bypass_contract442_ == "TRUE") 
-
 	
 	// Build Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>"); 
@@ -159,32 +143,71 @@ else {
 	dpd_buf4_close(&G);
 }// end else 
 
-if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
-	// Fai += \sum{m} Y_mami 
-        dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
-                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
-      for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&Y, h);
-        dpd_buf4_mat_irrep_rd(&Y, h);
-        //#pragma omp parallel for
-        for(int ma = 0; ma < Y.params->rowtot[h]; ++ma){
-            int m = Y.params->roworb[h][ma][0];
-            int a = Y.params->roworb[h][ma][1];
-	    int Ga = Y.params->qsym[a];
-	    int aa = a - Y.params->qoff[Ga] + occpiA[Ga];
-            for(int ki = 0; ki < Y.params->coltot[h]; ++ki){
-                int k = Y.params->colorb[h][ki][0];
-                int i = Y.params->colorb[h][ki][1];
-	        int Gi = Y.params->ssym[i];
-		int ii = i - Y.params->soff[Gi];
-		if (k == m) GFock->add(Ga, aa, ii, Y.matrix[h][ma][ki]);
+if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+      // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
+	dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+      	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
+	int ilsti,nbuf,index,fi;
+	double value = 0;
+
+ do
+ {
+        ilsti = ERIIN.last_buffer(); 
+        nbuf = ERIIN.buffer_count();
+	
+   fi = 0;
+   for (int idx=0; idx < nbuf; idx++ )
+   {
+
+        int m = ERIIN.labels()[fi];
+            m = abs(m);
+        int a = ERIIN.labels()[fi+1];
+        int e = ERIIN.labels()[fi+2];
+        int f = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[idx];
+        fi += 4;
+
+        int m_pitzer = qt2pitzerA[m];
+        int a_pitzer = qt2pitzerA[a];
+        int e_pitzer = qt2pitzerA[e];
+        int f_pitzer = qt2pitzerA[f];
+  
+        int hm = mosym[m_pitzer];
+        int ha = mosym[a_pitzer];
+        int he = mosym[e_pitzer];
+        int hf = mosym[f_pitzer];
+ 
+        int hma = ha^hm;
+        int hef = he^hf;
+
+        if (hma == hef) {
+            dpd_buf4_mat_irrep_init(&G, hma);
+            dpd_buf4_mat_irrep_rd(&G, hma);
+            double summ = 0.0;
+            int ee = e - nooA;
+            int ff = f - nooA;
+            for (int i=0; i < occpiA[ha]; i++) {
+                 int I = occ_offA[ha] + i;
+                 int i_pitzer = qt2pitzerA[I];
+                 int mi = G.params->rowidx[m][I];
+                 int ef = G.params->colidx[ee][ff];
+                 summ = 8.0 * value * G.matrix[hma][mi][ef];  
+                 int aa = pitzer2symblk[a_pitzer];
+                 GFock->add(ha, aa, i, summ); 
             }
+            dpd_buf4_mat_irrep_close(&G, hma);
         }
-        dpd_buf4_mat_irrep_close(&Y, h);
-    }
-	dpd_buf4_close(&Y);
-	dpd_file2_close(&GF);
-} // end if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE")
+
+   }
+        if(!ilsti)
+	  ERIIN.fetch();
+
+ } while(!ilsti);
+
+        // Close
+	dpd_buf4_close(&G);
+} // end if (wfn_type_ == "OMP2" && incore_iabc_ == 0)
 
 else {
         // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
