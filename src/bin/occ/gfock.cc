@@ -89,6 +89,9 @@ if (wfn_type_ != "OMP2") {
 }// end if (wfn_type_ != "OMP2")  
 
 	
+/************************************************************************************************/
+/*********************************** Build Fai **************************************************/
+/************************************************************************************************/
 	// Build Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>"); 
 	
@@ -101,7 +104,7 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP2") { 
+if (wfn_type_ == "OMP2" && incore_iabc_ == 1) { 
         dpdfile2 G;
 
         // Build Virtual-Virtual block of correlation OPDM
@@ -130,9 +133,58 @@ if (wfn_type_ == "OMP2") {
         dpd_contract422(&K, &G, &GF, 0, 0, 2.0, 1.0);
 	dpd_buf4_close(&K);
         dpd_file2_close(&G);
-}// end if (wfn_type_ != "OMP2") 
+}// end if (wfn_type_ == "OMP2" && incore_iabc_ == 1) 
 
-else { 
+else if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+      	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
+	int ilsti,nbuf,index,fi;
+	double value = 0.0;
+        double summ = 0.0;
+
+ do
+ {
+        ilsti = ERIIN.last_buffer(); 
+        nbuf = ERIIN.buffer_count();
+	
+   fi = 0;
+   for (int idx=0; idx < nbuf; idx++ )
+   {
+
+        int i = ERIIN.labels()[fi];
+            i = abs(i);
+        int e = ERIIN.labels()[fi+1];
+        int a = ERIIN.labels()[fi+2];
+        int f = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[idx];
+        fi += 4;
+
+        int i_pitzer = qt2pitzerA[i];
+        int e_pitzer = qt2pitzerA[e];
+        int a_pitzer = qt2pitzerA[a];
+        int f_pitzer = qt2pitzerA[f];
+  
+        int hi = mosym[i_pitzer];
+        int ha = mosym[a_pitzer];
+        int he = mosym[e_pitzer];
+        int hf = mosym[f_pitzer];
+
+        if (hi == ha && he == hf) {
+            int ii = pitzer2symblk[i_pitzer];
+            int ee = pitzer2symblk[e_pitzer];
+            int aa = pitzer2symblk[a_pitzer];
+            int ff = pitzer2symblk[f_pitzer];
+            summ = 2.0 * value * gamma1corr->get(he,ee,ff);  
+            GFock->add(ha, aa, ii, summ); 
+        }
+
+   }
+        if(!ilsti)
+	  ERIIN.fetch();
+
+ } while(!ilsti);
+}// end else if (wfn_type_ == "OMP2" && incore_iabc_ == 0)  
+
+else if (wfn_type_ != "OMP2") { 
 	// Fai += 4 * \sum{e,m,f} <me|af> * G_meif 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
@@ -141,7 +193,7 @@ else {
 	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-}// end else 
+}// end else if (wfn_type_ != "OMP2")  
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
       // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
@@ -221,6 +273,9 @@ else {
 	dpd_file2_close(&GF);
 }// end else
 	
+/************************************************************************************************/
+/*********************************** Build Fia **************************************************/
+/************************************************************************************************/
 	// Build Fia
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
 	
@@ -277,6 +332,9 @@ if (wfn_type_ != "OMP2") {
 	psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OCC_DPD, 1);
 	
+/************************************************************************************************/
+/*********************************** Load *******************************************************/
+/************************************************************************************************/
 	// Load Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
 	dpd_file2_mat_init(&GF);

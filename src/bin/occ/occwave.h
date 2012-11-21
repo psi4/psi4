@@ -162,12 +162,12 @@ protected:
      int time4grad;             // If 0 it is not the time for grad, if 1 it is the time for grad
      int cc_maxdiis_; 		// MAX Number of vectors used in CC diis
      int cc_mindiis_; 		// MIN Number of vectors used in CC diis
-     int cost_iabc_;            // Mem required for the <ia|bc> integrals
-     int cost_abcd_;            // Mem required for the <ab|cd> integrals
      int incore_iabc_;          // 1 means do incore, 0 means do out of core
      int incore_abcd_;          // 1 means do incore, 0 means do out of core
 
      ULI memory; 
+     ULI cost_iabc_;            // Mem required for the <ia|bc> integrals
+     ULI cost_abcd_;            // Mem required for the <ab|cd> integrals
      
      // Common
      double Enuc;
@@ -365,8 +365,9 @@ protected:
      int *idpcolB;
      int *idpirrA;
      int *idpirrB;
-     int *cost_ov_;
-     int *cost_vv_;
+
+     ULI *cost_ov_;
+     ULI *cost_vv_;
 
      double *evalsA; 
      double *evalsB; 
