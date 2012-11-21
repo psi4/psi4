@@ -65,6 +65,7 @@ protected:
     void coord_grad();
     void dump_pdms();
     void occ_iterations();
+    void tei_sort_iabc();
 
     // OMP2
     void omp2_g_int();
@@ -142,7 +143,6 @@ protected:
      int idp_returnB;
      int num_vecs; 		// Number of vectors used in diis (diis order)
      int nvar; 			// nvar = num_vecs +1;
-     int memory; 
      int multp; 
      int charge;
      int print_;
@@ -162,7 +162,13 @@ protected:
      int time4grad;             // If 0 it is not the time for grad, if 1 it is the time for grad
      int cc_maxdiis_; 		// MAX Number of vectors used in CC diis
      int cc_mindiis_; 		// MIN Number of vectors used in CC diis
+     int cost_iabc_;            // Mem required for the <ia|bc> integrals
+     int cost_abcd_;            // Mem required for the <ab|cd> integrals
+     int incore_iabc_;          // 1 means do incore, 0 means do out of core
+     int incore_abcd_;          // 1 means do incore, 0 means do out of core
 
+     ULI memory; 
+     
      // Common
      double Enuc;
      double sum;
@@ -309,7 +315,6 @@ protected:
      string wfn_type_;
      string compute_ccl;
      string orb_resp_solver_;
-     string bypass_contract442_;
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -360,6 +365,8 @@ protected:
      int *idpcolB;
      int *idpirrA;
      int *idpirrB;
+     int *cost_ov_;
+     int *cost_vv_;
 
      double *evalsA; 
      double *evalsB; 

@@ -192,6 +192,32 @@ if (reference_ == "RESTRICTED") {
       }
     
 /********************************************************************************************/
+/************************** qt2pitzer *******************************************************/
+/********************************************************************************************/
+      qt2pitzerA = new int[nmo_];
+      pitzer2qtA = new int[nmo_];
+      memset(qt2pitzerA,0,sizeof(int)*nmo_);
+      memset(pitzer2qtA,0,sizeof(int)*nmo_);
+      reorder_qt(doccpi_, soccpi_, frzcpi_, frzvpi_, pitzer2qtA, nmopi_, nirrep_);
+      for(int p = 0; p < nmo_; p++) {
+	  int pa = pitzer2qtA[p];
+	  qt2pitzerA[pa] = p;
+      }
+
+      // print
+      if (print_ > 2) {
+      for(int p = 0; p < nmo_; p++) {
+          fprintf(outfile," p, pitzer2qtA[p]: %2d %2d \n", p, pitzer2qtA[p]);
+          fflush(outfile);
+      }
+
+      for(int p = 0; p < nmo_; p++) {
+          fprintf(outfile," p, qt2pitzerA[p]: %2d %2d \n", p, qt2pitzerA[p]);
+          fflush(outfile);
+      }
+      }
+ 
+/********************************************************************************************/
 /************************** occ_off & vir_off ***********************************************/
 /********************************************************************************************/ 
     occ_offA = new int[nirrep_];
@@ -461,6 +487,25 @@ else if (reference_ == "UNRESTRICTED") {
             ij++;
         }
         myoffset += virtpiB[h];
+      }
+
+/********************************************************************************************/
+/************************** qt2pitzer *******************************************************/
+/********************************************************************************************/
+      qt2pitzerA = new int[nmo_];
+      qt2pitzerB = new int[nmo_];
+      pitzer2qtA = new int[nmo_];
+      pitzer2qtB = new int[nmo_];
+      memset(qt2pitzerA,0,sizeof(int)*nmo_);
+      memset(qt2pitzerB,0,sizeof(int)*nmo_);
+      memset(pitzer2qtA,0,sizeof(int)*nmo_);
+      memset(pitzer2qtB,0,sizeof(int)*nmo_);
+      reorder_qt_uhf(doccpi_, soccpi_, frzcpi_, frzvpi_, pitzer2qtA, pitzer2qtB, nmopi_, nirrep_);
+      for(int p = 0; p < nmo_; p++) {
+	  int pa = pitzer2qtA[p];
+	  int pb = pitzer2qtB[p];
+	  qt2pitzerA[p] = pitzer2qtA[pa];
+	  qt2pitzerB[p] = pitzer2qtB[pb];
       }
     
 /********************************************************************************************/
