@@ -20,11 +20,7 @@ OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbat
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
 
-*Module:* :ref:`Keywords <apdx:omp2>`, :ref:`PSI Variables <apdx:omp2_psivar>`, :source:`OMP2 <src/bin/omp2>`
-
-*Module:* :ref:`Keywords <apdx:omp3>`, :ref:`PSI Variables <apdx:omp3_psivar>`, :source:`OMP3 <src/bin/omp3>`
-
-*Module:* :ref:`Keywords <apdx:ocepa>`, :ref:`PSI Variables <apdx:ocepa_psivar>`, :source:`OCEPA <src/bin/ocepa>`
+*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
 
 Introduction
 ~~~~~~~~~~~~
@@ -230,25 +226,24 @@ The orbital-optimized CEPA methods currently supported in |Psifour| are outlined
 Basic Keywords
 ~~~~~~~~~~~~~~
 
-.. include:: /autodir_options_c/omp2__e_convergence.rst
-.. include:: /autodir_options_c/omp2__r_convergence.rst
-.. include:: /autodir_options_c/omp2__rms_mograd_convergence.rst
-.. include:: /autodir_options_c/omp2__max_mograd_convergence.rst
-.. include:: /autodir_options_c/omp2__mo_maxiter.rst
-.. include:: /autodir_options_c/ocepa__wfn_type.rst
+.. include:: /autodir_options_c/occ__e_convergence.rst
+.. include:: /autodir_options_c/occ__r_convergence.rst
+.. include:: /autodir_options_c/occ__rms_mograd_convergence.rst
+.. include:: /autodir_options_c/occ__max_mograd_convergence.rst
+.. include:: /autodir_options_c/occ__mo_maxiter.rst
+.. include:: /autodir_options_c/occ__wfn_type.rst
 
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
-.. include:: /autodir_options_c/omp2__opt_method.rst
-.. include:: /autodir_options_c/omp2__mo_diis_num_vecs.rst
-.. include:: /autodir_options_c/omp2__lineq_solver.rst
-.. include:: /autodir_options_c/omp2__orth_type.rst
-.. include:: /autodir_options_c/omp2__mp2_os_scale.rst
-.. include:: /autodir_options_c/omp2__mp2_ss_scale.rst
-.. include:: /autodir_options_c/omp2__sos_scale.rst
-.. include:: /autodir_options_c/omp2__sos_scale2.rst
-.. include:: /autodir_options_c/omp2__nat_orbs.rst
-.. include:: /autodir_options_c/omp2__omp2_orbs_print.rst
-.. include:: /autodir_options_c/omp3__omp3_orbs_print.rst
-.. include:: /autodir_options_c/omp3__tpdm_abcd_type.rst
+.. include:: /autodir_options_c/occ__opt_method.rst
+.. include:: /autodir_options_c/occ__mo_diis_num_vecs.rst
+.. include:: /autodir_options_c/occ__lineq_solver.rst
+.. include:: /autodir_options_c/occ__orth_type.rst
+.. include:: /autodir_options_c/occ__mp2_os_scale.rst
+.. include:: /autodir_options_c/occ__mp2_ss_scale.rst
+.. include:: /autodir_options_c/occ__mp2_sos_scale.rst
+.. include:: /autodir_options_c/occ__mp2_sos_scale2.rst
+.. include:: /autodir_options_c/occ__nat_orbs.rst
+.. include:: /autodir_options_c/occ__occ_orbs_print.rst
+.. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
 
