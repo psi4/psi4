@@ -504,8 +504,8 @@ else if (reference_ == "UNRESTRICTED") {
       for(int p = 0; p < nmo_; p++) {
 	  int pa = pitzer2qtA[p];
 	  int pb = pitzer2qtB[p];
-	  qt2pitzerA[p] = pitzer2qtA[pa];
-	  qt2pitzerB[p] = pitzer2qtB[pb];
+	  qt2pitzerA[pa] = p;
+	  qt2pitzerB[pb] = p;
       }
     
 /********************************************************************************************/
