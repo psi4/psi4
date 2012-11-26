@@ -73,6 +73,9 @@ protected:
     // TODO: Add integral derivative functor for erf integrals (and others)
     void compute_quartet_deriv1(int, int, int, int);
 
+    //! Computes the ERI second derivative between four shells.
+    void compute_quartet_deriv2(int, int, int, int);
+
     //! Form shell pair information. Must be smart enough to handle arbitrary basis sets
     void init_shell_pairs12();
     void init_shell_pairs34();
@@ -117,6 +120,9 @@ public:
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     virtual void compute_shell_deriv1(int, int, int, int);
+
+    /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
+    virtual void compute_shell_deriv2(int, int, int, int);
 
     //! Determine if a shell is zero based on schwarz sieve
     //Case No Sieve: false

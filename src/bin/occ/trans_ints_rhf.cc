@@ -126,10 +126,16 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") {
      
      timer_on("Sort (OV|VV) -> <OV|VV>");
      // (OV|VV) -> <OV|VV>
+if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+     tei_sort_iabc();
+}
+
+else {
      dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
      dpd_buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>");
      dpd_buf4_close(&K);
+}
      timer_off("Sort (OV|VV) -> <OV|VV>");
      
        

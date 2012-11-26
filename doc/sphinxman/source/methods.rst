@@ -19,7 +19,7 @@ A complete list of standard keywords is provided in Appendix
    scf
    dft
    dfmp2
-   ompn
+   occ
    adc
    sapt
    cepa
