@@ -17,7 +17,7 @@
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp> 
-#include <libiwl/iwl.h>
+#include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
@@ -88,23 +88,10 @@ if (wfn_type_ != "OMP2") {
     }
 }// end if (wfn_type_ != "OMP2")  
 
-
-if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
-   // Build Y intermediate 
-   // Y_MAMI = 8*\sum{E,F} <MA|EF> * G_MIEF   
-   dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
-                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
-   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-   dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
-   dpd_contract444(&K, &G, &Y, 0, 0, 8.0, 0.0);
-   dpd_buf4_close(&K);
-   dpd_buf4_close(&G);
-   dpd_buf4_close(&Y);
-} // end if (bypass_contract442_ == "TRUE") 
-
 	
+/************************************************************************************************/
+/*********************************** Build Fai **************************************************/
+/************************************************************************************************/
 	// Build Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>"); 
 	
@@ -117,7 +104,7 @@ if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP2") { 
+if (wfn_type_ == "OMP2" && incore_iabc_ == 1) { 
         dpdfile2 G;
 
         // Build Virtual-Virtual block of correlation OPDM
@@ -146,9 +133,58 @@ if (wfn_type_ == "OMP2") {
         dpd_contract422(&K, &G, &GF, 0, 0, 2.0, 1.0);
 	dpd_buf4_close(&K);
         dpd_file2_close(&G);
-}// end if (wfn_type_ != "OMP2") 
+}// end if (wfn_type_ == "OMP2" && incore_iabc_ == 1) 
 
-else { 
+else if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+      	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
+	int ilsti,nbuf,index,fi;
+	double value = 0.0;
+        double summ = 0.0;
+
+ do
+ {
+        ilsti = ERIIN.last_buffer(); 
+        nbuf = ERIIN.buffer_count();
+	
+   fi = 0;
+   for (int idx=0; idx < nbuf; idx++ )
+   {
+
+        int i = ERIIN.labels()[fi];
+            i = abs(i);
+        int e = ERIIN.labels()[fi+1];
+        int a = ERIIN.labels()[fi+2];
+        int f = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[idx];
+        fi += 4;
+
+        int i_pitzer = qt2pitzerA[i];
+        int e_pitzer = qt2pitzerA[e];
+        int a_pitzer = qt2pitzerA[a];
+        int f_pitzer = qt2pitzerA[f];
+  
+        int hi = mosym[i_pitzer];
+        int ha = mosym[a_pitzer];
+        int he = mosym[e_pitzer];
+        int hf = mosym[f_pitzer];
+
+        if (hi == ha && he == hf) {
+            int ii = pitzer2symblk[i_pitzer];
+            int ee = pitzer2symblk[e_pitzer];
+            int aa = pitzer2symblk[a_pitzer];
+            int ff = pitzer2symblk[f_pitzer];
+            summ = 2.0 * value * gamma1corr->get(he,ee,ff);  
+            GFock->add(ha, aa, ii, summ); 
+        }
+
+   }
+        if(!ilsti)
+	  ERIIN.fetch();
+
+ } while(!ilsti);
+}// end else if (wfn_type_ == "OMP2" && incore_iabc_ == 0)  
+
+else if (wfn_type_ != "OMP2") { 
 	// Fai += 4 * \sum{e,m,f} <me|af> * G_meif 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OV|VV>");
@@ -157,34 +193,73 @@ else {
 	dpd_contract442(&K, &G, &GF, 2, 2, 4.0, 1.0); 
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
-}// end else 
+}// end else if (wfn_type_ != "OMP2")  
 
-if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE") { 
-	// Fai += \sum{m} Y_mami 
-        dpd_buf4_init(&Y, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,O]"),
-                  ID("[O,V]"), ID("[O,O]"), 0, "Y <OV|OO>");
-      for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&Y, h);
-        dpd_buf4_mat_irrep_rd(&Y, h);
-        //#pragma omp parallel for
-        for(int ma = 0; ma < Y.params->rowtot[h]; ++ma){
-            int m = Y.params->roworb[h][ma][0];
-            int a = Y.params->roworb[h][ma][1];
-	    int Ga = Y.params->qsym[a];
-	    int aa = a - Y.params->qoff[Ga] + occpiA[Ga];
-            for(int ki = 0; ki < Y.params->coltot[h]; ++ki){
-                int k = Y.params->colorb[h][ki][0];
-                int i = Y.params->colorb[h][ki][1];
-	        int Gi = Y.params->ssym[i];
-		int ii = i - Y.params->soff[Gi];
-		if (k == m) GFock->add(Ga, aa, ii, Y.matrix[h][ma][ki]);
+if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+      // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
+	dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+      	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
+	int ilsti,nbuf,index,fi;
+	double value = 0;
+
+ do
+ {
+        ilsti = ERIIN.last_buffer(); 
+        nbuf = ERIIN.buffer_count();
+	
+   fi = 0;
+   for (int idx=0; idx < nbuf; idx++ )
+   {
+
+        int m = ERIIN.labels()[fi];
+            m = abs(m);
+        int a = ERIIN.labels()[fi+1];
+        int e = ERIIN.labels()[fi+2];
+        int f = ERIIN.labels()[fi+3];
+        value = ERIIN.values()[idx];
+        fi += 4;
+
+        int m_pitzer = qt2pitzerA[m];
+        int a_pitzer = qt2pitzerA[a];
+        int e_pitzer = qt2pitzerA[e];
+        int f_pitzer = qt2pitzerA[f];
+  
+        int hm = mosym[m_pitzer];
+        int ha = mosym[a_pitzer];
+        int he = mosym[e_pitzer];
+        int hf = mosym[f_pitzer];
+ 
+        int hma = ha^hm;
+        int hef = he^hf;
+
+        if (hma == hef) {
+            dpd_buf4_mat_irrep_init(&G, hma);
+            dpd_buf4_mat_irrep_rd(&G, hma);
+            double summ = 0.0;
+            int ee = e - nooA;
+            int ff = f - nooA;
+            for (int i=0; i < occpiA[ha]; i++) {
+                 int I = occ_offA[ha] + i;
+                 int i_pitzer = qt2pitzerA[I];
+                 int mi = G.params->rowidx[m][I];
+                 int ef = G.params->colidx[ee][ff];
+                 summ = 8.0 * value * G.matrix[hma][mi][ef];  
+                 int aa = pitzer2symblk[a_pitzer];
+                 GFock->add(ha, aa, i, summ); 
             }
+            dpd_buf4_mat_irrep_close(&G, hma);
         }
-        dpd_buf4_mat_irrep_close(&Y, h);
-    }
-	dpd_buf4_close(&Y);
-	dpd_file2_close(&GF);
-} // end if (wfn_type_ == "OMP2" && bypass_contract442_ == "TRUE")
+
+   }
+        if(!ilsti)
+	  ERIIN.fetch();
+
+ } while(!ilsti);
+
+        // Close
+	dpd_buf4_close(&G);
+} // end if (wfn_type_ == "OMP2" && incore_iabc_ == 0)
 
 else {
         // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
@@ -198,6 +273,9 @@ else {
 	dpd_file2_close(&GF);
 }// end else
 	
+/************************************************************************************************/
+/*********************************** Build Fia **************************************************/
+/************************************************************************************************/
 	// Build Fia
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('O'), ID('V'), "GF <O|V>");  
 	
@@ -254,6 +332,9 @@ if (wfn_type_ != "OMP2") {
 	psio_->close(PSIF_LIBTRANS_DPD, 1);
         psio_->close(PSIF_OCC_DPD, 1);
 	
+/************************************************************************************************/
+/*********************************** Load *******************************************************/
+/************************************************************************************************/
 	// Load Fai
 	dpd_file2_init(&GF, PSIF_OCC_DENSITY, 0, ID('V'), ID('O'), "GF <V|O>");  
 	dpd_file2_mat_init(&GF);

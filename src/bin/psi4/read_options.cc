@@ -2451,8 +2451,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_DIIS",true);
     /*- Do compute CC Lambda energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE = COMPUTE" option. -*/
     options.add_bool("CCL_ENERGY",false);
-    /*- Do bypass libdpd contract442 function in evaluation of the generalized-Fock matrix? -*/
-    options.add_bool("BYPASS_CONTRACT442",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
