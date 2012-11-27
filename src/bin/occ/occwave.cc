@@ -130,50 +130,24 @@ if (reference_ == "RESTRICTED") {
 	fflush(outfile);
 
 
-        // Print memory
-        memory = Process::environment.get_memory();
-        fprintf(outfile,     "\n\tMemory is %12u KB \n",memory); 
-	fflush(outfile);
 
         // Compute costs
         //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
-        cost_ov_ = new ULI[nirrep_];
-        cost_vv_ = new ULI[nirrep_];
-        memset(cost_ov_,0,sizeof(ULI)*nirrep_);
-        memset(cost_vv_,0,sizeof(ULI)*nirrep_);
-        for (int h1 = 0; h1 < nirrep_; h1++) {
-            for (int h2 = 0; h2 < nirrep_; h2++) {
-                 int h = h1^h2;
-                 cost_ov_[h] += occpiA[h1] * virtpiA[h2];
-                 cost_vv_[h] += virtpiA[h1] * virtpiA[h2];
-            }
-        }
-
         // compute cost_iabc and cost_abcd
         cost_iabc_ = 0;
         cost_abcd_ = 0;
         for(int h=0; h < nirrep_; h++) {
-            cost_iabc_ += 8 * cost_ov_[h] * cost_vv_[h];
-            cost_abcd_ += 8 * cost_vv_[h] * cost_vv_[h];
+            cost_iabc_ += 8 * ov_pairpiAA[h] * vv_pairpiAA[h];
+            cost_abcd_ += 8 * vv_pairpiAA[h] * vv_pairpiAA[h];
         }
        
-        // print  
-        if (print_ > 2) {
-         for(int h=0; h < nirrep_; h++) {
-            fprintf(outfile," h, cost_ov[h]: %2d %12u \n", h, cost_ov_[h]);
-            fflush(outfile);
-         }
-
-         for(int h=0; h < nirrep_; h++) {
-            fprintf(outfile," h, cost_vv[h]: %2d %12u \n", h, cost_vv_[h]);
-            fflush(outfile);
-         }
-        }
-
         // print
     if (wfn_type_ == "OMP2") {
-        fprintf(outfile,"\tCost of iabc is %12u KB \n",cost_iabc_); 
-        fprintf(outfile,"\tCost of abcd is %12u KB \n",cost_abcd_); 
+        // Print memory
+        memory = Process::environment.get_memory();
+        fprintf(outfile,     "\n\tMemory is %6lu MB \n", memory/1000000L); 
+        fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_/1000000L); 
+        fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_/1000000L); 
 	fflush(outfile);
         if (cost_iabc_ < memory) { 
             incore_iabc_ = 1;
@@ -307,7 +281,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 21, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision November 27, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -483,6 +457,11 @@ void OCCWave::mem_release()
 	delete [] virt2symblkA;
         delete [] pitzer2qtA;
         delete [] qt2pitzerA;
+        delete [] oo_pairpiAA;
+        delete [] ov_pairpiAA;
+        delete [] vv_pairpiAA;
+        delete oo_pairidxAA;
+        delete vv_pairidxAA;
 
        if (reference_ == "UNRESTRICTED") {
 	delete [] occ_offB;
