@@ -343,14 +343,6 @@ protected:
      int *occ2symblkB;		// convert OCC index to sym block index
      int *virt2symblkA;		// convert VIR index to sym block index
      int *virt2symblkB;		// convert VIR index to sym block index
-     int *c1topitzerA; 		// Convert the index of given alpha orbital in C1 subgroup to symmetric subgroup (pitzer ordered)
-     int *c1topitzerB; 		// Convert the index of given beta orbital in C1 subgroup to symmetric subgroup (pitzer ordered)
-     int *pitzer2c1A;		// Convert the index of given alpha orbital in symmetric subgroup to C1 subgroup (energy ordered)  
-     int *pitzer2c1B;		// Convert the index of given alpha orbital in symmetric subgroup to C1 subgroup (energy ordered)  
-     int *c1toqtA; 		// Convert the index of given orbital in C1 subgroup to QT order
-     int *c1toqtB; 		// Convert the index of given orbital in C1 subgroup to QT order
-     int *qt2c1A; 		// Convert the index of given orbital in QT order to C1 subgroup (energy ordered) 
-     int *qt2c1B; 		// Convert the index of given orbital in QT order to C1 subgroup (energy ordered) 
      int *qt2pitzerA; 		// Convert the index of given orbital in QT order to symmetric subgroup (pitzer ordered)
      int *qt2pitzerB; 		// Convert the index of given orbital in QT order to symmetric subgroup (pitzer ordered)
      int *pitzer2qtA;  		// Convert the index of given orbital in symmetric subgroup to QT order    
@@ -365,6 +357,15 @@ protected:
      int *idpcolB;
      int *idpirrA;
      int *idpirrB;
+     int *oo_pairpiAA;
+     int *oo_pairpiAB;
+     int *oo_pairpiBB;
+     int *ov_pairpiAA;
+     int *ov_pairpiAB;
+     int *ov_pairpiBB;
+     int *vv_pairpiAA;
+     int *vv_pairpiAB;
+     int *vv_pairpiBB;
 
      ULI *cost_ov_;
      ULI *cost_vv_;
@@ -411,6 +412,8 @@ protected:
      Array2d *AorbAB;
      Array2d *Aorb;
 
+     Array3i *oo_pairidxAA;
+     Array3i *vv_pairidxAA;
 
      double **C_pitzerA;     
      double **C_pitzerB;     

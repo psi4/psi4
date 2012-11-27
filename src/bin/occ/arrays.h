@@ -213,13 +213,13 @@ class Array1i
     
   public:
   Array1i(int d1);  
-  Array1i(int d1, string name);
+  Array1i(string name, int d1);
   Array1i();			   //default constructer
   ~Array1i(); 		   	   //destructer
   
   Array1i* generate(int d1);
-  Array1i* generate(int d1, string name);
-  void init(int d1, string name);
+  Array1i* generate(string name, int d1);
+  void init(string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -244,13 +244,13 @@ class Array3i
     
   public:
   Array3i(int d1,int d2, int d3);  
-  Array3i(int d1,int d2, int d3, string name);
+  Array3i(string name, int d1,int d2, int d3);
   Array3i();			   //default constructer
   ~Array3i(); 		           //destructer
   
   Array3i* generate(int d1,int d2, int d3);
-  Array3i* generate(int d1,int d2, int d3, string name);
-  void init(int d1,int d2, int d3, string name);
+  Array3i* generate(string name, int d1,int d2, int d3);
+  void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();
