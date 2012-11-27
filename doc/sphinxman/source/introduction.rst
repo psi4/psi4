@@ -332,8 +332,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | %RAS-CI DBOC            | Y         | N         |
     +-------------------------+-----------+-----------+
 
-Geometry optimization (currently restricted to true minima on the potential
-energy surface) can be performed using either analytic gradients
+Geometry optimization can be performed using either analytic gradients
 or energy points.  Likewise, vibrational frequencies can be 
 computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
