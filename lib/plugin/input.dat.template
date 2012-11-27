@@ -11,6 +11,7 @@ plugin_load("./@plugin@.so")
 
 set {
   basis sto-3g
+  scf_type pk
 }
 
 set @plugin@ {
