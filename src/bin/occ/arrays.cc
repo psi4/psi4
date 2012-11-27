@@ -1023,7 +1023,7 @@ Array1i::Array1i(int d1)
   memalloc(); 
 }//
 
-Array1i::Array1i(int d1, string name)
+Array1i::Array1i(string name, int d1)
 {
   A1i_ = NULL;
   dim1_=d1;
@@ -1048,9 +1048,9 @@ Array1i* Array1i::generate(int d1)
     return new Array1i(d1);
 }
 
-Array1i* Array1i::generate(int d1, string name)
+Array1i* Array1i::generate(string name, int d1)
 {
-    return new Array1i(d1,name);
+    return new Array1i(name, d1);
 }
 
 void Array1i::memalloc()
@@ -1066,7 +1066,7 @@ void Array1i::init(int d1)
     A1i_ = new int[dim1_];
 }//
 
-void Array1i::init(int d1, string name)
+void Array1i::init(string name, int d1)
 { 
     dim1_=d1;
     name_=name;
@@ -1156,7 +1156,7 @@ Array3i::Array3i(int d1,int d2, int d3)
   memalloc();
 }//
 
-Array3i::Array3i(int d1,int d2, int d3, string name)
+Array3i::Array3i(string name, int d1,int d2, int d3)
 {
   A3i_ = NULL;
   dim1_=d1;
@@ -1185,9 +1185,9 @@ Array3i* Array3i::generate(int d1,int d2, int d3)
     return new Array3i(d1,d2,d3);
 }//
 
-Array3i* Array3i::generate(int d1,int d2, int d3, string name)
+Array3i* Array3i::generate(string name, int d1,int d2, int d3)
 {
-    return new Array3i(d1,d2,d3,name);
+    return new Array3i(name,d1,d2,d3);
 }//
 
 void Array3i::memalloc()
@@ -1211,7 +1211,7 @@ void Array3i::init(int d1,int d2, int d3)
     }     
 }//
 
-void Array3i::init(int d1,int d2, int d3, string name)
+void Array3i::init(string name, int d1, int d2, int d3)
 { 
     dim1_=d1;
     dim2_=d2;

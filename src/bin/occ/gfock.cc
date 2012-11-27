@@ -30,6 +30,7 @@
 
 #include "occwave.h"
 #include "defines.h"
+#include "dpd.h"
 
 using namespace boost;
 using namespace psi;
@@ -197,11 +198,46 @@ else if (wfn_type_ != "OMP2") {
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
       // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
-	dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+    /*
+    struct iwlbuf AA;
+    iwl_buf_init(&AA, PSIF_MO_TPDM, cutoff, 0, 0);
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int hi = G.params->psym[i];
+            int hj = G.params->qsym[j];
+            for(int ab = 0; ab < G.params->coltot[h]; ++ab){
+                int a = G.params->colorb[h][ab][0];
+                int b = G.params->colorb[h][ab][1];
+                int ha = G.params->rsym[a];
+                int hb = G.params->ssym[b];
+                int A = a + nooA;// vir_qt => gen_qt
+                int B = b + nooA;
+                iwl_buf_wrt_val(&AA, i, j, A, B, G.matrix[h][ij][ab], 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    //dpd_buf4_close(&G);
+    iwl_buf_flush(&AA, 1);
+    iwl_buf_close(&AA, 1);
+    */
+
       	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
 	int ilsti,nbuf,index,fi;
 	double value = 0;
+
+       SymBlockMatrix *Goovv = new SymBlockMatrix("TPDM <OO|VV>", nirrep_, oo_pairpiAA, vv_pairpiAA); 
+       Goovv->zero();
+       //Goovv->read_oovv(psio_, PSIF_MO_TPDM, nooA, mosym, qt2pitzerA, occ_offA, vir_offA, occpiA, virtpiA, oo_pairidxAA, vv_pairidxAA);
+       dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                     ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+       Goovv->set(G);
+       dpd_buf4_close(&G);
+       Goovv->print();
 
  do
  {
@@ -232,23 +268,20 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
  
         int hma = ha^hm;
         int hef = he^hf;
+ 
+        int E = e - nooA;// convert to vir_qt
+        int F = f - nooA;
 
         if (hma == hef) {
-            dpd_buf4_mat_irrep_init(&G, hma);
-            dpd_buf4_mat_irrep_rd(&G, hma);
             double summ = 0.0;
-            int ee = e - nooA;
-            int ff = f - nooA;
             for (int i=0; i < occpiA[ha]; i++) {
-                 int I = occ_offA[ha] + i;
-                 int i_pitzer = qt2pitzerA[I];
-                 int mi = G.params->rowidx[m][I];
-                 int ef = G.params->colidx[ee][ff];
-                 summ = 8.0 * value * G.matrix[hma][mi][ef];  
+                 int I = i + occ_offA[ha];
+                 int mi = oo_pairidxAA->get(hma, m, I);
+                 int ef = vv_pairidxAA->get(hef, E, F);
+                 summ = 8.0 * value * Goovv->get(hma, mi, ef);  
                  int aa = pitzer2symblk[a_pitzer];
                  GFock->add(ha, aa, i, summ); 
             }
-            dpd_buf4_mat_irrep_close(&G, hma);
         }
 
    }
@@ -256,9 +289,8 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
 	  ERIIN.fetch();
 
  } while(!ilsti);
+       delete Goovv;
 
-        // Close
-	dpd_buf4_close(&G);
 } // end if (wfn_type_ == "OMP2" && incore_iabc_ == 0)
 
 else {
