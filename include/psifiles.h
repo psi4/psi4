@@ -12,6 +12,10 @@
 **  in the future but the names will not.
 **
 ** Created by C. David Sherrill on 29 April 1998
+**
+** Make sure that you comment any new additions to this, so they are inlined 
+**  into the manual as well as the psifiles.py python file.  Note the format 
+**  of the existing comment markers, and keep comments on one line.
 */
 
 #ifndef _psi_include_psifiles_h_
