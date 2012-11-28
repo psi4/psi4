@@ -27,7 +27,8 @@ private:
 @Plugin@::@Plugin@(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
     : Wavefunction(options, _default_psio_lib_)
 {
-    set_reference_wavefunction(reference_wavefunction);
+    Process::environment.set_wavefunction(reference_wavefunction);
+    reference_wavefunction_ = reference_wavefunction;
     common_init();
 }
 
@@ -70,7 +71,7 @@ int read_options(std::string name, Options& options)
 extern "C"
 PsiReturnType @plugin@(Options& options)
 {
-    @Plugin@ wave(Process::environment.reference_wavefunction(), options);
+    @Plugin@ wave(Process::environment.wavefunction(), options);
     wave.compute_energy();
 
     return Success;
