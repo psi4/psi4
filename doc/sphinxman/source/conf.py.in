@@ -63,10 +63,10 @@ def get_gitversion():
         return ''
 
     try:
-        vers = f.readline().split()[2]
+        vers = f.readline().split()[3]
         f.close()
         #print 'GIT_VERSION', vers[1:7]
-        return vers[1:7]
+        return vers[0:7]
     except IndexError:
         return ''
 

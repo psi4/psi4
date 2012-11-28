@@ -44,7 +44,7 @@ protected:
     /// Whether to force integrals to be generated in the Cartesian (AO) basis;
     bool force_cartesian_;
     //! The order of the derivative integral buffers, after permuting shells
-    int buffer_offsets_[4];
+    unsigned char buffer_offsets_[4];
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -98,8 +98,11 @@ public:
     ///Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
-    /// Compute the integrals
+    /// Compute the first derivatives
     virtual void compute_shell_deriv1(int, int, int, int) = 0;
+
+    /// Compute the second derivatives
+    virtual void compute_shell_deriv2(int, int, int, int) = 0;
 
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, int nchunk=1);
