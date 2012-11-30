@@ -105,8 +105,7 @@ protected:
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
     void compute_ewdm();
-    // Temp for more efficient gradients
-    void compute_lagrangian_OV_new();
+    void compute_density_VVVV();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
     void qc_dcft_init();
