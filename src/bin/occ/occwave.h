@@ -166,6 +166,7 @@ protected:
      int incore_abcd_;          // 1 means do incore, 0 means do out of core
 
      ULI memory; 
+     ULI memory_mb_; 
      ULI cost_iabc_;            // Mem required for the <ia|bc> integrals
      ULI cost_abcd_;            // Mem required for the <ab|cd> integrals
      
