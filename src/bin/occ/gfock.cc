@@ -237,7 +237,6 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
                      ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
        Goovv->set(G);
        dpd_buf4_close(&G);
-       Goovv->print();
 
  do
  {
