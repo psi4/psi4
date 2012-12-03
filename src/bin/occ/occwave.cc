@@ -142,8 +142,8 @@ if (reference_ == "RESTRICTED") {
         }
         cost_iabc_ /= (ULI)1024 * (ULI)1024;
         cost_abcd_ /= (ULI)1024 * (ULI)1024;
-        cost_iabc_ *= (ULI)8;
-        cost_abcd_ *= (ULI)8;
+        cost_iabc_ *= (ULI)sizeof(double);
+        cost_abcd_ *= (ULI)sizeof(double);
        
         // print
     if (wfn_type_ == "OMP2") {
@@ -286,7 +286,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision December 02, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 03, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
