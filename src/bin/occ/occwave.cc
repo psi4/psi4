@@ -137,19 +137,24 @@ if (reference_ == "RESTRICTED") {
         cost_iabc_ = 0;
         cost_abcd_ = 0;
         for(int h=0; h < nirrep_; h++) {
-            cost_iabc_ += 8 * ov_pairpiAA[h] * vv_pairpiAA[h];
-            cost_abcd_ += 8 * vv_pairpiAA[h] * vv_pairpiAA[h];
+            cost_iabc_ += (ULI)ov_pairpiAA[h] * (ULI)vv_pairpiAA[h];
+            cost_abcd_ += (ULI)vv_pairpiAA[h] * (ULI)vv_pairpiAA[h];
         }
+        cost_iabc_ /= (ULI)1024 * (ULI)1024;
+        cost_abcd_ /= (ULI)1024 * (ULI)1024;
+        cost_iabc_ *= (ULI)sizeof(double);
+        cost_abcd_ *= (ULI)sizeof(double);
        
         // print
     if (wfn_type_ == "OMP2") {
         // Print memory
         memory = Process::environment.get_memory();
-        fprintf(outfile,     "\n\tMemory is %6lu MB \n", memory/1000000L); 
-        fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_/1000000L); 
-        fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_/1000000L); 
+        memory_mb_ = memory/1000000L;
+        fprintf(outfile,"\n\tMemory is %6lu MB \n", memory_mb_); 
+        fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_); 
+        fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_); 
 	fflush(outfile);
-        if (cost_iabc_ < memory) { 
+        if (cost_iabc_ < memory_mb_) { 
             incore_iabc_ = 1;
             fprintf(outfile,     "\tSwitching to the incore algoritm for iabc..\n"); 
 	    fflush(outfile);
@@ -161,7 +166,7 @@ if (reference_ == "RESTRICTED") {
         }
 
         //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
-        if (cost_abcd_ < memory) { 
+        if (cost_abcd_ < memory_mb_) { 
             incore_abcd_ = 1;
             fprintf(outfile,     "\tSwitching to the incore algoritm for abcd..\n"); 
 	    fflush(outfile);
@@ -281,7 +286,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 27, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 03, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
