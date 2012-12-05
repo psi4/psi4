@@ -173,8 +173,10 @@ if (reference_ == "RESTRICTED") {
 	  kappaA->set(x, -wogA->get(x) / (2.0*value));
        }
 
-       fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
-       fflush(outfile);
+       if (print_ > 1 ) {
+           fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
+           fflush(outfile);
+       }
     } // end if pcg_conver = 0
 
         // find biggest_kappa 
@@ -478,8 +480,10 @@ else if (reference_ == "UNRESTRICTED") {
 	  kappaB->set(x, -wogB->get(x) / (2.0*value));
 	}
 
+       if (print_ > 1 ) {
         fprintf(outfile,"\tWarning!!! PCG did NOT converged in %2d iterations, switching to MSD. \n", itr_pcg);
         fflush(outfile);
+       }
     }// en d if pcg_conver = 0
 
         // find biggest_kappa 
