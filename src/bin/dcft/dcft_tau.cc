@@ -492,7 +492,7 @@ DCFTSolver::refine_tau() {
     } // end of macroiterations
 
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
-//    if (failed) {
+    if (failed) {
         fprintf(outfile, "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
         // Set old tau matrices to identity
         aocc_tau_old->identity();
@@ -549,7 +549,7 @@ DCFTSolver::refine_tau() {
         bocc_tau_->back_transform(bocc_evecs);
         avir_tau_->back_transform(avir_evecs);
         bvir_tau_->back_transform(bvir_evecs);
-//    }
+    }
 
     // Write the exact tau back to disk
 
