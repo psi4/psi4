@@ -164,6 +164,7 @@ protected:
      int cc_mindiis_; 		// MIN Number of vectors used in CC diis
      int incore_iabc_;          // 1 means do incore, 0 means do out of core
      int incore_abcd_;          // 1 means do incore, 0 means do out of core
+     int orbs_already_opt;      // 1 means true, 0 menas false
 
      ULI memory; 
      ULI memory_mb_; 
