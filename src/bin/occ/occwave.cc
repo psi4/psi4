@@ -142,8 +142,8 @@ if (reference_ == "RESTRICTED") {
         }
         cost_iabc_ /= (ULI)1024 * (ULI)1024;
         cost_abcd_ /= (ULI)1024 * (ULI)1024;
-        cost_iabc_ *= (ULI)8;
-        cost_abcd_ *= (ULI)8;
+        cost_iabc_ *= (ULI)sizeof(double);
+        cost_abcd_ *= (ULI)sizeof(double);
        
         // print
     if (wfn_type_ == "OMP2") {
@@ -286,7 +286,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision December 02, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 07, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -462,22 +462,14 @@ void OCCWave::mem_release()
 	delete [] virt2symblkA;
         delete [] pitzer2qtA;
         delete [] qt2pitzerA;
+
+      if (reference_ == "RESTRICTED") {
         delete [] oo_pairpiAA;
         delete [] ov_pairpiAA;
         delete [] vv_pairpiAA;
         delete oo_pairidxAA;
         delete vv_pairidxAA;
 
-       if (reference_ == "UNRESTRICTED") {
-	delete [] occ_offB;
-	delete [] vir_offB;
-	delete [] occ2symblkB;
-	delete [] virt2symblkB;
-        delete [] pitzer2qtB;
-        delete [] qt2pitzerB;
-      }
-
-      if (reference_ == "RESTRICTED") {
 	Ca_.reset();
 	Ca_ref.reset();
 	Hso.reset();
@@ -498,6 +490,13 @@ void OCCWave::mem_release()
        }
 
        else if (reference_ == "UNRESTRICTED") {
+	delete [] occ_offB;
+	delete [] vir_offB;
+	delete [] occ2symblkB;
+	delete [] virt2symblkB;
+        delete [] pitzer2qtB;
+        delete [] qt2pitzerB;
+
 	Ca_.reset();
 	Cb_.reset();
 	Ca_ref.reset();
