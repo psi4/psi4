@@ -39,6 +39,7 @@ namespace psi{ namespace occwave{
 void OCCWave::omp2_manager()
 {
 	mo_optimized = 0;
+	orbs_already_opt = 0;
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -92,6 +93,7 @@ void OCCWave::omp2_manager()
         occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+           orbs_already_opt = 1;
 	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   fprintf(outfile,"\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
@@ -108,6 +110,7 @@ void OCCWave::omp2_manager()
   if (conver == 1) {
         ref_energy();
 	omp2_mp2_energy();
+        if (orbs_already_opt == 1) Emp2L = Emp2;
 	
 	fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
@@ -207,6 +210,7 @@ void OCCWave::omp2_manager()
 void OCCWave::omp3_manager()
 {
 	mo_optimized = 0;
+	orbs_already_opt = 0;
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -298,6 +302,7 @@ void OCCWave::omp3_manager()
         occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+           orbs_already_opt = 1;
 	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   fprintf(outfile,"\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
@@ -312,6 +317,7 @@ void OCCWave::omp3_manager()
         ref_energy();
 	omp3_mp2_energy();
 	mp3_energy();
+        if (orbs_already_opt == 1) Emp3L = Emp3;
 
         fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
@@ -430,6 +436,7 @@ void OCCWave::omp3_manager()
 void OCCWave::ocepa_manager()
 {
 	mo_optimized = 0;// means MOs are not optimized yet.
+	orbs_already_opt = 0;
         time4grad = 0;// means i will not compute the gradient
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
@@ -490,6 +497,7 @@ void OCCWave::ocepa_manager()
         }
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
+           orbs_already_opt = 1;
 	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
 	   fprintf(outfile,"\tSwitching to the standard CEPA computation... \n");
 	   fflush(outfile);
@@ -506,6 +514,7 @@ void OCCWave::ocepa_manager()
   if (conver == 1) {
         ref_energy();
 	cepa_energy();
+        if (orbs_already_opt == 1) EcepaL = Ecepa;
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
