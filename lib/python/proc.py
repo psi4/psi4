@@ -30,7 +30,8 @@ def run_dcft(name, **kwargs):
 
     # DCFT module should probably take a REFERENCE keyword with only UHF allowed value
     PsiMod.set_global_option('REFERENCE', 'UHF')
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    scf_helper(name, **kwargs)
     returnvalue = PsiMod.dcft()
 
     optstash.restore()

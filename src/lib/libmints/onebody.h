@@ -95,6 +95,9 @@ public:
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix > &result);
 
+    /// Computes the second derivatives and stores them in result
+    virtual void compute_deriv2(std::vector<SharedMatrix > &result);
+
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
     /// Computes the integrals between basis function in the given shell pair
