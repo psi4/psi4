@@ -1,0 +1,20 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_dft_sapt.a
+
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+
+BINOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq "$(MAKECMDGOALS)" "clean"
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
