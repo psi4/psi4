@@ -736,7 +736,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
-
+  if (name == "DFTSAPT"|| options.read_globals()) {
+      /*- The amount of information printed to the output file -*/
+      options.add_int("PRINT", 1);
+      /*- Debug level -*/ 
+      options.add_int("DEBUG", 0);
+      /*- Bench level -*/ 
+      options.add_int("BENCH", 0);
+      /*- \% of memory for DF-MP2 three-index buffers -*/
+      options.add_double("SAPT_MEM_FACTOR", 0.9);
+      /*- The name of the orbital basis set -*/
+      options.add_str("BASIS", "");
+      /*- The name of the response auxiliary basis set -*/
+      options.add_str("DF_BASIS_SAPT", "");
+      /*- The name of the electrostatic/exchange auxiliary basis set -*/
+      options.add_str("DF_BASIS_ELST", "");
+  }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/

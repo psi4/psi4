@@ -40,6 +40,7 @@ procedures = {
             'sos-omp3'      : run_sos_omp3,
             'sos-pi-omp3'   : run_sos_omp3,
             'ocepa'         : run_ocepa,
+            'dftsapt'       : run_dftsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,

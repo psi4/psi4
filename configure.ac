@@ -965,7 +965,7 @@ AC_CONFIG_FILES([
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
-          src/bin/dft-sapt/Makefile
+          src/bin/dftsapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/scfgrad/Makefile
