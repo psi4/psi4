@@ -969,7 +969,7 @@ timer_off("INIT GUESS");
           Process::environment.globals[s.str()] = totalE;
 					
           fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
-             lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers, lambda_old[i], totalE);
+             lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers, lambda_old[i], totalE);
 
           /* print out largest components of wavefunction */
           fprintf(outfile, "\nLargest components of excited wave function #%d:\n", num_converged_index);
