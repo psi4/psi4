@@ -456,7 +456,7 @@ void diagSS(int C_irr) {
   if (pf) fprintf(outfile,"           (eV)     (cm^-1)            (au)\n");
   if (pf) for (i=0;i<num_roots;++i)
     if (pf)   fprintf(outfile,"%4d%12.3lf%12.2lf%20.10lf\n",i+1,
-		      lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers,
+		      lambda_old[i]* pc_hartree2ev, lambda_old[i]* pc_hartree2wavenumbers,
 		      lambda_old[i]+moinfo.eref+moinfo.ecc);
 
   free(lambda_old);

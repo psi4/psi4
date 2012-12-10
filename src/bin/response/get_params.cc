@@ -66,10 +66,10 @@ void get_params()
     for(int i=0; i < count-1; i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
 
-      if(units == "HZ") params.omega[i] *= _h / _hartree2J;
+      if(units == "HZ") params.omega[i] *= pc_h / pc_hartree2J;
       else if(units == "AU") 1; /* do nothing */
-      else if(units == "NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
-      else if(units == "EV") params.omega[i] /= _hartree2ev;
+      else if(units == "NM") params.omega[i] = (pc_c*pc_h*1e9)/(params.omega[i]*pc_hartree2J);
+      else if(units == "EV") params.omega[i] /= pc_hartree2ev;
       else {
         fprintf(outfile, "\n\tError in unit for input field frequencies.  Must use one of:\n");
         fprintf(outfile,   "\tau, hz, nm, or ev.\n");

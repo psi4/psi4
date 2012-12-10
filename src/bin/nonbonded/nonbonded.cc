@@ -214,7 +214,7 @@ int main(int argc, char *argv[]) {
   if (do_dispersion) {
 
     energy_dd = compute_ddisp(natom, R, AN, s6, d, damp_type);
-    energy_dd_hartree = energy_dd / (_na * _hartree2J);
+    energy_dd_hartree = energy_dd / (pc_na * pc_hartree2J);
 
     fprintf(outfile, "\n");
     fprintf(outfile, "   Damped dispersion energy  = %14.9lf hartree ", 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[]) {
 
   if (do_estatic) {
     double estatic = compute_estatic(natom, R, AC);
-    double estatic_hartree = estatic / (_na * _hartree2J);
+    double estatic_hartree = estatic / (pc_na * pc_hartree2J);
     fprintf(outfile, "   Electrostatic energy      = %14.9lf hartree ", 
       estatic_hartree);
     fprintf(outfile, "(%10.4lf kcal/mol)\n", (estatic / 4184.0));
@@ -400,7 +400,7 @@ void compute_R(int natom, double **geom, double *R)
       dy = geom[i][1] - geom[j][1];
       dz = geom[i][2] - geom[j][2];
       dist = sqrt(dx * dx + dy * dy + dz * dz);
-      R[ij] = dist * _bohr2angstroms;
+      R[ij] = dist * pc_bohr2angstroms;
     }
   }
  
@@ -428,9 +428,9 @@ void compute_dXdYdZ(int natom, double **geom, double **dX, double **dY,
 
   for (i=0; i<natom; i++) {
     for (j=0; j<natom; j++) {
-      dX[i][j] = (geom[i][0] - geom[j][0]) * _bohr2angstroms;
-      dY[i][j] = (geom[i][1] - geom[j][1]) * _bohr2angstroms;
-      dZ[i][j] = (geom[i][2] - geom[j][2]) * _bohr2angstroms;
+      dX[i][j] = (geom[i][0] - geom[j][0]) * pc_bohr2angstroms;
+      dY[i][j] = (geom[i][1] - geom[j][1]) * pc_bohr2angstroms;
+      dZ[i][j] = (geom[i][2] - geom[j][2]) * pc_bohr2angstroms;
     }
   }
 
@@ -521,9 +521,9 @@ void compute_ddisp_gradient(int natom, double *AN, double **geom,
     for (j=0; j<natom; j++) {
       if (j==i) continue;
 
-      dx = (geom[i][0] - geom[j][0]) * _bohr2angstroms;
-      dy = (geom[i][1] - geom[j][1]) * _bohr2angstroms;
-      dz = (geom[i][2] - geom[j][2]) * _bohr2angstroms;
+      dx = (geom[i][0] - geom[j][0]) * pc_bohr2angstroms;
+      dy = (geom[i][1] - geom[j][1]) * pc_bohr2angstroms;
+      dz = (geom[i][2] - geom[j][2]) * pc_bohr2angstroms;
       r =  sqrt(dx * dx + dy * dy + dz * dz); /* already ang now */
 
       Zj = (int) AN[j];
@@ -544,7 +544,7 @@ void compute_ddisp_gradient(int natom, double *AN, double **geom,
       tval *= prefact;
 
       /* right now we're in J / (mol * Angstrom) */
-      unitconv = _bohr2angstroms / (_na * _hartree2J);
+      unitconv = pc_bohr2angstroms / (pc_na * pc_hartree2J);
       tval *= unitconv;
 
       /* x */
@@ -586,7 +586,7 @@ void compute_disp_hess(int natom, double *AN, double **geom,
   double dx, dy, dz;
   double tval_10, tval_8;
   double prefact;
-  double unitconv = _bohr2angstroms * _bohr2angstroms / (_na * _hartree2J);
+  double unitconv = pc_bohr2angstroms * pc_bohr2angstroms / (pc_na * pc_hartree2J);
 
   for(i=0; i < natom; i++) {
     for(j=0; j <= i; j++) { /*Loop over all unique atom pairs (including i=j)*/
@@ -607,9 +607,9 @@ void compute_disp_hess(int natom, double *AN, double **geom,
 
           prefact = s6 * sqrt(C6i * C6k) * 1000000.0 * unitconv;
 
-          dx = (geom[i][0] - geom[k][0]) * _bohr2angstroms;
-          dy = (geom[i][1] - geom[k][1]) * _bohr2angstroms;
-          dz = (geom[i][2] - geom[k][2]) * _bohr2angstroms;
+          dx = (geom[i][0] - geom[k][0]) * pc_bohr2angstroms;
+          dy = (geom[i][1] - geom[k][1]) * pc_bohr2angstroms;
+          dz = (geom[i][2] - geom[k][2]) * pc_bohr2angstroms;
           r =  sqrt(dx * dx + dy * dy + dz * dz); /* in ang */
 
           tval_8  = 6.0/pow(r, 8.0);
@@ -628,9 +628,9 @@ void compute_disp_hess(int natom, double *AN, double **geom,
 
         prefact = s6 * sqrt(C6i * C6j) * 1000000.0 * unitconv;
 
-        dx = (geom[i][0] - geom[j][0]) * _bohr2angstroms;
-        dy = (geom[i][1] - geom[j][1]) * _bohr2angstroms;
-        dz = (geom[i][2] - geom[j][2]) * _bohr2angstroms;
+        dx = (geom[i][0] - geom[j][0]) * pc_bohr2angstroms;
+        dy = (geom[i][1] - geom[j][1]) * pc_bohr2angstroms;
+        dz = (geom[i][2] - geom[j][2]) * pc_bohr2angstroms;
         r =  sqrt(dx * dx + dy * dy + dz * dz); /* in ang */
 
         tval_8  = -6.0/pow(r, 8.0);
@@ -695,7 +695,7 @@ void compute_ddisp_hess(int natom, double *AN, double **geom,
   double term1, term2, term3, term4, term5, term6;
   double clump1, clump2;
   double prefact;
-  double unitconv = _bohr2angstroms * _bohr2angstroms / (_na * _hartree2J);
+  double unitconv = pc_bohr2angstroms * pc_bohr2angstroms / (pc_na * pc_hartree2J);
 
   for(i=0; i < natom; i++){
     for(j=0; j <= i; j++){ /*Loop over all unique atom pairs (including i=j)*/
@@ -721,9 +721,9 @@ void compute_ddisp_hess(int natom, double *AN, double **geom,
           prefact = s6 * sqrt(C6i * C6k) * 1000000.0 * unitconv;
           rvdw = r_i + r_k;
 
-          dx = (geom[i][0] - geom[k][0]) * _bohr2angstroms;
-          dy = (geom[i][1] - geom[k][1]) * _bohr2angstroms;
-          dz = (geom[i][2] - geom[k][2]) * _bohr2angstroms;
+          dx = (geom[i][0] - geom[k][0]) * pc_bohr2angstroms;
+          dy = (geom[i][1] - geom[k][1]) * pc_bohr2angstroms;
+          dz = (geom[i][2] - geom[k][2]) * pc_bohr2angstroms;
           r =  sqrt(dx * dx + dy * dy + dz * dz); /* in ang */
 
           dmp = exp(-d * (r / rvdw - 1.0));
@@ -753,9 +753,9 @@ void compute_ddisp_hess(int natom, double *AN, double **geom,
         prefact = s6 * sqrt(C6i * C6j) * 1000000.0 * unitconv;
         rvdw = r_i + r_j;
 
-        dx = (geom[i][0] - geom[j][0]) * _bohr2angstroms;
-        dy = (geom[i][1] - geom[j][1]) * _bohr2angstroms;
-        dz = (geom[i][2] - geom[j][2]) * _bohr2angstroms;
+        dx = (geom[i][0] - geom[j][0]) * pc_bohr2angstroms;
+        dy = (geom[i][1] - geom[j][1]) * pc_bohr2angstroms;
+        dz = (geom[i][2] - geom[j][2]) * pc_bohr2angstroms;
         r =  sqrt(dx * dx + dy * dy + dz * dz); /* in ang */
 
         dmp = exp(-d * (r / rvdw - 1.0));
@@ -825,7 +825,7 @@ double compute_estatic(int natom, double *R, double *AC)
   double au_to_coulomb = 1.60219E-19;
   double convfact;
 
-  convfact = au_to_coulomb * au_to_coulomb * _na / (4.0 * _pi * _e0);
+  convfact = au_to_coulomb * au_to_coulomb * pc_na / (4.0 * pc_pi * pc_e0);
   convfact *= 1.0E10; /* Angstroms to meters in denominator */
 
   for(i=0,ij=0; i<natom; i++){
