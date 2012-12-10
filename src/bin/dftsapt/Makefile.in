@@ -5,7 +5,7 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS)
 
-PSITARGET = $(top_objdir)/lib/libPSI_dft_sapt.a
+PSITARGET = $(top_objdir)/lib/libPSI_dftsapt.a
 
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 

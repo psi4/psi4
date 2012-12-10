@@ -44,7 +44,7 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->debug_ = options.get_int("DEBUG");
     sapt->bench_ = options.get_int("BENCH");
 
-    sapt->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEMORY_FACTOR") * 0.125);
+    sapt->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEM_FACTOR") * 0.125);
 
     sapt->dimer_     = d->molecule();
     sapt->monomer_A_ = mA->molecule();
@@ -60,23 +60,23 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
 
     sapt->Cocc_A_     = mA->Ca_subset("AO","OCC");
 
-    sapt->Caocc_A_    = mA->Ca_subset("AO","AOCC");
-    sapt->Cavir_A_    = mA->Ca_subset("AO","AVIR");
+    sapt->Caocc_A_    = mA->Ca_subset("AO","ACTIVE_OCC");
+    sapt->Cavir_A_    = mA->Ca_subset("AO","ACTIVE_VIR");
 
-    sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FOCC");
-    sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","AOCC");
-    sapt->eps_avir_A_ = mA->epsilon_a_subset("AO","AVIR");
-    sapt->eps_fvir_A_ = mA->epsilon_a_subset("AO","FVIR");
+    sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FROZEN_OCC");
+    sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","ACTIVE_OCC");
+    sapt->eps_avir_A_ = mA->epsilon_a_subset("AO","ACTIVE_VIR");
+    sapt->eps_fvir_A_ = mA->epsilon_a_subset("AO","FROZEN_VIR");
 
     sapt->Cocc_B_     = mB->Ca_subset("AO","OCC");
 
-    sapt->Caocc_B_    = mB->Ca_subset("AO","AOCC");
-    sapt->Cavir_B_    = mB->Ca_subset("AO","AVIR");
+    sapt->Caocc_B_    = mB->Ca_subset("AO","ACTIVE_OCC");
+    sapt->Cavir_B_    = mB->Ca_subset("AO","ACTIVE_VIR");
 
-    sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FOCC");
-    sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","AOCC");
-    sapt->eps_avir_B_ = mB->epsilon_a_subset("AO","AVIR");
-    sapt->eps_fvir_B_ = mB->epsilon_a_subset("AO","FVIR");
+    sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FROZEN_OCC");
+    sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","ACTIVE_OCC");
+    sapt->eps_avir_B_ = mB->epsilon_a_subset("AO","ACTIVE_VIR");
+    sapt->eps_fvir_B_ = mB->epsilon_a_subset("AO","FROZEN_VIR");
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     sapt->mp2fit_ = BasisSet::construct(parser, sapt->dimer_, "DF_BASIS_SAPT");
@@ -92,6 +92,8 @@ double DFTSAPT::compute_energy()
     mp2_terms();
 
     print_trailer();
+    
+    Process::environment.globals["SAPT ENERGY"] = 0.0;
 
     return 0.0;
 }
@@ -367,6 +369,8 @@ void DFTSAPT::fock_terms()
 
     boost::shared_ptr<Matrix> x_A(w_A->clone());
     boost::shared_ptr<Matrix> x_B(w_B->clone());
+    x_A->zero();
+    x_B->zero();
 
     // ==> Induction <== //
 
@@ -405,7 +409,7 @@ void DFTSAPT::mp2_terms()
 }
 void DFTSAPT::print_trailer() const 
 {
-    fprintf(outfile, "\t Oh all the money that e'er I had, I spent it in good company.\n");
+    fprintf(outfile, "\tOh all the money that e'er I had, I spent it in good company.\n");
     fprintf(outfile, "\n");
 }
 boost::shared_ptr<Matrix> DFTSAPT::build_S(boost::shared_ptr<BasisSet> basis)
