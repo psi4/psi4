@@ -418,7 +418,7 @@ void RCIS::print_wavefunctions()
         int    m = get<2>(states_[i]);
         int    h = get<3>(states_[i]);
         fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, _hartree2ev * E);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, pc_hartree2ev * E);
     }
     fprintf(outfile,"  -----------------------------------------------\n");
     fprintf(outfile, "\n");

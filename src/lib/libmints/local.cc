@@ -485,7 +485,7 @@ void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck)
             it != charge_atoms.end(); it++) {
             Vector3 v = molecule->xyz(*it);
             for (int A = 0; A < natom; A++) {
-                if (v.distance(molecule->xyz(A)) < Rext / _bohr2angstroms) {
+                if (v.distance(molecule->xyz(A)) < Rext / pc_bohr2angstroms) {
                     range_atoms.insert(A);
                 }
             }
