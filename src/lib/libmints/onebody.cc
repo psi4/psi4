@@ -369,6 +369,66 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
     }
 }
 
+void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix > &result)
+{
+    if (deriv_ < 2)
+        throw SanityCheckError("OneBodyInt::compute_deriv2(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
+
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int i_offset = 0;
+    double *location = 0;
+
+    // Check the length of result, must be 3*natom_
+    if (result.size() != 9*natom_*natom_)
+        throw SanityCheckError("OneBodyInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__, __LINE__);
+
+    if (result[0]->nirrep() != 1)
+        throw SanityCheckError("OneBodyInt::compute_deriv2(result): results must be C1 symmetry.", __FILE__, __LINE__);
+
+    for (int i=0; i<ns1; ++i) {
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int center_i3 = 3*bs1_->shell(i).ncenter();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
+            int center_j3 = 3*bs2_->shell(j).ncenter();
+
+            if (center_i3 != center_j3) {
+
+                // Compute the shell
+                compute_shell_deriv2(i, j);
+
+//                // Center i
+//                location = buffer_;
+//                for (int r=0; r<3; ++r) {
+//                    for (int p=0; p<ni; ++p) {
+//                        for (int q=0; q<nj; ++q) {
+//                            result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
+//                            location++;
+//                        }
+//                    }
+//                }
+
+//                // Center j -- only if center i != center j
+//                for (int r=0; r<3; ++r) {
+//                    for (int p=0; p<ni; ++p) {
+//                        for (int q=0; q<nj; ++q) {
+//                            result[center_j3+r]->add(0, i_offset+p, j_offset+q, *location);
+//                            location++;
+//                        }
+//                    }
+//                }
+
+            }
+
+            j_offset += nj;
+        }
+        i_offset += ni;
+    }
+}
+
 void OneBodyAOInt::compute_shell_deriv2(int i, int j)
 {
     compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));

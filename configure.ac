@@ -965,6 +965,7 @@ AC_CONFIG_FILES([
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
+          src/bin/dftsapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/scfgrad/Makefile
@@ -1131,10 +1132,13 @@ AC_CONFIG_FILES([
           tests/omp2-1/Makefile
           tests/omp2-2/Makefile
           tests/omp2-3/Makefile
+          tests/omp2-4/Makefile
           tests/omp3-1/Makefile
           tests/omp3-2/Makefile
           tests/omp3-3/Makefile
+          tests/omp3-4/Makefile
           tests/ocepa1/Makefile
+          tests/ocepa2/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
