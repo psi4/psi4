@@ -90,7 +90,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value = moinfo.singlet_evals[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
 
         fprintf(outfile, "\nLargest components of singlet excited wave function #%d/#%d:\n",
             h, i);
@@ -112,7 +112,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value = moinfo.triplet_evals[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
 
         fprintf(outfile, "\nLargest components of triplet excited wave function #%d/#%d:\n", h, i);
         sprintf(lbl, "BIA(%d)[%d] triplet", i, h);
@@ -148,7 +148,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value = moinfo.singlet_d[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
     fprintf(outfile, "\n");
@@ -163,7 +163,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value += moinfo.singlet_d[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
     fprintf(outfile, "\n");
@@ -178,7 +178,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
           value = moinfo.singlet_weakp[h][i];
 
           fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-              value, value*_hartree2ev, value*_hartree2wavenumbers);
+              value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
         }
       }
       fprintf(outfile, "\n");
@@ -196,7 +196,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value = moinfo.uhf_evals[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
     fprintf(outfile, "\n");
@@ -211,7 +211,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value = moinfo.uhf_d[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
     fprintf(outfile, "\n");
@@ -227,7 +227,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         value += moinfo.uhf_d[h][i];
 
         fprintf(outfile,   "CIS State %4d   %3s %18.14f  %9.5f  %10.2f\n", i, moinfo.labels[h],
-            value, value*_hartree2ev, value*_hartree2wavenumbers);
+            value, value*pc_hartree2ev, value*pc_hartree2wavenumbers);
       }
     }
     fprintf(outfile, "\n");

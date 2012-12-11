@@ -91,9 +91,9 @@ void polar(void)
       fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
     if(params.omega[i] != 0.0) 
-      omega_nm = (_c*_h*1e9)/(_hartree2J*params.omega[i]);
-    omega_ev = _hartree2ev*params.omega[i];
-    omega_cm = _hartree2wavenumbers*params.omega[i];
+      omega_nm = (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]);
+    omega_ev = pc_hartree2ev*params.omega[i];
+    omega_cm = pc_hartree2wavenumbers*params.omega[i];
     if(params.omega[i] != 0.0)
       fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", 
 	      params.omega[i], omega_nm, omega_ev, omega_cm);
@@ -118,7 +118,7 @@ void polar(void)
     fprintf(outfile,   "\t E_h      nm        a.u.        \n");
     fprintf(outfile,   "\t-----   ------ ----------------\n");
     for(i=0; i < params.nomega; i++)
-      fprintf(outfile, "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), trace[i]);
+      fprintf(outfile, "\t%5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), trace[i]);
   }
 
   for(i=0; i < params.nomega; i++)
