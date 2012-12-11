@@ -1105,8 +1105,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
             if (nroots > 1) {
                fprintf(outfile, "  (%6.4lf eV, %9.2lf 1/cm)\n", 
-                 (evals[i] - evals[0]) * _hartree2ev,
-                 (evals[i] - evals[0]) * _hartree2wavenumbers);
+                 (evals[i] - evals[0]) * pc_hartree2ev,
+                 (evals[i] - evals[0]) * pc_hartree2wavenumbers);
                }
             else fprintf(outfile, "\n");
 

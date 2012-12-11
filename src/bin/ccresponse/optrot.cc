@@ -395,12 +395,12 @@ void optrot(void)
     /* compute the specific rotation */
     for(j=0,M=0.0; j < moinfo.natom ;j++) M += Process::environment.molecule()->mass(j);  /* amu */
     nu = params.omega[i]; /* hartree */
-    bohr2a4 = _bohr2angstroms * _bohr2angstroms * _bohr2angstroms * _bohr2angstroms;
-    m2a = _bohr2angstroms * 1.0e-10;
-    hbar = _h/(2.0 * _pi);
-    prefactor = 1.0e-2 * hbar/(_c * 2.0 * _pi * _me * m2a * m2a);
+    bohr2a4 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
+    m2a = pc_bohr2angstroms * 1.0e-10;
+    hbar = pc_h/(2.0 * pc_pi);
+    prefactor = 1.0e-2 * hbar/(pc_c * 2.0 * pc_pi * pc_me * m2a * m2a);
     prefactor *= prefactor;
-    prefactor *= 288.0e-30 * _pi * _pi * _na * bohr2a4;
+    prefactor *= 288.0e-30 * pc_pi * pc_pi * pc_na * bohr2a4;
 
     if(compute_rl) {
       if (params.wfn == "CC2")
@@ -410,8 +410,8 @@ void optrot(void)
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
-              (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
-              _hartree2wavenumbers*params.omega[i]);
+              (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
+              pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_rl[i], 3, 3, outfile);
 
@@ -431,8 +431,8 @@ void optrot(void)
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
-              (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
-              _hartree2wavenumbers*params.omega[i]);
+              (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
+              pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
@@ -455,8 +455,8 @@ void optrot(void)
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
-              (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
-              _hartree2wavenumbers*params.omega[i]);
+              (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
+              pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
@@ -498,7 +498,7 @@ void optrot(void)
         fprintf(outfile,   "   -----   ------ ------------------  ----------------------------------\n");
         fprintf(outfile,   "                                          x           y           z      \n");
         for(i=0; i < params.nomega; i++)
-          fprintf(outfile, "   %5.3f   %6.2f      %10.5f    %10.5f  %10.5f  %10.5f\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]),
+          fprintf(outfile, "   %5.3f   %6.2f      %10.5f    %10.5f  %10.5f  %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
                   rotation_rl[i], delta[i][0], delta[i][1], delta[i][2]);
       }
       else {
@@ -506,7 +506,7 @@ void optrot(void)
         fprintf(outfile,   "    E_h      nm   deg/[dm (g/cm^3)]\n");
         fprintf(outfile,   "   -----   ------ ------------------\n");
         for(i=0; i < params.nomega; i++)
-          fprintf(outfile, "   %5.3f   %6.2f      %10.5f\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]),
+          fprintf(outfile, "   %5.3f   %6.2f      %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]),
                   rotation_rl[i]);
       }
     }
@@ -522,7 +522,7 @@ void optrot(void)
       fprintf(outfile, "\n    E_h      nm   Velocity-Gauge  Modified Velocity-Gauge\n");
       fprintf(outfile,   "   -----   ------ --------------  -----------------------\n");
       for(i=0; i < params.nomega; i++)
-        fprintf(outfile, "   %5.3f   %6.2f   %10.5f          %10.5f\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), rotation_pl[i], rotation_mod[i]);
+        fprintf(outfile, "   %5.3f   %6.2f   %10.5f          %10.5f\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), rotation_pl[i], rotation_mod[i]);
     }
   }
 

@@ -431,7 +431,7 @@ void roa(void)
       fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
 
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
     mat_print(tensor_rr[i], 3, 3, outfile);
 
@@ -442,7 +442,7 @@ void roa(void)
 	fprintf(outfile, "\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_rl[i], 3, 3, outfile);
     }
@@ -455,7 +455,7 @@ void roa(void)
 	fprintf(outfile, "\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
@@ -470,7 +470,7 @@ void roa(void)
 	fprintf(outfile, "\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
 
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
       mat_print(tensor_pl[i], 3, 3, outfile);
 
@@ -481,7 +481,7 @@ void roa(void)
     else
       fprintf(outfile, "\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i], pc_hartree2wavenumbers*params.omega[i]);
       fprintf(outfile, "  -------------------------------------------------------------------------\n");
     for(alpha=0; alpha < 3; alpha++)
       mat_print(tensor_rQ[i][alpha], 3, 3, outfile);

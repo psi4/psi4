@@ -648,12 +648,12 @@ void HF::form_H()
           fprintf(outfile, "  Number of azimuthal integration points  = %d\n", phi_points_);
 
           double r_step = thickness_/r_points_; // bohr
-          double theta_step = 2*_pi/theta_points_; // 1 degree in radians
-          double phi_step = 2*_pi/phi_points_; // 1 degree in radians
+          double theta_step = 2*pc_pi/theta_points_; // 1 degree in radians
+          double phi_step = 2*pc_pi/phi_points_; // 1 degree in radians
           double weight = r_step * theta_step * phi_step;
           for(double r=radius_; r < radius_+thickness_; r += r_step) {
-            for(double theta=0.0; theta < _pi; theta += theta_step) {  /* colatitude */
-              for(double phi=0.0; phi < 2*_pi; phi += phi_step) { /* azimuthal */
+            for(double theta=0.0; theta < pc_pi; theta += theta_step) {  /* colatitude */
+              for(double phi=0.0; phi < 2*pc_pi; phi += phi_step) { /* azimuthal */
 
                 double x = r * sin(theta) * cos(phi);
                 double y = r * sin(theta) * sin(phi);

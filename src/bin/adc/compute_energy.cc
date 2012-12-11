@@ -76,8 +76,8 @@ ADC::compute_energy()
                         
                         sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
                         dpd_file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                        fprintf(outfile, "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*_hartree2ev);
-                        fprintf(outfile, "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*_hartree2ev);
+                        fprintf(outfile, "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*pc_hartree2ev);
+                        fprintf(outfile, "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*pc_hartree2ev);
                         fprintf(outfile, "\t         Occ Vir        Coefficient\n");
                         fprintf(outfile, "\t---------------------------------------------\n");
                         int nprint;
@@ -90,7 +90,7 @@ ADC::compute_energy()
                         
                         sprintf(lbl, "B^(%d)_[%d]12", root, irrep);
                         dpd_file2_init(&B, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
-                        theta = acos(dpd_file2_dot(&B, &V)) * 180.0 / _pi;
+                        theta = acos(dpd_file2_dot(&B, &V)) * 180.0 / pc_pi;
                         if((180.0-fabs(theta)) < theta) theta = 180.0 - fabs(theta); 
                         dpd_file2_close(&B);
                         fprintf(outfile, "\tThe S vector is rotated up to %6.3f (deg.)\n", theta);
