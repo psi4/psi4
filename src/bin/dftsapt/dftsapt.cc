@@ -476,12 +476,30 @@ void DFTSAPT::fock_terms()
     energies_["Ind20,r (B->A)"] = Ind20r_BA;
     energies_["Ind20,r"] = Ind20r_AB + Ind20r_BA;
 
-    fprintf(outfile,"    Ind20 (A<-B)        = %18.12lf H\n",Ind20r_AB);
-    fprintf(outfile,"    Ind20 (A->B)        = %18.12lf H\n",Ind20r_BA);
-    fprintf(outfile,"    Ind20               = %18.12lf H\n",Ind20r);
+    fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+    fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
+    fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
     fflush(outfile);
 
     // ==> Exchange-Induction <== //
+
+    // => Fock-like matrices <= //
+
+    boost::shared_ptr<Matrix> h_A(V_A->clone());
+    h_A->copy(J_A);
+    h_A->scale(2.0);
+    h_A->add(V_A);
+    h_A->subtract(K_A);
+    J_A.reset();
+    V_A.reset();
+
+    boost::shared_ptr<Matrix> h_B(V_B->clone());
+    h_B->copy(J_B);
+    h_B->scale(2.0);
+    h_B->add(V_B);
+    h_B->subtract(K_B);
+    J_B.reset();
+    V_B.reset();
 
     // => AO-basis response <= //    
 
