@@ -46,6 +46,9 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
 
     sapt->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEM_FACTOR") * 0.125);
 
+    sapt->cpks_maxiter_ = options.get_int("MAXITER");
+    sapt->cpks_delta_ = options.get_double("D_CONVERGENCE");
+
     sapt->dimer_     = d->molecule();
     sapt->monomer_A_ = mA->molecule();
     sapt->monomer_B_ = mB->molecule();
@@ -57,6 +60,10 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     sapt->primary_   = d->basisset();
     sapt->primary_A_ = mA->basisset();
     sapt->primary_B_ = mB->basisset();
+
+    if (sapt->primary_A_->nbf() != sapt->primary_B_->nbf() || sapt->primary_->nbf() != sapt->primary_A_->nbf()) {
+        throw PSIEXCEPTION("Monomer-centered bases not allowed in DFT-SAPT");
+    }
 
     sapt->Cocc_A_     = mA->Ca_subset("AO","OCC");
 
@@ -104,9 +111,43 @@ void DFTSAPT::print_header() const
     fprintf(outfile, "\t               Rob Parrish and Ed Hohenstein             \n");
     fprintf(outfile, "\t --------------------------------------------------------\n");
     fprintf(outfile, "\n");
+
+    fprintf(outfile, "  ==> Sizes <==\n");
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "   => Resources <=\n\n");
+    
+    fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "   => Orbital Ranges <=\n\n");
+
+    int nmo_A = eps_focc_A_->dim() + eps_aocc_A_->dim() + eps_avir_A_->dim() + eps_fvir_A_->dim();
+    int nmo_B = eps_focc_B_->dim() + eps_aocc_B_->dim() + eps_avir_B_->dim() + eps_fvir_B_->dim();
+
+    fprintf(outfile, "    ------------------\n");    
+    fprintf(outfile, "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
+    fprintf(outfile, "    ------------------\n");    
+    fprintf(outfile, "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
+    fprintf(outfile, "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
+    fprintf(outfile, "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
+    fprintf(outfile, "    %-6s %5d %5d\n", "nvir", eps_avir_A_->dim() + eps_fvir_A_->dim(), eps_avir_B_->dim() + eps_fvir_B_->dim());
+    fprintf(outfile, "    %-6s %5d %5d\n", "nfocc", eps_focc_A_->dim(), eps_focc_B_->dim());
+    fprintf(outfile, "    %-6s %5d %5d\n", "naocc", eps_aocc_A_->dim(), eps_aocc_B_->dim());
+    fprintf(outfile, "    %-6s %5d %5d\n", "navir", eps_avir_A_->dim(), eps_avir_B_->dim());
+    fprintf(outfile, "    %-6s %5d %5d\n", "nfvir", eps_fvir_A_->dim(), eps_fvir_B_->dim());
+    fprintf(outfile, "    ------------------\n");    
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "   => Primary Basis Set <=\n\n");
+    primary_->print_by_level(outfile, print_);
+
+    fflush(outfile);
 }
 void DFTSAPT::fock_terms()
 {
+    fprintf(outfile, "  SCF TERMS:\n\n");
+
     // ==> Setup <== //    
 
     boost::shared_ptr<JK> jk = JK::build_JK();
@@ -208,24 +249,52 @@ void DFTSAPT::fock_terms()
     boost::shared_ptr<Matrix> V_A = build_V(primary_A_);
     boost::shared_ptr<Matrix> V_B = build_V(primary_B_);
 
+    // => Scale to make Hesselmann happy <= //
+
+    P_A->scale(2.0);
+    P_B->scale(2.0);
+    
+    J_T_A_2->scale(0.5);
+    J_T_A_n->scale(0.5);
+    J_T_BA_2->scale(0.5);
+    J_T_BA_n->scale(0.5);
+
+    K_T_A_2->scale(0.5);
+    K_T_A_n->scale(0.5);
+    K_T_BA_2->scale(0.5);
+    K_T_BA_n->scale(0.5);
+
     // ==> Electrostatic Terms <== //
 
-    double Elst10r = 0.0;
+    double Elst10 = 0.0;
 
     // Classical physics (watch for cancellation!)
     double Enuc = 0.0;
     Enuc += dimer_->nuclear_repulsion_energy();
     Enuc -= monomer_A_->nuclear_repulsion_energy();
     Enuc -= monomer_B_->nuclear_repulsion_energy();
-    
-    Elst10r += 1.0 * P_A->vector_dot(V_B);
-    Elst10r += 1.0 * P_B->vector_dot(V_A);
-    Elst10r += 2.0 * P_B->vector_dot(J_A);
-    Elst10r += 1.0 * Enuc;
-    
-    energies_["Elst10r"] = Elst10r;
 
-    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10r);
+    std::vector<double> Elst10_terms;
+    Elst10_terms.resize(4);
+    
+    Elst10_terms[0] += 1.0 * P_A->vector_dot(V_B);
+    Elst10_terms[1] += 1.0 * P_B->vector_dot(V_A);
+    Elst10_terms[2] += 2.0 * P_B->vector_dot(J_A);
+    Elst10_terms[3] += 1.0 * Enuc;
+    
+    for (int k = 0; k < Elst10_terms.size(); k++) {
+        Elst10 += Elst10_terms[k];
+    }
+
+    if (debug_) {
+        for (int k = 0; k < Elst10_terms.size(); k++) {
+            fprintf(outfile,"    Elst10 (%1d)          = %18.12lf H\n",k+1,Elst10_terms[k]);
+        }
+    }
+
+    energies_["Elst10"] = Elst10;
+
+    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
     fflush(outfile);
 
     // ==> Exchange Terms (S^\infty) <== //
@@ -239,34 +308,46 @@ void DFTSAPT::fock_terms()
     boost::shared_ptr<Matrix> T_BA_n = build_D(Cocc_B_, C_T_BA_n);
     boost::shared_ptr<Matrix> T_AB_n = build_D(Cocc_A_, C_T_AB_n);
 
-    Exch10_n += 1.0 * P_A->vector_dot(K_B);
+    std::vector<double> Exch10_n_terms;
+    Exch10_n_terms.resize(6);
+
+    Exch10_n_terms[0] += 1.0 * P_A->vector_dot(K_B);
     
-    Exch10_n += 2.0 * T_A_n->vector_dot(V_B);
-    Exch10_n += 4.0 * T_A_n->vector_dot(J_B);
-    Exch10_n -= 2.0 * T_A_n->vector_dot(K_B);
+    Exch10_n_terms[1] += 2.0 * T_A_n->vector_dot(V_B);
+    Exch10_n_terms[1] += 4.0 * T_A_n->vector_dot(J_B);
+    Exch10_n_terms[1] -= 2.0 * T_A_n->vector_dot(K_B);
 
-    Exch10_n += 2.0 * T_B_n->vector_dot(V_A);
-    Exch10_n += 4.0 * T_B_n->vector_dot(J_A);
-    Exch10_n -= 2.0 * T_B_n->vector_dot(K_A);
+    Exch10_n_terms[2] += 2.0 * T_B_n->vector_dot(V_A);
+    Exch10_n_terms[2] += 4.0 * T_B_n->vector_dot(J_A);
+    Exch10_n_terms[2] -= 2.0 * T_B_n->vector_dot(K_A);
 
-    Exch10_n += 4.0 * T_AB_n->vector_dot(V_A);
-    Exch10_n += 8.0 * T_AB_n->vector_dot(J_A);
-    Exch10_n -= 4.0 * T_AB_n->vector_dot(K_A);
-    Exch10_n += 4.0 * T_AB_n->vector_dot(V_B);
-    Exch10_n += 8.0 * T_AB_n->vector_dot(J_B);
-    Exch10_n -= 4.0 * T_AB_n->vector_dot(K_B);
+    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(V_A);
+    Exch10_n_terms[3] += 8.0 * T_AB_n->vector_dot(J_A);
+    Exch10_n_terms[3] -= 4.0 * T_AB_n->vector_dot(K_A);
+    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(V_B);
+    Exch10_n_terms[3] += 8.0 * T_AB_n->vector_dot(J_B);
+    Exch10_n_terms[3] -= 4.0 * T_AB_n->vector_dot(K_B);
 
-    Exch10_n += 8.0 * T_AB_n->vector_dot(J_T_A_n);
-    Exch10_n -= 4.0 * T_AB_n->vector_dot(K_T_A_n);
-    Exch10_n += 8.0 * T_B_n->vector_dot(J_T_A_n);
-    Exch10_n -= 4.0 * T_B_n->vector_dot(K_T_A_n);
+    Exch10_n_terms[4] += 8.0 * T_AB_n->vector_dot(J_T_A_n);
+    Exch10_n_terms[4] -= 4.0 * T_AB_n->vector_dot(K_T_A_n);
+    Exch10_n_terms[4] += 8.0 * T_B_n->vector_dot(J_T_A_n);
+    Exch10_n_terms[4] -= 4.0 * T_B_n->vector_dot(K_T_A_n);
     
-    Exch10_n += 8.0 * T_BA_n->vector_dot(J_T_BA_n);
-    Exch10_n -= 4.0 * T_BA_n->vector_dot(K_T_BA_n);
-    Exch10_n += 8.0 * T_B_n->vector_dot(J_T_BA_n);
-    Exch10_n -= 4.0 * T_B_n->vector_dot(K_T_BA_n);
+    Exch10_n_terms[5] += 8.0 * T_BA_n->vector_dot(J_T_BA_n);
+    Exch10_n_terms[5] -= 4.0 * T_BA_n->vector_dot(K_T_BA_n);
+    Exch10_n_terms[5] += 8.0 * T_B_n->vector_dot(J_T_BA_n);
+    Exch10_n_terms[5] -= 4.0 * T_B_n->vector_dot(K_T_BA_n);
 
-    Exch10_n *= -1.0;
+    for (int k = 0; k < Exch10_n_terms.size(); k++) {
+        Exch10_n_terms[k] *= -1.0;
+        Exch10_n += Exch10_n_terms[k];
+    }
+
+    if (debug_) {
+        for (int k = 0; k < Exch10_n_terms.size(); k++) {
+            fprintf(outfile,"    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
+        }
+    }
 
     energies_["Exch10"] = Exch10_n;
 
@@ -298,34 +379,46 @@ void DFTSAPT::fock_terms()
     boost::shared_ptr<Matrix> T_BA_2 = build_D(Cocc_B_, C_T_BA_2);
     boost::shared_ptr<Matrix> T_AB_2 = build_D(Cocc_A_, C_T_AB_2);
 
-    Exch10_2 += 1.0 * P_A->vector_dot(K_B);
+    std::vector<double> Exch10_2_terms;
+    Exch10_2_terms.resize(6);
+
+    Exch10_2_terms[0] += 1.0 * P_A->vector_dot(K_B);
     
-    Exch10_2 += 2.0 * T_A_2->vector_dot(V_B);
-    Exch10_2 += 4.0 * T_A_2->vector_dot(J_B);
-    Exch10_2 -= 2.0 * T_A_2->vector_dot(K_B);
+    Exch10_2_terms[1] += 2.0 * T_A_2->vector_dot(V_B);
+    Exch10_2_terms[1] += 4.0 * T_A_2->vector_dot(J_B);
+    Exch10_2_terms[1] -= 2.0 * T_A_2->vector_dot(K_B);
 
-    Exch10_2 += 2.0 * T_B_2->vector_dot(V_A);
-    Exch10_2 += 4.0 * T_B_2->vector_dot(J_A);
-    Exch10_2 -= 2.0 * T_B_2->vector_dot(K_A);
+    Exch10_2_terms[2] += 2.0 * T_B_2->vector_dot(V_A);
+    Exch10_2_terms[2] += 4.0 * T_B_2->vector_dot(J_A);
+    Exch10_2_terms[2] -= 2.0 * T_B_2->vector_dot(K_A);
 
-    Exch10_2 += 4.0 * T_AB_2->vector_dot(V_A);
-    Exch10_2 += 8.0 * T_AB_2->vector_dot(J_A);
-    Exch10_2 -= 4.0 * T_AB_2->vector_dot(K_A);
-    Exch10_2 += 4.0 * T_AB_2->vector_dot(V_B);
-    Exch10_2 += 8.0 * T_AB_2->vector_dot(J_B);
-    Exch10_2 -= 4.0 * T_AB_2->vector_dot(K_B);
+    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(V_A);
+    Exch10_2_terms[3] += 8.0 * T_AB_2->vector_dot(J_A);
+    Exch10_2_terms[3] -= 4.0 * T_AB_2->vector_dot(K_A);
+    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(V_B);
+    Exch10_2_terms[3] += 8.0 * T_AB_2->vector_dot(J_B);
+    Exch10_2_terms[3] -= 4.0 * T_AB_2->vector_dot(K_B);
 
-    Exch10_2 += 8.0 * T_AB_2->vector_dot(J_T_A_2);
-    Exch10_2 -= 4.0 * T_AB_2->vector_dot(K_T_A_2);
-    Exch10_2 += 8.0 * T_B_2->vector_dot(J_T_A_2);
-    Exch10_2 -= 4.0 * T_B_2->vector_dot(K_T_A_2);
+    Exch10_2_terms[4] += 8.0 * T_AB_2->vector_dot(J_T_A_2);
+    Exch10_2_terms[4] -= 4.0 * T_AB_2->vector_dot(K_T_A_2);
+    Exch10_2_terms[4] += 8.0 * T_B_2->vector_dot(J_T_A_2);
+    Exch10_2_terms[4] -= 4.0 * T_B_2->vector_dot(K_T_A_2);
     
-    Exch10_2 += 8.0 * T_BA_2->vector_dot(J_T_BA_2);
-    Exch10_2 -= 4.0 * T_BA_2->vector_dot(K_T_BA_2);
-    Exch10_2 += 8.0 * T_B_2->vector_dot(J_T_BA_2);
-    Exch10_2 -= 4.0 * T_B_2->vector_dot(K_T_BA_2);
+    Exch10_2_terms[5] += 8.0 * T_BA_2->vector_dot(J_T_BA_2);
+    Exch10_2_terms[5] -= 4.0 * T_BA_2->vector_dot(K_T_BA_2);
+    Exch10_2_terms[5] += 8.0 * T_B_2->vector_dot(J_T_BA_2);
+    Exch10_2_terms[5] -= 4.0 * T_B_2->vector_dot(K_T_BA_2);
 
-    Exch10_2 *= -1.0;
+    for (int k = 0; k < Exch10_2_terms.size(); k++) {
+        Exch10_2_terms[k] *= -1.0;
+        Exch10_2 += Exch10_2_terms[k];
+    }
+
+    if (debug_) {
+        for (int k = 0; k < Exch10_2_terms.size(); k++) {
+            fprintf(outfile,"    Exch10 (S^2) (%1d)    = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+        }
+    }
 
     energies_["Exch10 (S^2)"] = Exch10_2;
 
@@ -346,6 +439,9 @@ void DFTSAPT::fock_terms()
     K_T_A_2.reset();
     K_T_BA_2.reset();
 
+    fprintf(outfile, "\n");
+    fflush(outfile);
+
     // ==> Uncorrelated Second-Order Response Terms [Induction] <== //
 
     // Electrostatic potential of monomer A (AO)
@@ -365,12 +461,10 @@ void DFTSAPT::fock_terms()
     // Electrostatic potential of monomer A (ov space of B)
     boost::shared_ptr<Matrix> w_A = build_w(W_A,Caocc_B_,Cavir_B_);
 
-    // TODO: CPHF
-
-    boost::shared_ptr<Matrix> x_A(w_A->clone());
-    boost::shared_ptr<Matrix> x_B(w_B->clone());
-    x_A->zero();
-    x_B->zero();
+    // Compute CPHF
+    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,w_B,w_A);
+    boost::shared_ptr<Matrix> x_A = x_sol.first;
+    boost::shared_ptr<Matrix> x_B = x_sol.second;
 
     // ==> Induction <== //
 
@@ -405,6 +499,8 @@ void DFTSAPT::fock_terms()
 }
 void DFTSAPT::mp2_terms()
 {
+    fprintf(outfile, "  PT2 TERMS:\n\n");
+
     // TODO 
 }
 void DFTSAPT::print_trailer() const 
@@ -494,7 +590,7 @@ boost::shared_ptr<Matrix> DFTSAPT::build_Sij_n(boost::shared_ptr<Matrix> Sij)
     Sij2->copy_upper_to_lower();
 
     for (int i = 0; i < nocc; i++) {
-        Sij2p[i][i] = 0.0;
+        Sij2p[i][i] -= 1.0;
     }
    
     return Sij2; 
@@ -585,6 +681,303 @@ boost::shared_ptr<Matrix> DFTSAPT::build_X(boost::shared_ptr<Matrix> x, boost::s
     C_DGEMM('N','N',nso,nso,no,1.0,Lp[0],no,Tp[0],nso,0.0,Xp[0],nso);
 
     return x;
+}
+std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > DFTSAPT::compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A)
+{
+    boost::shared_ptr<CPKS_SAPT> cpks(new CPKS_SAPT);
+   
+    // Effective constructor 
+    cpks->delta_ = cpks_delta_;
+    cpks->maxiter_ = cpks_maxiter_;
+    cpks->jk_ = jk;
+
+    cpks->w_A_ = w_B; // Reversal of convention
+    cpks->Caocc_A_ = Caocc_A_;
+    cpks->Cavir_A_ = Cavir_A_;
+    cpks->eps_aocc_A_ = eps_aocc_A_;
+    cpks->eps_avir_A_ = eps_avir_A_;
+
+    cpks->w_B_ = w_A; // Reversal of convention
+    cpks->Caocc_B_ = Caocc_B_;
+    cpks->Cavir_B_ = Cavir_B_;
+    cpks->eps_aocc_B_ = eps_aocc_B_;
+    cpks->eps_avir_B_ = eps_avir_B_;
+
+    // Gogo CPKS
+    cpks->compute_cpks();
+
+    // Unpack
+    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = make_pair(cpks->x_A_,cpks->x_B_);
+
+    // Scale up for electron pairs
+    x_sol.first->scale(2.0);
+    x_sol.second->scale(2.0);
+
+    return x_sol;
+}
+
+CPKS_SAPT::CPKS_SAPT()
+{
+}
+CPKS_SAPT::~CPKS_SAPT()
+{
+}
+void CPKS_SAPT::compute_cpks()
+{
+    // Allocate
+    x_A_ = boost::shared_ptr<Matrix>(w_A_->clone());
+    x_B_ = boost::shared_ptr<Matrix>(w_B_->clone());
+    x_A_->zero();
+    x_B_->zero();
+
+    boost::shared_ptr<Matrix> r_A(w_A_->clone());
+    boost::shared_ptr<Matrix> z_A(w_A_->clone());
+    boost::shared_ptr<Matrix> p_A(w_A_->clone());
+    boost::shared_ptr<Matrix> r_B(w_B_->clone());
+    boost::shared_ptr<Matrix> z_B(w_B_->clone());
+    boost::shared_ptr<Matrix> p_B(w_B_->clone());
+        
+    // Initialize (x_0 = 0)
+    r_A->copy(w_A_);
+    r_B->copy(w_B_);
+    preconditioner(r_A,z_A,eps_aocc_A_,eps_avir_A_);
+    preconditioner(r_B,z_B,eps_aocc_B_,eps_avir_B_);
+    p_A->copy(z_A);
+    p_B->copy(z_B);
+
+    double zr_old_A = z_A->vector_dot(r_A);
+    double zr_old_B = z_B->vector_dot(r_B);
+
+    double r2A = 1.0;
+    double r2B = 1.0;
+
+    double b2A = sqrt(w_A_->vector_dot(w_A_));
+    double b2B = sqrt(w_B_->vector_dot(w_B_));
+
+    fprintf(outfile, "  ==> CPKS Iterations <==\n\n");
+
+    fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
+    fprintf(outfile, "    Convergence = %11.3E\n", delta_);
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "    ------------------------------\n");
+    fprintf(outfile, "    %4s %11s  %11s \n", "Iter", "Monomer A", "Monomer B");
+    fprintf(outfile, "    ------------------------------\n");
+    fflush(outfile);
+
+    int iter;
+    for (iter = 0; iter < maxiter_; iter++) {
+       
+        std::map<std::string, boost::shared_ptr<Matrix> > b;
+        if (r2A > delta_) {
+            b["A"] = p_A;
+        } 
+        if (r2B > delta_) {
+            b["B"] = p_B;
+        } 
+    
+        std::map<std::string, boost::shared_ptr<Matrix> > s =
+            product(b);
+    
+        if (r2A > delta_) {
+            boost::shared_ptr<Matrix> s_A = s["A"];
+            double alpha = r_A->vector_dot(z_A) / p_A->vector_dot(s_A);
+            int no = x_A_->nrow();
+            int nv = x_A_->ncol();
+            double** xp = x_A_->pointer();
+            double** rp = r_A->pointer();
+            double** pp = p_A->pointer();
+            double** sp = s_A->pointer();
+            C_DAXPY(no*nv, alpha,pp[0],1,xp[0],1);
+            C_DAXPY(no*nv,-alpha,sp[0],1,rp[0],1); 
+            r2A = sqrt(C_DDOT(no*nv,rp[0],1,rp[0],1)) / b2A; 
+        } 
+    
+        if (r2B > delta_) {
+            boost::shared_ptr<Matrix> s_B = s["B"];
+            double alpha = r_B->vector_dot(z_B) / p_B->vector_dot(s_B);
+            int no = x_B_->nrow();
+            int nv = x_B_->ncol();
+            double** xp = x_B_->pointer();
+            double** rp = r_B->pointer();
+            double** pp = p_B->pointer();
+            double** sp = s_B->pointer();
+            C_DAXPY(no*nv, alpha,pp[0],1,xp[0],1);
+            C_DAXPY(no*nv,-alpha,sp[0],1,rp[0],1); 
+            r2B = sqrt(C_DDOT(no*nv,rp[0],1,rp[0],1)) / b2B; 
+        } 
+
+        fprintf(outfile, "    %4d %11.3E%1s %11.3E%1s\n", iter+1,
+            r2A, (r2A < delta_ ? "*" : " "), 
+            r2B, (r2B < delta_ ? "*" : " ")
+            );
+        fflush(outfile);
+
+        if (r2A <= delta_ && r2B <= delta_) {
+            break;
+        }
+        
+        if (r2A > delta_) {
+            preconditioner(r_A,z_A,eps_aocc_A_,eps_avir_A_);
+            double zr_new = z_A->vector_dot(r_A);
+            double beta = zr_new / zr_old_A;
+            zr_old_A = zr_new;
+            int no = x_A_->nrow();
+            int nv = x_A_->ncol();
+            double** pp = p_A->pointer();
+            double** zp = z_A->pointer();
+            C_DSCAL(no*nv,beta,pp[0],1);
+            C_DAXPY(no*nv,1.0,zp[0],1,pp[0],1);
+        } 
+        
+        if (r2B > delta_) {
+            preconditioner(r_B,z_B,eps_aocc_B_,eps_avir_B_);
+            double zr_new = z_B->vector_dot(r_B);
+            double beta = zr_new / zr_old_B;
+            zr_old_B = zr_new;
+            int no = x_B_->nrow();
+            int nv = x_B_->ncol();
+            double** pp = p_B->pointer();
+            double** zp = z_B->pointer();
+            C_DSCAL(no*nv,beta,pp[0],1);
+            C_DAXPY(no*nv,1.0,zp[0],1,pp[0],1);
+        } 
+    }
+    
+    fprintf(outfile, "    ------------------------------\n");
+    fprintf(outfile, "\n");
+    fflush(outfile);
+
+    if (iter == maxiter_) 
+        throw PSIEXCEPTION("CPKS did not converge.");
+}
+void CPKS_SAPT::preconditioner(boost::shared_ptr<Matrix> r,
+                               boost::shared_ptr<Matrix> z,
+                               boost::shared_ptr<Vector> o,
+                               boost::shared_ptr<Vector> v)
+{
+    int no = o->dim();
+    int nv = v->dim();
+    
+    double** rp = r->pointer();
+    double** zp = z->pointer();
+
+    double* op = o->pointer();
+    double* vp = v->pointer();
+
+    for (int i = 0; i < no; i++) {
+        for (int a = 0; a < nv; a++) {
+            zp[i][a] = rp[i][a] / (vp[a] - op[i]);
+        }
+    }
+}
+std::map<std::string, boost::shared_ptr<Matrix> > CPKS_SAPT::product(std::map<std::string, boost::shared_ptr<Matrix> > b)
+{
+    std::map<std::string, boost::shared_ptr<Matrix> > s;
+
+    bool do_A = b.count("A");
+    bool do_B = b.count("B");
+
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+    Cl.clear();
+    Cr.clear();
+
+    if (do_A) {
+        Cl.push_back(Caocc_A_);    
+        int no = b["A"]->nrow();
+        int nv = b["A"]->ncol();
+        int nso = Cavir_A_->nrow();
+        double** Cp = Cavir_A_->pointer();
+        double** bp = b["A"]->pointer();
+        boost::shared_ptr<Matrix> T(new Matrix("T",nso,no));
+        double** Tp = T->pointer();
+        C_DGEMM('N','T',nso,no,nv,1.0,Cp[0],nv,bp[0],nv,0.0,Tp[0],no);
+        Cr.push_back(T);
+    }
+
+    if (do_B) {
+        Cl.push_back(Caocc_B_);    
+        int no = b["B"]->nrow();
+        int nv = b["B"]->ncol();
+        int nso = Cavir_B_->nrow();
+        double** Cp = Cavir_B_->pointer();
+        double** bp = b["B"]->pointer();
+        boost::shared_ptr<Matrix> T(new Matrix("T",nso,no));
+        double** Tp = T->pointer();
+        C_DGEMM('N','T',nso,no,nv,1.0,Cp[0],nv,bp[0],nv,0.0,Tp[0],no);
+        Cr.push_back(T);
+    }
+
+    jk_->compute();
+    
+    const std::vector<SharedMatrix>& J = jk_->J();
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    int indA = 0;
+    int indB = (do_A ? 1 : 0);
+
+    if (do_A) {
+        boost::shared_ptr<Matrix> Jv = J[indA];
+        boost::shared_ptr<Matrix> Kv = K[indA];
+        Jv->scale(4.0);
+        Jv->subtract(Kv);
+        Jv->subtract(Kv->transpose());
+        
+        int no = b["A"]->nrow();
+        int nv = b["A"]->ncol();
+        int nso = Cavir_A_->nrow();
+        boost::shared_ptr<Matrix> T(new Matrix("T", no, nso));
+        s["A"] = boost::shared_ptr<Matrix>(new Matrix("S", no, nv));
+        double** Cop = Caocc_A_->pointer();
+        double** Cvp = Cavir_A_->pointer();
+        double** Jp = Jv->pointer();
+        double** Tp = T->pointer();
+        double** Sp = s["A"]->pointer();
+        C_DGEMM('T','N',no,nso,nso,1.0,Cop[0],no,Jp[0],nso,0.0,Tp[0],nso);
+        C_DGEMM('N','N',no,nv,nso,1.0,Tp[0],nso,Cvp[0],nv,0.0,Sp[0],nv); 
+
+        double** bp = b["A"]->pointer();
+        double* op = eps_aocc_A_->pointer();
+        double* vp = eps_avir_A_->pointer();
+        for (int i = 0; i < no; i++) {
+            for (int a = 0; a < nv; a++) {
+                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            }
+        }
+    } 
+
+    if (do_B) {
+        boost::shared_ptr<Matrix> Jv = J[indB];
+        boost::shared_ptr<Matrix> Kv = K[indB];
+        Jv->scale(4.0);
+        Jv->subtract(Kv);
+        Jv->subtract(Kv->transpose());
+        
+        int no = b["B"]->nrow();
+        int nv = b["B"]->ncol();
+        int nso = Cavir_B_->nrow();
+        boost::shared_ptr<Matrix> T(new Matrix("T", no, nso));
+        s["B"] = boost::shared_ptr<Matrix>(new Matrix("S", no, nv));
+        double** Cop = Caocc_B_->pointer();
+        double** Cvp = Cavir_B_->pointer();
+        double** Jp = Jv->pointer();
+        double** Tp = T->pointer();
+        double** Sp = s["B"]->pointer();
+        C_DGEMM('T','N',no,nso,nso,1.0,Cop[0],no,Jp[0],nso,0.0,Tp[0],nso);
+        C_DGEMM('N','N',no,nv,nso,1.0,Tp[0],nso,Cvp[0],nv,0.0,Sp[0],nv); 
+
+        double** bp = b["B"]->pointer();
+        double* op = eps_aocc_B_->pointer();
+        double* vp = eps_avir_B_->pointer();
+        for (int i = 0; i < no; i++) {
+            for (int a = 0; a < nv; a++) {
+                Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
+            }
+        }
+    } 
+
+    return s;
 }
 
 }}

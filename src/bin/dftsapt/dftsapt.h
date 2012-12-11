@@ -22,6 +22,11 @@ protected:
     int debug_;
     // Bench flag
     int bench_;
+    
+    // CPKS maximum iterations
+    int cpks_maxiter_;
+    // CPKS convergence threshold
+    double cpks_delta_;
 
     // Memory in doubles
     unsigned long int memory_;
@@ -115,6 +120,9 @@ protected:
     // Build the CPKS LHS (AO-space)
     boost::shared_ptr<Matrix> build_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
 
+    // Compute the CPKS solution
+    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
+
     // Protected constructor (use factory below)
     DFTSAPT();
     // Common initialization
@@ -131,6 +139,66 @@ public:
     // Compute the DFT-SAPT analysis
     virtual double compute_energy();
 
+};
+
+class CPKS_SAPT {
+
+friend class DFTSAPT;
+
+protected:
+
+    // => Global Data <= //
+
+    // Convergence tolerance
+    double delta_;
+    // Maximum allowed iterations
+    int maxiter_;
+    // JK Object 
+    boost::shared_ptr<JK> jk_;
+    
+    // => Monomer A Problem <= //
+
+    // Perturbation applied to A
+    boost::shared_ptr<Matrix> w_A_;
+    // Response of A
+    boost::shared_ptr<Matrix> x_A_;
+    // Active occ orbital coefficients of A
+    boost::shared_ptr<Matrix> Caocc_A_;
+    // Active vir orbital coefficients of A
+    boost::shared_ptr<Matrix> Cavir_A_;
+    // Active occ orbital eigenvalues of A
+    boost::shared_ptr<Vector> eps_aocc_A_;
+    // Active vir orbital eigenvalues of A
+    boost::shared_ptr<Vector> eps_avir_A_;
+
+    // => Monomer B Problem <= //
+
+    // Perturbation applied to B
+    boost::shared_ptr<Matrix> w_B_;
+    // Response of B
+    boost::shared_ptr<Matrix> x_B_;
+    // Active occ orbital coefficients of B
+    boost::shared_ptr<Matrix> Caocc_B_;
+    // Active vir orbital coefficients of B
+    boost::shared_ptr<Matrix> Cavir_B_;
+    // Active occ orbital eigenvalues of B
+    boost::shared_ptr<Vector> eps_aocc_B_;
+    // Active vir orbital eigenvalues of B
+    boost::shared_ptr<Vector> eps_avir_B_;
+
+    // Form the s = Ab product for the provided vectors b (may or may not need more iterations)
+    std::map<std::string, boost::shared_ptr<Matrix> > product(std::map<std::string, boost::shared_ptr<Matrix> > b);
+    // Apply the denominator from r into z
+    void preconditioner(boost::shared_ptr<Matrix> r,
+                        boost::shared_ptr<Matrix> z,
+                        boost::shared_ptr<Vector> o,
+                        boost::shared_ptr<Vector> v);
+
+public:
+    CPKS_SAPT();
+    virtual ~CPKS_SAPT();
+
+    void compute_cpks();
 };
 
 }} // End namespace
