@@ -379,6 +379,9 @@ mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule us
 ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
 
 
+ocepa2:       OCEPA cc-pVDZ energy with B3LYP initial guess for the NO radical
+
+
 omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
 
 
@@ -388,6 +391,9 @@ omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
 
+omp2-4:       OMP2 cc-pVDZ energy for the NO radical
+
+
 omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
 
 
@@ -395,6 +401,9 @@ omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
 omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
 
 
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input

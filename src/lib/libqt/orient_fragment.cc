@@ -37,11 +37,11 @@ void orient_fragment(int natom_A, int natom_B, int P_A, int P_B, double **geom_A
      about collinear reference atoms and to make zmat_point() work in such cases */
   if (P_A < 3) {
       for (xyz=0; xyz<3; ++xyz)
-        ref_A[2][xyz] = (xyz+1)/_pi;
+        ref_A[2][xyz] = (xyz+1)/pc_pi;
   }
   if (P_A < 2) {
       for (xyz=0; xyz<3; ++xyz)
-        ref_A[1][xyz] = (xyz+1)/(2*_pi);
+        ref_A[1][xyz] = (xyz+1)/(2*pc_pi);
   }
 
   for (pts=0; pts<P_A; ++pts)
@@ -76,7 +76,7 @@ fprintf(outfile,"\t     tau:%10.5f,   phi_A:%10.5f,   phi_B:%10.5f\n", tau, phi_
     R_B2B3 = sqrt(R_B2B3);
     unit_vec(ref_B[1],ref_B[0],e12);
     unit_vec(ref_B[1],ref_B[2],e12b);
-    B_angle = acos(dot_prod(e12,e12b))*180.0/_pi;
+    B_angle = acos(dot_prod(e12,e12b))*180.0/pc_pi;
   }
 
     /* determine location of reference pts for B in coordinate system of A */
@@ -111,7 +111,7 @@ print_mat(ref_B_final,P_B,3,outfile);
     unit_vec(ref_B[1],       ref_B[0], e12);  /* v B1->B2 */
     unit_vec(ref_B_final[1], ref_B[0], e12b); /* v B1->B2_final */
     B_angle = acos(dot_prod(e12b,e12));
-    fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/_pi);
+    fprintf(outfile,"Rotation by %f degrees (to fix point B2)\n", 180.0*B_angle/pc_pi);
     if (fabs(B_angle) > 1.0e-7) {
       cross_prod(e12,e12b,erot);
 
@@ -164,7 +164,7 @@ print_mat(ref_B_final,P_B,3,outfile);
     else tval = 2.0;
 
     if (tval > 0.99999) B_angle = 0.0000;
-    else if (tval < -0.99999) B_angle = _pi;
+    else if (tval < -0.99999) B_angle = pc_pi;
     else B_angle = acos(tval) ;
 
     sign = 1.0; /* check sign */
@@ -179,7 +179,7 @@ print_mat(ref_B_final,P_B,3,outfile);
     B_angle *= sign;
 
     if (fabs(B_angle) > 1.0e-7) {
-      fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/_pi);
+      fprintf(outfile,"Rotation by %f degrees (to fix point B3)\n", 180.0*B_angle/pc_pi);
 
       /* Move B to put B2 at origin */
       for (xyz=0; xyz<3; ++xyz)

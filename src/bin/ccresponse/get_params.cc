@@ -90,12 +90,12 @@ void get_params(Options &options)
     for(i=0; i < (count-1); i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
       if(units == "HZ" || units == "Hz" || units == "hz") 
-        params.omega[i] *= _h / _hartree2J;
+        params.omega[i] *= pc_h / pc_hartree2J;
       else if(units == "AU" || units == "Au" || units == "au") 1; // do nothing
       else if(units == "NM" || units == "nm") 
-        params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
+        params.omega[i] = (pc_c*pc_h*1e9)/(params.omega[i]*pc_hartree2J);
       else if(units == "EV" || units == "ev" || units == "eV") 
-        params.omega[i] /= _hartree2ev;
+        params.omega[i] /= pc_hartree2ev;
       else
         throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
     }
@@ -202,8 +202,8 @@ void get_params(Options &options)
       fprintf(outfile, "\tApplied field %2d =  0.000\n", i);
     else
       fprintf(outfile, "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
-              (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
-              _hartree2wavenumbers*params.omega[i]);
+              (pc_c*pc_h*1e9)/(pc_hartree2J*params.omega[i]), pc_hartree2ev*params.omega[i],
+              pc_hartree2wavenumbers*params.omega[i]);
   }
   fprintf(outfile, "\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
   fprintf(outfile, "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
