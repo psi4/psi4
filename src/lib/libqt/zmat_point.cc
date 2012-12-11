@@ -21,8 +21,8 @@ void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD,
   double eAB[3],eBC[3],eX[3],eY[3], cosABC, sinABC;
   int xyz;
 
-  theta_BCD *= _pi/180.0;
-  phi_ABCD *= _pi/180.0;
+  theta_BCD *= pc_pi/180.0;
+  phi_ABCD *= pc_pi/180.0;
 
   unit_vec(B,A,eAB); /* vector B->A */
   unit_vec(C,B,eBC); /* vector C->B */
