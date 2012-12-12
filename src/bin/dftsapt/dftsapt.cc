@@ -311,7 +311,7 @@ void DFTSAPT::fock_terms()
     std::vector<double> Exch10_n_terms;
     Exch10_n_terms.resize(6);
 
-    Exch10_n_terms[0] += 1.0 * P_A->vector_dot(K_B);
+    Exch10_n_terms[0] -= 1.0 * P_A->vector_dot(K_B); // Hesselmann mistake 1
     
     Exch10_n_terms[1] += 2.0 * T_A_n->vector_dot(V_B);
     Exch10_n_terms[1] += 4.0 * T_A_n->vector_dot(J_B);
@@ -321,12 +321,12 @@ void DFTSAPT::fock_terms()
     Exch10_n_terms[2] += 4.0 * T_B_n->vector_dot(J_A);
     Exch10_n_terms[2] -= 2.0 * T_B_n->vector_dot(K_A);
 
-    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(V_A);
-    Exch10_n_terms[3] += 8.0 * T_AB_n->vector_dot(J_A);
-    Exch10_n_terms[3] -= 4.0 * T_AB_n->vector_dot(K_A);
-    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(V_B);
-    Exch10_n_terms[3] += 8.0 * T_AB_n->vector_dot(J_B);
-    Exch10_n_terms[3] -= 4.0 * T_AB_n->vector_dot(K_B);
+    Exch10_n_terms[3] += 2.0 * T_AB_n->vector_dot(V_A); // Hesselmann mistake 2
+    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(J_A);
+    Exch10_n_terms[3] -= 2.0 * T_AB_n->vector_dot(K_A);
+    Exch10_n_terms[3] += 2.0 * T_AB_n->vector_dot(V_B);
+    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(J_B);
+    Exch10_n_terms[3] -= 2.0 * T_AB_n->vector_dot(K_B);
 
     Exch10_n_terms[4] += 8.0 * T_AB_n->vector_dot(J_T_A_n);
     Exch10_n_terms[4] -= 4.0 * T_AB_n->vector_dot(K_T_A_n->transpose());
@@ -339,7 +339,6 @@ void DFTSAPT::fock_terms()
     Exch10_n_terms[5] -= 4.0 * T_B_n->vector_dot(K_T_BA_n->transpose());
 
     for (int k = 0; k < Exch10_n_terms.size(); k++) {
-        Exch10_n_terms[k] *= -1.0;
         Exch10_n += Exch10_n_terms[k];
     }
 
@@ -382,7 +381,7 @@ void DFTSAPT::fock_terms()
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(6);
 
-    Exch10_2_terms[0] += 1.0 * P_A->vector_dot(K_B);
+    Exch10_2_terms[0] -= 1.0 * P_A->vector_dot(K_B); // Hesselmann mistake 1
     
     Exch10_2_terms[1] += 2.0 * T_A_2->vector_dot(V_B);
     Exch10_2_terms[1] += 4.0 * T_A_2->vector_dot(J_B);
@@ -392,12 +391,12 @@ void DFTSAPT::fock_terms()
     Exch10_2_terms[2] += 4.0 * T_B_2->vector_dot(J_A);
     Exch10_2_terms[2] -= 2.0 * T_B_2->vector_dot(K_A);
 
-    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(V_A);
-    Exch10_2_terms[3] += 8.0 * T_AB_2->vector_dot(J_A);
-    Exch10_2_terms[3] -= 4.0 * T_AB_2->vector_dot(K_A);
-    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(V_B);
-    Exch10_2_terms[3] += 8.0 * T_AB_2->vector_dot(J_B);
-    Exch10_2_terms[3] -= 4.0 * T_AB_2->vector_dot(K_B);
+    Exch10_2_terms[3] += 2.0 * T_AB_2->vector_dot(V_A); // Hesselmann mistake 2
+    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(J_A);
+    Exch10_2_terms[3] -= 2.0 * T_AB_2->vector_dot(K_A);
+    Exch10_2_terms[3] += 2.0 * T_AB_2->vector_dot(V_B);
+    Exch10_2_terms[3] += 4.0 * T_AB_2->vector_dot(J_B);
+    Exch10_2_terms[3] -= 2.0 * T_AB_2->vector_dot(K_B);
 
     Exch10_2_terms[4] += 8.0 * T_AB_2->vector_dot(J_T_A_2);
     Exch10_2_terms[4] -= 4.0 * T_AB_2->vector_dot(K_T_A_2->transpose());
@@ -410,7 +409,6 @@ void DFTSAPT::fock_terms()
     Exch10_2_terms[5] -= 4.0 * T_B_2->vector_dot(K_T_BA_2->transpose());
 
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
-        Exch10_2_terms[k] *= -1.0;
         Exch10_2 += Exch10_2_terms[k];
     }
 
@@ -641,7 +639,7 @@ std::map<std::string, boost::shared_ptr<Matrix> > DFTSAPT::build_Cbar(boost::sha
 
     Cbar["C_T_AB"] = boost::shared_ptr<Matrix>(new Matrix("C_T_AB", nso, nA));   
     Cp = Cbar["C_T_AB"]->pointer();
-    C_DGEMM('N','N',nso,nA,nB,1.0,CBp[0],nB,&Sp[nB][0],no,0.0,Cp[0],nA);
+    C_DGEMM('N','N',nso,nA,nB,1.0,CBp[0],nB,&Sp[nA][0],no,0.0,Cp[0],nA);
 
     return Cbar;
 }
@@ -758,8 +756,14 @@ void CPKS_SAPT::compute_cpks()
     // Initialize (x_0 = 0)
     r_A->copy(w_A_);
     r_B->copy(w_B_);
+    
     preconditioner(r_A,z_A,eps_aocc_A_,eps_avir_A_);
     preconditioner(r_B,z_B,eps_aocc_B_,eps_avir_B_);
+    
+    // Uncoupled value
+    //fprintf(outfile, "(A<-B): %24.16E\n", -2.0 * z_A->vector_dot(w_A_));
+    //fprintf(outfile, "(B<-A): %24.16E\n", -2.0 * z_B->vector_dot(w_B_));
+
     p_A->copy(z_A);
     p_B->copy(z_B);
 
@@ -800,6 +804,9 @@ void CPKS_SAPT::compute_cpks()
         if (r2A > delta_) {
             boost::shared_ptr<Matrix> s_A = s["A"];
             double alpha = r_A->vector_dot(z_A) / p_A->vector_dot(s_A);
+            if (alpha < 0.0) {
+                throw PSIEXCEPTION("Monomer A: A Matrix is not SPD");
+            }
             int no = x_A_->nrow();
             int nv = x_A_->ncol();
             double** xp = x_A_->pointer();
@@ -814,6 +821,9 @@ void CPKS_SAPT::compute_cpks()
         if (r2B > delta_) {
             boost::shared_ptr<Matrix> s_B = s["B"];
             double alpha = r_B->vector_dot(z_B) / p_B->vector_dot(s_B);
+            if (alpha < 0.0) {
+                throw PSIEXCEPTION("Monomer B: A Matrix is not SPD");
+            }
             int no = x_B_->nrow();
             int nv = x_B_->ncol();
             double** xp = x_B_->pointer();
