@@ -90,7 +90,7 @@ if (do_diis_ == 1) {
 	
         // Extrapolate 
         if (itr_diis >= num_vecs) {
-	  diis(nidpA, vecsA, errvecsA, kappa_barA);
+	  diis(nidpA, vecsA, errvecsA, kappa_barA, wog_intA);
 	}
 	
 }// end if (do_diis_ == 1) 
@@ -271,8 +271,8 @@ if (do_diis_ == 1) {
 	
         // Extrapolate 
         if (itr_diis >= num_vecs) {
-	  diis(nidpA, vecsA, errvecsA, kappa_barA);
-	  diis(nidpB, vecsB, errvecsB, kappa_barB);
+	  diis(nidpA, vecsA, errvecsA, kappa_barA, wog_intA);
+	  diis(nidpB, vecsB, errvecsB, kappa_barB, wog_intB);
 	}
 	
 }// end if (do_diis_ == 1) 

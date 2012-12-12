@@ -74,7 +74,7 @@ if (reference_ == "RESTRICTED") {
 
 
     // Build the MO Hessian
-    Aorb = new Array2d(nidpA, nidpA, "MO Hessian Matrix");
+    Aorb = new Array2d("MO Hessian Matrix", nidpA, nidpA);
     Aorb->zero();
     // A(ai,bj) = 8*(ai|bj)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
@@ -260,7 +260,7 @@ else if (reference_ == "UNRESTRICTED") {
 
     // Build the MO Hessian
     // Alpha-Alpha spin cae
-    AorbAA = new Array2d(nidpA, nidpA, "Alpha-Alpha MO Hessian Matrix");
+    AorbAA = new Array2d("Alpha-Alpha MO Hessian Matrix", nidpA, nidpA);
     AorbAA->zero();
     // A(AI,BJ) = 4*(AI|BJ)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[V,O]"),
@@ -331,7 +331,7 @@ else if (reference_ == "UNRESTRICTED") {
     if (print_ > 2) AorbAA->print();
 
     // Build the UHF MO Hessian matrix
-    Aorb = new Array2d(nidp_tot, nidp_tot, "UHF MO Hessian Matrix");
+    Aorb = new Array2d("UHF MO Hessian Matrix", nidp_tot, nidp_tot);
     Aorb->zero();
     // AAAA part 
     for (int x=0; x<nidpA;x++) { 
@@ -342,7 +342,7 @@ else if (reference_ == "UNRESTRICTED") {
     delete AorbAA;
 
     // Beta-Beta spin cae
-    AorbBB = new Array2d(nidpB, nidpB, "Beta-Beta MO Hessian Matrix");
+    AorbBB = new Array2d("Beta-Beta MO Hessian Matrix", nidpB, nidpB);
     AorbBB->zero();
     // A(ai,bj) = 4*(ai|bj)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[v,o]"),
@@ -421,7 +421,7 @@ else if (reference_ == "UNRESTRICTED") {
     delete AorbBB;
 
     // Alpha-Beta spin cae
-    AorbAB = new Array2d(nidpA, nidpB, "Alpha-Beta MO Hessian Matrix");
+    AorbAB = new Array2d("Alpha-Beta MO Hessian Matrix", nidpA, nidpB);
     AorbAB->zero();
     // A(AI,bj) = 4*(AI|bj)
     dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[v,o]"),
