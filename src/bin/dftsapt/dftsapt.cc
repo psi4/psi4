@@ -329,14 +329,14 @@ void DFTSAPT::fock_terms()
     Exch10_n_terms[3] -= 4.0 * T_AB_n->vector_dot(K_B);
 
     Exch10_n_terms[4] += 8.0 * T_AB_n->vector_dot(J_T_A_n);
-    Exch10_n_terms[4] -= 4.0 * T_AB_n->vector_dot(K_T_A_n);
+    Exch10_n_terms[4] -= 4.0 * T_AB_n->vector_dot(K_T_A_n->transpose());
     Exch10_n_terms[4] += 8.0 * T_B_n->vector_dot(J_T_A_n);
-    Exch10_n_terms[4] -= 4.0 * T_B_n->vector_dot(K_T_A_n);
+    Exch10_n_terms[4] -= 4.0 * T_B_n->vector_dot(K_T_A_n->transpose());
     
     Exch10_n_terms[5] += 8.0 * T_BA_n->vector_dot(J_T_BA_n);
-    Exch10_n_terms[5] -= 4.0 * T_BA_n->vector_dot(K_T_BA_n);
+    Exch10_n_terms[5] -= 4.0 * T_BA_n->vector_dot(K_T_BA_n->transpose());
     Exch10_n_terms[5] += 8.0 * T_B_n->vector_dot(J_T_BA_n);
-    Exch10_n_terms[5] -= 4.0 * T_B_n->vector_dot(K_T_BA_n);
+    Exch10_n_terms[5] -= 4.0 * T_B_n->vector_dot(K_T_BA_n->transpose());
 
     for (int k = 0; k < Exch10_n_terms.size(); k++) {
         Exch10_n_terms[k] *= -1.0;
@@ -400,14 +400,14 @@ void DFTSAPT::fock_terms()
     Exch10_2_terms[3] -= 4.0 * T_AB_2->vector_dot(K_B);
 
     Exch10_2_terms[4] += 8.0 * T_AB_2->vector_dot(J_T_A_2);
-    Exch10_2_terms[4] -= 4.0 * T_AB_2->vector_dot(K_T_A_2);
+    Exch10_2_terms[4] -= 4.0 * T_AB_2->vector_dot(K_T_A_2->transpose());
     Exch10_2_terms[4] += 8.0 * T_B_2->vector_dot(J_T_A_2);
-    Exch10_2_terms[4] -= 4.0 * T_B_2->vector_dot(K_T_A_2);
+    Exch10_2_terms[4] -= 4.0 * T_B_2->vector_dot(K_T_A_2->transpose());
     
     Exch10_2_terms[5] += 8.0 * T_BA_2->vector_dot(J_T_BA_2);
-    Exch10_2_terms[5] -= 4.0 * T_BA_2->vector_dot(K_T_BA_2);
+    Exch10_2_terms[5] -= 4.0 * T_BA_2->vector_dot(K_T_BA_2->transpose());
     Exch10_2_terms[5] += 8.0 * T_B_2->vector_dot(J_T_BA_2);
-    Exch10_2_terms[5] -= 4.0 * T_B_2->vector_dot(K_T_BA_2);
+    Exch10_2_terms[5] -= 4.0 * T_B_2->vector_dot(K_T_BA_2->transpose());
 
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
         Exch10_2_terms[k] *= -1.0;
