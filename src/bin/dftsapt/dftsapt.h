@@ -61,6 +61,20 @@ protected:
     boost::shared_ptr<Matrix> Cocc_A_;
     // Monomer B C matrix (full occ)
     boost::shared_ptr<Matrix> Cocc_B_;
+    // Monomer A C matrix (full vir)
+    boost::shared_ptr<Matrix> Cvir_A_;
+    // Monomer B C matrix (full vir)
+    boost::shared_ptr<Matrix> Cvir_B_;
+    
+    // Monomer A eps vector (full occ)
+    boost::shared_ptr<Vector> eps_occ_A_;
+    // Monomer B eps vector (full occ)
+    boost::shared_ptr<Vector> eps_occ_B_;
+    // Monomer A eps vector (full vir)
+    boost::shared_ptr<Vector> eps_vir_A_;
+    // Monomer B eps vector (full vir)
+    boost::shared_ptr<Vector> eps_vir_B_;
+
 
     // Monomer A C matrix (active occ)
     boost::shared_ptr<Matrix> Caocc_A_;
@@ -117,11 +131,15 @@ protected:
     boost::shared_ptr<Matrix> build_D(boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
     // Build the CPKS RHS (ov-space)
     boost::shared_ptr<Matrix> build_w(boost::shared_ptr<Matrix> W, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
-    // Build the CPKS LHS (AO-space)
-    boost::shared_ptr<Matrix> build_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
+    // Triple GEMM (all matrices must be square)
+    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C);
+    // Build the C_O matrix
+    boost::shared_ptr<Matrix> build_C_O(boost::shared_ptr<Matrix> C, boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> P);
+    // Build the C_X matrix
+    boost::shared_ptr<Matrix> build_C_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> C);
 
     // Protected constructor (use factory below)
     DFTSAPT();
@@ -163,13 +181,13 @@ protected:
     // Response of A
     boost::shared_ptr<Matrix> x_A_;
     // Active occ orbital coefficients of A
-    boost::shared_ptr<Matrix> Caocc_A_;
+    boost::shared_ptr<Matrix> Cocc_A_;
     // Active vir orbital coefficients of A
-    boost::shared_ptr<Matrix> Cavir_A_;
+    boost::shared_ptr<Matrix> Cvir_A_;
     // Active occ orbital eigenvalues of A
-    boost::shared_ptr<Vector> eps_aocc_A_;
+    boost::shared_ptr<Vector> eps_occ_A_;
     // Active vir orbital eigenvalues of A
-    boost::shared_ptr<Vector> eps_avir_A_;
+    boost::shared_ptr<Vector> eps_vir_A_;
 
     // => Monomer B Problem <= //
 
@@ -178,13 +196,13 @@ protected:
     // Response of B
     boost::shared_ptr<Matrix> x_B_;
     // Active occ orbital coefficients of B
-    boost::shared_ptr<Matrix> Caocc_B_;
+    boost::shared_ptr<Matrix> Cocc_B_;
     // Active vir orbital coefficients of B
-    boost::shared_ptr<Matrix> Cavir_B_;
+    boost::shared_ptr<Matrix> Cvir_B_;
     // Active occ orbital eigenvalues of B
-    boost::shared_ptr<Vector> eps_aocc_B_;
+    boost::shared_ptr<Vector> eps_occ_B_;
     // Active vir orbital eigenvalues of B
-    boost::shared_ptr<Vector> eps_avir_B_;
+    boost::shared_ptr<Vector> eps_vir_B_;
 
     // Form the s = Ab product for the provided vectors b (may or may not need more iterations)
     std::map<std::string, boost::shared_ptr<Matrix> > product(std::map<std::string, boost::shared_ptr<Matrix> > b);
