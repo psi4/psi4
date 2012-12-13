@@ -1860,7 +1860,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
     /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
-    options.add_int("ROTATE_MO_ANGLE",0);
+    options.add_double("ROTATE_MO_ANGLE",0.0);
     /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
     options.add_int("ROTATE_MO_IRREP",1);
     /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
