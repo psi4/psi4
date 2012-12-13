@@ -53,13 +53,13 @@ class Array1d
     
   public:
   Array1d(int d1);  
-  Array1d(int d1, string name);
+  Array1d(string name, int d1);
   Array1d();			   //default constructer
   ~Array1d(); 		   	   //destructer
   
   Array1d* generate(int d1);
-  Array1d* generate(int d1, string name);
-  void init(int d1, string name);
+  Array1d* generate(string name, int d1);
+  void init(string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -103,13 +103,13 @@ class Array2d
     
   public:
   Array2d(int d1,int d2);  
-  Array2d(int d1,int d2, string name);
+  Array2d(string name, int d1,int d2);
   Array2d();			   //default constructer
   ~Array2d(); 		   	   //destructer
   
   Array2d* generate(int d1,int d2);
-  Array2d* generate(int d1,int d2, string name);
-  void init(int d1,int d2, string name);
+  Array2d* generate(string name, int d1,int d2);
+  void init(string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
   void zero();
@@ -184,13 +184,13 @@ class Array3d
     
   public:
   Array3d(int d1,int d2, int d3);  
-  Array3d(int d1,int d2, int d3, string name);
+  Array3d(string name, int d1,int d2, int d3);
   Array3d();			   //default constructer
   ~Array3d(); 		   	   //destructer
   
   Array3d* generate(int d1,int d2, int d3);
-  Array3d* generate(int d1,int d2, int d3, string name);
-  void init(int d1,int d2, int d3, string name);
+  Array3d* generate(string name, int d1,int d2, int d3);
+  void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();

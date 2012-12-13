@@ -66,6 +66,7 @@ void OCCWave::common_init()
 	cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
 	cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
 	e3_scale=options_.get_double("E3_SCALE");
+	lambda_damping=options_.get_double("MOGRAD_DAMPING");
 	
 	orth_type=options_.get_str("ORTH_TYPE");
 	opt_method=options_.get_str("OPT_METHOD");
@@ -286,7 +287,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision December 07, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 12, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
