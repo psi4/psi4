@@ -44,7 +44,7 @@ Array1d::Array1d(int d1)
   memalloc(); 
 }//
 
-Array1d::Array1d(int d1, string name)
+Array1d::Array1d(string name, int d1)
 {
   A1d_ = NULL;
   dim1_=d1;
@@ -69,9 +69,9 @@ Array1d* Array1d::generate(int d1)
     return new Array1d(d1);
 }
 
-Array1d* Array1d::generate(int d1, string name)
+Array1d* Array1d::generate(string name, int d1)
 {
-    return new Array1d(d1,name);
+    return new Array1d(name,d1);
 }
 
 void Array1d::memalloc()
@@ -87,7 +87,7 @@ void Array1d::init(int d1)
     A1d_ = new double[dim1_];
 }//
 
-void Array1d::init(int d1, string name)
+void Array1d::init(string name, int d1)
 { 
     dim1_=d1;
     name_=name;
@@ -318,7 +318,7 @@ Array2d::Array2d(int d1,int d2)
   memalloc(); 
 }//
 
-Array2d::Array2d(int d1,int d2, string name)
+Array2d::Array2d(string name, int d1,int d2)
 {
   A2d_ = NULL;
   dim1_=d1;
@@ -345,9 +345,9 @@ Array2d* Array2d::generate(int d1,int d2)
     return new Array2d(d1,d2);
 }
 
-Array2d* Array2d::generate(int d1,int d2, string name)
+Array2d* Array2d::generate(string name, int d1,int d2)
 {
-    return new Array2d(d1,d2,name);
+    return new Array2d(name,d1,d2);
 }
 
 void Array2d::memalloc()
@@ -364,7 +364,7 @@ void Array2d::init(int d1,int d2)
     A2d_ = block_matrix(dim1_, dim2_);
 }//
 
-void Array2d::init(int d1,int d2, string name)
+void Array2d::init(string name, int d1,int d2)
 { 
     dim1_=d1;
     dim2_=d2;
@@ -901,7 +901,7 @@ Array3d::Array3d(int d1,int d2, int d3)
   memalloc(); 
 }//
 
-Array3d::Array3d(int d1,int d2, int d3, string name)
+Array3d::Array3d(string name, int d1,int d2, int d3)
 {
   A3d_ = NULL;
   dim1_=d1;
@@ -937,9 +937,9 @@ Array3d* Array3d::generate(int d1,int d2, int d3)
     return new Array3d(d1,d2,d3);
 }
 
-Array3d* Array3d::generate(int d1,int d2, int d3, string name)
+Array3d* Array3d::generate(string name, int d1,int d2, int d3)
 {
-    return new Array3d(d1,d2,d3,name);
+    return new Array3d(name,d1,d2,d3);
 }
 
 void Array3d::memalloc()
@@ -963,7 +963,7 @@ void Array3d::init(int d1,int d2, int d3)
     }          
 }//
 
-void Array3d::init(int d1,int d2, int d3, string name)
+void Array3d::init(string name, int d1,int d2, int d3)
 { 
     dim1_=d1;
     dim2_=d2;

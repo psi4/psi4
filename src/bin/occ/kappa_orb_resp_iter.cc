@@ -142,11 +142,47 @@ if (reference_ == "RESTRICTED") {
 	double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
 	sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
     }
-    //sigma_pcgA->print();
 
+    /*
+    // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && i == j) {
+	        value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * kappaA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, 2.0 * value);
+    }
+
+    // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && a == b) {
+	        value = FockA->get(ha, i, j) * kappaA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, -2.0 * value);
+    }
+    */
+ 
     // Build r0
     r_pcgA->zero();
     r_pcgA->subtract(wogA);
+    r_pcgA->scale(lambda_damping);//new
     r_pcgA->subtract(sigma_pcgA);
 
     // Build z0
@@ -375,7 +411,42 @@ else if (reference_ == "UNRESTRICTED") {
 	double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
 	sigma_pcgA->add(x, 2.0 * value * kappaA->get(x));
     }
-    //sigma_pcgA->print();
+
+    /*
+    // \sigma_AI += 2.0 * \sum_{B} F_AB * p_BI
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && i == j) {
+	        value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * kappaA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, 2.0 * value);
+    }
+
+    // \sigma_AI -= 2.0 * \sum_{J} F_IJ * p_AJ
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && a == b) {
+	        value = FockA->get(ha, i, j) * kappaA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, -2.0 * value);
+    }
+    */
 
     // Start to beta spin case
     // Build sigma = A * p
@@ -432,14 +503,51 @@ else if (reference_ == "UNRESTRICTED") {
 	double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);  
 	sigma_pcgB->add(x, 2.0 * value * kappaB->get(x));
     }
-    //sigma_pcgB->print();
 
+    /*
+    // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
+    for(int x = 0; x < nidpB; x++) {
+	int a = idprowB[x];
+	int i = idpcolB[x];
+	int ha = idpirrB[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpB; y++) {
+	    int b = idprowB[y];
+	    int j = idpcolB[y];
+	    int hb = idpirrB[y];
+            if (ha == hb && i == j) {
+	        value = FockB->get(ha, a + occpiB[ha], b + occpiB[ha]) * kappaB->get(y);  
+            }
+        }
+	sigma_pcgB->add(x, 2.0 * value);
+    }
+
+    // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
+    for(int x = 0; x < nidpB; x++) {
+	int a = idprowB[x];
+	int i = idpcolB[x];
+	int ha = idpirrB[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpB; y++) {
+	    int b = idprowB[y];
+	    int j = idpcolB[y];
+	    int hb = idpirrB[y];
+            if (ha == hb && a == b) {
+	        value = FockB->get(ha, i, j) * kappaB->get(y);  
+            }
+        }
+	sigma_pcgB->add(x, -2.0 * value);
+    }
+    */
+ 
     // Build r0
     r_pcgA->zero();
     r_pcgA->subtract(wogA);
+    r_pcgA->scale(lambda_damping);//new
     r_pcgA->subtract(sigma_pcgA);
     r_pcgB->zero();
     r_pcgB->subtract(wogB);
+    r_pcgB->scale(lambda_damping);//new
     r_pcgB->subtract(sigma_pcgB);
 
     // Build z0
@@ -627,6 +735,42 @@ void OCCWave::orb_resp_pcg_rhf()
 	sigma_pcgA->add(x, 2.0 * value * p_pcgA->get(x));
     }
 
+    /*
+    // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && i == j) {
+	        value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * p_pcgA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, 2.0 * value);
+    }
+
+    // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && a == b) {
+	        value = FockA->get(ha, i, j) * p_pcgA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, -2.0 * value);
+    }
+    */
+
    // Build line search parameter alpha
    a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
 
@@ -799,6 +943,42 @@ void OCCWave::orb_resp_pcg_uhf()
 	sigma_pcgA->add(x, 2.0 * value * p_pcgA->get(x));
     }
 
+    /*
+    // \sigma_AI += 2.0 * \sum_{B} F_AB * p_BI
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && i == j) {
+	        value = FockA->get(ha, a + occpiA[ha], b + occpiA[ha]) * p_pcgA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, 2.0 * value);
+    }
+
+    // \sigma_AI -= 2.0 * \sum_{J} F_IJ * p_AJ
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int ha = idpirrA[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpA; y++) {
+	    int b = idprowA[y];
+	    int j = idpcolA[y];
+	    int hb = idpirrA[y];
+            if (ha == hb && a == b) {
+	        value = FockA->get(ha, i, j) * p_pcgA->get(y);  
+            }
+        }
+	sigma_pcgA->add(x, -2.0 * value);
+    }
+    */
+
     // Start to beta spin case
     // Build sigma = A * p
     // sigma_ai = 4 \sum_{bj} (ai|bj) P_bj
@@ -854,6 +1034,42 @@ void OCCWave::orb_resp_pcg_uhf()
 	double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);  
 	sigma_pcgB->add(x, 2.0 * value * p_pcgB->get(x));
     }
+
+    /*
+    // \sigma_ai += 2.0 * \sum_{b} F_ab * p_bi
+    for(int x = 0; x < nidpB; x++) {
+	int a = idprowB[x];
+	int i = idpcolB[x];
+	int ha = idpirrB[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpB; y++) {
+	    int b = idprowB[y];
+	    int j = idpcolB[y];
+	    int hb = idpirrB[y];
+            if (ha == hb && i == j) {
+	        value = FockB->get(ha, a + occpiB[ha], b + occpiB[ha]) * p_pcgB->get(y);  
+            }
+        }
+	sigma_pcgB->add(x, 2.0 * value);
+    }
+
+    // \sigma_ai -= 2.0 * \sum_{j} F_ij * p_aj
+    for(int x = 0; x < nidpB; x++) {
+	int a = idprowB[x];
+	int i = idpcolB[x];
+	int ha = idpirrB[x];
+        double value = 0.0;
+        for(int y = 0; y < nidpB; y++) {
+	    int b = idprowB[y];
+	    int j = idpcolB[y];
+	    int hb = idpirrB[y];
+            if (ha == hb && a == b) {
+	        value = FockB->get(ha, i, j) * p_pcgB->get(y);  
+            }
+        }
+	sigma_pcgB->add(x, -2.0 * value);
+    }
+    */
 
    // Build line search parameter alpha
    a_pcgA = r_pcgA->dot(z_pcgA) / p_pcgA->dot(sigma_pcgA);
