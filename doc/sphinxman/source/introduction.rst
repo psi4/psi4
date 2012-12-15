@@ -312,11 +312,11 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | ACPF/AQCC               | Y         | N         | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP2                    | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP3                    | Y         | N         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OMP3                    | Y         | N         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OCEPA                   | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |
