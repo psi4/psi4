@@ -94,13 +94,18 @@ void OCCWave::omp2_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
 	   semi_canonic();
 	   if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
 	   omp2_t2_1st_sc();
+           conver = 1;
            if (dertype == "FIRST") {
                omp2_response_pdms();
 	       gfock();
@@ -303,7 +308,11 @@ void OCCWave::omp3_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
 	   semi_canonic();
@@ -311,6 +320,7 @@ void OCCWave::omp3_manager()
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
 	   omp3_t2_1st_sc();
 	   t2_2nd_sc();
+           conver = 1;
         }     
 
   if (conver == 1) {
@@ -498,7 +508,11 @@ void OCCWave::ocepa_manager()
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
            orbs_already_opt = 1;
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard CEPA computation... \n");
 	   fflush(outfile);
            ref_energy();

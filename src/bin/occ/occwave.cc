@@ -49,7 +49,6 @@ void OCCWave::common_init()
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
 	exp_cutoff=options_.get_int("CUTOFF");
-	//memory=options_.get_int("MEMORY"); 
         tol_pcg=options_.get_double("PCG_CONVERGENCE");
         pcg_maxiter=options_.get_int("PCG_MAXITER");
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
@@ -92,7 +91,7 @@ void OCCWave::common_init()
         orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER"); 
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
-        else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+        else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
 
         if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
@@ -100,6 +99,7 @@ void OCCWave::common_init()
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
         title();
+        if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 	get_moinfo();
 
 	
@@ -129,8 +129,6 @@ if (reference_ == "RESTRICTED") {
         }
         fprintf(outfile,     "\t==============================\n"); 
 	fflush(outfile);
-
-
 
         // Compute costs
         //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
@@ -287,7 +285,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision December 12, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 14, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
