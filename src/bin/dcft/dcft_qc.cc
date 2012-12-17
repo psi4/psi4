@@ -118,7 +118,7 @@ DCFTSolver::compute_orbital_gradient(){
     }
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
     build_tau();
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
         refine_tau();
     }
     transform_tau();
