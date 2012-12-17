@@ -42,7 +42,7 @@ protected:
     void fock_alpha();
     void fock_beta();
     void idp();
-    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
+    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new, Array1d *errvec_new);
     void kappa_msd();
     void kappa_orb_resp();
     void kappa_orb_resp_iter();
@@ -247,6 +247,7 @@ protected:
      double rms_pcgB;
      double rms_pcg;
      double tol_pcg;
+     double lambda_damping;
 
      // OMP3
      double e3_scale;
@@ -379,6 +380,8 @@ protected:
      
      Array1d *wogA; 
      Array1d *wogB; 
+     Array1d *wog_intA; 
+     Array1d *wog_intB; 
      Array1d *kappaA; 
      Array1d *kappaB; 
      Array1d *kappa;          // where kappa = kappaA + kappaB
