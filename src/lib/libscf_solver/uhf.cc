@@ -458,7 +458,7 @@ void UHF::stability_analysis()
                 if(evals[0] < 0.0){
                     redo = true;
                     status = "\tNegative hessian eigenvalue detected: rotating orbitals.\n";
-                    double scale = _pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
+                    double scale = pc_pi*options_.get_double("FOLLOW_STEP_SCALE")/2.0;
                     // Rotate the alpha orbitals
 //                    fprintf(outfile, "OLD ORBS");
 //                    Ca_->print();

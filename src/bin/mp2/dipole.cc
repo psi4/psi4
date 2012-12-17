@@ -184,50 +184,50 @@ void dipole(void)
   fprintf(outfile,"\n\tReference part of electric dipole moment:\n");
   fprintf(outfile,"\t----------------------------------------------\n");
   fprintf(outfile,"\tmu(X) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_x_ref* _dipmom_au2debye, mu_x_ref* _dipmom_au2si, mu_x_ref);
+	  mu_x_ref* pc_dipmom_au2debye, mu_x_ref* pc_dipmom_au2si, mu_x_ref);
   fprintf(outfile,"\tmu(Y) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_y_ref* _dipmom_au2debye, mu_y_ref* _dipmom_au2si, mu_y_ref);
+	  mu_y_ref* pc_dipmom_au2debye, mu_y_ref* pc_dipmom_au2si, mu_y_ref);
   fprintf(outfile,"\tmu(Z) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_z_ref* _dipmom_au2debye, mu_z_ref* _dipmom_au2si, mu_z_ref);
+	  mu_z_ref* pc_dipmom_au2debye, mu_z_ref* pc_dipmom_au2si, mu_z_ref);
   mu = sqrt(mu_x_ref*mu_x_ref+ mu_y_ref*mu_y_ref+ mu_z_ref*mu_z_ref);
   fprintf(outfile,"\t|mu|  = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu * _dipmom_au2debye, mu * _dipmom_au2si, mu);
+	  mu * pc_dipmom_au2debye, mu * pc_dipmom_au2si, mu);
 
   fprintf(outfile,"\n\tCorrelation part of electric dipole moment:\n");
   fprintf(outfile,"\t----------------------------------------------\n");
   fprintf(outfile,"\tmu(X) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_x* _dipmom_au2debye, mu_x* _dipmom_au2si, mu_x);
+	  mu_x* pc_dipmom_au2debye, mu_x* pc_dipmom_au2si, mu_x);
   fprintf(outfile,"\tmu(Y) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_y* _dipmom_au2debye, mu_y* _dipmom_au2si, mu_y);
+	  mu_y* pc_dipmom_au2debye, mu_y* pc_dipmom_au2si, mu_y);
   fprintf(outfile,"\tmu(Z) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_z* _dipmom_au2debye, mu_z* _dipmom_au2si, mu_z);
+	  mu_z* pc_dipmom_au2debye, mu_z* pc_dipmom_au2si, mu_z);
   mu = sqrt(mu_x*mu_x+ mu_y*mu_y+ mu_z*mu_z);
   fprintf(outfile,"\t|mu|  = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu * _dipmom_au2debye, mu * _dipmom_au2si, mu);
+	  mu * pc_dipmom_au2debye, mu * pc_dipmom_au2si, mu);
 
   fprintf(outfile,"\n\tNuclear part of electric dipole moment:\n");
   fprintf(outfile,"\t----------------------------------------------\n");
   fprintf(outfile,"\tmu(X) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_x_n * _dipmom_au2debye, mu_x_n * _dipmom_au2si, mu_x_n);
+	  mu_x_n * pc_dipmom_au2debye, mu_x_n * pc_dipmom_au2si, mu_x_n);
   fprintf(outfile,"\tmu(Y) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_y_n * _dipmom_au2debye, mu_y_n * _dipmom_au2si, mu_y_n);
+	  mu_y_n * pc_dipmom_au2debye, mu_y_n * pc_dipmom_au2si, mu_y_n);
   fprintf(outfile,"\tmu(Z) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_z_n * _dipmom_au2debye, mu_z_n * _dipmom_au2si, mu_z_n);
+	  mu_z_n * pc_dipmom_au2debye, mu_z_n * pc_dipmom_au2si, mu_z_n);
   mu = sqrt(mu_x_n*mu_x_n + mu_y_n*mu_y_n + mu_z_n*mu_z_n);
   fprintf(outfile,"\t|mu|  = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu * _dipmom_au2debye, mu * _dipmom_au2si, mu);
+	  mu * pc_dipmom_au2debye, mu * pc_dipmom_au2si, mu);
 
   fprintf(outfile,"\n\tTotal electric dipole moment:\n");
   fprintf(outfile,"\t----------------------------------------------\n");
   fprintf(outfile,"\tmu(X) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_x_tot * _dipmom_au2debye, mu_x_tot * _dipmom_au2si, mu_x_tot);
+	  mu_x_tot * pc_dipmom_au2debye, mu_x_tot * pc_dipmom_au2si, mu_x_tot);
   fprintf(outfile,"\tmu(Y) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_y_tot * _dipmom_au2debye, mu_y_tot * _dipmom_au2si, mu_y_tot);
+	  mu_y_tot * pc_dipmom_au2debye, mu_y_tot * pc_dipmom_au2si, mu_y_tot);
   fprintf(outfile,"\tmu(Z) = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu_z_tot * _dipmom_au2debye, mu_z_tot * _dipmom_au2si, mu_z_tot);
+	  mu_z_tot * pc_dipmom_au2debye, mu_z_tot * pc_dipmom_au2si, mu_z_tot);
   mu = sqrt(mu_x_tot*mu_x_tot + mu_y_tot*mu_y_tot + mu_z_tot*mu_z_tot);
   fprintf(outfile,"\t|mu|  = %8.5lf D,  %15.8e C*m,  %11.8lf a.u.\n",
-	  mu * _dipmom_au2debye, mu * _dipmom_au2si, mu);
+	  mu * pc_dipmom_au2debye, mu * pc_dipmom_au2si, mu);
 
   return;
 }

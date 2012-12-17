@@ -3612,37 +3612,43 @@ void DFJK::block_K(double** Qmnp, int naux)
 
         if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
 
-            timer_on("JK: K1");
+            if (C_right_[N].get() == C_left_[N].get()) {
+                ::memcpy((void*) Erp[0], (void*) Elp[0], sizeof(double) * naux * nocc * nbf);
+            } else {
 
-            #pragma omp parallel for schedule (dynamic)
-            for (int m = 0; m < nbf; m++) {
+                timer_on("JK: K1");
 
-                int thread = 0;
-                #ifdef _OPENMP
-                    thread = omp_get_thread_num();
-                #endif
+                #pragma omp parallel for schedule (dynamic)
+                for (int m = 0; m < nbf; m++) {
 
-                double** Ctp = C_temp_[thread]->pointer();
-                double** QSp = Q_temp_[thread]->pointer();
+                    int thread = 0;
+                    #ifdef _OPENMP
+                        thread = omp_get_thread_num();
+                    #endif
 
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
-                int rows = pairs.size();
+                    double** Ctp = C_temp_[thread]->pointer();
+                    double** QSp = Q_temp_[thread]->pointer();
 
-                for (int i = 0; i < rows; i++) {
-                    int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
-                    C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
-                    C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
+                    const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                    int rows = pairs.size();
+
+                    for (int i = 0; i < rows; i++) {
+                        int n = pairs[i];
+                        long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                        C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
+                        C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
+                    }
+
+                    if (nocc > 1) {
+                        C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                    } else {
+                        C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Erp[0][m*(ULI)nocc*naux],1);
+                    }
                 }
 
-                if (nocc > 1) {
-                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
-                } else {
-                    C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Erp[0][m*(ULI)nocc*naux],1);
-                }
+                timer_off("JK: K1");
+
             }
-
-            timer_off("JK: K1");
 
         }
 

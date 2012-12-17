@@ -53,10 +53,11 @@ if (reference_ == "RESTRICTED") {
     
     if (nidpA != 0) {
       idp_returnA = 1;
-      wogA = new Array1d(nidpA, "Alpha MO grad vector");
-      kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
-      kappa_newA = new Array1d(nidpA, "Alpha New orb rot params vector of current step");
-      kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
+      wogA = new Array1d("Alpha MO grad vector", nidpA);
+      kappaA = new Array1d("Alpha orb rot params vector of current step", nidpA);
+      kappa_newA = new Array1d("Alpha New orb rot params vector of current step", nidpA);
+      kappa_barA = new Array1d("Alpha orb rot params vector with respect to scf MOs", nidpA);
+      wog_intA = new Array1d("Alpha Interpolated MO grad vector", nidpA);
       wogA->zero();
       kappaA->zero();
       kappa_barA->zero();
@@ -111,10 +112,11 @@ else if (reference_ == "UNRESTRICTED") {
     
     if (nidpA != 0) {
       idp_returnA = 1;
-      wogA = new Array1d(nidpA, "Alpha MO grad vector");
-      kappaA = new Array1d(nidpA, "Alpha orb rot params vector of current step");
-      kappa_newA = new Array1d(nidpA, "Alpha New orb rot params vector of current step");
-      kappa_barA = new Array1d(nidpA, "Alpha orb rot params vector with respect to scf MOs");
+      wogA = new Array1d("Alpha MO grad vector", nidpA);
+      kappaA = new Array1d("Alpha orb rot params vector of current step", nidpA);
+      kappa_newA = new Array1d("Alpha New orb rot params vector of current step", nidpA);
+      kappa_barA = new Array1d("Alpha orb rot params vector with respect to scf MOs", nidpA);
+      wog_intA = new Array1d("Alpha Interpolated MO grad vector", nidpA);
       wogA->zero();
       kappaA->zero();
       kappa_barA->zero();
@@ -122,10 +124,11 @@ else if (reference_ == "UNRESTRICTED") {
     
     if (nidpB != 0) {
       idp_returnB = 1;
-      wogB = new Array1d(nidpB, "Beta MO grad vector");
-      kappaB = new Array1d(nidpB, "Beta orb rot params vector of current step");
-      kappa_newB = new Array1d(nidpB, "Beta New orb rot params vector of current step");
-      kappa_barB = new Array1d(nidpB, "Beta orb rot params vector with respect to scf MOs");
+      wogB = new Array1d("Beta MO grad vector", nidpB);
+      kappaB = new Array1d("Beta orb rot params vector of current step", nidpB);
+      kappa_newB = new Array1d("Beta New orb rot params vector of current step", nidpB);
+      kappa_barB = new Array1d("Beta orb rot params vector with respect to scf MOs", nidpB);
+      wog_intB = new Array1d("Beta Interpolated MO grad vector", nidpB);
       wogB->zero();
       kappaB->zero();
       kappa_barB->zero();

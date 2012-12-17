@@ -736,7 +736,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
-
+  if (name == "DFTSAPT"|| options.read_globals()) { 
+  /*- The amount of information printed to the output file -*/ 
+  options.add_int("PRINT", 1); 
+  /*- Debug level -*/  
+  options.add_int("DEBUG", 0); 
+  /*- Bench level -*/  
+  options.add_int("BENCH", 0); 
+  /*- \% of memory for DF-MP2 three-index buffers -*/ 
+  options.add_double("SAPT_MEM_FACTOR", 0.9); 
+  /*- The name of the orbital basis set -*/ 
+  options.add_str("BASIS", ""); 
+  /*- The name of the response auxiliary basis set -*/ 
+  options.add_str("DF_BASIS_SAPT", ""); 
+  /*- The name of the electrostatic/exchange auxiliary basis set -*/ 
+  options.add_str("DF_BASIS_ELST", ""); 
+  /*- The maximum number of iterations in CPKS -*/ 
+  options.add_int("MAXITER", 100); 
+  /*- Convergence criterion for residual of the CPKS coefficients in the SAPT 
+  * $E@@{ind,resp}^{(20)}$ term. -*/ 
+  options.add_double("D_CONVERGENCE",1e-8);    
+  } 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
@@ -1840,7 +1860,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
     /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
-    options.add_int("ROTATE_MO_ANGLE",0);
+    options.add_double("ROTATE_MO_ANGLE",0.0);
     /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
     options.add_int("ROTATE_MO_IRREP",1);
     /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
@@ -2400,6 +2420,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E3_SCALE",0.25);
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
+    /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
+    options.add_double("MOGRAD_DAMPING",1.0);
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");

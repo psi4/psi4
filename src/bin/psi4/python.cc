@@ -60,6 +60,7 @@ namespace psi {
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfmp2      { PsiReturnType dfmp2grad(Options &);}
     namespace sapt       { PsiReturnType sapt(Options &);     }
+    namespace dftsapt    { PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB); }
     namespace dcft       { PsiReturnType dcft(Options &);     }
     namespace mcscf      { PsiReturnType mcscf(Options &);    }
     namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
@@ -340,6 +341,16 @@ double py_psi_sapt()
 {
     py_psi_prepare_options_for_module("SAPT");
     if (sapt::sapt(Process::environment.options) == Success) {
+        return Process::environment.globals["SAPT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_dftsapt(boost::shared_ptr<Wavefunction> dimer, boost::shared_ptr<Wavefunction> mA, boost::shared_ptr<Wavefunction> mB)
+{
+    py_psi_prepare_options_for_module("DFTSAPT");
+    if (dftsapt::dftsapt(dimer, mA, mB) == Success) {
         return Process::environment.globals["SAPT ENERGY"];
     }
     else
@@ -1090,6 +1101,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("fd_freq_1", py_psi_fd_freq_1, "Performs a finite difference frequency computation, from gradients, for a given irrep.");
     def("fd_hessian_0", py_psi_fd_hessian_0, "Performs a finite difference frequency computation, from energy points.");
     def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
+    def("dftsapt", py_psi_dftsapt, "Runs the DFT variant of the symmetry adapted perturbation theory code.");
     def("stability", py_psi_stability, "Runs the (experimental version) of HF stability analysis.");
     def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
     def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
