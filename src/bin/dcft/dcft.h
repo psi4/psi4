@@ -121,6 +121,8 @@ protected:
     void refine_tau();
     void compute_F_intermediate();
     void form_density_weighted_fock();
+    // FNO-DCFT
+    void form_nso_basis();
 
     bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
