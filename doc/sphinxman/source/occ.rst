@@ -217,6 +217,8 @@ The orbital-optimized CEPA methods currently supported in |Psifour| are outlined
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cepa0                   | CEPA0 (identical to Linearized CCD)                          |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 
 .. index:: OMP2; setting keywords
@@ -246,4 +248,5 @@ Advanced Keywords
 .. include:: /autodir_options_c/occ__nat_orbs.rst
 .. include:: /autodir_options_c/occ__occ_orbs_print.rst
 .. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
+.. include:: /autodir_options_c/occ__do_diis.rst
 

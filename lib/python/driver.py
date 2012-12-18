@@ -40,6 +40,7 @@ procedures = {
             'sos-omp3'      : run_sos_omp3,
             'sos-pi-omp3'   : run_sos_omp3,
             'ocepa'         : run_ocepa,
+            'cepa0'         : run_cepa0,
             'dftsapt'       : run_dftsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
@@ -274,6 +275,8 @@ def energy(name, **kwargs):
     | sos-omp3                | spin-opposite scaled OMP3                                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cepa0                   | coupled electron pair approximation, it is identical to linearized CCD                |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
