@@ -363,6 +363,7 @@ void OCCWave::omp3_tpdm_vvvv()
 /*=======================*/
 void OCCWave::ocepa_tpdm_vvvv()
 {      
+    //fprintf(outfile,"\n ocepa_tpdm_vvvv is starting... \n"); fflush(outfile);
     // NOTE: contract444 can handle only TN and NT type contractions, which means (0,0) and (1,1) type target indices,
     //  with out-of-core algorithm!!!!     
     dpdbuf4  T, L, G, V;
@@ -375,7 +376,6 @@ void OCCWave::ocepa_tpdm_vvvv()
     // TPDM VVVV-block. However, in the case of analytical gradients 
     // I need to symmetrize it.
     
-    if (time4grad == 0) {
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
@@ -387,9 +387,8 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
-    }
 
-    else if (time4grad == 1) {
+    if (time4grad == 1) {
     // Symmetrize the VVVV block
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
@@ -407,7 +406,6 @@ void OCCWave::ocepa_tpdm_vvvv()
 
     //Print 
     if (print_ > 3) {
-      //fprintf(outfile, "\t I am in the ocepa-tpdm-vvvv print flag \n"); fflush(outfile);
       dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>"); 
       dpd_buf4_print(&G, outfile, 1);
@@ -478,6 +476,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     
     psio_->close(PSIF_OCC_DENSITY, 1);
     psio_->close(PSIF_OCC_DPD, 1);
+    //fprintf(outfile,"\n ocepa_tpdm_vvvv done. \n"); fflush(outfile);
 
 } // end of twopdm_vvvv
 

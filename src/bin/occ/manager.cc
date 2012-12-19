@@ -206,7 +206,13 @@ void OCCWave::omp2_manager()
 	if (occ_orb_energy == "TRUE") semi_canonic(); 
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST") coord_grad();
+        if (dertype == "FIRST") {
+	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
+	    fflush(outfile);
+            coord_grad();
+	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    fflush(outfile);
+        }
 
   }// end if (conver == 1)
 }// end omp2_manager 
@@ -501,6 +507,7 @@ void OCCWave::ocepa_manager()
 	mograd();
         if (rms_wog > tol_grad) occ_iterations();
         else {
+           orbs_already_opt = 1;
 	   fprintf(outfile,"\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
 	   fflush(outfile);
            cepa_iterations();
@@ -571,7 +578,11 @@ void OCCWave::ocepa_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
             time4grad = 1;
+	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
+	    fflush(outfile);
             coord_grad();
+	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    fflush(outfile);
         }
 
   }// end if (conver == 1)
