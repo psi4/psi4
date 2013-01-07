@@ -852,9 +852,9 @@ void OEProp::common_init()
             double z = options["PROPERTIES_ORIGIN"][2].to_double();
             bool convert = mol->units() == Molecule::Angstrom;
             if(convert){
-                x /= _bohr2angstroms;
-                y /= _bohr2angstroms;
-                z /= _bohr2angstroms;
+                x /= pc_bohr2angstroms;
+                y /= pc_bohr2angstroms;
+                z /= pc_bohr2angstroms;
             }
             origin_ = Vector3(x, y, z);
         }else{
@@ -1009,7 +1009,7 @@ void OEProp::compute_multipoles(int order, bool transition)
     fprintf(outfile, "\n ------------------------------------------------------------------------------------\n");
     fprintf(outfile, "     Multipole             Electric (a.u.)       Nuclear  (a.u.)        Total (a.u.)\n");
     fprintf(outfile, " ------------------------------------------------------------------------------------\n\n");
-    double convfac = _dipmom_au2debye;
+    double convfac = pc_dipmom_au2debye;
     int address = 0;
     for(int l = 1; l <= order; ++l){
         int ncomponents = (l + 1) * (l + 2) / 2;
@@ -1037,7 +1037,7 @@ void OEProp::compute_multipoles(int order, bool transition)
             ++address;
         }
         fprintf(outfile, "\n");
-        convfac *= _bohr2angstroms;
+        convfac *= pc_bohr2angstroms;
     }
     fprintf(outfile, " --------------------------------------------------------------------------------\n");
 
@@ -1158,7 +1158,7 @@ void OEProp::compute_dipole(bool transition)
        de[0], de[1], de[2], de.norm());
     fprintf(outfile, "\n");
 
-    double dfac = _dipmom_au2debye;
+    double dfac = pc_dipmom_au2debye;
     fprintf(outfile,"  %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
@@ -1241,7 +1241,7 @@ void OEProp::compute_quadrupole(bool transition)
     }
 
     // Print multipole components
-    double dfac = _dipmom_au2debye * _bohr2angstroms;
+    double dfac = pc_dipmom_au2debye * pc_bohr2angstroms;
     fprintf(outfile, "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);

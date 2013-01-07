@@ -202,6 +202,8 @@ void SAPT0::exch10()
   for (int i=0; i<noccA_+noccB_; i++)
     P[i][i] -= 1.0;
 
+  //mat_print(P,noccA_+noccB_,noccA_+noccB_,outfile); 
+
   double **pAA = block_matrix(noccA_,noccA_);
   double **pBB = block_matrix(noccB_,noccB_);
   double **pAB = block_matrix(noccA_,noccB_);

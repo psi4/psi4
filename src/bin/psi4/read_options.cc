@@ -736,7 +736,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     printed. -*/
     options.add_int("PRINT", 1);
   }
-
+  if (name == "DFTSAPT"|| options.read_globals()) { 
+  /*- The amount of information printed to the output file -*/ 
+  options.add_int("PRINT", 1); 
+  /*- Debug level -*/  
+  options.add_int("DEBUG", 0); 
+  /*- Bench level -*/  
+  options.add_int("BENCH", 0); 
+  /*- \% of memory for DF-MP2 three-index buffers -*/ 
+  options.add_double("SAPT_MEM_FACTOR", 0.9); 
+  /*- The name of the orbital basis set -*/ 
+  options.add_str("BASIS", ""); 
+  /*- The name of the response auxiliary basis set -*/ 
+  options.add_str("DF_BASIS_SAPT", ""); 
+  /*- The name of the electrostatic/exchange auxiliary basis set -*/ 
+  options.add_str("DF_BASIS_ELST", ""); 
+  /*- The maximum number of iterations in CPKS -*/ 
+  options.add_int("MAXITER", 100); 
+  /*- Convergence criterion for residual of the CPKS coefficients in the SAPT 
+  * $E@@{ind,resp}^{(20)}$ term. -*/ 
+  options.add_double("D_CONVERGENCE",1e-8);    
+  } 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
@@ -828,7 +848,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DCFT-06", "DCFT-06 DCFT-06X CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 CEPA0");
+      /*- Specify orbital basis to be used in the DCFT iterations !expert -*/
+      options.add_str("DCFT_BASIS", "MO", "MO NSO");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -1840,7 +1862,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
     /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
-    options.add_int("ROTATE_MO_ANGLE",0);
+    options.add_double("ROTATE_MO_ANGLE",0.0);
     /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
     options.add_int("ROTATE_MO_IRREP",1);
     /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
@@ -2368,16 +2390,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Cutoff value for numerical procedures -*/
     options.add_int("CUTOFF",14);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
-    options.add_int("PCG_MAXITER",50);
+    options.add_int("PCG_MAXITER",30);
 
     /*- Convergence criterion for energy. -*/
     options.add_double("E_CONVERGENCE",1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
     /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-6);
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
     /*- Convergence criterion for maximum orbital gradient -*/
-    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
+    options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- Level shift to aid convergence -*/
@@ -2400,17 +2422,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E3_SCALE",0.25);
     /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
     options.add_double("PCG_CONVERGENCE",1e-6);
+    /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
+    options.add_double("MOGRAD_DAMPING",1.0);
 
     /*- The solver will be used for simultaneous linear equations. -*/
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
-     with a crude approximation to diagonal elements of MO Hessian. NR option takes a NR step with the MO Hessian, 
-     in this case type of the MO Hessian is controlled by HESS_TYPE option. -*/
-    options.add_str("OPT_METHOD","NR","MSD NR");
-    /*- Type of the Hessian matrix will be used in orbital optimization procedure. This option is associated with the OPT_METHOD = NR option.  -*/
-    options.add_str("HESS_TYPE","SCF","SCF");
+     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation    
+     parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both methods a DIIS extrapolation
+     will be performed with the DO_DIIS = TRUE option. -*/
+    options.add_str("OPT_METHOD","ORB_RESP","MSD ORB_RESP");
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the 
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian 
+      explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
+    options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
     options.add_str("PCG_BETA_TYPE","FLETCHER_REEVES","FLETCHER_REEVES POLAK_RIBIERE");
     /*- Type of the SCS method -*/

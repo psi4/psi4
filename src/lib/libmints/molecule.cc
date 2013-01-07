@@ -152,7 +152,7 @@ Molecule::Molecule():
     molecular_charge_(0),
     multiplicity_(1),
     units_(Angstrom),
-    input_units_to_au_(1.0/_bohr2angstroms),
+    input_units_to_au_(1.0/pc_bohr2angstroms),
     nunique_(0),
     nequiv_(0),
     equiv_(0),
@@ -756,9 +756,9 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
 
             if (angstrom_in_file) {
                 // Coordinates in Molecule must be bohr.
-                x /= _bohr2angstroms;
-                y /= _bohr2angstroms;
-                z /= _bohr2angstroms;
+                x /= pc_bohr2angstroms;
+                y /= pc_bohr2angstroms;
+                z /= pc_bohr2angstroms;
             }
 
             // Add it to the molecule.
@@ -904,7 +904,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     unsigned int firstAtom  = 0;
     unsigned int atomCount = 0;
 
-    mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / _bohr2angstroms;
+    mol->input_units_to_au_ = mol->units_ == Bohr ? 1.0 : 1.0 / pc_bohr2angstroms;
     mol->fragment_multiplicities_.push_back(mol->multiplicity_);
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
@@ -1088,21 +1088,25 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         ++currentAtom;
     }
 
-    if(pubcheminput){
-        // The coordinates are a bit crude, so we symmetrize them
-        // First, populate the atom list
-        mol->reinterpret_coordentries();
-        double tol = 1.0e-3;
-        // Now, redetect the symmetry with a really crude tolerance
-        SharedMatrix frame = mol->symmetry_frame(tol);
-        // Put it on the center of mass and rotate
-        mol->move_to_com();
-        mol->rotate_full(*frame.get());
-        mol->set_point_group(mol->find_point_group(tol));
-        // Clean up the molecule, to make sure it actually has the correct symmetry
-        mol->symmetrize();
-    }
+    if(pubcheminput)
+        mol->symmetrize_to_abelian_group(1.0e-3);
+
     return mol;
+}
+
+void Molecule::symmetrize_to_abelian_group(double tol)
+{
+    // The coordinates are a bit crude, so we symmetrize them
+    // First, populate the atom list
+    reinterpret_coordentries();
+    // Now, redetect the symmetry with a really crude tolerance
+    SharedMatrix frame = symmetry_frame(tol);
+    // Put it on the center of mass and rotate
+    move_to_com();
+    rotate_full(*frame.get());
+    set_point_group(find_point_group(tol));
+    // Clean up the molecule, to make sure it actually has the correct symmetry
+    symmetrize();
 }
 
 void Molecule::reinterpret_coordentries()
@@ -1376,7 +1380,7 @@ void Molecule::print_in_angstrom() const
             for(int i = 0; i < natom(); ++i){
                 fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
                 for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", xyz(i, j) * _bohr2angstroms);
+                    fprintf(outfile, "  %17.12f", xyz(i, j) * pc_bohr2angstroms);
                 fprintf(outfile,"\n");
             }
             fprintf(outfile,"\n");
@@ -1505,7 +1509,7 @@ void Molecule::print_distances() const
         for(int j=i+1;j<natom();j++) {
             Vector3 eij = xyz(j)-xyz(i);
             double distance=eij.norm();
-            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance*_bohr2angstroms);
+            fprintf(outfile, "        Distance %d to %d %-8.3lf\n",i+1,j+1,distance*pc_bohr2angstroms);
         }
     }
     fprintf(outfile, "\n\n");
@@ -1526,7 +1530,7 @@ void Molecule::print_bond_angles() const
                 Vector3 ejk = xyz(k)-xyz(j);
                 ejk.normalize ();
                 double dotproduct=eji.dot (ejk);
-                double phi = 180*acos(dotproduct)/_pi;
+                double phi = 180*acos(dotproduct)/pc_pi;
                 fprintf(outfile, "        Angle %d-%d-%d: %8.3lf\n", i+1, j+1, k+1, phi);
             }
         }
@@ -1568,7 +1572,7 @@ void Molecule::print_dihedrals() const
                         costau=1.00;
                     if(costau<-1.00 && costau>-1.000001)
                         costau=-1.00;
-                    double tau = 180*acos(costau)/_pi;
+                    double tau = 180*acos(costau)/pc_pi;
                     fprintf(outfile, "        Dihedral %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, tau);
                 }
             }
@@ -1608,7 +1612,7 @@ void Molecule::print_out_of_planes () const
                         sinetheta=1.000;
                     if(sinetheta<-1.00)
                         sinetheta=-1.000;
-                    double theta = 180*asin(sinetheta)/_pi;
+                    double theta = 180*asin(sinetheta)/pc_pi;
                     fprintf(outfile, "        Out-of-plane %d-%d-%d-%d: %8.3lf\n", i+1, j+1, k+1, l+1, theta);
                 }
             }
@@ -1620,7 +1624,7 @@ void Molecule::print_out_of_planes () const
 void Molecule::save_xyz(const std::string& filename) const
 {
 
-    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+    double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
 
     if (WorldComm->me() == 0) {
         FILE* fh = fopen(filename.c_str(), "w");
@@ -1638,7 +1642,7 @@ void Molecule::save_xyz(const std::string& filename) const
 
 std::string Molecule::save_string_xyz() const
 {
-    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+    double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
     char buffer[120];
     std::stringstream ss;
 
@@ -1697,9 +1701,9 @@ Vector Molecule::rotational_constants(double zero_tol) const {
   pI->diagonalize(eigenvectors, evals, ascending);
 
   // Conversion factor from moments to rotational constants.
-  double im2rotconst = _h / (8 * _pi * _pi * _c);
+  double im2rotconst = pc_h / (8 * pc_pi * pc_pi * pc_c);
   // Add factor to put moments into SI units - give result in wavenumbers.
-  im2rotconst /= (_bohr2m * _bohr2m * _amu2kg * 100);
+  im2rotconst /= (pc_bohr2m * pc_bohr2m * pc_amu2kg * 100);
 
   Vector rot_const(3);
   for (int i=0; i<3; ++i) {
@@ -2936,7 +2940,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     }
     else { // Oh or Ih ?
       // Oh has a S4 and should be oriented properly already.
-      test_mat = geom.matrix_3d_rotation(z_axis, _pi/2, true);
+      test_mat = geom.matrix_3d_rotation(z_axis, pc_pi/2, true);
       bool op_symm = geom.equal_but_for_row_order(test_mat, zero_tol);
       //fprintf(outfile,"\t\tS4z : %s\n", (op_symm ? "yes" : "no"));
 
@@ -3013,7 +3017,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     if (fabs(dot-1) < 1.0e-10)
       phi = 0.0;
     else if (fabs(dot+1) < 1.0e-10)
-      phi = _pi;
+      phi = pc_pi;
     else
       phi = acos(dot);
 
@@ -3072,7 +3076,7 @@ void Molecule::set_full_point_group(double zero_tol) {
     if (fabs(dot-1) < 1.0e-10)
       phi = 0.0;
     else if (fabs(dot+1) < 1.0e-10)
-      phi = _pi;
+      phi = pc_pi;
     else
       phi = acos(dot);
 
@@ -3191,7 +3195,7 @@ int matrix_3d_rotation_Cn(Matrix &coord, Vector3 axis, bool reflect, double TOL,
   bool present;
 
   for (int n=2; n<max_possible+1; ++n) {
-    rotated_mat = coord.matrix_3d_rotation(axis, 2*_pi/n, reflect);
+    rotated_mat = coord.matrix_3d_rotation(axis, 2*pc_pi/n, reflect);
     present = coord.equal_but_for_row_order(rotated_mat, TOL);
    
     if (present)

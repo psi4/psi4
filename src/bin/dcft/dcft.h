@@ -105,6 +105,7 @@ protected:
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
     void compute_ewdm();
+    void compute_density_VVVV();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
     void qc_dcft_init();
@@ -120,6 +121,8 @@ protected:
     void refine_tau();
     void compute_F_intermediate();
     void form_density_weighted_fock();
+    // FNO-DCFT
+    void form_nso_basis();
 
     bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF

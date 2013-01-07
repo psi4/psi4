@@ -387,6 +387,7 @@ void export_mints()
             def("point_group", &Molecule::point_group, "Returns the current point group object").
             def("schoenflies_symbol", &Molecule::schoenflies_symbol, "Returns the Schoenflies symbol").
             def("form_symmetry_information", &Molecule::form_symmetry_information, "Uses the point group object obtain by calling point_group()").
+            def("symmetrize", &Molecule::symmetrize_to_abelian_group, "Finds the highest point Abelian point group within the specified tolerance, and forces the geometry to have that symmetry.").
             def("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg1 in psi4 format").
             staticmethod("create_molecule_from_string").
             def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").

@@ -30,7 +30,8 @@ def run_dcft(name, **kwargs):
 
     # DCFT module should probably take a REFERENCE keyword with only UHF allowed value
     PsiMod.set_global_option('REFERENCE', 'UHF')
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    scf_helper(name, **kwargs)
     returnvalue = PsiMod.dcft()
 
     optstash.restore()
@@ -198,6 +199,16 @@ def run_ocepa_gradient(name, **kwargs):
     PsiMod.deriv()
 
     optstash.restore()
+
+
+def run_cepa0(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a CEPA (LCCD) computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'CEPA')
+    return PsiMod.occ()
 
 
 def run_scf(name, **kwargs):
@@ -1419,6 +1430,110 @@ def run_sapt(name, **kwargs):
 
     molecule.reset_point_group(user_pg)
     molecule.update_geometry()
+
+    optstash.restore()
+    return e_sapt
+
+def run_dftsapt(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DFT-SAPT calculation of any level.
+
+    """
+    optstash = OptionsState(
+        ['SCF', 'SCF_TYPE'])
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
+
+    molecule = PsiMod.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
+    molecule.update_geometry()
+
+    nfrag = molecule.nfragments()
+    if nfrag != 2:
+        raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
+
+    sapt_basis = 'dimer'
+    if 'sapt_basis' in kwargs:
+        sapt_basis = kwargs.pop('sapt_basis')
+    sapt_basis = sapt_basis.lower()
+
+    if (sapt_basis == 'dimer'):
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1, 2)
+        monomerA.set_name('monomerA')
+        monomerB = molecule.extract_subsets(2, 1)
+        monomerB.set_name('monomerB')
+    elif (sapt_basis == 'monomer'):
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1)
+        monomerA.set_name('monomerA')
+        monomerB = molecule.extract_subsets(2)
+        monomerB.set_name('monomerB')
+
+    ri = PsiMod.get_option('SCF', 'SCF_TYPE')
+    df_ints_io = PsiMod.get_option('SCF', 'DF_INTS_IO')
+    # inquire if above at all applies to dfmp2
+
+    PsiMod.IO.set_default_namespace('dimer')
+    PsiMod.print_out('\n')
+    banner('Dimer HF')
+    PsiMod.print_out('\n')
+    if (sapt_basis == 'dimer'):
+        PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
+    e_dimer = scf_helper('RHF', **kwargs)
+    wfn_dimer = PsiMod.reference_wavefunction()
+    if (sapt_basis == 'dimer'):
+        PsiMod.set_global_option('DF_INTS_IO', 'LOAD')
+
+    activate(monomerA)
+    if (ri == 'DF' and sapt_basis == 'dimer'):
+        PsiMod.IO.change_file_namespace(97, 'dimer', 'monomerA')
+    PsiMod.IO.set_default_namespace('monomerA')
+    PsiMod.print_out('\n')
+    banner('Monomer A HF')
+    PsiMod.print_out('\n')
+    e_monomerA = scf_helper('RHF', **kwargs)
+    wfn_monomerA = PsiMod.reference_wavefunction()
+
+    activate(monomerB)
+    if (ri == 'DF' and sapt_basis == 'dimer'):
+        PsiMod.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+    PsiMod.IO.set_default_namespace('monomerB')
+    PsiMod.print_out('\n')
+    banner('Monomer B HF')
+    PsiMod.print_out('\n')
+    e_monomerB = scf_helper('RHF', **kwargs)
+    wfn_monomerB = PsiMod.reference_wavefunction()
+
+    if (ri == 'DF' and sapt_basis == 'dimer'):
+        PsiMod.IO.change_file_namespace(97, 'monomerB', 'dimer')
+
+    activate(molecule)
+    PsiMod.IO.set_default_namespace('dimer')
+
+    # if the df_basis_sapt basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_SAPT') == '':
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
+            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_SAPT is required.')
+
+    PsiMod.print_out('\n')
+    banner(name.upper())
+    PsiMod.print_out('\n')
+
+    e_sapt = PsiMod.dftsapt(wfn_dimer,wfn_monomerA,wfn_monomerB)
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
+    PsiMod.set_global_option('DF_INTS_IO', df_ints_io)
 
     optstash.restore()
     return e_sapt

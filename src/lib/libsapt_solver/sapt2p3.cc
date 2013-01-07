@@ -204,83 +204,83 @@ void SAPT2p3::print_results()
   fprintf(outfile,"\n    SAPT Results  \n");
   fprintf(outfile,"  --------------------------------------------------------------------------\n");
   fprintf(outfile,"    Electrostatics        %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_elst*1000.0,tot_elst*_hartree2kcalmol);
+    tot_elst*1000.0,tot_elst*pc_hartree2kcalmol);
   fprintf(outfile,"      Elst10,r            %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst10_*1000.0,e_elst10_*_hartree2kcalmol);
+    e_elst10_*1000.0,e_elst10_*pc_hartree2kcalmol);
   fprintf(outfile,"      Elst12,r            %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst12_*1000.0,e_elst12_*_hartree2kcalmol);
+    e_elst12_*1000.0,e_elst12_*pc_hartree2kcalmol);
   fprintf(outfile,"      Elst13,r            %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst13_*1000.0,e_elst13_*_hartree2kcalmol);
+    e_elst13_*1000.0,e_elst13_*pc_hartree2kcalmol);
   fprintf(outfile,"\n    Exchange              %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_exch*1000.0,tot_exch*_hartree2kcalmol);
+    tot_exch*1000.0,tot_exch*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch10              %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_*1000.0,e_exch10_*_hartree2kcalmol);
+    e_exch10_*1000.0,e_exch10_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch10(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_s2_*1000.0,e_exch10_s2_*_hartree2kcalmol);
+    e_exch10_s2_*1000.0,e_exch10_s2_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch11(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch11_*1000.0,e_exch11_*_hartree2kcalmol);
+    e_exch11_*1000.0,e_exch11_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch12(S^2)         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch12_*1000.0,e_exch12_*_hartree2kcalmol);
+    e_exch12_*1000.0,e_exch12_*pc_hartree2kcalmol);
   fprintf(outfile,"\n    Induction             %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_ind*1000.0,tot_ind*_hartree2kcalmol);
+    tot_ind*1000.0,tot_ind*pc_hartree2kcalmol);
   fprintf(outfile,"      Ind20,r             %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind20_*1000.0,e_ind20_*_hartree2kcalmol);
+    e_ind20_*1000.0,e_ind20_*pc_hartree2kcalmol);
   if (third_order_)
     fprintf(outfile,"      Ind30,r             %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind30r_*1000.0,e_ind30r_*_hartree2kcalmol);
+      e_ind30r_*1000.0,e_ind30r_*pc_hartree2kcalmol);
   fprintf(outfile,"      Ind22               %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind22_*1000.0,e_ind22_*_hartree2kcalmol);
+    e_ind22_*1000.0,e_ind22_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch-Ind20,r        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind20_*1000.0,e_exch_ind20_*_hartree2kcalmol);
+    e_exch_ind20_*1000.0,e_exch_ind20_*pc_hartree2kcalmol);
   if (third_order_)
     fprintf(outfile,"      Exch-Ind30,r        %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind30r_*1000.0,e_exch_ind30r_*_hartree2kcalmol);
+      e_exch_ind30r_*1000.0,e_exch_ind30r_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch-Ind22          %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind22_*1000.0,e_exch_ind22_*_hartree2kcalmol);
+    e_exch_ind22_*1000.0,e_exch_ind22_*pc_hartree2kcalmol);
   fprintf(outfile,"      delta HF,r (2)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    dHF2*1000.0,dHF2*_hartree2kcalmol);
+    dHF2*1000.0,dHF2*pc_hartree2kcalmol);
   if (third_order_)
     fprintf(outfile,"      delta HF,r (3)      %16.8lf mH %16.8lf kcal mol^-1\n",
-      dHF3*1000.0,dHF3*_hartree2kcalmol);
+      dHF3*1000.0,dHF3*pc_hartree2kcalmol);
   fprintf(outfile,"\n    Dispersion            %16.8lf mH %16.8lf kcal mol^-1\n",
-    tot_disp*1000.0,tot_disp*_hartree2kcalmol);
+    tot_disp*1000.0,tot_disp*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp20              %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_*1000.0,e_disp20_*_hartree2kcalmol);
+    e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp30              %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp30_*1000.0,e_disp30_*_hartree2kcalmol);
+    e_disp30_*1000.0,e_disp30_*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp21              %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp21_*1000.0,e_disp21_*_hartree2kcalmol);
+    e_disp21_*1000.0,e_disp21_*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp22 (SDQ)        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp22sdq_*1000.0,e_disp22sdq_*_hartree2kcalmol);
+    e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp22 (T)          %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp22t_*1000.0,e_disp22t_*_hartree2kcalmol);
+    e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
   if (nat_orbs_)
     fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_est_disp22t_*1000.0,e_est_disp22t_*_hartree2kcalmol);
+      e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
   fprintf(outfile,"      Exch-Disp20         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_disp20_*1000.0,e_exch_disp20_*_hartree2kcalmol);
+    e_exch_disp20_*1000.0,e_exch_disp20_*pc_hartree2kcalmol);
   if (third_order_) {
     fprintf(outfile,"      Exch-Disp30         %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_disp30_*1000.0,e_exch_disp30_*_hartree2kcalmol);
+      e_exch_disp30_*1000.0,e_exch_disp30_*pc_hartree2kcalmol);
     fprintf(outfile,"      Ind-Disp30          %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind_disp30_*1000.0,e_ind_disp30_*_hartree2kcalmol);
+      e_ind_disp30_*1000.0,e_ind_disp30_*pc_hartree2kcalmol);
     fprintf(outfile,"      Exch-Ind-Disp30     %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind_disp30_*1000.0,e_exch_ind_disp30_*_hartree2kcalmol);
+      e_exch_ind_disp30_*1000.0,e_exch_ind_disp30_*pc_hartree2kcalmol);
   }
 
   fprintf(outfile,"\n    Total HF              %16.8lf mH %16.8lf kcal mol^-1\n",
-    eHF_*1000.0,eHF_*_hartree2kcalmol);
+    eHF_*1000.0,eHF_*pc_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT0           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_*1000.0,e_sapt0_*_hartree2kcalmol);
+    e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT2           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2_*1000.0,e_sapt2_*_hartree2kcalmol);
+    e_sapt2_*1000.0,e_sapt2_*pc_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT2+          %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2p_*1000.0,e_sapt2p_*_hartree2kcalmol);
+    e_sapt2p_*1000.0,e_sapt2p_*pc_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT2+(3)       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2pp3_*1000.0,e_sapt2pp3_*_hartree2kcalmol);
+    e_sapt2pp3_*1000.0,e_sapt2pp3_*pc_hartree2kcalmol);
   if (third_order_)
     fprintf(outfile,"    Total SAPT2+3         %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_sapt2p3_*1000.0,e_sapt2p3_*_hartree2kcalmol);
+      e_sapt2p3_*1000.0,e_sapt2p3_*pc_hartree2kcalmol);
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;

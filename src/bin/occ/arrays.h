@@ -1,5 +1,5 @@
-#ifndef _psi_src_bin_omp2_arrays_h_
-#define _psi_src_bin_omp2_arrays_h_
+#ifndef _psi_src_bin_occ_arrays_h_
+#define _psi_src_bin_occ_arrays_h_
 
 /** Standard library includes */
 #include <iostream>
@@ -53,13 +53,13 @@ class Array1d
     
   public:
   Array1d(int d1);  
-  Array1d(int d1, string name);
+  Array1d(string name, int d1);
   Array1d();			   //default constructer
   ~Array1d(); 		   	   //destructer
   
   Array1d* generate(int d1);
-  Array1d* generate(int d1, string name);
-  void init(int d1, string name);
+  Array1d* generate(string name, int d1);
+  void init(string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -103,13 +103,13 @@ class Array2d
     
   public:
   Array2d(int d1,int d2);  
-  Array2d(int d1,int d2, string name);
+  Array2d(string name, int d1,int d2);
   Array2d();			   //default constructer
   ~Array2d(); 		   	   //destructer
   
   Array2d* generate(int d1,int d2);
-  Array2d* generate(int d1,int d2, string name);
-  void init(int d1,int d2, string name);
+  Array2d* generate(string name, int d1,int d2);
+  void init(string name, int d1,int d2);
   void init(int d1,int d2);
   void memalloc();
   void zero();
@@ -131,6 +131,8 @@ class Array2d
   void davidson(int n_eigval, Array2d* eigvectors, Array1d* eigvalues, double cutoff, int print); 
   void cdgesv(Array1d* Xvec); // solve lineq via acml
   void cdgesv(double* Xvec); // solve lineq via acml
+  void cdgesv(Array1d* Xvec, int errcod);
+  void cdgesv(double* Xvec, int errcod);
   void lineq_flin(Array1d* Xvec, double *det); // solve lineq via flin
   void lineq_flin(double* Xvec, double *det); // solve lineq via flin
   void lineq_pople(Array1d* Xvec, int num_vecs, double cutoff); // solve lineq via pople  
@@ -182,13 +184,13 @@ class Array3d
     
   public:
   Array3d(int d1,int d2, int d3);  
-  Array3d(int d1,int d2, int d3, string name);
+  Array3d(string name, int d1,int d2, int d3);
   Array3d();			   //default constructer
   ~Array3d(); 		   	   //destructer
   
   Array3d* generate(int d1,int d2, int d3);
-  Array3d* generate(int d1,int d2, int d3, string name);
-  void init(int d1,int d2, int d3, string name);
+  Array3d* generate(string name, int d1,int d2, int d3);
+  void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();
@@ -211,13 +213,13 @@ class Array1i
     
   public:
   Array1i(int d1);  
-  Array1i(int d1, string name);
+  Array1i(string name, int d1);
   Array1i();			   //default constructer
   ~Array1i(); 		   	   //destructer
   
   Array1i* generate(int d1);
-  Array1i* generate(int d1, string name);
-  void init(int d1, string name);
+  Array1i* generate(string name, int d1);
+  void init(string name, int d1);
   void init(int d1);
   void memalloc();
   void zero();
@@ -242,13 +244,13 @@ class Array3i
     
   public:
   Array3i(int d1,int d2, int d3);  
-  Array3i(int d1,int d2, int d3, string name);
+  Array3i(string name, int d1,int d2, int d3);
   Array3i();			   //default constructer
   ~Array3i(); 		           //destructer
   
   Array3i* generate(int d1,int d2, int d3);
-  Array3i* generate(int d1,int d2, int d3, string name);
-  void init(int d1,int d2, int d3, string name);
+  Array3i* generate(string name, int d1,int d2, int d3);
+  void init(string name, int d1,int d2, int d3);
   void init(int d1,int d2, int d3);
   void memalloc();
   void zero();
@@ -258,5 +260,5 @@ class Array3i
   int get(int h, int i, int j); 
 };
 }} // End Namespaces
-#endif // _psi_src_bin_omp2_arrays_h_
+#endif // _psi_src_bin_occ_arrays_h_
 

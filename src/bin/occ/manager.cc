@@ -39,6 +39,7 @@ namespace psi{ namespace occwave{
 void OCCWave::omp2_manager()
 {
 	mo_optimized = 0;
+	orbs_already_opt = 0;
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -89,16 +90,22 @@ void OCCWave::omp2_manager()
 	gfock();
 	idp();
 	mograd();
-        omp2_iterations();
+        occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+           orbs_already_opt = 1;
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard MP2 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
 	   semi_canonic();
 	   if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
 	   omp2_t2_1st_sc();
+           conver = 1;
            if (dertype == "FIRST") {
                omp2_response_pdms();
 	       gfock();
@@ -108,6 +115,7 @@ void OCCWave::omp2_manager()
   if (conver == 1) {
         ref_energy();
 	omp2_mp2_energy();
+        if (orbs_already_opt == 1) Emp2L = Emp2;
 	
 	fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
@@ -198,7 +206,13 @@ void OCCWave::omp2_manager()
 	if (occ_orb_energy == "TRUE") semi_canonic(); 
 
         // Compute Analytic Gradients
-        if (dertype == "FIRST") coord_grad();
+        if (dertype == "FIRST") {
+	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
+	    fflush(outfile);
+            coord_grad();
+	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    fflush(outfile);
+        }
 
   }// end if (conver == 1)
 }// end omp2_manager 
@@ -207,6 +221,7 @@ void OCCWave::omp2_manager()
 void OCCWave::omp3_manager()
 {
 	mo_optimized = 0;
+	orbs_already_opt = 0;
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
@@ -295,10 +310,15 @@ void OCCWave::omp3_manager()
 	
 	idp();
 	mograd();
-        omp3_iterations();
+        occ_iterations();
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+           orbs_already_opt = 1;
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard MP3 computation after semicanonicalization of the MOs... \n");
 	   fflush(outfile);
 	   semi_canonic();
@@ -306,12 +326,14 @@ void OCCWave::omp3_manager()
 	   else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
 	   omp3_t2_1st_sc();
 	   t2_2nd_sc();
+           conver = 1;
         }     
 
   if (conver == 1) {
         ref_energy();
 	omp3_mp2_energy();
 	mp3_energy();
+        if (orbs_already_opt == 1) Emp3L = Emp3;
 
         fprintf(outfile,"\n"); 
 	fprintf(outfile,"\tComputing MP2 energy using optimized MOs... \n"); 
@@ -430,6 +452,7 @@ void OCCWave::omp3_manager()
 void OCCWave::ocepa_manager()
 {
 	mo_optimized = 0;// means MOs are not optimized yet.
+	orbs_already_opt = 0;
         time4grad = 0;// means i will not compute the gradient
         timer_on("trans_ints");
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
@@ -482,15 +505,21 @@ void OCCWave::ocepa_manager()
 	gfock();
 	idp();
 	mograd();
-        if (rms_wog > tol_grad) ocepa_iterations();
+        if (rms_wog > tol_grad) occ_iterations();
         else {
+           orbs_already_opt = 1;
 	   fprintf(outfile,"\n\tOrbitals are already optimized, switching to the canonical CEPA computation... \n");
 	   fflush(outfile);
            cepa_iterations();
         }
 	
         if (rms_wog <= tol_grad && fabs(DE) >= tol_Eod) {
-	   fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+           orbs_already_opt = 1;
+	   if (conver == 1) fprintf(outfile,"\n\tOrbitals are optimized now.\n");
+	   else if (conver == 0) { 
+                    fprintf(outfile,"\n\tMAX MOGRAD did NOT converged, but RMS MOGRAD converged!!!\n");
+	            fprintf(outfile,"\tI will consider the present orbitals as optimized.\n");
+           }
 	   fprintf(outfile,"\tSwitching to the standard CEPA computation... \n");
 	   fflush(outfile);
            ref_energy();
@@ -506,6 +535,7 @@ void OCCWave::ocepa_manager()
   if (conver == 1) {
         ref_energy();
 	cepa_energy();
+        if (orbs_already_opt == 1) EcepaL = Ecepa;
 
 	fprintf(outfile,"\n");
 	fprintf(outfile,"\t============================================================================== \n");
@@ -548,7 +578,11 @@ void OCCWave::ocepa_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST") {
             time4grad = 1;
+	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
+	    fflush(outfile);
             coord_grad();
+	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+	    fflush(outfile);
         }
 
   }// end if (conver == 1)

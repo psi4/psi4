@@ -491,7 +491,65 @@ DCFTSolver::refine_tau() {
 
     } // end of macroiterations
 
-    if (failed) throw PSIEXCEPTION("Exact Tau iterations did not converge!!!");
+    // If exact tau iterations failed, throw a message about it and compute it non-iteratively
+    if (failed) {
+        fprintf(outfile, "\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
+        // Set old tau matrices to identity
+        aocc_tau_old->identity();
+        bocc_tau_old->identity();
+        avir_tau_old->identity();
+        bvir_tau_old->identity();
+        // Scale the non-idempotency elements
+        aocc_d->scale(4.0);
+        bocc_d->scale(4.0);
+        avir_d->scale(-4.0);
+        bvir_d->scale(-4.0);
+        // Add them to the old tau
+        aocc_tau_old->add(aocc_d);
+        bocc_tau_old->add(bocc_d);
+        avir_tau_old->add(avir_d);
+        bvir_tau_old->add(bvir_d);
+        // Zero out new tau
+        aocc_tau_->zero();
+        avir_tau_->zero();
+        bocc_tau_->zero();
+        bvir_tau_->zero();
+        // Diagonalize and take a square root
+        SharedMatrix aocc_evecs(new Matrix("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
+        SharedMatrix bocc_evecs(new Matrix("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
+        SharedMatrix avir_evecs(new Matrix("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
+        SharedMatrix bvir_evecs(new Matrix("Eigenvectors (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+        SharedVector aocc_evals(new Vector("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_));
+        SharedVector bocc_evals(new Vector("Eigenvalues (Beta Occupied)", nirrep_, nboccpi_));
+        SharedVector avir_evals(new Vector("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_));
+        SharedVector bvir_evals(new Vector("Eigenvalues (Beta Virtual)", nirrep_, nbvirpi_));
+        aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
+        bocc_tau_old->diagonalize(bocc_evecs, bocc_evals);
+        avir_tau_old->diagonalize(avir_evecs, avir_evals);
+        bvir_tau_old->diagonalize(bvir_evecs, bvir_evals);
+
+        for(int h = 0; h < nirrep_; ++h){
+            if(nsopi_[h] == 0) continue;
+
+            // Alpha occupied
+            for(int p = 0 ; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
+
+            // Beta occupied
+            for(int p = 0 ; p < nboccpi_[h]; ++p) bocc_tau_->set(h, p, p, (-1.0 + sqrt(bocc_evals->get(h, p))) / 2.0);
+
+            // Alpha virtual
+            for(int p = 0 ; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
+
+            // Beta virtual
+            for(int p = 0 ; p < nbvirpi_[h]; ++p) bvir_tau_->set(h, p, p, (1.0 - sqrt(bvir_evals->get(h, p))) / 2.0);
+        }
+
+        // Back-transform the diagonal Tau to the original basis
+        aocc_tau_->back_transform(aocc_evecs);
+        bocc_tau_->back_transform(bocc_evecs);
+        avir_tau_->back_transform(avir_evecs);
+        bvir_tau_->back_transform(bvir_evecs);
+    }
 
     // Write the exact tau back to disk
 
@@ -537,6 +595,118 @@ DCFTSolver::refine_tau() {
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
+
+}
+
+// Form OPDM from current Tau and obtain the rotation matrix for the NSO basis
+void
+DCFTSolver::form_nso_basis() {
+
+    dpdfile2 T_OO, T_oo, T_VV, T_vv;
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    // Copy Tau in MO basis from the DPD library
+    SharedMatrix a_tau_mo (new Matrix ("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_tau_mo (new Matrix ("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int p = 0 ; p < naoccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_OO.matrix[h][p][q];
+                a_tau_mo->set(h, p, q, value);
+                if (p != q) a_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_oo.matrix[h][p][q];
+                b_tau_mo->set(h, p, q, value);
+                if (p != q) b_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Alpha virtual
+        for(int p = 0 ; p < navirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_VV.matrix[h][p][q];
+                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
+                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
+            }
+        }
+
+        // Beta virtual
+        for(int p = 0 ; p < nbvirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_vv.matrix[h][p][q];
+                b_tau_mo->set(h, p + nboccpi_[h], q + nboccpi_[h], value);
+                if (p != q) b_tau_mo->set(h, q + nboccpi_[h], p + nboccpi_[h], value);
+            }
+        }
+    }
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    SharedMatrix a_opdm_mo (new Matrix ("Alpha OPDM in the MO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_opdm_mo (new Matrix ("Beta OPDM in the MO basis", nirrep_, nmopi_, nmopi_));
+
+    // Copy Tau into the OPDM
+    a_opdm_mo->copy(a_tau_mo);
+    b_opdm_mo->copy(b_tau_mo);
+
+    // Put Kappa on the diagonal in the occupied block
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int p = 0 ; p < naoccpi_[h]; ++p) a_opdm_mo->add(h, p, p, 1.0);
+
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p) a_opdm_mo->add(h, p, p, 1.0);
+
+    }
+
+    SharedMatrix a_evecs (new Matrix ("OPDM Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_evecs (new Matrix ("OPDM Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
+    SharedVector a_evals (new Vector ("OPDM Eigenvalues (Alpha)", nirrep_, nmopi_));
+    SharedVector b_evals (new Vector ("OPDM Eigenvalues (Beta)", nirrep_, nmopi_));
+
+    // Diagonalize Tau
+    a_opdm_mo->diagonalize(a_evecs, a_evals, descending);
+    a_opdm_mo->zero();
+    a_opdm_mo->set_diagonal(a_evals);
+    b_opdm_mo->diagonalize(b_evecs, b_evals, descending);
+    b_opdm_mo->zero();
+    b_opdm_mo->set_diagonal(b_evals);
+
+    // Transform Tau into the diagonal form
+    a_tau_mo->print();
+    b_tau_mo->print();
+    a_tau_mo->transform(a_evecs);
+    b_tau_mo->transform(b_evecs);
+    a_tau_mo->print();
+    b_tau_mo->print();
+
+//    exit(1);
 
 }
 

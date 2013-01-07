@@ -312,11 +312,11 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | ACPF/AQCC               | Y         | N         | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP2                    | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP3                    | Y         | N         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OMP3                    | Y         | N         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OCEPA                   | Y         | Y         | RHF/UHF/RKS/UKS      | partially threaded          |
+    | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |
@@ -332,8 +332,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     | %RAS-CI DBOC            | Y         | N         |
     +-------------------------+-----------+-----------+
 
-Geometry optimization (currently restricted to true minima on the potential
-energy surface) can be performed using either analytic gradients
+Geometry optimization can be performed using either analytic gradients
 or energy points.  Likewise, vibrational frequencies can be 
 computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
