@@ -420,13 +420,11 @@ XMLArchive::getAttribute(long& val, const std::string& attrname)
     _getAttribute(val, attrname);
 }
 
-#if defined(__LP64__)
 void 
 XMLArchive::getAttribute(unsigned long& val, const std::string& attrname)
 {
     _getAttribute(val, attrname);
 }
-#endif
 
 void 
 XMLArchive::getAttribute(double& val, const std::string& attrname)
@@ -464,13 +462,11 @@ XMLArchive::setAttribute(long val, const std::string& attrname)
     _setAttribute(val, attrname);
 }
 
-#if defined(__LP64__)
 void 
 XMLArchive::setAttribute(unsigned long val, const std::string& attrname)
 {
     _setAttribute(val, attrname);
 }
-#endif
 
 void 
 XMLArchive::setAttribute(double val, const std::string& attrname)
