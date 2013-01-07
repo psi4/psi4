@@ -311,6 +311,12 @@ public:
      */
     void reinterpret_coordentries();
 
+    /**
+     * Find the nearest point group within the tolerance specified, and adjust
+     * the coordinates to have that symmetry.
+     */
+    void symmetrize_to_abelian_group(double tol);
+
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy

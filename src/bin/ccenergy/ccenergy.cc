@@ -68,7 +68,6 @@ int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
 void cachedone_rhf(int **cachelist);
 void cachedone_uhf(int **cachelist);
-void memchk(void);
 struct dpd_file4_cache_entry *priority_list(void);
 void spinad_amps(void);
 void status(const char *, FILE *);
@@ -618,21 +617,6 @@ void exit_io(void)
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
   tstop();
 
-}
-
-void memchk(void)
-{
-  pid_t mypid;
-  FILE *memdat;
-  char comm[80];
-
-  mypid = getpid();
-
-  memdat = freopen("output.dat","a",stdout);
-
-  sprintf(comm, "grep \"VmSize\" /proc/%d/status", (int) mypid);
-
-  system(comm);
 }
 
 void init_ioff(void)

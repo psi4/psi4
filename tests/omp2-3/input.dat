@@ -1,8 +1,8 @@
 #! SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
-refnuc      =  9.12295189225854 #TEST
-refscf      = -76.02621185668636 #TEST
-refsosomp2  = -76.21065087105741 #TEST
+refnuc      =  9.12293389624981 #TEST
+refscf      = -76.02621167524400 #TEST
+refsosomp2  = -76.21065166052178 #TEST
 
 memory 250 mb
 

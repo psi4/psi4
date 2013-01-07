@@ -49,9 +49,8 @@ void OCCWave::common_init()
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
 	exp_cutoff=options_.get_int("CUTOFF");
-	memory=options_.get_int("MEMORY"); 
         tol_pcg=options_.get_double("PCG_CONVERGENCE");
-        pcg_maxiter=options_.get_int("CC_MAXITER");
+        pcg_maxiter=options_.get_int("PCG_MAXITER");
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
 	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
@@ -66,10 +65,11 @@ void OCCWave::common_init()
 	cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
 	cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
 	e3_scale=options_.get_double("E3_SCALE");
+	lambda_damping=options_.get_double("MOGRAD_DAMPING");
 	
 	orth_type=options_.get_str("ORTH_TYPE");
 	opt_method=options_.get_str("OPT_METHOD");
-	hess_type=options_.get_str("HESS_TYPE");
+	//hess_type=options_.get_str("HESS_TYPE");
 	occ_orb_energy=options_.get_str("OCC_ORBS_PRINT");
 	natorb=options_.get_str("NAT_ORBS");
 	reference=options_.get_str("REFERENCE");
@@ -88,9 +88,10 @@ void OCCWave::common_init()
 	dertype=options_.get_str("DERTYPE");
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         compute_ccl=options_.get_str("CCL_ENERGY"); 
+        orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER"); 
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
-        else if (reference == "UHF" || reference == "UKS") reference_ = "UNRESTRICTED";
+        else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
 
         if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
@@ -98,7 +99,9 @@ void OCCWave::common_init()
 	cutoff = pow(10.0,-exp_cutoff);
 	if (print_ > 0) options_.print();
         title();
+        if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 	get_moinfo();
+
 	
 if (reference_ == "RESTRICTED") {
 	// Memory allocation
@@ -127,17 +130,76 @@ if (reference_ == "RESTRICTED") {
         fprintf(outfile,     "\t==============================\n"); 
 	fflush(outfile);
 
+        // Compute costs
+        //cost_iabc_ = 8 * nooA * nvoA * nvoA * nvoA;
+        // compute cost_iabc and cost_abcd
+        cost_iabc_ = 0;
+        cost_abcd_ = 0;
+        for(int h=0; h < nirrep_; h++) {
+            cost_iabc_ += (ULI)ov_pairpiAA[h] * (ULI)vv_pairpiAA[h];
+            cost_abcd_ += (ULI)vv_pairpiAA[h] * (ULI)vv_pairpiAA[h];
+        }
+        cost_iabc_ /= (ULI)1024 * (ULI)1024;
+        cost_abcd_ /= (ULI)1024 * (ULI)1024;
+        cost_iabc_ *= (ULI)sizeof(double);
+        cost_abcd_ *= (ULI)sizeof(double);
+       
+        // print
+    if (wfn_type_ == "OMP2") {
+        // Print memory
+        memory = Process::environment.get_memory();
+        memory_mb_ = memory/1000000L;
+        fprintf(outfile,"\n\tMemory is %6lu MB \n", memory_mb_); 
+        fprintf(outfile,"\tCost of iabc is %6lu MB \n", cost_iabc_); 
+        fprintf(outfile,"\tCost of abcd is %6lu MB \n", cost_abcd_); 
+	fflush(outfile);
+        if (cost_iabc_ < memory_mb_) { 
+            incore_iabc_ = 1;
+            fprintf(outfile,     "\tSwitching to the incore algoritm for iabc..\n"); 
+	    fflush(outfile);
+        }
+        else { 
+            incore_iabc_ = 0;
+            fprintf(outfile,     "\tSwitching to the out of core algoritm for iabc..\n"); 
+	    fflush(outfile);
+        }
+
+        //cost_abcd_ = 8 * nvoA * nvoA * nvoA * nvoA;
+        if (cost_abcd_ < memory_mb_) { 
+            incore_abcd_ = 1;
+            fprintf(outfile,     "\tSwitching to the incore algoritm for abcd..\n"); 
+	    fflush(outfile);
+        }
+        else { 
+            incore_abcd_ = 0;
+            fprintf(outfile,     "\tSwitching to the out of core algoritm for abcd..\n"); 
+	    fflush(outfile);
+        }
+    }// end if (wfn_type_ == "OMP2") 
+
+
     // Alloc ints
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
 
+if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
+    ints = new IntegralTransform(reference_wavefunction_, spaces, 
+                           IntegralTransform::Restricted,
+                           IntegralTransform::IWLAndDPD,
+                           IntegralTransform::QTOrder,
+                           IntegralTransform::None,
+                           false);
+}
+
+else {
     ints = new IntegralTransform(reference_wavefunction_, spaces, 
                            IntegralTransform::Restricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
                            IntegralTransform::None,
                            false);
+}
                            
                           
     ints->set_print(0);
@@ -223,7 +285,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
    else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision November 15, 2012.\n") ;
+   fprintf(outfile,"              Latest Revision December 19, 2012.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -397,15 +459,16 @@ void OCCWave::mem_release()
 	delete [] vir_offA;
 	delete [] occ2symblkA;
 	delete [] virt2symblkA;
-
-       if (reference_ == "UNRESTRICTED") {
-	delete [] occ_offB;
-	delete [] vir_offB;
-	delete [] occ2symblkB;
-	delete [] virt2symblkB;
-      }
+        delete [] pitzer2qtA;
+        delete [] qt2pitzerA;
 
       if (reference_ == "RESTRICTED") {
+        delete [] oo_pairpiAA;
+        delete [] ov_pairpiAA;
+        delete [] vv_pairpiAA;
+        delete oo_pairidxAA;
+        delete vv_pairidxAA;
+
 	Ca_.reset();
 	Ca_ref.reset();
 	Hso.reset();
@@ -426,6 +489,13 @@ void OCCWave::mem_release()
        }
 
        else if (reference_ == "UNRESTRICTED") {
+	delete [] occ_offB;
+	delete [] vir_offB;
+	delete [] occ2symblkB;
+	delete [] virt2symblkB;
+        delete [] pitzer2qtB;
+        delete [] qt2pitzerB;
+
 	Ca_.reset();
 	Cb_.reset();
 	Ca_ref.reset();

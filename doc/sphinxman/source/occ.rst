@@ -20,11 +20,7 @@ OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbat
 .. codeauthor:: Ugur Bozkaya
 .. sectionauthor:: Ugur Bozkaya
 
-*Module:* :ref:`Keywords <apdx:omp2>`, :ref:`PSI Variables <apdx:omp2_psivar>`, :source:`OMP2 <src/bin/omp2>`
-
-*Module:* :ref:`Keywords <apdx:omp3>`, :ref:`PSI Variables <apdx:omp3_psivar>`, :source:`OMP3 <src/bin/omp3>`
-
-*Module:* :ref:`Keywords <apdx:ocepa>`, :ref:`PSI Variables <apdx:ocepa_psivar>`, :source:`OCEPA <src/bin/ocepa>`
+*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
 
 Introduction
 ~~~~~~~~~~~~
@@ -168,59 +164,61 @@ The orbital-optimized MP2 methods currently supported in |Psifour| are outlined 
 
     .. _`table:omp2_calls`:
 
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference         |
-    +=========================+==============================================================+=========+==========+===================+
-    | omp2                    | Orbital-Optimized MP2                                        |    Y    |     Y    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | sos-omp2                | Spin-Opposite Scaled Orbital-Optimized MP2                   |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scsn-omp2               | A special version of SCS-OMP2 for nucleobase interactions    |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | omp2                    | Orbital-Optimized MP2                                        |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | sos-omp2                | Spin-Opposite Scaled Orbital-Optimized MP2                   |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scsn-omp2               | A special version of SCS-OMP2 for nucleobase interactions    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 The orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
 
     .. _`table:omp3_calls`:
 
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference         |
-    +=========================+==============================================================+=========+==========+===================+
-    | omp3                    | Orbital-Optimized MP3                                        |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | sos-omp3                | Spin-Opposite Scaled Orbital-Optimized MP3                   |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scsn-omp3               | A special version of SCS-OMP3 for nucleobase interactions    |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-mi-omp3             | A special version of SCS-OMP3 (from S22 database)            |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-omp3-vdw            | A special version of SCS-OMP3 (from ethene dimers)           |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | omp3                    | Orbital-Optimized MP3                                        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | sos-omp3                | Spin-Opposite Scaled Orbital-Optimized MP3                   |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scsn-omp3               | A special version of SCS-OMP3 for nucleobase interactions    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-mi-omp3             | A special version of SCS-OMP3 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-omp3-vdw            | A special version of SCS-OMP3 (from ethene dimers)           |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 The orbital-optimized CEPA methods currently supported in |Psifour| are outlined in Table :ref:`OCEPA Methods <table:ocepa_calls>`.
 
     .. _`table:ocepa_calls`:
 
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference         |
-    +=========================+==============================================================+=========+==========+===================+
-    | ocepa                   | Orbital-Optimized CEPA                                       |    Y    |     Y    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | scs-ocepa               | Spin-Component Scaled Orbital-Optimized CEPA                 |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
-    | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  |    Y    |     N    | RHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+-------------------+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | ocepa                   | Orbital-Optimized CEPA                                       |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | scs-ocepa               | Spin-Component Scaled Orbital-Optimized CEPA                 |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cepa0                   | CEPA0 (identical to Linearized CCD)                          |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 
 .. index:: OMP2; setting keywords
@@ -230,25 +228,25 @@ The orbital-optimized CEPA methods currently supported in |Psifour| are outlined
 Basic Keywords
 ~~~~~~~~~~~~~~
 
-.. include:: /autodir_options_c/omp2__e_convergence.rst
-.. include:: /autodir_options_c/omp2__r_convergence.rst
-.. include:: /autodir_options_c/omp2__rms_mograd_convergence.rst
-.. include:: /autodir_options_c/omp2__max_mograd_convergence.rst
-.. include:: /autodir_options_c/omp2__mo_maxiter.rst
-.. include:: /autodir_options_c/ocepa__wfn_type.rst
+.. include:: /autodir_options_c/occ__e_convergence.rst
+.. include:: /autodir_options_c/occ__r_convergence.rst
+.. include:: /autodir_options_c/occ__rms_mograd_convergence.rst
+.. include:: /autodir_options_c/occ__max_mograd_convergence.rst
+.. include:: /autodir_options_c/occ__mo_maxiter.rst
+.. include:: /autodir_options_c/occ__wfn_type.rst
 
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
-.. include:: /autodir_options_c/omp2__opt_method.rst
-.. include:: /autodir_options_c/omp2__mo_diis_num_vecs.rst
-.. include:: /autodir_options_c/omp2__lineq_solver.rst
-.. include:: /autodir_options_c/omp2__orth_type.rst
-.. include:: /autodir_options_c/omp2__mp2_os_scale.rst
-.. include:: /autodir_options_c/omp2__mp2_ss_scale.rst
-.. include:: /autodir_options_c/omp2__sos_scale.rst
-.. include:: /autodir_options_c/omp2__sos_scale2.rst
-.. include:: /autodir_options_c/omp2__nat_orbs.rst
-.. include:: /autodir_options_c/omp2__omp2_orbs_print.rst
-.. include:: /autodir_options_c/omp3__omp3_orbs_print.rst
-.. include:: /autodir_options_c/omp3__tpdm_abcd_type.rst
+.. include:: /autodir_options_c/occ__opt_method.rst
+.. include:: /autodir_options_c/occ__mo_diis_num_vecs.rst
+.. include:: /autodir_options_c/occ__lineq_solver.rst
+.. include:: /autodir_options_c/occ__orth_type.rst
+.. include:: /autodir_options_c/occ__mp2_os_scale.rst
+.. include:: /autodir_options_c/occ__mp2_ss_scale.rst
+.. include:: /autodir_options_c/occ__mp2_sos_scale.rst
+.. include:: /autodir_options_c/occ__mp2_sos_scale2.rst
+.. include:: /autodir_options_c/occ__nat_orbs.rst
+.. include:: /autodir_options_c/occ__occ_orbs_print.rst
+.. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
+.. include:: /autodir_options_c/occ__do_diis.rst
 

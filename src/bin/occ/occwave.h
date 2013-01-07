@@ -42,9 +42,10 @@ protected:
     void fock_alpha();
     void fock_beta();
     void idp();
-    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new);
+    void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new, Array1d *errvec_new);
     void kappa_msd();
     void kappa_orb_resp();
+    void kappa_orb_resp_iter();
     void orb_resp_pcg_rhf();
     void orb_resp_pcg_uhf();
     void dump_ints();
@@ -63,10 +64,11 @@ protected:
     void gfock_diag();
     void coord_grad();
     void dump_pdms();
+    void occ_iterations();
+    void tei_sort_iabc();
 
     // OMP2
     void omp2_g_int();
-    void omp2_iterations();
     void omp2_response_pdms();
     void omp2_t2_1st_sc(); 
     void omp2_t2_1st_general();
@@ -77,7 +79,6 @@ protected:
     // OMP3
     void omp3_manager();
     void omp3_response_pdms();
-    void omp3_iterations();
     void omp3_t2_1st_sc(); 
     void omp3_t2_1st_general();
     void omp3_tpdm_vvvv();
@@ -92,7 +93,6 @@ protected:
     // OCEPA
     void ocepa_manager();
     void cepa_manager();
-    void ocepa_iterations();
     void cepa_iterations();
     void ocepa_mp2_energy();
     void ocepa_t2_1st_sc(); 
@@ -143,12 +143,12 @@ protected:
      int idp_returnB;
      int num_vecs; 		// Number of vectors used in diis (diis order)
      int nvar; 			// nvar = num_vecs +1;
-     int memory; 
      int multp; 
      int charge;
      int print_;
      int cachelev; 
      int nidp;
+     int nidp_tot;             // nidpA + nidpB
      int nidpA;
      int nidpB;
      int conver;
@@ -162,7 +162,15 @@ protected:
      int time4grad;             // If 0 it is not the time for grad, if 1 it is the time for grad
      int cc_maxdiis_; 		// MAX Number of vectors used in CC diis
      int cc_mindiis_; 		// MIN Number of vectors used in CC diis
+     int incore_iabc_;          // 1 means do incore, 0 means do out of core
+     int incore_abcd_;          // 1 means do incore, 0 means do out of core
+     int orbs_already_opt;      // 1 means true, 0 menas false
 
+     ULI memory; 
+     ULI memory_mb_; 
+     ULI cost_iabc_;            // Mem required for the <ia|bc> integrals
+     ULI cost_abcd_;            // Mem required for the <ab|cd> integrals
+     
      // Common
      double Enuc;
      double sum;
@@ -239,6 +247,7 @@ protected:
      double rms_pcgB;
      double rms_pcg;
      double tol_pcg;
+     double lambda_damping;
 
      // OMP3
      double e3_scale;
@@ -308,6 +317,7 @@ protected:
      string twopdm_abcd_type;	// How to handle G_abcd
      string wfn_type_;
      string compute_ccl;
+     string orb_resp_solver_;
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -336,14 +346,6 @@ protected:
      int *occ2symblkB;		// convert OCC index to sym block index
      int *virt2symblkA;		// convert VIR index to sym block index
      int *virt2symblkB;		// convert VIR index to sym block index
-     int *c1topitzerA; 		// Convert the index of given alpha orbital in C1 subgroup to symmetric subgroup (pitzer ordered)
-     int *c1topitzerB; 		// Convert the index of given beta orbital in C1 subgroup to symmetric subgroup (pitzer ordered)
-     int *pitzer2c1A;		// Convert the index of given alpha orbital in symmetric subgroup to C1 subgroup (energy ordered)  
-     int *pitzer2c1B;		// Convert the index of given alpha orbital in symmetric subgroup to C1 subgroup (energy ordered)  
-     int *c1toqtA; 		// Convert the index of given orbital in C1 subgroup to QT order
-     int *c1toqtB; 		// Convert the index of given orbital in C1 subgroup to QT order
-     int *qt2c1A; 		// Convert the index of given orbital in QT order to C1 subgroup (energy ordered) 
-     int *qt2c1B; 		// Convert the index of given orbital in QT order to C1 subgroup (energy ordered) 
      int *qt2pitzerA; 		// Convert the index of given orbital in QT order to symmetric subgroup (pitzer ordered)
      int *qt2pitzerB; 		// Convert the index of given orbital in QT order to symmetric subgroup (pitzer ordered)
      int *pitzer2qtA;  		// Convert the index of given orbital in symmetric subgroup to QT order    
@@ -358,6 +360,18 @@ protected:
      int *idpcolB;
      int *idpirrA;
      int *idpirrB;
+     int *oo_pairpiAA;
+     int *oo_pairpiAB;
+     int *oo_pairpiBB;
+     int *ov_pairpiAA;
+     int *ov_pairpiAB;
+     int *ov_pairpiBB;
+     int *vv_pairpiAA;
+     int *vv_pairpiAB;
+     int *vv_pairpiBB;
+
+     ULI *cost_ov_;
+     ULI *cost_vv_;
 
      double *evalsA; 
      double *evalsB; 
@@ -366,8 +380,11 @@ protected:
      
      Array1d *wogA; 
      Array1d *wogB; 
+     Array1d *wog_intA; 
+     Array1d *wog_intB; 
      Array1d *kappaA; 
      Array1d *kappaB; 
+     Array1d *kappa;          // where kappa = kappaA + kappaB
      Array1d *kappa_barA; 
      Array1d *kappa_barB;   
      Array1d *kappa_newA; 
@@ -395,7 +412,13 @@ protected:
      Array2d *vecsB;
      Array2d *errvecsA;
      Array2d *errvecsB;
+     Array2d *AorbAA;
+     Array2d *AorbBB;
+     Array2d *AorbAB;
+     Array2d *Aorb;
 
+     Array3i *oo_pairidxAA;
+     Array3i *vv_pairidxAA;
 
      double **C_pitzerA;     
      double **C_pitzerB;     

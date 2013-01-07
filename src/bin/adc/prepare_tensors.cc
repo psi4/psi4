@@ -76,7 +76,7 @@ ADC::rhf_prepare_tensors()
             }
             dpd_file2_mat_wrt(&B);
             dpd_file2_mat_close(&B);
-            fprintf(outfile, "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*_hartree2ev);
+            fprintf(outfile, "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*pc_hartree2ev);
             fprintf(outfile, "\t---------------------------------------------\n");
             int nprint;
             if(nxspi_[h] < num_amps_) nprint = nxspi_[h];

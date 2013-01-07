@@ -38,15 +38,14 @@ using namespace std;
 
 namespace psi{ namespace occwave{ 
 
-void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new)
+void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new, Array1d *errvec_new)
 { 
 
 /********************************************************************************************/
 /************************** memalloc ********************************************************/
 /********************************************************************************************/ 
-        Array2d *Bmat = new Array2d(nvar, nvar, "DIIS B Matrix"); 
-        Array1d *Cvec = new Array1d(nvar, "DIIS C Vector"); 
-        Array1d *errvec_new = new Array1d(dimvec, "New Error Vector");
+        Array2d *Bmat = new Array2d("DIIS B Matrix", nvar, nvar); 
+        Array1d *Cvec = new Array1d("DIIS C Vector", nvar); 
         Array1d *vrow = new Array1d(dimvec); 
         Array1d *vcol = new Array1d(dimvec); 
         Bmat->zero(); 
@@ -92,19 +91,16 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 /************************** Solve LINEQ *****************************************************/
 /********************************************************************************************/
          if (lineq == "CDGESV") Bmat->cdgesv(Cvec);
- 
          else if (lineq == "FLIN") {
             double det = 0.0;      
             Bmat->lineq_flin(Cvec, &det);
             if (fabs(det) < DIIS_MIN_DET) { 
-               fprintf(outfile, "Warning: diis matrix near-singular\n");
+               fprintf(outfile, "Warning!!! Diis matrix is near-singular\n");
                fprintf(outfile, "Determinant is %6.3E\n", det);
+               fflush(outfile);
             }
           }
- 
           else if (lineq == "POPLE") Bmat->lineq_pople(Cvec, num_vecs, cutoff);
-
-             
        
 /********************************************************************************************/
 /************************** Extrapolate *****************************************************/
@@ -123,7 +119,6 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 
 	delete Bmat;
 	delete Cvec;
-	delete errvec_new;
 	delete vrow;
 	delete vcol;
 

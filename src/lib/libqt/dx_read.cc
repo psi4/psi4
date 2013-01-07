@@ -62,7 +62,7 @@ namespace psi {
           int zinc = 0;
           int num_steps = 0;
           int total;
-          double b2a3 = _bohr2angstroms * _bohr2angstroms * _bohr2angstroms;
+          double b2a3 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
           ifstream input;
           input.open("potential.dx");
           if (!input.good()) throw PSIEXCEPTION("Error opening potential.dx.");

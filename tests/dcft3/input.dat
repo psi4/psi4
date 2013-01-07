@@ -1,4 +1,4 @@
-#! DCFT-06 calculation for the He dimer. This performs a
+#! DC-06 calculation for the He dimer. This performs a
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
@@ -27,10 +27,10 @@ energy('dcft')
 compare_values(refnuc, he2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");            #TEST
 compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 8, "MP2 Energy");                   #TEST
-compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 8, "DCFT-06 Energy (two-step)");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT-06 SCF Energy (two-step)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 8, "DC-06 Energy (two-step)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DC-06 SCF Energy (two-step)");     #TEST
 
 set algorithm simultaneous
 energy('dcft')
-compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 8, "DCFT-06 Energy (simultaneous)");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT-06 SCF Energy (simultaneous)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 8, "DC-06 Energy (simultaneous)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DC-06 SCF Energy (simultaneous)");     #TEST
