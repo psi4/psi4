@@ -340,7 +340,7 @@ MemoryPool::~MemoryPool()
 }
 
 char*
-MemoryPool::get(size_t size)
+MemoryPool::get(uli size)
 {
     if (size > remaining_)
     {

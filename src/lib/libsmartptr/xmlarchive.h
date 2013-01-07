@@ -238,9 +238,7 @@ class XMLArchive : public smartptr::Countable {
 
         void getAttribute(double& val, const std::string& attrname);
 
-#if defined(__LP64__)
         void getAttribute(unsigned int& val, const std::string& attrname);
-#endif
 
         void getAttribute(bool& val, const std::string& attrname);
 
@@ -254,9 +252,7 @@ class XMLArchive : public smartptr::Countable {
 
         void setAttribute(double val, const std::string& attrname);
 
-#if defined(__LP64__)
         void setAttribute(unsigned int val, const std::string& attrname);
-#endif
 
         void setAttribute(bool val, const std::string& attrname);
 
