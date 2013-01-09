@@ -34,11 +34,11 @@ MRCC simply provide the following::
         O
         H 1 1.0
         H 1 1.0 2 104.5
-    }
-    set {
+   }
+   set {
         basis cc-pVDZ
-    }
-    energy('mrccsdt')
+   }
+   energy('mrccsdt')
 
 ``'mrccsdt'`` in the call to :py:func:`~driver.energy` instructs |PSIfour| to first
 perform an RHF calculation and then call MRCC to compute the CCSDT energy.
