@@ -1,0 +1,39 @@
+# Computes the gradient of the EFP water dimer by finite differences
+
+plugin_load("./efpfd.so")
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+molecule efp_spec {
+He     0.00000000    -0.69801390     0.00000000
+He     1.48150016     0.34900695     0.00000000
+He    -1.48150016     0.34900695     0.00000000
+--
+He     4.926          3.49007        0.0
+He     6.4075         4.53709        0.0
+He     3.4445         4.53709        0.0
+no_reorient
+no_com
+}
+
+set {
+  basis sto-3g
+  print 0
+  efp_disp yes
+  efp_exch yes
+  dertype first
+  frags ['h2o_l', 'h2o_l']
+  points 5
+}
+
+energy('efp')
+
+plugin("./efpfd.so")
+
