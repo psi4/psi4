@@ -438,6 +438,75 @@ void EFP::Compute() {
 
 }
 
+// Get number of fragments
+int EFP::get_frag_count(void) {
+  return nfrag_;
+}
+
+// Get number of atoms in a fragment
+int EFP::get_frag_atom_count(int frag_idx) {
+  int n=0;
+  enum efp_result res;
+  res = efp_get_frag_atom_count(efp_, frag_idx, &n);
+  return n;
+}
+
+// Get atomic numbers of atoms in a fragment
+double *EFP::get_frag_atom_Z(int frag_idx) {
+
+  if (frag_idx >= nfrag_) return NULL;
+
+  int frag_natom = get_frag_atom_count(frag_idx);
+  if (frag_natom == 0)
+    return NULL;
+
+  struct efp_atom atoms[frag_natom];
+  enum efp_result res;
+  res = efp_get_frag_atoms(efp_, frag_idx, frag_natom, atoms);
+
+  if (res != EFP_RESULT_SUCCESS)
+    return NULL;
+
+  double *frag_atom_Z = new double[frag_natom];
+  for (int i=0; i<frag_natom; ++i)
+    frag_atom_Z[i] = atoms[i].znuc;
+
+  return frag_atom_Z;
+}
+
+// Get masses of atoms in a fragment
+double *EFP::get_frag_atom_mass(int frag_idx) {
+  
+  if (frag_idx >= nfrag_) return NULL;
+  
+  int frag_natom = get_frag_atom_count(frag_idx);
+  
+  struct efp_atom atoms[frag_natom];
+  enum efp_result res;
+  res = efp_get_frag_atoms(efp_, frag_idx, frag_natom, atoms);
+  if (res != EFP_RESULT_SUCCESS) return NULL;
+  
+  double *frag_atom_mass = new double[frag_natom];
+  for (int i=0; i<frag_natom; ++i)
+    frag_atom_mass[i] = atoms[i].mass;
+  
+  return frag_atom_mass;
+}
+
+// Fetch COM for fragment from libefp coordinates
+double *EFP::get_com(int frag_idx) {
+  if (frag_idx >= nfrag_) return NULL;
+  
+  double *xyzabc = new double [6*nfrag_];
+  efp_get_coordinates(efp_, nfrag_, xyzabc);
+  double *com = new double[3];
+  com[0] = xyzabc[6*frag_idx+0];
+  com[1] = xyzabc[6*frag_idx+1];
+  com[2] = xyzabc[6*frag_idx+2];
+  
+  return com;
+}
+
 }
 
 } // End namespaces

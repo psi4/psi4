@@ -232,7 +232,10 @@ public:
     int nfragments() const { return fragments_.size();}
     /// The number of active fragments in the molecule
     int nactive_fragments();
-    /// Get molecule name
+    /// Returns the list of atoms belonging to a fragment.
+    // Needed for EFP interface
+    std::pair<int, int> fragment_atom_pair(int f) { return fragments_[f]; }
+
     /// Get molecule name
     const std::string name() const {return name_; }
     /// Set molecule name
