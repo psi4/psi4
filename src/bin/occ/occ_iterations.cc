@@ -69,14 +69,14 @@ fflush(outfile);
       // If diis?
       if (do_diis_ == 1) {
 	nvar = num_vecs +1;
-        vecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Vectors");
-        errvecsA = new Array2d(num_vecs, nidpA, "Alpha MO DIIS Error Vectors");
+        vecsA = new Array2d("Alpha MO DIIS Vectors", num_vecs, nidpA);
+        errvecsA = new Array2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA);
         vecsA->zero();
         errvecsA->zero();
 
         if (reference_ == "UNRESTRICTED") {
-            vecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Vectors");
-            errvecsB = new Array2d(num_vecs, nidpB, "Beta MO DIIS Error Vectors");
+            vecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
+            errvecsB = new Array2d("Beta MO DIIS Vectors", num_vecs, nidpB);
             vecsB->zero();
             errvecsB->zero();
         }
@@ -87,23 +87,23 @@ fflush(outfile);
 
        // Lineq
        if (orb_resp_solver_ == "LINEQ") {
-         if (reference_ == "RESTRICTED") Aorb = new Array2d(nidpA, nidpA, "MO Hessian Matrix");
+         if (reference_ == "RESTRICTED") Aorb = new Array2d("MO Hessian Matrix", nidpA, nidpA);
          else if (reference_ == "UNRESTRICTED") {
              nidp_tot = nidpA + nidpB;
-             kappa = new Array1d(nidp_tot, "Total orb rot params vector of current step");
+             kappa = new Array1d("Total orb rot params vector of current step", nidp_tot);
          }
        }
 
        // PCG
        else if (orb_resp_solver_ == "PCG") {
-          r_pcgA = new Array1d(nidpA, "Alpha PCG r vector");
-          z_pcgA = new Array1d(nidpA, "Alpha PCG z vector");
-          p_pcgA = new Array1d(nidpA, "Alpha PCG p vector");
-          r_pcg_newA = new Array1d(nidpA, "Alpha New PCG r vector");
-          z_pcg_newA = new Array1d(nidpA, "Alpha New PCG z vector");
-          p_pcg_newA = new Array1d(nidpA, "Alpha New PCG p vector");
-          sigma_pcgA = new Array1d(nidpA, "Alpha PCG sigma vector");
-          Minv_pcgA = new Array1d(nidpA, "Alpha PCG inverse of M matrix");
+          r_pcgA = new Array1d("Alpha PCG r vector", nidpA);
+          z_pcgA = new Array1d("Alpha PCG z vector", nidpA);
+          p_pcgA = new Array1d("Alpha PCG p vector", nidpA);
+          r_pcg_newA = new Array1d("Alpha New PCG r vector", nidpA);
+          z_pcg_newA = new Array1d("Alpha New PCG z vector", nidpA);
+          p_pcg_newA = new Array1d("Alpha New PCG p vector", nidpA);
+          sigma_pcgA = new Array1d("Alpha PCG sigma vector", nidpA);
+          Minv_pcgA = new Array1d("Alpha PCG inverse of M matrix", nidpA);
           r_pcgA->zero();
           z_pcgA->zero();
           sigma_pcgA->zero();
@@ -111,26 +111,26 @@ fflush(outfile);
           Minv_pcgA->zero();
 
         if (pcg_beta_type_ == "POLAK_RIBIERE") {
-          dr_pcgA = new Array1d(nidpA, "Alpha PCG dr vector");
+          dr_pcgA = new Array1d("Alpha PCG dr vector", nidpA);
           r_pcgA->zero();
         }
 
         if (reference_ == "UNRESTRICTED") {
-            r_pcgB = new Array1d(nidpB, "Beta PCG r vector");
-            z_pcgB = new Array1d(nidpB, "Beta PCG z vector");
-            p_pcgB = new Array1d(nidpB, "Beta PCG p vector");
-            r_pcg_newB = new Array1d(nidpB, "Beta New PCG r vector");
-            z_pcg_newB = new Array1d(nidpB, "Beta New PCG z vector");
-            p_pcg_newB = new Array1d(nidpB, "Beta New PCG p vector");
-            sigma_pcgB = new Array1d(nidpB, "Beta PCG sigma vector");
-            Minv_pcgB = new Array1d(nidpB, "Beta PCG inverse of M matrix");
+            r_pcgB = new Array1d("Beta PCG r vector", nidpB);
+            z_pcgB = new Array1d("Beta PCG z vector", nidpB);
+            p_pcgB = new Array1d("Beta PCG p vector", nidpB);
+            r_pcg_newB = new Array1d("Beta New PCG r vector", nidpB);
+            z_pcg_newB = new Array1d("Beta New PCG z vector", nidpB);
+            p_pcg_newB = new Array1d("Beta New PCG p vector", nidpB);
+            sigma_pcgB = new Array1d("Beta PCG sigma vector", nidpB);
+            Minv_pcgB = new Array1d("Beta PCG inverse of M matrix", nidpB);
             r_pcgB->zero();
             z_pcgB->zero();
             sigma_pcgB->zero();
             p_pcgB->zero();
             Minv_pcgB->zero();
             if (pcg_beta_type_ == "POLAK_RIBIERE") {
-                dr_pcgB = new Array1d(nidpB, "Alpha PCG dr vector");
+                dr_pcgB = new Array1d("Alpha PCG dr vector", nidpB);
                 r_pcgB->zero();
             }
         }
@@ -333,6 +333,7 @@ else if (conver == 0) {
 	delete [] idpcolA;
 	delete [] idpirrA;
         delete wogA;
+        delete wog_intA;
 	delete kappaA;
 	delete kappa_newA;
 	delete kappa_barA;
@@ -342,6 +343,7 @@ else if (conver == 0) {
 	delete [] idpcolB;
 	delete [] idpirrB;
 	delete wogB;
+        delete wog_intB;
 	delete kappaB;
 	delete kappa_newB;
 	delete kappa_barB;

@@ -65,7 +65,6 @@ fflush(outfile);
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
     t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    //DIISManager t2DiisManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
     t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
     t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
     dpd_buf4_close(&T);
@@ -82,7 +81,6 @@ fflush(outfile);
     dpd_buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
     t2DiisManager = new DIISManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-    //DIISManager t2DiisManager(cc_maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
     t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa,
                                            DIISEntry::DPDBuf4, &Tbb,
                                            DIISEntry::DPDBuf4, &Tab);

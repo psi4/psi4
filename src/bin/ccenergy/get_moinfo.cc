@@ -10,12 +10,15 @@
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <libmints/wavefunction.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccenergy {
+
+#define reference_wavefunction_ Process::environment.wavefunction()->reference_wavefunction()
 
 /*
 ** get_moinfo():  Routine to obtain basic orbital information from
@@ -32,7 +35,8 @@ void get_moinfo(void)
   psio_address next;
 
   chkpt_init(PSIO_OPEN_OLD);
-  moinfo.nirreps = chkpt_rd_nirreps();
+  moinfo.nirreps = reference_wavefunction_->nirrep();
+//  moinfo.nirreps = chkpt_rd_nirreps();
   moinfo.nmo = chkpt_rd_nmo();
   moinfo.nso = chkpt_rd_nso();
   moinfo.nao = chkpt_rd_nao();

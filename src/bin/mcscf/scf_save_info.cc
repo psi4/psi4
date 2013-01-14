@@ -45,15 +45,15 @@ void SCF::save_info()
         frzvpi_[h] = 0;
     }
     // Save the eigenvectors after rotating them
-    if(options_.get_int("ROTATE_MO_ANGLE") != 0){
-        int mo_rotate_angle = options_.get_int("ROTATE_MO_ANGLE");
+    if(options_.get_double("ROTATE_MO_ANGLE") != 0.0){
+        double mo_rotate_angle = options_.get_double("ROTATE_MO_ANGLE");
         int p = options_.get_int("ROTATE_MO_P") -1;  // P, Q and IRREPS are one-based
         int q = options_.get_int("ROTATE_MO_Q") -1;
         int h = options_.get_int("ROTATE_MO_IRREP") - 1;
 
-        fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %d degrees",
+        fprintf(outfile,"\n\n  Rotating MOs %d and %d of irrep %d by %lf degrees",
                         p,q,h,mo_rotate_angle);
-        double angle = static_cast<double>(mo_rotate_angle) * acos(-1.0) / 180.0;
+        double angle = mo_rotate_angle * acos(-1.0) / 180.0;
         for(int i = 0; i < sopi[h]; ++i){
             double Cp = cos(angle) * C->get(h,i,p) + sin(angle) * C->get(h,i,q);
             double Cq = cos(angle) * C->get(h,i,q) - sin(angle) * C->get(h,i,p);

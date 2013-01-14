@@ -88,9 +88,9 @@ and number of atoms.\n");
   fprintf(outfile, "\n\tRotational constants:\n");
   fprintf(outfile, "\t\t   wavenumbers      GHz\n");
   if (rot_type < 4) {
-    fprintf(outfile,"\t\tA:  %10.6lf   %10.5lf\n",rot_const[0],_c*rot_const[0]/1e7);
-    fprintf(outfile,"\t\tB:  %10.6lf   %10.5lf\n",rot_const[1],_c*rot_const[1]/1e7);
-    fprintf(outfile,"\t\tC:  %10.6lf   %10.5lf\n",rot_const[2],_c*rot_const[2]/1e7);
+    fprintf(outfile,"\t\tA:  %10.6lf   %10.5lf\n",rot_const[0],pc_c*rot_const[0]/1e7);
+    fprintf(outfile,"\t\tB:  %10.6lf   %10.5lf\n",rot_const[1],pc_c*rot_const[1]/1e7);
+    fprintf(outfile,"\t\tC:  %10.6lf   %10.5lf\n",rot_const[2],pc_c*rot_const[2]/1e7);
   }
 
   // Can eliminate when debugged - should be printed out in freq. code
@@ -125,14 +125,14 @@ and number of atoms.\n");
   for(int i=0; i < Natom; i++)
     molecular_mass += mol->mass(i);
 
-  const double kT = _kb * T;
+  const double kT = pc_kb * T;
   double phi_A = 0.0, phi_B = 0.0, phi_C = 0.0;
 
   // variables Etrans, Cvtrans, and Strans are divided by R
   Etrans = 1.5 * T;
   Cvtrans = 1.5;
-  qtrans = pow(_twopi * molecular_mass * _amu2kg * kT / (_h * _h), 1.5) * _na * kT / P ;
-  Strans = 5.0/2.0 + log(qtrans/_na);
+  qtrans = pow(pc_twopi * molecular_mass * pc_amu2kg * kT / (pc_h * pc_h), 1.5) * pc_na * kT / P ;
+  Strans = 5.0/2.0 + log(qtrans/pc_na);
 
   // electronic part
   Eelec = 0;
@@ -147,22 +147,22 @@ and number of atoms.\n");
   else if(rot_type == 3) { // linear molecule
     Erot = T;
     Cvrot = 1.0;
-    qrot = kT / (rot_symm_num * 100 * _c * _h * rot_const[1]); // B goes from cm^-1 to 1/s
+    qrot = kT / (rot_symm_num * 100 * pc_c * pc_h * rot_const[1]); // B goes from cm^-1 to 1/s
     Srot = 1.0 + log(qrot);
   }
   else {
     Erot = 1.5 * T;
     Cvrot = 1.5;
-    phi_A = rot_const[0] * 100 * _h * _c / _kb;
-    phi_B = rot_const[1] * 100 * _h * _c / _kb;
-    phi_C = rot_const[2] * 100 * _h * _c / _kb;
-    qrot = sqrt(_pi) * pow(T,1.5) / (rot_symm_num * sqrt(phi_A*phi_B*phi_C));
+    phi_A = rot_const[0] * 100 * pc_h * pc_c / pc_kb;
+    phi_B = rot_const[1] * 100 * pc_h * pc_c / pc_kb;
+    phi_C = rot_const[2] * 100 * pc_h * pc_c / pc_kb;
+    qrot = sqrt(pc_pi) * pow(T,1.5) / (rot_symm_num * sqrt(phi_A*phi_B*phi_C));
     Srot = 1.5 + log(qrot);
   }
 
   // vibrational part
   for(int i=0; i < nvib_freqs; i++)
-    vib_temp[i] = 100 * _h * _c * vib_freqs->get(i) / _kb;
+    vib_temp[i] = 100 * pc_h * pc_c * vib_freqs->get(i) / pc_kb;
 
   if (nvib_freqs)
     fprintf(outfile,"\n\tVibrational frequencies (cm^-1)      Temperatures (K):\n");
@@ -181,7 +181,7 @@ and number of atoms.\n");
   }
 
   // convert quantities in units of R into units of cal/mol
-  double R_to_cal = _R / _cal2J;
+  double R_to_cal = pc_R / pc_cal2J;
 
   Eelec *= R_to_cal/1000; // go to kcal/mol
   Etrans *= R_to_cal/1000;
@@ -210,15 +210,15 @@ and number of atoms.\n");
   fprintf(outfile,"\tVibrational   : %15.3lf%15.3lf%15.3lf\n", Evib,   Cvvib,   Svib);
   fprintf(outfile,"\tTotal         : %15.3lf%15.3lf%15.3lf\n", Etotal, Cvtotal, Stotal);
 
-  double ZPVE_au = ZPVE * 100 * _h * _c / _hartree2J ; // cm^-1 -> au/particle
+  double ZPVE_au = ZPVE * 100 * pc_h * pc_c / pc_hartree2J ; // cm^-1 -> au/particle
 
   fprintf(outfile,"\n\t                          cm^(-1)             au         kJ/mol\n");
   fprintf(outfile,"\tZero-point energy:    %15.10lf%15.10lf%15.10lf\n", ZPVE, ZPVE_au,
-    ZPVE_au * _hartree2J / 1000 * _na);
+    ZPVE_au * pc_hartree2J / 1000 * pc_na);
 
-  double DU = Etotal * 1000.0 * _cal2J / _na / _hartree2J ;
-  double DH = DU + _kb * T / _hartree2J ;
-  double DG = DH - T * Stotal * _cal2J / _na / _hartree2J ;
+  double DU = Etotal * 1000.0 * pc_cal2J / pc_na / pc_hartree2J ;
+  double DH = DU + pc_kb * T / pc_hartree2J ;
+  double DG = DH - T * Stotal * pc_cal2J / pc_na / pc_hartree2J ;
 
   fprintf(outfile,"\tEnergies in Hartree/particle:       Correction         Total\n");
   fprintf(outfile,"\t\tEnergy (0 K)         = %15.8lf  %15.8lf\n", ZPVE_au, E_elec+ZPVE_au);
