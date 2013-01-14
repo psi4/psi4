@@ -22,6 +22,8 @@ DCFTSolver::mp2_guess()
 {
     dcft_timer_on("DCFTSolver::mp2_guess()");
 
+    dpdbuf4 I, D;
+
     // Initialize the integral transformation object
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
@@ -33,11 +35,55 @@ DCFTSolver::mp2_guess()
     _ints->set_keep_dpd_so_ints(true);
     dpd_set_default(_ints->get_dpd_id());
     fprintf(outfile, "\n\n\tComputing MP2 amplitude guess...\n\n"); fflush(outfile);
-    transform_integrals();
+
+    // If NSO basis is requested - do the OOVV integral transform only
+    if (options_.get_str("DCFT_BASIS") == "NSO") {
+        _ints->update_orbitals();
+        if(print_ > 1){
+            fprintf(outfile, "\tTransforming integrals...\n");
+            fflush(outfile);
+        }
+        _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
+
+        // Generate the integrals in various spaces in chemists' notation for OOVV
+        _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+
+        /*
+         * Re-sort the chemists' notation integrals to physisists' notation
+         * (pq|rs) = <pr|qs>
+         */
+
+        // The integral object closes this file - we need to re-open it.
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+        /*
+         * Re-sort the chemists' notation integrals to physisicts' notation
+         * (pq|rs) = <pr|qs>
+         */
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                      ID("[O,V]"), ID("[O,V]"),0, "MO Ints (OV|OV)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,o]"), ID("[V,v]"), "MO Ints <Oo|Vv>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                      ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[o,o]"), ID("[v,v]"), "MO Ints <oo|vv>");
+        dpd_buf4_close(&I);
+
+        build_denominators();
+
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+    }
+    else {
+        transform_integrals();
+    }
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-
-    dpdbuf4 I, D;
     /*
      * L_ijab = <ij||ab> / D_ijab
      */
@@ -148,6 +194,14 @@ DCFTSolver::mp2_guess()
         dpd_buf4_close(&T2);
         psio_->close(CC_TAMPS, 1);
     }
+
+    // If user specified the DCFT basis to be NSO, then form tau and transform everything to NSO basis
+    if (options_.get_str("DCFT_BASIS") == "NSO") {
+        build_tau();
+        form_nso_basis();
+    }
+
+//    exit(1);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 

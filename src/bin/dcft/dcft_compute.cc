@@ -30,8 +30,8 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
 
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X")
-        fprintf(outfile, "\n\n\tUsing QC algorithm for DCFT-06X with approximate DCFT-06 Hessian");
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
+        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
 
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                      "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
@@ -40,14 +40,14 @@ DCFTSolver::compute_energy()
     // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
     // the desired cutoff, we're done
 
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DCFT-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DC-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") throw FeatureNotImplemented("DCFT-06X functional", "ALGORITHM = QC", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DCFT-06", "Analytic gradients", __FILE__, __LINE__);
+//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "ALGORITHM = QC", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DC-06", "Analytic gradients", __FILE__, __LINE__);
 
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
@@ -101,7 +101,7 @@ DCFTSolver::compute_energy()
                         if (options_.get_bool("RELAX_TAU")) {
                             build_tau();
                             // Compute tau exactly if requested
-                            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+                            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
                                 refine_tau();
                             }
                             if (options_.get_str("AO_BASIS") == "DISK") {
@@ -190,7 +190,7 @@ DCFTSolver::compute_energy()
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
             // Compute tau exactly if requested
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
                 refine_tau();
             }
             transform_tau();
@@ -307,7 +307,7 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DCFT-06X") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
                 refine_tau();
             }
             transform_tau();

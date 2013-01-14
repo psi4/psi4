@@ -598,6 +598,118 @@ DCFTSolver::refine_tau() {
 
 }
 
+// Form OPDM from current Tau and obtain the rotation matrix for the NSO basis
+void
+DCFTSolver::form_nso_basis() {
+
+    dpdfile2 T_OO, T_oo, T_VV, T_vv;
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    // Copy Tau in MO basis from the DPD library
+    SharedMatrix a_tau_mo (new Matrix ("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_tau_mo (new Matrix ("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_));
+
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int p = 0 ; p < naoccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_OO.matrix[h][p][q];
+                a_tau_mo->set(h, p, q, value);
+                if (p != q) a_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_oo.matrix[h][p][q];
+                b_tau_mo->set(h, p, q, value);
+                if (p != q) b_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Alpha virtual
+        for(int p = 0 ; p < navirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_VV.matrix[h][p][q];
+                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
+                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
+            }
+        }
+
+        // Beta virtual
+        for(int p = 0 ; p < nbvirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_vv.matrix[h][p][q];
+                b_tau_mo->set(h, p + nboccpi_[h], q + nboccpi_[h], value);
+                if (p != q) b_tau_mo->set(h, q + nboccpi_[h], p + nboccpi_[h], value);
+            }
+        }
+    }
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    SharedMatrix a_opdm_mo (new Matrix ("Alpha OPDM in the MO basis", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_opdm_mo (new Matrix ("Beta OPDM in the MO basis", nirrep_, nmopi_, nmopi_));
+
+    // Copy Tau into the OPDM
+    a_opdm_mo->copy(a_tau_mo);
+    b_opdm_mo->copy(b_tau_mo);
+
+    // Put Kappa on the diagonal in the occupied block
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int p = 0 ; p < naoccpi_[h]; ++p) a_opdm_mo->add(h, p, p, 1.0);
+
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p) a_opdm_mo->add(h, p, p, 1.0);
+
+    }
+
+    SharedMatrix a_evecs (new Matrix ("OPDM Eigenvectors (Alpha)", nirrep_, nmopi_, nmopi_));
+    SharedMatrix b_evecs (new Matrix ("OPDM Eigenvectors (Beta)", nirrep_, nmopi_, nmopi_));
+    SharedVector a_evals (new Vector ("OPDM Eigenvalues (Alpha)", nirrep_, nmopi_));
+    SharedVector b_evals (new Vector ("OPDM Eigenvalues (Beta)", nirrep_, nmopi_));
+
+    // Diagonalize Tau
+    a_opdm_mo->diagonalize(a_evecs, a_evals, descending);
+    a_opdm_mo->zero();
+    a_opdm_mo->set_diagonal(a_evals);
+    b_opdm_mo->diagonalize(b_evecs, b_evals, descending);
+    b_opdm_mo->zero();
+    b_opdm_mo->set_diagonal(b_evals);
+
+    // Transform Tau into the diagonal form
+    a_tau_mo->print();
+    b_tau_mo->print();
+    a_tau_mo->transform(a_evecs);
+    b_tau_mo->transform(b_evecs);
+    a_tau_mo->print();
+    b_tau_mo->print();
+
+//    exit(1);
+
+}
+
 }} // Namespaces
 
 

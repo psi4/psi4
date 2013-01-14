@@ -77,18 +77,18 @@ void dx_write(Options& options,double **D)
     if(molecule->xyz(atom, 2) > zmax) zmax = molecule->xyz(atom, 2);
   }
 
-  xmin *= _bohr2angstroms;
-  xmax *= _bohr2angstroms;
-  ymin *= _bohr2angstroms;
-  ymax *= _bohr2angstroms;
-  zmin *= _bohr2angstroms;
-  zmax *= _bohr2angstroms;
+  xmin *= pc_bohr2angstroms;
+  xmax *= pc_bohr2angstroms;
+  ymin *= pc_bohr2angstroms;
+  ymax *= pc_bohr2angstroms;
+  zmin *= pc_bohr2angstroms;
+  zmax *= pc_bohr2angstroms;
 
-  double b2a3 = _bohr2angstroms * _bohr2angstroms * _bohr2angstroms;
+  double b2a3 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
 
   do {
     xmin -= 0.1;
-    compute_delta(delta, xmin/_bohr2angstroms, 0, 0);
+    compute_delta(delta, xmin/pc_bohr2angstroms, 0, 0);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -98,7 +98,7 @@ void dx_write(Options& options,double **D)
 
   do {
     xmax += 0.1;
-    compute_delta(delta, xmax/_bohr2angstroms, 0, 0);
+    compute_delta(delta, xmax/pc_bohr2angstroms, 0, 0);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -108,7 +108,7 @@ void dx_write(Options& options,double **D)
 
   do {
     ymin -= 0.1;
-    compute_delta(delta, 0, ymin/_bohr2angstroms, 0);
+    compute_delta(delta, 0, ymin/pc_bohr2angstroms, 0);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -118,7 +118,7 @@ void dx_write(Options& options,double **D)
 
   do {
     ymax += 0.1;
-    compute_delta(delta, 0, ymax/_bohr2angstroms, 0);
+    compute_delta(delta, 0, ymax/pc_bohr2angstroms, 0);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -128,7 +128,7 @@ void dx_write(Options& options,double **D)
 
   do {
     zmin -= 0.1;
-    compute_delta(delta, 0, 0, zmin/_bohr2angstroms);
+    compute_delta(delta, 0, 0, zmin/pc_bohr2angstroms);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -138,7 +138,7 @@ void dx_write(Options& options,double **D)
 
   do {
     zmax += 0.1;
-    compute_delta(delta, 0, 0, zmax/_bohr2angstroms);
+    compute_delta(delta, 0, 0, zmax/pc_bohr2angstroms);
     dens = 0.0;
     for(int i=0; i < nmo; i++)
       for(int j=0; j < nmo; j++)
@@ -158,8 +158,8 @@ void dx_write(Options& options,double **D)
       for(int j=0; j < nmo; j++)
         dens += delta[i][j] * D[i][j];
 
-    fprintf(outfile, "  Atom %d (%8.6f, %8.6f, %8.5f), dens = %20.12f (e/Ang^3)\n", atom, x*_bohr2angstroms,
-y*_bohr2angstroms, z*_bohr2angstroms, dens/b2a3);
+    fprintf(outfile, "  Atom %d (%8.6f, %8.6f, %8.5f), dens = %20.12f (e/Ang^3)\n", atom, x*pc_bohr2angstroms,
+y*pc_bohr2angstroms, z*pc_bohr2angstroms, dens/b2a3);
    }
 
   double step_size = options.get_double("ONEPDM_GRID_STEPSIZE");
@@ -188,7 +188,7 @@ y*_bohr2angstroms, z*_bohr2angstroms, dens/b2a3);
       for(z=zmin; z <= zmax; z += step_size) {
 
         // Compute delta function in Gaussian basis
-        compute_delta(delta, x/_bohr2angstroms, y/_bohr2angstroms, z/_bohr2angstroms);
+        compute_delta(delta, x/pc_bohr2angstroms, y/pc_bohr2angstroms, z/pc_bohr2angstroms);
 
         dens = 0.0; // e/bohr^3
         for(int i=0; i < nmo; i++)
@@ -224,7 +224,7 @@ y*_bohr2angstroms, z*_bohr2angstroms, dens/b2a3);
   fprintf(dxfile, "Initial atomic coordinates\n");
   for(int i=0; i < molecule->natom(); i++) {
     fprintf(dxfile, "%2s  ", molecule->symbol(i).c_str());
-    fprintf(dxfile, "  %9.6f  %9.6f  %9.6f\n", molecule->x(i)*_bohr2angstroms, molecule->y(i)*_bohr2angstroms, molecule->z(i)*_bohr2angstroms);
+    fprintf(dxfile, "  %9.6f  %9.6f  %9.6f\n", molecule->x(i)*pc_bohr2angstroms, molecule->y(i)*pc_bohr2angstroms, molecule->z(i)*pc_bohr2angstroms);
   }
   fflush(dxfile);
   fclose(dxfile);

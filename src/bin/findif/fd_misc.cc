@@ -26,8 +26,8 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
   // compute harmonic frequencies, +/- in wavenumbers
   /* Convert evals from H/(kg bohr^2) to J/(kg m^2) = 1/s^2 */
   /* v = 1/(2 pi c) sqrt( eval ) */
-  const double k_convert = _hartree2J/(_bohr2m * _bohr2m * _amu2kg);
-  const double cm_convert = 1.0/(2.0 * _pi * _c * 100.0);
+  const double k_convert = pc_hartree2J/(pc_bohr2m * pc_bohr2m * pc_amu2kg);
+  const double cm_convert = 1.0/(2.0 * pc_pi * pc_c * 100.0);
 
   for (int i=0; i<modes.size(); ++i) {
     if(modes[i]->km < 0.0)
