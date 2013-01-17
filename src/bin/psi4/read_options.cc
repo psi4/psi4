@@ -848,7 +848,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DCFT-06", "DCFT-06 DCFT-06X CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 CEPA0");
+      /*- Specify orbital basis to be used in the DCFT iterations !expert -*/
+      options.add_str("DCFT_BASIS", "MO", "MO NSO");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -1860,7 +1862,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
     /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
-    options.add_int("ROTATE_MO_ANGLE",0);
+    options.add_double("ROTATE_MO_ANGLE",0.0);
     /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
     options.add_int("ROTATE_MO_IRREP",1);
     /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/

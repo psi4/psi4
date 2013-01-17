@@ -201,6 +201,16 @@ def run_ocepa_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_cepa0(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a CEPA (LCCD) computation
+
+    """
+    PsiMod.scf()
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'CEPA')
+    return PsiMod.occ()
+
+
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.

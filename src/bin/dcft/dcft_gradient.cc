@@ -15,7 +15,7 @@ DCFTSolver::compute_gradient()
 
     // Print out the header
     fprintf(outfile,"\n\n\t  **********************************************\n");
-    fprintf(outfile,    "\t  *       DCFT-06 Analytic Gradients Code      *\n");
+    fprintf(outfile,    "\t  *       DC-06 Analytic Gradients Code      *\n");
     fprintf(outfile,    "\t  *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
     fprintf(outfile,    "\t  **********************************************\n\n");
 
