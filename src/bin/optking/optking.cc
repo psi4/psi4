@@ -144,6 +144,8 @@ OptReturnType optking(void) {
       mol1->freeze_interfragment_asymm(); // remove problematic ones?
     }
 
+    mol1->apply_input_constraints();
+
     // print out internal coordinates for future steps
     FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
     mol1->print_intco_dat(fp_intco);
