@@ -45,6 +45,7 @@ void set_params(void)
       }
       else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
       else if (s == "SD") Opt_params.step_type = OPT_PARAMS::SD;
+      else if (s == "LINESEARCH_STATIC") Opt_params.step_type = OPT_PARAMS::LINESEARCH_STATIC;
    }
    else { // set defaults for step type
      if (Opt_params.opt_type == OPT_PARAMS::MIN)
@@ -296,6 +297,13 @@ void set_params(void)
   // for intcos with user-specified equilibrium values - this is the force constant
   Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
 
+  // Currently, a static line search merely displaces along the gradient in internal
+  // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
+  // control the min and the max of the largest internal coordinate displacement.
+  Opt_params.linesearch_static_N   = options.get_int("LINESEARCH_STATIC_N");
+  Opt_params.linesearch_static_min = options.get_double("LINESEARCH_STATIC_MIN");
+  Opt_params.linesearch_static_max = options.get_double("LINESEARCH_STATIC_MAX");
+
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 
@@ -520,6 +528,12 @@ void print_params(void) {
   fprintf(outfile, "step_type              = %18s\n", "RFO");
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
   fprintf(outfile, "step_type              = %18s\n", "P_RFO");
+  else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
+  fprintf(outfile, "step_type              = %18s\n", "Static linesearch");
+
+  fprintf(outfile, "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
+  fprintf(outfile, "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
+  fprintf(outfile, "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
