@@ -437,6 +437,15 @@ void set_params(void)
 
 #endif
 
+// Strings that carry user-specified constraints (from input, probably)
+#if defined(OPTKING_PACKAGE_PSI)
+  Opt_params.frozen_distance_str = options.get_str("FROZEN_DISTANCE");
+  Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
+  Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // TODO
+#endif
+
 // ** Items are below unlikely to need modified
 
 // For RFO step, eigenvectors of augmented Hessian are divided by the last
