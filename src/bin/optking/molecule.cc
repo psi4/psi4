@@ -643,7 +643,18 @@ void MOLECULE::print_intco_dat(FILE *fp_intco) {
   }
 }
 
-// tell whether internal coordinate is frozen
+// Read string of atoms for frozen coordinates and pass to fragment object
+bool MOLECULE::apply_input_constraints(void) {
+  if (   !Opt_params.frozen_distance_str.empty()
+      || !Opt_params.frozen_bend_str.empty() 
+      || !Opt_params.frozen_dihedral_str.empty() ) {
+    fprintf(outfile,"\tAssuming, in current code, that constraints apply to first fragment.\n");
+    return fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
+      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
+  }
+}
+
+// Compute constraint matrix.
 double ** MOLECULE::compute_constraints(void) {
   double **C, **C_frag, **C_inter;
   int i, j;

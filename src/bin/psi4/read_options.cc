@@ -2254,6 +2254,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
+      /*- Specify distances between atoms to be frozen -*/
+      options.add_str("FROZEN_DISTANCE", "");
+      /*- Specify angles between atoms to be frozen -*/
+      options.add_str("FROZEN_BEND", "");
+      /*- Specify dihedral angles between atoms to be frozen -*/
+      options.add_str("FROZEN_DIHEDRAL", "");
 
       /*- SUBSECTION Convergence Control -*/
 
