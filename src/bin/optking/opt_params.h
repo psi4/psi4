@@ -87,6 +87,11 @@ struct OPT_PARAMS {
 
   int consecutive_backsteps_allowed;
 
+  // list of atoms for frozen bonds, angles, dihedrals provided by user in input
+  std::string frozen_distance_str;
+  std::string frozen_bend_str;  
+  std::string frozen_dihedral_str;
+
 // ** Unlikely to need modified **
 
   // how close to pi should a torsion be to assume it may have passed through 180

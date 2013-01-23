@@ -233,6 +233,14 @@ class FRAG {
   }
   double intco_value(int intco_index) const;
 
+  /**
+   * @param R_list string of atom pairs for frozen distances
+   * @param B_list string of atom triples for frozen bends
+   * @param D_list string of atom quartets for frozen dihedrals
+   * @returns True if any constraints are present.
+  */
+  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
+
 };
 
 }
