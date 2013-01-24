@@ -149,6 +149,8 @@ class FRAG {
 
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
+  // utility used by displace
+  void displace_util(double *dq, bool focus_on_constraints);
 
   double ** g_geom_pointer(void) { return geom; };           // returns pointer
   double ** g_geom(void) const;                              // returns a copy
