@@ -241,16 +241,12 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(P, 0, temp_mat, 0, H, 0, Nintco, Nintco, Nintco, 0);
   free_matrix(temp_mat);
 
-/* 2nd term unnecessary
-  for (int i=0; i<Nintco;++i)
+  /*for (int i=0; i<Nintco;++i)
     H[i][i] += 1000 * (1.0 - P[i][i]);
 
-  double tval;
   for (int i=0; i<Nintco; ++i)
-    for (int j=0; j<i; ++j) {
-      tval = H[i][j] - 1000 * P[i][j];
-      H[j][i] = H[i][j] = tval;
-    } */
+    for (int j=0; j<i; ++j)
+      H[j][i] = H[i][j] = H[i][j] + 1000 * (1.0 - P[i][j]);*/
 
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Projected (PHP) Hessian matrix\n");
