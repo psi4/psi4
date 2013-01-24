@@ -2233,7 +2233,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
-      options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
+      options.add_str("STEP_TYPE", "RFO", "RFO NR SD LINESEARCH_STATIC");
       /*- Do follow the initial RFO vector after the first step? -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
       /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
@@ -2361,6 +2361,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the user may specify this value to apply a force of a particular magnitude, in which case the
       given equilibrium value may or may not be reached by the optimization. -*/
       options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0);
+      /*- If doing a static line search, scan this many points. -*/
+      options.add_int("LINESEARCH_STATIC_N", 8);
+      /*- If doing a static line search, this fixes the shortest step, whose largest
+          change in an internal coordinate is set to this value (in au) -*/
+      options.add_double("LINESEARCH_STATIC_MIN", 0.001);
+      /*- If doing a static line search, this fixes the largest step, whose largest
+          change in an internal coordinate is set to this value (in au) -*/
+      options.add_double("LINESEARCH_STATIC_MAX", 0.100);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements

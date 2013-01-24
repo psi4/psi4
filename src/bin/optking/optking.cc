@@ -259,6 +259,14 @@ OptReturnType optking(void) {
       mol1->prfo_step();
     else if (Opt_params.step_type == OPT_PARAMS::SD)
       mol1->sd_step();
+    else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC) {
+      // compute geometries and then quit
+      mol1->linesearch_step();
+      delete p_Opt_data;
+      print_end();
+      close_output_dat();
+      return OptReturnEndloop;
+    }
   }
 
   bool converged = p_Opt_data->conv_check(*mol1);
