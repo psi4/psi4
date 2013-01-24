@@ -325,6 +325,7 @@ printf("adding %d auxiliary bonds\n", n);
   void prfo_step(void);
   void backstep(void);
   void sd_step(void);
+  void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);
   void check_intrafragment_zero_angles(double const * const dq);
