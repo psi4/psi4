@@ -9,8 +9,10 @@
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
-#include <libparallel/parallel.h>
 
+#if defined(OPTKING_PACKAGE_PSI)
+  #include <libparallel/parallel.h>
+#endif
 
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
@@ -34,7 +36,7 @@ namespace psi { void psiclean(void); }
  namespace opt {
    OptReturnType optking(void); // declare optking
  }
- OptReturnType opt2man_main(void) { opt::optking(); } // QCHEM wrapper/alias
+ OptReturnType opt2man_main(void) { return opt::optking(); } // QCHEM wrapper/alias
 #endif
 
 namespace opt {
@@ -149,7 +151,9 @@ OptReturnType optking(void) {
     // print out internal coordinates for future steps
     FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
     mol1->print_intco_dat(fp_intco);
+#if defined(OPTKING_PACKAGE_PSI)
     psi::WorldComm->sync();
+#endif
     fclose(fp_intco);
 
     // only generate coordinates and print them out
@@ -415,7 +419,7 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
   }
   catch (...) {
 #if defined (OPTKING_PACKAGE_QCHEM)
-      QCrash(exc.g_message());
+      QCrash("Exception thrown in optking() leading to abort.");
 #elif defined (OPTKING_PACKAGE_PSI)
       abort();
 #endif

@@ -20,8 +20,9 @@
 using namespace psi;
 #endif
 
-// Name of opt_data file for QCHEM
-#define QCHEM_OPTDATA_FILENAME "opt_data.1"
+// Name of opt_data file for QCHEM; PSI uses file 1 in the default name
+const char* getOptdataFileName();
+#define QCHEM_OPTDATA_FILENAME getOptdataFileName()
 
 // binary QCHEM data file
 #if defined (OPTKING_PACKAGE_QCHEM)

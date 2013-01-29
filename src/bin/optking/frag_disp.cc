@@ -7,10 +7,14 @@
 #include "linear_algebra.h"
 #include "opt_data.h"
 
-#include <cmath>
-
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
 
 namespace opt {
 

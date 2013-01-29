@@ -8,14 +8,18 @@
 
 #include "frag.h"
 
-#include <cmath>
-
 #include <string>
 #include <sstream>
 #include <vector>
 
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
 
 namespace opt {
 

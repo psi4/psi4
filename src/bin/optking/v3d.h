@@ -6,7 +6,14 @@
 #ifndef _opt_v3d_h_
 #define _opt_v3d_h_
 
-#include <cmath>
+#include "package.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
+
 #define V3D_SQR(x) ((x)*(x))
 
 #define PARALLEL_LIMIT (1.0e-10)

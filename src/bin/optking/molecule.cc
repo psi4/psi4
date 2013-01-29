@@ -5,7 +5,6 @@
 
 #include "molecule.h"
 
-#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -17,12 +16,12 @@
 #define EXTERN
 #include "globals.h"
 
-#if defined (OPTKING_PACKAGE_QCHEM)
-#include "EFP.h"
-#endif
-
 #if defined(OPTKING_PACKAGE_PSI)
-#include <libmints/molecule.h>
+ #include <cmath>
+ #include <libmints/molecule.h>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+ #include "EFP.h"
 #endif
 
 namespace opt {
