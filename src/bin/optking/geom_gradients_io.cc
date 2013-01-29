@@ -9,22 +9,19 @@
 
 #define EXTERN
 #include "globals.h"
-#include <libparallel/parallel.h>
-
 
 #include "io.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
-#include <psi4-dec.h>
-#include <libmints/molecule.h>
-#include <libmints/matrix.h>
-#include <libmints/wavefunction.h>
+ #include <psi4-dec.h>
+ #include <libmints/molecule.h>
+ #include <libmints/matrix.h>
+ #include <libmints/wavefunction.h>
+ #include <libparallel/parallel.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
-
-#include <qchem.h> // typedefs INTEGER
-#include "EFP.h"
-void get_carts(double** Carts, double** A, INTEGER** AtNo, INTEGER* NAtoms, bool noghosts);
-
+ #include <qchem.h> // typedefs INTEGER
+ #include "EFP.h"
+ void get_carts(double** Carts, double** A, INTEGER** AtNo, INTEGER* NAtoms, bool noghosts);
 #endif
 
 namespace opt {
@@ -186,27 +183,41 @@ void MOLECULE::read_geom_grad(void) {
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
+  int EFPfrag = 0;
+  int EFPatom = 0;
+  if (Opt_params.efp_fragments) {
+    EFPfrag = EFP::GetInstance()->NFragments();
+    std::vector<int> AtomsinEFP = EFP::GetInstance()->NEFPAtoms();
+    for (int i = 0; i < EFPfrag; ++i)
+      EFPatom += AtomsinEFP[i];
+    fprintf(outfile,"\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
+  }     
+
   double *QX;
   INTEGER *QZ, QNATOMS;
   bool Qnoghosts = true;
 
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
-  if (QNATOMS != g_natom()) {
-    fprintf(outfile,"read_geom_grad() QNATOMS=%d\n", QNATOMS);
-    //QCrash("Number of atoms read inconsistent with REM variable.");
+  int QNATOMS_real = g_natom();
+  if (QNATOMS_REAL != (QNATOMS-EFPatom))
+    QCrash("Number of computed real atoms is inconsistent.");
+
+  fprintf(outfile, "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
+
+  if (Opt_params.print_lvl >= 3) {
+    fprintf(outfile,"\tCartesian coordinates from ::get_carts().\n");
+    print_array(outfile, QX, 3*QNATOMS);
   }
-  //fprintf(outfile, "QX read with get_carts()\n");
-  //print_array(outfile, QX, 3*QNATOMS);
 
-  double* QGrad = init_array(3*QNATOMS);
+  int Numgrad = QNATOMS_real*3 + 6*EFPfrag;
+  double* QGrad = init_array(Numgrad);
+
   ::FileMan_Open_Read(FILE_NUCLEAR_GRADIENT);
-  ::FileMan(FM_READ, FILE_NUCLEAR_GRADIENT, FM_DP, 3*QNATOMS, 0, FM_BEG, QGrad);
+  ::FileMan(FM_READ, FILE_NUCLEAR_GRADIENT, FM_DP, Numgrad, 0, FM_BEG, QGrad);
   ::FileMan_Close(FILE_NUCLEAR_GRADIENT);
-  //fprintf(outfile, "QGrad read with get_carts()\n");
-  //print_array(outfile, QGrad, 3*QNATOMS);
 
-
+  // store geometry and gradient of real atoms in fragment objects
   int cnt=0;
   for (int f=0; f<nfrag; ++f) {
 
@@ -224,13 +235,29 @@ void MOLECULE::read_geom_grad(void) {
     }
 
   }
-  free_array(QGrad);
+  // Now read in gradients for EFP fragments
+  for (int f=0; f<EFPfrag; ++f) {
 
-  double QEnergy;
-  ::FileMan_Open_Read(FILE_ENERGY);
-  ::FileMan(FM_READ, FILE_ENERGY, FM_DP, 1, FILE_POS_CRNT_TOTAL_ENERGY, FM_BEG, &QEnergy);
-  ::FileMan_Close(FILE_ENERGY);
-  energy = QEnergy;
+    double *efp_f = init_array(6);
+    for (int i=0; i<6; ++i)
+      efp_f[i] = -1 * QGrad[3*QNATOMS_real + 6*f + i];
+    
+    efp_fragments[f]->set_forces(efp_f);
+    free_array(efp_f);
+  }
+  free_array(QGrad);
+  
+  if (Opt_params.efp_fragments) {
+    energy = EFP::GetInstance()->GetEnergy();
+  }
+  else {
+    double E_tmp;
+    ::FileMan_Open_Read(FILE_ENERGY);
+    ::FileMan(FM_READ, FILE_ENERGY, FM_DP, 1, FILE_POS_CRNT_TOTAL_ENERGY, FM_BEG, &E_tmp);
+    ::FileMan_Close(FILE_ENERGY);
+    energy = E_tmp;
+  }
+  free_array(QGrad);
 
 #endif
 

@@ -7,17 +7,28 @@
 #include "linear_algebra.h"
 
 #include <cstdlib>
-#include <cmath>
 #include "mem.h"
 
 #define EXTERN
 #include "globals.h"
 
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
+
 extern "C" {
 
-// defines correct format of BLAS/LAPACK functions
-#define F_DGEMM dgemm_
-#define F_DSYEV dsyev_
+#if defined(OPTKING_PACKAGE_PSI)
+ // defines correct format of BLAS/LAPACK functions
+ #define F_DGEMM dgemm_
+ #define F_DSYEV dsyev_
+#elif defined(OPTKING_PACKAGE_QCHEM)
+ #include "qccfg.h"
+ #define F_DGEMM FTN_EXTNAME(dgemm,DGEMM)
+ #define F_DSYEV FTN_EXTNAME(dsyev,DSYEV)
+#endif
 
 // declations of BLAS/LAPACK routines
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k,

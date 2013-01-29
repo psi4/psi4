@@ -7,6 +7,8 @@
 #ifndef _opt_opt_params_h_
 #define _opt_opt_params_h_
 
+#include <string>
+
 namespace opt {
 
 struct OPT_PARAMS {

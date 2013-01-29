@@ -6,12 +6,10 @@
 #define EXTERN
 #include "globals.h"
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-#include <qchem.h>
-#endif
-
 #if defined(OPTKING_PACKAGE_PSI)
-#include <psi4-dec.h>
+ #include <psi4-dec.h>
+#elif defined(OPTKING_PACKAGE_QCHEM)
+ #include <qchem.h>
 #endif
 
 namespace opt {
@@ -315,12 +313,26 @@ void set_params(void)
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
-
   int i;
-// RFO = 0 ; NR = 1       (default 0)
+
+// MIN = 0 ; TS = 1 ; IRC = 2      (default 0)
+  i = rem_read(REM_GEOM_OPT2_OPT_TYPE); 
+  if (i == 0)      Opt_params.opt_type = OPT_PARAMS::MIN;
+  else if (i == 1) Opt_params.opt_type = OPT_PARAMS::TS;
+  else if (i == 2) Opt_params.opt_type = OPT_PARAMS::IRC;
+
+// RFO = 0 ; NR = 1 ; P_RFO = 2      (default 0)
+// defaults should be RFO for MIN; P_RFO for TS
+  if (Opt_params.opt_type == OPT_PARAMS::MIN)
+    Opt_params.step_type = OPT_PARAMS::RFO;
+  else if (Opt_params.opt_type == OPT_PARAMS::TS)
+    Opt_params.step_type = OPT_PARAMS::P_RFO;
+
+  // How to check if user specified this?
   i = rem_read(REM_GEOM_OPT2_STEP_TYPE);
   if (i == 0)      Opt_params.step_type = OPT_PARAMS::RFO;
   else if (i == 1) Opt_params.step_type = OPT_PARAMS::NR;
+  else if (i == 2) Opt_params.step_type = OPT_PARAMS::P_RFO;
 
 // max = i / 10  (default 4)
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_STEP_LIMIT);
