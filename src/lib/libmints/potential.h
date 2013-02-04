@@ -46,6 +46,9 @@ public:
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix > &result);
 
+    /// Computes the second derivatives and store them in result
+    virtual void compute_deriv2(std::vector<SharedMatrix>& result);
+
     /// Set the field of charges
     void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
 
