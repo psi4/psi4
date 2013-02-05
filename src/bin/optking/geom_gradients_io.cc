@@ -200,7 +200,7 @@ void MOLECULE::read_geom_grad(void) {
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
   int QNATOMS_real = g_natom();
-  if (QNATOMS_REAL != (QNATOMS-EFPatom))
+  if (QNATOMS_real != (QNATOMS-EFPatom))
     QCrash("Number of computed real atoms is inconsistent.");
 
   fprintf(outfile, "\tNATOMS (total)=%d (minus EFP)=%d\n", QNATOMS, QNATOMS_real);
@@ -257,7 +257,6 @@ void MOLECULE::read_geom_grad(void) {
     ::FileMan_Close(FILE_ENERGY);
     energy = E_tmp;
   }
-  free_array(QGrad);
 
 #endif
 

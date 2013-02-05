@@ -647,6 +647,8 @@ bool MOLECULE::apply_input_constraints(void) {
     return fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
       Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
   }
+  else
+    return false;
 }
 
 // Compute constraint matrix.
