@@ -334,13 +334,15 @@ void set_params(void)
   else if (i == 1) Opt_params.step_type = OPT_PARAMS::NR;
   else if (i == 2) Opt_params.step_type = OPT_PARAMS::P_RFO;
 
-// max = i / 10  (default 4)
-  i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_STEP_LIMIT);
-  Opt_params.intrafragment_step_limit = i / 10.0;
-
-// max = i / 10  (default 4)
-  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_STEP_LIMIT);
-  Opt_params.interfragment_step_limit = i / 10.0;
+  // Maximum change in an internal coordinate is au; limits on steps are rem / 1000
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);     // default is  400 -> 0.4
+  Opt_params.intrafragment_step_limit =     i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT_MIN); // default is    1 -> 0.001
+  Opt_params.intrafragment_step_limit_min = i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT_MAX); // default is 1000 -> 1.0
+  Opt_params.intrafragment_step_limit_max = i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTERFRAG_STEP_LIMIT);
+  Opt_params.interfragment_step_limit     = i / 1000.0; // default is  400 -> 0.4
 
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
@@ -369,6 +371,7 @@ void set_params(void)
   if (i == 0)      Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
   else if (i == 1) Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
   else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
+  else if (i == 3) Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
 
 // interfragment 0=DEFAULT ; 1=FISCHER_LIKE
   i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_H);
@@ -421,6 +424,13 @@ void set_params(void)
 
   i = rem_read(REM_GEOM_OPT2_TOL_ENERGY);
   Opt_params.conv_max_DE    = i / 1.0e8; // default (100 -> 1.0e-6)
+
+// Turn "on" these convergence criteria; At least for now, QChem, doesn't
+// support all the special string names for convergence criteria.
+  Opt_params.i_untampered = true; // allow flex between force and displacement
+  Opt_params.i_max_force = true;
+  Opt_params.i_max_disp = true;
+  Opt_params.i_max_DE = true;
 
 // test B (default 0)
   Opt_params.test_B = rem_read(REM_GEOM_OPT2_TEST_B);

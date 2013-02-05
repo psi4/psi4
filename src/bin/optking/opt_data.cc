@@ -11,6 +11,7 @@
 #if defined(OPTKING_PACKAGE_PSI)
  #include <cmath>
 #elif defined (OPTKING_PACKAGE_QCHEM)
+ #include <qchem.h> // used for rem_write
  #include "qcmath.h"
 #endif
 
@@ -125,7 +126,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double max_force = array_abs_max(f, Nintco);
   double rms_force = array_rms(f, Nintco);
 
-#if defined(OPTKING_PACKAGE_PSI)
+//#if defined(OPTKING_PACKAGE_PSI)
   fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
   fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
   fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
@@ -163,9 +164,10 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
 
   fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
-  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
 
+/*
 #elif defined(OPTKING_PACKAGE_QCHEM)
+  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
   fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
@@ -184,7 +186,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
   printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
-#endif
+#endif */
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
@@ -249,7 +251,6 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 void OPT_DATA::summary(void) const {
   double DE, *f, *dq, max_force, max_disp, rms_force, rms_disp;
 
-#if defined(OPTKING_PACKAGE_PSI)
   fprintf(outfile, "\n  ==> Optimization Summary <==\n\n");
   fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
 
@@ -273,31 +274,6 @@ void OPT_DATA::summary(void) const {
       DE, max_force, rms_force, max_disp, rms_disp); 
   }
   fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n\n");
-
-#elif defined(OPTKING_PACKAGE_QCHEM)
-  fprintf(outfile,"\n\t            ****  Optimization Summary  ****\n");
-  fprintf(outfile,"\t----------------------------------------------------------------------------\n");
-  fprintf(outfile,"\t Step         Energy             Delta(E)      MAX force    MAX Delta(q)  \n");
-  fprintf(outfile,"\t----------------------------------------------------------------------------\n");
-
-  for (int i=0; i<iteration; ++i) {
-
-    if (i == 0) DE = g_energy(i);
-    else DE = g_energy(i) - g_energy(i-1); 
-
-    f =  g_forces_pointer(i);
-    max_force = array_abs_max(f, Nintco);
-
-    dq =  g_dq_pointer(i);
-    max_disp = array_abs_max(dq, Nintco);
-
-    fprintf(outfile,"\t %3d  %18.12lf  %18.12lf  %10.2e   %10.2e\n", i+1, g_energy(i),
-      DE, max_force, max_disp);
-
-  }
-  fprintf(outfile,"\t----------------------------------------------------------------------\n");
-  fprintf(outfile,"\n");
-#endif
 }
 
 inline int sign_of_double(double d) {
@@ -673,21 +649,21 @@ bool OPT_DATA::previous_step_report(void) const {
 // These functions are a bit out of place, given that the trust radius is not
 // stored inside opt_data.
 void OPT_DATA::increase_trust_radius(void) const {
-  // don't let step_limit get larger than 1.0 au
   std::string module = "OPTKING";
-#if defined(OPTKING_PACKAGE_PSI)
   std::string key = "INTRAFRAG_STEP_LIMIT";
-#elif defined(OPTKING_PACKAGE_QCHEM)
-  std::string key = "INTRAFRAGMENT_STEP_LIMIT";
-#endif
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
     double new_val = Opt_params.intrafragment_step_limit * 2;
     Opt_params.intrafragment_step_limit = ((new_val > max) ? max : new_val);
     fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
         Opt_params.intrafragment_step_limit);
+
+    // Save new trust radii in environment
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000 + 0.5);
+    rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT); // tell QChem current iteration number
 #endif
   }
   return;
@@ -695,11 +671,7 @@ void OPT_DATA::increase_trust_radius(void) const {
 
 void OPT_DATA::decrease_trust_radius(void) const {
   std::string module = "OPTKING";
-#if defined(OPTKING_PACKAGE_PSI)
   std::string key = "INTRAFRAG_STEP_LIMIT";
-#elif defined(OPTKING_PACKAGE_QCHEM)
-  std::string key = "INTRAFRAGMENT_STEP_LIMIT";
-#endif
   double min = Opt_params.intrafragment_step_limit_min;
   if (Opt_params.intrafragment_step_limit != min) {
     double new_val = Opt_params.intrafragment_step_limit / 4;

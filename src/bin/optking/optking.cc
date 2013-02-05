@@ -446,10 +446,10 @@ void close_output_dat(void) {
 }
 
 void print_title(void) {
-  fprintf(outfile, "\n\t\t\t----------------------------------\n");
-  fprintf(outfile, "\t\t\t OPTKING: for geometry optimizations  \n");
-  fprintf(outfile, "\t\t\t  - R.A. King,  Bethel University   \n");
-  fprintf(outfile, "\t\t\t------------------------------------\n");
+  fprintf(outfile, "\n\t\t\t-----------------------------------------\n");
+  fprintf(outfile,   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
+  fprintf(outfile,   "\t\t\t  - R.A. King,  Bethel University        \n");
+  fprintf(outfile,   "\t\t\t-----------------------------------------\n");
   fflush(outfile);
 }
 
