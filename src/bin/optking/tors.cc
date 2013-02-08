@@ -5,18 +5,21 @@
 
 #include "tors.h"
 
-//#include <string>
-//#include <iostream>
 #include <sstream>
 
 #include "print.h"
 #include "v3d.h"
 #include "physconst.h"
 #include "opt_params.h"
-#include <cmath>
 
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
 
 namespace opt {
 

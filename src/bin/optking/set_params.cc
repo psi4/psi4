@@ -6,12 +6,10 @@
 #define EXTERN
 #include "globals.h"
 
-#if defined(OPTKING_PACKAGE_QCHEM)
-#include <qchem.h>
-#endif
-
 #if defined(OPTKING_PACKAGE_PSI)
-#include <psi4-dec.h>
+ #include <psi4-dec.h>
+#elif defined(OPTKING_PACKAGE_QCHEM)
+ #include <qchem.h>
 #endif
 
 namespace opt {
@@ -45,6 +43,7 @@ void set_params(void)
       }
       else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
       else if (s == "SD") Opt_params.step_type = OPT_PARAMS::SD;
+      else if (s == "LINESEARCH_STATIC") Opt_params.step_type = OPT_PARAMS::LINESEARCH_STATIC;
    }
    else { // set defaults for step type
      if (Opt_params.opt_type == OPT_PARAMS::MIN)
@@ -296,6 +295,13 @@ void set_params(void)
   // for intcos with user-specified equilibrium values - this is the force constant
   Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
 
+  // Currently, a static line search merely displaces along the gradient in internal
+  // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
+  // control the min and the max of the largest internal coordinate displacement.
+  Opt_params.linesearch_static_N   = options.get_int("LINESEARCH_STATIC_N");
+  Opt_params.linesearch_static_min = options.get_double("LINESEARCH_STATIC_MIN");
+  Opt_params.linesearch_static_max = options.get_double("LINESEARCH_STATIC_MAX");
+
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 
@@ -307,20 +313,36 @@ void set_params(void)
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
-
   int i;
-// RFO = 0 ; NR = 1       (default 0)
+
+// MIN = 0 ; TS = 1 ; IRC = 2      (default 0)
+  i = rem_read(REM_GEOM_OPT2_OPT_TYPE); 
+  if (i == 0)      Opt_params.opt_type = OPT_PARAMS::MIN;
+  else if (i == 1) Opt_params.opt_type = OPT_PARAMS::TS;
+  else if (i == 2) Opt_params.opt_type = OPT_PARAMS::IRC;
+
+// RFO = 0 ; NR = 1 ; P_RFO = 2      (default 0)
+// defaults should be RFO for MIN; P_RFO for TS
+  if (Opt_params.opt_type == OPT_PARAMS::MIN)
+    Opt_params.step_type = OPT_PARAMS::RFO;
+  else if (Opt_params.opt_type == OPT_PARAMS::TS)
+    Opt_params.step_type = OPT_PARAMS::P_RFO;
+
+  // How to check if user specified this?
   i = rem_read(REM_GEOM_OPT2_STEP_TYPE);
   if (i == 0)      Opt_params.step_type = OPT_PARAMS::RFO;
   else if (i == 1) Opt_params.step_type = OPT_PARAMS::NR;
+  else if (i == 2) Opt_params.step_type = OPT_PARAMS::P_RFO;
 
-// max = i / 10  (default 4)
-  i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_STEP_LIMIT);
-  Opt_params.intrafragment_step_limit = i / 10.0;
-
-// max = i / 10  (default 4)
-  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_STEP_LIMIT);
-  Opt_params.interfragment_step_limit = i / 10.0;
+  // Maximum change in an internal coordinate is au; limits on steps are rem / 1000
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);     // default is  400 -> 0.4
+  Opt_params.intrafragment_step_limit =     i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT_MIN); // default is    1 -> 0.001
+  Opt_params.intrafragment_step_limit_min = i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT_MAX); // default is 1000 -> 1.0
+  Opt_params.intrafragment_step_limit_max = i / 1000.0;
+  i = rem_read(REM_GEOM_OPT2_INTERFRAG_STEP_LIMIT);
+  Opt_params.interfragment_step_limit     = i / 1000.0; // default is  400 -> 0.4
 
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
@@ -349,6 +371,7 @@ void set_params(void)
   if (i == 0)      Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
   else if (i == 1) Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
   else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
+  else if (i == 3) Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
 
 // interfragment 0=DEFAULT ; 1=FISCHER_LIKE
   i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_H);
@@ -402,6 +425,13 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_TOL_ENERGY);
   Opt_params.conv_max_DE    = i / 1.0e8; // default (100 -> 1.0e-6)
 
+// Turn "on" these convergence criteria; At least for now, QChem, doesn't
+// support all the special string names for convergence criteria.
+  Opt_params.i_untampered = true; // allow flex between force and displacement
+  Opt_params.i_max_force = true;
+  Opt_params.i_max_disp = true;
+  Opt_params.i_max_DE = true;
+
 // test B (default 0)
   Opt_params.test_B = rem_read(REM_GEOM_OPT2_TEST_B);
   Opt_params.test_derivative_B = rem_read(REM_GEOM_OPT2_TEST_DERIVATIVE_B);
@@ -427,6 +457,15 @@ void set_params(void)
 
 //TO DO: initialize IRC_step_size for Q-Chem
 
+#endif
+
+// Strings that carry user-specified constraints (from input, probably)
+#if defined(OPTKING_PACKAGE_PSI)
+  Opt_params.frozen_distance_str = options.get_str("FROZEN_DISTANCE");
+  Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
+  Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // TODO
 #endif
 
 // ** Items are below unlikely to need modified
@@ -520,6 +559,12 @@ void print_params(void) {
   fprintf(outfile, "step_type              = %18s\n", "RFO");
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
   fprintf(outfile, "step_type              = %18s\n", "P_RFO");
+  else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC)
+  fprintf(outfile, "step_type              = %18s\n", "Static linesearch");
+
+  fprintf(outfile, "linesearch_static_N    = %18d\n", Opt_params.linesearch_static_N);
+  fprintf(outfile, "linesearch_static_min  = %18.3e\n", Opt_params.linesearch_static_min);
+  fprintf(outfile, "linesearch_static_max  = %18.3e\n", Opt_params.linesearch_static_max);
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");

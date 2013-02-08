@@ -1,9 +1,9 @@
-#! DCFT calculation for the HF+ using DCFT-06 functional. This performs both
+#! DCFT calculation for the HF+ using DC-06 functional. This performs both
 #! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
 #! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
 #! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
-#! The computation is then repeated using the DCFT-06X functional with the same algorithms.
+#! The computation is then repeated using the DC-12 functional with the same algorithms.
 
 memory 250 mb
 
@@ -41,7 +41,7 @@ set algorithm simultaneous
 energy('dcft')
 
 
-set dcft_functional dcft-06x
+set dcft_functional dc-12
 set algorithm twostep
 set ao_basis none
 energy('dcft')

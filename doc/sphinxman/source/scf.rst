@@ -196,7 +196,7 @@ option, and a call to ``energy('scf')``::
 This will run a Restricted Hartree-Fock (RHF) on neutral singlet Helium in
 :math:`D_{2h}` spatial symmetry with a minimal ``STO-3G`` basis, 1.0E-6
 energy and 1.0E-5 density convergence criteria (since single-point, see
-:ref:`SCF Convergence & Algorithm <table:conv_scf>`), a PK ERI algorithm, symmetric
+:ref:`SCF Convergence & Algorithm <table:conv_scf>`), a DF ERI algorithm, symmetric
 orthogonalization, DIIS, and a core Hamiltonian guess. For more
 information on any of these options, see the relevant section below.
 
@@ -476,8 +476,8 @@ contributions to the Fock Matrix. A number of algorithms are available in
 |PSIfour| for these terms. The algorithm is selected by the |scf__scf_type|
 keyword, which may be one of the following
 
-PK [Default]
-    An in-core, presorted algorithm using exact ERIs. Quite fast
+PK [:ref:`Default <table:conv_scf>`]
+    An out-of-core, presorted algorithm using exact ERIs. Quite fast
     for a zero-error algorithm if enough memory is available. Integrals are
     generated only once, and symmetry is utilized to reduce number of integrals. 
 OUT_OF_CORE
@@ -490,7 +490,7 @@ DIRECT
     used. However, integral regeneration is quite costly, implying that this
     algorithm should be used only if there is not enough disk space for the
     ``OUT_OF_CORE`` algorithm. 
-DF
+DF [:ref:`Default <table:conv_scf>`]
     A density-fitted algorithm designed for computations with thousands of basis
     functions. This algorithm is highly optimized, and is threaded with a mixture of
     parallel BLAS and OpenMP. Note that this algorithm should use the -JKFIT series
