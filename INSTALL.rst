@@ -231,6 +231,10 @@ compiling and installing the PSI4 package.
 
           Use at least version 12.0.4.
 
+     * Gnu compiler with ACML math library (better than MKL for AMD processors) ::
+
+          ../configure --prefix=/usr/local/psi4 --with-cc=gcc --with-cxx=g++ --with-fc=gfortran --with-opt=-O2 --with-blas="-L/opt/acml5.2.0/gfortran64_mp/lib -lacml_mp" --with-lapack="-L/opt/acml5.2.0/gfortran64_mp/lib -lacml_mp"
+
      * g++, optimized ::
 
          ../configure --prefix=/usr/local/psi4

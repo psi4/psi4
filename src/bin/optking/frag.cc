@@ -6,8 +6,6 @@
 
 #include "frag.h"
 
-#include <cmath>
-
 #include "mem.h"
 #include "v3d.h"
 #include "atom_data.h"
@@ -19,6 +17,12 @@
 
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
 
 namespace opt {
 

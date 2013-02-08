@@ -5,7 +5,6 @@
 
 #include "molecule.h"
 
-#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -17,12 +16,12 @@
 #define EXTERN
 #include "globals.h"
 
-#if defined (OPTKING_PACKAGE_QCHEM)
-#include "EFP.h"
-#endif
-
 #if defined(OPTKING_PACKAGE_PSI)
-#include <libmints/molecule.h>
+ #include <cmath>
+ #include <libmints/molecule.h>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+ #include "EFP.h"
 #endif
 
 namespace opt {
@@ -241,16 +240,12 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(P, 0, temp_mat, 0, H, 0, Nintco, Nintco, Nintco, 0);
   free_matrix(temp_mat);
 
-/* 2nd term unnecessary
-  for (int i=0; i<Nintco;++i)
+  /*for (int i=0; i<Nintco;++i)
     H[i][i] += 1000 * (1.0 - P[i][i]);
 
-  double tval;
   for (int i=0; i<Nintco; ++i)
-    for (int j=0; j<i; ++j) {
-      tval = H[i][j] - 1000 * P[i][j];
-      H[j][i] = H[i][j] = tval;
-    } */
+    for (int j=0; j<i; ++j)
+      H[j][i] = H[i][j] = H[i][j] + 1000 * (1.0 - P[i][j]);*/
 
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile,"Projected (PHP) Hessian matrix\n");
@@ -643,7 +638,20 @@ void MOLECULE::print_intco_dat(FILE *fp_intco) {
   }
 }
 
-// tell whether internal coordinate is frozen
+// Read string of atoms for frozen coordinates and pass to fragment object
+bool MOLECULE::apply_input_constraints(void) {
+  if (   !Opt_params.frozen_distance_str.empty()
+      || !Opt_params.frozen_bend_str.empty() 
+      || !Opt_params.frozen_dihedral_str.empty() ) {
+    fprintf(outfile,"\tAssuming, in current code, that constraints apply to first fragment.\n");
+    return fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
+      Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
+  }
+  else
+    return false;
+}
+
+// Compute constraint matrix.
 double ** MOLECULE::compute_constraints(void) {
   double **C, **C_frag, **C_inter;
   int i, j;

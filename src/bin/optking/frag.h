@@ -149,6 +149,8 @@ class FRAG {
 
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
+  // utility used by displace
+  void displace_util(double *dq, bool focus_on_constraints);
 
   double ** g_geom_pointer(void) { return geom; };           // returns pointer
   double ** g_geom(void) const;                              // returns a copy
@@ -232,6 +234,14 @@ class FRAG {
     return intcos[intco_index]->fixed_eq_val();
   }
   double intco_value(int intco_index) const;
+
+  /**
+   * @param R_list string of atom pairs for frozen distances
+   * @param B_list string of atom triples for frozen bends
+   * @param D_list string of atom quartets for frozen dihedrals
+   * @returns True if any constraints are present.
+  */
+  bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
 
 };
 

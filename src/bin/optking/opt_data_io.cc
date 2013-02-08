@@ -10,18 +10,16 @@
 
 // PSI unit number for opt_data binary file
 #if defined (OPTKING_PACKAGE_PSI)
-#include <libparallel/parallel.h>
-#define PSI_OPTDATA_FILE_NUM 1
-#include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+ #define PSI_OPTDATA_FILE_NUM 1
+ #include <libparallel/parallel.h>
+ #include <libpsio/psio.h>
+ #include <libpsio/psio.hpp>
+ using namespace psi;
 #endif
 
-#if defined (OPTKING_PACKAGE_PSI)
-using namespace psi;
-#endif
-
-// Name of opt_data file for QCHEM
-#define QCHEM_OPTDATA_FILENAME "opt_data.1"
+// Name of opt_data file for QCHEM; PSI uses file 1 in the default name
+const char* getOptdataFileName();
+#define QCHEM_OPTDATA_FILENAME getOptdataFileName()
 
 // binary QCHEM data file
 #if defined (OPTKING_PACKAGE_QCHEM)
@@ -38,10 +36,12 @@ bool opt_io_is_present(void) {
   bool file_present = false;
 
 #if defined(OPTKING_PACKAGE_PSI)
+  ::psi::WorldComm->sync();
   psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
   if (psio_rd_toclen(PSI_OPTDATA_FILE_NUM) > 0)
     file_present = true;
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
+  psi::WorldComm->sync();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
@@ -51,8 +51,6 @@ bool opt_io_is_present(void) {
   if (opt_data_stream.is_open()) {
     if (opt_data_stream.good())
       file_present = true;
-    WorldComm->sync();
-    WorldComm->sync();
     opt_data_stream.close();
   }
 #endif
@@ -63,16 +61,17 @@ bool opt_io_is_present(void) {
 void opt_io_remove(void) {
 #if defined(OPTKING_PACKAGE_PSI)
   // check retention setting in .psi4rc - maybe the user likes file 1 !
+  psi::WorldComm->sync();
   if (! psi::_default_psio_manager_->get_specific_retention(1)) {
     if (!psio_open_check(PSI_OPTDATA_FILE_NUM)) // if not open, open it
       psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
     psio_close(PSI_OPTDATA_FILE_NUM, 0);        // close and delete it
   }
+  psi::WorldComm->sync();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
 
-  WorldComm->sync();
   if (opt_data_stream.is_open())       // if open, close it
     opt_data_stream.close();
   std::remove(QCHEM_OPTDATA_FILENAME); // remove file
@@ -96,12 +95,14 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 #if defined(OPTKING_PACKAGE_PSI)
   // if file is already open, then close it
   // delete it if NEW is requested
+  psi::WorldComm->sync();
   if (psio_open_check(PSI_OPTDATA_FILE_NUM)) {
     if (status == OPT_IO_OPEN_OLD)
       psio_close(PSI_OPTDATA_FILE_NUM, 1);
     else if (status == OPT_IO_OPEN_NEW)
       psio_close(PSI_OPTDATA_FILE_NUM, 0);
   }
+  psi::WorldComm->sync();
 
   psio_open(PSI_OPTDATA_FILE_NUM, PSIO_OPEN_OLD);
 
@@ -112,7 +113,6 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
   if ( opt_data_stream.is_open() && (status == OPT_IO_OPEN_OLD))
     return;
 
-  WorldComm->sync();
   if ( opt_data_stream.is_open() && (status == OPT_IO_OPEN_NEW) )
     opt_data_stream.close();
 
@@ -131,11 +131,10 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 
 void opt_io_close(int keep) {
 
-    WorldComm->sync();
 #if defined(OPTKING_PACKAGE_PSI)
+  psi::WorldComm->sync();
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
 #elif defined(OPTKING_PACKAGE_QCHEM)
-  WorldComm->sync();
   opt_io::opt_data_stream.close();
 #endif
 

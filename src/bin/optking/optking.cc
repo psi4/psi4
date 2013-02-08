@@ -9,8 +9,10 @@
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
-#include <libparallel/parallel.h>
 
+#if defined(OPTKING_PACKAGE_PSI)
+  #include <libparallel/parallel.h>
+#endif
 
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
@@ -34,7 +36,7 @@ namespace psi { void psiclean(void); }
  namespace opt {
    OptReturnType optking(void); // declare optking
  }
- OptReturnType opt2man_main(void) { opt::optking(); } // QCHEM wrapper/alias
+ OptReturnType opt2man_main(void) { return opt::optking(); } // QCHEM wrapper/alias
 #endif
 
 namespace opt {
@@ -144,10 +146,14 @@ OptReturnType optking(void) {
       mol1->freeze_interfragment_asymm(); // remove problematic ones?
     }
 
+    mol1->apply_input_constraints();
+
     // print out internal coordinates for future steps
     FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
     mol1->print_intco_dat(fp_intco);
+#if defined(OPTKING_PACKAGE_PSI)
     psi::WorldComm->sync();
+#endif
     fclose(fp_intco);
 
     // only generate coordinates and print them out
@@ -257,6 +263,14 @@ OptReturnType optking(void) {
       mol1->prfo_step();
     else if (Opt_params.step_type == OPT_PARAMS::SD)
       mol1->sd_step();
+    else if (Opt_params.step_type == OPT_PARAMS::LINESEARCH_STATIC) {
+      // compute geometries and then quit
+      mol1->linesearch_step();
+      delete p_Opt_data;
+      print_end();
+      close_output_dat();
+      return OptReturnEndloop;
+    }
   }
 
   bool converged = p_Opt_data->conv_check(*mol1);
@@ -405,7 +419,7 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
   }
   catch (...) {
 #if defined (OPTKING_PACKAGE_QCHEM)
-      QCrash(exc.g_message());
+      QCrash("Exception thrown in optking() leading to abort.");
 #elif defined (OPTKING_PACKAGE_PSI)
       abort();
 #endif
@@ -432,10 +446,10 @@ void close_output_dat(void) {
 }
 
 void print_title(void) {
-  fprintf(outfile, "\n\t\t\t----------------------------------\n");
-  fprintf(outfile, "\t\t\t OPTKING: for geometry optimizations  \n");
-  fprintf(outfile, "\t\t\t  - R.A. King,  Bethel University   \n");
-  fprintf(outfile, "\t\t\t------------------------------------\n");
+  fprintf(outfile, "\n\t\t\t-----------------------------------------\n");
+  fprintf(outfile,   "\t\t\t OPTKING 2.0: for geometry optimizations \n");
+  fprintf(outfile,   "\t\t\t  - R.A. King,  Bethel University        \n");
+  fprintf(outfile,   "\t\t\t-----------------------------------------\n");
   fflush(outfile);
 }
 
