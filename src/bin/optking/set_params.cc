@@ -307,12 +307,11 @@ void set_params(void)
     else
       Opt_params.read_cartesian_H = options.get_bool("CART_HESS_READ");
 
-// Are EFP fragments present?
-  if (options.get_bool("EFP_FRAGMENTS") || options.get_bool("EFP_FRAGMENTS_ONLY"))
-    Opt_params.efp_fragments = true;
-
-// Are ONLY EFP fragments present?
-  Opt_params.efp_fragments_only = options.get_bool("EFP_FRAGMENTS_ONLY");
+// only treating "dummy fragments"
+    // These are not found in psi4/read_options.cc
+    // Not sure if we need these.
+  Opt_params.efp_fragments = false;
+  Opt_params.efp_fragments_only = false;
 
 //IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
@@ -478,12 +477,16 @@ void set_params(void)
 // read Hessian (default 0)
   Opt_params.read_cartesian_H = rem_read(REM_GEOM_OPT2_READ_CARTESIAN_H);
 
-// At last QChem attempt, this optimizer would work if only EFP fragments were present.
-  if (rem_read(REM_EFP) || rem_read(REM_EFP_FRAGMENTS_ONLY))
-    Opt_params.efp_fragments = true;
+// This optimizer will not work unless only EFP fragments are present
+// Last I tried, I can't even get geometry data when running EFP_opt.in
+  Opt_params.efp_fragments = rem_read(REM_EFP);
 
-// are ONLY EFP fragments present?
-  Opt_params.efp_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
+// are ONLY EFP fragments present
+  if(Opt_params.efp_fragments)
+    Opt_params.efp_fragments_only = rem_read(REM_EFP_FRAGMENTS_ONLY);
+  else {
+    Opt_params.efp_fragments_only = false;
+  }
 
   // for intcos with user-specified equilibrium values - this is the force constant
   //i = rem_read(REM_INTCO_FIXED_EQ_FORCE_CONSTANT);
