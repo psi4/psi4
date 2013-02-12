@@ -107,10 +107,7 @@ struct OPT_PARAMS {
 
   bool read_cartesian_H;
 
-  // are any efp fragments present ?
   bool efp_fragments;
-
-  // are ONLY efp fragments present?
   bool efp_fragments_only;
 
   int consecutive_backsteps_allowed;
