@@ -326,6 +326,9 @@ public:
     /// Computes nuclear repulsion energy second derivatives.
     Matrix nuclear_repulsion_energy_deriv2() const;
 
+    /// Computes the nuclear repuslion energy between this and another Molecule
+    double pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> other) const;
+
     /// Translates molecule by r
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
@@ -351,6 +354,9 @@ public:
 
     /// Print the molecule
     void print() const;
+
+    /// Print the molecule, adding spacers
+    void print_cluster() const;
 
     /// Print full atom list
     void print_full() const;

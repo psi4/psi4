@@ -16,6 +16,7 @@
 #include <psi4-dec.h>
 
 #include "dftsapt.h"
+#include "infsapt.h"
 
 using namespace boost;
 
@@ -28,6 +29,24 @@ PsiReturnType dftsapt(boost::shared_ptr<Wavefunction> dimer,
     tstart();
 
     boost::shared_ptr<DFTSAPT> sapt = DFTSAPT::build(dimer,mA,mB);
+    sapt->compute_energy();
+
+    tstop();
+
+    return Success;
+}
+
+PsiReturnType infsapt(boost::shared_ptr<Wavefunction> dimer, 
+                      boost::shared_ptr<Wavefunction> mA, 
+                      boost::shared_ptr<Wavefunction> mB)
+{
+    tstart();
+
+    std::vector<boost::shared_ptr<Wavefunction> > m;
+    m.push_back(mA);
+    m.push_back(mB);
+
+    boost::shared_ptr<INFSAPT> sapt = INFSAPT::build(dimer,m);
     sapt->compute_energy();
 
     tstop();

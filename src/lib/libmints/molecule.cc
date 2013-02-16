@@ -356,6 +356,18 @@ Matrix Molecule::distance_matrix() const
     return distance;
 }
 
+double Molecule::pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> mB) const
+{
+    double V = 0.0;
+    for (int A = 0; A < natom(); A++) {
+        for (int B = 0; B < mB->natom(); B++) {
+            if (Z(A) == 0.0 || mB->Z(B) == 0.0) continue;
+            V += Z(A) * mB->Z(B) / (xyz(A).distance(mB->xyz(B)));
+        }
+    }
+    return V;
+}
+
 double Molecule::nuclear_repulsion_energy() const
 {
     double e=0.0;
@@ -1462,6 +1474,43 @@ void Molecule::print() const
             fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
             for(int i = 0; i < natom(); ++i){
+                Vector3 geom = atoms_[i]->compute();
+                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", geom[j]);
+                fprintf(outfile,"\n");
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
+        else
+            fprintf(outfile, "  No atoms in this molecule.\n");
+    }
+}
+
+void Molecule::print_cluster() const
+{
+    if (WorldComm->me() == 0) {
+        if (natom()) {
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
+            if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+            fprintf(outfile,"       Center              X                  Y                   Z       \n");
+            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+
+            int cluster_index = 1;
+            bool look_for_separators = (fragments_.size() > 1);
+
+            for(int i = 0; i < natom(); ++i){
+                if (look_for_separators && fragments_[cluster_index].first == i) {
+                    fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+                    cluster_index++;
+                    if (cluster_index == fragments_.size()) {
+                        look_for_separators = false;
+                    }
+                }
+
                 Vector3 geom = atoms_[i]->compute();
                 fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
                 for(int j = 0; j < 3; j++)
