@@ -97,7 +97,7 @@ void MOLECULE::backstep(void) {
 
   fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
 
-  double *fq = p_Opt_data->g_last_forces_pointer();
+  double *fq = p_Opt_data->g_forces_pointer();
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
