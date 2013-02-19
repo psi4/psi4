@@ -756,6 +756,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Convergence criterion for residual of the CPKS coefficients in the SAPT 
   * $E@@{ind,resp}^{(20)}$ term. -*/ 
   options.add_double("D_CONVERGENCE",1e-8);    
+  /*- Lambda in Pauli Blockade -*/
+  options.add_double("PB_LAMBDA",1E5);  
   } 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory

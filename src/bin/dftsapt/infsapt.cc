@@ -60,6 +60,12 @@ boost::shared_ptr<INFSAPT> INFSAPT::build(boost::shared_ptr<Wavefunction> d,
 }
 double INFSAPT::compute_energy()
 {
+    energies_["Total"] = 0.0; 
+    energies_["Elst"]  = 0.0;
+    energies_["Exch"]  = 0.0;
+    energies_["Ind"]   = 0.0;
+    energies_["Disp"]  = 0.0;
+
     print_header();
 
     scf_terms();
@@ -142,49 +148,14 @@ void INFSAPT::scf_terms()
     int N = monomers_.size();
     // Number of AO basis functions
     int nso = primary_->nbf();
+
+    // => PB Object <= //
     
-    // JK object (hopefully DFJK already on disk)
-    boost::shared_ptr<JK> jk = JK::build_JK();
-    long int jk_memory = (long int)memory_; 
-    if (jk_memory < 0L) {
-        throw PSIEXCEPTION("Too little static memory for INFSAPT::scf_terms");
-    }
-    jk->set_memory((unsigned long int )jk_memory);
-
-    jk->set_do_J(true);
-    jk->set_do_K(true);
-    jk->initialize();
-    jk->print_header();
-
-    fflush(outfile);
-
-    // T matrix
-    boost::shared_ptr<Matrix> T(new Matrix("T",nso,nso));
-    boost::shared_ptr<IntegralFactory> Tfact(new IntegralFactory(primary_));   
-    boost::shared_ptr<OneBodyAOInt> Tint(Tfact->ao_kinetic());
-    Tint->compute(T);
-    Tint.reset();
-    Tfact.reset();
-
-    // V matrices
-    std::vector<boost::shared_ptr<Matrix> > V;
-    for (int A = 0; A < monomers_.size(); A++) {
-        V.push_back(boost::shared_ptr<Matrix>(new Matrix("V",nso,nso)));
-        boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(monomers_[A]->basisset()));   
-        boost::shared_ptr<OneBodyAOInt> Vint(Vfact->ao_potential());
-        Vint->compute(V[A]);
-    } 
-
-    // C matrices
-    std::vector<boost::shared_ptr<Matrix> > C;
-    for (int A = 0; A < monomers_.size(); A++) {
-        C.push_back(monomers_[A]->Ca_subset("AO", "OCC"));
-    }
-
-    // Cl matrices
-    std::vector<SharedMatrix>& Cl = jk->C_left();
-    // Cr matrices
-    std::vector<SharedMatrix>& Cr = jk->C_right();
+    boost::shared_ptr<PB> pb = PB::build(monomers_);
+    pb->initialize();
+    pb->print_header();
+    
+    boost::shared_ptr<JK> jk = pb->jk();
 
     // D matrices
     const std::vector<SharedMatrix>& D = jk->D();
@@ -192,32 +163,18 @@ void INFSAPT::scf_terms()
     const std::vector<SharedMatrix>& J = jk->J();
     // K matrices
     const std::vector<SharedMatrix>& K = jk->K();
-
-    // F matrices
-    std::vector<boost::shared_ptr<Matrix> > F;
-    for (int A = 0; A < monomers_.size(); A++) {
-        F.push_back(boost::shared_ptr<Matrix>(new Matrix("F",nso,nso)));
-    }
+    // V matrices
+    const std::vector<SharedMatrix>& V = pb->V();
 
     // ==> (HF) Terms <== //
 
     // E_HF^(0)
     double E_HF = 0.0;
     for (int A = 0; A < monomers_.size(); A++) {
-        E_HF += monomers_[A]->reference_energy();
+        E_HF += pb->E_HF_0()->get(A);
     }
     
     // ==> (0) Terms <== //
-
-    Cl.clear();
-    Cr.clear();
-
-    for (int A = 0; A < monomers_.size(); A++) {
-        Cl.push_back(C[A]);
-        Cr.push_back(C[A]);
-    }
-
-    jk->compute();
 
     // Total Elst^(10)
     double E_elst = 0.0;
@@ -246,7 +203,8 @@ void INFSAPT::scf_terms()
     
     // ==> (A) Terms <== //
 
-    // TODO: PBD => (F, C, and \epsilon)
+    // Run the Pauli Blockade
+    pb->compute();
 
     // Tunneling term
     double E_tunnel = 0.0;
@@ -260,11 +218,7 @@ void INFSAPT::scf_terms()
     boost::shared_ptr<Matrix> EK_A(new Matrix("EK_A", N, N)); 
     // Pauli Repulsion term
     for (int A = 0; A < monomers_.size(); A++) {
-        double EK = 0.0;
-        EK += 2.0 * D[A]->vector_dot(T);
-        EK += 2.0 * D[A]->vector_dot(V[A]);
-        EK += 2.0 * D[A]->vector_dot(F[A]);
-        EK -= monomers_[A]->reference_energy(); 
+        double EK = pb->E_HF_A()->get(A) - pb->E_HF_0()->get(A);
         EK_A->set(A,A,EK);
         E_exch += EK;
         E_Pauli += EK;
@@ -407,6 +361,46 @@ void INFSAPT::scf_terms()
     energies_["Ind"] = E_ind;
 
     fflush(outfile);
+
+    // => Setup PT2 Terms <= //
+
+    std::vector<boost::shared_ptr<Matrix> > Co = pb->Cocc(); 
+    std::vector<boost::shared_ptr<Matrix> > Cv = pb->Cvir(); 
+    std::vector<boost::shared_ptr<Vector> > eo = pb->eps_occ(); 
+    std::vector<boost::shared_ptr<Vector> > ev = pb->eps_vir(); 
+
+    pb.reset();
+
+    Caocc_.clear();
+    Cavir_.clear();
+    eps_aocc_.clear();
+    eps_avir_.clear();
+    for (int A = 0; A < monomers_.size(); A++) {
+        int nvir = cluster_->nmo() - cluster_->doccpi().sum();
+        int nfvir = cluster_->frzvpi().sum();
+        int navir = nvir - nfvir;
+        
+        boost::shared_ptr<Wavefunction> m = monomers_[A];
+        int nocc = m->doccpi().sum();
+        int nfocc = m->frzcpi().sum();
+        int naocc = nocc - nfocc;
+
+        Caocc_.push_back(boost::shared_ptr<Matrix>(new Matrix("Caocc",nso,naocc)));
+        for (int a = 0; a < naocc; a++) {
+            C_DCOPY(nso,&Co[A]->pointer()[0][a + nfocc],nocc,&Caocc_[A]->pointer()[0][a],naocc);
+        }
+
+        Cavir_.push_back(boost::shared_ptr<Matrix>(new Matrix("Cavir",nso,navir)));
+        for (int a = 0; a < navir; a++) {
+            C_DCOPY(nso,&Cv[A]->pointer()[0][a],nvir,&Cavir_[A]->pointer()[0][a],navir);
+        }
+
+        eps_aocc_.push_back(boost::shared_ptr<Vector>(new Vector("eps_aocc",naocc)));
+        C_DCOPY(naocc,&eo[A]->pointer()[nfocc],1,eps_aocc_[A]->pointer(),1);
+
+        eps_avir_.push_back(boost::shared_ptr<Vector>(new Vector("eps_avir",navir)));
+        C_DCOPY(navir,&ev[A]->pointer()[0],1,eps_avir_[A]->pointer(),1);
+    }    
 }
 void INFSAPT::pt2_terms()
 {
@@ -423,7 +417,7 @@ void INFSAPT::pt2_terms()
     int nso   = cluster_->nso();
     int naux  = mp2fit_->nbf();
     int naocc = cluster_->doccpi().sum() - cluster_->frzcpi().sum();
-    int navir = Cavir_->colspi()[0];
+    int navir = Cavir_[0]->colspi()[0];
     std::vector<int> aocc_starts;
     aocc_starts.push_back(0);
     for (int A = 0; A < N; A++) {
@@ -432,9 +426,7 @@ void INFSAPT::pt2_terms()
 
     // ==> Integral Generation <== //
     
-    boost::shared_ptr<Matrix> Caocc = Matrix::horzcat(Caocc_);
-    build_iaQ(primary_,mp2fit_,Caocc,Cavir_);
-    Caocc.reset();
+    build_iaQ(primary_,mp2fit_,Caocc_,Cavir_);
 
     // ==> PT2 computation <== //
 
@@ -479,20 +471,17 @@ void INFSAPT::pt2_terms()
     double** bsQp = bsQ->pointer();
 
     // Thread-level blocks for GEMM to integrals
-    std::vector<boost::shared_ptr<Matrix> > I(threads); 
+    std::vector<boost::shared_ptr<Matrix> > I;
     std::vector<double**> Ipointers;
-    for (int thread = 0; thread <= threads; thread++) {
+    for (int thread = 0; thread < threads; thread++) {
         I.push_back(boost::shared_ptr<Matrix>(new Matrix("I", navir, navir)));
-        Ipointers[threads] = I[thread]->pointer();
+        Ipointers.push_back(I[thread]->pointer());
     } 
-
-    // Pointer to shared virtual orbitals
-    double* erp = eps_avir_->pointer();
 
     boost::shared_ptr<PSIO> psio(new PSIO()); 
     psio_address next_AIA = PSIO_ZERO;
 
-    psio->open(PSIF_DFMP2_AIA,PSIO_OPEN_NEW);
+    psio->open(PSIF_DFMP2_AIA,PSIO_OPEN_OLD);
 
     for (int A = 0; A < N-1; A++) {
 
@@ -501,6 +490,7 @@ void INFSAPT::pt2_terms()
         int adelta = astop - astart;
 
         double* eap = eps_aocc_[A]->pointer();
+        double* erp = eps_avir_[A]->pointer();
 
         for (int a = 0; a < adelta; a += max_block) {
 
@@ -515,6 +505,7 @@ void INFSAPT::pt2_terms()
                 int bdelta = bstop - bstart;
                 
                 double* ebp = eps_aocc_[B]->pointer();
+                double* esp = eps_avir_[B]->pointer();
 
                 for (int b = 0; b < bdelta; b += max_block) {
 
@@ -539,15 +530,15 @@ void INFSAPT::pt2_terms()
                         #endif
                         double** Ip = Ipointers[thread];
 
-                        C_DGEMM('N','T',navir,navir,naux,1.0,arQp[aval + astart],naux,bsQp[bval + bstart],naux,0.0,Ip[0],navir);
+                        C_DGEMM('N','T',navir,navir,naux,1.0,arQp[aval],naux,bsQp[bval],naux,0.0,Ip[0],navir);
 
-                        double ea = eap[aval + astart];
-                        double eb = ebp[bval + bstart];
+                        double ea = eap[aval];
+                        double eb = ebp[bval];
 
                         for (int r = 0; r < navir; r++) {
                             double er = erp[r];
                             for (int s = 0; s < navir; s++) {
-                                double es = erp[s];
+                                double es = esp[s];
                                 double Irs = Ip[r][s];    
                                 double Isr = Ip[s][r];    
                                 double denom = 1.0 / (er + es - ea - eb);
@@ -667,11 +658,13 @@ void INFSAPT::print_trailer()
 void INFSAPT::build_iaQ(
         boost::shared_ptr<BasisSet> primary,
         boost::shared_ptr<BasisSet> auxiliary,
-        boost::shared_ptr<Matrix> Caocc, 
-        boost::shared_ptr<Matrix> Cavir)
+        std::vector<boost::shared_ptr<Matrix> >& Caocc, 
+        std::vector<boost::shared_ptr<Matrix> >& Cavir)
 {
     // PSIO object
     boost::shared_ptr<PSIO> psio(new PSIO()); 
+
+    boost::shared_ptr<Matrix> Caocc2 = Matrix::horzcat(Caocc);
 
     // ==> Target <== //
 
@@ -681,8 +674,8 @@ void INFSAPT::build_iaQ(
 
     int nso = primary->nbf();
     int naux = auxiliary->nbf();
-    int naocc = Caocc->colspi()[0];
-    int navir = Cavir->colspi()[0];
+    int naocc = Caocc2->colspi()[0];
+    int navir = Cavir[0]->colspi()[0];
 
     // ==> (A|ia) <== //
 
@@ -744,8 +737,7 @@ void INFSAPT::build_iaQ(
     double** Aiap = Aia->pointer();
 
     // C Matrices
-    double** Caoccp = Caocc->pointer();
-    double** Cavirp = Cavir->pointer();
+    double** Caoccp = Caocc2->pointer();
 
     psio_address next_AIA = PSIO_ZERO;
 
@@ -813,7 +805,15 @@ void INFSAPT::build_iaQ(
         timer_on("INFSAPT (A|mi)C_na");
         #pragma omp parallel for
         for (int row = 0; row < nrows; row++) {
-            C_DGEMM('T','N',naocc,navir,nso,1.0,Amip[row],naocc,Cavirp[0],navir,0.0,Aiap[row],navir);
+            double* Aia2p = Aiap[row];
+            int aoff = 0;
+            for (int A = 0; A < Caocc_.size(); A++) {
+                double** Cap = Cavir_[A]->pointer();
+                int na = Caocc_[A]->colspi()[0];
+                C_DGEMM('T','N',na,navir,nso,1.0,&Amip[row][aoff],naocc,Cap[0],navir,0.0,Aia2p,navir);
+                Aia2p += na * navir;
+                aoff += na;
+            }
         }
         timer_off("INFSAPT (A|mi)C_na");
 
@@ -838,7 +838,7 @@ void INFSAPT::build_iaQ(
     Jm12 = metric->get_metric();
     timer_off("INFSAPT Metric");
 
-    } // End Metrix
+    } // End Metric
 
     // ==> (ia|Q) <== //
 
@@ -877,7 +877,6 @@ void INFSAPT::build_iaQ(
     double** Jp   = Jm12->pointer();
 
     // Loop through blocks
-    psio->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
     psio_address next_QIA = PSIO_ZERO;
     for (int block = 0; block < ia_starts.size() - 1; block++) {
@@ -912,6 +911,842 @@ void INFSAPT::build_iaQ(
     // ==> Cleanup <== //
 
     psio->close(PSIF_DFMP2_AIA,1);
+}
+
+PB::PB()
+{
+    common_init();
+}
+PB::~PB()
+{
+}
+void PB::common_init()
+{
+    print_ = 1;
+    debug_ = 0;
+    bench_ = 0;
+}
+boost::shared_ptr<PB> PB::build(std::vector<boost::shared_ptr<Wavefunction> > m)
+{
+    PB* pb = new PB();
+
+    Options& options = Process::environment.options; 
+
+    pb->print_ = options.get_int("PRINT");
+    pb->debug_ = options.get_int("DEBUG");
+    pb->bench_ = options.get_int("BENCH");
+
+    pb->lambda_ = options.get_double("PB_LAMBDA");
+
+    pb->S_cutoff_ = options.get_double("S_TOLERANCE");
+
+    pb->maxiter_ = options.get_int("MAXITER");
+    pb->E_convergence_ = options.get_double("E_CONVERGENCE");
+    pb->D_convergence_ = options.get_double("D_CONVERGENCE");
+
+    pb->diis_ = options.get_bool("DIIS");
+    pb->diis_min_ = options.get_int("DIIS_MIN_VECS");
+    pb->diis_max_ = options.get_int("DIIS_MAX_VECS");
+    pb->diis_start_ = options.get_int("DIIS_START");
+
+    pb->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEM_FACTOR") * 0.125);
+
+    pb->monomers_ = m;
+
+    return boost::shared_ptr<PB>(pb);
+}
+void PB::initialize()
+{
+    if (monomers_.size() == 0) {
+        throw PSIEXCEPTION("What is going on here, no monomers?");
+    }
+
+    // Sizing
+    int N = monomers_.size();
+    int nso = monomers_[0]->basisset()->nbf();
+    occ_starts_.clear();
+    occ_starts_.push_back(0);
+    for (int A = 0; A < N; A++) {
+        occ_starts_.push_back(monomers_[A]->doccpi().sum() + occ_starts_[A]);
+    }
+
+    // S/T matrix
+    S_ = boost::shared_ptr<Matrix>(new Matrix("S",nso,nso));
+    T_ = boost::shared_ptr<Matrix>(new Matrix("T",nso,nso));
+    boost::shared_ptr<IntegralFactory> Tfact(new IntegralFactory(monomers_[0]->basisset()));   
+    boost::shared_ptr<OneBodyAOInt> Tint(Tfact->ao_kinetic());
+    boost::shared_ptr<OneBodyAOInt> Sint(Tfact->ao_overlap());
+    Tint->compute(T_);
+    Sint->compute(S_);
+    Tint.reset();
+    Sint.reset();
+    Tfact.reset();
+
+    // X matrix
+    X_ = S_->canonical_orthogonalization(S_cutoff_);
+    if (X_->colspi()[0] != monomers_[0]->nmo()) {
+        throw PSIEXCEPTION("Orthogonalization techniques are different, call Rob");
+    }
+    int nmo = X_->colspi()[0];
+    int nvir = nmo - occ_starts_[N];
+
+    // V matrices
+    V_.clear();
+    for (int A = 0; A < monomers_.size(); A++) {
+        V_.push_back(boost::shared_ptr<Matrix>(new Matrix("V",nso,nso)));
+        boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(monomers_[A]->basisset()));   
+        boost::shared_ptr<OneBodyAOInt> Vint(Vfact->ao_potential());
+        Vint->compute(V_[A]);
+    } 
+
+    // JK object (hopefully DFJK already on disk)
+    jk_ = JK::build_JK();
+    long int jk_memory = (long int)memory_; 
+    jk_memory -= 2L * N * nso * nso;
+    jk_memory -= 1L * N * nmo * nmo;
+    jk_memory -= 7L * nso * nso;
+    if (jk_memory < 0L) {
+        throw PSIEXCEPTION("Too little static memory for INFSAPT::scf_terms");
+    }
+    jk_->set_memory((unsigned long int )jk_memory);
+
+    jk_->set_do_J(true);
+    jk_->set_do_K(true);
+    jk_->initialize();
+
+    // Initial Cocc matrices and other allocation
+    Cocc_.clear();
+    Cvir_.clear();
+    eps_occ_.clear();
+    eps_vir_.clear();
+    for (int A = 0; A < monomers_.size(); A++) {
+        Cocc_.push_back(monomers_[A]->Ca_subset("AO", "OCC"));
+        Cvir_.push_back(boost::shared_ptr<Matrix>(new Matrix("Cvir",nso,nvir)));
+        eps_occ_.push_back(boost::shared_ptr<Vector>(new Vector("eps_occ",Cocc_[A]->colspi()[0])));
+        eps_vir_.push_back(boost::shared_ptr<Vector>(new Vector("eps_vir",nvir)));
+    }
+
+    // => Initial J/K matrices [for E_HF^(0)] <= //
+
+    // Cl matrices
+    std::vector<SharedMatrix>& Cl = jk_->C_left();
+    // Cr matrices
+    std::vector<SharedMatrix>& Cr = jk_->C_right();
+
+    Cl.clear();
+    Cr.clear();
+
+    for (int A = 0; A < monomers_.size(); A++) {
+        Cl.push_back(Cocc_[A]);
+        Cr.push_back(Cocc_[A]);
+    }
+
+    jk_->compute();
+    
+    E_HF_0_ = HF_energy();
+    E_HF_0_->set_name("E_HF^(0)");
+    E_HF_A_ = E_HF_0_;
+    E_0_ = E_;
+
+    // F/Q matrices
+    F_.clear();
+    Q_.clear();
+    for (int A = 0; A < monomers_.size(); A++) {
+        F_.push_back(boost::shared_ptr<Matrix>(new Matrix("F",nso,nso)));
+        Q_.push_back(boost::shared_ptr<Matrix>(new Matrix("Q",nmo,nmo)));
+
+    }
+
+    S_0_ = compute_Soo();
+}
+void PB::print_header() const 
+{
+    fprintf(outfile, "  ==> Pauli Blockade <==\n\n");
+
+    fprintf(outfile, "    Lambda:               %11.3E\n", lambda_);
+    fprintf(outfile, "    S cutoff:             %11.3E\n", S_cutoff_);
+    fprintf(outfile, "    Maximum iterations:   %11d\n", maxiter_);
+    fprintf(outfile, "    Energy threshold:     %11.3E\n", E_convergence_);
+    fprintf(outfile, "    Commutator threshold: %11.3E\n", D_convergence_);
+    fprintf(outfile, "    DIIS:                 %11s\n", diis_ ? "Yes" : "No");
+    fprintf(outfile, "\n");
+
+    jk_->print_header();
+
+    fflush(outfile);
+}
+void PB::compute()
+{
+    fprintf(outfile,"    Unconstrained Total Energy: %24.14f\n\n", E_);
+    
+    fprintf(outfile,"    Occupied guess via symmetric orthogonalization.\n\n");
+
+    // Do a Pauli explosion to start from a good spot
+    symmetric_orthogonalize();
+
+    // ==> Master PBD Loop <== //    
+
+    bool converged = false; 
+    bool extrapolated = false;
+    E_HF_L_ = boost::shared_ptr<Vector>(E_HF_A_->clone());
+    E_HF_L_->zero();
+
+    fprintf(outfile,"   => Pauli Blockade Iterations <=\n\n");
+
+    fprintf(outfile, "    %-14s %24s %11s %11s %s\n",
+        "", "Total Energy", "DeltaE", "Q RMS", "");
+    fprintf(outfile, "\n");
+    fflush(outfile);
+
+    for (int iter = 0; iter < maxiter_ || converged; iter++) {
+
+        // Build the new J/K matrices
+        jk_->compute();
+
+        // Compute the new HF energy
+        E_HF_A_ = HF_energy();
+
+        // Build the full Fock matrices with penalties
+        build_fock();
+
+        // Build the commutators
+        build_commutators();
+
+        // Check that the energy and commutators are converged
+        converged = check_convergence();
+        
+        // Message to the user
+        fprintf(outfile, "    @PB Iter %4d: %24.14f %11.3E %11.3E %s\n",
+            iter + 1, E_, dE_, dQ_, (extrapolated ? "DIIS" : ""));
+        fflush(outfile);
+
+        // New Fock matrix components are built, we are self-consistent
+        if (converged) break; 
+
+        // DIIS (modifies the Fock matrices)
+        extrapolated = false;
+        if (iter + 1 >= diis_start_) {
+            extrapolated = diis();
+        }
+
+        // Diagonalize the Fock matrices
+        diagonalize(); 
+
+    }
+
+    if (!converged) {
+        throw PSIEXCEPTION("PB did not converge");
+    }
+
+    fprintf(outfile,"\n    Pauli Blockade Converged.\n\n");
+
+    fprintf(outfile,"    Constrained Total Energy: %24.14f\n", E_);
+    fprintf(outfile,"    Pauli Total Energy:       %24.14f\n", E_ - E_0_);
+    fprintf(outfile,"\n");
+
+    // Remove the penalty function from the orbitals
+    purify_eigenvalues();
+
+    // Give the user an indication of what happened
+    print_summary();
+    print_errors();
+}
+void PB::symmetric_orthogonalize()
+{
+    // Metrix matrix
+    boost::shared_ptr<Matrix> Soo = compute_Soo();
+
+    if (debug_) {
+        fprintf(outfile, "    > Symmetric Orthogonalization <\n\n");
+        Soo->print();
+    }
+
+    // Symmetric orthogonalization transformation
+    boost::shared_ptr<Matrix> X(Soo->clone());
+    X->copy(Soo);
+    X->set_name("X"); 
+    X->power(-1.0/2.0); 
+
+    // Orbital transformation
+    boost::shared_ptr<Matrix> Cocc1 = Matrix::horzcat(Cocc_);
+    boost::shared_ptr<Matrix> Cocc2(Cocc1->clone());
+
+    int nso =  Cocc1->rowspi()[0];
+    int nocc = Cocc1->colspi()[0];
+
+    double** Xp =  X->pointer();
+    double** C1p = Cocc1->pointer();
+    double** C2p = Cocc2->pointer();
+
+    C_DGEMM('N','N',nso,nocc,nocc,1.0,C1p[0],nocc,Xp[0],nocc,0.0,C2p[0],nocc); 
+
+    // Orbital selection (Based on <p|a><a|p>)
+
+    // The selections should remain unique (pronounced "assignable")
+    std::set<int> taken;
+
+    for (int A = 0; A < Cocc_.size(); A++) {
+        int na = Cocc_[A]->colspi()[0];
+        boost::shared_ptr<Matrix> T(new Matrix("T",nso,na));
+        boost::shared_ptr<Matrix> R(new Matrix("R",nocc,na));
+        boost::shared_ptr<Vector> P(new Vector("P",nocc));
+        double** Cp = Cocc_[A]->pointer();
+        double** Sp = S_->pointer();
+        double** Tp = T->pointer();
+        double** Rp = R->pointer();    
+        double* Pp = P->pointer();
+
+        // Compute <p|a><a|p> for this a space
+        C_DGEMM('N','N',nso,na,nso,1.0,Sp[0],nso,Cp[0],na,0.0,Tp[0],na);
+        C_DGEMM('T','N',nocc,na,nso,1.0,C2p[0],nocc,Tp[0],na,0.0,Rp[0],na);
+        std::vector<std::pair<double,int> > order;
+        for (int a = 0; a < nocc; a++) {
+            Pp[a] = C_DDOT(na,Rp[a],1,Rp[a],1);
+            order.push_back(std::pair<double,int>(Pp[a],a));
+        } 
+        
+        if (debug_) {
+            P->print();
+        }
+
+        // Sort the projections by p descending
+        std::sort(order.begin(),order.end(),std::greater<std::pair<double, int> >());
+
+        // Assign the best na p to be the chosen a
+        for (int a = 0; a < na; a++) {
+            int ind = order[a].second;
+            if (taken.count(ind)) {
+                throw PSIEXCEPTION("Symmetric orthogonalization of monomers is not assignable.");
+            } else {
+                taken.insert(ind);
+                C_DCOPY(nso,&C2p[0][ind],nocc,&Cp[0][a],na);
+            }
+        }
+    }
+}
+void PB::build_fock()
+{
+    // D matrices
+    const std::vector<SharedMatrix>& D = jk_->D();
+    // J matrices
+    const std::vector<SharedMatrix>& J = jk_->J();
+    // K matrices
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    int nso = Cocc_[0]->rowspi()[0];
+
+    // Standard Fock Matrix
+    for (int A = 0; A < Cocc_.size(); A++) {
+        double** Fp =  F_[A]->pointer();
+        C_DAXPY(nso * nso, 1.0, T_->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso, 1.0, V_[A]->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso, 2.0, J[A]->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso,-1.0, K[A]->pointer()[0], 1, Fp[0], 1);
+    }
+
+    // Penalty operator
+    boost::shared_ptr<Matrix> R(new Matrix("R", nso, nso));
+    double** Rp = R->pointer();
+    for (int B = 0; B < Cocc_.size(); B++) {
+        int na = Cocc_[B]->colspi()[0];
+        boost::shared_ptr<Matrix> T(new Matrix("T", na, nso));
+        double** Tp = T->pointer();
+        double** Sp = S_->pointer();
+        double** Cp = Cocc_[B]->pointer(); 
+        C_DGEMM('T','N',na,nso,nso,1.0,Cp[0],na,Sp[0],nso,0.0,Tp[0],nso);
+        C_DGEMM('T','N',nso,nso,na,1.0,Tp[0],nso,Tp[0],nso,0.0,Rp[0],nso);
+        for (int A = 0; A < Cocc_.size(); A++) {
+            if (A == B) continue;
+            double** Fp =  F_[A]->pointer();
+            C_DAXPY(nso * nso, lambda_, Rp[0], 1, Fp[0], 1);
+        }
+    } 
+}
+void PB::build_commutators()
+{
+    // D matrices
+    const std::vector<SharedMatrix>& D = jk_->D();
+
+    int nso = X_->rowspi()[0];
+    int nmo = X_->colspi()[0];
+
+    double** Xp = X_->pointer();
+    double** Sp = S_->pointer();
+
+    // X[FDS-SDF]X
+    boost::shared_ptr<Matrix> FD(new Matrix("FD",nso,nso));
+    boost::shared_ptr<Matrix> FDS(new Matrix("FDS",nso,nso));
+    boost::shared_ptr<Matrix> XFDS(new Matrix("XFDS",nmo,nso));
+
+    double** FDp = FD->pointer();
+    double** FDSp = FDS->pointer();
+    double** XFDSp = XFDS->pointer();
+
+    for (int A = 0; A < Cocc_.size(); A++) {
+         
+        double** Fp = F_[A]->pointer();
+        double** Dp = D[A]->pointer();
+        double** Qp = Q_[A]->pointer();
+
+        C_DGEMM('N','N',nso,nso,nso,1.0,Fp[0],nso,Dp[0],nso,0.0,FDp[0],nso);
+        C_DGEMM('N','N',nso,nso,nso,1.0,FDp[0],nso,Sp[0],nso,0.0,FDSp[0],nso);
+        C_DGEMM('T','N',nmo,nso,nso,1.0,Xp[0],nmo,FDSp[0],nso,0.0,XFDSp[0],nso);
+        C_DGEMM('N','N',nmo,nmo,nso,1.0,XFDSp[0],nso,Xp[0],nmo,0.0,Qp[0],nmo);
+
+        for (int p = 0; p < nmo; p++) {
+            for (int q = p; q < nmo; q++) {
+                double val = Qp[p][q] - Qp[q][p];
+                Qp[p][q] = val;
+                Qp[q][p] = -val;    
+            }
+        }
+    } 
+}
+bool PB::check_convergence()
+{
+    dE_ = 0.0;
+    dQ_ = 0.0;
+    for (int A = 0; A < Q_.size(); A++) {
+        dE_ += (E_HF_A_->get(A) - E_HF_L_->get(A));
+        double val = Q_[A]->rms();
+        dQ_ = (val > dQ_ ? val : dQ_);
+    }
+
+    bool converged = false;
+    //if (abs(dE_) < E_convergence_ && abs(dQ_) < D_convergence_) {
+    if (abs(dE_) < E_convergence_) {
+        converged = true;
+    }
+
+    E_HF_L_ = E_HF_A_;
+    
+    return converged;
+}
+bool PB::diis()
+{
+    if (!diis_manager_) {   
+        diis_manager_ = boost::shared_ptr<DIISN>(new DIISN("PB DIIS",diis_min_,diis_max_,F_,Q_));
+    }
+
+    return diis_manager_->diis(F_,Q_);
+}
+void PB::diagonalize()
+{
+    int nso = X_->rowspi()[0];
+    int nmo = X_->colspi()[0];
+
+    boost::shared_ptr<Matrix> T(new Matrix("T",nso,nmo));
+    boost::shared_ptr<Matrix> F2(new Matrix("F2",nmo,nmo));
+    boost::shared_ptr<Matrix> C(new Matrix("C",nmo,nmo));
+    boost::shared_ptr<Vector> e(new Vector("e",nmo));
+
+    double** Tp = T->pointer(); 
+    double** F2p = F2->pointer(); 
+    double** Xp = X_->pointer();
+    double** Cp = C->pointer();
+    double*  ep = e->pointer();
+
+    for (int A = 0; A < Cocc_.size(); A++) {
+        double** Fp = F_[A]->pointer();
+        
+        // Transform to orthonormal basis
+        C_DGEMM('N','N',nso,nmo,nso,1.0,Fp[0],nso,Xp[0],nmo,0.0,Tp[0],nmo);
+        C_DGEMM('T','N',nmo,nmo,nso,1.0,Xp[0],nmo,Tp[0],nmo,0.0,F2p[0],nmo);
+    
+        // Diagonalize
+        F2->diagonalize(C,e);
+
+        // Select low-energy occ/vir orbitals
+        int na = Cocc_[A]->colspi()[0];
+        int nv = Cvir_[A]->colspi()[0];
+
+        double** Cap = Cocc_[A]->pointer();
+        double** Cvp = Cvir_[A]->pointer();
+        double*  eap = eps_occ_[A]->pointer();
+        double*  evp = eps_vir_[A]->pointer();
+
+        C_DGEMM('N','N',nso,na,nmo,1.0,Xp[0],nmo,&Cp[0][0],nmo,0.0,Cap[0],na);
+        C_DGEMM('N','N',nso,nv,nmo,1.0,Xp[0],nmo,&Cp[0][na],nmo,0.0,Cvp[0],nv);
+
+        C_DCOPY(na,&ep[0],1,eap,1);
+        C_DCOPY(nv,&ep[na],1,evp,1);
+    }
+}
+void PB::purify_eigenvalues()
+{
+    // J matrices
+    const std::vector<SharedMatrix>& J = jk_->J();
+    // K matrices
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    int nso = Cocc_[0]->rowspi()[0];
+    int nvir = Cvir_[0]->colspi()[0];
+
+    boost::shared_ptr<Matrix> F(new Matrix("F",nso,nso));
+    boost::shared_ptr<Matrix> T2(new Matrix("T",nvir,nso)); 
+
+    for (int A = 0; A < Cocc_.size(); A++) {
+        int na = Cocc_[0]->colspi()[0];
+        boost::shared_ptr<Matrix> T1(new Matrix("T",na,nso)); 
+
+        double** Fp =  F->pointer();
+        double** T1p = T1->pointer();
+        double** T2p = T2->pointer();
+        double** C1p = Cocc_[A]->pointer();
+        double** C2p = Cvir_[A]->pointer();
+        double*  e1p = eps_occ_[A]->pointer();
+        double*  e2p = eps_vir_[A]->pointer();
+ 
+        // Build the true Fock matrix
+        F->zero();
+        C_DAXPY(nso * nso, 1.0, T_->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso, 1.0, V_[A]->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso, 2.0, J[A]->pointer()[0], 1, Fp[0], 1);
+        C_DAXPY(nso * nso,-1.0, K[A]->pointer()[0], 1, Fp[0], 1);
+
+        // <a|F_A|a>
+        C_DGEMM('T','N',na,nso,nso,1.0,C1p[0],na,Fp[0],nso,0.0,T1p[0],nso);
+        for (int a = 0; a < na; a++) {
+            e1p[a] = C_DDOT(nso,T1p[a],1,&C1p[0][a],na);
+        }
+
+        // <v|F_A|v>
+        C_DGEMM('T','N',nvir,nso,nso,1.0,C2p[0],nvir,Fp[0],nso,0.0,T2p[0],nso);
+        for (int a = 0; a < nvir; a++) {
+            e2p[a] = C_DDOT(nso,T2p[a],1,&C2p[0][a],nvir);
+        }
+    }
+}
+boost::shared_ptr<Matrix> PB::compute_Soo()
+{
+    boost::shared_ptr<Matrix> Cocc = Matrix::horzcat(Cocc_);
+
+    int nso = Cocc->rowspi()[0];
+    int nocc = Cocc->colspi()[0];
+
+    boost::shared_ptr<Matrix> T(new Matrix("T",nso,nocc));
+    boost::shared_ptr<Matrix> Soo(new Matrix("Soo",nocc,nocc));
+
+    double** Cp = Cocc->pointer();
+    double** Sp = S_->pointer();
+    double** Tp = T->pointer();
+    double** Soop = Soo->pointer();
+
+    C_DGEMM('N','N',nso,nocc,nso,1.0,Sp[0],nso,Cp[0],nocc,0.0,Tp[0],nocc);
+    C_DGEMM('T','N',nocc,nocc,nso,1.0,Cp[0],nocc,Tp[0],nocc,0.0,Soop[0],nocc);
+    
+    return Soo;
+}
+boost::shared_ptr<Vector> PB::HF_energy()
+{
+    // D matrices
+    const std::vector<SharedMatrix>& D = jk_->D();
+    // J matrices
+    const std::vector<SharedMatrix>& J = jk_->J();
+    // K matrices
+    const std::vector<SharedMatrix>& K = jk_->K();
+
+    boost::shared_ptr<Vector> E(new Vector("E_HF", monomers_.size())); 
+    
+    E_ = 0.0;
+    for (int A = 0; A < monomers_.size(); A++) {
+        double E_HF = 0.0;
+        E_HF += 2.0 * D[A]->vector_dot(T_);
+        E_HF += 2.0 * D[A]->vector_dot(V_[A]);
+        E_HF += 2.0 * D[A]->vector_dot(J[A]);
+        E_HF -= 1.0 * D[A]->vector_dot(K[A]);
+        E_HF += monomers_[A]->molecule()->nuclear_repulsion_energy(); 
+        E->set(A,E_HF);
+        E_ += E_HF;
+    } 
+
+    return E;
+}
+void PB::print_summary()
+{
+    fprintf(outfile,"   => Pauli Blockade Results <=\n\n");
+    
+    for (int A = 0; A < Cocc_.size(); A++) {
+        fprintf(outfile,"    Monomer %d:\n\n", A+1);
+
+        fprintf(outfile,"    Unconstrained Energy: %24.14f\n", E_HF_0_->get(A));
+        fprintf(outfile,"    Constrained Energy:   %24.14f\n", E_HF_A_->get(A));
+        fprintf(outfile,"    Pauli Energy:         %24.14f\n", E_HF_A_->get(A) - E_HF_0_->get(A));
+        fprintf(outfile,"\n");
+
+        int count;
+        int n;  
+        int offset;
+        double* ep;
+
+        fprintf(outfile, "\t%-70s\n\n\t", "Purified Occupied Orbital Eigenvalues:");
+        count = 0;
+        n = eps_occ_[A]->dimpi()[0];
+        offset = 0;
+        ep = eps_occ_[A]->pointer();
+        for (int i = 0; i < n; i++) {
+            fprintf(outfile, "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
+            if (count++ % 3 == 2 && count != n)
+                fprintf(outfile, "\n\t");
+        }
+        fprintf(outfile, "\n\n");
+
+        fprintf(outfile, "\t%-70s\n\n\t", "Purified Virtual Orbital Eigenvalues:");
+        count = 0;
+        n = eps_vir_[A]->dimpi()[0];
+        offset = eps_occ_[A]->dimpi()[0];
+        ep = eps_vir_[A]->pointer();
+        for (int i = 0; i < n; i++) {
+            fprintf(outfile, "%4d%-4s%11.6f  ", i + offset + 1, "A", ep[i]);
+            if (count++ % 3 == 2 && count != n)
+                fprintf(outfile, "\n\t");
+        }
+        fprintf(outfile, "\n\n");
+        
+    }    
+
+    fflush(outfile);
+}
+void PB::print_errors()
+{
+    fprintf(outfile,"   => Pauli Blockade Overlap Errors <=\n\n");
+    
+    boost::shared_ptr<Matrix> Soo = compute_Soo();
+
+    double** SAp = Soo->pointer();
+    double** S0p = S_0_->pointer();
+
+    double SAG = 0.0;
+    double S0G = 0.0;
+    
+    fprintf(outfile, "    -----------------------------------------------\n");
+    fprintf(outfile, "    %-11s %11s %11s %11s\n",
+        "Interaction", "HF^(A)", "HF^(0)", "Ratio");
+    fprintf(outfile, "    -----------------------------------------------\n");
+
+    for (int A = 0; A < monomers_.size(); A++) {
+        for (int B = A+1; B < monomers_.size(); B++) {
+            
+            double SA = 0.0;
+            double S0 = 0.0;
+            for (int a = occ_starts_[A]; a < occ_starts_[A+1]; a++) {
+                for (int b = occ_starts_[B]; b < occ_starts_[B+1]; b++) {
+                    SA = (SA > SAp[a][b] ? SA : SAp[a][b]);
+                    S0 = (S0 > S0p[a][b] ? S0 : S0p[a][b]);
+                }
+            }
+            
+            SAG = (SAG > SA ? SAG : SA);
+            S0G = (S0G > S0 ? S0G : S0);
+
+            fprintf(outfile, "    %-3d <-> %3d %11.3E %11.3E %11.3E\n",
+                A+1, B+1, SA, S0, SA / S0);
+        }
+    }
+
+    fprintf(outfile, "    -----------------------------------------------\n");
+    fprintf(outfile, "    %-11s %11.3E %11.3E %11.3E\n",
+        "Overall", SAG, S0G, SAG / S0G);
+    fprintf(outfile, "    -----------------------------------------------\n");
+    fprintf(outfile, "\n");
+
+    fflush(outfile);
+}
+
+DIISN::DIISN(const std::string& name,
+    int min_vecs,
+    int max_vecs,
+    const std::vector<boost::shared_ptr<Matrix> >& x,
+    const std::vector<boost::shared_ptr<Matrix> >& f) :
+    name_(name), min_vecs_(min_vecs), max_vecs_(max_vecs)
+{
+    N_ = x.size();
+
+    if (N_ != f.size()) {
+        throw PSIEXCEPTION("DIISN: x.size() != f.size()");
+    }
+    if (N_ <= 0) {
+        throw PSIEXCEPTION("DIISN: x.size() <= 0?");
+    }
+    if (x[0]->nirrep() != 1) {
+        throw PSIEXCEPTION("DIISN: x is not C1");
+    }
+    if (f[0]->nirrep() != 1) {
+        throw PSIEXCEPTION("DIISN: f is not C1");
+    }
+
+    x_numel_ = x[0]->rowspi()[0] * (size_t) x[0]->colspi()[0];
+    f_numel_ = f[0]->rowspi()[0] * (size_t) f[0]->colspi()[0];
+
+    for (int n = 0; n < N_; n++) {
+        if (x[n]->rowspi()[0] * (size_t) x[n]->colspi()[0] != x_numel_) {
+            throw PSIEXCEPTION("DIISN: x must all be the same size");
+        }
+        if (f[n]->rowspi()[0] * (size_t) f[n]->colspi()[0] != f_numel_) {
+            throw PSIEXCEPTION("DIISN: f must all be the same size");
+        }
+    }
+
+    metric_ = boost::shared_ptr<Matrix>(new Matrix("B", max_vecs, max_vecs)); 
+
+    fh_ = fopen(filename().c_str(), "wb+");
+
+    iter_ = 0;
+} 
+DIISN::~DIISN()
+{
+    fclose(fh_);
+    remove(filename().c_str());
+}
+std::string DIISN::filename() const
+{
+    std::stringstream ss;
+    ss <<  PSIOManager::shared_object()->get_default_path();
+    ss <<  "/";
+    ss << psi_file_prefix;
+    ss << ".";
+    ss << getpid(); 
+    ss << ".";
+    ss << PSIO::get_default_namespace();
+    ss << ".";
+    ss << name_;
+    ss << ".dat";
+    return ss.str();
+}
+bool DIISN::diis(std::vector<boost::shared_ptr<Matrix> >& x,
+                std::vector<boost::shared_ptr<Matrix> >& f)
+{
+    // ==> Add Phase <== //
+
+    // => Index determination <= //
+    int nvec;
+    int ind;
+
+    if (iter_ < max_vecs_) {
+        // Pattern is not full, add to the next open space
+        nvec = iter_ + 1;
+        ind = iter_;
+    } else {
+        // Pattern is full, overwrite the worst residual
+        double** Bp = metric_->pointer(); 
+        double maxB = 0.0;
+        ind = 0;
+        for (int v = 0; v < max_vecs_; v++) {
+            if (Bp[v][v] >= maxB) {
+                maxB = Bp[v][v];
+                ind = v;    
+            }
+        }
+        nvec = max_vecs_;
+    }
+
+    // => Entry export <= //
+
+    fseek(fh_, ind * (x_numel_ + f_numel_) * N_ * sizeof(double), SEEK_SET);
+    for (int n = 0; n < N_; n++) {
+        fwrite((void*) x[n]->pointer()[0],sizeof(double),x_numel_,fh_);
+    } 
+    for (int n = 0; n < N_; n++) {
+        fwrite((void*) f[n]->pointer()[0],sizeof(double),f_numel_,fh_);
+    } 
+
+    // => B matrix update <= //
+
+    double** Bp = metric_->pointer();
+    boost::shared_ptr<Matrix> f2(f[0]->clone()); 
+
+    for (int v = 0; v < nvec; v++) {
+        fseek(fh_, (v * (x_numel_ + f_numel_) * N_ + x_numel_ * N_) * sizeof(double), SEEK_SET);
+        double Bval = 0.0;
+        for (int n = 0; n < N_; n++) {
+            fread((void*) f2->pointer()[0],sizeof(double),f_numel_,fh_);
+            Bval += f2->vector_dot(f[n]); 
+        } 
+        Bp[v][ind] = Bp[ind][v] = Bval;
+    }
+
+    iter_++;
+    
+    // ==> Extrapolate Phase <== //
+
+    if (nvec < min_vecs_) {
+        return false;
+    }
+
+    // => Extrapolation Coefficients <= //
+
+    std::vector<std::pair<double,int> > order;
+    for (int v = 0; v < nvec; v++) {
+        order.push_back(std::pair<double, int>(Bp[v][v],v));
+    }
+    std::sort(order.begin(), order.end(), std::greater<std::pair<double, int> >());
+    std::vector<int> sorted;
+    for (int v = 0; v < nvec; v++) {
+        sorted.push_back(order[v].second);
+    }
+
+    // > Sorted Basis C matrix < //
+
+    boost::shared_ptr<Matrix> C(new Matrix("C", nvec + 1, nvec + 1));
+    boost::shared_ptr<Matrix> D(new Matrix("D", nvec + 1, nvec + 1));
+    boost::shared_ptr<Vector> r(new Vector("r", nvec + 1));
+    boost::shared_ptr<Vector> l(new Vector("l", nvec + 1));
+
+    double** Cp = C->pointer();
+    double** Dp = D->pointer();
+    double*  lp = l->pointer();
+    double*  rp = r->pointer();
+
+    rp[nvec] = -1.0; 
+
+    for (int v = 0; v < nvec; v++) {
+        for (int w = 0; w < nvec; w++) {
+            Cp[v][w] = Bp[sorted[v]][sorted[w]];
+        }
+        Cp[v][nvec] = Cp[nvec][v] = -1.0;
+    }
+
+    // > Conditioned Inversion < //
+
+    int* pivots = new int[nvec+1];
+    int offset = 0;
+    while (true) {
+        // Destructive LU 
+        D->copy(C);
+        // Do the LU
+        int info = C_DGETRF(nvec+1 - offset, nvec+1 - offset, &Dp[offset][offset], nvec+1, pivots);
+        // LU failing is usually what you call a clue
+        if (info) {
+            offset++;
+            continue;
+        }
+        // You are guaranteed to get here at some point (WCS is [X 1; 1 0], with the smallest X in the set)
+        C_DGETRS('N',nvec+1 - offset, 1, &Dp[offset][offset], nvec+1, pivots, &rp[offset], nvec+1);
+        for (int v = offset; v < nvec; v++) {
+            lp[sorted[v]] = rp[v];
+        }
+        break;
+    }
+    delete[] pivots;
+
+    // => Extrapolation <= //
+
+    boost::shared_ptr<Matrix> x2(x[0]->clone()); 
+
+    for (int n = 0; n < N_; n++) {
+        x[n]->zero();
+    }
+
+    for (int v = 0; v < nvec; v++) {
+        fseek(fh_, (v * (x_numel_ + f_numel_) * N_) * sizeof(double), SEEK_SET);
+        double lval = lp[v];
+        for (int n = 0; n < N_; n++) {
+            fread((void*) x2->pointer()[0],sizeof(double),x_numel_,fh_);
+            C_DAXPY(x_numel_,lval,x2->pointer()[0],1,x[n]->pointer()[0],1);
+        } 
+    }    
+    
+    return true;
 }
 
 }}
