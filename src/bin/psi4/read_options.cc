@@ -31,7 +31,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
   /*- An array containing the number of singly-occupied orbitals per irrep
-  (in Cotton order) -*/
+  (in Cotton order).  The value of |globals__docc| should also be set. -*/
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
