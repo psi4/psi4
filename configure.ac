@@ -950,6 +950,7 @@ AC_CONFIG_FILES([
           src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/cepa/Makefile
+          src/bin/qci/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
