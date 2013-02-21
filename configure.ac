@@ -1057,6 +1057,7 @@ AC_CONFIG_FILES([
           tests/mpn-bh/Makefile
           tests/ci-multi/Makefile
           tests/qci1/Makefile
+          tests/qci2/Makefile
           tests/cepa1/Makefile
           tests/cepa2/Makefile
           tests/cepa3/Makefile
