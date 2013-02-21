@@ -1346,13 +1346,13 @@ def run_sapt(name, **kwargs):
     sapt_basis = sapt_basis.lower()
 
     if (sapt_basis == 'dimer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
     elif (sapt_basis == 'monomer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2)

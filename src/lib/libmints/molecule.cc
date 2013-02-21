@@ -972,6 +972,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     zVals.load_values();
     int currentAtom = 0, rTo, aTo, dTo;
     string atomSym, atomLabel;
+    bool zmatrix = false;
 
     std::vector<std::string>::iterator line = lines.begin();
     for(; line != lines.end(); ++line) {
@@ -1018,11 +1019,13 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
+            zmatrix = true;
             mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
                                                                                       an2masses[(int)zVal], atomSym, atomLabel)));
         }
         else if(numEntries == 3) {
             // This is the second line of a Z-Matrix
+            zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1038,6 +1041,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 5) {
             // This is the third line of a Z-Matrix
+            zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1100,6 +1104,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         ++currentAtom;
     }
 
+    mol->set_has_zmatrix(zmatrix);
+
     if(pubcheminput)
         mol->symmetrize_to_abelian_group(1.0e-3);
 
@@ -1151,6 +1157,14 @@ void Molecule::reinterpret_coordentries()
         molecular_charge_ = temp_charge;
         multiplicity_ = temp_multiplicity;
     }
+
+    if(zmat_){
+        // Even if the user asked us to lock the frame, we should reorient here for zmatrices
+        SharedMatrix frame = symmetry_frame();
+        rotate_full(*frame.get());
+        move_to_com();
+    }
+
 }
 
 void Molecule::update_geometry()
@@ -1162,17 +1176,12 @@ void Molecule::update_geometry()
     if (lock_frame_) 
         return;
 
-//    fprintf(outfile, "beginning update_geometry:\n"); print_full();
 
     if (reinterpret_coordentries_)
         reinterpret_coordentries();
 
-//    fprintf(outfile, "after reinterpret_coordentries:\n"); print_full();
-
-    if (move_to_com_) {
+    if (move_to_com_)
         move_to_com();
-//        fprintf(outfile, "after com:\n"); print_full();
-    }
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
@@ -1183,19 +1192,14 @@ void Molecule::update_geometry()
         // the the user might have provided.
         SharedMatrix frame = symmetry_frame();
         rotate_full(*frame.get());
-//        fprintf(outfile, "after rotate:\n"); print_full();
     }
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
     set_full_point_group();
 
-    // Disabling symmetrize for now if orientation is fixed, as it is not correct.  We may want
-    // to fix this in the future, but in some cases of finite-differences the set geometry is not
-    // totally symmetric anyway.
-    //if (!fix_orientation_)
     symmetrize(); // Symmetrize the molecule to remove any noise.
-//    fprintf(outfile, "after symmetry:\n"); print_full();
+
     lock_frame_ = true;
 }
 
@@ -2845,19 +2849,19 @@ void Molecule::set_orientation_fixed(bool _fix) {
     if (_fix) {
         fix_orientation_ = true; // tells update_geometry() not to change orientation
 
-        // Compute original cartesian coordinates - code coped from update_geometry()
-        atoms_.clear();
-        EntryVectorIter iter;
-        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
-            (*iter)->invalidate();
+//        // Compute original cartesian coordinates - code coped from update_geometry()
+//        atoms_.clear();
+//        EntryVectorIter iter;
+//        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
+//            (*iter)->invalidate();
 
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-                full_atoms_[atom]->compute();
-                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-            }
-        }
+//        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+//            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+//                full_atoms_[atom]->compute();
+//                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+//                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+//            }
+//        }
     }
     else { // release orientation to be free
         fix_orientation_ = false;
