@@ -125,7 +125,7 @@
 #define PSIF_SAPT_AMPS         126  /*- SAPT Amplitudes -*/
 #define PSIF_SAPT_TEMP         127  /*- SAPT Temporary worlds fastest code file -*/
 
-#define PSIF_SAPT_LRINTS       198  /*- SAPT0 2-Body linear response LDA integrals -*/
+#define PSIF_SAPT_LRINTS       128  /*- SAPT0 2-Body linear response LDA integrals -*/
 
 #define PSIF_3B_SAPT_TRIMER              220  /*- SAPT Three-Body Trimer -*/
 #define PSIF_3B_SAPT_DIMER_AB            221  /*- SAPT Three-Body Dimer AB -*/
