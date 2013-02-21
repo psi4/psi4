@@ -1930,6 +1930,110 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_qci(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a QCISD(T), CCSD(T), MP2.5, MP3, and MP4 computation.
+
+    >>> energy('qcisd(t)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # stash user options:
+    optstash = OptionsState(
+        ['TRANSQT2','WFN'],
+        ['QCI','RUN_MP2'],
+        ['QCI','RUN_MP3'],
+        ['QCI','RUN_MP4'],
+        ['QCI','RUN_CCSD'],
+        ['QCI','COMPUTE_TRIPLES'],
+        ['QCI','COMPUTE_MP4_TRIPLES'],
+        ['QCI','NAT_ORBS'])
+
+    # override symmetry for fno-cc
+    if (PsiMod.get_option('QCI','NAT_ORBS')):
+        molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+        molecule.reset_point_group('c1')
+
+    # which method?
+    if (lowername == '_ccsd'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+    elif (lowername == '_ccsd(t)'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+    if (lowername == 'qcisd'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+    elif (lowername == 'qcisd(t)'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+    elif (lowername == '_mp2'):
+        PsiMod.set_local_option('QCI','RUN_MP2', True)
+    elif (lowername == '_mp2.5'):
+        PsiMod.set_local_option('QCI','RUN_MP3', True)
+    elif (lowername == '_mp3'):
+        PsiMod.set_local_option('QCI','RUN_MP3', True)
+    elif (lowername == '_mp4'):
+        PsiMod.set_local_option('QCI','RUN_MP4', True)
+        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', True)
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+    elif (lowername == '_mp4(sdq)'):
+        PsiMod.set_local_option('QCI','RUN_MP4', True)
+        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', False)
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        PsiMod.print_out("\n")
+        PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+        PsiMod.print_out("\n")
+        sys.exit(1)
+
+    # scf
+    scf_helper(name,**kwargs)
+
+    # if the scf type is df, then the ao integrals were never generated.
+    if PsiMod.get_option('SCF','SCF_TYPE') == 'DF' :
+        mints = PsiMod.MintsHelper()
+        mints.integrals()
+
+    # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
+    if PsiMod.get_option('QCI','NAT_ORBS') == False and PsiMod.get_option('QCI','RUN_MP2') == False:
+       PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+       PsiMod.transqt2()
+
+    # run ccsd
+    PsiMod.qci()
+
+    # set current correlation energy and total energy.  only need to treat mpn here.
+    emp2     = PsiMod.get_variable("MP2 TOTAL ENERGY")
+    emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
+    emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
+    emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
+    cemp2    = PsiMod.get_variable("MP2 CORRELATION ENERGY")
+    cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
+    cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
+    cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
+    if ( lowername == '_mp3' ):
+        PsiMod.set_variable("CURRENT ENERGY",emp3)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
+    elif ( lowername == '_mp4(sdq)'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
+    elif ( lowername == '_mp4'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
+    elif ( lowername == '_mp2.5'):
+        PsiMod.set_variable("CURRENT ENERGY",0.5*(emp2+emp3))
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",0.5*(cemp2+cemp3))
+
+    # restore options
+    optstash.restore()
+
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 def run_cepa(name, **kwargs):
     """Function encoding sequence of PSI module calls for
