@@ -10,7 +10,7 @@ set {
     d_convergence 1e-10
     r_convergence 1e-10
 }
-G2()
+energy('g2')
 refg2    = -76.332049434647 #TEST
 refgibbs = -76.349646300362 #TEST
 

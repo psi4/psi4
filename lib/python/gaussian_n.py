@@ -12,7 +12,7 @@ from procutil import *
 from physconst import *
 # never import aliases into this file
 
-def gaussian_2(**kwargs):
+def run_gaussian_2(name, **kwargs):
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
@@ -176,6 +176,5 @@ def gaussian_2(**kwargs):
     return eg2_0k
 
 # aliases for g2
-g2         = gaussian_2
-Gaussian_2 = gaussian_2
-G2         = gaussian_2
+procedures['energy']['gaussian-2'] = run_gaussian_2
+procedures['energy']['g2']         = run_gaussian_2
