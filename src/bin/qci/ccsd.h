@@ -5,18 +5,12 @@
 #include<stdlib.h>
 #include<math.h>
 
-// file identifiers - and those not defined in psifiles.h
-#include<psifiles.h>
-#define PSIF_DCC_ABCI4 265
-#define PSIF_DCC_ABCI  266
-#define PSIF_DCC_ABCI2 267
-
-// psi headers
 #include"psi4-dec.h"
 #include<libiwl/iwl.h>
 #include<libpsio/psio.hpp>
 #include<libpsio/psio.h>
 #include<libmints/wavefunction.h>
+#include<psifiles.h>
 
 long int Position(long int i,long int j);
 
