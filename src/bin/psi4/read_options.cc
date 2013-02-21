@@ -31,7 +31,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
   /*- An array containing the number of singly-occupied orbitals per irrep
-  (in Cotton order) -*/
+  (in Cotton order).  The value of |globals__docc| should also be set. -*/
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
@@ -2596,6 +2596,54 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       transform will be faster, and the out-of-core sort of the
       (AC|BD) integrals will be avoided. -*/
       options.add_bool("CEPA_VABCD_DIRECT",false);
+  }
+  if (name == "QCI"|| options.read_globals()) {
+      /*- time each cc diagram? -*/
+      options.add_bool("CC_TIMINGS",false);
+      /*- Convergence based on energy alone? -*/
+      options.add_bool("CC_CONVERGE_E_ONLY",false);
+      /*- Convergence for the CC energy.  Note that convergence is 
+          met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
+      options.add_double("E_CONVERGENCE", 1.0e-8);
+      /*- Convergence for the CC amplitudes.  Note that convergence is 
+          met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
+      options.add_double("R_CONVERGENCE", 1.0e-7);
+      /*- Maximum number of CC iterations -*/
+      options.add_int("MAXITER", 100);
+      /*- Desired number of DIIS vectors -*/
+      options.add_int("DIIS_MAX_VECS", 8);
+      /*- Low memory options for triples contribution -*/
+      options.add_bool("TRIPLES_LOW_MEMORY",false);
+      /*- Compute triples contribution? !expert -*/
+      options.add_bool("COMPUTE_TRIPLES", true);
+      /*- Compute MP4 triples contribution? !expert -*/
+      options.add_bool("COMPUTE_MP4_TRIPLES", false);
+      /*- Use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)?  */
+      options.add_bool("NAT_ORBS", false);
+      /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T) -*/
+      options.add_double("OCC_TOLERANCE", 1.0e-6);
+      /*- Do SCS-MP2? -*/
+      options.add_bool("SCS_MP2", false);
+      /*- Do SCS-CCSD? -*/
+      options.add_bool("SCS_CCSD", false);
+      /*- Opposite-spin scaling factor for SCS-MP2 -*/
+      options.add_double("MP2_SCALE_OS",1.20);
+      /*- Same-spin scaling factor for SCS-MP2 -*/
+      options.add_double("MP2_SCALE_SS",1.0/3.0);
+      /*- Oppposite-spin scaling factor for SCS-CCSD -*/
+      options.add_double("CC_SCALE_OS", 1.27);
+      /*- Same-spin scaling factor for SCS-CCSD -*/
+      options.add_double("CC_SCALE_SS",1.13);
+      /*- Use packed storage for the (ac|bd) diagram? only valid in MO -*/
+      options.add_bool("VABCD_PACKED",true);
+      /*- only evaluate mp2 energy? !expert -*/
+      options.add_bool("RUN_MP2",false);
+      /*- only evaluate mp3 energy? !expert -*/
+      options.add_bool("RUN_MP3",false);
+      /*- only evaluate mp4 energy? !expert -*/
+      options.add_bool("RUN_MP4",false);
+      /*- is this a ccsd or qcisd calculation? !expert -*/
+      options.add_bool("RUN_CCSD",false);
   }
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. -*/

@@ -156,6 +156,20 @@ inline void DSPEV(char&JOBZ,char&UPLO,integer&N,doublereal*AP,doublereal*W,doubl
     F77NAME(dspev)(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
 }
 
+/**
+ *  General SVD
+ */
+void SVD(integer M,integer N,doublereal*A,doublereal*U,doublereal*VT,doublereal*S);
+/**
+ * name mangling dgesvd
+ */
+extern "C" {
+    void F77NAME(dgesvd)(char&JOBU,char&JOBVT,integer&M,integer&N,doublereal*A,integer&LDA,doublereal*S,doublereal*U,integer&LDU,doublereal*VT,integer&LDVT,doublereal*WORK,integer&LWORK,integer&INFO);
+};
+inline void DGESVD(char&JOBU,char&JOBVT,integer&M,integer&N,doublereal*A,integer&LDA,doublereal*S,doublereal*U,integer&LDU,doublereal*VT,integer&LDVT,doublereal*WORK,integer&LWORK,integer&INFO){
+    F77NAME(dgesvd)(JOBU,JOBVT,M,N,A,LDA,S,U,LDU,VT,LDVT,WORK,LWORK,INFO);
+}
+
 }}
 
 #endif
