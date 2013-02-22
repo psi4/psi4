@@ -895,7 +895,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- The type of guess orbitals -*/
+    /*- The type of guess orbitals.  Defaults to CORE except for geometry
+    optimizations, in which case READ becomes the default after the first
+    geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The name of a molden-style output file which is only generated
     if the user specifies one -*/

@@ -87,7 +87,7 @@ def run_scs_omp2(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of scs?
     if (lowername == 'scs-omp2'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
@@ -110,7 +110,7 @@ def run_sos_omp2(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of sos?
     if (lowername == 'sos-omp2'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
@@ -139,7 +139,7 @@ def run_scs_omp3(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of scs?
     if (lowername == 'scs-omp3'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
@@ -163,7 +163,7 @@ def run_sos_omp3(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of sos?
     if (lowername == 'sos-omp3'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
@@ -258,9 +258,9 @@ def run_scf(name, **kwargs):
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
-   
+
     returnvalue = scf_helper(name, **kwargs)
-    
+
     optstash.restore()
     return returnvalue
 
@@ -280,7 +280,7 @@ def run_scf_gradient(name, **kwargs):
 
     returnvalue = run_scf(name, **kwargs)
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
 
         # if the df_basis_scf basis is not set, pick a sensible one.
         if PsiMod.get_global_option('DF_BASIS_SCF') == '':
@@ -1063,9 +1063,6 @@ def run_dft_gradient(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') != 'DF'):
-        raise ValidationError('SCF_TYPE must be DF for DFT gradient (for now).')
-
     returnvalue = run_scf_gradient(name, **kwargs)
 
     optstash.restore()
@@ -1347,13 +1344,13 @@ def run_sapt(name, **kwargs):
     sapt_basis = sapt_basis.lower()
 
     if (sapt_basis == 'dimer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
     elif (sapt_basis == 'monomer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2)
@@ -2095,8 +2092,8 @@ def run_cepa(name, **kwargs):
         PsiMod.transqt2()
 
     PsiMod.cepa()
-   
-    # one-electron properties 
+
+    # one-electron properties
     if PsiMod.get_option('CEPA', 'DIPMOM'):
         if cepa_level == "CEPA(1)" or cepa_level == "CEPA(3)":
             PsiMod.print_out("\n")

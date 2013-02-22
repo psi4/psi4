@@ -398,7 +398,11 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
 
             double PA[3], PB[3];
             double P[3];
-
+#define DEBUG 0
+#if DEBUG
+            fprintf(outfile, "AM1 %d AM2 %d a1 %16.10f a2 %16.10 center i %d center j %df\n",
+                    am1, am2, a1, a2, center_i, center_j);
+#endif
             P[0] = (a1*A[0] + a2*B[0])*oog;
             P[1] = (a1*A[1] + a2*B[1])*oog;
             P[2] = (a1*A[2] + a2*B[2])*oog;
@@ -457,6 +461,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a1*a1*vi[iind+ix2+ix2][jind][0] - 2.0*a1*(2*l1+1)*v_int;
                                 if (l1 > 1)
                                     temp += l1*(l1-1)*vi[iind-ix2-ix2][jind][0];
+#if DEBUG
+fprintf(outfile, "AxAx = %20.12f\n", temp);
+#endif
                                 //      center ax   center ax              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -469,6 +476,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*m1*a1*vi[iind+ix2-iy2][jind][0];
                                 if (l1 && m1)
                                     temp += l1*m1*vi[iind-ix2-iy2][jind][0];
+#if DEBUG
+fprintf(outfile, "AxAy = %20.12f\n", temp);
+#endif
                                 //      center ax   center ay              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -481,6 +491,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*n1*a1*vi[iind+ix2-iz2][jind][0];
                                 if (l1 && n1)
                                     temp += l1*n1*vi[iind-ix2-iz2][jind][0];
+#if DEBUG
+fprintf(outfile, "AxAz = %20.12f\n", temp);
+#endif
                                 //      center ax   center az              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -492,6 +505,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a1*a1*vi[iind+iy2+iy2][jind][0] - 2.0*a1*(2*m1+1)*v_int;
                                 if (m1 > 1)
                                     temp += m1*(m1-1)*vi[iind-iy2-iy2][jind][0];
+#if DEBUG
+fprintf(outfile, "AyAy = %20.12f\n", temp);
+#endif
                                 //      center ay   center ay              x,y,z       ao offset
                                 buffer_[a_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -504,6 +520,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*n1*a1*vi[iind+iy2-iz2][jind][0];
                                 if (m1 && n1)
                                     temp += m1*n1*vi[iind-iy2-iz2][jind][0];
+#if DEBUG
+fprintf(outfile, "AyAz = %20.12f\n", temp);
+#endif
                                 //      center ay   center az              x,y,z       ao offset
                                 buffer_[a_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -515,6 +534,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a1*a1*vi[iind+iz2+iz2][jind][0] - 2.0*a1*(2*n1+1)*v_int;
                                 if (n1 > 1)
                                     temp += n1*(n1-1)*vi[iind-iz2-iz2][jind][0];
+#if DEBUG
+fprintf(outfile, "AzAz = %20.12f\n", temp);
+#endif
                                 //      center az   center az              x,y,z       ao offset
                                 buffer_[a_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -526,6 +548,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a2*a2*vi[iind][jind+jx2+jx2][0] - 2.0*a2*(2*l2+1)*v_int;
                                 if (l2 > 1)
                                     temp += l2*(l2-1)*vi[iind][jind-jx2-jx2][0];
+#if DEBUG
+fprintf(outfile, "BxBx = %20.12f\n", temp);
+#endif
                                 //      center bx   center bx              x,y,z       ao offset
                                 buffer_[b_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -538,6 +563,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*m2*a2*vi[iind][jind+jx2-jy2][0];
                                 if (l2 && m2)
                                     temp += l2*m2*vi[iind][jind-jx2-jy2][0];
+#if DEBUG
+fprintf(outfile, "BxBy = %20.12f\n", temp);
+#endif
                                 //      center bx   center by              x,y,z       ao offset
                                 buffer_[b_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -550,6 +578,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*n2*a2*vi[iind][jind+jx2-jz2][0];
                                 if (l2 && n2)
                                     temp += l2*n2*vi[iind][jind-jx2-jz2][0];
+#if DEBUG
+fprintf(outfile, "BxBz = %20.12f\n", temp);
+#endif
                                 //      center bx   center bz              x,y,z       ao offset
                                 buffer_[b_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -561,6 +592,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a2*a2*vi[iind][jind+jy2+jy2][0];
                                 if (m2 > 1)
                                     temp -= m2*(m2-1)*vi[iind][jind-jy2-jy2][0];
+#if DEBUG
+fprintf(outfile, "ByBy = %20.12f\n", temp);
+#endif
                                 //      center by   center by              x,y,z       ao offset
                                 buffer_[b_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -573,6 +607,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*n2*a2*vi[iind][jind+jy2-jz2][0];
                                 if (m2 && n2)
                                     temp += m2*n2*vi[iind][jind-jy2-jz2][0];
+#if DEBUG
+fprintf(outfile, "ByBz = %20.12f\n", temp);
+#endif
                                 //      center by   center bz              x,y,z       ao offset
                                 buffer_[b_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -584,7 +621,10 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 4.0*a2*a2*vi[iind][jind+jz2+jz2][0];
                                 if (n2 > 1)
                                     temp -= n2*(n2-1)*vi[iind][jind-jz2-jz2][0];
-                                //      center by   center bz              x,y,z       ao offset
+#if DEBUG
+fprintf(outfile, "BzBz = %20.12f\n", temp);
+#endif
+                                //      center bz   center bz              x,y,z       ao offset
                                 buffer_[b_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
                                 // V_{\mu\nu}^{a_x b_x}
@@ -598,6 +638,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp += l1*l2*vi[iind-ix1][jind-jx1][0];
                                 if (center_i == center_j)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "AxBx = %20.12f\n", temp);
+#endif
                                 //      center ax   center bx              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -610,6 +653,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*m2*vi[iind+ix1][jind-jy1][0];
                                 if (l1 && m2)
                                     temp += l1*m2*vi[iind-ix1][jind-jy1][0];
+#if DEBUG
+fprintf(outfile, "AxBy = %20.12f\n", temp);
+#endif
                                 //      center ax   center by              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -622,6 +668,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*n2*vi[iind+ix1][jind-jz1][0];
                                 if (l1 && n2)
                                     temp += l1*n2*vi[iind-ix1][jind-jz1][0];
+#if DEBUG
+fprintf(outfile, "AxBz = %20.12f\n", temp);
+#endif
                                 //      center ax   center bz              x,y,z       ao offset
                                 buffer_[a_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -634,6 +683,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*l2*vi[iind+iy1][jind-jx1][0];
                                 if (m1 && l2)
                                     temp += m1*l2*vi[iind-iy1][jind-jx1][0];
+#if DEBUG
+fprintf(outfile, "AyBx = %20.12f\n", temp);
+#endif
                                 //      center ay   center bx              x,y,z       ao offset
                                 buffer_[a_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -648,6 +700,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp += m1*m2*vi[iind-iy1][jind-jy1][0];
                                 if (center_i == center_j)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "AyBy = %20.12f\n", temp);
+#endif
                                 //      center ay   center by              x,y,z       ao offset
                                 buffer_[a_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -660,6 +715,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*n2*vi[iind+iy1][jind-jz1][0];
                                 if (m1 && n2)
                                     temp += m1*n2*vi[iind-iy1][jind-jz1][0];
+#if DEBUG
+fprintf(outfile, "AyBz = %20.12f\n", temp);
+#endif
                                 //      center ay   center bz              x,y,z       ao offset
                                 buffer_[a_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -672,6 +730,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*l2*vi[iind+iz1][jind-jx1][0];
                                 if (n1 && l2)
                                     temp += n1*l2*vi[iind-iz1][jind-jx1][0];
+#if DEBUG
+fprintf(outfile, "AzBx = %20.12f\n", temp);
+#endif
                                 //      center az   center bx              x,y,z       ao offset
                                 buffer_[a_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -684,6 +745,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= 2.0*a1*m2*vi[iind+iz1][jind-jy1][0];
                                 if (n1 && m2)
                                     temp += n1*m2*vi[iind-iz1][jind-jy1][0];
+#if DEBUG
+fprintf(outfile, "AzBy = %20.12f\n", temp);
+#endif
                                 //      center az   center by              x,y,z       ao offset
                                 buffer_[a_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -698,6 +762,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp += n1*n2*vi[iind-iz1][jind-jz1][0];
                                 if (center_i == center_j)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "AzBz = %20.12f\n", temp);
+#endif
                                 //      center az   center bz              x,y,z       ao offset
                                 buffer_[a_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -711,6 +778,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= l1*vx[iind-ix1][jind][0];
                                 if (center_i == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CxAx = %20.12f\n", temp);
+#endif
                                 //      center cx   center ax              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -719,7 +789,10 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vx[iind+iy1][jind][0];
                                 if (m1)
                                     temp -= m1*vx[iind-iy1][jind][0];
-                                //      center cx   center ax              x,y,z       ao offset
+#if DEBUG
+fprintf(outfile, "CxAy = %20.12f\n", temp);
+#endif
+                                //      center cx   center ay              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
 
                                 // V_{\mu\nu}^{c_x a_z}
@@ -727,7 +800,10 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vx[iind+iz1][jind][0];
                                 if (n1)
                                     temp -= n1*vx[iind-iz1][jind][0];
-                                //      center cx   center ax              x,y,z       ao offset
+#if DEBUG
+fprintf(outfile, "CxAz = %20.12f\n", temp);
+#endif
+                                //      center cx   center az              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
                                 //                                                x,y,z offset
@@ -738,6 +814,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vy[iind+ix1][jind][0];
                                 if (l1)
                                     temp -= l1*vy[iind-ix1][jind][0];
+#if DEBUG
+fprintf(outfile, "CyAx = %20.12f\n", temp);
+#endif
                                 //      center cy   center ax              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -748,6 +827,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= m1*vy[iind-iy1][jind][0];
                                 if (center_i == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CyAy = %20.12f\n", temp);
+#endif
                                 //      center cy   center ay              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -756,6 +838,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vy[iind+iz1][jind][0];
                                 if (n1)
                                     temp -= n1*vy[iind-iz1][jind][0];
+#if DEBUG
+fprintf(outfile, "CyAz = %20.12f\n", temp);
+#endif
                                 //      center cy   center az              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -767,6 +852,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vz[iind+ix1][jind][0];
                                 if (l1)
                                     temp -= l1*vz[iind-ix1][jind][0];
+#if DEBUG
+fprintf(outfile, "CzAx = %20.12f\n", temp);
+#endif
                                 //      center cz   center ax              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_i * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -775,6 +863,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a1*vz[iind+iy1][jind][0];
                                 if (m1)
                                     temp -= m1*vz[iind-iy1][jind][0];
+#if DEBUG
+fprintf(outfile, "CzAy = %20.12f\n", temp);
+#endif
                                 //      center cz   center ay              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_i * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -785,6 +876,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= n1*vz[iind-iz1][jind][0];
                                 if (center_i == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CzAz = %20.12f\n", temp);
+#endif
                                 //      center cz   center az              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_i * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -795,6 +889,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= l2*vx[iind][jind-jx1][0];
                                 if (center_j == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CzBx = %20.12f\n", temp);
+#endif
                                 //      center cx   center bx              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -803,6 +900,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vx[iind][jind+jy1][0];
                                 if (m2)
                                     temp -= m2*vx[iind][jind-jy1][0];
+#if DEBUG
+fprintf(outfile, "CxBy = %20.12f\n", temp);
+#endif
                                 //      center cx   center by              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -811,6 +911,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vx[iind][jind+jz1][0];
                                 if (n2)
                                     temp -= n2*vx[iind][jind-jz1][0];
+#if DEBUG
+fprintf(outfile, "CxBz = %20.12f\n", temp);
+#endif
                                 //      center cx   center bz              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -819,6 +922,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vy[iind][jind+jx1][0];
                                 if (l2)
                                     temp -= l2*vy[iind][jind-jx1][0];
+#if DEBUG
+fprintf(outfile, "CyBx = %20.12f\n", temp);
+#endif
                                 //      center cy   center bx              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -829,6 +935,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= m2*vy[iind][jind-jy1][0];
                                 if (center_j == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CyBy = %20.12f\n", temp);
+#endif
                                 //      center cy   center by              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -837,6 +946,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vy[iind][jind+jz1][0];
                                 if (n2)
                                     temp -= n2*vy[iind][jind-jz1][0];
+#if DEBUG
+fprintf(outfile, "CyBz = %20.12f\n", temp);
+#endif
                                 //      center cy   center bz              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
@@ -845,6 +957,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vz[iind][jind+ix1][0];
                                 if (l2)
                                     temp -= l2*vz[iind][jind-ix1][0];
+#if DEBUG
+fprintf(outfile, "CzBx = %20.12f\n", temp);
+#endif
                                 //      center cz   center bx              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_j * size + 0 * size) + ao12     ] -= temp * pfac;
 
@@ -853,6 +968,9 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                 temp += 2.0*a2*vz[iind][jind+jy1][0];
                                 if (m2)
                                     temp -= m2*vz[iind][jind-jy1][0];
+#if DEBUG
+fprintf(outfile, "CzBy = %20.12f\n", temp);
+#endif
                                 //      center cz   center by              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_j * size + 1 * size) + ao12     ] -= temp * pfac;
 
@@ -863,21 +981,50 @@ void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianSh
                                     temp -= n2*vz[iind][jind-jz1][0];
                                 if (center_j == center_c)
                                     temp *= 2.0;
+#if DEBUG
+fprintf(outfile, "CzBz = %20.12f\n", temp);
+#endif
                                 //      center cz   center bz              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_j * size + 2 * size) + ao12     ] -= temp * pfac;
 
                                 // V_{\mu\nu}^{c_x c_x}
-                                //      center cz   center by              x,y,z       ao offset
+#if DEBUG
+fprintf(outfile, "CxCx = %20.12f\n", temp);
+#endif
+                                //      center cx   center cx              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_c * size + 0 * size) + ao12     ] -= vxx[iind][jind][0] * pfac;
+#if DEBUG
+fprintf(outfile, "CxCx = %20.12f\n", temp);
+#endif
                                 // V_{\mu\nu}^{c_x c_y}
+#if DEBUG
+fprintf(outfile, "CxCy = %20.12f\n", temp);
+#endif
+                                //      center cx   center cy              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_c * size + 1 * size) + ao12     ] -= vxy[iind][jind][0] * pfac;
                                 // V_{\mu\nu}^{c_x c_z}
+#if DEBUG
+fprintf(outfile, "CxCz = %20.12f\n", temp);
+#endif
+                                //      center cx   center cz              x,y,z       ao offset
                                 buffer_[c_x_start + (3 * center_c * size + 2 * size) + ao12     ] -= vxz[iind][jind][0] * pfac;
                                 // V_{\mu\nu}^{c_y c_y}
+#if DEBUG
+fprintf(outfile, "CyCy = %20.12f\n", temp);
+#endif
+                                //      center cy   center cy              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_c * size + 1 * size) + ao12     ] -= vyy[iind][jind][0] * pfac;
                                 // V_{\mu\nu}^{c_y c_z}
+#if DEBUG
+fprintf(outfile, "CyCz = %20.12f\n", temp);
+#endif
+                                //      center cy   center cz              x,y,z       ao offset
                                 buffer_[c_y_start + (3 * center_c * size + 2 * size) + ao12     ] -= vyz[iind][jind][0] * pfac;
                                 // V_{\mu\nu}^{c_z c_z}
+#if DEBUG
+fprintf(outfile, "CzCz = %20.12f\n", temp);
+#endif
+                                //      center cz   center cz              x,y,z       ao offset
                                 buffer_[c_z_start + (3 * center_c * size + 2 * size) + ao12     ] -= vzz[iind][jind][0] * pfac;
 
                                 ao12++;
