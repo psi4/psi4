@@ -10,7 +10,7 @@ namespace psi{
   class Wavefunction;
 }
 
-namespace psi{namespace qci{
+namespace psi{namespace fnocc{
 
 // base class
 class FrozenNO : public Wavefunction{

@@ -3,9 +3,9 @@
 
 using namespace boost;
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
-PsiReturnType qci(Options &options) {
+PsiReturnType fnocc(Options &options) {
 
   boost::shared_ptr<Wavefunction> wfn;
 
@@ -22,6 +22,6 @@ PsiReturnType qci(Options &options) {
   ccsd->compute_energy();
 
   return  Success;
-} // end qci
+} // end fnocc
 
 }} // end namespaces

@@ -20,8 +20,8 @@ def run_gaussian_2(name, **kwargs):
 
     # stash user options:
     optstash = OptionsState(
-        ['QCI','COMPUTE_TRIPLES'],
-        ['QCI','COMPUTE_MP4_TRIPLES'],
+        ['FNOCC','COMPUTE_TRIPLES'],
+        ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
         ['SCF','SCF_TYPE'])
 
@@ -59,10 +59,10 @@ def run_gaussian_2(name, **kwargs):
     PsiMod.clean()
 
     # qcisd(t)
-    PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES',"TRUE")
+    PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES',"TRUE")
     PsiMod.set_global_option('FREEZE_CORE',"TRUE")
     PsiMod.set_global_option('BASIS',"6-311G(D_P)")
-    run_qci('qcisd(t)',**kwargs)
+    run_fnocc('qcisd(t)',**kwargs)
 
     # HLC: high-level correction based on number of valence electrons
     ref    = PsiMod.reference_wavefunction()
@@ -85,21 +85,21 @@ def run_gaussian_2(name, **kwargs):
 
     # correction for diffuse functions
     PsiMod.set_global_option('BASIS',"6-311+G(D_P)")
-    run_qci('_mp4',**kwargs)
+    run_fnocc('_mp4',**kwargs)
     emp4_6311pg_dp = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp2_6311pg_dp = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
 
     # correction for polarization functions
     PsiMod.set_global_option('BASIS',"6-311G(2DF_P)")
-    run_qci('_mp4',**kwargs)
+    run_fnocc('_mp4',**kwargs)
     emp4_6311g2dfp = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp2_6311g2dfp = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
 
     # big basis mp2
     PsiMod.set_global_option('BASIS',"6-311+G(3DF_2P)")
-    run_qci('_mp2',**kwargs)
+    run_fnocc('_mp2',**kwargs)
     emp2_big = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
 
