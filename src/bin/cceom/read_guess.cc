@@ -123,19 +123,19 @@ void read_guess(int C_irr)
   /* loop over number of initial guess of this symmetry */
   for(k=0; k < eom_params.cs_per_irrep[C_irr]; k++) {
     sprintf(lbl, "%s %d", "CME", k);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
     dpd_file2_scm(&CME, 0);
     dpd_file2_mat_init(&CME);
 
     if(params.eom_ref <= 1) {
       sprintf(lbl, "%s %d", "Cme", k);
-      dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
       dpd_file2_scm(&Cme, 0);
       dpd_file2_mat_init(&Cme);
     }
     else if (params.eom_ref == 2) {
       sprintf(lbl, "%s %d", "Cme", k);
-      dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       dpd_file2_scm(&Cme, 0);
       dpd_file2_mat_init(&Cme);
     }

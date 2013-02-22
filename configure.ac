@@ -950,6 +950,7 @@ AC_CONFIG_FILES([
           src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/cepa/Makefile
+          src/bin/qci/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
@@ -999,6 +1000,7 @@ AC_CONFIG_FILES([
           tests/scf6/Makefile
           tests/dfscf-bz2/Makefile
           tests/scf-bz2/Makefile
+          tests/scf-guess-read/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile
@@ -1055,6 +1057,8 @@ AC_CONFIG_FILES([
           tests/zaptn-nh2/Makefile
           tests/mpn-bh/Makefile
           tests/ci-multi/Makefile
+          tests/qci1/Makefile
+          tests/qci2/Makefile
           tests/cepa1/Makefile
           tests/cepa2/Makefile
           tests/cepa3/Makefile
@@ -1130,6 +1134,7 @@ AC_CONFIG_FILES([
           tests/mints3/Makefile
           tests/mints4/Makefile
           tests/mints5/Makefile
+          tests/mints6/Makefile
           tests/omp2-1/Makefile
           tests/omp2-2/Makefile
           tests/omp2-3/Makefile

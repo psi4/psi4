@@ -56,7 +56,7 @@ int rotate(void)
   /* First check to see if we've already converged the orbitals */
   max = 0.0;
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
 
@@ -70,7 +70,7 @@ int rotate(void)
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
 
@@ -82,7 +82,7 @@ int rotate(void)
     dpd_file2_mat_close(&T1);
     dpd_file2_close(&T1);
 
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
 
@@ -121,7 +121,7 @@ int rotate(void)
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
     max = 0.0;
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
@@ -360,7 +360,7 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
@@ -430,7 +430,7 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
