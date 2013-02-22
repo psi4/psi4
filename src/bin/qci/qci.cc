@@ -16,6 +16,7 @@ PsiReturnType qci(Options &options) {
   }
 
   boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
+  Process::environment.set_wavefunction(ccsd);
   ccsd->compute_energy();
 
   return  Success;
