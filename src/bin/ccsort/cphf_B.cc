@@ -29,7 +29,7 @@ void cphf_B(const char *cart)
     irrep = moinfo.irrep_x;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_file2_init(&L, CC_OEI, irrep, 0, 1, "L_X_IA");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_X_IA");
     dpd_file2_mat_init(&L);
     dpd_file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
@@ -61,7 +61,7 @@ void cphf_B(const char *cart)
     dpd_buf4_mat_irrep_close(&A, irrep);
 
     /* sort CPHF solution to DPD format */
-    dpd_file2_init(&L, CC_OEI, irrep, 1, 0, "CPHF Ub_X_AI");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_X_AI");
     dpd_file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];
@@ -78,7 +78,7 @@ void cphf_B(const char *cart)
     irrep = moinfo.irrep_y;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_file2_init(&L, CC_OEI, irrep, 0, 1, "L_Y_IA");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Y_IA");
     dpd_file2_mat_init(&L);
     dpd_file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
@@ -110,7 +110,7 @@ void cphf_B(const char *cart)
     dpd_buf4_mat_irrep_close(&A, irrep);
 
     /* sort CPHF solution to DPD format */
-    dpd_file2_init(&L, CC_OEI, irrep, 1, 0, "CPHF Ub_Y_AI");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Y_AI");
     dpd_file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];
@@ -127,7 +127,7 @@ void cphf_B(const char *cart)
     irrep = moinfo.irrep_z;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_file2_init(&L, CC_OEI, irrep, 0, 1, "L_Z_IA");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Z_IA");
     dpd_file2_mat_init(&L);
     dpd_file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
@@ -171,7 +171,7 @@ void cphf_B(const char *cart)
     */
 
     /* sort CPHF solution to DPD format */
-    dpd_file2_init(&L, CC_OEI, irrep, 1, 0, "CPHF Ub_Z_AI");
+    dpd_file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Z_AI");
     dpd_file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];

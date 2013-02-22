@@ -32,7 +32,7 @@ void sort_pert(const char *pert, double **pertints, int irrep)
   char prefix[32], lbl[32];
 
   sprintf(lbl, "%s_IJ", pert);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 0, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
   dpd_file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;
@@ -50,7 +50,7 @@ void sort_pert(const char *pert, double **pertints, int irrep)
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_AB", pert);
-  dpd_file2_init(&f, CC_OEI, irrep, 1, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
   dpd_file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;
@@ -68,7 +68,7 @@ void sort_pert(const char *pert, double **pertints, int irrep)
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_IA", pert);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   dpd_file2_mat_init(&f);
   for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
     Gq = irrep ^ Gp;

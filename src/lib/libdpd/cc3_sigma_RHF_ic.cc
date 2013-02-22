@@ -84,8 +84,8 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
 
   nirreps = CIjAb->params->nirreps;
   /* these are sent to T3 function */
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
 
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_init(&fAB);
@@ -137,12 +137,12 @@ void cc3_sigma_RHF_ic(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
   for (i=0;i<nthreads;++i) {
     if (do_singles) {
       sprintf(lbl, "%s %d", "CC3 SIA", i);
-      dpd_file2_init(&(SIA_local[i]), CC_TMP1, GS, 0, 1, lbl);
+      dpd_file2_init(&(SIA_local[i]), PSIF_CC_TMP1, GS, 0, 1, lbl);
       dpd_file2_mat_init(&(SIA_local[i]));
     }
     if (do_doubles) {
       sprintf(lbl, "%s %d", "CC3 SIjAb", i);
-      dpd_buf4_init(&(SIjAb_local[i]), CC_TMP1, GS, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&(SIjAb_local[i]), PSIF_CC_TMP1, GS, 0, 5, 0, 5, 0, lbl);
       for (h=0;h<nirreps;++h) {
         dpd_buf4_mat_irrep_init(&(SIjAb_local[i]),h);
       }

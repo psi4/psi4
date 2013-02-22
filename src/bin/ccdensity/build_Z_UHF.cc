@@ -55,7 +55,7 @@ void build_Z_UHF(void)
      linear array, Z */
   Z = init_array(num_ai);
 
-  dpd_file2_init(&X, CC_OEI, 0, 1, 0, "XAI");
+  dpd_file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
   dpd_file2_mat_init(&X);
   dpd_file2_mat_rd(&X);
   for(h=0,count=0; h < nirreps; h++)
@@ -65,7 +65,7 @@ void build_Z_UHF(void)
   dpd_file2_mat_close(&X);
   dpd_file2_close(&X);
 
-  dpd_file2_init(&X, CC_OEI, 0, 3, 2, "Xai");
+  dpd_file2_init(&X, PSIF_CC_OEI, 0, 3, 2, "Xai");
   dpd_file2_mat_init(&X);
   dpd_file2_mat_rd(&X);
   for(h=0; h < nirreps; h++)
@@ -76,9 +76,9 @@ void build_Z_UHF(void)
   dpd_file2_close(&X);
 
   /* Now, build the full MO Hessian */
-  dpd_buf4_init(&A_AA, CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
-  dpd_buf4_init(&A_BB, CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
-  dpd_buf4_init(&A_AB, CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
+  dpd_buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
+  dpd_buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
+  dpd_buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
 
 
   dim_A = A_AA.params->rowtot[0];
@@ -134,7 +134,7 @@ void build_Z_UHF(void)
   for(ai=0; ai < num_ai; ai++) fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[ai]);
   */
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
   dpd_file2_scm(&D, 0.0);
   dpd_file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
@@ -148,7 +148,7 @@ void build_Z_UHF(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
   dpd_file2_scm(&D, 0.0);
   dpd_file2_mat_init(&D);
   for(h=0; h < nirreps; h++)

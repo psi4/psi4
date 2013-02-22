@@ -37,7 +37,7 @@ void sort_ltd_rohf(struct TD_Params S)
 
   moinfo.ltd = block_matrix(nmo, nmo);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 0, "LTDIJ");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDIJ");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -52,7 +52,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 1, 1, "LTDAB");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDAB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -68,7 +68,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "LTDAI");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDAI");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -83,7 +83,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "LTDIA");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDIA");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -98,7 +98,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 0, "LTDij");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "LTDij");
   dpd_file2_mat_init(&D); 
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -113,7 +113,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 1, 1, "LTDab");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "LTDab");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -129,7 +129,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "LTDai");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDai");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -144,7 +144,7 @@ void sort_ltd_rohf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "LTDia");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "LTDia");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {

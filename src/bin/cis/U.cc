@@ -31,23 +31,23 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
 
     /* build initial guess amplitudes */
     sprintf(lbl, "ZIjAb[%d]", irrep);
-    dpd_buf4_init(&Z, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&Z, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
     sprintf(lbl, "UIjAb[%d]", irrep);
-    dpd_buf4_copy(&Z, CC_MISC, lbl);
+    dpd_buf4_copy(&Z, PSIF_CC_MISC, lbl);
     dpd_buf4_close(&Z);
 
     sprintf(lbl, "UIjAb[%d]", irrep);
-    dpd_buf4_init(&U, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
     if(params.local) local_filter_U2(&U, lambda);
     else {
       sprintf(lbl, "dIjAb[%d]", irrep);
-      dpd_buf4_init(&D, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       dpd_buf4_dirprd(&D, &U);
       dpd_buf4_close(&D);
     }
 
     sprintf(lbl, "New UIjAb[%d]", irrep);
-    dpd_buf4_copy(&U, CC_MISC, lbl);
+    dpd_buf4_copy(&U, PSIF_CC_MISC, lbl);
     dpd_buf4_close(&U);
 
     /*
@@ -59,24 +59,24 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
     for(iter=0; iter < params.maxiter; iter++) {
 
       sprintf(lbl, "ZIjAb[%d]", irrep);
-      dpd_buf4_init(&Z, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&Z, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       sprintf(lbl, "New UIjAb[%d] Increment", irrep);
-      dpd_buf4_copy(&Z, CC_MISC, lbl);
+      dpd_buf4_copy(&Z, PSIF_CC_MISC, lbl);
       dpd_buf4_close(&Z);
 
       sprintf(lbl, "New UIjAb[%d] Increment", irrep);
-      dpd_buf4_init(&Unew, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&Unew, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       sprintf(lbl, "UIjAb[%d]", irrep);
-      dpd_buf4_init(&U, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
 
       dpd_buf4_axpy(&U, &Unew, -lambda);
 
-      dpd_file2_init(&F, CC_OEI, 0, 0, 0, "fIJ");
+      dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "fIJ");
       dpd_contract424(&U, &F, &Unew, 1, 0, 1, -1, 1);
       dpd_contract244(&F, &U, &Unew, 0, 0, 0, -1, 1);
       dpd_file2_close(&F);
 
-      dpd_file2_init(&F, CC_OEI, 0, 1, 1, "fAB");
+      dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "fAB");
       dpd_contract244(&F, &U, &Unew, 1, 2, 1, 1, 1);
       dpd_contract424(&U, &F, &Unew, 3, 1, 0, 1, 1);
       dpd_file2_close(&F);
@@ -86,7 +86,7 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
       if(params.local) local_filter_U2(&Unew, lambda);
       else {
 	sprintf(lbl, "dIjAb[%d]", irrep);
-	dpd_buf4_init(&D, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+	dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
 	dpd_buf4_dirprd(&D, &Unew);
 	dpd_buf4_close(&D);
       }
@@ -108,9 +108,9 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
       rms = sqrt(rms);
 
       sprintf(lbl, "New UIjAb[%d]", irrep);
-      dpd_buf4_init(&Unew, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&Unew, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       sprintf(lbl, "New UIjAb[%d] Increment", irrep);
-      dpd_buf4_init(&U, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       dpd_buf4_axpy(&U, &Unew, 1);
       dpd_buf4_close(&U);
 
@@ -123,9 +123,9 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
       }
       else {
 	sprintf(lbl, "New UIjAb[%d]", irrep);
-	dpd_buf4_init(&U, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+	dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
 	sprintf(lbl, "UIjAb[%d]", irrep);
-	dpd_buf4_copy(&U, CC_MISC, lbl);
+	dpd_buf4_copy(&U, PSIF_CC_MISC, lbl);
 	dpd_buf4_close(&U);
       }
     }
@@ -133,7 +133,7 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
     if(!conv) {
       fprintf(outfile, "\n\tU2(%d)[%d] iterative procedure failed. RMS = %4.3e\n", root, irrep, rms);
       sprintf(lbl, "UIjAb[%d]", irrep);
-      dpd_buf4_init(&U, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
       dpd_buf4_scm(&U, 0.0);
       dpd_buf4_close(&U);
       return 1;
@@ -146,45 +146,45 @@ int U_build(int irrep, int root, double lambda, enum Spin spin)
 
     /* U(IJ,AB) <-- Z(IJ,AB) * D(IJ,AB) */
     sprintf(lbl, "ZIJAB[%d]", irrep);
-    dpd_buf4_init(&Z, CC_MISC, irrep, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&Z, PSIF_CC_MISC, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "UIJAB[%d]", irrep);
-    dpd_buf4_copy(&Z, CC_MISC, lbl);
+    dpd_buf4_copy(&Z, PSIF_CC_MISC, lbl);
     dpd_buf4_close(&Z);
 
     sprintf(lbl, "UIJAB[%d]", irrep);
-    dpd_buf4_init(&U, CC_MISC, irrep, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "dIJAB[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
     dpd_buf4_dirprd(&D, &U);
     dpd_buf4_close(&D);
     dpd_buf4_close(&U);
 
     /* U(ij,ab) <-- Z(ij,ab) * D(ij,ab) */
     sprintf(lbl, "Zijab[%d]", irrep);
-    dpd_buf4_init(&Z, CC_MISC, irrep, 12, 17, 12, 17, 0, lbl);
+    dpd_buf4_init(&Z, PSIF_CC_MISC, irrep, 12, 17, 12, 17, 0, lbl);
     sprintf(lbl, "Uijab[%d]", irrep);
-    dpd_buf4_copy(&Z, CC_MISC, lbl);
+    dpd_buf4_copy(&Z, PSIF_CC_MISC, lbl);
     dpd_buf4_close(&Z);
 
     sprintf(lbl, "Uijab[%d]", irrep);
-    dpd_buf4_init(&U, CC_MISC, irrep, 12, 17, 12, 17, 0, lbl);
+    dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 12, 17, 12, 17, 0, lbl);
     sprintf(lbl, "dijab[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
     dpd_buf4_dirprd(&D, &U);
     dpd_buf4_close(&D);
     dpd_buf4_close(&U);
 
     /* U(Ij,Ab) <-- Z(Ij,Ab) * D(Ij,Ab) */
     sprintf(lbl, "ZIjAb[%d]", irrep);
-    dpd_buf4_init(&Z, CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&Z, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
     sprintf(lbl, "UIjAb[%d]", irrep);
-    dpd_buf4_copy(&Z, CC_MISC, lbl);
+    dpd_buf4_copy(&Z, PSIF_CC_MISC, lbl);
     dpd_buf4_close(&Z);
 
     sprintf(lbl, "UIjAb[%d]", irrep);
-    dpd_buf4_init(&U, CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&U, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
     sprintf(lbl, "dIjAb[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
     dpd_buf4_dirprd(&D, &U);
     dpd_buf4_close(&D);
     dpd_buf4_close(&U);

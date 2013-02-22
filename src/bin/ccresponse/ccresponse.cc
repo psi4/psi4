@@ -121,14 +121,14 @@ void init_io(void)
 
   tstart();
 
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i, 1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i, 1);
 
   /* Clear out DIIS TOC Entries */
-  psio_close(CC_DIIS_AMP, 0);
-  psio_close(CC_DIIS_ERR, 0);
+  psio_close(PSIF_CC_DIIS_AMP, 0);
+  psio_close(PSIF_CC_DIIS_ERR, 0);
 
-  psio_open(CC_DIIS_AMP, 0);
-  psio_open(CC_DIIS_ERR, 0);
+  psio_open(PSIF_CC_DIIS_AMP, 0);
+  psio_open(PSIF_CC_DIIS_ERR, 0);
 }
 
 void title(void)
@@ -145,9 +145,9 @@ void exit_io(void)
   int i;
 
   /* Close all dpd data files here */
-  for(i=CC_MIN; i < CC_TMP; i++) psio_close(i,1);
-  for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
-  for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
+  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
+  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
 
   tstop();
 }

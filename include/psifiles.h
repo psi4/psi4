@@ -23,12 +23,12 @@
 
 #define PSI_DEFAULT_FILE_PREFIX "psi"
 
-#define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/
-
 #define PSIF_OPTKING           1    /*-  -*/
 #define PSIF_FILE11            11   /*- geometry optimization, geometry, and gradient -*/
 #define PSIF_INTCO             12   /*- internal coordinates file, formerly intco.dat -*/
+#define PSIF_3INDEX            16   /*-  -*/
 #define PSIF_DSCF              31   /*-  -*/
+#define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/
 #define PSIF_SO_TEI            33   /*-  -*/
 #define PSIF_SO_PK             34   /*-  -*/
 #define PSIF_OEI               35   /*-  -*/
@@ -108,6 +108,90 @@
 #define PSIF_DFSCF_K           98   /*- Exchange tensor for DF-SCF -*/
 #define PSIF_DFSCF_BJI         99   /*- The three-center integrals for DF-SCF -*/
 
+/* The miscellaneous CC information file */
+#define PSIF_CC_INFO        100   /*-  -*/
+/* One-electron integral files */
+#define PSIF_CC_OEI         101   /*-  -*/
+/* Two-electron integral files */   /* pqnum  rsnum */
+#define PSIF_CC_AINTS       102   /*-  -*/
+#define PSIF_CC_BINTS       103   /*-  -*/
+#define PSIF_CC_CINTS       104   /*-  -*/
+#define PSIF_CC_DINTS       105   /*-  -*/
+#define PSIF_CC_EINTS       106   /*-  -*/
+#define PSIF_CC_FINTS       107   /*-  -*/
+
+/* Two-electron amplitudes, intermediates, and densities */
+#define PSIF_CC_DENOM       108   /*-  -*/
+#define PSIF_CC_TAMPS       109   /*-  -*/
+#define PSIF_CC_GAMMA       110   /*-  -*/
+#define PSIF_CC_MISC        111   /*-  -*/
+#define PSIF_CC_HBAR        112   /*-  -*/
+
+#define PSIF_CC_OEI_NEW     113   /*-  -*/
+#define PSIF_CC_GAMMA_NEW   114   /*-  -*/
+#define PSIF_CC_AINTS_NEW   115   /*-  -*/
+#define PSIF_CC_BINTS_NEW   116   /*-  -*/
+#define PSIF_CC_CINTS_NEW   117   /*-  -*/
+#define PSIF_CC_DINTS_NEW   118   /*-  -*/
+#define PSIF_CC_EINTS_NEW   119   /*-  -*/
+#define PSIF_CC_FINTS_NEW   120   /*-  -*/
+
+/* ground state lambda and intermediates for excited states */
+#define PSIF_CC_LAMBDA      121   /*-  -*/
+
+/* converged eigenvectors of hbar */
+#define PSIF_CC_RAMPS       122   /*-  -*/
+#define PSIF_CC_LAMPS       123   /*-  -*/
+
+#define PSIF_CC_LR          124   /*-  -*/
+
+#define PSIF_CC_DIIS_ERR    125   /*-  -*/
+#define PSIF_CC_DIIS_AMP    126   /*-  -*/
+
+#define PSIF_CC_TMP         127   /*-  -*/
+#define PSIF_CC_TMP0        128   /*-  -*/
+#define PSIF_CC_TMP1        129   /*-  -*/
+#define PSIF_CC_TMP2        130   /*-  -*/
+#define PSIF_CC_TMP3        131   /*-  -*/
+#define PSIF_CC_TMP4        132   /*-  -*/
+#define PSIF_CC_TMP5        133   /*-  -*/
+#define PSIF_CC_TMP6        134   /*-  -*/
+#define PSIF_CC_TMP7        135   /*-  -*/
+#define PSIF_CC_TMP8        135   /*-  -*/
+#define PSIF_CC_TMP9        137   /*-  -*/
+#define PSIF_CC_TMP10       138   /*-  -*/
+#define PSIF_CC_TMP11       139   /*-  -*/
+/* temporary files for CCEOM and CCLAMBDA */
+#define PSIF_EOM_D          140   /*-  -*/
+#define PSIF_EOM_CME        141   /*-  -*/
+#define PSIF_EOM_Cme        142   /*-  -*/
+#define PSIF_EOM_CMNEF      143   /*-  -*/
+#define PSIF_EOM_Cmnef      144   /*-  -*/
+#define PSIF_EOM_CMnEf      145   /*-  -*/
+#define PSIF_EOM_SIA        146   /*-  -*/
+#define PSIF_EOM_Sia        147   /*-  -*/
+#define PSIF_EOM_SIJAB      148   /*-  -*/
+#define PSIF_EOM_Sijab      149   /*-  -*/
+#define PSIF_EOM_SIjAb      150   /*-  -*/
+#define PSIF_EOM_R          151 /*- holds residual -*/
+#define PSIF_CC_GLG         152 /*- left-hand psi for g.s. parts of cc-density -*/
+#define PSIF_CC_GL          153 /*- left-hand psi for e.s. parts of cc-density -*/
+#define PSIF_CC_GR          154 /*- right-hand eigenvector for cc-density -*/
+#define PSIF_EOM_TMP1       155 /*- intermediates just for single contractions -*/
+#define PSIF_EOM_TMP0       156 /*- temporary copies of density -*/
+#define PSIF_EOM_TMP_XI     157 /*- intermediates for xi computation -*/
+#define PSIF_EOM_XI         158 /*- xi = dE/dt amplitudes -*/
+#define PSIF_EOM_TMP        159 /*- intermediates used more than once -*/
+#define PSIF_CC3_HET1       160 /*- [H,e^T1] -*/
+#define PSIF_CC3_HC1        161 /*- [H,C1] -*/
+#define PSIF_CC3_HC1ET1     162 /*- [[H,e^T1],C1] -*/
+#define PSIF_CC3_MISC       163 /*- various intermediates needed in CC3 codes -*/
+#define PSIF_CC2_HET1       164 /*- [H,e^T1] -*/
+
+/* Markers for the first and last CC file numbers */
+#define PSIF_CC_MIN  PSIF_CC_INFO  /*-  -*/
+#define PSIF_CC_MAX  PSIF_CC2_HET1 /*-  -*/
+
 #define PSIF_SCF_MOS           180  /*- Save SCF orbitals for re-use later as guess, etc. -*/
 #define PSIF_DFMP2_AIA         181  /*- Unfitted three-index MO ints for DFMP2 -*/
 #define PSIF_DFMP2_QIA         182  /*- Fitted-three index MO ints for DFMP2 -*/
@@ -115,17 +199,20 @@
 #define PSIF_ADC               183  /*- ADC -*/
 #define PSIF_ADC_SEM           184  /*- ADC -*/
 
-#define PSIF_SAPT_DIMER        120  /*- SAPT Two-Body Dimer -*/
-#define PSIF_SAPT_MONOMERA     121  /*- SAPT Two-Body Mon A -*/
-#define PSIF_SAPT_MONOMERB     122  /*- SAPT Two-Body Mon B -*/
+#define PSIF_SAPT_DIMER        190  /*- SAPT Two-Body Dimer -*/
+#define PSIF_SAPT_MONOMERA     191  /*- SAPT Two-Body Mon A -*/
+#define PSIF_SAPT_MONOMERB     192  /*- SAPT Two-Body Mon B -*/
 
-#define PSIF_SAPT_AA_DF_INTS   123  /*- SAPT AA DF Ints -*/
-#define PSIF_SAPT_AB_DF_INTS   124  /*- SAPT AB DF Ints -*/
-#define PSIF_SAPT_BB_DF_INTS   125  /*- SAPT BB DF Ints -*/
-#define PSIF_SAPT_AMPS         126  /*- SAPT Amplitudes -*/
-#define PSIF_SAPT_TEMP         127  /*- SAPT Temporary worlds fastest code file -*/
+#define PSIF_SAPT_AA_DF_INTS   193  /*- SAPT AA DF Ints -*/
+#define PSIF_SAPT_AB_DF_INTS   194  /*- SAPT AB DF Ints -*/
+#define PSIF_SAPT_BB_DF_INTS   195  /*- SAPT BB DF Ints -*/
+#define PSIF_SAPT_AMPS         196  /*- SAPT Amplitudes -*/
+#define PSIF_SAPT_TEMP         197  /*- SAPT Temporary worlds fastest code file -*/
 
-#define PSIF_SAPT_LRINTS       128  /*- SAPT0 2-Body linear response LDA integrals -*/
+#define PSIF_SAPT_LRINTS       198  /*- SAPT0 2-Body linear response LDA integrals -*/
+
+#define PSIF_SO_D1OEI          199  /*- Derivative OEIs are stored in file 199 -*/
+#define PSIF_SO_D1ERI          200  /*- Derivative ERIs are stored in files 200, 201, 202, etc. File 200 -*/
 
 #define PSIF_3B_SAPT_TRIMER              220  /*- SAPT Three-Body Trimer -*/
 #define PSIF_3B_SAPT_DIMER_AB            221  /*- SAPT Three-Body Dimer AB -*/
@@ -158,11 +245,6 @@
 #define PSIF_DCC_T2            266  /*- CEPA/CC t2 amplitudes -*/
 #define PSIF_DCC_QSO           267  /*- DFCC 3-index integrals -*/
 #define PSIF_DCC_SORT_START    270  /*- CEPA/CC integral sort starting file number -*/
-
-#define PSIF_SO_D1OEI          199  /*- Derivative OEIs are stored in file 199 -*/
-#define PSIF_SO_D1ERI          200  /*- Derivative ERIs are stored in files 200, 201, 202, etc. File 200 -*/
-
-#define PSIF_3INDEX            16   /*-  -*/
 
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
@@ -260,89 +342,5 @@ integrals out (i.e. multiply by i=sqrt(-1) to get the integrals) */
 #define PSIF_MO_A_QRR       "MO-basis Alpha Q-XX + Q-YY + Q-ZZ Ints"
 #define PSIF_MO_B_QRR       "MO-basis Beta Q-XX + Q-YY + Q-ZZ Ints"
 // end ACS additions
-
-/* The miscellaneous CC information file */
-#define CC_INFO        100
-/* One-electron integral files */
-#define CC_OEI         101
-/* Two-electron integral files */   /* pqnum  rsnum */
-#define CC_AINTS       102
-#define CC_BINTS       103
-#define CC_CINTS       104
-#define CC_DINTS       105
-#define CC_EINTS       106
-#define CC_FINTS       107
-
-/* Two-electron amplitudes, intermediates, and densities */
-#define CC_DENOM       108
-#define CC_TAMPS       109
-#define CC_GAMMA       110
-#define CC_MISC        111
-#define CC_HBAR        112
-
-#define CC_OEI_NEW     113
-#define CC_GAMMA_NEW   114
-#define CC_AINTS_NEW   115
-#define CC_BINTS_NEW   116
-#define CC_CINTS_NEW   117
-#define CC_DINTS_NEW   118
-#define CC_EINTS_NEW   119
-#define CC_FINTS_NEW   120
-
-/* ground state lambda and intermediates for excited states */
-#define CC_LAMBDA      121
-
-/* converged eigenvectors of hbar */
-#define CC_RAMPS       122
-#define CC_LAMPS       123
-
-#define CC_LR          124
-
-#define CC_DIIS_ERR    125
-#define CC_DIIS_AMP    126
-
-#define CC_TMP         127
-#define CC_TMP0        128
-#define CC_TMP1        129
-#define CC_TMP2        130
-#define CC_TMP3        131
-#define CC_TMP4        132
-#define CC_TMP5        133
-#define CC_TMP6        134
-#define CC_TMP7        135
-#define CC_TMP8        135
-#define CC_TMP9        137
-#define CC_TMP10       138
-#define CC_TMP11       139
-/* temporary files for CCEOM and CCLAMBDA */
-#define EOM_D          140
-#define EOM_CME        141
-#define EOM_Cme        142
-#define EOM_CMNEF      143
-#define EOM_Cmnef      144
-#define EOM_CMnEf      145
-#define EOM_SIA        146
-#define EOM_Sia        147
-#define EOM_SIJAB      148
-#define EOM_Sijab      149
-#define EOM_SIjAb      150
-#define EOM_R          151 /* holds residual */
-#define CC_GLG         152 /* left-hand psi for g.s. parts of cc-density */
-#define CC_GL          153 /* left-hand psi for e.s. parts of cc-density */
-#define CC_GR          154 /* right-hand eigenvector for cc-density */
-#define EOM_TMP1       155 /* intermediates just for single contractions */
-#define EOM_TMP0       156 /* temporary copies of density */
-#define EOM_TMP_XI     157 /* intermediates for xi computation */
-#define EOM_XI         158 /* xi = dE/dt amplitudes */
-#define EOM_TMP        159 /* intermediates used more than once */
-#define CC3_HET1       160 /* [H,e^T1] */
-#define CC3_HC1        161 /* [H,C1] */
-#define CC3_HC1ET1     162 /* [[H,e^T1],C1] */
-#define CC3_MISC       163 /* various intermediates needed in CC3 codes */
-#define CC2_HET1       164 /* [H,e^T1] */
-
-/* Markers for the first and last file numbers */
-#define CC_MIN  CC_INFO
-#define CC_MAX  CC2_HET1
 
 #endif /* header guard */

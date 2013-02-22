@@ -48,11 +48,11 @@ void cc3_t3x(void)
       }
     }
 
-    dpd_file2_init(&XLD, CC3_MISC, 0, 0, 1, "CC3 XLD");
+    dpd_file2_init(&XLD, PSIF_CC3_MISC, 0, 0, 1, "CC3 XLD");
     dpd_file2_mat_init(&XLD);
 
-    dpd_buf4_init(&L2, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&L2AB, CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2, h);
       dpd_buf4_mat_irrep_rd(&L2, h);
@@ -61,24 +61,24 @@ void cc3_t3x(void)
       dpd_buf4_mat_irrep_rd(&L2AB, h);
     }
 
-    dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fij");
-    dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fab");
+    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_buf4_init(&F, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&E, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    dpd_buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+    dpd_buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
 
     T2AA = T2;
-    dpd_buf4_init(&T2AB, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_init(&T2BA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+    dpd_buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_buf4_init(&T2BA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
     FAA = F;
-    dpd_buf4_init(&FAB, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&FBA, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+    dpd_buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
+    dpd_buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
     EAA = E;
-    dpd_buf4_init(&EAB, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&EBA, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
+    dpd_buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+    dpd_buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
 
     /* target T3 amplitudes go in here */
     W1 = (double ***) malloc(nirreps * sizeof(double **));

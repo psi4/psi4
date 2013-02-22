@@ -79,7 +79,7 @@ void diagSS(int C_irr) {
         for (i=begin_occ; i < occpi[irr_occ]; ++i)
           for (a=0; a < end_virt; ++a, ++C_index) {
             sprintf(lbl, "%s %d", "CME", C_index);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&CME);
             CME.matrix[cnt][i][a] = 1.0/sqrt(2.0);
             dpd_file2_mat_wrt(&CME);
@@ -94,14 +94,14 @@ void diagSS(int C_irr) {
         for (i=begin_occ; i < occpi[irr_occ]; ++i)
           for (a=0; a < end_virt; ++a, ++C_index) {
             sprintf(lbl, "%s %d", "CME", C_index);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&CME);
             CME.matrix[cnt][i][a] = 1.0/sqrt(2.0);
             dpd_file2_mat_wrt(&CME);
             dpd_file2_mat_close(&CME);
             dpd_file2_close(&CME);
             sprintf(lbl, "%s %d", "Cme", C_index);
-            dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&Cme);
             Cme.matrix[cnt][i][a] = 1.0/sqrt(2.0);
             dpd_file2_mat_wrt(&Cme);
@@ -109,14 +109,14 @@ void diagSS(int C_irr) {
             dpd_file2_close(&Cme);
             ++C_index;
             sprintf(lbl, "%s %d", "CME", C_index);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&CME);
             CME.matrix[cnt][i][a] = 1.0/sqrt(2.0);
             dpd_file2_mat_wrt(&CME);
             dpd_file2_mat_close(&CME);
             dpd_file2_close(&CME);
             sprintf(lbl, "%s %d", "Cme", C_index);
-            dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&Cme);
             Cme.matrix[cnt][i][a] = -1.0/sqrt(2.0);
             dpd_file2_mat_wrt(&Cme);
@@ -131,13 +131,13 @@ void diagSS(int C_irr) {
       for (i=begin_occ; i < occpi[irr_occ] ; ++i)
         for (a=0; a<end_virt; ++a, ++C_index) {
           sprintf(lbl, "%s %d", "CME", C_index);
-          dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&CME);
           CME.matrix[cnt][i][a] = 1.0;
           dpd_file2_mat_wrt(&CME);
           dpd_file2_close(&CME);
           sprintf(lbl, "%s %d", "Cme", C_index);
-          dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+          dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&Cme);
           dpd_file2_mat_wrt(&Cme);
           dpd_file2_close(&Cme);
@@ -148,13 +148,13 @@ void diagSS(int C_irr) {
       for (i=begin_occ; i < occpi[irr_occ]-openpi[irr_occ]; ++i)
         for (a=begin_virt; a < virtpi[irr_virt]; ++a, ++C_index) {
           sprintf(lbl, "%s %d", "Cme", C_index);
-          dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+          dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&Cme);
           Cme.matrix[cnt][i][a] = 1.0;
           dpd_file2_mat_wrt(&Cme);
           dpd_file2_close(&Cme);
           sprintf(lbl, "%s %d", "CME", C_index);
-          dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&CME);
           dpd_file2_mat_wrt(&CME);
           dpd_file2_close(&CME);
@@ -165,13 +165,13 @@ void diagSS(int C_irr) {
       for (i=begin_occ; i < occpi[irr_occ]-openpi[irr_occ]; ++i)
         for (a=0; a < end_virt; ++a, ++C_index) {
           sprintf(lbl, "%s %d", "Cme", C_index);
-          dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+          dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&Cme);
           Cme.matrix[cnt][i][a] = 1.0;
           dpd_file2_mat_wrt(&Cme);
           dpd_file2_close(&Cme);
           sprintf(lbl, "%s %d", "CME", C_index);
-          dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+          dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
           dpd_file2_mat_init(&CME);
           dpd_file2_mat_wrt(&CME);
           dpd_file2_close(&CME);
@@ -184,13 +184,13 @@ void diagSS(int C_irr) {
         for (i=begin_occ; i < aoccpi[irr_occ] ; ++i)
           for (a=0; a<end_virt; ++a, ++C_index) {
             sprintf(lbl, "%s %d", "CME", C_index);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&CME);
             CME.matrix[cnt][i][a] = 1.0;
             dpd_file2_mat_wrt(&CME);
             dpd_file2_close(&CME);
             sprintf(lbl, "%s %d", "Cme", C_index);
-            dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
             dpd_file2_mat_init(&Cme);
             dpd_file2_mat_wrt(&Cme);
             dpd_file2_close(&Cme);
@@ -200,12 +200,12 @@ void diagSS(int C_irr) {
         for (i=begin_occ; i < boccpi[irr_occ] ; ++i)
           for (a=0; a<end_virt; ++a, ++C_index) {
             sprintf(lbl, "%s %d", "CME", C_index);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+            dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             dpd_file2_mat_init(&CME);
             dpd_file2_mat_wrt(&CME);
             dpd_file2_close(&CME);
             sprintf(lbl, "%s %d", "Cme", C_index);
-            dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+            dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
             dpd_file2_mat_init(&Cme);
             Cme.matrix[cnt][i][a] = 1.0;
             dpd_file2_mat_wrt(&Cme);
@@ -251,13 +251,13 @@ void diagSS(int C_irr) {
   fflush(outfile);
 
   /* Setup residual vector file */
-  dpd_file2_init(&RIA, EOM_R, C_irr, 0, 1, "RIA");
+  dpd_file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
   dpd_file2_mat_init(&RIA);
   dpd_file2_mat_wrt(&RIA);
   dpd_file2_close(&RIA);
   if (params.eom_ref > 0) {
-    if (params.eom_ref == 1) dpd_file2_init(&Ria, EOM_R, C_irr, 0, 1, "Ria");
-    else if (params.eom_ref == 2) dpd_file2_init(&Ria, EOM_R, C_irr, 2, 3, "Ria");
+    if (params.eom_ref == 1) dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 0, 1, "Ria");
+    else if (params.eom_ref == 2) dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 2, 3, "Ria");
     dpd_file2_mat_init(&Ria);
     dpd_file2_mat_wrt(&Ria);
     dpd_file2_close(&Ria);
@@ -282,20 +282,20 @@ void diagSS(int C_irr) {
     for (i=0;i<L;++i) {
       if (params.eom_ref == 0) {
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         dpd_file2_scm(&SIA, 0.0);
         dpd_file2_close(&SIA);
 				if (params.full_matrix) {
           sprintf(lbl, "%s %d", "S0", i);
-				  psio_write_entry(EOM_SIA, lbl, (char *) &zero, sizeof(double));
+				  psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &zero, sizeof(double));
 			  }
       }
       if (params.eom_ref > 0) {
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "Sia", i);
-        if (params.eom_ref == 1) dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
-        else if (params.eom_ref == 2) dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+        if (params.eom_ref == 1) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+        else if (params.eom_ref == 2) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
         scm_C1(&SIA, &Sia, 0.0);
         dpd_file2_close(&SIA);
         dpd_file2_close(&Sia);
@@ -315,25 +315,25 @@ void diagSS(int C_irr) {
 
     for (i=0;i<L;++i) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       if (params.eom_ref > 0) {
         sprintf(lbl, "%s %d", "Cme", i);
-        if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-        else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+        if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+        else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       }
       for (j=0;j<L;++j) {
         if(params.eom_ref == 0) {
           sprintf(lbl, "%s %d", "SIA", j);
-          dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+          dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
           tval = 2.0 * dpd_file2_dot(&CME, &SIA);
           dpd_file2_close(&SIA);
         }
         else if (params.eom_ref > 0) {
           sprintf(lbl, "%s %d", "SIA", j);
-          dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+          dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
           sprintf(lbl, "%s %d", "Sia", j);
-          if (params.eom_ref == 1) dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
-          else if (params.eom_ref == 2) dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+          if (params.eom_ref == 1) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+          else if (params.eom_ref == 2) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
           tval = dpd_file2_dot(&CME, &SIA);
           tval += dpd_file2_dot(&Cme, &Sia);
           dpd_file2_close(&SIA);
@@ -358,9 +358,9 @@ void diagSS(int C_irr) {
 		    "  Root    EOM Energy    Delta E     Res. Norm    Conv?\n");
     fflush(outfile);
 
-    dpd_file2_init(&RIA, EOM_R, C_irr, 0, 1, "RIA");
-    if (params.eom_ref == 1) dpd_file2_init(&Ria, EOM_R, C_irr, 0, 1, "Ria");
-    else if (params.eom_ref == 2) dpd_file2_init(&Ria, EOM_R, C_irr, 2, 3, "Ria");
+    dpd_file2_init(&RIA, PSIF_EOM_R, C_irr, 0, 1, "RIA");
+    if (params.eom_ref == 1) dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 0, 1, "Ria");
+    else if (params.eom_ref == 2) dpd_file2_init(&Ria, PSIF_EOM_R, C_irr, 2, 3, "Ria");
 
     for (k=0;k<num_roots;++k) {
       dpd_file2_scm(&RIA, 0.0);
@@ -368,19 +368,19 @@ void diagSS(int C_irr) {
       converged[k] = 0;
       for (i=0;i<L;++i) { 
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "CME", i);
-        dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+        dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
         dpd_file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
         dpd_file2_close(&CME);
         dpd_file2_close(&SIA);
         if (params.eom_ref > 0) {
           sprintf(lbl, "%s %d", "Sia", i);
-          if (params.eom_ref == 1) dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
-          else if (params.eom_ref == 2) dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+          if (params.eom_ref == 1) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+          else if (params.eom_ref == 2) dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
           sprintf(lbl, "%s %d", "Cme", i);
-          if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-          else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+          if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+          else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
           dpd_file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
           dpd_file2_close(&Cme);
           dpd_file2_close(&Sia);
@@ -481,7 +481,7 @@ void precondition_SS(dpdfile2 *RIA, dpdfile2 *Ria, double eval)
 
   dpd_file2_mat_init(RIA);
   dpd_file2_mat_rd(RIA);
-  dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+  dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
   dpd_file2_mat_init(&DIA);
   dpd_file2_mat_rd(&DIA);
   for(h=0; h < nirreps; h++)
@@ -497,8 +497,8 @@ void precondition_SS(dpdfile2 *RIA, dpdfile2 *Ria, double eval)
   dpd_file2_mat_init(Ria);
   dpd_file2_mat_rd(Ria);
 
-  if (params.eom_ref == 1) dpd_file2_init(&Dia, EOM_D, C_irr, 0, 1, "Dia");
-  else if (params.eom_ref == 2) dpd_file2_init(&Dia, EOM_D, C_irr, 2, 3, "Dia");
+  if (params.eom_ref == 1) dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 0, 1, "Dia");
+  else if (params.eom_ref == 2) dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 2, 3, "Dia");
   dpd_file2_mat_init(&Dia);
   dpd_file2_mat_rd(&Dia);
   for(h=0; h < nirreps; h++)
@@ -537,11 +537,11 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
     local.pairdom_len = init_int_array(nocc*nocc);
     local.pairdom_nrlen = init_int_array(nocc*nocc);
     local.eps_occ = init_array(nocc);
-    psio_read_entry(CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
 		    nocc*nocc*sizeof(int));
-    psio_read_entry(CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *) local.pairdom_nrlen,
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *) local.pairdom_nrlen,
 		    nocc*nocc*sizeof(int));
-    psio_read_entry(CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
 		    nocc*sizeof(double));
     local.W = (double ***) malloc(nocc * nocc * sizeof(double **));
     local.V = (double ***) malloc(nocc * nocc * sizeof(double **));
@@ -549,19 +549,19 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
-      psio_read(CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
+      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
 		local.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.V[ij] = block_matrix(nvir,local.pairdom_len[ij]);
-      psio_read(CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
+      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
 		nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
     }
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.W[ij] = block_matrix(local.pairdom_len[ij],local.pairdom_nrlen[ij]);
-      psio_read(CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
+      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
 		local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
 
@@ -626,7 +626,7 @@ void precondition_SS_RHF(dpdfile2 *RIA, double eval)
 
     dpd_file2_mat_init(RIA);
     dpd_file2_mat_rd(RIA);
-    dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+    dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
     dpd_file2_mat_init(&DIA);
     dpd_file2_mat_rd(&DIA);
     for(h=0; h < nirreps; h++)
@@ -652,10 +652,10 @@ void schmidt_add_SS(dpdfile2 *RIA, dpdfile2 *Ria, int C_irr, int *numCs)
 
   for (i=0; i<*numCs; i++) {
     sprintf(CME_lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
     sprintf(Cme_lbl, "%s %d", "Cme", i);
-    if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, Cme_lbl);
-    else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, Cme_lbl);
+    if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, Cme_lbl);
+    else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, Cme_lbl);
     dotval  = dpd_file2_dot(RIA, &CME);
     dotval += dpd_file2_dot(Ria, &Cme);
     dpd_file2_axpy(&CME, RIA, -1.0*dotval, 0);
@@ -673,8 +673,8 @@ void schmidt_add_SS(dpdfile2 *RIA, dpdfile2 *Ria, int C_irr, int *numCs)
     scm_C1(RIA, Ria, 1.0/norm);
     sprintf(CME_lbl, "%s %d", "CME", *numCs);
     sprintf(Cme_lbl, "%s %d", "Cme", *numCs);
-    dpd_file2_copy(RIA, EOM_CME, CME_lbl);
-    dpd_file2_copy(Ria, EOM_Cme, Cme_lbl);
+    dpd_file2_copy(RIA, PSIF_EOM_CME, CME_lbl);
+    dpd_file2_copy(Ria, PSIF_EOM_Cme, Cme_lbl);
     ++(*numCs);
   }
   return;
@@ -689,7 +689,7 @@ void schmidt_add_SS_RHF(dpdfile2 *RIA, int C_irr, int *numCs)
 
   for (i=0; i<*numCs; i++) {
     sprintf(CME_lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
     dotval  = 2.0 * dpd_file2_dot(RIA, &CME);
     dpd_file2_axpy(&CME, RIA, -1.0*dotval, 0);
     dpd_file2_close(&CME);
@@ -703,7 +703,7 @@ void schmidt_add_SS_RHF(dpdfile2 *RIA, int C_irr, int *numCs)
   else {
     dpd_file2_scm(RIA, 1.0/norm);
     sprintf(CME_lbl, "%s %d", "CME", *numCs);
-    dpd_file2_copy(RIA, EOM_CME, CME_lbl);
+    dpd_file2_copy(RIA, PSIF_EOM_CME, CME_lbl);
     ++(*numCs);
   }
   return;
@@ -733,11 +733,11 @@ void restart_SS(double **alpha, int L, int num, int C_irr) {
 
   for (i=0; i<num; ++i) {
     sprintf(lbl, "%s %d", "CME", L+i);
-    dpd_file2_init(&C1, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&C1, PSIF_EOM_CME, C_irr, 0, 1, lbl);
     dpd_file2_scm(&C1, 0.0);
     for (j=0;j<L;++j) {
       sprintf(lbl, "%s %d", "CME", j);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       dpd_file2_axpy(&CME, &C1, alpha[j][i], 0);
       dpd_file2_close(&CME);
     }
@@ -745,13 +745,13 @@ void restart_SS(double **alpha, int L, int num, int C_irr) {
 
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Cme", L+i);
-      if (params.eom_ref == 1) dpd_file2_init(&C1, EOM_Cme, C_irr, 0, 1, lbl);
-      else if (params.eom_ref == 2) dpd_file2_init(&C1, EOM_Cme, C_irr, 2, 3, lbl);
+      if (params.eom_ref == 1) dpd_file2_init(&C1, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+      else if (params.eom_ref == 2) dpd_file2_init(&C1, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       dpd_file2_scm(&C1, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "Cme", j);
-        if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-        else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+        if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+        else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
         dpd_file2_axpy(&Cme, &C1, alpha[j][i],0);
         dpd_file2_close(&Cme);
       }
@@ -761,16 +761,16 @@ void restart_SS(double **alpha, int L, int num, int C_irr) {
 
   for (i=0; i<num; ++i) {
     sprintf(lbl, "%s %d", "CME", L+i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_copy(&CME, EOM_CME, lbl);
+    dpd_file2_copy(&CME, PSIF_EOM_CME, lbl);
     dpd_file2_close(&CME);
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Cme", L+i);
-      if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-      else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+      if (params.eom_ref == 1) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+      else if (params.eom_ref == 2) dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_copy(&Cme, EOM_Cme, lbl);
+      dpd_file2_copy(&Cme, PSIF_EOM_Cme, lbl);
       dpd_file2_close(&Cme);
     }
   }
