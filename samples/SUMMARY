@@ -541,6 +541,9 @@ sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the
 scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
 
 
+scf-guess-read:  Sample UHF/cc-pVDZ H2O computation on a doublet cation, using  RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
+
+
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
 
