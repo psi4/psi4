@@ -16,21 +16,17 @@ def run_gaussian_2(name, **kwargs):
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
-        PsiMod.print_out("\n")
-        PsiMod.print_out("Error: g2 computations require \"reference rhf\".\n")
-        PsiMod.print_out("\n")
-        sys.exit(1)
+        raise ValidationError("""g2 computations require "reference rhf".""")
 
     # stash user options:
     optstash = OptionsState(
-        ['OPTKING','G_CONVERGENCE'],
         ['QCI','COMPUTE_TRIPLES'],
         ['QCI','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
-        ['SCF_TYPE'])
+        ['SCF','SCF_TYPE'])
 
     # override default scf_type
-    PsiMod.set_global_option('SCF_TYPE','OUT_OF_CORE')
+    PsiMod.set_local_option('SCF','SCF_TYPE','OUT_OF_CORE')
 
     # optimize geometry at scf level
     PsiMod.clean()
@@ -57,6 +53,7 @@ def run_gaussian_2(name, **kwargs):
     PsiMod.clean()
 
     # optimize geometry at mp2 (no frozen core) level
+    # note: freeze_core isn't an option in MP2
     PsiMod.set_global_option('FREEZE_CORE',"FALSE")
     optimize('conv-mp2')
     PsiMod.clean()
@@ -82,8 +79,8 @@ def run_gaussian_2(name, **kwargs):
     hlc1 = -0.00614 * nalpha
 
     eqci_6311gdp = PsiMod.get_variable("QCISD(T) TOTAL ENERGY")
-    emp4_6311gd = PsiMod.get_variable("MP4 TOTAL ENERGY")
-    emp2_6311gd = PsiMod.get_variable("MP2 TOTAL ENERGY")
+    emp4_6311gd  = PsiMod.get_variable("MP4 TOTAL ENERGY")
+    emp2_6311gd  = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
 
     # correction for diffuse functions

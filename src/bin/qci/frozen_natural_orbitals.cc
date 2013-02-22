@@ -28,40 +28,32 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
 
 namespace psi{namespace qci{
 
-FrozenNO::FrozenNO(Options&options):
-  Wavefunction(Process::environment.options, _default_psio_lib_),options_(options)
+FrozenNO::FrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options):
+  Wavefunction(options, _default_psio_lib_)
 {
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
-  copy(ref);
-
-  if (ref.get() == NULL){
-     throw PsiException("no wavefunction?",__FILE__,__LINE__);
-  }
-  nirreps = ref->nirrep();
-  if (nirreps>1){
-     throw PsiException("FrozenNO requires symmetry c1 (for now!)",__FILE__,__LINE__);
-  }
-  int * sorbs = ref->nsopi();
-  int * orbs  = ref->nmopi();
-  int * docc  = ref->doccpi();
-  int * fzc   = ref->frzcpi();
-  int * fzv   = ref->frzvpi();
-  nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-  for (long int h=0; h<nirreps; h++){
-      nfzc   += fzc[h];
-      nfzv   += fzv[h];
-      nso    += sorbs[h];
-      nmo    += orbs[h];
-      ndocc  += docc[h];
-  }
-  ndoccact = ndocc - nfzc;
-  nvirt  = nmo - ndocc;
-
-  // NO time
-  NaturalOrbitals();
+    // copy wave function.
+    copy(wfn);
+    common_init();
+    ComputeNaturalOrbitals();
 }
 FrozenNO::~FrozenNO()
 {
+}
+
+void FrozenNO::common_init() {
+    if (nirrep_>1){
+       throw PsiException("FrozenNO requires symmetry c1 (for now!)",__FILE__,__LINE__);
+    }
+    nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
+    for (int h=0; h<nirrep_; h++){
+        nfzc   += frzcpi_[h];
+        nfzv   += frzvpi_[h];
+        nso    += nsopi_[h];
+        nmo    += nmopi_[h];
+        ndocc  += doccpi_[h];
+    }
+    ndoccact = ndocc - nfzc;
+    nvirt    = nmo - ndocc;
 }
 // use this function to return the mp2 energy in the full basis.
 double FrozenNO::compute_energy(){
@@ -71,7 +63,7 @@ double FrozenNO::compute_energy(){
 /*
  * build natural orbitals and transform TEIs
  */
-void FrozenNO::NaturalOrbitals(){
+void FrozenNO::ComputeNaturalOrbitals(){
   fflush(outfile);
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
