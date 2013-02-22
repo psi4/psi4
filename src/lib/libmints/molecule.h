@@ -248,6 +248,9 @@ public:
     std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
+    /// Returns the true atomic number of an atom
+    int true_atomic_number(int atom) const;
+    int ftrue_atomic_number(int atom) const;
     /// Returns mass atom atom
     double fmass(int atom) const;
     /// Returns label of atom
