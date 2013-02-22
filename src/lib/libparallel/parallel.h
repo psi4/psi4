@@ -13,15 +13,25 @@
 #include <cstdio>
 
 // Define the default parallel environment. In general, developers should just use this type.
+#if defined(HAVE_MPI)
+#   include <libparallel/mpi_wrapper.h>
+typedef psi::MPICommunicator            worldcomm;
+#else
+#   include <libparallel/local.h>
+typedef psi::LocalCommWrapper           worldcomm;
+#endif
+
+#if 0
 #if !defined(HAVE_MADNESS) && !defined(HAVE_ELEMENTAL)
 #include <libparallel/local.h>
 typedef     psi::LocalCommWrapper       worldcomm;
 #elif !defined(HAVE_MADNESS) && defined(HAVE_ELEMENTAL)
 #include <libparallel/elem.h>
-typedef     psi::ElemCommWrapper             worldcomm;
+typedef     psi::ElemCommWrapper        worldcomm;
 #elif defined(HAVE_MADNESS)
 #include <libparallel/mad.h>
 typedef     psi::MADNESSCommWrapper     worldcomm;
+#endif
 #endif
 
 namespace psi {
@@ -40,6 +50,6 @@ namespace psi {
 
 }
 
-#include "threaded_storage.h"
+//#include "threaded_storage.h"
 
 #endif  /* _psi_src_lib_libparallel_parallel_h_ */

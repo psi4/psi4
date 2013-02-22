@@ -522,9 +522,9 @@ AC_CXX_PROCESS_CHECK([dlfcn.h],[#include <dlfcn.h>],,[HAVE_DLFCN_H=1],[HAVE_DLFC
 AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 
 ACX_MPI()
-ACX_MADNESS()
-ACX_ELEMENTAL()
-ACX_SCALAPACK()
+#ACX_MADNESS()
+#ACX_ELEMENTAL()
+#ACX_SCALAPACK()
 
 # Make sure we're back in C++
 AC_LANG([C++])
@@ -655,18 +655,18 @@ if test "x${have_boost}" == "x0"; then
 fi
 
 PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
+#if test "$HAVE_MADNESS" = "1"; then
+#  PSICPPFLAGS="${PSICPPFLAGS} ${madinc}"
 #  PSICPPFLAGS='-I. ${BOOST_CPPFLAGS} -I${top_objdir}/include -I${top_srcdir}/include -I${top_srcdir}/src/lib -I${top_objdir}/src/lib ${madinc}'
-  AC_SUBST(madlibs)
-  AC_SUBST(madinc)
-fi
-if test "$HAVE_ELEMENTAL" = "1"; then
-  echo "we have elemental			:)"
-  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
-  echo "CPPFLAGS = "
-  echo ${PSICPPFLAGS}
-fi
+#  AC_SUBST(madlibs)
+#  AC_SUBST(madinc)
+#fi
+#if test "$HAVE_ELEMENTAL" = "1"; then
+#  echo "we have elemental			:)"
+#  PSICPPFLAGS="${PSICPPFLAGS} ${eleminc}"
+#  echo "CPPFLAGS = "
+#  echo ${PSICPPFLAGS}
+#fi
 #else
 #  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
 #fi
@@ -1199,11 +1199,11 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 
 # If we are using madness, and we are linking the internal madness
 # library then set up the internal madness to be built
-if test "$HAVE_MADNESS" = "1"; then
-  if test "$CONFIG_MADNESS" = "1"; then
-    AC_CONFIG_SUBDIRS([madness])
-  fi
-fi
+#if test "$HAVE_MADNESS" = "1"; then
+#  if test "$CONFIG_MADNESS" = "1"; then
+#    AC_CONFIG_SUBDIRS([madness])
+#  fi
+#fi
 
 AC_OUTPUT
 
