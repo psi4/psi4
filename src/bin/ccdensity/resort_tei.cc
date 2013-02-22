@@ -27,27 +27,27 @@ void resort_tei(void)
 
   distribute();
 
-  dpd_file4_init_nocache(&A, CC_AINTS_NEW, 0, 0, 0, "A <ij|kl>");
+  dpd_file4_init_nocache(&A, PSIF_CC_AINTS_NEW, 0, 0, 0, "A <ij|kl>");
   file_build(&A, 90, tolerance, 1, 1, 1, 0);
   dpd_file4_close(&A);
 
-  dpd_file4_init_nocache(&B, CC_BINTS_NEW, 0, 5, 5, "B <ab|cd>");
+  dpd_file4_init_nocache(&B, PSIF_CC_BINTS_NEW, 0, 5, 5, "B <ab|cd>");
   file_build(&B, 91, tolerance, 1, 1, 1, 0);
   dpd_file4_close(&B);
 
-  dpd_file4_init_nocache(&C, CC_CINTS_NEW, 0, 10, 10, "C <ia|jb>");
+  dpd_file4_init_nocache(&C, PSIF_CC_CINTS_NEW, 0, 10, 10, "C <ia|jb>");
   file_build(&C, 92, tolerance, 1, 1, 0, 0);
   dpd_file4_close(&C);
 
-  dpd_file4_init_nocache(&D, CC_DINTS_NEW, 0, 0, 5, "D <ij|ab>");
+  dpd_file4_init_nocache(&D, PSIF_CC_DINTS_NEW, 0, 0, 5, "D <ij|ab>");
   file_build(&D, 93, tolerance, 0, 0, 1, 0);
   dpd_file4_close(&D);
 
-  dpd_file4_init_nocache(&E, CC_EINTS_NEW, 0, 11, 0, "E <ai|jk>");
+  dpd_file4_init_nocache(&E, PSIF_CC_EINTS_NEW, 0, 11, 0, "E <ai|jk>");
   file_build(&E, 94, tolerance, 0, 1, 0, 0);
   dpd_file4_close(&E);
 
-  dpd_file4_init_nocache(&F, CC_FINTS_NEW, 0, 10, 5, "F <ia|bc>");
+  dpd_file4_init_nocache(&F, PSIF_CC_FINTS_NEW, 0, 10, 5, "F <ia|bc>");
   file_build(&F, 95, tolerance, 0, 1, 0, 0);
   dpd_file4_close(&F);
 

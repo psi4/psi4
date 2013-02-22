@@ -4,6 +4,7 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
+from psifiles import *
 import PsiMod
 import shutil
 import os
@@ -1296,8 +1297,8 @@ def run_mp2c(name, **kwargs):
     e_monomerB_mp2 = PsiMod.dfmp2()
     PsiMod.set_global_option('DF_INTS_IO', df_ints_io)
 
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     activate(molecule)
     PsiMod.IO.set_default_namespace('dimer')
@@ -1394,8 +1395,8 @@ def run_sapt(name, **kwargs):
     e_monomerB = scf_helper('RHF', **kwargs)
     PsiMod.set_global_option('DF_INTS_IO', df_ints_io)
 
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     activate(molecule)
     PsiMod.IO.set_default_namespace('dimer')
@@ -1757,16 +1758,16 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out('\n')
     banner('Dimer Basis SAPT')
     PsiMod.print_out('\n')
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = PsiMod.sapt()
     CTd = PsiMod.get_variable('SAPT CT ENERGY')
 
     PsiMod.print_out('\n')
     banner('Monomer Basis SAPT')
     PsiMod.print_out('\n')
-    PsiMod.IO.change_file_namespace(121, 'monomerAm', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerBm', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
     e_sapt = PsiMod.sapt()
     CTm = PsiMod.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm

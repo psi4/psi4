@@ -64,29 +64,29 @@ namespace psi { namespace ccdensity {
 	fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
 	fprintf(outfile,   "\t---------------------------------------------------\n");
 
-	dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-	dpd_file2_init(&F, CC_OEI, 0, 0, 0, "h(i,j)");
+	dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+	dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
 	this_energy = 2.0 * dpd_file2_dot(&D, &F);
 	dpd_file2_close(&F);
 	dpd_file2_close(&D);
 	one_energy += this_energy;
 
-	dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-	dpd_file2_init(&F, CC_OEI, 0, 1, 1, "h(a,b)");
+	dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+	dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
 	this_energy = 2.0 * dpd_file2_dot(&D, &F);
 	dpd_file2_close(&F);
 	dpd_file2_close(&D);
 	one_energy += this_energy;
 
-	dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-	dpd_file2_init(&F, CC_OEI, 0, 0, 1, "h(i,a)");
+	dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+	dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
 	this_energy = 2.0 * dpd_file2_dot(&D, &F);
 	dpd_file2_close(&F);
 	dpd_file2_close(&D);
 	one_energy += this_energy;
 
-	dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-	dpd_file2_init(&F, CC_OEI, 0, 0, 1, "h(i,a)");
+	dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+	dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
 	this_energy = 2.0 * dpd_file2_dot(&D, &F);
 	dpd_file2_close(&F);
 	dpd_file2_close(&D);
@@ -96,11 +96,11 @@ namespace psi { namespace ccdensity {
 	fflush(outfile);
       }
 
-      dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+      dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
       dpd_file2_mat_init(&D);
       dpd_file2_mat_rd(&D);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
@@ -132,13 +132,13 @@ namespace psi { namespace ccdensity {
       }
 
       /* Generate spin-adapted Gijkl just for the energy calculation */
-      dpd_buf4_scmcopy(&G, CC_GAMMA, "2 Gijkl - Gijlk", 2);
-      dpd_buf4_sort_axpy(&G, CC_GAMMA, pqsr, 0, 0, "2 Gijkl - Gijlk", -1);
+      dpd_buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gijkl - Gijlk", 2);
+      dpd_buf4_sort_axpy(&G, PSIF_CC_GAMMA, pqsr, 0, 0, "2 Gijkl - Gijlk", -1);
       dpd_buf4_close(&G);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 0, 0, 0, 0, 0, "2 Gijkl - Gijlk");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "2 Gijkl - Gijlk");
       if(!params.aobasis) {
-	dpd_buf4_init(&Aints, CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+	dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
 	two_energy += dpd_buf4_dot(&Aints, &G);
 	dpd_buf4_close(&Aints);
       }
@@ -153,14 +153,14 @@ namespace psi { namespace ccdensity {
       dpd_file2_mat_close(&D);
       dpd_file2_close(&D);
 
-      dpd_file2_init(&D1, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+      dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
       dpd_file2_mat_init(&D1);
       dpd_file2_mat_rd(&D1);
-      dpd_file2_init(&D2, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+      dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
       dpd_file2_mat_init(&D2);
       dpd_file2_mat_rd(&D2);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
@@ -190,13 +190,13 @@ namespace psi { namespace ccdensity {
       }
 
       /* Generate spin-adapted Gijka just for the energy calculation */
-      dpd_buf4_scmcopy(&G, CC_GAMMA, "2 Gijka - Gjika", 2);
-      dpd_buf4_sort_axpy(&G, CC_GAMMA, qprs, 0, 10, "2 Gijka - Gjika", -1);
+      dpd_buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gijka - Gjika", 2);
+      dpd_buf4_sort_axpy(&G, PSIF_CC_GAMMA, qprs, 0, 10, "2 Gijka - Gjika", -1);
       dpd_buf4_close(&G);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 0, 10, 0, 10, 0, "2 Gijka - Gjika");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "2 Gijka - Gjika");
       if(!params.aobasis) {
-	dpd_buf4_init(&E, CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+	dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
 	/* The factor of 4 here is necessary because Gijka is multiplied by 1/2 in Gijka.cc */
 	two_energy = 4 * dpd_buf4_dot(&E, &G);
 	dpd_buf4_close(&E);
@@ -216,12 +216,12 @@ namespace psi { namespace ccdensity {
 
       if(!params.aobasis) {
 	/* Generate spin-adapted Gijab jut for energy calculation */
-	dpd_buf4_init(&G, CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
-	dpd_buf4_scmcopy(&G, CC_GAMMA, "2 Gijab - Gijba", 2);
-	dpd_buf4_sort_axpy(&G, CC_GAMMA, pqsr, 0, 5, "2 Gijab - Gijba", -1);
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
+	dpd_buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gijab - Gijba", 2);
+	dpd_buf4_sort_axpy(&G, PSIF_CC_GAMMA, pqsr, 0, 5, "2 Gijab - Gijba", -1);
 	dpd_buf4_close(&G);
-	dpd_buf4_init(&G, CC_GAMMA, 0, 0, 5, 0, 5, 0, "2 Gijab - Gijba");
-	dpd_buf4_init(&DInts, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "2 Gijab - Gijba");
+	dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
 	two_energy = 2 * dpd_buf4_dot(&G, &DInts);
 	dpd_buf4_close(&G);
 	dpd_buf4_close(&DInts);
@@ -231,11 +231,11 @@ namespace psi { namespace ccdensity {
 	fflush(outfile);
       }
 
-      dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+      dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
       dpd_file2_mat_init(&D);
       dpd_file2_mat_rd(&D);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
@@ -268,11 +268,11 @@ namespace psi { namespace ccdensity {
       dpd_file2_close(&D);
 
 
-      dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+      dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
       dpd_file2_mat_init(&D);
       dpd_file2_mat_rd(&D);
 
-      dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+      dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_init(&G, h);
 	dpd_buf4_mat_irrep_rd(&G, h);
@@ -307,18 +307,18 @@ namespace psi { namespace ccdensity {
 
       if(!params.aobasis) {
 	two_energy = 0.0;
-	dpd_buf4_init(&C, CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
-	dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
+	dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia||jb>");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
 	two_energy += 2.0 * dpd_buf4_dot(&G, &C);
 	dpd_buf4_close(&G);
 
-	dpd_buf4_init(&C, CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-	dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
+	dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
 	two_energy += 2.0 * dpd_buf4_dot(&G, &C);
 	dpd_buf4_close(&G);
 
-	dpd_buf4_init(&DInts, CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
-	dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
+	dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
 	two_energy -= 2.0 * dpd_buf4_dot(&G, &DInts);
 	dpd_buf4_close(&G);
 	dpd_buf4_close(&DInts);
@@ -330,16 +330,16 @@ namespace psi { namespace ccdensity {
 
       if(!params.aobasis) {
 	/* Generate spin-adapted Gciab just for energy calculation */
-	dpd_buf4_init(&G, CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-	dpd_buf4_scmcopy(&G, CC_GAMMA, "2 Gciab - Gciba", 2);
-	dpd_buf4_sort_axpy(&G, CC_GAMMA, pqsr, 11, 5, "2 Gciab - Gciba", -1);
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
+	dpd_buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gciab - Gciba", 2);
+	dpd_buf4_sort_axpy(&G, PSIF_CC_GAMMA, pqsr, 11, 5, "2 Gciab - Gciba", -1);
 	dpd_buf4_close(&G);
 
-	dpd_buf4_init(&G, CC_GAMMA, 0, 11, 5, 11, 5, 0, "2 Gciab - Gciba");
-	dpd_buf4_init(&FInts, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-	dpd_buf4_sort(&FInts, CC_FINTS, qpsr, 11, 5, "F <ai|bc>");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "2 Gciab - Gciba");
+	dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+	dpd_buf4_sort(&FInts, PSIF_CC_FINTS, qpsr, 11, 5, "F <ai|bc>");
 	dpd_buf4_close(&FInts);
-	dpd_buf4_init(&FInts, CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+	dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
 	/* The factor of 4 here is necessary because Gciab is multiplied by 1/2 in Gciab.cc */
 	two_energy = 4*dpd_buf4_dot(&FInts, &G);
 	dpd_buf4_close(&FInts);
@@ -350,14 +350,14 @@ namespace psi { namespace ccdensity {
       }
 
       if(!params.aobasis) {
-	dpd_buf4_init(&G, CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
 
-	dpd_buf4_scmcopy(&G, CC_GAMMA, "2 Gabcd - Gabdc", 2);
-	dpd_buf4_sort_axpy(&G, CC_GAMMA, pqsr, 5, 5, "2 Gabcd - Gabdc", -1);
+	dpd_buf4_scmcopy(&G, PSIF_CC_GAMMA, "2 Gabcd - Gabdc", 2);
+	dpd_buf4_sort_axpy(&G, PSIF_CC_GAMMA, pqsr, 5, 5, "2 Gabcd - Gabdc", -1);
 	dpd_buf4_close(&G);
 
-	dpd_buf4_init(&G, CC_GAMMA, 0, 5, 5, 5, 5, 0, "2 Gabcd - Gabdc");
-	dpd_buf4_init(&BInts, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+	dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "2 Gabcd - Gabdc");
+	dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
 	two_energy = dpd_buf4_dot(&BInts, &G);
 	dpd_buf4_close(&BInts);
 	dpd_buf4_close(&G);

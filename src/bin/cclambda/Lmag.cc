@@ -19,11 +19,11 @@ void Lmag(int L_irr)
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
 
-    dpd_file2_init(&LIA, CC_LAMBDA, L_irr, 0, 1, "New LIA");
-    dpd_file2_init(&Lia, CC_LAMBDA, L_irr, 0, 1, "New Lia");
-    dpd_buf4_init(&LIJAB, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&Lijab, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_init(&LIjAb, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
 
     norm = dpd_file2_dot_self(&LIA);
     norm += dpd_file2_dot_self(&Lia);

@@ -2612,13 +2612,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 100);
       /*- Desired number of DIIS vectors -*/
       options.add_int("DIIS_MAX_VECS", 8);
-      /*- Low memory options for triples contribution -*/
+      /*- Low memory option for triples contribution. Note that this option
+          is enabled automatically if the memory requirements of the 
+          conventional algorithm would exceed the available resources -*/
       options.add_bool("TRIPLES_LOW_MEMORY",false);
       /*- Compute triples contribution? !expert -*/
       options.add_bool("COMPUTE_TRIPLES", true);
       /*- Compute MP4 triples contribution? !expert -*/
       options.add_bool("COMPUTE_MP4_TRIPLES", false);
-      /*- Use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)?  */
+      /*- Use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
       /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);

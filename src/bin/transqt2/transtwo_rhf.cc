@@ -135,7 +135,7 @@ void transtwo_rhf(void)
   iwl_buf_init(&MBuff, PSIF_MO_TEI, params.tolerance, 0, 0);
 
   dpd_buf4_init(&J, PSIF_HALFT1, 0, 8, 0, 8, 3, 0, "Half-Transformed Ints (ij,pq)");
-  dpd_buf4_init(&K, CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
+  dpd_buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
   for(h=0; h < nirreps; h++) {
 
     memfree = (unsigned long int) (dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);

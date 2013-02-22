@@ -47,9 +47,9 @@ void cc2_sigma(int i, int C_irr)
     cc2_sigmaSS(i,C_irr);
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
-    dpd_buf4_init(&CMnEf, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
     dpd_dot24(&FME,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_file2_close(&FME);
@@ -67,10 +67,10 @@ void cc2_sigma(int i, int C_irr)
     dpd_file2_close(&SIA);
     */
 
-    dpd_buf4_init(&C, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
-    dpd_buf4_init(&W, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
+    dpd_buf4_init(&C, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&S, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&S, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     dpd_file2_mat_init(&S);
     dpd_file2_mat_rd(&S);
     for(Gam=0; Gam < moinfo.nirreps; Gam++) {
@@ -113,10 +113,10 @@ void cc2_sigma(int i, int C_irr)
     dpd_buf4_close(&W);
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_init(&WMnIe, CC_HBAR, H_IRR, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&WMnIe, PSIF_CC_HBAR, H_IRR, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
     dpd_contract442(&WMnIe, &CMnEf, &SIA, 3, 3, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_buf4_close(&WMnIe);
@@ -125,17 +125,17 @@ void cc2_sigma(int i, int C_irr)
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(Ij,Ab)");
-    dpd_buf4_init(&WMbIj, CC2_HET1, H_IRR, 10, 0, 10, 0, 0, "CC2 WMbIj");
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(Ij,Ab)");
+    dpd_buf4_init(&WMbIj, PSIF_CC2_HET1, H_IRR, 10, 0, 10, 0, 0, "CC2 WMbIj");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
     dpd_contract244(&CME, &WMbIj, &Z, 0, 0, 1, 1.0, 0.0);
     dpd_file2_close(&CME);
     dpd_buf4_close(&WMbIj);
-    dpd_buf4_sort(&Z, EOM_TMP, qpsr, 0, 5, "WmaijDS Z(jI,bA)");
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "WmaijDS Z(jI,bA)");
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
     dpd_buf4_axpy(&Z, &SIjAb,  -1.0);
     dpd_buf4_close(&Z);
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(jI,bA)");
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(jI,bA)");
     dpd_buf4_axpy(&Z, &SIjAb,  -1.0);
     dpd_buf4_close(&Z);
     dpd_buf4_close(&SIjAb);
@@ -143,10 +143,10 @@ void cc2_sigma(int i, int C_irr)
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
     dpd_buf4_scm(&Z,0);
-    dpd_buf4_init(&W, CC2_HET1, H_IRR, 11, 5, 11, 5, 0, "CC2 WAbEi (Ei,Ab)");
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
+    dpd_buf4_init(&W, PSIF_CC2_HET1, H_IRR, 11, 5, 11, 5, 0, "CC2 WAbEi (Ei,Ab)");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
     /*dpd_contract244(&CME, &WAbEi, &Z, 1, 0, 0, 1.0, 0.0);*/
     dpd_file2_mat_init(&CME);
     dpd_file2_mat_rd(&CME);
@@ -198,8 +198,8 @@ void cc2_sigma(int i, int C_irr)
     dpd_buf4_close(&SIjAb);
     */
 
-    dpd_buf4_sort_axpy(&Z, EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
     dpd_buf4_axpy(&Z, &SIjAb, 1.0);
     dpd_buf4_close(&SIjAb);
     dpd_buf4_close(&Z);
@@ -207,34 +207,34 @@ void cc2_sigma(int i, int C_irr)
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&FAE, CC_OEI, H_IRR, 1, 1, "fAB");
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "fAB");
     dpd_contract424(&CMnEf, &FAE, &Z, 3, 1, 0, 1.0, 0.0);
     dpd_file2_close(&FAE);
     dpd_buf4_close(&CMnEf);
 
-    dpd_buf4_sort(&Z, EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
-    dpd_buf4_init(&Z2, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
+    dpd_buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
+    dpd_buf4_init(&Z2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
 
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
     dpd_buf4_axpy(&Z, &SIjAb, 1.0);
     dpd_buf4_axpy(&Z2, &SIjAb, 1.0);
     dpd_buf4_close(&Z);
     dpd_buf4_close(&Z2);
     dpd_buf4_close(&SIjAb);
 
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&FMI, CC_OEI, H_IRR, 0, 0, "fIJ");
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "fIJ");
     dpd_contract244(&FMI, &CMnEf, &Z, 0, 0, 0, 1.0, 0.0);
     dpd_file2_close(&FMI);
     dpd_buf4_close(&CMnEf);
-    dpd_buf4_sort(&Z, EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
     dpd_buf4_axpy(&Z, &SIjAb, -1.0);
     dpd_buf4_close(&Z);
-    dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
+    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
     dpd_buf4_axpy(&Z, &SIjAb, -1.0);
     dpd_buf4_close(&Z);
     dpd_buf4_close(&SIjAb);
@@ -266,28 +266,28 @@ void cc2_sigmaSS(int i, int C_irr)
     /* sigmaSS */
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 
-    dpd_file2_init(&FAE, CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
     dpd_contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
     dpd_file2_close(&FAE);
 
-    dpd_file2_init(&FMI, CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
     dpd_contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
     dpd_file2_close(&FMI);
 
-    dpd_buf4_init(&WMbEj, CC2_HET1, H_IRR, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
+    dpd_buf4_init(&WMbEj, PSIF_CC2_HET1, H_IRR, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
     dpd_contract422(&WMbEj, &CME, &SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&WMbEj);
 
-    dpd_file2_init(&Xme, CC_OEI, C_irr, 0, 1, "XME");
-    dpd_buf4_init(&D, CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
+    dpd_file2_init(&Xme, PSIF_CC_OEI, C_irr, 0, 1, "XME");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
     dpd_contract422(&D, &CME, &Xme, 0, 0, 1, 0);
     dpd_buf4_close(&D);
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
     dpd_contract422(&T2, &Xme, &SIA, 0, 0, 1, 1);
     dpd_buf4_close(&T2);
     dpd_file2_close(&Xme);
