@@ -2606,9 +2606,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("CEPA_VABCD_DIRECT",false);
   }
   if (name == "QCI"|| options.read_globals()) {
-      /*- time each cc diagram? -*/
+      /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
-      /*- Convergence based on energy alone? -*/
+      /*- Do determine convergence based on energy alone? -*/
       options.add_bool("CC_CONVERGE_E_ONLY",false);
       /*- Convergence for the CC energy.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
@@ -2620,17 +2620,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 100);
       /*- Desired number of DIIS vectors -*/
       options.add_int("DIIS_MAX_VECS", 8);
-      /*- Low memory option for triples contribution. Note that this option
-          is enabled automatically if the memory requirements of the
+      /*- Do use low memory option for triples contribution? Note that this 
+          option is enabled automatically if the memory requirements of the 
           conventional algorithm would exceed the available resources -*/
       options.add_bool("TRIPLES_LOW_MEMORY",false);
-      /*- Compute triples contribution? !expert -*/
+      /*- Do compute triples contribution? !expert -*/
       options.add_bool("COMPUTE_TRIPLES", true);
-      /*- Compute MP4 triples contribution? !expert -*/
+      /*- Do compute MP4 triples contribution? !expert -*/
       options.add_bool("COMPUTE_MP4_TRIPLES", false);
-      /*- Use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
+      /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
-      /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T) -*/
+      /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
+          ( only valid if |qci__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
@@ -2646,13 +2647,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("CC_SCALE_SS",1.13);
       /*- Use packed storage for the (ac|bd) diagram? only valid in MO -*/
       options.add_bool("VABCD_PACKED",true);
-      /*- only evaluate mp2 energy? !expert -*/
+      /*- do only evaluate mp2 energy? !expert -*/
       options.add_bool("RUN_MP2",false);
-      /*- only evaluate mp3 energy? !expert -*/
+      /*- do only evaluate mp3 energy? !expert -*/
       options.add_bool("RUN_MP3",false);
-      /*- only evaluate mp4 energy? !expert -*/
+      /*- do only evaluate mp4 energy? !expert -*/
       options.add_bool("RUN_MP4",false);
-      /*- is this a ccsd or qcisd calculation? !expert -*/
+      /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
   }
   if (name == "THERMO"|| options.read_globals()) {
