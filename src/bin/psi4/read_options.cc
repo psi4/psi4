@@ -2605,7 +2605,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       (AC|BD) integrals will be avoided. -*/
       options.add_bool("CEPA_VABCD_DIRECT",false);
   }
-  if (name == "QCI"|| options.read_globals()) {
+  if (name == "FNOCC"|| options.read_globals()) {
       /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
       /*- Do determine convergence based on energy alone? -*/

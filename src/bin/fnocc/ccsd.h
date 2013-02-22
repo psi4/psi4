@@ -10,7 +10,7 @@
 
 long int Position(long int i,long int j);
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 class CoupledCluster: public Wavefunction{
   public:
@@ -51,7 +51,7 @@ class CoupledCluster: public Wavefunction{
 
     /// cc/qci/mp task
     struct CCTask{
-        void(psi::qci::CoupledCluster::*func)(CCTaskParams);
+        void(psi::fnocc::CoupledCluster::*func)(CCTaskParams);
         double flopcount;
         char*name;
     };

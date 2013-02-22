@@ -1931,11 +1931,11 @@ def run_mrcc(name, **kwargs):
 
     return e
 
-def run_qci(name, **kwargs):
+def run_fnocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a QCISD(T), CCSD(T), MP2.5, MP3, and MP4 computation.
 
-    >>> energy('qcisd(t)')
+    >>> energy('fno-ccsd(t)')
 
     """
     lowername = name.lower()
@@ -1944,47 +1944,47 @@ def run_qci(name, **kwargs):
     # stash user options:
     optstash = OptionsState(
         ['TRANSQT2','WFN'],
-        ['QCI','RUN_MP2'],
-        ['QCI','RUN_MP3'],
-        ['QCI','RUN_MP4'],
-        ['QCI','RUN_CCSD'],
-        ['QCI','COMPUTE_TRIPLES'],
-        ['QCI','COMPUTE_MP4_TRIPLES'],
-        ['QCI','NAT_ORBS'])
+        ['FNOCC','RUN_MP2'],
+        ['FNOCC','RUN_MP3'],
+        ['FNOCC','RUN_MP4'],
+        ['FNOCC','RUN_CCSD'],
+        ['FNOCC','COMPUTE_TRIPLES'],
+        ['FNOCC','COMPUTE_MP4_TRIPLES'],
+        ['FNOCC','NAT_ORBS'])
 
     # override symmetry for fno-cc
-    if (PsiMod.get_option('QCI','NAT_ORBS')):
+    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
         molecule = PsiMod.get_active_molecule()
         molecule.update_geometry()
         molecule.reset_point_group('c1')
 
     # which method?
     if (lowername == '_ccsd'):
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
-        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
     elif (lowername == '_ccsd(t)'):
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
-        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
     if (lowername == 'qcisd'):
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
-        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
     elif (lowername == 'qcisd(t)'):
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
-        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
     elif (lowername == '_mp2'):
-        PsiMod.set_local_option('QCI','RUN_MP2', True)
+        PsiMod.set_local_option('FNOCC','RUN_MP2', True)
     elif (lowername == '_mp2.5'):
-        PsiMod.set_local_option('QCI','RUN_MP3', True)
+        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
     elif (lowername == '_mp3'):
-        PsiMod.set_local_option('QCI','RUN_MP3', True)
+        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
     elif (lowername == '_mp4'):
-        PsiMod.set_local_option('QCI','RUN_MP4', True)
-        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', True)
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
     elif (lowername == '_mp4(sdq)'):
-        PsiMod.set_local_option('QCI','RUN_MP4', True)
-        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', False)
-        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
@@ -2002,12 +2002,12 @@ def run_qci(name, **kwargs):
         mints.integrals()
 
     # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
-    if PsiMod.get_option('QCI','NAT_ORBS') == False and PsiMod.get_option('QCI','RUN_MP2') == False:
+    if PsiMod.get_option('FNOCC','NAT_ORBS') == False and PsiMod.get_option('FNOCC','RUN_MP2') == False:
        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
        PsiMod.transqt2()
 
     # run ccsd
-    PsiMod.qci()
+    PsiMod.fnocc()
 
     # set current correlation energy and total energy.  only need to treat mpn here.
     emp2     = PsiMod.get_variable("MP2 TOTAL ENERGY")

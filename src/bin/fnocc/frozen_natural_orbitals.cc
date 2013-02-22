@@ -22,11 +22,11 @@
 using namespace psi;
 using namespace cepa;
 using namespace boost;
-namespace psi{namespace qci{
+namespace psi{namespace fnocc{
 void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
 }}
 
-namespace psi{namespace qci{
+namespace psi{namespace fnocc{
 
 FrozenNO::FrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options):
   Wavefunction(options, _default_psio_lib_)
