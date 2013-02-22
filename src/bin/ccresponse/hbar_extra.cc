@@ -18,16 +18,16 @@ void hbar_extra(void) {
   dpdbuf4 t2, l2;
 
   /* LIjAb * TIjAb */
-  dpd_file2_init(&lt, CC_OEI, 0, 0, 0, "Lt_IJ");
+  dpd_file2_init(&lt, PSIF_CC_OEI, 0, 0, 0, "Lt_IJ");
 
-  dpd_buf4_init(&l2, CC_LAMPS, 0, 0, 7, 2, 7, 0, "LIJAB 0 -1");
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 7, 2, 7, 0, "LIJAB 0 -1");
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
   dpd_contract442(&l2, &t2, &lt, 0, 0, -1.0, 0.0);
   dpd_buf4_close(&t2);
   dpd_buf4_close(&l2);
 
-  dpd_buf4_init(&l2, CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&l2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract442(&l2, &t2, &lt, 0, 0, -1.0, 1.0);
   dpd_buf4_close(&t2);
   dpd_buf4_close(&l2);
@@ -35,14 +35,14 @@ void hbar_extra(void) {
   dpd_file2_close(&lt);
 
   /* 2 W(ME,jb) + W(Me,Jb) */
-  dpd_buf4_init(&W1, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-  dpd_buf4_copy(&W1, CC_HBAR, "2 W(ME,jb) + W(Me,Jb)");
+  dpd_buf4_init(&W1, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+  dpd_buf4_copy(&W1, PSIF_CC_HBAR, "2 W(ME,jb) + W(Me,Jb)");
   dpd_buf4_close(&W1);
-  dpd_buf4_init(&W1, CC_HBAR, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
-  dpd_buf4_init(&W2, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+  dpd_buf4_init(&W1, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
+  dpd_buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
   dpd_buf4_axpy(&W2, &W1, 2);
   dpd_buf4_close(&W2);
-  dpd_buf4_sort(&W1, CC_HBAR, rspq, 10, 10, "2 W(jb,ME) + W(Jb,Me)");
+  dpd_buf4_sort(&W1, PSIF_CC_HBAR, rspq, 10, 10, "2 W(jb,ME) + W(Jb,Me)");
   dpd_buf4_close(&W1);
 }
 

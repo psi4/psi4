@@ -63,70 +63,70 @@ void lag(struct RHO_Params rho_params)
      final gradient expression */
 
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'IJ");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'AB");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'IA");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'AI");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'IJ");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'ij");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'AB");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'ab");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'IA");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'ia");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'AI");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'ai");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'IJ");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 2, 2, "I'ij");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 2, "I'ij");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'AB");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 3, 3, "I'ab");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 3, 3, "I'ab");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'IA");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 2, 3, "I'ia");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'AI");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
-    dpd_file2_init(&I, CC_OEI, 0, 3, 2, "I'ai");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 3, 2, "I'ai");
     dpd_file2_scm(&I, -0.5);
     dpd_file2_close(&I);
 
@@ -140,7 +140,7 @@ void lag(struct RHO_Params rho_params)
     occpi = moinfo.occpi; virtpi = moinfo.virtpi; openpi = moinfo.openpi;
 
 
-    dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'ij");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'ij");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {
@@ -164,7 +164,7 @@ void lag(struct RHO_Params rho_params)
     dpd_file2_mat_close(&I);
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'AB");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'AB");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {
@@ -188,10 +188,10 @@ void lag(struct RHO_Params rho_params)
     dpd_file2_mat_close(&I);
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 1, 1, "I'ab");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 1, "I'ab");
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'AI");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {
@@ -205,7 +205,7 @@ void lag(struct RHO_Params rho_params)
     dpd_file2_mat_close(&I);
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 1, 0, "I'ai");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {
@@ -219,7 +219,7 @@ void lag(struct RHO_Params rho_params)
     dpd_file2_mat_close(&I);
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'IA");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {
@@ -233,7 +233,7 @@ void lag(struct RHO_Params rho_params)
     dpd_file2_mat_close(&I);
     dpd_file2_close(&I);
 
-    dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'ia");
+    dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
     dpd_file2_mat_init(&I);
     dpd_file2_mat_rd(&I);
     for(h=0; h < nirreps; h++) {

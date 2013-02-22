@@ -44,9 +44,9 @@ void FT2(void)
 
     /* t(ij,ab) <-- t(j,e) * <ie|ab> + t(i,e) * <je|ba> */
     /* OOC code added 3/23/05, TDC */
-    dpd_buf4_init(&X, CC_TMP0, 0, 0, 5, 0, 5, 0, "X(Ij,Ab)");
-    dpd_buf4_init(&F, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-    dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&X, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "X(Ij,Ab)");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+    dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&t1);
     dpd_file2_mat_rd(&t1);
     for(Gie=0; Gie < moinfo.nirreps; Gie++) { 
@@ -81,30 +81,30 @@ void FT2(void)
     dpd_file2_mat_close(&t1);
     dpd_file2_close(&t1);
     dpd_buf4_close(&F);
-    dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
     dpd_buf4_axpy(&X, &t2, 1);
     dpd_buf4_close(&t2);
-    dpd_buf4_sort_axpy(&X, CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
+    dpd_buf4_sort_axpy(&X, PSIF_CC_TAMPS, qpsr, 0, 5, "New tIjAb", 1);
     dpd_buf4_close(&X);
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_buf4_init(&newtIJAB, CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
-    dpd_buf4_init(&newtijab, CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tijab");
-    dpd_buf4_init(&newtIjAb, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    dpd_buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
+    dpd_buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tijab");
+    dpd_buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
 
-    dpd_file2_init(&tIA, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&tia, CC_OEI, 0, 0, 1, "tia");
+    dpd_file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
 
     /*** AA ***/
 
-    dpd_buf4_init(&F_anti, CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
-    dpd_buf4_init(&t2, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&F_anti, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
+    dpd_buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
     dpd_contract424(&F_anti, &tIA, &t2, 1, 1, 1, 1, 0);
-    dpd_buf4_sort(&t2, CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
+    dpd_buf4_sort(&t2, PSIF_CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
     dpd_buf4_close(&t2);
-    dpd_buf4_init(&t2a, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_buf4_init(&t2b, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
+    dpd_buf4_init(&t2a, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&t2b, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
     dpd_buf4_axpy(&t2b, &t2a, -1);
     dpd_buf4_axpy(&t2a, &newtIJAB, 1);
     dpd_buf4_close(&t2b);
@@ -113,13 +113,13 @@ void FT2(void)
 
     /*** BB ***/
 
-    dpd_buf4_init(&F_anti, CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
-    dpd_buf4_init(&t2, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&F_anti, PSIF_CC_FINTS, 0, 10, 7, 10, 5, 1, "F <ia|bc>");
+    dpd_buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
     dpd_contract424(&F_anti, &tia, &t2, 1, 1, 1, 1, 0);
-    dpd_buf4_sort(&t2, CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
+    dpd_buf4_sort(&t2, PSIF_CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
     dpd_buf4_close(&t2);
-    dpd_buf4_init(&t2a, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_buf4_init(&t2b, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
+    dpd_buf4_init(&t2a, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&t2b, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
     dpd_buf4_axpy(&t2b, &t2a, -1);
     dpd_buf4_axpy(&t2a, &newtijab, 1);
     dpd_buf4_close(&t2b);
@@ -128,10 +128,10 @@ void FT2(void)
 
     /*** AB ***/
 
-    dpd_buf4_init(&F, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
     dpd_contract424(&F, &tia, &newtIjAb, 1, 1, 1, 1, 1);
     dpd_buf4_close(&F);
-    dpd_buf4_init(&F, CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
     dpd_contract244(&tIA, &F, &newtIjAb, 1, 0, 0, 1, 1);
     dpd_buf4_close(&F);
 
@@ -144,22 +144,22 @@ void FT2(void)
   }
   else if(params.ref == 2) { /*** UHF ***/
 
-    dpd_buf4_init(&newtIJAB, CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
-    dpd_buf4_init(&newtijab, CC_TAMPS, 0, 10, 17, 12, 17, 0, "New tijab");
-    dpd_buf4_init(&newtIjAb, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+    dpd_buf4_init(&newtIJAB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "New tIJAB");
+    dpd_buf4_init(&newtijab, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "New tijab");
+    dpd_buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
 
-    dpd_file2_init(&tIA, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&tia, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
 
     /*** AA ***/
 
-    dpd_buf4_init(&F, CC_FINTS, 0, 20, 7, 20, 5, 1, "F <IA|BC>");
-    dpd_buf4_init(&t2, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 20, 7, 20, 5, 1, "F <IA|BC>");
+    dpd_buf4_init(&t2, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
     dpd_contract424(&F, &tIA, &t2, 1, 1, 1, 1, 0);
-    dpd_buf4_sort(&t2, CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
+    dpd_buf4_sort(&t2, PSIF_CC_TMP0, qprs, 0, 7, "T (JI,A>B)");
     dpd_buf4_close(&t2);
-    dpd_buf4_init(&t2a, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
-    dpd_buf4_init(&t2b, CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
+    dpd_buf4_init(&t2a, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (IJ,A>B)");
+    dpd_buf4_init(&t2b, PSIF_CC_TMP0, 0, 0, 7, 0, 7, 0, "T (JI,A>B)");
     dpd_buf4_axpy(&t2b, &t2a, -1);
     dpd_buf4_axpy(&t2a, &newtIJAB, 1);
     dpd_buf4_close(&t2b);
@@ -168,13 +168,13 @@ void FT2(void)
 
     /*** BB ***/
 
-    dpd_buf4_init(&F, CC_FINTS, 0, 30, 17, 30, 15, 1, "F <ia|bc>");
-    dpd_buf4_init(&t2, CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 30, 17, 30, 15, 1, "F <ia|bc>");
+    dpd_buf4_init(&t2, PSIF_CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
     dpd_contract424(&F, &tia, &t2, 1, 1, 1, 1, 0);
-    dpd_buf4_sort(&t2, CC_TMP0, qprs, 10, 17, "T (ji,a>b)");
+    dpd_buf4_sort(&t2, PSIF_CC_TMP0, qprs, 10, 17, "T (ji,a>b)");
     dpd_buf4_close(&t2);
-    dpd_buf4_init(&t2a, CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
-    dpd_buf4_init(&t2b, CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ji,a>b)");
+    dpd_buf4_init(&t2a, PSIF_CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ij,a>b)");
+    dpd_buf4_init(&t2b, PSIF_CC_TMP0, 0, 10, 17, 10, 17, 0, "T (ji,a>b)");
     dpd_buf4_axpy(&t2b, &t2a, -1);
     dpd_buf4_axpy(&t2a, &newtijab, 1);
     dpd_buf4_close(&t2b);
@@ -183,10 +183,10 @@ void FT2(void)
 
     /*** AB ***/
 
-    dpd_buf4_init(&F, CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
     dpd_contract424(&F, &tia, &newtIjAb, 1, 1, 1, 1, 1);
     dpd_buf4_close(&F);
-    dpd_buf4_init(&F, CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
+    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 28, 26, 28, 26, 0, "F <Ab|Ci>");
     dpd_contract244(&tIA, &F, &newtIjAb, 1, 2, 0, 1, 1);
     dpd_buf4_close(&F);
 

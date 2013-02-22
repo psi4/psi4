@@ -28,65 +28,65 @@ void restart_with_root(int prop_root, int C_irr) {
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, EOM_CME, "CME 0");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_EOM_CME, "CME 0");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_copy(&CMnEf, EOM_CMnEf, "CMnEf 0");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_EOM_CMnEf, "CMnEf 0");
     dpd_buf4_close(&CMnEf);
   }
   else if (params.eom_ref == 1) {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, EOM_CME, "CME 0");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_EOM_CME, "CME 0");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "Cme %d", prop_root);
-    dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&Cme, EOM_Cme, "Cme 0");
+    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&Cme, PSIF_EOM_Cme, "Cme 0");
     dpd_file2_close(&Cme);
 
     sprintf(lbl, "CMNEF %d", prop_root);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&CMNEF, EOM_CMNEF, "CMNEF 0");
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&CMNEF, PSIF_EOM_CMNEF, "CMNEF 0");
     dpd_buf4_close(&CMNEF);
 
     sprintf(lbl, "Cmnef %d", prop_root);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&Cmnef, EOM_Cmnef, "Cmnef 0");
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&Cmnef, PSIF_EOM_Cmnef, "Cmnef 0");
     dpd_buf4_close(&Cmnef);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_copy(&CMnEf, EOM_CMnEf, "CMnEf 0");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_EOM_CMnEf, "CMnEf 0");
     dpd_buf4_close(&CMnEf);
   }
   else {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, EOM_CME, "CME 0");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_EOM_CME, "CME 0");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "Cme %d", prop_root);
-    dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
-    dpd_file2_copy(&Cme, EOM_Cme, "Cme 0");
+    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+    dpd_file2_copy(&Cme, PSIF_EOM_Cme, "Cme 0");
     dpd_file2_close(&Cme);
 
     sprintf(lbl, "CMNEF %d", prop_root);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&CMNEF, EOM_CMNEF, "CMNEF 0");
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&CMNEF, PSIF_EOM_CMNEF, "CMNEF 0");
     dpd_buf4_close(&CMNEF);
 
     sprintf(lbl, "Cmnef %d", prop_root);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
-    dpd_buf4_copy(&Cmnef, EOM_Cmnef, "Cmnef 0");
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+    dpd_buf4_copy(&Cmnef, PSIF_EOM_Cmnef, "Cmnef 0");
     dpd_buf4_close(&Cmnef);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
-    dpd_buf4_copy(&CMnEf, EOM_CMnEf, "CMnEf 0");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_EOM_CMnEf, "CMnEf 0");
     dpd_buf4_close(&CMnEf);
   }
   return;
@@ -105,65 +105,65 @@ void save_C_ccsd(int prop_root, int C_irr) {
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, CC3_MISC, "CCSD CME");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_CC3_MISC, "CCSD CME");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_copy(&CMnEf, CC3_MISC, "CCSD CMnEf");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_CC3_MISC, "CCSD CMnEf");
     dpd_buf4_close(&CMnEf);
   }
   else if (params.eom_ref == 1) {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, CC3_MISC, "CCSD CME");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_CC3_MISC, "CCSD CME");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "Cme %d", prop_root);
-    dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&Cme, CC3_MISC, "CCSD Cme");
+    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&Cme, PSIF_CC3_MISC, "CCSD Cme");
     dpd_file2_close(&Cme);
 
     sprintf(lbl, "CMNEF %d", prop_root);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&CMNEF, CC3_MISC, "CCSD CMNEF");
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&CMNEF, PSIF_CC3_MISC, "CCSD CMNEF");
     dpd_buf4_close(&CMNEF);
 
     sprintf(lbl, "Cmnef %d", prop_root);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&Cmnef, CC3_MISC, "CCSD Cmnef");
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&Cmnef, PSIF_CC3_MISC, "CCSD Cmnef");
     dpd_buf4_close(&Cmnef);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_copy(&CMnEf, CC3_MISC, "CCSD CMnEf");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_CC3_MISC, "CCSD CMnEf");
     dpd_buf4_close(&CMnEf);
   }
   else {
     sprintf(lbl, "CME %d", prop_root);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_copy(&CME, CC3_MISC, "CCSD CME");
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_copy(&CME, PSIF_CC3_MISC, "CCSD CME");
     dpd_file2_close(&CME);
 
     sprintf(lbl, "Cme %d", prop_root);
-    dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
-    dpd_file2_copy(&Cme, CC3_MISC, "CCSD Cme");
+    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+    dpd_file2_copy(&Cme, PSIF_CC3_MISC, "CCSD Cme");
     dpd_file2_close(&Cme);
 
     sprintf(lbl, "CMNEF %d", prop_root);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
-    dpd_buf4_copy(&CMNEF, CC3_MISC, "CCSD CMNEF");
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_copy(&CMNEF, PSIF_CC3_MISC, "CCSD CMNEF");
     dpd_buf4_close(&CMNEF);
 
     sprintf(lbl, "Cmnef %d", prop_root);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
-    dpd_buf4_copy(&Cmnef, CC3_MISC, "CCSD Cmnef");
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+    dpd_buf4_copy(&Cmnef, PSIF_CC3_MISC, "CCSD Cmnef");
     dpd_buf4_close(&Cmnef);
 
     sprintf(lbl, "CMnEf %d", prop_root);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
-    dpd_buf4_copy(&CMnEf, CC3_MISC, "CCSD CMnEf");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_CC3_MISC, "CCSD CMnEf");
     dpd_buf4_close(&CMnEf);
   }
   return;

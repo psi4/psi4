@@ -19,69 +19,69 @@ namespace psi { namespace ccdensity {
       G_irr = params.G_irr;
 
       if(params.ref == 0) { /** RHF **/
-	dpd_buf4_init(&V, CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
-	dpd_buf4_copy(&V, CC_GAMMA, "GIjKl");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "GIjKl");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
       }
       else if(params.ref == 1) { /** ROHF **/
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
-	dpd_buf4_copy(&V, CC_GAMMA, "GIJKL");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "GIJKL");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 2, 2, 2, 2, 0, "Vmnij");
-	dpd_buf4_copy(&V, CC_GAMMA, "Gijkl");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "Vmnij");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "Gijkl");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
-	dpd_buf4_copy(&V, CC_GAMMA, "GIjKl");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 0, 0, 0, 0, 0, "VMnIj");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "GIjKl");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
       }
       else if(params.ref == 2) { /** UHF **/
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
-	dpd_buf4_copy(&V, CC_GAMMA, "GIJKL");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 2, 2, 2, 2, 0, "VMNIJ");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "GIJKL");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 12, 12, 12, 12, 0, "Vmnij");
-	dpd_buf4_copy(&V, CC_GAMMA, "Gijkl");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 12, 12, 12, 12, 0, "Vmnij");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "Gijkl");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}
 
-	dpd_buf4_init(&V, CC_MISC, G_irr, 22, 22, 22, 22, 0, "VMnIj");
-	dpd_buf4_copy(&V, CC_GAMMA, "GIjKl");
+	dpd_buf4_init(&V, PSIF_CC_MISC, G_irr, 22, 22, 22, 22, 0, "VMnIj");
+	dpd_buf4_copy(&V, PSIF_CC_GAMMA, "GIjKl");
 	dpd_buf4_close(&V);
 	if (params.ground) {
-	  dpd_buf4_init(&G, CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
+	  dpd_buf4_init(&G, PSIF_CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
 	  dpd_buf4_symm(&G);
 	  dpd_buf4_close(&G);
 	}

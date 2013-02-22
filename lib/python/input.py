@@ -655,6 +655,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from text import *\n'
     imports += 'from inpsight import *\n'
     imports += 'from wrappers import *\n'
+    imports += 'from gaussian_n import *\n'
     imports += 'from aliases import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'

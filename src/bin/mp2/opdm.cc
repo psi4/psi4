@@ -41,39 +41,39 @@ void rhf_opdm(void)
   if(params.gradient) alpha = 1.0;
   else alpha = 2.0;
 
-  dpd_file2_init(&DIJ, CC_OEI, 0, 0, 0, "DIJ");
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
+  dpd_file2_init(&DIJ, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
   dpd_contract442(&T2A, &T2B, &DIJ, 0, 0, -alpha, 0);
   dpd_buf4_close(&T2B);
   dpd_buf4_close(&T2A);
   trace_IJ = dpd_file2_trace(&DIJ);
-  if(params.gradient) dpd_file2_copy(&DIJ, CC_OEI, "Dij");
+  if(params.gradient) dpd_file2_copy(&DIJ, PSIF_CC_OEI, "Dij");
   dpd_file2_close(&DIJ);
 
-  dpd_file2_init(&DAB, CC_OEI, 0, 1, 1, "DAB");
+  dpd_file2_init(&DAB, PSIF_CC_OEI, 0, 1, 1, "DAB");
   dpd_file2_scm(&DAB,0.0);
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
   dpd_contract442(&T2A, &T2B, &DAB, 3, 3, alpha, 0);
   dpd_buf4_close(&T2B);
   dpd_buf4_close(&T2A);
   trace_AB = dpd_file2_trace(&DAB);
-  if(params.gradient) dpd_file2_copy(&DAB, CC_OEI, "Dab");
+  if(params.gradient) dpd_file2_copy(&DAB, PSIF_CC_OEI, "Dab");
   dpd_file2_close(&DAB);
 
   if(params.gradient) {
     /* zero out Dia DIA Dai DAI */
-    dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DAI");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
     dpd_file2_scm(&D,0.0);
     dpd_file2_close(&D);
-    dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dai");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
     dpd_file2_scm(&D,0.0);
     dpd_file2_close(&D);
-    dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DIA");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
     dpd_file2_scm(&D,0.0);
     dpd_file2_close(&D);
-    dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dia");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
     dpd_file2_scm(&D,0.0);
   }
   
@@ -98,30 +98,30 @@ void uhf_opdm(void)
   dpdbuf4 T2A, T2B;
 
   if(params.semicanonical) {
-    dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&T1B, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract222(&T1A, &T1B, &D, 0, 0, -1, 0);
     dpd_file2_close(&T1A);
     dpd_file2_close(&T1B);
     
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
     dpd_contract442(&T2A, &T2B, &D, 0, 0, -1, 1);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   else {	
-    dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB"); 
     dpd_contract442(&T2A, &T2B, &D, 0, 0, -1, 0);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   dpd_contract442(&T2A, &T2B, &D, 0, 0, -1, 1);
   traceA += dpd_file2_trace(&D);
   dpd_buf4_close(&T2A);
@@ -129,30 +129,30 @@ void uhf_opdm(void)
   dpd_file2_close(&D);
     
   if(params.semicanonical) {
-    dpd_file2_init(&D, CC_OEI, 0, 2, 2, "Dij");
-    dpd_file2_init(&T1A, CC_OEI, 0, 2, 3, "tia");
-    dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "Dij");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_contract222(&T1A, &T1B, &D, 0, 0, -1, 0);
     dpd_file2_close(&T1A);
     dpd_file2_close(&T1B);
     
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
     dpd_contract442(&T2A, &T2B, &D, 0, 0, -1, 1);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   else { 
-    dpd_file2_init(&D, CC_OEI, 0, 2, 2, "Dij");
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "Dij");
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 10, 17, 12, 17, 0, "tijab"); 
     dpd_contract442(&T2A, &T2B, &D, 0, 0, -1, 0);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   dpd_contract442(&T2A, &T2B, &D, 1, 1, -1, 1);
   traceB += dpd_file2_trace(&D);
   dpd_buf4_close(&T2A);
@@ -160,30 +160,30 @@ void uhf_opdm(void)
   dpd_file2_close(&D);
   
   if(params.semicanonical) {
-    dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&T1B, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract222(&T1A, &T1B, &D, 1, 1, 1, 0);
     dpd_file2_close(&T1A);
     dpd_file2_close(&T1B);
     
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
     dpd_contract442(&T2A, &T2B, &D, 3, 3, 1, 1);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   else {
-    dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB"); 
     dpd_contract442(&T2A, &T2B, &D, 3, 3, 1, 0);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   dpd_contract442(&T2A, &T2B, &D, 2, 2, 1, 1);
   traceA += dpd_file2_trace(&D);
   dpd_buf4_close(&T2A);
@@ -191,30 +191,30 @@ void uhf_opdm(void)
   dpd_file2_close(&D);
     
   if(params.semicanonical) {
-    dpd_file2_init(&D, CC_OEI, 0, 3, 3, "Dab");
-    dpd_file2_init(&T1A, CC_OEI, 0, 2, 3, "tia");
-    dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "Dab");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_contract222(&T1A, &T1B, &D, 1, 1, 1, 0);
     dpd_file2_close(&T1A);
     dpd_file2_close(&T1B);
     
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
     dpd_contract442(&T2A, &T2B, &D, 3, 3, 1, 1);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   else {
-    dpd_file2_init(&D, CC_OEI, 0, 3, 3, "Dab");
-    dpd_buf4_init(&T2A, CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
-    dpd_buf4_init(&T2B, CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "Dab");
+    dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 12, 15, 12, 17, 0, "tijab"); 
     dpd_contract442(&T2A, &T2B, &D, 3, 3, 1, 0);
     dpd_buf4_close(&T2A);
     dpd_buf4_close(&T2B);
   }
   
-  dpd_buf4_init(&T2A, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_buf4_init(&T2B, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2A, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2B, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   dpd_contract442(&T2A, &T2B, &D, 3, 3, 1, 1);
   traceB += dpd_file2_trace(&D);
   dpd_buf4_close(&T2A);
@@ -244,77 +244,77 @@ void rhf_sf_opdm(void)
   double trace_AB = 0.0; 
   double trace_ab = 0.0;
 
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-  dpd_buf4_copy(&TA, CC_TMP0, "tIJAB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_copy(&TA, PSIF_CC_TMP0, "tIJAB");
   dpd_buf4_close(&TA);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-  dpd_buf4_copy(&TA, CC_TMP0, "tijab");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+  dpd_buf4_copy(&TA, PSIF_CC_TMP0, "tijab");
   dpd_buf4_close(&TA);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_copy(&TA, CC_TMP0, "tIjAb");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_copy(&TA, PSIF_CC_TMP0, "tIjAb");
   dpd_buf4_close(&TA);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
-  dpd_buf4_copy(&TA, CC_TMP0, "tiJaB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_copy(&TA, PSIF_CC_TMP0, "tiJaB");
   dpd_buf4_close(&TA);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   dpd_file2_scm(&D, 0.0);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&TB, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&TB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tIJAB");
   dpd_contract442(&TA, &TB, &D, 0, 0, -1.0, 0.0);
   dpd_buf4_close(&TA);
   dpd_buf4_close(&TB);
 
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&TB, CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&TB, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract442(&TA, &TB, &D, 0, 0, -1.0, 1.0);
   dpd_buf4_close(&TA);
   dpd_buf4_close(&TB);
   trace_IJ += dpd_file2_trace(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "Dij");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "Dij");
   dpd_file2_scm(&D, 0.0);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
-  dpd_buf4_init(&TB, CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
+  dpd_buf4_init(&TB, PSIF_CC_TAMPS, 0, 0, 7, 2, 7, 0, "tijab");
   dpd_contract442(&TA, &TB, &D, 0, 0, -1.0, 0.0);
   dpd_buf4_close(&TB);
   dpd_buf4_close(&TA);
 
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
-  dpd_buf4_init(&TB, CC_TMP0, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_init(&TB, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tiJaB");
   dpd_contract442(&TA, &TB, &D, 0, 0, -1.0, 1.0);
   dpd_buf4_close(&TB);
   dpd_buf4_close(&TA);
   trace_ij += dpd_file2_trace(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
   dpd_file2_scm(&D, 0.0);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&TB, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&TB, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tIJAB");
   dpd_contract442(&TA, &TB, &D, 3, 3, 1.0, 0.0);
   dpd_buf4_close(&TA);
   dpd_buf4_close(&TB);
 
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
-  dpd_buf4_init(&TB, CC_TMP0, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_init(&TB, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tiJaB");
   dpd_contract442(&TA, &TB, &D, 3, 3, 1.0, 1.0);
   dpd_buf4_close(&TA);
   dpd_buf4_close(&TB);
   trace_AB += dpd_file2_trace(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "Dab");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
   dpd_file2_scm(&D, 0.0);
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tijab");
-  dpd_buf4_init(&TB, CC_TAMPS, 0, 2, 5, 2, 7, 0, "tijab");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tijab");
+  dpd_buf4_init(&TB, PSIF_CC_TAMPS, 0, 2, 5, 2, 7, 0, "tijab");
   dpd_contract442(&TA, &TB, &D, 3, 3, 1.0, 0.0);
   dpd_buf4_close(&TB);
   dpd_buf4_close(&TA);
 
-  dpd_buf4_init(&TA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&TB, CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&TA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&TB, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract442(&TA, &TB, &D, 3, 3, 1.0, 1.0);
   dpd_buf4_close(&TB);
   dpd_buf4_close(&TA);
@@ -322,16 +322,16 @@ void rhf_sf_opdm(void)
   dpd_file2_close(&D);
 
   /* zero out Dia DIA Dai DAI */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DAI");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
   dpd_file2_scm(&D,0.0);
   dpd_file2_close(&D);
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dai");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
   dpd_file2_scm(&D,0.0);
   dpd_file2_close(&D);
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DIA");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
   dpd_file2_scm(&D,0.0);
   dpd_file2_close(&D);
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dia");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
   dpd_file2_scm(&D,0.0);
   dpd_file2_close(&D);
   

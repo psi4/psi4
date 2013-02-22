@@ -220,6 +220,10 @@ and number of atoms.\n");
   double DH = DU + pc_kb * T / pc_hartree2J ;
   double DG = DH - T * Stotal * pc_cal2J / pc_na / pc_hartree2J ;
 
+  Process::environment.globals["DU"] = DU;
+  Process::environment.globals["DH"] = DH;
+  Process::environment.globals["DG"] = DG;
+
   fprintf(outfile,"\tEnergies in Hartree/particle:       Correction         Total\n");
   fprintf(outfile,"\t\tEnergy (0 K)         = %15.8lf  %15.8lf\n", ZPVE_au, E_elec+ZPVE_au);
   fprintf(outfile,"\t\tInternal energy      = %15.8lf  %15.8lf\n",  DU, E_elec + DU);
