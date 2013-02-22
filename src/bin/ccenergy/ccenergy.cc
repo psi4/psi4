@@ -244,7 +244,7 @@ PsiReturnType ccenergy(Options &options)
   /* Compute the MP2 energy while we're here */
   if(params.ref == 0 || params.ref == 2) {
     moinfo.emp2 = mp2_energy();
-    psio_write_entry(CC_INFO, "MP2 Energy", (char *) &(moinfo.emp2),sizeof(double));
+    psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *) &(moinfo.emp2),sizeof(double));
     Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo.emp2;
     Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo.emp2 + moinfo.eref;
   }
@@ -597,7 +597,7 @@ void init_io()
   params.just_energy = 0;
   params.just_residuals = 0;
   tstart();
-  for(int i =CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(int i =PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
 void title(void)
@@ -612,9 +612,9 @@ void title(void)
 void exit_io(void)
 {
   int i;
-  for(i=CC_MIN; i < CC_TMP; i++) psio_close(i,1);
-  for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
-  for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
+  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
+  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
   tstop();
 
 }
@@ -632,8 +632,8 @@ void checkpoint(void)
 {
   int i;
 
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_close(i,1);
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
 /* just use T's on disk and don't iterate */
@@ -645,7 +645,7 @@ void one_step(void) {
     moinfo.ecc = energy();
     fprintf(outfile,"\n\tValues computed from T amplitudes on disk.\n");
     fprintf(outfile,"Reference expectation value computed: %20.15lf\n", moinfo.ecc);
-    psio_write_entry(CC_HBAR, "Reference expectation value", (char *) &(moinfo.ecc), sizeof(double));
+    psio_write_entry(PSIF_CC_HBAR, "Reference expectation value", (char *) &(moinfo.ecc), sizeof(double));
 
   if (params.just_residuals) {
       Fme_build(); Fae_build(); Fmi_build();
@@ -655,53 +655,53 @@ void one_step(void) {
         Wmnij_build();
         t2_build();
         if ( (params.ref == 0) || (params.ref == 1) ) {
-          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tIA");
-          dpd_file2_copy(&t1, CC_OEI, "FAI residual");
+          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+          dpd_file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
           dpd_file2_close(&t1);
-          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "FAI residual");
+          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
             tval = dpd_file2_dot_self(&t1);
           dpd_file2_close(&t1);
             fprintf(outfile,"\tNorm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
         }
       if (params.ref == 1) {
-          dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "New tia");
-          dpd_file2_copy(&t1, CC_OEI, "Fai residual");
+          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
+          dpd_file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
           dpd_file2_close(&t1);
         }
         else if (params.ref == 2) {
-          dpd_file2_init(&t1, CC_OEI, 0, 2, 3, "New tia");
-          dpd_file2_copy(&t1, CC_OEI, "Fai residual");
+          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
+          dpd_file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
           dpd_file2_close(&t1);
         }
     if (params.ref == 0) {
-          dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+          dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
           dpd_buf4_close(&t2);
-            dpd_buf4_init(&t2, CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
+            dpd_buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
             tval = dpd_buf4_dot_self(&t2);
             fprintf(outfile,"\tNorm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
             dpd_buf4_close(&t2);
     }
     else if (params.ref == 1) {
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_buf4_copy(&t2, CC_HBAR, "WABIJ residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
       dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-          dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
+          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
       dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
       dpd_buf4_close(&t2);
     }
     else if(params.ref ==2) {
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_buf4_copy(&t2, CC_HBAR, "WABIJ residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
       dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-          dpd_buf4_copy(&t2, CC_HBAR, "Wabij residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
       dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, CC_HBAR, "WAbIj residual");
+      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
       dpd_buf4_close(&t2);
     }
     }

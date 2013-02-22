@@ -43,10 +43,10 @@ void x_xi_check(char *term_lbl) {
   */
  
   if (params.ref == 0) {
-    dpd_file2_init(&XIA, EOM_XI, irrep, 0, 1, "XIA");
-    dpd_buf4_init(&XIjAb, EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
-    dpd_buf4_sort(&XIjAb, EOM_XI, pqsr, 0, 5, "XIjbA");
-    dpd_buf4_init(&XIjbA, EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
+    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    dpd_buf4_sort(&XIjAb, PSIF_EOM_XI, pqsr, 0, 5, "XIjbA");
+    dpd_buf4_init(&XIjbA, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
     
     norm = norm_C_rhf(&XIA, &XIjAb, &XIjbA);
     
@@ -55,11 +55,11 @@ void x_xi_check(char *term_lbl) {
     dpd_buf4_close(&XIjbA);
   }
   else if (params.ref == 1) {
-    dpd_file2_init(&XIA, EOM_XI, irrep, 0, 1, "XIA");
-    dpd_file2_init(&Xia, EOM_XI, irrep, 0, 1, "Xia");
-    dpd_buf4_init(&XIJAB, EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_buf4_init(&Xijab, EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
-    dpd_buf4_init(&XIjAb, EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    dpd_file2_init(&Xia, PSIF_EOM_XI, irrep, 0, 1, "Xia");
+    dpd_buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    dpd_buf4_init(&Xijab, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
+    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
 
     c_clean(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
@@ -71,11 +71,11 @@ void x_xi_check(char *term_lbl) {
     dpd_buf4_close(&XIjAb);
   }
   else if (params.ref == 2) {
-    dpd_file2_init(&XIA, EOM_XI, irrep, 0, 1, "XIA");
-    dpd_file2_init(&Xia, EOM_XI, irrep, 2, 3, "Xia");
-    dpd_buf4_init(&XIJAB, EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_buf4_init(&Xijab, EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
-    dpd_buf4_init(&XIjAb, EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
+    dpd_file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    dpd_file2_init(&Xia, PSIF_EOM_XI, irrep, 2, 3, "Xia");
+    dpd_buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    dpd_buf4_init(&Xijab, PSIF_EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
+    dpd_buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
     
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     

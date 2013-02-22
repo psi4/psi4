@@ -26,17 +26,17 @@ void Fkc_build(int irrep, int root, enum Spin spin)
     else 
       sprintf(lbl, "BIA(%d)[%d] triplet", root, irrep);
 
-    dpd_file2_init(&B, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&B, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
     sprintf(lbl, "FKC(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 0, 1, lbl);
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 0, 1, lbl);
 
     if(spin == singlet) {
-      dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
       dpd_dot13(&B, &D, &F, 0, 0, 1, 0);
     }
     else {
-      dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       dpd_dot14(&B, &D, &F, 0, 0, -1, 0);
     }
 
@@ -48,27 +48,27 @@ void Fkc_build(int irrep, int root, enum Spin spin)
   else if(params.ref == 2) { /** UHF **/
 
     sprintf(lbl, "BIA(%d)[%d]", root, irrep);
-    dpd_file2_init(&B_A, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&B_A, PSIF_CC_OEI, irrep, 0, 1, lbl);
     sprintf(lbl, "Bia(%d)[%d]", root, irrep);
-    dpd_file2_init(&B_B, CC_OEI, irrep, 2, 3, lbl);
+    dpd_file2_init(&B_B, PSIF_CC_OEI, irrep, 2, 3, lbl);
 
     sprintf(lbl, "FKC(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 0, 1, lbl);
-    dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 0, 1, lbl);
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
     dpd_dot13(&B_A, &D, &F, 0, 0, 1, 0);
     dpd_buf4_close(&D);
-    dpd_buf4_init(&D, CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
     dpd_dot24(&B_B, &D, &F, 0, 0, 1, 1);
     dpd_buf4_close(&D);
 
     dpd_file2_close(&F);
 
     sprintf(lbl, "Fkc(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 2, 3, lbl);
-    dpd_buf4_init(&D, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 2, 3, lbl);
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
     dpd_dot13(&B_B, &D, &F, 0, 0, 1, 0);
     dpd_buf4_close(&D);
-    dpd_buf4_init(&D, CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
     dpd_dot13(&B_A, &D, &F, 0, 0, 1, 1);
     dpd_buf4_close(&D);
     dpd_file2_close(&F);

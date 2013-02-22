@@ -461,7 +461,7 @@ void local_init(Options & options)
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
   for(i=0; i < nfzc; i++) Fmo[i][i] = eps_all[i];
-  dpd_file2_init(&fock, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fock);
   dpd_file2_mat_rd(&fock);
   for(i=0; i < nocc; i++) 
@@ -470,7 +470,7 @@ void local_init(Options & options)
   dpd_file2_mat_close(&fock);
   dpd_file2_close(&fock);
 
-  dpd_file2_init(&fock, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fock);
   dpd_file2_mat_rd(&fock);
   for(i=0; i < nvir; i++) 

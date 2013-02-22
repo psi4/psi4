@@ -32,28 +32,28 @@ void build_A_RHF(void)
   nirreps = moinfo.nirreps;
 
   /* Two-electron integral contributions */
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_sort(&D, CC_MISC, rpsq, 11, 11, "A(EM,AI)");
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(EM,AI)");
   dpd_buf4_close(&D);
-  dpd_buf4_init(&Amat, CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   dpd_buf4_scm(&Amat, 4.0);
   dpd_buf4_close(&Amat);
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_sort_axpy(&D, CC_MISC, rqsp, 11, 11, "A(EM,AI)", -1);
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_buf4_sort_axpy(&D, PSIF_CC_MISC, rqsp, 11, 11, "A(EM,AI)", -1);
   dpd_buf4_close(&D);
-  dpd_buf4_init(&C, CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-  dpd_buf4_sort_axpy(&C, CC_MISC, qpsr, 11, 11, "A(EM,AI)", -1);
+  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+  dpd_buf4_sort_axpy(&C, PSIF_CC_MISC, qpsr, 11, 11, "A(EM,AI)", -1);
   dpd_buf4_close(&C);
 
   /* Fock matrix contributions */
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_rd(&fIJ);
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fAB);
   dpd_file2_mat_rd(&fAB);
 
-  dpd_buf4_init(&Amat, CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&Amat, h);

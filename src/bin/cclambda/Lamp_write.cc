@@ -40,48 +40,48 @@ void Lamp_write(struct L_Params L_params) {
   L_irr = L_params.irrep;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
     dpd_file2_close(&L1);
 
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
   }
   else if(params.ref == 1) { /** ROHF **/
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
     dpd_file2_close(&L1);
 
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "Lia");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest Lia Amplitudes:\n", outfile);
     dpd_file2_close(&L1);
 
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIJAB Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest Lijab Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
     dpd_file2_close(&L1);
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 2, 3, "Lia");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest Lia Amplitudes:\n", outfile);
     dpd_file2_close(&L1);
 
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIJAB Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest Lijab Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&L2);
   }
