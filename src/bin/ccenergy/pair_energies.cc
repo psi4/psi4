@@ -40,9 +40,9 @@ void pair_energies(double** epair_aa, double** epair_ab)
     if (naa) {
       double* eaa = init_array(naa);
       
-      dpd_buf4_init(&D, CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
-      dpd_buf4_init(&tau, CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
-      dpd_buf4_init(&E, CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
+      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
+      dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 2, 5, 0, 5, 1, "tauIjAb");
+      dpd_buf4_init(&E, PSIF_CC_TMP0, 0, 2, 2, 2, 2, 0, "E <ij|kl>");
       dpd_contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
 
       //dpd_buf4_print(&E, outfile, 1);
@@ -81,9 +81,9 @@ void pair_energies(double** epair_aa, double** epair_ab)
     if (nab) {
       double* eab = init_array(nab);
 
-      dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-      dpd_buf4_init(&tau, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
-      dpd_buf4_init(&E, CC_TMP0, 0, 0, 0, 0, 0, 0, "E <ij|kl>");
+      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      dpd_buf4_init(&tau, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+      dpd_buf4_init(&E, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "E <ij|kl>");
       dpd_contract444(&D, &tau, &E, 0, 0, 1.0, 0.0);
 
       //dpd_buf4_print(&E, outfile, 1);

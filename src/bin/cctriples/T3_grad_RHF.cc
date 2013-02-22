@@ -49,9 +49,9 @@ namespace psi { namespace cctriples {
       occ_off = moinfo.occ_off;
       vir_off = moinfo.vir_off;
 
-      dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-      dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-      dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
+      dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+      dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+      dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
       dpd_file2_mat_init(&fIJ);
       dpd_file2_mat_init(&fAB);
       dpd_file2_mat_init(&fIA);
@@ -59,19 +59,19 @@ namespace psi { namespace cctriples {
       dpd_file2_mat_rd(&fAB);
       dpd_file2_mat_rd(&fIA);
 
-      dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
       dpd_file2_mat_init(&T1);
       dpd_file2_mat_rd(&T1);
 
-      dpd_file2_init(&S1, CC_OEI, 0, 0, 1, "SIA");
+      dpd_file2_init(&S1, PSIF_CC_OEI, 0, 0, 1, "SIA");
       dpd_file2_mat_init(&S1);
 
-      dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-      dpd_buf4_init(&S2, CC_MISC, 0, 0, 5, 0, 5, 0, "SIjAb");
-      dpd_buf4_init(&Fints, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-      dpd_buf4_init(&F2ints, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-      dpd_buf4_init(&Eints, CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-      dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+      dpd_buf4_init(&S2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "SIjAb");
+      dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+      dpd_buf4_init(&F2ints, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+      dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+      dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_init(&T2, h);
 	dpd_buf4_mat_irrep_rd(&T2, h);

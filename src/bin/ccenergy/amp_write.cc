@@ -38,48 +38,48 @@ void amp_write(void)
   dpdbuf4 T2;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
   }
   else if(params.ref == 1) { /** ROHF **/
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tia");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
     amp_write_T1(&T1, params.num_amps, "\n\tLargest Tia Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest TIJAB Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest Tijab Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     amp_write_T1(&T1, params.num_amps, "\n\tLargest TIA Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     amp_write_T1(&T1, params.num_amps, "\n\tLargest Tia Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest TIJAB Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest Tijab Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
     amp_write_T2(&T2, params.num_amps, "\n\tLargest TIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
   }

@@ -175,24 +175,24 @@ DCFTSolver::mp2_guess()
     std::string guess = options_.get_str("DCFT_GUESS");
     if(guess == "CC" || guess == "BCC"){
         fprintf(outfile, "\tReading existing coupled cluster amplitudes\n");
-        psio_->open(CC_TAMPS, PSIO_OPEN_OLD);
+        psio_->open(PSIF_CC_TAMPS, PSIO_OPEN_OLD);
         dpdbuf4 T2;
         // Copy the AA amplitudes from CCEnergy
-        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"),
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"),
                       ID("[O>O]-"), ID("[V>V]-"), 0, "tIJAB");
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <OO|VV>");
         dpd_buf4_close(&T2);
         // Copy the AB amplitudes from CCEnergy
-        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"),
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "tIjAb");
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <Oo|Vv>");
         dpd_buf4_close(&T2);
         // Copy the BB amplitudes from CCEnergy
-        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"),
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "tijab");
         dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <oo|vv>");
         dpd_buf4_close(&T2);
-        psio_->close(CC_TAMPS, 1);
+        psio_->close(PSIF_CC_TAMPS, 1);
     }
 
     // If user specified the DCFT basis to be NSO, then form tau and transform everything to NSO basis

@@ -53,7 +53,7 @@ void rhf_sort_opdm(void)
 
   OPDM = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -68,7 +68,7 @@ void rhf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -85,7 +85,7 @@ void rhf_sort_opdm(void)
 
   if(params.relax_opdm || params.gradient) {
 
-    dpd_file2_init(&D, CC_OEI, 0, 1, 0, "DAI");
+    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
     dpd_file2_mat_init(&D);
     dpd_file2_mat_rd(&D);
     for(h=0; h < nirreps; h++) {
@@ -168,7 +168,7 @@ void uhf_sort_opdm(void)
   AOPDM = block_matrix(nmo,nmo);  
   BOPDM = block_matrix(nmo,nmo);  
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
    
@@ -185,7 +185,7 @@ void uhf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 2, "Dij");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "Dij");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
    
@@ -202,7 +202,7 @@ void uhf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
     
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
     
@@ -219,7 +219,7 @@ void uhf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 3, "Dab");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "Dab");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
     
@@ -301,7 +301,7 @@ void rhf_sf_sort_opdm(void)
 
   OPDM = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "DIJ");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -316,7 +316,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "Dij");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "Dij");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -331,7 +331,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "DAB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -346,7 +346,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "Dab");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -361,7 +361,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DAI");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -376,7 +376,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
   
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "DIA");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -392,7 +392,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dai");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -407,7 +407,7 @@ void rhf_sf_sort_opdm(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "Dia");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
