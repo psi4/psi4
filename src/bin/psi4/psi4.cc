@@ -34,6 +34,7 @@ namespace psi {
     void psiclean(void);
 
     PSIO *psio = NULL;
+
 }
 
 // This is the ONLY main function in PSI
@@ -92,6 +93,9 @@ int main(int argc, char **argv, char **envp)
 
     WorldComm->sync();
     WorldComm->finalize();
+
+
+    Process::environment.wavefunction().reset();
 
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;

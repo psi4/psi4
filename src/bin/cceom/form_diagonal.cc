@@ -34,14 +34,14 @@ void form_diagonal(int C_irr) {
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
 
-    dpd_file2_init(&FAE, CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_file2_init(&FMI, CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FAE);
     dpd_file2_mat_rd(&FMI);
 
-    dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+    dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
     dpd_file2_mat_init(&DIA);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < occpi[h]; i++)
@@ -51,7 +51,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_wrt(&DIA);
     dpd_file2_close(&DIA);
 
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&DIjAb, h);
       for(ij=0; ij < DIjAb.params->rowtot[h]; ij++) {
@@ -90,10 +90,10 @@ void form_diagonal(int C_irr) {
     occ_sym = moinfo.occ_sym;
     vir_sym = moinfo.vir_sym;
 
-    dpd_file2_init(&FAE, CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_file2_init(&FMI, CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_file2_init(&Fae, CC_OEI, H_IRR, 1, 1, "Fae");
-    dpd_file2_init(&Fmi, CC_OEI, H_IRR, 0, 0, "Fmi");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
+    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_init(&Fae);
@@ -103,7 +103,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_rd(&Fae);
     dpd_file2_mat_rd(&Fmi);
 
-    dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+    dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
     dpd_file2_mat_init(&DIA);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < occpi[h]; i++)
@@ -113,7 +113,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_wrt(&DIA);
     dpd_file2_close(&DIA);
 
-    dpd_file2_init(&Dia, EOM_D, C_irr, 0, 1, "Dia");
+    dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 0, 1, "Dia");
     dpd_file2_mat_init(&Dia);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < (occpi[h]-openpi[h]); i++)
@@ -123,7 +123,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_wrt(&Dia);
     dpd_file2_close(&Dia);
 
-    dpd_buf4_init(&DIJAB, EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
+    dpd_buf4_init(&DIJAB, PSIF_EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&DIJAB, h);
       for(ij=0; ij < DIJAB.params->rowtot[h]; ij++) {
@@ -153,7 +153,7 @@ void form_diagonal(int C_irr) {
     }
     dpd_buf4_close(&DIJAB);
 
-    dpd_buf4_init(&Dijab, EOM_D, C_irr, 2, 7, 2, 7, 0, "Dijab");
+    dpd_buf4_init(&Dijab, PSIF_EOM_D, C_irr, 2, 7, 2, 7, 0, "Dijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&Dijab, h);
       for(ij=0; ij < Dijab.params->rowtot[h]; ij++) {
@@ -183,7 +183,7 @@ void form_diagonal(int C_irr) {
     }
     dpd_buf4_close(&Dijab);
 
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&DIjAb, h);
       for(ij=0; ij < DIjAb.params->rowtot[h]; ij++) {
@@ -231,10 +231,10 @@ void form_diagonal(int C_irr) {
     aocc_sym = moinfo.aocc_sym; bocc_sym = moinfo.bocc_sym;
     avir_sym = moinfo.avir_sym; bvir_sym = moinfo.bvir_sym;
 
-    dpd_file2_init(&FAE, CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_file2_init(&FMI, CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_file2_init(&Fae, CC_OEI, H_IRR, 3, 3, "Fae");
-    dpd_file2_init(&Fmi, CC_OEI, H_IRR, 2, 2, "Fmi");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
+    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_init(&Fae);
@@ -244,7 +244,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_rd(&Fae);
     dpd_file2_mat_rd(&Fmi);
 
-    dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+    dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
     dpd_file2_mat_init(&DIA);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < aoccpi[h]; i++)
@@ -254,7 +254,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_wrt(&DIA);
     dpd_file2_close(&DIA);
 
-    dpd_file2_init(&Dia, EOM_D, C_irr, 2, 3, "Dia");
+    dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 2, 3, "Dia");
     dpd_file2_mat_init(&Dia);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < boccpi[h]; i++)
@@ -264,7 +264,7 @@ void form_diagonal(int C_irr) {
     dpd_file2_mat_wrt(&Dia);
     dpd_file2_close(&Dia);
 
-    dpd_buf4_init(&DIJAB, EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
+    dpd_buf4_init(&DIJAB, PSIF_EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&DIJAB, h);
       for(ij=0; ij < DIJAB.params->rowtot[h]; ij++) {
@@ -292,7 +292,7 @@ void form_diagonal(int C_irr) {
     }
     dpd_buf4_close(&DIJAB);
 
-    dpd_buf4_init(&Dijab, EOM_D, C_irr, 12, 17, 12, 17, 0, "Dijab");
+    dpd_buf4_init(&Dijab, PSIF_EOM_D, C_irr, 12, 17, 12, 17, 0, "Dijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&Dijab, h);
       for(ij=0; ij < Dijab.params->rowtot[h]; ij++) {
@@ -320,7 +320,7 @@ void form_diagonal(int C_irr) {
     }
     dpd_buf4_close(&Dijab);
 
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 22, 28, 22, 28, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 22, 28, 22, 28, 0, "DIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&DIjAb, h);
       for(ij=0; ij < DIjAb.params->rowtot[h]; ij++) {

@@ -39,80 +39,80 @@ void spinad_amps(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_copy(&T1, CC_OEI, "tia");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_copy(&T1, PSIF_CC_OEI, "tia");
     dpd_file2_close(&T1);
 
-    dpd_buf4_init(&T2AB1, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_copy(&T2AB1, CC_TMP0, "tIjAb");
-    dpd_buf4_sort(&T2AB1, CC_TMP0, pqsr, 0, 5, "tIjBa");
+    dpd_buf4_init(&T2AB1, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_buf4_copy(&T2AB1, PSIF_CC_TMP0, "tIjAb");
+    dpd_buf4_sort(&T2AB1, PSIF_CC_TMP0, pqsr, 0, 5, "tIjBa");
     dpd_buf4_close(&T2AB1);
 
-    dpd_buf4_init(&T2AB1, CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_init(&T2AB2, CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjBa");
+    dpd_buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_buf4_init(&T2AB2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjBa");
     dpd_buf4_axpy(&T2AB2, &T2AB1, -1.0);
     dpd_buf4_close(&T2AB2);
     dpd_buf4_close(&T2AB1);
 
-    dpd_buf4_init(&T2AB1, CC_TMP0, 0, 2, 7, 0, 5, 0, "tIjAb");
-    dpd_buf4_copy(&T2AB1, CC_TAMPS, "tIJAB");
-    dpd_buf4_copy(&T2AB1, CC_TAMPS, "tijab");
+    dpd_buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 2, 7, 0, 5, 0, "tIjAb");
+    dpd_buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tIJAB");
+    dpd_buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tijab");
     dpd_buf4_close(&T2AB1);
 
     if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
 
       /*** Wmbej intermediates ***/
-      dpd_buf4_init(&W, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-      dpd_buf4_copy(&W, CC_HBAR, "WmBEj");
-      dpd_buf4_copy(&W, CC_HBAR, "WMBEJ");
+      dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "WmBEj");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "WMBEJ");
       dpd_buf4_close(&W);
 
-      dpd_buf4_init(&W, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-      dpd_buf4_copy(&W, CC_HBAR, "WmBeJ");
+      dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "WmBeJ");
       dpd_buf4_close(&W);
 
       /* WMBEJ = WMbeJ + WMbEj */
-      dpd_buf4_init(&W1, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-      dpd_buf4_init(&W2, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+      dpd_buf4_init(&W1, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+      dpd_buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
       dpd_buf4_axpy(&W2, &W1, 1);
       dpd_buf4_close(&W2);
       dpd_buf4_close(&W1);
 
-      dpd_buf4_init(&W, CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-      dpd_buf4_copy(&W, CC_HBAR, "Wmbej");
+      dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "Wmbej");
       dpd_buf4_close(&W);
 
       /*** Wmnij intermediates ***/
 
-      dpd_buf4_init(&W, CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
-      dpd_buf4_copy(&W, CC_TMP0, "WMnIj");
-      dpd_buf4_sort(&W, CC_TMP0, pqsr, 0, 0, "WMnJi");
+      dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
+      dpd_buf4_copy(&W, PSIF_CC_TMP0, "WMnIj");
+      dpd_buf4_sort(&W, PSIF_CC_TMP0, pqsr, 0, 0, "WMnJi");
       dpd_buf4_close(&W);
 
-      dpd_buf4_init(&W1, CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnIj");
-      dpd_buf4_init(&W2, CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnJi");
+      dpd_buf4_init(&W1, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnIj");
+      dpd_buf4_init(&W2, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnJi");
       dpd_buf4_axpy(&W2, &W1, -1);
       dpd_buf4_close(&W2);
       dpd_buf4_close(&W1);
 
-      dpd_buf4_init(&W, CC_TMP0, 0, 2, 2, 0, 0, 0, "WMnIj");
-      dpd_buf4_copy(&W, CC_HBAR, "WMNIJ");
-      dpd_buf4_copy(&W, CC_HBAR, "Wmnij");
+      dpd_buf4_init(&W, PSIF_CC_TMP0, 0, 2, 2, 0, 0, 0, "WMnIj");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "WMNIJ");
+      dpd_buf4_copy(&W, PSIF_CC_HBAR, "Wmnij");
       dpd_buf4_close(&W);
     }
 
     /*** FMI and FAE intermediates ***/
 
-    dpd_file2_init(&F, CC_OEI, 0, 0, 0, "FMIt");
-    dpd_file2_copy(&F, CC_OEI, "Fmit");
+    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "FMIt");
+    dpd_file2_copy(&F, PSIF_CC_OEI, "Fmit");
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_OEI, 0, 1, 1, "FAEt");
-    dpd_file2_copy(&F, CC_OEI, "Faet");
+    dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAEt");
+    dpd_file2_copy(&F, PSIF_CC_OEI, "Faet");
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_OEI, 0, 0, 1, "FME");
-    dpd_file2_copy(&F, CC_OEI, "Fme");
+    dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
+    dpd_file2_copy(&F, PSIF_CC_OEI, "Fme");
     dpd_file2_close(&F);
 
   }

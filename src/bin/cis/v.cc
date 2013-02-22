@@ -25,28 +25,28 @@ void v_build(int irrep, int root, enum Spin spin)
       sprintf(lbl, "BIA(%d)[%d] singlet", root, irrep);
     else
       sprintf(lbl, "BIA(%d)[%d] triplet", root, irrep);
-    dpd_file2_init(&B, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&B, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
     sprintf(lbl, "VIA[%d]", irrep);
-    dpd_file2_init(&V, CC_MISC, irrep, 0, 1, lbl);
+    dpd_file2_init(&V, PSIF_CC_MISC, irrep, 0, 1, lbl);
 
-    dpd_file2_init(&F, CC_MISC, 0, 1, 1, "FAB");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
     dpd_contract222(&B, &F, &V, 0, 0, 1, 0);
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_MISC, 0, 0, 0, "FIJ");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 0, 0, "FIJ");
     dpd_contract222(&F, &B, &V, 0, 1, 1, 1);
     dpd_file2_close(&F);
 
     sprintf(lbl, "FKC(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 0, 1, lbl);
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 0, 1, lbl);
 
     if(spin == singlet) {
-      dpd_buf4_init(&T2, CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 2 tIjAb - tIjbA");
+      dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 2 tIjAb - tIjbA");
       dpd_dot24(&F, &T2, &V, 0, 0, 1, 1);
     }
     else {
-      dpd_buf4_init(&T2, CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
+      dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 0, 5, 0, "MP2 tIjAb");
       dpd_dot23(&F, &T2, &V, 0, 0, -1, 1);
     }
 
@@ -60,56 +60,56 @@ void v_build(int irrep, int root, enum Spin spin)
   else if(params.ref == 2) { /** UHF **/
 
     sprintf(lbl, "BIA(%d)[%d]", root, irrep);
-    dpd_file2_init(&B_A, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&B_A, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
     sprintf(lbl, "Bia(%d)[%d]", root, irrep);
-    dpd_file2_init(&B_B, CC_OEI, irrep, 2, 3, lbl);
+    dpd_file2_init(&B_B, PSIF_CC_OEI, irrep, 2, 3, lbl);
 
     sprintf(lbl, "VIA[%d]", irrep);
-    dpd_file2_init(&V_A, CC_MISC, irrep, 0, 1, lbl);
+    dpd_file2_init(&V_A, PSIF_CC_MISC, irrep, 0, 1, lbl);
     sprintf(lbl, "Via[%d]", irrep);
-    dpd_file2_init(&V_B, CC_MISC, irrep, 2, 3, lbl);
+    dpd_file2_init(&V_B, PSIF_CC_MISC, irrep, 2, 3, lbl);
 
-    dpd_file2_init(&F, CC_MISC, 0, 1, 1, "FAB");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 1, 1, "FAB");
     dpd_contract222(&B_A, &F, &V_A, 0, 0, 1, 0);
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_MISC, 0, 0, 0, "FIJ");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 0, 0, "FIJ");
     dpd_contract222(&F, &B_A, &V_A, 0, 1, 1, 1);
     dpd_file2_close(&F);
 
     sprintf(lbl, "FKC(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 0, 1, lbl);
-    dpd_buf4_init(&T2, CC_MISC, 0, 0, 5, 2, 7, 0, "MP2 tIJAB");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 0, 1, lbl);
+    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 0, 5, 2, 7, 0, "MP2 tIJAB");
     dpd_dot24(&F, &T2, &V_A, 0, 0, 1, 1);
     dpd_buf4_close(&T2);
     dpd_file2_close(&F);
 
     sprintf(lbl, "Fkc(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 2, 3, lbl);
-    dpd_buf4_init(&T2, CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 2, 3, lbl);
+    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
     dpd_dot24(&F, &T2, &V_A, 0, 0, 1, 1);
     dpd_buf4_close(&T2);
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_MISC, 0, 3, 3, "Fab");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 3, 3, "Fab");
     dpd_contract222(&B_B, &F, &V_B, 0, 0, 1, 0);
     dpd_file2_close(&F);
 
-    dpd_file2_init(&F, CC_MISC, 0, 2, 2, "Fij");
+    dpd_file2_init(&F, PSIF_CC_MISC, 0, 2, 2, "Fij");
     dpd_contract222(&F, &B_B, &V_B, 0, 1, 1, 1);
     dpd_file2_close(&F);
 
     sprintf(lbl, "Fkc(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 2, 3, lbl);
-    dpd_buf4_init(&T2, CC_MISC, 0, 10, 15, 12, 17, 0, "MP2 tijab");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 2, 3, lbl);
+    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 10, 15, 12, 17, 0, "MP2 tijab");
     dpd_dot24(&F, &T2, &V_B, 0, 0, 1, 1);
     dpd_buf4_close(&T2);
     dpd_file2_close(&F);
 
     sprintf(lbl, "FKC(%d)[%d]", root, irrep);
-    dpd_file2_init(&F, CC_MISC, irrep, 0, 1, lbl);
-    dpd_buf4_init(&T2, CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
+    dpd_file2_init(&F, PSIF_CC_MISC, irrep, 0, 1, lbl);
+    dpd_buf4_init(&T2, PSIF_CC_MISC, 0, 22, 28, 22, 28, 0, "MP2 tIjAb");
     dpd_dot13(&F, &T2, &V_B, 0, 0, 1, 1);
     dpd_buf4_close(&T2);
     dpd_file2_close(&F);

@@ -33,24 +33,24 @@ void denom(int irrep, double root)
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
-    dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&fIJ);
     dpd_file2_mat_rd(&fIJ);
   
-    dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fij");
+    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
     dpd_file2_mat_init(&fij);
     dpd_file2_mat_rd(&fij);
   
-    dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
     dpd_file2_mat_init(&fAB);
     dpd_file2_mat_rd(&fAB);
   
-    dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fab");
+    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
     dpd_file2_mat_init(&fab);
     dpd_file2_mat_rd(&fab);
 
     sprintf(lbl, "dIjAb[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
 
       dpd_buf4_mat_irrep_init(&D, Gij);
@@ -102,24 +102,24 @@ void denom(int irrep, double root)
     avir_off = moinfo.avir_off;
     bvir_off = moinfo.bvir_off;
 
-    dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&fIJ);
     dpd_file2_mat_rd(&fIJ);
   
-    dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
+    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
     dpd_file2_mat_init(&fij);
     dpd_file2_mat_rd(&fij);
   
-    dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
     dpd_file2_mat_init(&fAB);
     dpd_file2_mat_rd(&fAB);
   
-    dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
     dpd_file2_mat_init(&fab);
     dpd_file2_mat_rd(&fab);
 
     sprintf(lbl, "dIJAB[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
       dpd_buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
@@ -151,7 +151,7 @@ void denom(int irrep, double root)
     dpd_buf4_close(&D);
 
     sprintf(lbl, "dijab[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
       dpd_buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
@@ -183,7 +183,7 @@ void denom(int irrep, double root)
     dpd_buf4_close(&D);
 
     sprintf(lbl, "dIjAb[%d]", irrep);
-    dpd_buf4_init(&D, CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
       dpd_buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {

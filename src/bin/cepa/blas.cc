@@ -74,4 +74,23 @@ void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z){
   DSPEV(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
 }
 
+/**
+ *  General SVD
+ */
+void SVD(integer M,integer N,doublereal*A,doublereal*U,doublereal*VT,doublereal*S){
+  char JOBU    = 'S'; // all M columns of U are returned in array U
+  char JOBVT   = 'A'; // all N rows of V**T are returned in the array VT
+  integer LDA  = M;
+  integer LDU  = M;
+  integer LDVT = N;
+
+  integer min = ( M < N ) ? M : N;
+  integer max = ( M < N ) ? N : M;
+  integer LWORK = 1000*( 3 * min + max > 5 * min ) ? 3 * min + max : 5 * min;
+  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal));
+
+  integer INFO=0;
+  DGESVD(JOBU,JOBVT,M,N,A,LDA,S,U,LDU,VT,LDVT,WORK,LWORK,INFO);
+}
+
 }}

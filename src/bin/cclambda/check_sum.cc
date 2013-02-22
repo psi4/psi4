@@ -32,11 +32,11 @@ void check_sum(char *term_lbl, int irrep) {
   }
 
   if (params.ref <= 1) {
-    dpd_file2_init(&LIA, CC_LAMBDA, irrep, 0, 1, "New LIA");
-    dpd_file2_init(&Lia, CC_LAMBDA, irrep, 0, 1, "New Lia");
-    dpd_buf4_init(&LIJAB, CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&Lijab, CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_init(&LIjAb, CC_LAMBDA, irrep, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, irrep, 0, 1, "New LIA");
+    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, irrep, 0, 1, "New Lia");
+    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, irrep, 0, 5, 0, 5, 0, "New LIjAb");
 
     norm = norm_C(&LIA, &Lia, &LIJAB, &Lijab, &LIjAb); 
 
@@ -47,11 +47,11 @@ void check_sum(char *term_lbl, int irrep) {
     dpd_buf4_close(&LIjAb);
   }
   else if (params.ref == 2) {
-    dpd_file2_init(&LIA, CC_LAMBDA, irrep, 0, 1, "New LIA");
-    dpd_file2_init(&Lia, CC_LAMBDA, irrep, 2, 3, "New Lia");
-    dpd_buf4_init(&LIJAB, CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&Lijab, CC_LAMBDA, irrep, 12, 17, 12, 17, 0, "New Lijab");
-    dpd_buf4_init(&LIjAb, CC_LAMBDA, irrep, 22, 28, 22, 28, 0, "New LIjAb");
+    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, irrep, 0, 1, "New LIA");
+    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, irrep, 2, 3, "New Lia");
+    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, irrep, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, irrep, 12, 17, 12, 17, 0, "New Lijab");
+    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, irrep, 22, 28, 22, 28, 0, "New LIjAb");
 
     norm = norm_C(&LIA, &Lia, &LIJAB, &Lijab, &LIjAb);
 

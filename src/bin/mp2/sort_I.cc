@@ -41,7 +41,7 @@ void rhf_sort_W(void)
 
   O = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&W, CC_OEI, 0, 0, 0, "WIJ");
+  dpd_file2_init(&W, PSIF_CC_OEI, 0, 0, 0, "WIJ");
   dpd_file2_mat_init(&W);
   dpd_file2_mat_rd(&W);
   for(h=0; h < nirreps; h++) {
@@ -56,7 +56,7 @@ void rhf_sort_W(void)
   dpd_file2_mat_close(&W);
   dpd_file2_close(&W);
 
-  dpd_file2_init(&W, CC_OEI, 0, 1, 1, "WAB");
+  dpd_file2_init(&W, PSIF_CC_OEI, 0, 1, 1, "WAB");
   dpd_file2_mat_init(&W);
   dpd_file2_mat_rd(&W);
   for(h=0; h < nirreps; h++) {
@@ -71,7 +71,7 @@ void rhf_sort_W(void)
   dpd_file2_mat_close(&W);
   dpd_file2_close(&W);
 
-  dpd_file2_init(&W, CC_OEI, 0, 1, 0, "WAI");
+  dpd_file2_init(&W, PSIF_CC_OEI, 0, 1, 0, "WAI");
   dpd_file2_mat_init(&W);
   dpd_file2_mat_rd(&W);
   for(h=0; h < nirreps; h++) {
@@ -86,7 +86,7 @@ void rhf_sort_W(void)
   dpd_file2_mat_close(&W);
   dpd_file2_close(&W);
 
-  dpd_file2_init(&W, CC_OEI, 0, 0, 1, "WIA");
+  dpd_file2_init(&W, PSIF_CC_OEI, 0, 0, 1, "WIA");
   dpd_file2_mat_init(&W);
   dpd_file2_mat_rd(&W);
   for(h=0; h < nirreps; h++) {
@@ -156,7 +156,7 @@ void rhf_sf_sort_I(void)
   O = block_matrix(nmo,nmo);
 
   /* Sort alpha components first */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "I(I,J)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -171,7 +171,7 @@ void rhf_sf_sort_I(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "I'AB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -186,7 +186,7 @@ void rhf_sf_sort_I(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "I(I,A)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -203,7 +203,7 @@ void rhf_sf_sort_I(void)
   dpd_file2_close(&D);
 
   /* Sort beta components */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "I(i,j)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(i,j)");
   dpd_file2_mat_init(&D); 
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -218,7 +218,7 @@ void rhf_sf_sort_I(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "I'ab");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'ab");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -233,7 +233,7 @@ void rhf_sf_sort_I(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "I(i,a)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(i,a)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {

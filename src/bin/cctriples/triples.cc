@@ -210,7 +210,7 @@ PsiReturnType cctriples(Options &options)
   chkpt_close();
 
   /* Dump triples energy to CC_INFO and the python environment*/
-  psio_write_entry(CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
+  psio_write_entry(PSIF_CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
 
   Process::environment.globals["CURRENT ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ET+ moinfo.ecc;
@@ -233,7 +233,7 @@ void init_io()
 {
   tstart();
 
-  for(int i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(int i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
 void title(void)
@@ -248,7 +248,7 @@ void title(void)
 void exit_io(void)
 {
   int i;
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i,1);
   tstop();
 }
 
