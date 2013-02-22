@@ -184,39 +184,39 @@ OneBodyAOInt* IntegralFactory::electric_field()
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_);
 }
 
-TwoBodyAOInt* IntegralFactory::eri(int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs)
 {
-    return new ERI(this, deriv, schwarz);
+    return new ERI(this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs)
 {
-    return new ErfERI(omega, this, deriv, schwarz);
+    return new ErfERI(omega, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs)
 {
-    return new ErfComplementERI(omega, this, deriv, schwarz);
+    return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
-    return new F12(cf, this, deriv, schwarz);
+    return new F12(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::f12_squared(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
-    return new F12Squared(cf, this, deriv, schwarz);
+    return new F12Squared(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::f12g12(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
-    return new F12G12(cf, this, deriv, schwarz);
+    return new F12G12(cf, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::f12_double_commutator(boost::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs)
 {
-    return new F12DoubleCommutator(cf, this, deriv, schwarz);
+    return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am)

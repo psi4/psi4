@@ -59,10 +59,6 @@ protected:
     //! Maximum cartesian class size.
     int max_cart_;
 
-    int screen_; //to screen or not to screen, that is the question
-    double schwarz2_; //square of schwarz cutoff value;
-    double *schwarz_norm_;
-
     //! Computes the fundamental
     Fjt *fjt_;
 
@@ -70,7 +66,6 @@ protected:
     void compute_quartet(int, int, int, int);
 
     //! Computes the ERI derivatives between four shells.
-    // TODO: Add integral derivative functor for erf integrals (and others)
     void compute_quartet_deriv1(int, int, int, int);
 
     //! Computes the ERI second derivative between four shells.
@@ -105,12 +100,9 @@ protected:
 
 public:
     //! Constructor. Use an IntegralFactory to create this object.
-    TwoElectronInt(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    TwoElectronInt(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
 
     virtual ~TwoElectronInt();
-
-    //! Performs integral screening calculations
-    void form_sieve();
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     void compute_shell(const AOShellCombinationsIterator&);
@@ -123,53 +115,47 @@ public:
 
     /// Compute ERI second derivatives between 4 sheels. Result is stored in buffer.
     virtual void compute_shell_deriv2(int, int, int, int);
-
-    //! Determine if a shell is zero based on schwarz sieve
-    //Case No Sieve: false
-    //Case Sieve, non-negligible integrals: false
-    //Case Sieve, negligible integrals: true
-    int shell_is_zero(int,int,int,int);
 };
 
 class ERI : public TwoElectronInt
 {
 public:
-    ERI(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    ERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~ERI();
 };
 
 class F12 : public TwoElectronInt
 {
 public:
-    F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12();
 };
 
 class F12Squared : public TwoElectronInt
 {
 public:
-    F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12Squared();
 };
 
 class F12G12 : public TwoElectronInt
 {
 public:
-    F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12G12();
 };
 
 class F12DoubleCommutator : public TwoElectronInt
 {
 public:
-    F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~F12DoubleCommutator();
 };
 
 class ErfERI : public TwoElectronInt
 {
 public:
-    ErfERI(double omega, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    ErfERI(double omega, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~ErfERI();
 
     void setOmega(double omega);
@@ -178,7 +164,7 @@ public:
 class ErfComplementERI : public TwoElectronInt
 {
 public:
-    ErfComplementERI(double omega, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    ErfComplementERI(double omega, const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false);
     virtual ~ErfComplementERI();
 
     void setOmega(double omega);
