@@ -4,6 +4,7 @@ calls for each of the *name* values of the energy(), optimize(),
 response(), and frequency() function.
 
 """
+from psifiles import *
 import PsiMod
 import shutil
 import os
@@ -86,7 +87,7 @@ def run_scs_omp2(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of scs?
     if (lowername == 'scs-omp2'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
@@ -109,7 +110,7 @@ def run_sos_omp2(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of sos?
     if (lowername == 'sos-omp2'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
@@ -138,7 +139,7 @@ def run_scs_omp3(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of scs?
     if (lowername == 'scs-omp3'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
@@ -162,7 +163,7 @@ def run_sos_omp3(name, **kwargs):
     """
     # Get calls method
     lowername = name.lower()
- 
+
     # what type of sos?
     if (lowername == 'sos-omp3'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOS')
@@ -257,9 +258,9 @@ def run_scf(name, **kwargs):
             raise ValidationError('ROHF reference for DFT is not available.')
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
-   
+
     returnvalue = scf_helper(name, **kwargs)
-    
+
     optstash.restore()
     return returnvalue
 
@@ -279,7 +280,7 @@ def run_scf_gradient(name, **kwargs):
 
     returnvalue = run_scf(name, **kwargs)
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
 
         # if the df_basis_scf basis is not set, pick a sensible one.
         if PsiMod.get_global_option('DF_BASIS_SCF') == '':
@@ -1062,9 +1063,6 @@ def run_dft_gradient(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') != 'DF'):
-        raise ValidationError('SCF_TYPE must be DF for DFT gradient (for now).')
-
     returnvalue = run_scf_gradient(name, **kwargs)
 
     optstash.restore()
@@ -1296,8 +1294,8 @@ def run_mp2c(name, **kwargs):
     e_monomerB_mp2 = PsiMod.dfmp2()
     PsiMod.set_global_option('DF_INTS_IO', df_ints_io)
 
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     activate(molecule)
     PsiMod.IO.set_default_namespace('dimer')
@@ -1346,13 +1344,13 @@ def run_sapt(name, **kwargs):
     sapt_basis = sapt_basis.lower()
 
     if (sapt_basis == 'dimer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1, 2)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2, 1)
         monomerB.set_name('monomerB')
     elif (sapt_basis == 'monomer'):
-        molecule.update_geometry()
+        #molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name('monomerA')
         monomerB = molecule.extract_subsets(2)
@@ -1394,8 +1392,8 @@ def run_sapt(name, **kwargs):
     e_monomerB = scf_helper('RHF', **kwargs)
     PsiMod.set_global_option('DF_INTS_IO', df_ints_io)
 
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
 
     activate(molecule)
     PsiMod.IO.set_default_namespace('dimer')
@@ -1757,16 +1755,16 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out('\n')
     banner('Dimer Basis SAPT')
     PsiMod.print_out('\n')
-    PsiMod.IO.change_file_namespace(121, 'monomerA', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerB', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = PsiMod.sapt()
     CTd = PsiMod.get_variable('SAPT CT ENERGY')
 
     PsiMod.print_out('\n')
     banner('Monomer Basis SAPT')
     PsiMod.print_out('\n')
-    PsiMod.IO.change_file_namespace(121, 'monomerAm', 'dimer')
-    PsiMod.IO.change_file_namespace(122, 'monomerBm', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
+    PsiMod.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
     e_sapt = PsiMod.sapt()
     CTm = PsiMod.get_variable('SAPT CT ENERGY')
     CT = CTd - CTm
@@ -1933,6 +1931,110 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_qci(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a QCISD(T), CCSD(T), MP2.5, MP3, and MP4 computation.
+
+    >>> energy('qcisd(t)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # stash user options:
+    optstash = OptionsState(
+        ['TRANSQT2','WFN'],
+        ['QCI','RUN_MP2'],
+        ['QCI','RUN_MP3'],
+        ['QCI','RUN_MP4'],
+        ['QCI','RUN_CCSD'],
+        ['QCI','COMPUTE_TRIPLES'],
+        ['QCI','COMPUTE_MP4_TRIPLES'],
+        ['QCI','NAT_ORBS'])
+
+    # override symmetry for fno-cc
+    if (PsiMod.get_option('QCI','NAT_ORBS')):
+        molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+        molecule.reset_point_group('c1')
+
+    # which method?
+    if (lowername == '_ccsd'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+    elif (lowername == '_ccsd(t)'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('QCI','RUN_CCSD', True)
+    if (lowername == 'qcisd'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+    elif (lowername == 'qcisd(t)'):
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('QCI','RUN_CCSD', False)
+    elif (lowername == '_mp2'):
+        PsiMod.set_local_option('QCI','RUN_MP2', True)
+    elif (lowername == '_mp2.5'):
+        PsiMod.set_local_option('QCI','RUN_MP3', True)
+    elif (lowername == '_mp3'):
+        PsiMod.set_local_option('QCI','RUN_MP3', True)
+    elif (lowername == '_mp4'):
+        PsiMod.set_local_option('QCI','RUN_MP4', True)
+        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', True)
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', True)
+    elif (lowername == '_mp4(sdq)'):
+        PsiMod.set_local_option('QCI','RUN_MP4', True)
+        PsiMod.set_local_option('QCI','COMPUTE_MP4_TRIPLES', False)
+        PsiMod.set_local_option('QCI','COMPUTE_TRIPLES', False)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        PsiMod.print_out("\n")
+        PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
+        PsiMod.print_out("\n")
+        sys.exit(1)
+
+    # scf
+    scf_helper(name,**kwargs)
+
+    # if the scf type is df, then the ao integrals were never generated.
+    if PsiMod.get_option('SCF','SCF_TYPE') == 'DF' :
+        mints = PsiMod.MintsHelper()
+        mints.integrals()
+
+    # if this is not cim or FNO-CC, run transqt2.  otherwise, libtrans will be used
+    if PsiMod.get_option('QCI','NAT_ORBS') == False and PsiMod.get_option('QCI','RUN_MP2') == False:
+       PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+       PsiMod.transqt2()
+
+    # run ccsd
+    PsiMod.qci()
+
+    # set current correlation energy and total energy.  only need to treat mpn here.
+    emp2     = PsiMod.get_variable("MP2 TOTAL ENERGY")
+    emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
+    emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
+    emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
+    cemp2    = PsiMod.get_variable("MP2 CORRELATION ENERGY")
+    cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
+    cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
+    cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
+    if ( lowername == '_mp3' ):
+        PsiMod.set_variable("CURRENT ENERGY",emp3)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
+    elif ( lowername == '_mp4(sdq)'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
+    elif ( lowername == '_mp4'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
+    elif ( lowername == '_mp2.5'):
+        PsiMod.set_variable("CURRENT ENERGY",0.5*(emp2+emp3))
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",0.5*(cemp2+cemp3))
+
+    # restore options
+    optstash.restore()
+
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 def run_cepa(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -1990,8 +2092,8 @@ def run_cepa(name, **kwargs):
         PsiMod.transqt2()
 
     PsiMod.cepa()
-   
-    # one-electron properties 
+
+    # one-electron properties
     if PsiMod.get_option('CEPA', 'DIPMOM'):
         if cepa_level == "CEPA(1)" or cepa_level == "CEPA(3)":
             PsiMod.print_out("\n")

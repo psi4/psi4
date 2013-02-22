@@ -43,12 +43,12 @@ void amp_write(const char *pert, int irrep, double omega)
 
   if(params.ref == 0) { /** RHF **/
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-    dpd_file2_init(&T1, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&T1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     amp_write_T1(&T1, params.num_amps, "\n\tLargest XIA Amplitudes:\n", outfile);
     dpd_file2_close(&T1);
 
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_buf4_init(&T2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&T2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     amp_write_T2(&T2, params.num_amps, "\n\tLargest XIjAb Amplitudes:\n", outfile);
     dpd_buf4_close(&T2);
   }

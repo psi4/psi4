@@ -28,40 +28,40 @@ void x_Gijkl(void)
 
   if (params.ref == 0 || params.ref == 1) {
     /* Gijkl += R2L2_OOOO */
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_OOOO");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_OOOO");
     dpd_buf4_axpy(&I2, &GIJKL, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIJKL);
 
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_oooo");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_oooo");
     dpd_buf4_axpy(&I2, &Gijkl, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&Gijkl);
 
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 0, 0, 0, 0, 0, "R2L2_OoOo");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 0, 0, 0, 0, 0, "R2L2_OoOo");
     dpd_buf4_axpy(&I2, &GIjKl, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIjKl);
   }
   else {
     /* Gijkl += R2L2_OOOO */
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_OOOO");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 2, 2, 2, 0, "R2L2_OOOO");
     dpd_buf4_axpy(&I2, &GIJKL, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIJKL);
 
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 12, 12, 12, 12, 0, "R2L2_oooo");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 12, 12, 12, 12, 0, "R2L2_oooo");
     dpd_buf4_axpy(&I2, &Gijkl, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&Gijkl);
 
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 22, 22, 22, 22, 0, "R2L2_OoOo");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 22, 22, 22, 22, 0, "R2L2_OoOo");
     dpd_buf4_axpy(&I2, &GIjKl, 1.0);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIjKl);
@@ -69,43 +69,43 @@ void x_Gijkl(void)
 
   if (params.ref == 0 || params.ref == 1) {
     /* GIJKL += - (Lklfe rie) tjf */
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "GIJKL");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 10, 2, 10, 0, "L2R1_OOVO(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 10, 2, 10, 0, "L2R1_OOVO(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract424(&I2, &T1, &GIJKL, 3, 1, 1, -1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 11, 2, 11, 0, "L2R1_OOVO");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 11, 2, 11, 0, "L2R1_OOVO");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract244(&T1, &I2, &GIJKL, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIJKL);
 
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "Gijkl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 10, 2, 10, 0, "L2R1_oovo(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tia");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "Gijkl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 10, 2, 10, 0, "L2R1_oovo(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
     dpd_contract424(&I2, &T1, &Gijkl, 3, 1, 1, -1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 11, 2, 11, 0, "L2R1_oovo");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tia");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 11, 2, 11, 0, "L2R1_oovo");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
     dpd_contract244(&T1, &I2, &Gijkl, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&Gijkl);
 
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 0, 10, 0, 10, 0, "L2R1_OovO(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tia");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 0, 10, 0, 10, 0, "L2R1_OovO(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tia");
     dpd_contract424(&I2, &T1, &GIjKl, 3, 1, 1, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 0, 11, 0, 11, 0, "L2R1_OoVo");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 0, 11, 0, 11, 0, "L2R1_OoVo");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract244(&T1, &I2, &GIjKl, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
@@ -113,43 +113,43 @@ void x_Gijkl(void)
   }
   else {
     /* GIJKL += - (Lklfe rie) tjf */
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "GIJKL");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 20, 2, 20, 0, "L2R1_OOVO(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 0, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 20, 2, 20, 0, "L2R1_OOVO(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract424(&I2, &T1, &GIJKL, 3, 1, 1, -1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 2, 21, 2, 21, 0, "L2R1_OOVO");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 2, 21, 2, 21, 0, "L2R1_OOVO");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract244(&T1, &I2, &GIJKL, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&GIJKL);
 
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 10, 12, 12, 12, 0, "Gijkl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 12, 30, 12, 30, 0, "L2R1_oovo(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 10, 12, 12, 12, 0, "Gijkl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 12, 30, 12, 30, 0, "L2R1_oovo(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_contract424(&I2, &T1, &Gijkl, 3, 1, 1, -1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 12, 31, 12, 31, 0, "L2R1_oovo");
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 12, 31, 12, 31, 0, "L2R1_oovo");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_contract244(&T1, &I2, &Gijkl, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
     dpd_buf4_close(&Gijkl);
 
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 22, 24, 22, 24, 0, "L2R1_OovO(pqsr)");
-    dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 22, 24, 22, 24, 0, "L2R1_OovO(pqsr)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_contract424(&I2, &T1, &GIjKl, 3, 1, 1, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
 
-    dpd_buf4_init(&I2, EOM_TMP, G_irr, 22, 26, 22, 26, 0, "L2R1_OoVo");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&I2, PSIF_EOM_TMP, G_irr, 22, 26, 22, 26, 0, "L2R1_OoVo");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_contract244(&T1, &I2, &GIjKl, 1, 2, 0, 1.0, 1.0);
     dpd_file2_close(&T1);
     dpd_buf4_close(&I2);
@@ -158,24 +158,24 @@ void x_Gijkl(void)
 
   /* Now bra-ket symmetrize Gijkl */
   if (params.ref == 0 || params.ref == 1) {
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
     dpd_buf4_symm(&GIJKL);
     dpd_buf4_close(&GIJKL);
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "Gijkl");
     dpd_buf4_symm(&Gijkl);
     dpd_buf4_close(&Gijkl);
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 0, 0, 0, 0, 0, "GIjKl");
     dpd_buf4_symm(&GIjKl);
     dpd_buf4_close(&GIjKl);
   }
   else {
-    dpd_buf4_init(&GIJKL, CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
+    dpd_buf4_init(&GIJKL, PSIF_CC_GAMMA, G_irr, 2, 2, 2, 2, 0, "GIJKL");
     dpd_buf4_symm(&GIJKL);
     dpd_buf4_close(&GIJKL);
-    dpd_buf4_init(&Gijkl, CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
+    dpd_buf4_init(&Gijkl, PSIF_CC_GAMMA, G_irr, 12, 12, 12, 12, 0, "Gijkl");
     dpd_buf4_symm(&Gijkl);
     dpd_buf4_close(&Gijkl);
-    dpd_buf4_init(&GIjKl, CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
+    dpd_buf4_init(&GIjKl, PSIF_CC_GAMMA, G_irr, 22, 22, 22, 22, 0, "GIjKl");
     dpd_buf4_symm(&GIjKl);
     dpd_buf4_close(&GIjKl);
   }

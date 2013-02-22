@@ -66,7 +66,7 @@ void get_moinfo(void)
   if(params.ref == 0) moinfo.scf = chkpt_rd_scf();
 
   /* Dump the reference wave function ID to CC_INFO */
-  psio_write_entry(CC_INFO, "Reference Wavefunction",
+  psio_write_entry(PSIF_CC_INFO, "Reference Wavefunction",
            (char *) &(params.ref), sizeof(int));
 
   moinfo.frdocc = Process::environment.wavefunction()->frzcpi();
@@ -103,9 +103,9 @@ void get_moinfo(void)
   }
 
   /* Dump the frozen orbital arrays to CC_INFO */
-  psio_write_entry(CC_INFO, "Frozen Core Orbs Per Irrep",
+  psio_write_entry(PSIF_CC_INFO, "Frozen Core Orbs Per Irrep",
            (char *) moinfo.frdocc, sizeof(int)*moinfo.nirreps);
-  psio_write_entry(CC_INFO, "Frozen Virt Orbs Per Irrep",
+  psio_write_entry(PSIF_CC_INFO, "Frozen Virt Orbs Per Irrep",
            (char *) moinfo.fruocc, sizeof(int)*moinfo.nirreps);
 
   /* Get the Pitzer->QT reordering array and compute its inverse */
@@ -160,7 +160,7 @@ void get_moinfo(void)
 
   /* Number of non-frozen orbitals */
   moinfo.nactive = nclsd + nopen + nuocc;
-  psio_write_entry(CC_INFO, "No. of Active Orbitals", (char *) &(moinfo.nactive),
+  psio_write_entry(PSIF_CC_INFO, "No. of Active Orbitals", (char *) &(moinfo.nactive),
                    sizeof(int));
 
   /* Number of occupied and virtual orbirals per irrep including
@@ -186,21 +186,21 @@ void get_moinfo(void)
       moinfo.all_bvirtpi[h] = moinfo.fruocc[h] + moinfo.uoccpi[h] + moinfo.openpi[h];
     }
     /* Dump occpi and virtpi arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Alpha Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Occ Orbs Per Irrep",
              (char *) moinfo.aoccpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Beta Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Occ Orbs Per Irrep",
              (char *) moinfo.boccpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Alpha Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Virt Orbs Per Irrep",
              (char *) moinfo.avirtpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Beta Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Virt Orbs Per Irrep",
              (char *) moinfo.bvirtpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Alpha Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Occ Orbs Per Irrep",
              (char *) moinfo.all_aoccpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Beta Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Occ Orbs Per Irrep",
              (char *) moinfo.all_boccpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Alpha Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Virt Orbs Per Irrep",
              (char *) moinfo.all_avirtpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Beta Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Virt Orbs Per Irrep",
              (char *) moinfo.all_bvirtpi, sizeof(int)*moinfo.nirreps);
 
   }
@@ -218,13 +218,13 @@ void get_moinfo(void)
     moinfo.openpi[h];
     }
     /* Dump occpi and virtpi arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Occ Orbs Per Irrep",
              (char *) moinfo.occpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "Active Virt Orbs Per Irrep",
              (char *) moinfo.virtpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Occ Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Occ Orbs Per Irrep",
              (char *) moinfo.all_occpi, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Virt Orbs Per Irrep",
+    psio_write_entry(PSIF_CC_INFO, "All Virt Orbs Per Irrep",
              (char *) moinfo.all_virtpi, sizeof(int)*moinfo.nirreps);
 
   }
@@ -300,23 +300,23 @@ void get_moinfo(void)
     }
 
     /* Dump the Boolean arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Alpha Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Occ Orbital Boolean",
              (char *) moinfo.aocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Beta Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Occ Orbital Boolean",
              (char *) moinfo.bocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Alpha Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Virt Orbital Boolean",
              (char *) moinfo.avir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Beta Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Virt Orbital Boolean",
              (char *) moinfo.bvir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "All Alpha Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Occ Orbital Boolean",
              (char *) moinfo.all_aocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Beta Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Occ Orbital Boolean",
              (char *) moinfo.all_bocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Alpha Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Virt Orbital Boolean",
              (char *) moinfo.all_avir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Beta Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Virt Orbital Boolean",
              (char *) moinfo.all_bvir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "Frozen Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Frozen Orbital Boolean",
              (char *) moinfo.frozen, sizeof(int)*moinfo.nmo);
   }
   else {
@@ -371,19 +371,19 @@ void get_moinfo(void)
     }
 
     /* Dump the Boolean arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Occ Orbital Boolean",
              (char *) moinfo.occ, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Virt Orbital Boolean",
              (char *) moinfo.vir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Socc Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Active Socc Orbital Boolean",
              (char *) moinfo.socc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "All Occ Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Occ Orbital Boolean",
              (char *) moinfo.all_occ, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Virt Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Virt Orbital Boolean",
              (char *) moinfo.all_vir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Socc Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "All Socc Orbital Boolean",
              (char *) moinfo.all_socc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "Frozen Orbital Boolean",
+    psio_write_entry(PSIF_CC_INFO, "Frozen Orbital Boolean",
              (char *) moinfo.frozen, sizeof(int)*moinfo.nmo);
   }
 
@@ -512,29 +512,29 @@ void get_moinfo(void)
     }
 
     /* Dump the active-orbital CC and QT ordering and symmetry arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Alpha Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Symmetry",
              (char *) moinfo.aocc_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Beta Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Occ Orb Symmetry",
              (char *) moinfo.bocc_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Alpha Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Symmetry",
              (char *) moinfo.avir_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Beta Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Virt Orb Symmetry",
              (char *) moinfo.bvir_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Alpha Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Alpha Active Occ Order",
              (char *) moinfo.cc_aocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Beta Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Beta Active Occ Order",
              (char *) moinfo.cc_bocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Alpha Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Alpha Active Virt Order",
              (char *) moinfo.cc_avir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Beta Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Beta Active Virt Order",
              (char *) moinfo.cc_bvir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Alpha Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Alpha Active Occ Order",
              (char *) moinfo.qt_aocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Beta Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Beta Active Occ Order",
              (char *) moinfo.qt_bocc, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Alpha Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Alpha Active Virt Order",
              (char *) moinfo.qt_avir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Beta Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Beta Active Virt Order",
              (char *) moinfo.qt_bvir, sizeof(int)*moinfo.nactive);
 
     /* Now the all-orbital CC ordering and symmetry arrays */
@@ -631,34 +631,34 @@ void get_moinfo(void)
     }
 
     /* Dump the all-orbital CC ordering and symmetry arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "All Alpha Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Occ Orb Symmetry",
              (char *) moinfo.allaocc_sym, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Beta Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Occ Orb Symmetry",
              (char *) moinfo.allbocc_sym, sizeof(int)*moinfo.nmo);
 
-    psio_write_entry(CC_INFO, "All Alpha Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Virt Orb Symmetry",
              (char *) moinfo.allavir_sym, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Beta Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Virt Orb Symmetry",
              (char *) moinfo.allbvir_sym, sizeof(int)*moinfo.nmo);
 
-    psio_write_entry(CC_INFO, "QT->CC All Alpha Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Alpha Occ Order",
              (char *) moinfo.cc_allaocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "QT->CC All Beta Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Beta Occ Order",
              (char *) moinfo.cc_allbocc, sizeof(int)*moinfo.nmo);
 
-    psio_write_entry(CC_INFO, "QT->CC All Alpha Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Alpha Virt Order",
              (char *) moinfo.cc_allavir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "QT->CC All Beta Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Beta Virt Order",
              (char *) moinfo.cc_allbvir, sizeof(int)*moinfo.nmo);
 
-    psio_write_entry(CC_INFO, "CC->QT All Alpha Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Alpha Occ Order",
              (char *) moinfo.qt_allaocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "CC->QT All Beta Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Beta Occ Order",
              (char *) moinfo.qt_allbocc, sizeof(int)*moinfo.nmo);
 
-    psio_write_entry(CC_INFO, "CC->QT All Alpha Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Alpha Virt Order",
              (char *) moinfo.qt_allavir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "CC->QT All Beta Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Beta Virt Order",
              (char *) moinfo.qt_allbvir, sizeof(int)*moinfo.nmo);
 
   }  /*** UHF references ***/
@@ -761,17 +761,17 @@ void get_moinfo(void)
     }
 
     /* Dump the active-orbital CC and QT ordering and symmetry arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Occ Orb Symmetry",
              (char *) moinfo.occ_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "Active Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "Active Virt Orb Symmetry",
              (char *) moinfo.vir_sym, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Active Occ Order",
              (char *) moinfo.cc_occ, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "QT->CC Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC Active Virt Order",
              (char *) moinfo.cc_vir, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Active Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Active Occ Order",
              (char *) moinfo.qt_occ, sizeof(int)*moinfo.nactive);
-    psio_write_entry(CC_INFO, "CC->QT Active Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT Active Virt Order",
              (char *) moinfo.qt_vir, sizeof(int)*moinfo.nactive);
 
     /* Now the all-orbital CC ordering and symmetry arrays */
@@ -838,17 +838,17 @@ void get_moinfo(void)
     }
 
     /* Dump the all-orbital CC ordering and symmetry arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "All Occ Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Occ Orb Symmetry",
              (char *) moinfo.allocc_sym, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "All Virt Orb Symmetry",
+    psio_write_entry(PSIF_CC_INFO, "All Virt Orb Symmetry",
              (char *) moinfo.allvir_sym, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "QT->CC All Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Occ Order",
              (char *) moinfo.cc_allocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "QT->CC All Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "QT->CC All Virt Order",
              (char *) moinfo.cc_allvir, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "CC->QT All Occ Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Occ Order",
              (char *) moinfo.qt_allocc, sizeof(int)*moinfo.nmo);
-    psio_write_entry(CC_INFO, "CC->QT All Virt Order",
+    psio_write_entry(PSIF_CC_INFO, "CC->QT All Virt Order",
              (char *) moinfo.qt_allvir, sizeof(int)*moinfo.nmo);
 
   } /*** RHF and ROHF references ***/
@@ -899,24 +899,24 @@ void get_moinfo(void)
     }
 
     /* Dump occ_off and vir_off arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Alpha Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Occ Orb Offsets",
              (char *) moinfo.aocc_off, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Beta Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Occ Orb Offsets",
              (char *) moinfo.bocc_off, sizeof(int)*moinfo.nirreps);
 
-    psio_write_entry(CC_INFO, "Active Alpha Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Alpha Virt Orb Offsets",
              (char *) moinfo.avir_off,  sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Beta Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Beta Virt Orb Offsets",
              (char *) moinfo.bvir_off,  sizeof(int)*moinfo.nirreps);
 
-    psio_write_entry(CC_INFO, "All Alpha Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Occ Orb Offsets",
              (char *) moinfo.all_aocc_off, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Beta Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Occ Orb Offsets",
              (char *) moinfo.all_bocc_off, sizeof(int)*moinfo.nirreps);
 
-    psio_write_entry(CC_INFO, "All Alpha Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Alpha Virt Orb Offsets",
              (char *) moinfo.all_avir_off, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Beta Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Beta Virt Orb Offsets",
              (char *) moinfo.all_bvir_off, sizeof(int)*moinfo.nirreps);
 
   }
@@ -941,13 +941,13 @@ void get_moinfo(void)
     }
 
     /* Dump occ_off and vir_off arrays to CC_INFO */
-    psio_write_entry(CC_INFO, "Active Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Occ Orb Offsets",
              (char *) moinfo.occ_off, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "Active Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "Active Virt Orb Offsets",
              (char *) moinfo.vir_off,  sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Occ Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Occ Orb Offsets",
              (char *) moinfo.all_occ_off, sizeof(int)*moinfo.nirreps);
-    psio_write_entry(CC_INFO, "All Virt Orb Offsets",
+    psio_write_entry(PSIF_CC_INFO, "All Virt Orb Offsets",
              (char *) moinfo.all_vir_off, sizeof(int)*moinfo.nirreps);
 
   }
@@ -1004,7 +1004,7 @@ void get_moinfo(void)
       }
     }
 
-    psio_write(CC_INFO, "UHF Active Alpha Virtual Orbs", (char *) scf_vector_A[h][0],
+    psio_write(PSIF_CC_INFO, "UHF Active Alpha Virtual Orbs", (char *) scf_vector_A[h][0],
            moinfo.sopi[h]*moinfo.avirtpi[h]*sizeof(double), next, &next);
 
         free_block(evects_A[h]);
@@ -1036,7 +1036,7 @@ void get_moinfo(void)
       }
     }
 
-    psio_write(CC_INFO, "UHF Active Beta Virtual Orbs", (char *) scf_vector_B[h][0],
+    psio_write(PSIF_CC_INFO, "UHF Active Beta Virtual Orbs", (char *) scf_vector_B[h][0],
            moinfo.sopi[h]*moinfo.bvirtpi[h]*sizeof(double), next, &next);
 
     free_block(evects_B[h]);
@@ -1082,7 +1082,7 @@ void get_moinfo(void)
       }
     }
 
-    psio_write(CC_INFO, "RHF/ROHF Active Virtual Orbitals",
+    psio_write(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals",
            (char *) scf_vector[h][0],
            moinfo.sopi[h]*moinfo.virtpi[h]*sizeof(double),
            next, &next);
@@ -1109,7 +1109,7 @@ void get_moinfo(void)
       }
     }
 
-    psio_write(CC_INFO, "RHF/ROHF Active Occupied Orbitals",
+    psio_write(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals",
            (char *) scf_vector[h][0],
            moinfo.sopi[h]*moinfo.occpi[h]*sizeof(double),
            next, &next);
@@ -1134,7 +1134,7 @@ void get_moinfo(void)
     for(h=0; h < moinfo.nirreps; h++) {
       if(moinfo.sopi[h] && moinfo.virtpi[h]) {
         C[h] = block_matrix(moinfo.sopi[h],moinfo.virtpi[h]);
-        psio_read(CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *) C[h][0],
+        psio_read(PSIF_CC_INFO, "RHF/ROHF Active Virtual Orbitals", (char *) C[h][0],
                   moinfo.sopi[h]*moinfo.virtpi[h]*sizeof(double), next, &next);
       }
     }

@@ -24,15 +24,15 @@ void get_params(Options &options)
 
   params.wfn = options.get_str("WFN");
   if(params.wfn == "EOM_CC2") {
-    psio_read_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc), sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc), sizeof(double));
     fprintf(outfile,"\tCC2 energy          (file100) = %20.15f\n",moinfo.ecc);
   }
   else if(params.wfn == "EOM_CCSD") {
-    psio_read_entry(CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc), sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc), sizeof(double));
     fprintf(outfile,"\tCCSD energy         (file100) = %20.15f\n",moinfo.ecc);
   }
   else if(params.wfn == "EOM_CC3") {
-    psio_read_entry(CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc), sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc), sizeof(double));
     fprintf(outfile,"\tCC3 energy          (file100) = %20.15f\n",moinfo.ecc);
   }
 

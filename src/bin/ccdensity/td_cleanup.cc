@@ -15,21 +15,21 @@ namespace psi { namespace ccdensity {
 
 void td_cleanup(void)
 {
-  psio_close(CC_TMP,0);
-  psio_close(EOM_TMP,0);
-  psio_close(EOM_TMP0,0);
-  psio_close(EOM_TMP1,0);
-  psio_close(CC_GLG,0);
-  psio_close(CC_GL,0);
-  psio_close(CC_GR,0);
+  psio_close(PSIF_CC_TMP,0);
+  psio_close(PSIF_EOM_TMP,0);
+  psio_close(PSIF_EOM_TMP0,0);
+  psio_close(PSIF_EOM_TMP1,0);
+  psio_close(PSIF_CC_GLG,0);
+  psio_close(PSIF_CC_GL,0);
+  psio_close(PSIF_CC_GR,0);
 
-  psio_open(CC_TMP,PSIO_OPEN_NEW);
-  psio_open(EOM_TMP,PSIO_OPEN_NEW);
-  psio_open(EOM_TMP0,PSIO_OPEN_NEW);
-  psio_open(EOM_TMP1,PSIO_OPEN_NEW);
-  psio_open(CC_GLG,PSIO_OPEN_NEW);
-  psio_open(CC_GL,PSIO_OPEN_NEW);
-  psio_open(CC_GR,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_TMP,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GLG,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GL,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GR,PSIO_OPEN_NEW);
 
   if((params.ref==0) || (params.ref==1)) {
     free_block(moinfo.ltd);

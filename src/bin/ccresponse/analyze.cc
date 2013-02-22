@@ -48,7 +48,7 @@ void analyze(const char *pert, int irrep, double omega)
   nso = moinfo.nso;
 
   sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-  dpd_buf4_init(&T2, CC_LR, 0, 0, 5, 0, 5, 0, lbl);
+  dpd_buf4_init(&T2, PSIF_CC_LR, 0, 0, 5, 0, 5, 0, lbl);
   dpd_buf4_mat_irrep_init(&T2, 0);
   dpd_buf4_mat_irrep_rd(&T2, 0);
   T2trans = block_matrix(nocc*nocc, nso*nso);
@@ -106,7 +106,7 @@ void analyze(const char *pert, int irrep, double omega)
   amp_array = init_array(num_div);
 
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-  dpd_file2_init(&T1, CC_OEI, 0, 0, 1, lbl);
+  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, lbl);
   dpd_file2_print(&T1, outfile);
   dpd_file2_mat_init(&T1);
   dpd_file2_mat_rd(&T1);

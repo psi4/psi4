@@ -44,9 +44,9 @@ void Wabei_RHF_FT2_a(void)
 
   /* Zaeib <-- - <mf|ae> t_mi^fb */
   /**** this contraction still requires storage of a full <ia|bc> set *****/
-  dpd_buf4_init(&F, CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-  dpd_buf4_init(&Z, CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
+  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+  dpd_buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
   dpd_contract444(&F, &T2, &Z, 1, 1, -1, 0);
   dpd_buf4_close(&T2);
   dpd_buf4_close(&F);
@@ -54,9 +54,9 @@ void Wabei_RHF_FT2_a(void)
 
   /* Zaeib <-- <am|ef> [ 2 t_mi^fb - t_mi^bf ] */
 
-   dpd_buf4_init(&Z, CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
-  dpd_buf4_init(&F, CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+   dpd_buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
+  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2, h);
     dpd_buf4_mat_irrep_rd(&T2, h);
@@ -148,7 +148,7 @@ void Wabei_RHF_FT2_a(void)
 
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_close(&T2, h);
   dpd_buf4_close(&T2);
-  dpd_buf4_sort_axpy(&Z, CC_HBAR, prqs, 11, 5, "WAbEi (Ei,Ab)", 1);
+  dpd_buf4_sort_axpy(&Z, PSIF_CC_HBAR, prqs, 11, 5, "WAbEi (Ei,Ab)", 1);
   dpd_buf4_close(&Z);
   dpd_buf4_close(&F);
 
