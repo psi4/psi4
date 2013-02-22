@@ -635,15 +635,18 @@ if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
 
-    BOOST_CPPFLAGS='-I$(top_objdir)/boost/boost_1_48_0'
+    BOOSTVER='boost_1_53_0'
+    AC_SUBST(BOOSTVER)
+
+    BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
     BOOST_LDFLAGS=''
     
-    BOOST_FILESYSTEM_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_filesystem.a'
-    BOOST_PYTHON_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_python.a'
-    BOOST_REGEX_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_regex.a'
-    BOOST_SERIALIZATION_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_serialization.a'
-    BOOST_SYSTEM_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_system.a'
-    BOOST_THREAD_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_thread.a'
+    BOOST_FILESYSTEM_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_filesystem.a'
+    BOOST_PYTHON_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_python.a'
+    BOOST_REGEX_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_regex.a'
+    BOOST_SERIALIZATION_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_serialization.a'
+    BOOST_SYSTEM_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_system.a'
+    BOOST_THREAD_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_thread.a'
 
     AC_SUBST(BOOST_CPPFLAGS)
     AC_SUBST(BOOST_LDFLAGS)
