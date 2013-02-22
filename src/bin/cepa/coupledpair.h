@@ -1,6 +1,7 @@
 #ifndef CEPA_H
 #define CEPA_H
 
+#include <psi4-dec.h>
 #include<libmints/wavefunction.h>
 
 namespace psi{ namespace cepa{
@@ -26,9 +27,9 @@ protected:
 
     /**
       * Define CEPA Tasks.  most diagrams are designated as
-      * independent tasks.  some will be tiled out as 
+      * independent tasks.  some will be tiled out as
       * separate tasks either so we can do them with limited
-      * memory or for distribution among many processors 
+      * memory or for distribution among many processors
      */
     void DefineTasks();
     long int ncepatasks;
@@ -57,7 +58,7 @@ protected:
       * this function solves the CEPA equations (requires a minimum of 3o^2v^2 memory)
      */
     PsiReturnType CEPAIterations();
-  
+
     void WriteBanner();
 
     /**
