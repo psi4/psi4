@@ -1,10 +1,6 @@
 #ifndef CCSD_H
 #define CCSD_H
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
-
 #include"psi4-dec.h"
 #include<libiwl/iwl.h>
 #include<libpsio/psio.hpp>

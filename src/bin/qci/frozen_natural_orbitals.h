@@ -11,9 +11,11 @@ namespace psi{
 }
 
 namespace psi{namespace qci{
+
+// base class
 class FrozenNO : public Wavefunction{
   public:
-    FrozenNO(Options&options);
+    FrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options);
     ~FrozenNO();
 
     double compute_energy();
@@ -22,13 +24,12 @@ class FrozenNO : public Wavefunction{
 
   protected:
 
-    Options & options_;
-
     // mp2 energy in full basis
     double emp2;
     long int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,nvirt_no;
 
-    void NaturalOrbitals();
+    void common_init();
+    void ComputeNaturalOrbitals();
     void TransformIntegrals(double*Dab);
     void TransformOVOV();
 };
