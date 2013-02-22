@@ -1,0 +1,500 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta3+ Driver
+
+               Git: Rev {master} 79af755481dbe91a7dcda89e93c5b641d380a575
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  10312
+    PSI4DATADIR: /Users/deprince/psi4-devel/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Test QCISD(T) for H2O/cc-pvdz Energy
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+set {
+  e_convergence 1e-10
+  d_convergence 1e-10
+  r_convergence 1e-10
+  basis cc-pvdz
+  freeze_core true
+}
+energy('qcisd(t)')
+
+refscf    = -76.02141844515494 #TEST
+refqcisd  =  -0.214455072238 #TEST
+refqcisdt =  -0.217610678343 #TEST
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy") #TEST
+compare_values(refqcisd, get_variable("QCISD CORRELATION ENERGY"), 8, "QCISD correlation energy") #TEST
+compare_values(refqcisdt, get_variable("QCISD(T) CORRELATION ENERGY"), 8, "QCISD(T) correlation energy") #TEST
+
+clean()
+--------------------------------------------------------------------------
+
+*** tstart() called on lawn-128-61-127-238.lawn.gatech.edu
+*** at Wed Feb 20 15:34:07 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.790689573744     0.543701060724
+           H          0.000000000000     0.790689573744     0.543701060724
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.801465529972068
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       0       0       0       0
+     A2         2       2       0       0       0       0
+     B1         4       4       0       0       0       0
+     B2         7       7       0       0       0       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     107] index = [             0,5778]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               183
+    Schwarz Cutoff:          0E+00
+
+  Minimum eigenvalue in the overlap matrix is 3.7382439507E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.68914707059005
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.92345273387484   -1.02343e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+
+   @RHF iter   2:   -69.87832927887153   -9.54877e-01   5.29715e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+   @RHF iter   3:   -75.76505683712061   -5.88673e+00   4.96564e-01 DIIS
+   @RHF iter   4:   -75.99909055478028   -2.34034e-01   1.67112e-02 DIIS
+   @RHF iter   5:   -76.02109883592948   -2.20083e-02   7.82169e-03 DIIS
+   @RHF iter   6:   -76.02136729063049   -2.68455e-04   1.37201e-03 DIIS
+   @RHF iter   7:   -76.02141644684103   -4.91562e-05   4.89170e-04 DIIS
+   @RHF iter   8:   -76.02141833859500   -1.89175e-06   1.11626e-04 DIIS
+   @RHF iter   9:   -76.02141844395761   -1.05363e-07   1.80568e-05 DIIS
+   @RHF iter  10:   -76.02141844507099   -1.11338e-09   2.94238e-06 DIIS
+   @RHF iter  11:   -76.02141844515263   -8.16414e-11   6.18360e-07 DIIS
+   @RHF iter  12:   -76.02141844515502   -2.38742e-12   8.35457e-08 DIIS
+   @RHF iter  13:   -76.02141844515496    5.68434e-14   1.55147e-08 DIIS
+   @RHF iter  14:   -76.02141844515496    0.00000e+00   2.19537e-09 DIIS
+   @RHF iter  15:   -76.02141844515494    2.84217e-14   1.66744e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
+	   3A1    -0.558726     1B1    -0.490383  
+
+	Virtual:                                                              
+
+	   4A1     0.178011     2B2     0.249490     3B2     0.760274  
+	   5A1     0.816118     6A1     1.166182     2B1     1.198611  
+	   4B2     1.256467     7A1     1.452518     1A2     1.466082  
+	   3B1     1.667951     8A1     1.877148     5B2     1.889827  
+	   6B2     2.354901     9A1     2.388286     4B1     3.248786  
+	   2A2     3.297834    10A1     3.453879    11A1     3.821364  
+	   7B2     4.099041  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02141844515494
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655299720683
+    One-Electron Energy =                -122.4453516198961722
+    Two-Electron Energy =                  37.6224676447692090
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                        -76.0214184451548931
+
+
+Properties computed using the SCF density matrix
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1947
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.0955     Total:     2.0955
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-128-61-127-238.lawn.gatech.edu at Wed Feb 20 15:34:08 2013
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-128-61-127-238.lawn.gatech.edu
+*** at Wed Feb 20 15:34:08 2013
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 24
+	Number of MOs        = 24
+	Number of active MOs = 23
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   11	    1	    2	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      8.80146552997207
+	SCF energy          (chkpt) =    -76.02141844515494
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.221839796388139
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on lawn-128-61-127-238.lawn.gatech.edu at Wed Feb 20 15:34:08 2013
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  available memory =                            244.14 mb
+  minimum memory requirements for QCISD =         0.14 mb
+  memory requirements for QCISD(T) =              0.25 mb
+
+*** tstart() called on lawn-128-61-127-238.lawn.gatech.edu
+*** at Wed Feb 20 15:34:08 2013
+
+
+        **********************************************************
+        *                                                        *
+        *                   CCSD Integral Sort                   *
+        *                                                        *
+        **********************************************************
+
+
+        CC integral sort will use                      1.65 mb
+
+        Number of (ab|cd) temporary files:                2
+        Number of (ab|ci) temporary files:                3
+        Starting temporary file number:                 150
+
+        Initial sort........done.
+
+        Sort (IJ|KL)........done.
+        Sort (IJ|KA) 1/2....done.
+        Sort (IJ|KA) 2/2....done.
+        Sort (IA|JB)........done.
+        Sort (IJ|AB)........done.
+        Sort (IA|BC) 1/3....done.
+        Sort (IA|BC) 2/3....done.
+        Sort (IA|BC) 3/3....done.
+        Sort (AB|CD) 1/2....done.
+        Sort (AB|CD) 2/2....done.
+
+
+*** tstop() called on lawn-128-61-127-238.lawn.gatech.edu at Wed Feb 20 15:34:08 2013
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-128-61-127-238.lawn.gatech.edu
+*** at Wed Feb 20 15:34:08 2013
+
+
+
+        *****************************************************
+        *                                                   *
+        *                       QCISD                       *
+        *                  Eugene DePrince                  *
+        *                                                   *
+        *****************************************************
+
+
+
+  Define tiling:
+
+        v(ab,cd) diagrams will be evaluated in   1 blocks.
+        v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
+        v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
+
+  Allocate cpu memory (     0.42 mb).....done.
+  Initialize cpu memory..................done.
+
+  ==> MP4(SDQ) <==
+
+        1st-order doubles amplitudes...............done.
+        MP2 energy.................................done.
+        MP3 energy.................................done.
+        2nd-order singles and doubles amplitudes...done.
+        MP4(SD)....................................done.
+        MP4(Q).....................................done.
+
+  Begin singles and doubles quadratic ci iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 1   -0.2132949788   -0.2132949788    0.0090491528        0
+      1   1 1   -0.2139687074   -0.0006737286    0.0037022646        0
+      2   2 1   -0.2144802611   -0.0005115537    0.0016627376        0
+      3   3 1   -0.2144585594    0.0000217017    0.0002446188        0
+      4   4 1   -0.2144539017    0.0000046577    0.0001056737        0
+      5   5 1   -0.2144556760   -0.0000017743    0.0000307120        1
+      6   6 1   -0.2144551043    0.0000005717    0.0000050478        0
+      7   7 1   -0.2144550728    0.0000000315    0.0000014199        0
+      8   8 1   -0.2144550718    0.0000000010    0.0000002256        0
+      9   8 2   -0.2144550717    0.0000000000    0.0000000391        0
+     10   8 3   -0.2144550723   -0.0000000006    0.0000000081        0
+     11   8 4   -0.2144550722    0.0000000001    0.0000000021        0
+     12   8 5   -0.2144550722   -0.0000000001    0.0000000005        1
+     13   8 6   -0.2144550722   -0.0000000000    0.0000000001        0
+
+  QCISD iterations converged!
+
+        OS MP2 correlation energy:            -0.153488826718
+        SS MP2 correlation energy:            -0.051203580280
+        MP2 correlation energy:               -0.204692406998
+      * MP2 total energy:                    -76.226110852153
+
+        OS MP2.5 correlation energy:          -0.158861629978
+        SS MP2.5 correlation energy:          -0.049135163154
+        MP2.5 correlation energy:             -0.207996793132
+      * MP2.5 total energy:                  -76.229415238287
+
+        OS MP3 correlation energy:            -0.164234433238
+        SS MP3 correlation energy:            -0.047066746028
+        MP3 correlation energy:               -0.211301179266
+      * MP3 total energy:                    -76.232719624421
+
+        OS MP4(SDQ) correlation energy:       -0.167844953905
+        SS MP4(SDQ) correlation energy:       -0.044544705894
+        MP4(SDQ) correlation energy:          -0.213919357127
+      * MP4(SDQ) total energy:               -76.235337802282
+
+        OS QCISD correlation energy:          -0.169103830569
+        SS QCISD correlation energy:          -0.045351241670
+        QCISD correlation energy:             -0.214455072238
+      * QCISD total energy:                  -76.235873517393
+
+  Total time for QCISD iterations:       0.12 s (user)
+                                         0.15 s (system)
+                                            2 s (total)
+
+  Time per iteration:                    0.01 s (user)
+                                         0.01 s (system)
+                                         0.15 s (total)
+
+*** tstop() called on lawn-128-61-127-238.lawn.gatech.edu at Wed Feb 20 15:34:10 2013
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on lawn-128-61-127-238.lawn.gatech.edu
+*** at Wed Feb 20 15:34:10 2013
+
+
+        *******************************************************
+        *                                                     *
+        *                     QCISD(T)                        *
+        *                                                     *
+        *******************************************************
+
+        num_threads =                     1
+        available memory =        243.89 mb
+        memory requirements =       0.25 mb
+
+        Number of ijk combinations: 20
+
+        Computing (T) correction...
+
+        % complete  total time
+              10.0         0 s
+              20.0         0 s
+              30.0         0 s
+              40.0         0 s
+              50.0         0 s
+              60.0         0 s
+              70.0         0 s
+              80.0         0 s
+              90.0         0 s
+
+        (T) energy                             -0.003155606105
+
+        QCISD(T) correlation energy            -0.217610678343
+      * QCISD(T) total energy                 -76.239029123498
+
+
+*** tstop() called on lawn-128-61-127-238.lawn.gatech.edu at Wed Feb 20 15:34:10 2013
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

@@ -176,7 +176,7 @@ void init_io()
 
   tstart();
 
-  for(int i=CC_MIN; i <= CC_MAX; i++)
+  for(int i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++)
     psio_open(i,1);
 
 //  free(extra_args);
@@ -251,7 +251,7 @@ void cleanup(void)
 void exit_io(void)
 {
   int i;
-  for(int i=CC_MIN; i <= CC_MAX; i++)
+  for(int i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++)
     psio_close(i,0);
 
   tstop();

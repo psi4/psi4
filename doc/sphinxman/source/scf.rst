@@ -393,7 +393,8 @@ For initial orbital selection, several options are available. These include:
 CORE [Default]
     Diagonalization of the core Hamiltonian, removing even mean-field electron
     repulsion. Simple, but often too far from the final solution for larger
-    systems. 
+    systems.   READ becomes the default for the second and later iterations
+    of geometry optimizations.
 SAD
     Superposition of Atomic Densities. Builds the initial density as the
     spin-averaged sum of atomic UHF computations in the current basis. If an
@@ -408,7 +409,8 @@ READ
     Read the previous orbitals from a checkpoint file, casting from one basis to
     another if needed. Useful for starting anion computations from neutral
     orbitals, or after small geometry changes. At present, casting from a
-    different molecular point group is not supported.
+    different molecular point group is not supported.  This becomes the
+    default for the second and later iterations of geometry optimizations.
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then

@@ -31,7 +31,7 @@ void purge(void) {
   openpi = moinfo.openpi;
 
   /* Purge FME matrix elements */
-  dpd_file2_init(&FME, CC_OEI, 0, 0, 1, "FME");
+  dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
   dpd_file2_mat_init(&FME);
   dpd_file2_mat_rd(&FME);
   for(h=0; h < nirreps; h++) {
@@ -44,7 +44,7 @@ void purge(void) {
   dpd_file2_close(&FME);
 
   /* Purge Fme matrix elements */
-  dpd_file2_init(&Fme, CC_OEI, 0, 0, 1, "Fme");
+  dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
   dpd_file2_mat_init(&Fme);
   dpd_file2_mat_rd(&Fme);
   for(h=0; h < nirreps; h++) {
@@ -57,7 +57,7 @@ void purge(void) {
   dpd_file2_close(&Fme);
 
   /* Purge Fmi matrix elements */
-  dpd_file2_init(&Fmi, CC_OEI, 0, 0, 0, "Fmi");
+  dpd_file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmi");
   dpd_file2_mat_init(&Fmi);
   dpd_file2_mat_rd(&Fmi);
   for(h=0; h < nirreps; h++) {
@@ -76,7 +76,7 @@ void purge(void) {
   dpd_file2_close(&Fmi);
 
   /* Purge FAE matrix elements */
-  dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "FAE");
+  dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
   dpd_file2_mat_init(&FAE);
   dpd_file2_mat_rd(&FAE);
   for(h=0; h < nirreps; h++) {
@@ -95,7 +95,7 @@ void purge(void) {
   dpd_file2_close(&FAE);
 
   /* Purge Fmit (matrix elements with zero diagonal) */
-  dpd_file2_init(&Fmi, CC_OEI, 0, 0, 0, "Fmit");
+  dpd_file2_init(&Fmi, PSIF_CC_OEI, 0, 0, 0, "Fmit");
   dpd_file2_mat_init(&Fmi);
   dpd_file2_mat_rd(&Fmi);
   for(h=0; h < nirreps; h++) {
@@ -114,7 +114,7 @@ void purge(void) {
   dpd_file2_close(&Fmi);
 
   /* Purge FAEt (matrix elements with zero diagonal) */
-  dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "FAEt");
+  dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAEt");
   dpd_file2_mat_init(&FAE);
   dpd_file2_mat_rd(&FAE);
   for(h=0; h < nirreps; h++) {
@@ -133,7 +133,7 @@ void purge(void) {
   dpd_file2_close(&FAE);
 
   /* Purge Wmnij matrix elements */
-  dpd_file4_init(&W, CC_HBAR, 0, 2, 2,"Wmnij");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 2,"Wmnij");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -163,7 +163,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 0, 0,"WMnIj");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 0,"WMnIj");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -186,7 +186,7 @@ void purge(void) {
   dpd_file4_close(&W);
 
   /* Purge Wmbej matrix elements */
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 10,"WMBEJ");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMBEJ");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -208,7 +208,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 10,"Wmbej");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"Wmbej");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -230,7 +230,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 10,"WMbEj");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WMbEj");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -252,7 +252,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 10,"WmBeJ");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBeJ");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -274,7 +274,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 10,"WmBEj");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 10,"WmBEj");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -307,7 +307,7 @@ void purge(void) {
   /* WMbeJ is already OK */
 
   /* Purge Wamef matrix elements */
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 7,"WAMEF");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WAMEF");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -333,7 +333,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 7,"Wamef");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Wamef");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -351,7 +351,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 5,"WAmEf");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WAmEf");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -377,7 +377,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 5,"WaMeF");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WaMeF");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -488,7 +488,7 @@ void purge(void) {
 
 
   /* Purge WMBIJ matrix elements */
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 2,"WMBIJ");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"WMBIJ");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -506,7 +506,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 2,"Wmbij");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 2,"Wmbij");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -532,7 +532,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 0,"WMbIj");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WMbIj");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -550,7 +550,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 10, 0,"WmBiJ");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 10, 0,"WmBiJ");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -581,7 +581,7 @@ void purge(void) {
 
 
   /* Purge Wabei matrix elements */
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 7,"WEIAB");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"WEIAB");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -607,7 +607,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 7,"Weiab");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 7,"Weiab");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -625,7 +625,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 5,"WEiAb");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WEiAb");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -652,7 +652,7 @@ void purge(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 11, 5,"WeIaB");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 11, 5,"WeIaB");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -691,7 +691,7 @@ void purge_Wmnie(void) {
   occ_sym = moinfo.occ_sym; vir_sym = moinfo.vir_sym;
   openpi = moinfo.openpi;
 
-  dpd_file4_init(&W, CC_HBAR, 0, 0, 11,"WMnIe (Mn,eI)");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WMnIe (Mn,eI)");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -708,7 +708,7 @@ void purge_Wmnie(void) {
     dpd_file4_mat_irrep_close(&W, h);
   }
 
-  dpd_file4_init(&W, CC_HBAR, 0, 2, 11, "WMNIE (M>N,EI)");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 11, "WMNIE (M>N,EI)");
   for(h=0; h < W.params->nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -726,7 +726,7 @@ void purge_Wmnie(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 2, 11,"Wmnie (m>n,ei)");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 2, 11,"Wmnie (m>n,ei)");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);
@@ -752,7 +752,7 @@ void purge_Wmnie(void) {
   }
   dpd_file4_close(&W);
 
-  dpd_file4_init(&W, CC_HBAR, 0, 0, 11,"WmNiE (mN,Ei)");
+  dpd_file4_init(&W, PSIF_CC_HBAR, 0, 0, 11,"WmNiE (mN,Ei)");
   for(h=0; h < nirreps; h++) {
     dpd_file4_mat_irrep_init(&W, h);
     dpd_file4_mat_irrep_rd(&W, h);

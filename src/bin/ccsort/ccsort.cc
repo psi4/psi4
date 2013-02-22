@@ -140,8 +140,8 @@ void init_io()
   tstart();
 
   int i;
-  if(params.reset) for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,0);
-  else for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  if(params.reset) for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,0);
+  else for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
 void title(void)
@@ -158,9 +158,9 @@ void title(void)
 void exit_io(void)
 {
   int i;
-  for(i=CC_MIN; i < CC_TMP; i++) psio_close(i,1);
-  for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
-  for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i < PSIF_CC_TMP; i++) psio_close(i,1);
+  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0);  /* get rid of TMP files */
+  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
 
   tstop();
 }
@@ -177,7 +177,7 @@ void cleanup(void)
 {
   int i;
 
-  psio_write_entry(CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
+  psio_write_entry(PSIF_CC_INFO, "Reference Energy", (char *) &(moinfo.eref),
            sizeof(double));
 
   if(params.ref == 2) {

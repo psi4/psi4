@@ -1428,6 +1428,8 @@ void PKJK::compute_JK()
      * The J terms
      */
     for(int N = 0; N < J_.size(); ++N){
+        if(D_[N]->symmetry())
+            throw PSIEXCEPTION("PK integrals cannot be used for this type of calculation.");
         double *J_vector = new double[pk_pairs_];
         ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
         J_vectors.push_back(J_vector);
