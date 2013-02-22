@@ -1000,6 +1000,7 @@ AC_CONFIG_FILES([
           tests/scf6/Makefile
           tests/dfscf-bz2/Makefile
           tests/scf-bz2/Makefile
+          tests/scf-guess-read/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile

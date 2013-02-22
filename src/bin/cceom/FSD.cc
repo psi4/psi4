@@ -23,9 +23,9 @@ void FSD(int i, int C_irr) {
 
   if (params.eom_ref == 0) {  /* RHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
-    dpd_buf4_init(&CMnEf, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
     dpd_dot24(&FME,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_file2_close(&FME);
@@ -34,35 +34,35 @@ void FSD(int i, int C_irr) {
 
   else if (params.eom_ref == 1) { /* ROHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
 
     /* SIA += FME*CIMAE + Fme*CImAe */
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
     dpd_dot24(&FME,&CMNEF,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMNEF);
     dpd_file2_close(&FME);
 
-    dpd_file2_init(&Fme, CC_OEI, H_IRR, 0, 1, "Fme");
+    dpd_file2_init(&Fme, PSIF_CC_OEI, H_IRR, 0, 1, "Fme");
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     dpd_dot24(&Fme,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_file2_close(&Fme);
 
     /* Sia += Fme*Cimae + FME*CiMaE */
-    dpd_file2_init(&Fme, CC_OEI, H_IRR, 0, 1, "Fme");
+    dpd_file2_init(&Fme, PSIF_CC_OEI, H_IRR, 0, 1, "Fme");
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 0, 5, 2, 7, 0, lbl);
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 0, 5, 2, 7, 0, lbl);
     dpd_dot24(&Fme,&Cmnef,&Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&Cmnef);
     dpd_file2_close(&Fme);
 
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
-    dpd_buf4_init(&CmNeF, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CmNeF");
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CmNeF");
     dpd_dot24(&FME,&CmNeF,&Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CmNeF);
     dpd_file2_close(&FME);
@@ -74,35 +74,35 @@ void FSD(int i, int C_irr) {
   else { /* UHF */
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
 
     /* SIA += FME*CIMAE + Fme*CImAe */
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 5, 2, 7, 0, lbl);
     dpd_dot24(&FME,&CMNEF,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMNEF);
     dpd_file2_close(&FME);
 
-    dpd_file2_init(&Fme, CC_OEI, H_IRR, 2, 3, "Fme");
+    dpd_file2_init(&Fme, PSIF_CC_OEI, H_IRR, 2, 3, "Fme");
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
     dpd_dot24(&Fme,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_file2_close(&Fme);
 
     /* Sia += Fme*Cimae + FME*CiMaE */
-    dpd_file2_init(&Fme, CC_OEI, H_IRR, 2, 3, "Fme");
+    dpd_file2_init(&Fme, PSIF_CC_OEI, H_IRR, 2, 3, "Fme");
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 15, 12, 17, 0, lbl);
     dpd_dot24(&Fme,&Cmnef,&Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&Cmnef);
     dpd_file2_close(&Fme);
 
-    dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
-    dpd_buf4_init(&CmNeF, EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
+    dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
     dpd_dot24(&FME,&CmNeF,&Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CmNeF);
     dpd_file2_close(&FME);

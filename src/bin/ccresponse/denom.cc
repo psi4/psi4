@@ -27,20 +27,20 @@ void denom1(dpdfile2 *X1, double omega)
   irrep = X1->my_irrep;
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-    dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
 
-    dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_rd(&FAE);
   }
   else {
-    dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "FAE");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_rd(&FAE);
 
-    dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "FMI");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
   }
@@ -71,20 +71,20 @@ void denom2(dpdbuf4 *X2, double omega)
   irrep = X2->file.my_irrep;
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-    dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
 
-    dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "fAB");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_rd(&FAE);
   }
   else {
-    dpd_file2_init(&FAE, CC_OEI, 0, 1, 1, "FAE");
+    dpd_file2_init(&FAE, PSIF_CC_OEI, 0, 1, 1, "FAE");
     dpd_file2_mat_init(&FAE);
     dpd_file2_mat_rd(&FAE);
 
-    dpd_file2_init(&FMI, CC_OEI, 0, 0, 0, "FMI");
+    dpd_file2_init(&FMI, PSIF_CC_OEI, 0, 0, 0, "FMI");
     dpd_file2_mat_init(&FMI);
     dpd_file2_mat_rd(&FMI);
   }

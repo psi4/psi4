@@ -81,9 +81,9 @@ void d_corr(void)
 
 	/* e1 = b_i^a v_i^a */
 	sprintf(lbl, "BIA(%d)[%d] singlet", root, h);
-	dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+	dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
 	sprintf(lbl, "VIA[%d]", h);
-	dpd_file2_init(&V, CC_MISC, h, 0, 1, lbl);
+	dpd_file2_init(&V, PSIF_CC_MISC, h, 0, 1, lbl);
 	e1 = dpd_file2_dot(&V, &B);
 	dpd_file2_close(&V);
 	dpd_file2_close(&B);
@@ -101,9 +101,9 @@ void d_corr(void)
 
 	  /* e2 = 1/4 [ u_ij^ab * ( <ab||cj> b_i^c - <ab||ci> b_j^c + <ka||ij> b_k^b - <kb||ij> b_k^a ) */
 	  sprintf(lbl, "UIjAb[%d]", h);
-	  dpd_buf4_init(&U, CC_MISC, h, 0, 5, 0, 5, 0, lbl);
+	  dpd_buf4_init(&U, PSIF_CC_MISC, h, 0, 5, 0, 5, 0, lbl);
 	  sprintf(lbl, "(ZIjAb - 1/2 ZIjbA)[%d]", h);
-	  dpd_buf4_init(&Z, CC_MISC, h, 0, 5, 0, 5, 0, lbl);
+	  dpd_buf4_init(&Z, PSIF_CC_MISC, h, 0, 5, 0, 5, 0, lbl);
 	  e2 = dpd_buf4_dot(&Z, &U);
 	  dpd_buf4_close(&U);
 	  dpd_buf4_close(&Z);
@@ -114,9 +114,9 @@ void d_corr(void)
 
 	  if(params.local) { /* compute the weak-pair E2 correction */
 	    sprintf(lbl, "UIjAb[%d]", h);
-	    dpd_buf4_init(&U, CC_MISC, h, 0, 5, 0, 5, 0, lbl);
+	    dpd_buf4_init(&U, PSIF_CC_MISC, h, 0, 5, 0, 5, 0, lbl);
 	    sprintf(lbl, "(ZIjAb - 1/2 ZIjbA)[%d]", h);
-	    dpd_buf4_init(&Z, CC_MISC, h, 0, 5, 0, 5, 0, lbl);
+	    dpd_buf4_init(&Z, PSIF_CC_MISC, h, 0, 5, 0, 5, 0, lbl);
 
 	    dpd_buf4_mat_irrep_init(&U, 0);
 	    dpd_buf4_mat_irrep_rd(&U, 0);
@@ -141,7 +141,7 @@ void d_corr(void)
 	    dpd_buf4_close(&U);
 
 	    sprintf(lbl, "CIS(D) Pair Energies (%d)", root);
-	    psio_write_entry(CC_INFO, lbl, (char *) pair_energy, local.nocc*local.nocc*sizeof(double));
+	    psio_write_entry(PSIF_CC_INFO, lbl, (char *) pair_energy, local.nocc*local.nocc*sizeof(double));
 	  }
 	}
 	else singlet_d[h][root] = 0.0;
@@ -208,13 +208,13 @@ void d_corr(void)
 
 	/* e1 = b_i^a v_i^a */
 	sprintf(lbl, "BIA(%d)[%d]", root, h);
-	dpd_file2_init(&B_A, CC_OEI, h, 0, 1, lbl);
+	dpd_file2_init(&B_A, PSIF_CC_OEI, h, 0, 1, lbl);
 	sprintf(lbl, "Bia(%d)[%d]", root, h);
-	dpd_file2_init(&B_B, CC_OEI, h, 2, 3, lbl);
+	dpd_file2_init(&B_B, PSIF_CC_OEI, h, 2, 3, lbl);
 	sprintf(lbl, "VIA[%d]", h);
-	dpd_file2_init(&V_A, CC_MISC, h, 0, 1, lbl);
+	dpd_file2_init(&V_A, PSIF_CC_MISC, h, 0, 1, lbl);
 	sprintf(lbl, "Via[%d]", h);
-	dpd_file2_init(&V_B, CC_MISC, h, 2, 3, lbl);
+	dpd_file2_init(&V_B, PSIF_CC_MISC, h, 2, 3, lbl);
 	e1 = dpd_file2_dot(&V_A, &B_A);
 	e1 += dpd_file2_dot(&V_B, &B_B);
 	dpd_file2_close(&V_A);
@@ -233,25 +233,25 @@ void d_corr(void)
 
 	/* e2 = 1/4 [ u_ij^ab * ( <ab||cj> b_i^c - <ab||ci> b_j^c + <ka||ij> b_k^b - <kb||ij> b_k^a ) */
 	sprintf(lbl, "UIJAB[%d]", h);
-	dpd_buf4_init(&U, CC_MISC, h, 2, 7, 2, 7, 0, lbl);
+	dpd_buf4_init(&U, PSIF_CC_MISC, h, 2, 7, 2, 7, 0, lbl);
 	sprintf(lbl, "ZIJAB[%d]", h);
-	dpd_buf4_init(&Z, CC_MISC, h, 2, 7, 2, 7, 0, lbl);
+	dpd_buf4_init(&Z, PSIF_CC_MISC, h, 2, 7, 2, 7, 0, lbl);
 	e2_AA = dpd_buf4_dot(&Z, &U);
 	dpd_buf4_close(&U);
 	dpd_buf4_close(&Z);
 
 	sprintf(lbl, "Uijab[%d]", h);
-	dpd_buf4_init(&U, CC_MISC, h, 12, 17, 12, 17, 0, lbl);
+	dpd_buf4_init(&U, PSIF_CC_MISC, h, 12, 17, 12, 17, 0, lbl);
 	sprintf(lbl, "Zijab[%d]", h);
-	dpd_buf4_init(&Z, CC_MISC, h, 12, 17, 12, 17, 0, lbl);
+	dpd_buf4_init(&Z, PSIF_CC_MISC, h, 12, 17, 12, 17, 0, lbl);
 	e2_BB = dpd_buf4_dot(&Z, &U);
 	dpd_buf4_close(&U);
 	dpd_buf4_close(&Z);
 
 	sprintf(lbl, "UIjAb[%d]", h);
-	dpd_buf4_init(&U, CC_MISC, h, 22, 28, 22, 28, 0, lbl);
+	dpd_buf4_init(&U, PSIF_CC_MISC, h, 22, 28, 22, 28, 0, lbl);
 	sprintf(lbl, "ZIjAb[%d]", h);
-	dpd_buf4_init(&Z, CC_MISC, h, 22, 28, 22, 28, 0, lbl);
+	dpd_buf4_init(&Z, PSIF_CC_MISC, h, 22, 28, 22, 28, 0, lbl);
 	e2_AB = dpd_buf4_dot(&Z, &U);
 	dpd_buf4_close(&U);
 	dpd_buf4_close(&Z);

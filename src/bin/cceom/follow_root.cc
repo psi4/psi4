@@ -29,22 +29,22 @@ int follow_root(int L, double **alpha, int C_irr) {
 
   /* open CCSD vector "R" from CC3_MISC */
   if (params.eom_ref == 0) {
-    dpd_file2_init(&RME, CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_buf4_init(&RMnEf, CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
+    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
   }
   else if (params.eom_ref == 1) {
-    dpd_file2_init(&RME, CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_file2_init(&Rme, CC3_MISC, C_irr, 0, 1, "CCSD Cme");
-    dpd_buf4_init(&RMNEF, CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
-    dpd_buf4_init(&Rmnef, CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD Cmnef");
-    dpd_buf4_init(&RMnEf, CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
+    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    dpd_file2_init(&Rme, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD Cme");
+    dpd_buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
+    dpd_buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD Cmnef");
+    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 0, 5, 0, 5, 0, "CCSD CMnEf");
   }
   else if (params.eom_ref == 2) {
-    dpd_file2_init(&RME, CC3_MISC, C_irr, 0, 1, "CCSD CME");
-    dpd_file2_init(&Rme, CC3_MISC, C_irr, 2, 3, "CCSD Cme");
-    dpd_buf4_init(&RMNEF, CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
-    dpd_buf4_init(&Rmnef, CC3_MISC, C_irr, 12, 17, 12, 17, 0, "CCSD Cmnef");
-    dpd_buf4_init(&RMnEf, CC3_MISC, C_irr, 22, 28, 22, 28, 0, "CCSD CMnEf");
+    dpd_file2_init(&RME, PSIF_CC3_MISC, C_irr, 0, 1, "CCSD CME");
+    dpd_file2_init(&Rme, PSIF_CC3_MISC, C_irr, 2, 3, "CCSD Cme");
+    dpd_buf4_init(&RMNEF, PSIF_CC3_MISC, C_irr, 2, 7, 2, 7, 0, "CCSD CMNEF");
+    dpd_buf4_init(&Rmnef, PSIF_CC3_MISC, C_irr, 12, 17, 12, 17, 0, "CCSD Cmnef");
+    dpd_buf4_init(&RMnEf, PSIF_CC3_MISC, C_irr, 22, 28, 22, 28, 0, "CCSD CMnEf");
   }
 
   /* loop over trial C vectors */
@@ -53,33 +53,33 @@ int follow_root(int L, double **alpha, int C_irr) {
     /* read C vector from EOM_Cxxx */
     if (params.eom_ref == 0) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     }
     else if (params.eom_ref == 1) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "CMNEF", i);
-      dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "Cmnef", i);
-      dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
+      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     }
     else if (params.eom_ref == 2) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
       sprintf(lbl, "%s %d", "CMNEF", i);
-      dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
+      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
       sprintf(lbl, "%s %d", "Cmnef", i);
-      dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
+      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
     }
 
     /* dot C vector with R vector */

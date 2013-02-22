@@ -56,7 +56,7 @@ void sortI_RHF(void)
   O = block_matrix(nmo,nmo);
 
   /* Sort alpha components first */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, "I(I,J)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -71,7 +71,7 @@ void sortI_RHF(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, "I'AB");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "I'AB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -87,7 +87,7 @@ void sortI_RHF(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, "I(I,A)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {

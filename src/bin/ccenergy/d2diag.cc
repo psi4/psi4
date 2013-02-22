@@ -33,12 +33,12 @@ double d2diag_rhf(void)
   nirreps = moinfo.nirreps;
   max = 0.0;
 
-  dpd_buf4_init(&Tikab, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&Tjkab, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_file2_init(&To, CC_TMP0, 0, 0, 0, "To");
-  dpd_buf4_init(&Tijac, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&Tijbc, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_file2_init(&Tv, CC_TMP0, 0, 1, 1, "Tv");
+  dpd_buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
+  dpd_buf4_init(&Tijac, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&Tijbc, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
 
   // Build diagnostic matrices To and Tv //
   dpd_contract442(&Tikab, &Tjkab, &To, 0, 0, 1, 0);
@@ -51,11 +51,11 @@ double d2diag_rhf(void)
   dpd_buf4_close(&Tijbc);
   dpd_file2_close(&Tv);
 
-  dpd_file2_init(&To, CC_TMP0, 0, 0, 0, "To");
+  dpd_file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
   dpd_file2_mat_init(&To);
   dpd_file2_mat_rd(&To);
 
-  dpd_file2_init(&Tv, CC_TMP0, 0, 1, 1, "Tv");
+  dpd_file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
   dpd_file2_mat_init(&Tv);
   dpd_file2_mat_rd(&Tv);
 

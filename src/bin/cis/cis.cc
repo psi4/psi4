@@ -95,7 +95,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
         fprintf(outfile, "\nLargest components of singlet excited wave function #%d/#%d:\n",
             h, i);
         sprintf(lbl, "BIA(%d)[%d] singlet", i, h);
-        dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+        dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
         amp_write_T1(&B, 5, outfile);
         dpd_file2_close(&B);
 
@@ -116,7 +116,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
 
         fprintf(outfile, "\nLargest components of triplet excited wave function #%d/#%d:\n", h, i);
         sprintf(lbl, "BIA(%d)[%d] triplet", i, h);
-        dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+        dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
         amp_write_T1(&B, 5, outfile);
         dpd_file2_close(&B);
         fprintf(outfile, "\n");
@@ -249,16 +249,16 @@ void init_io(int argc, char *argv[])
 {
   tstart();
 
-  psio_open(CC_INFO, 1);
-  psio_open(CC_OEI, 1);
-  psio_open(CC_CINTS, 1);
-  psio_open(CC_DINTS, 1);
-  psio_open(CC_EINTS, 1);
-  psio_open(CC_FINTS, 1);
-  psio_open(CC_DENOM, 1);
-  psio_open(CC_MISC, 0);
-  psio_open(CC_TMP0, 0);
-  psio_open(CC_TMP1, 0);
+  psio_open(PSIF_CC_INFO, 1);
+  psio_open(PSIF_CC_OEI, 1);
+  psio_open(PSIF_CC_CINTS, 1);
+  psio_open(PSIF_CC_DINTS, 1);
+  psio_open(PSIF_CC_EINTS, 1);
+  psio_open(PSIF_CC_FINTS, 1);
+  psio_open(PSIF_CC_DENOM, 1);
+  psio_open(PSIF_CC_MISC, 0);
+  psio_open(PSIF_CC_TMP0, 0);
+  psio_open(PSIF_CC_TMP1, 0);
 }
 
 void title(void)
@@ -272,16 +272,16 @@ void title(void)
 
 void exit_io(void)
 {
-  psio_close(CC_INFO, 1);
-  psio_close(CC_OEI, 1);
-  psio_close(CC_CINTS, 1);
-  psio_close(CC_DINTS, 1);
-  psio_close(CC_EINTS, 1);
-  psio_close(CC_FINTS, 1);
-  psio_close(CC_DENOM, 1);
-  psio_close(CC_MISC, 1);
-  psio_close(CC_TMP0, 0);
-  psio_close(CC_TMP1, 0);
+  psio_close(PSIF_CC_INFO, 1);
+  psio_close(PSIF_CC_OEI, 1);
+  psio_close(PSIF_CC_CINTS, 1);
+  psio_close(PSIF_CC_DINTS, 1);
+  psio_close(PSIF_CC_EINTS, 1);
+  psio_close(PSIF_CC_FINTS, 1);
+  psio_close(PSIF_CC_DENOM, 1);
+  psio_close(PSIF_CC_MISC, 1);
+  psio_close(PSIF_CC_TMP0, 0);
+  psio_close(PSIF_CC_TMP1, 0);
 
   tstop();
 }

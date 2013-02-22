@@ -95,15 +95,15 @@ PsiReturnType cceom(Options &options)
 void init_io(void)
 {
   tstart();
-  for(int i = CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(int i = PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,1);
 }
 
 void exit_io(void)
 {
   int i;
-  for(i=CC_MIN; i <= CC_DIIS_AMP; i++) psio_close(i,1);
-  for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);
-  for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_DIIS_AMP; i++) psio_close(i,1);
+  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) psio_close(i,0);
+  for(i=PSIF_CC_TMP11+1; i <= PSIF_CC_MAX; i++) psio_close(i,1);
   tstop();
 }
 

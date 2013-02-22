@@ -38,7 +38,7 @@ void linresp(double *tensor, double A, double B,
   double polar, polar_LCX, polar_HXY, polar_LHX1Y1, polar_LHX1Y2, polar_LHX2Y2;
 
   /* clear out scratch space */
-  for(int j=CC_TMP; j <= CC_TMP11; j++) {
+  for(int j=PSIF_CC_TMP; j <= PSIF_CC_TMP11; j++) {
      psio_close(j,0); psio_open(j,0);
   }
 

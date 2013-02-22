@@ -31,14 +31,14 @@ int **cacheprep_uhf(int level, int *cachefiles)
   int **cachelist;
 
   /* The listing of CC files whose entries may be cached */
-  cachefiles[CC_AINTS] = 1;
-  cachefiles[CC_CINTS] = 1;
-  cachefiles[CC_DINTS] = 1;
-  cachefiles[CC_EINTS] = 1;
-  cachefiles[CC_DENOM] = 1;
-  cachefiles[CC_TAMPS] = 1;
-  cachefiles[CC_LAMPS] = 1;
-  cachefiles[CC_HBAR] = 1;
+  cachefiles[PSIF_CC_AINTS] = 1;
+  cachefiles[PSIF_CC_CINTS] = 1;
+  cachefiles[PSIF_CC_DINTS] = 1;
+  cachefiles[PSIF_CC_EINTS] = 1;
+  cachefiles[PSIF_CC_DENOM] = 1;
+  cachefiles[PSIF_CC_TAMPS] = 1;
+  cachefiles[PSIF_CC_LAMPS] = 1;
+  cachefiles[PSIF_CC_HBAR] = 1;
 
   /* The listing of DPD patterns which may be cached */
   cachelist = init_int_matrix(32,32);
@@ -94,14 +94,14 @@ int **cacheprep_rhf(int level, int *cachefiles)
   int **cachelist;
 
   /* The listing of CC files whose entries may be cached */
-  cachefiles[CC_AINTS] = 1;
-  cachefiles[CC_CINTS] = 1;
-  cachefiles[CC_DINTS] = 1;
-  cachefiles[CC_EINTS] = 1;
-  cachefiles[CC_DENOM] = 1;
-  cachefiles[CC_TAMPS] = 1;
-  cachefiles[CC_LAMPS] = 1;
-  cachefiles[CC_HBAR] = 1;
+  cachefiles[PSIF_CC_AINTS] = 1;
+  cachefiles[PSIF_CC_CINTS] = 1;
+  cachefiles[PSIF_CC_DINTS] = 1;
+  cachefiles[PSIF_CC_EINTS] = 1;
+  cachefiles[PSIF_CC_DENOM] = 1;
+  cachefiles[PSIF_CC_TAMPS] = 1;
+  cachefiles[PSIF_CC_LAMPS] = 1;
+  cachefiles[PSIF_CC_HBAR] = 1;
 
   /* The listing of DPD patterns which may be cached */
   cachelist = init_int_matrix(12,12);

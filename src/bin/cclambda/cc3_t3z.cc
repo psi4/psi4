@@ -75,26 +75,26 @@ void cc3_t3z_RHF_AAA(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_buf4_init(&ZIFLN, CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
+  dpd_buf4_init(&ZIFLN, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&ZIFLN, h);
   }
 
-  dpd_buf4_init(&ZDFAN, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDFAN (NA,FD)");
+  dpd_buf4_init(&ZDFAN, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDFAN (NA,FD)");
   dpd_buf4_scm(&ZDFAN, 0.0);
 
-  dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&Dints, h);
     dpd_buf4_mat_irrep_rd(&Dints, h);
   }
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&F, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_buf4_init(&E, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  dpd_buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
 
   /* target T3 amplitudes go in here */
   W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -263,8 +263,8 @@ void cc3_t3z_RHF_AAB(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_init(&DAAints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_buf4_init(&DAAints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&Dints, h);
     dpd_buf4_mat_irrep_rd(&Dints, h);
@@ -273,8 +273,8 @@ void cc3_t3z_RHF_AAB(void)
     dpd_buf4_mat_irrep_rd(&DAAints, h);
   }
 
-  dpd_buf4_init(&ZIFLN, CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
-  dpd_buf4_init(&ZIfLn, CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIfLn");
+  dpd_buf4_init(&ZIFLN, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
+  dpd_buf4_init(&ZIfLn, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIfLn");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&ZIFLN, h);
     dpd_buf4_mat_irrep_rd(&ZIFLN, h);
@@ -282,24 +282,24 @@ void cc3_t3z_RHF_AAB(void)
     dpd_buf4_mat_irrep_init(&ZIfLn, h);
   }
 
-  dpd_buf4_init(&ZDFAN, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDFAN (NA,FD)");
-  dpd_buf4_init(&ZDfAn, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDfAn (nA,fD)");
+  dpd_buf4_init(&ZDFAN, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDFAN (NA,FD)");
+  dpd_buf4_init(&ZDfAn, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDfAn (nA,fD)");
   dpd_buf4_scm(&ZDfAn, 0.0);
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fij");
-  dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fab");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
 
-  dpd_buf4_init(&T2AA, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&T2AB, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&T2BA, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
-  dpd_buf4_init(&FAA, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_buf4_init(&FAB, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
-  dpd_buf4_init(&FBA, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
-  dpd_buf4_init(&EAA, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
-  dpd_buf4_init(&EAB, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
-  dpd_buf4_init(&EBA, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
+  dpd_buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&T2BA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+  dpd_buf4_init(&FAA, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  dpd_buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
+  dpd_buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+  dpd_buf4_init(&EAA, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  dpd_buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+  dpd_buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
 
   /* target T3 amplitudes go in here */
   W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -610,9 +610,9 @@ void cc3_t3z_RHF_AAB(void)
   dpd_buf4_close(&ZIFLN);
   dpd_buf4_close(&ZIfLn);
 
-  dpd_buf4_sort(&ZDFAN, CC3_MISC, qpsr, 11, 5, "CC3 ZDFAN (AN,DF)");
+  dpd_buf4_sort(&ZDFAN, PSIF_CC3_MISC, qpsr, 11, 5, "CC3 ZDFAN (AN,DF)");
   dpd_buf4_close(&ZDFAN);
-  dpd_buf4_sort(&ZDfAn, CC3_MISC, qpsr, 11, 5, "CC3 ZDfAn (An,Df)");
+  dpd_buf4_sort(&ZDfAn, PSIF_CC3_MISC, qpsr, 11, 5, "CC3 ZDfAn (An,Df)");
   dpd_buf4_close(&ZDfAn);
 
   for(h=0; h < nirreps; h++) {
