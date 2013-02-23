@@ -18,7 +18,7 @@
 using namespace psi;
 using namespace cepa;
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 /**
   * Build and use I(a,b)

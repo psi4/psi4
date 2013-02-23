@@ -56,31 +56,31 @@ void HET1_Wabef(void)
 
   if(params.ref == 1) {
 
-    dpd_buf4_init(&Bints, CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
-    dpd_buf4_copy(&Bints, CC3_HET1, "CC3 WABEF");
+    dpd_buf4_init(&Bints, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <ab|cd>");
+    dpd_buf4_copy(&Bints, PSIF_CC3_HET1, "CC3 WABEF");
     dpd_buf4_close(&Bints);
 
-    dpd_buf4_init(&Bints, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
-    dpd_buf4_copy(&Bints, CC3_HET1, "CC3 WAbEf");
+    dpd_buf4_init(&Bints, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+    dpd_buf4_copy(&Bints, PSIF_CC3_HET1, "CC3 WAbEf");
     dpd_buf4_close(&Bints);
 
     /* ZANEF = <AN||EF> - 1/2 t_M^A <MN||EF> */
-    dpd_buf4_init(&Fints, CC_FINTS, 0, 11, 7, 11, 5, 1, "F <ai|bc>");
-    dpd_buf4_copy(&Fints, CC_TMP0, "ZANEF (AN,E>F)");
+    dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 11, 7, 11, 5, 1, "F <ai|bc>");
+    dpd_buf4_copy(&Fints, PSIF_CC_TMP0, "ZANEF (AN,E>F)");
     dpd_buf4_close(&Fints);
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
-    dpd_buf4_init(&Z, CC_TMP0, 0, 11, 7, 11, 7, 0, "ZANEF (AN,E>F)");
-    dpd_buf4_init(&D, CC_DINTS, 0, 0, 7, 0, 7, 0, "D <ij||ab> (ij,a>b)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "ZANEF (AN,E>F)");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 7, 0, 7, 0, "D <ij||ab> (ij,a>b)");
     dpd_contract244(&T1, &D, &Z, 0, 0, 0, -0.5, 1);
     dpd_buf4_close(&D);
     dpd_buf4_close(&Z);
     dpd_file2_close(&T1);
 
     /* WABEF <-- -P(AB) t_N^B ZANEF */
-    dpd_buf4_init(&W, CC3_HET1, 0, 7, 7, 7, 7, 0, "CC3 WABEF");
-    dpd_buf4_init(&Z, CC_TMP0, 0, 11, 7, 11, 7, 0, "ZANEF (AN,E>F)");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&W, PSIF_CC3_HET1, 0, 7, 7, 7, 7, 0, "CC3 WABEF");
+    dpd_buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 7, 11, 7, 0, "ZANEF (AN,E>F)");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
     for(Gab=0; Gab < nirreps; Gab++) {
@@ -136,22 +136,22 @@ void HET1_Wabef(void)
     dpd_buf4_close(&W);
 
     /* ZAnEf = <An|Ef> - 1/2 t_MA <Mn|Ef> */
-    dpd_buf4_init(&Fints, CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
-    dpd_buf4_copy(&Fints, CC_TMP0, "ZAnEf");
+    dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+    dpd_buf4_copy(&Fints, PSIF_CC_TMP0, "ZAnEf");
     dpd_buf4_close(&Fints);
 
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
-    dpd_buf4_init(&Z, CC_TMP0, 0, 11, 5, 11, 5, 0, "ZAnEf");
-    dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "ZAnEf");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
     dpd_contract244(&T1, &D, &Z, 0, 0, 0, -0.5, 1);
     dpd_buf4_close(&D);
     dpd_buf4_close(&Z);
     dpd_file2_close(&T1);
 
     /* WAbEf <-- P(Ab) t_n^b ZAnEf */
-    dpd_buf4_init(&W, CC3_HET1, 0, 5, 5, 5, 5, 0, "CC3 WAbEf");
-    dpd_buf4_init(&Z, CC_TMP0, 0, 11, 5, 11, 5, 0, "ZAnEf");
-    dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+    dpd_buf4_init(&W, PSIF_CC3_HET1, 0, 5, 5, 5, 5, 0, "CC3 WAbEf");
+    dpd_buf4_init(&Z, PSIF_CC_TMP0, 0, 11, 5, 11, 5, 0, "ZAnEf");
+    dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1);
     dpd_file2_mat_rd(&T1);
     for(Gab=0; Gab < nirreps; Gab++) {

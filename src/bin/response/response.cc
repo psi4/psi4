@@ -88,11 +88,11 @@ void init_io(int argc, char *argv[])
 
   tstart();
   psio_open(PSIF_MO_HESS,0);
-  psio_open(CC_INFO, PSIO_OPEN_OLD);
-  psio_open(CC_OEI, PSIO_OPEN_OLD);
-  psio_open(CC_CINTS, PSIO_OPEN_OLD);
-  psio_open(CC_DINTS, PSIO_OPEN_OLD);
-  psio_open(CC_TMP0, PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_INFO, PSIO_OPEN_OLD);
+  psio_open(PSIF_CC_OEI, PSIO_OPEN_OLD);
+  psio_open(PSIF_CC_CINTS, PSIO_OPEN_OLD);
+  psio_open(PSIF_CC_DINTS, PSIO_OPEN_OLD);
+  psio_open(PSIF_CC_TMP0, PSIO_OPEN_NEW);
 }
 
 void exit_io(void)
@@ -100,11 +100,11 @@ void exit_io(void)
   int i;
 
   psio_close(PSIF_MO_HESS,1);
-  psio_close(CC_INFO, 1);
-  psio_close(CC_OEI, 1);
-  psio_close(CC_CINTS, 1);
-  psio_close(CC_DINTS, 1);
-  psio_close(CC_TMP0, 1);
+  psio_close(PSIF_CC_INFO, 1);
+  psio_close(PSIF_CC_OEI, 1);
+  psio_close(PSIF_CC_CINTS, 1);
+  psio_close(PSIF_CC_DINTS, 1);
+  psio_close(PSIF_CC_TMP0, 1);
   psio_done();
   tstop();
 }

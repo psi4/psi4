@@ -24,8 +24,8 @@ void rhf_twopdm(void)
 {
   dpdbuf4 T;
 
-  dpd_buf4_init(&T, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_copy(&T, CC_GAMMA, "GIjAb");
+  dpd_buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
   dpd_buf4_close(&T);
 }
 
@@ -38,16 +38,16 @@ void rhf_sf_twopdm(void)
 {
   dpdbuf4 T;
 
-  dpd_buf4_init(&T, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-  dpd_buf4_copy(&T, CC_GAMMA, "GIJAB");
+  dpd_buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_copy(&T, PSIF_CC_GAMMA, "GIJAB");
   dpd_buf4_close(&T);
 
-  dpd_buf4_init(&T, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-  dpd_buf4_copy(&T, CC_GAMMA, "Gijab");
+  dpd_buf4_init(&T, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+  dpd_buf4_copy(&T, PSIF_CC_GAMMA, "Gijab");
   dpd_buf4_close(&T);
 
-  dpd_buf4_init(&T, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_copy(&T, CC_GAMMA, "GIjAb");
+  dpd_buf4_init(&T, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_copy(&T, PSIF_CC_GAMMA, "GIjAb");
   dpd_buf4_close(&T);
 }
 

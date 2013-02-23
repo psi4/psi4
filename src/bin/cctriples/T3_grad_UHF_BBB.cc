@@ -63,34 +63,34 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
       double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
 
-      dpd_file2_init(&fIJ, CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fAB, CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fIA, CC_OEI, 0, 2, 3, "fia");
-      dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+      dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
+      dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
+      dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 2, 3, "fia");
+      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
 
-      dpd_buf4_init(&T2, CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-      dpd_buf4_init(&Fints, CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-      dpd_buf4_init(&Eints, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-      dpd_buf4_init(&Dints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+      dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+      dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
+      dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
+      dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
 
-      dpd_file2_init(&S1, CC_OEI, 0, 2, 3, "Sia");
+      dpd_file2_init(&S1, PSIF_CC_OEI, 0, 2, 3, "Sia");
       dpd_file2_mat_init(&S1); 
-      dpd_buf4_init(&S2, CC_MISC, 0, 10, 15, 12, 17, 0, "Sijab");
+      dpd_buf4_init(&S2, PSIF_CC_MISC, 0, 10, 15, 12, 17, 0, "Sijab");
       for(h=0; h < nirreps; h++)
 	dpd_buf4_mat_irrep_init(&S2, h);
 
-      dpd_file2_init(&Dab, CC_OEI, 0, 3, 3, "Dab");
+      dpd_file2_init(&Dab, PSIF_CC_OEI, 0, 3, 3, "Dab");
       dpd_file2_mat_init(&Dab); 
 
-      dpd_buf4_init(&Gijab, CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
+      dpd_buf4_init(&Gijab, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
       for(h=0; h < nirreps; h++)
 	dpd_buf4_mat_irrep_init(&Gijab, h);
 
-      dpd_buf4_init(&Gijka, CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
+      dpd_buf4_init(&Gijka, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
       for(h=0; h < nirreps; h++)
 	dpd_buf4_mat_irrep_init(&Gijka, h);
 
-      dpd_buf4_init(&Gidab, CC_GAMMA, 0, 30, 15, 30, 17, 0, "Gidab");
+      dpd_buf4_init(&Gidab, PSIF_CC_GAMMA, 0, 30, 15, 30, 17, 0, "Gidab");
       for(h=0; h < nirreps; h++)
 	dpd_buf4_mat_irrep_init(&Gidab, h);
 
@@ -470,21 +470,21 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
       /*** T3 --> Dij ***/
 
-      dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fia, CC_OEI, 0, 2, 3, "fia");
-      dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+      dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+      dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+      dpd_file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
 
       dpdbuf4 EBBints;
-      dpd_buf4_init(&EBBints, CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
+      dpd_buf4_init(&EBBints, PSIF_CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
       dpdbuf4 FBBints;
-      dpd_buf4_init(&FBBints, CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
+      dpd_buf4_init(&FBBints, PSIF_CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
       dpdbuf4 T2BB;
-      dpd_buf4_init(&T2BB, CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
+      dpd_buf4_init(&T2BB, PSIF_CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
       dpdbuf4 DBBints;
-      dpd_buf4_init(&DBBints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+      dpd_buf4_init(&DBBints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
 
-      dpd_file2_init(&Dij, CC_OEI, 0, 2, 2, "Dij");
+      dpd_file2_init(&Dij, PSIF_CC_OEI, 0, 2, 2, "Dij");
       dpd_file2_mat_init(&Dij);
 
       int Gabc;

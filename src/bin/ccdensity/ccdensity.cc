@@ -159,8 +159,8 @@ PsiReturnType ccdensity(Options& options)
       else cachedone_rhf(cachelist);
       free(cachefiles);
       cleanup();
-      psio_close(EOM_TMP_XI,0); /* delete EOM_TMP_XI */
-      psio_open(EOM_TMP_XI,PSIO_OPEN_NEW);
+      psio_close(PSIF_EOM_TMP_XI,0); /* delete EOM_TMP_XI */
+      psio_open(PSIF_EOM_TMP_XI,PSIO_OPEN_NEW);
       exit_io();
       return Success;
     }
@@ -293,15 +293,15 @@ PsiReturnType ccdensity(Options& options)
 
     free_block(moinfo.opdm);
 
-    psio_close(CC_TMP,0);   psio_open(CC_TMP,PSIO_OPEN_NEW);
-    psio_close(EOM_TMP0,0); psio_open(EOM_TMP0,PSIO_OPEN_NEW);
-    psio_close(EOM_TMP1,0); psio_open(EOM_TMP1,PSIO_OPEN_NEW);
-    psio_close(CC_GLG,0);   psio_open(CC_GLG,PSIO_OPEN_NEW);
-    psio_close(CC_GL,0);    psio_open(CC_GL,PSIO_OPEN_NEW);
-    psio_close(CC_GR,0);    psio_open(CC_GR,PSIO_OPEN_NEW);
+    psio_close(PSIF_CC_TMP,0);   psio_open(PSIF_CC_TMP,PSIO_OPEN_NEW);
+    psio_close(PSIF_EOM_TMP0,0); psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
+    psio_close(PSIF_EOM_TMP1,0); psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
+    psio_close(PSIF_CC_GLG,0);   psio_open(PSIF_CC_GLG,PSIO_OPEN_NEW);
+    psio_close(PSIF_CC_GL,0);    psio_open(PSIF_CC_GL,PSIO_OPEN_NEW);
+    psio_close(PSIF_CC_GR,0);    psio_open(PSIF_CC_GR,PSIO_OPEN_NEW);
     if (!params.calc_xi) {
-      psio_close(EOM_TMP,0);
-      psio_open(EOM_TMP,PSIO_OPEN_NEW);
+      psio_close(PSIF_EOM_TMP,0);
+      psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
     }
   }
 
@@ -381,14 +381,14 @@ void init_io(void)
 
   tstart();
 
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,PSIO_OPEN_OLD);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_open(i,PSIO_OPEN_OLD);
   // erase old files
-  psio_close(CC_GR,0);
-  psio_close(CC_GL,0);
-  psio_close(EOM_TMP0,0);
-  psio_open(CC_GR,PSIO_OPEN_NEW);
-  psio_open(CC_GL,PSIO_OPEN_NEW);
-  psio_open(EOM_TMP0,PSIO_OPEN_NEW);
+  psio_close(PSIF_CC_GR,0);
+  psio_close(PSIF_CC_GL,0);
+  psio_close(PSIF_EOM_TMP0,0);
+  psio_open(PSIF_CC_GR,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GL,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
 }
 
 void title(void)
@@ -407,23 +407,23 @@ void exit_io(void)
   int i;
 
   /* delete temporary EOM files */
-  psio_close(EOM_TMP0,0);
-  psio_close(EOM_TMP1,0);
-  psio_close(CC_GLG,0);
-  psio_open(EOM_TMP0,PSIO_OPEN_NEW);
-  psio_open(EOM_TMP1,PSIO_OPEN_NEW);
-  psio_open(CC_GLG,PSIO_OPEN_NEW);
+  psio_close(PSIF_EOM_TMP0,0);
+  psio_close(PSIF_EOM_TMP1,0);
+  psio_close(PSIF_CC_GLG,0);
+  psio_open(PSIF_EOM_TMP0,PSIO_OPEN_NEW);
+  psio_open(PSIF_EOM_TMP1,PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_GLG,PSIO_OPEN_NEW);
   if (!params.calc_xi) {
-    psio_close(EOM_TMP,0);
-    psio_open(EOM_TMP,PSIO_OPEN_NEW);
+    psio_close(PSIF_EOM_TMP,0);
+    psio_open(PSIF_EOM_TMP,PSIO_OPEN_NEW);
   }
   if (params.use_zeta) { /* we're done with Xi amplitudes */
-    psio_close(EOM_XI,0);
-    psio_open(EOM_XI,PSIO_OPEN_NEW);
+    psio_close(PSIF_EOM_XI,0);
+    psio_open(PSIF_EOM_XI,PSIO_OPEN_NEW);
   }
 
   /* Close all dpd data files here */
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_close(i,1);
+  for(i=PSIF_CC_MIN; i <= PSIF_CC_MAX; i++) psio_close(i,1);
 
   tstop();
 }

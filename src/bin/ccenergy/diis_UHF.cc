@@ -49,11 +49,11 @@ void diis_UHF(int iter)
   nirreps = moinfo.nirreps;
 
   /* Compute the length of a single error vector */
-  dpd_file2_init(&T1a, CC_TMP0, 0, 0, 1, "tIA");
-  dpd_file2_init(&T1b, CC_TMP0, 0, 2, 3, "tIA");
-  dpd_buf4_init(&T2a, CC_TMP0, 0, 2, 7, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&T2b, CC_TMP0, 0, 12, 17, 12, 17, 0, "tIJAB");
-  dpd_buf4_init(&T2c, CC_TMP0, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_file2_init(&T1a, PSIF_CC_TMP0, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1b, PSIF_CC_TMP0, 0, 2, 3, "tIA");
+  dpd_buf4_init(&T2a, PSIF_CC_TMP0, 0, 2, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&T2b, PSIF_CC_TMP0, 0, 12, 17, 12, 17, 0, "tIJAB");
+  dpd_buf4_init(&T2c, PSIF_CC_TMP0, 0, 22, 28, 22, 28, 0, "tIjAb");
   for(h=0; h < nirreps; h++) {
     vector_length += T1a.params->rowtot[h] * T1a.params->coltot[h];
     vector_length += T1b.params->rowtot[h] * T1b.params->coltot[h];
@@ -74,10 +74,10 @@ void diis_UHF(int iter)
   error = dpd_block_matrix(1,vector_length);
 
   word=0;
-  dpd_file2_init(&T1a, CC_OEI, 0, 0, 1, "New tIA");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
   dpd_file2_mat_init(&T1a);
   dpd_file2_mat_rd(&T1a);
-  dpd_file2_init(&T1b, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1b, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_file2_mat_init(&T1b);
   dpd_file2_mat_rd(&T1b);
   for(h=0; h < nirreps; h++)
@@ -89,10 +89,10 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1b);
   dpd_file2_close(&T1b);
 
-  dpd_file2_init(&T1a, CC_OEI, 0, 2, 3, "New tia");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 2, 3, "New tia");
   dpd_file2_mat_init(&T1a);
   dpd_file2_mat_rd(&T1a);
-  dpd_file2_init(&T1b, CC_OEI, 0, 2, 3, "tia");
+  dpd_file2_init(&T1b, PSIF_CC_OEI, 0, 2, 3, "tia");
   dpd_file2_mat_init(&T1b);
   dpd_file2_mat_rd(&T1b);
   for(h=0; h < nirreps; h++)
@@ -104,8 +104,8 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1b);
   dpd_file2_close(&T1b);
   
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-  dpd_buf4_init(&T2b, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+  dpd_buf4_init(&T2b, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -120,8 +120,8 @@ void diis_UHF(int iter)
   dpd_buf4_close(&T2a);
   dpd_buf4_close(&T2b);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-  dpd_buf4_init(&T2b, CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+  dpd_buf4_init(&T2b, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -136,8 +136,8 @@ void diis_UHF(int iter)
   dpd_buf4_close(&T2a);
   dpd_buf4_close(&T2b);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-  dpd_buf4_init(&T2b, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+  dpd_buf4_init(&T2b, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -153,13 +153,13 @@ void diis_UHF(int iter)
   dpd_buf4_close(&T2b);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-  psio_write(CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0], 
+  psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0], 
 	     vector_length*sizeof(double), start, &end);
 
   /* Store the current amplitude vector on disk */
   word=0;
 
-  dpd_file2_init(&T1a, CC_OEI, 0, 0, 1, "New tIA");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
   dpd_file2_mat_init(&T1a);
   dpd_file2_mat_rd(&T1a);
   for(h=0; h < nirreps; h++)
@@ -169,7 +169,7 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1a);
   dpd_file2_close(&T1a);
 
-  dpd_file2_init(&T1a, CC_OEI, 0, 2, 3, "New tia");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 2, 3, "New tia");
   dpd_file2_mat_init(&T1a);
   dpd_file2_mat_rd(&T1a);
   for(h=0; h < nirreps; h++)
@@ -179,7 +179,7 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1a);
   dpd_file2_close(&T1a);
   
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -190,7 +190,7 @@ void diis_UHF(int iter)
   }
   dpd_buf4_close(&T2a);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -201,7 +201,7 @@ void diis_UHF(int iter)
   }
   dpd_buf4_close(&T2a);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -213,7 +213,7 @@ void diis_UHF(int iter)
   dpd_buf4_close(&T2a);
 
   start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-  psio_write(CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0], 
+  psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0], 
 	     vector_length*sizeof(double), start, &end);
 
   /* If we haven't run through enough iterations, set the correct dimensions
@@ -233,7 +233,7 @@ void diis_UHF(int iter)
 
     start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
-    psio_read(CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[0],
+    psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[0],
 	      vector_length*sizeof(double), start, &end);
 
     dot_arr(vector[0], vector[0], vector_length, &product);
@@ -244,7 +244,7 @@ void diis_UHF(int iter)
 
       start = psio_get_address(PSIO_ZERO, q*vector_length*sizeof(double));
 
-      psio_read(CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
+      psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
 		vector_length*sizeof(double), start, &end);
 
       dot_arr(vector[1], vector[0], vector_length, &product);
@@ -291,7 +291,7 @@ void diis_UHF(int iter)
 
     start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
-    psio_read(CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0], 
+    psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0], 
 	      vector_length*sizeof(double), start, &end);
 
     for(q=0; q < vector_length; q++) 
@@ -302,7 +302,7 @@ void diis_UHF(int iter)
 
   /* Now place these elements into the DPD amplitude arrays */
   word=0;
-  dpd_file2_init(&T1a, CC_OEI, 0, 0, 1, "New tIA");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 0, 1, "New tIA");
   dpd_file2_mat_init(&T1a);
   for(h=0; h < nirreps; h++)
     for(row=0; row < T1a.params->rowtot[h]; row++)
@@ -312,7 +312,7 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1a);
   dpd_file2_close(&T1a);
 
-  dpd_file2_init(&T1a, CC_OEI, 0, 2, 3, "New tia");
+  dpd_file2_init(&T1a, PSIF_CC_OEI, 0, 2, 3, "New tia");
   dpd_file2_mat_init(&T1a);
   for(h=0; h < nirreps; h++)
     for(row=0; row < T1a.params->rowtot[h]; row++)
@@ -322,7 +322,7 @@ void diis_UHF(int iter)
   dpd_file2_mat_close(&T1a);
   dpd_file2_close(&T1a);
   
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)
@@ -333,7 +333,7 @@ void diis_UHF(int iter)
   }
   dpd_buf4_close(&T2a);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)
@@ -344,7 +344,7 @@ void diis_UHF(int iter)
   }
   dpd_buf4_close(&T2a);
 
-  dpd_buf4_init(&T2a, CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+  dpd_buf4_init(&T2a, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2a, h);
     for(row=0; row < T2a.params->rowtot[h]; row++)

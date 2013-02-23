@@ -44,7 +44,7 @@ void sort_rtd_uhf(struct TD_Params S)
   moinfo.rtd_a = block_matrix(nmo,nmo);
   moinfo.rtd_b = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 0, "RTDIJ");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 0, "RTDIJ");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -59,7 +59,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 1, 1, "RTDAB");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 1, 1, "RTDAB");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -75,7 +75,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "RTDAI");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "RTDAI");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -90,7 +90,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 0, 1, "RTDIA");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 0, 1, "RTDIA");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -105,7 +105,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 2, 2, "RTDij");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 2, 2, "RTDij");
   dpd_file2_mat_init(&D); 
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -120,7 +120,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 3, 3, "RTDab");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 3, 3, "RTDab");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -136,7 +136,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_TMP, S.irrep, 2, 3, "RTDai");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 2, 3, "RTDai");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -151,7 +151,7 @@ void sort_rtd_uhf(struct TD_Params S)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_TMP, S.irrep, 2, 3, "RTDia");
+  dpd_file2_init(&D, PSIF_CC_TMP, S.irrep, 2, 3, "RTDia");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {

@@ -86,7 +86,7 @@ void compute_X(const char *pert, int irrep, double omega)
       fprintf(outfile, "\tConverged %s-Perturbed Wfn to %4.3e\n", pert, rms);
       if(params.print & 2) {
         sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-        dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+        dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
         X2_norm = dpd_buf4_dot_self(&X2);
         dpd_buf4_close(&X2);
         X2_norm = sqrt(X2_norm);
@@ -117,13 +117,13 @@ void compute_X(const char *pert, int irrep, double omega)
   }
 
   /* Clean up disk space */
-  psio_close(CC_DIIS_AMP, 0);
-  psio_close(CC_DIIS_ERR, 0);
+  psio_close(PSIF_CC_DIIS_AMP, 0);
+  psio_close(PSIF_CC_DIIS_ERR, 0);
 
-  psio_open(CC_DIIS_AMP, 0);
-  psio_open(CC_DIIS_ERR, 0);
+  psio_open(PSIF_CC_DIIS_AMP, 0);
+  psio_open(PSIF_CC_DIIS_ERR, 0);
 
-  for(i=CC_TMP; i <= CC_TMP11; i++) {
+  for(i=PSIF_CC_TMP; i <= PSIF_CC_TMP11; i++) {
     psio_close(i,0);
     psio_open(i,0);
   }

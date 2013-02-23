@@ -29,10 +29,10 @@ void build_B_RHF(void)
 {
   dpdbuf4 D;
 
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
   dpd_buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ)");
   dpd_buf4_close(&D);
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>"); 
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>"); 
   dpd_buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ) triplet");
   dpd_buf4_close(&D);
 }

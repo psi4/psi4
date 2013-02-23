@@ -59,7 +59,7 @@ void lmp2(void)
   next = PSIO_ZERO;
   for(i=0; i<nocc; i++) {
     local.domain[i] = (int *) malloc(local.natom*sizeof(int));
-    psio_read(CC_INFO, "Local Domains", (char *) local.domain[i],
+    psio_read(PSIF_CC_INFO, "Local Domains", (char *) local.domain[i],
               natom*sizeof(int), next, &next);
   }
 
@@ -67,11 +67,11 @@ void lmp2(void)
   for(ij=0; ij < nocc*nocc; ij++) local.weak_pairs[ij] = 0;
 
   /* Clean out diagonal element of occ-occ Fock matrix */
-  dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_copy(&fij, CC_OEI, "fIJ (non-diagonal)");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_copy(&fij, PSIF_CC_OEI, "fIJ (non-diagonal)");
   dpd_file2_close(&fij);
 
-  dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fIJ (non-diagonal)");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ (non-diagonal)");
   dpd_file2_mat_init(&fij);
   dpd_file2_mat_rd(&fij);
   for(i=0; i < nocc; i++) fij.matrix[0][i][i] = 0.0;
@@ -79,24 +79,24 @@ void lmp2(void)
   dpd_file2_close(&fij);
 
   /* Build initial LMP2 amplitudes */
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_copy(&D, CC_TAMPS, "LMP2 tIjAb");
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_buf4_copy(&D, PSIF_CC_TAMPS, "LMP2 tIjAb");
   dpd_buf4_close(&D);
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
   if(params.local) {
     local_filter_T2(&T2);
   }
   else {
-    dpd_buf4_init(&D, CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+    dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
     dpd_buf4_dirprd(&D, &T2);
     dpd_buf4_close(&D);
   }
   dpd_buf4_close(&T2);
 
   /* Compute the LMP2 energy */
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
   energy = dpd_buf4_dot(&D, &T2);
   dpd_buf4_close(&T2);
   dpd_buf4_close(&D);
@@ -109,53 +109,53 @@ void lmp2(void)
   int lmp2_maxiter=1000;
   for(iter=1; iter < lmp2_maxiter; iter++) {
 
-    dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_buf4_copy(&D, CC_TAMPS, "New LMP2 tIjAb Increment");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    dpd_buf4_copy(&D, PSIF_CC_TAMPS, "New LMP2 tIjAb Increment");
     dpd_buf4_close(&D);
 
-    dpd_buf4_init(&newT2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb Increment");
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
+    dpd_buf4_init(&newT2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb Increment");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
 
-    dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fIJ");
+    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     dpd_contract424(&T2, &fij, &newT2, 1, 0, 1, -1, 1);
     dpd_contract244(&fij, &T2, &newT2, 0, 0, 0, -1, 1);
     dpd_file2_close(&fij);
 
-    dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fAB");
+    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
     dpd_contract244(&fab, &T2, &newT2, 1, 2, 1, 1, 1);
     dpd_contract424(&T2, &fab, &newT2, 3, 1, 0, 1, 1);
     dpd_file2_close(&fab);
 
-    dpd_buf4_copy(&T2, CC_TAMPS, "New LMP2 tIjAb");
+    dpd_buf4_copy(&T2, PSIF_CC_TAMPS, "New LMP2 tIjAb");
     dpd_buf4_close(&T2);
 
     if(params.local) {
       local_filter_T2(&newT2);
     }
     else {
-      dpd_buf4_init(&D, CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+      dpd_buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
       dpd_buf4_dirprd(&D, &newT2);
       dpd_buf4_close(&D);
     }
     dpd_buf4_close(&newT2);
 
-    dpd_buf4_init(&newT2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb Increment");
+    dpd_buf4_init(&newT2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb Increment");
     dpd_buf4_axpy(&T2, &newT2, 1);
     dpd_buf4_close(&T2);
 
-    dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     energy = dpd_buf4_dot(&D, &newT2);
     dpd_buf4_close(&D);
 
     dpd_buf4_close(&newT2);
 
     /* Check for convergence */
-    dpd_buf4_init(&newT2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
+    dpd_buf4_init(&newT2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
     dpd_buf4_mat_irrep_init(&newT2, 0);
     dpd_buf4_mat_irrep_rd(&newT2, 0);
 
-    dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "LMP2 tIjAb");
     dpd_buf4_mat_irrep_init(&T2, 0);
     dpd_buf4_mat_irrep_rd(&T2, 0);
 
@@ -180,8 +180,8 @@ void lmp2(void)
       break;
     }
     else {
-      dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
-      dpd_buf4_copy(&T2, CC_TAMPS, "LMP2 tIjAb");
+      dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
+      dpd_buf4_copy(&T2, PSIF_CC_TAMPS, "LMP2 tIjAb");
       dpd_buf4_close(&T2);
     }
   }
@@ -204,10 +204,10 @@ void lmp2(void)
     }
 
   /* Compute the MP2 weak-pair energy */
-  dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
   dpd_buf4_mat_irrep_init(&D, 0);
   dpd_buf4_mat_irrep_rd(&D, 0);
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New LMP2 tIjAb");
   dpd_buf4_mat_irrep_init(&T2, 0);
   dpd_buf4_mat_irrep_rd(&T2, 0);
 

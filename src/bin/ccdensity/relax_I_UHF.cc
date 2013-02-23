@@ -31,19 +31,19 @@ void relax_I_UHF(void)
   /*** occupied-virtual relaxation terms */
 
   /* I(I,A) = I'(I,A) - f(I,I) D(orb)(A,I) */
-  dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I'IA");
-  dpd_file2_copy(&I, CC_OEI, "I(I,A)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+  dpd_file2_copy(&I, PSIF_CC_OEI, "I(I,A)");
   dpd_file2_close(&I);
 
-  dpd_file2_init(&I, CC_OEI, 0, 0, 1, "I(I,A)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I(I,A)");
   dpd_file2_mat_init(&I);
   dpd_file2_mat_rd(&I);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_file2_init(&f, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&f, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&f);
   dpd_file2_mat_rd(&f);
 
@@ -62,19 +62,19 @@ void relax_I_UHF(void)
   dpd_file2_close(&I);
 
   /* I(i,a) = I'(i,a) - f(i,i) D(orb)(a,i) */
-  dpd_file2_init(&I, CC_OEI, 0, 2, 3, "I'ia");
-  dpd_file2_copy(&I, CC_OEI, "I(i,a)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
+  dpd_file2_copy(&I, PSIF_CC_OEI, "I(i,a)");
   dpd_file2_close(&I);
 
-  dpd_file2_init(&I, CC_OEI, 0, 2, 3, "I(i,a)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I(i,a)");
   dpd_file2_mat_init(&I);
   dpd_file2_mat_rd(&I);
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_file2_init(&f, CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&f, PSIF_CC_OEI, 0, 2, 2, "fij");
   dpd_file2_mat_init(&f);
   dpd_file2_mat_rd(&f);
 
@@ -95,36 +95,36 @@ void relax_I_UHF(void)
   /*** occupied-occupied relaxtion terms */
 
   /* I(I,J) <-- I'(I,J) - sum_A,K D(orb)(A,K) [<AI||KJ> + <AJ||KI>] - 2 sum_a,k D(orb)(a,k) <aI|kJ> */
-  dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I'IJ");
-  dpd_file2_copy(&I, CC_OEI, "I(I,J)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I'IJ");
+  dpd_file2_copy(&I, PSIF_CC_OEI, "I(I,J)");
   dpd_file2_close(&I);
-  dpd_file2_init(&I, CC_OEI, 0, 0, 0, "I(I,J)");
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-  dpd_buf4_init(&E, CC_EINTS, 0, 21, 0, 21, 0, 1, "E <AI|JK>");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 0, "I(I,J)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 21, 0, 21, 0, 1, "E <AI|JK>");
   dpd_dot13(&D, &E, &I, 0, 0, -1.0, 1.0);
   dpd_dot13(&D, &E, &I, 0, 1, -1.0, 1.0);
   dpd_buf4_close(&E);
   dpd_file2_close(&D);
-  dpd_file2_init(&D, CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-  dpd_buf4_init(&E, CC_EINTS, 0, 24, 22, 24, 22, 0, "E <Ia|Jk>");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 24, 22, 24, 22, 0, "E <Ia|Jk>");
   dpd_dot24(&D, &E, &I, 0, 0, -2.0, 1.0);
   dpd_buf4_close(&E);
   dpd_file2_close(&D);
   dpd_file2_close(&I);
 
   /* I(i,j) <-- I'(i,j) - sum_a,k D(orb)(a,k) [<ai||kj> + <aj||ki>] - 2 sum_A,K D(orb)(A,K) <Ai|Kj> */
-  dpd_file2_init(&I, CC_OEI, 0, 2, 2, "I'ij");
-  dpd_file2_copy(&I, CC_OEI, "I(i,j)");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 2, "I'ij");
+  dpd_file2_copy(&I, PSIF_CC_OEI, "I(i,j)");
   dpd_file2_close(&I);
-  dpd_file2_init(&I, CC_OEI, 0, 2, 2, "I(i,j)");
-  dpd_file2_init(&D, CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-  dpd_buf4_init(&E, CC_EINTS, 0, 31, 10, 31, 10, 1, "E <ai|jk>");
+  dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 2, "I(i,j)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 31, 10, 31, 10, 1, "E <ai|jk>");
   dpd_dot13(&D, &E, &I, 0, 0, -1.0, 1.0);
   dpd_dot13(&D, &E, &I, 0, 1, -1.0, 1.0);
   dpd_buf4_close(&E);
   dpd_file2_close(&D);
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-  dpd_buf4_init(&E, CC_EINTS, 0, 26, 22, 26, 22, 0, "E <Ai|Jk>");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 26, 22, 26, 22, 0, "E <Ai|Jk>");
   dpd_dot13(&D, &E, &I, 0, 0, -2.0, 1.0);
   dpd_buf4_close(&E);
   dpd_file2_close(&D);

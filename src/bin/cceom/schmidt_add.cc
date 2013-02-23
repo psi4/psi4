@@ -42,17 +42,17 @@ void schmidt_add(dpdfile2 *RIA, dpdfile2 *Ria,
     sprintf(Cmnef_lbl, "%s %d", "Cmnef", i);
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
 
-    dpd_file2_init(&CME, EOM_CME, irrep, 0, 1, CME_lbl);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, irrep, 2, 7, 2, 7, 0, CMNEF_lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, irrep, 0, 1, CME_lbl);
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, irrep, 2, 7, 2, 7, 0, CMNEF_lbl);
     if (params.eom_ref == 1) {
-      dpd_file2_init(&Cme, EOM_Cme, irrep, 0, 1, Cme_lbl);
-      dpd_buf4_init(&Cmnef, EOM_Cmnef, irrep, 2, 7, 2, 7, 0, Cmnef_lbl);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, irrep, 0, 5, 0, 5, 0, CMnEf_lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, irrep, 0, 1, Cme_lbl);
+      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, irrep, 2, 7, 2, 7, 0, Cmnef_lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, irrep, 0, 5, 0, 5, 0, CMnEf_lbl);
     }
     else if (params.eom_ref == 2) {
-      dpd_file2_init(&Cme, EOM_Cme, irrep, 2, 3, Cme_lbl);
-      dpd_buf4_init(&Cmnef, EOM_Cmnef, irrep, 12, 17, 12, 17, 0, Cmnef_lbl);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, irrep, 22, 28, 22, 28, 0, CMnEf_lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, irrep, 2, 3, Cme_lbl);
+      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, irrep, 12, 17, 12, 17, 0, Cmnef_lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, irrep, 22, 28, 22, 28, 0, CMnEf_lbl);
     }
 
     dotval  = dpd_file2_dot(RIA, &CME);
@@ -91,11 +91,11 @@ void schmidt_add(dpdfile2 *RIA, dpdfile2 *Ria,
     sprintf(Cmnef_lbl, "%s %d", "Cmnef", *numCs);
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", *numCs);
 
-    dpd_file2_copy(RIA, EOM_CME, CME_lbl);
-    dpd_file2_copy(Ria, EOM_Cme, Cme_lbl);
-    dpd_buf4_copy(RIJAB, EOM_CMNEF, CMNEF_lbl);
-    dpd_buf4_copy(Rijab, EOM_Cmnef, Cmnef_lbl);
-    dpd_buf4_copy(RIjAb, EOM_CMnEf, CMnEf_lbl);
+    dpd_file2_copy(RIA, PSIF_EOM_CME, CME_lbl);
+    dpd_file2_copy(Ria, PSIF_EOM_Cme, Cme_lbl);
+    dpd_buf4_copy(RIJAB, PSIF_EOM_CMNEF, CMNEF_lbl);
+    dpd_buf4_copy(Rijab, PSIF_EOM_Cmnef, Cmnef_lbl);
+    dpd_buf4_copy(RIjAb, PSIF_EOM_CMnEf, CMnEf_lbl);
 
     ++(*numCs);
   }
@@ -112,30 +112,30 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
   dpdbuf4 R2a, R2b;
   char CME_lbl[32], Cme_lbl[32], CMNEF_lbl[32], Cmnef_lbl[32], CMnEf_lbl[32], C0_lbl[32];
 
-  if (params.full_matrix) psio_read_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
+  if (params.full_matrix) psio_read_entry(PSIF_EOM_R, "R0", (char *) &R0, sizeof(double));
 
   for (i=0; i<*numCs; i++) {
     /* Spin-adapt the residual */
-    dpd_buf4_copy(RIjAb, EOM_TMP, "RIjAb");
-    dpd_buf4_sort(RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
+    dpd_buf4_copy(RIjAb, PSIF_EOM_TMP, "RIjAb");
+    dpd_buf4_sort(RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
 
-    dpd_buf4_init(&R2a, EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjAb");
-    dpd_buf4_init(&R2b, EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
+    dpd_buf4_init(&R2a, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjAb");
+    dpd_buf4_init(&R2b, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
     dpd_buf4_scm(&R2a, 2.0);
     dpd_buf4_axpy(&R2b, &R2a, -1.0);
     dpd_buf4_close(&R2b);
 
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
-    dpd_file2_init(&CME, EOM_CME, irrep, 0, 1, CME_lbl);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, irrep, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, irrep, 0, 1, CME_lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, irrep, 0, 5, 0, 5, 0, CMnEf_lbl);
     dotval  = 2.0 * dpd_file2_dot(RIA, &CME);
  //fprintf(outfile, "OE Dotval for vector %d = %20.14f\n", i, dotval);
     dotval += dpd_buf4_dot(&R2a, &CMnEf);
     dpd_buf4_close(&R2a);
 		if (params.full_matrix) {
       sprintf(C0_lbl, "%s %d", "C0", i);
-			psio_read_entry(EOM_CME, C0_lbl, (char *) &C0, sizeof(double));
+			psio_read_entry(PSIF_EOM_CME, C0_lbl, (char *) &C0, sizeof(double));
 			dotval += C0 * R0;
 		}
 
@@ -147,8 +147,8 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
     dpd_buf4_close(&CMnEf);
   }
 
-  dpd_buf4_sort(RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
-  dpd_buf4_init(&R2b, EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
+  dpd_buf4_sort(RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
+  dpd_buf4_init(&R2b, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
 
   /* norm = norm_C_rhf(RIA, RIjAb, &R2b); */
   norm  = 2.0 * dpd_file2_dot_self(RIA);
@@ -186,23 +186,23 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep)
     sprintf(CME_lbl, "%s %d", "CME", *numCs);
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", *numCs);
 
-    dpd_file2_copy(RIA, EOM_CME, CME_lbl);
-    dpd_buf4_copy(RIjAb, EOM_CMnEf, CMnEf_lbl);
+    dpd_file2_copy(RIA, PSIF_EOM_CME, CME_lbl);
+    dpd_buf4_copy(RIjAb, PSIF_EOM_CMnEf, CMnEf_lbl);
 
     /* Generate AA and BB C2 vectors from AB vector */
     /* C(IJ,AB) = C(ij,ab) = C(Ij,Ab) - C(Ij,bA) */
-    dpd_buf4_copy(RIjAb, EOM_TMP, "CMnEf");
-    dpd_buf4_sort(RIjAb, EOM_TMP, pqsr, 0, 5, "CMnfE");
+    dpd_buf4_copy(RIjAb, PSIF_EOM_TMP, "CMnEf");
+    dpd_buf4_sort(RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "CMnfE");
 
-    dpd_buf4_init(&CAB1, EOM_TMP, irrep, 0, 5, 0, 5, 0, "CMnEf");
-    dpd_buf4_init(&CAB2, EOM_TMP, irrep, 0, 5, 0, 5, 0, "CMnfE");
+    dpd_buf4_init(&CAB1, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "CMnEf");
+    dpd_buf4_init(&CAB2, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "CMnfE");
     dpd_buf4_axpy(&CAB2, &CAB1, -1.0);
     dpd_buf4_close(&CAB2);
     dpd_buf4_close(&CAB1);
 
 		if (params.full_matrix) {
       sprintf(C0_lbl, "%s %d", "C0", *numCs);
-		  psio_write_entry(EOM_CME, C0_lbl, (char *) &R0, sizeof(double));
+		  psio_write_entry(PSIF_EOM_CME, C0_lbl, (char *) &R0, sizeof(double));
 		}
     ++(*numCs);
   }

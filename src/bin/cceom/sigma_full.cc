@@ -27,8 +27,8 @@ void sigma0S(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
     if (C_irr == H_IRR) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-      dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
       S0 = dpd_file2_dot(&FME, &CME);
       dpd_file2_close(&FME);
       dpd_file2_close(&CME);
@@ -38,9 +38,9 @@ void sigma0S(int i, int C_irr) {
     }
 
     sprintf(lbl, "%s %d", "S0", i);
-    psio_read_entry(EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
+    psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
     S0 += S0_old;
-    psio_write_entry(EOM_SIA, lbl, (char *) &(S0), sizeof(double));
+    psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &(S0), sizeof(double));
   }
 
 #ifdef EOM_DEBUG
@@ -53,15 +53,15 @@ void sigma00(int i, int C_irr) {
   char lbl[32];
 		double C0, S0, S0_old, reference_expectation_value;
 
-  psio_read_entry(CC_HBAR, "Reference expectation value",
+  psio_read_entry(PSIF_CC_HBAR, "Reference expectation value",
 		(char *) &(reference_expectation_value), sizeof(double));
 
   sprintf(lbl, "%s %d", "C0", i);
-  psio_read_entry(EOM_CME, lbl, (char *) &(C0), sizeof(double));
+  psio_read_entry(PSIF_EOM_CME, lbl, (char *) &(C0), sizeof(double));
   sprintf(lbl, "%s %d", "S0", i);
-  psio_read_entry(EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
+  psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
 	S0_old += C0 * reference_expectation_value;
-  psio_write_entry(EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
+  psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
 
 #ifdef EOM_DEBUG
   check_sum("Sigma00",i,C_irr);
@@ -83,8 +83,8 @@ void sigma0D(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
     if (C_irr == H_IRR) {
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-      dpd_buf4_init(&D, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       S0 = dpd_buf4_dot(&D, &CMnEf);
       dpd_buf4_close(&D);
       dpd_buf4_close(&CMnEf);
@@ -94,9 +94,9 @@ void sigma0D(int i, int C_irr) {
     }
 
     sprintf(lbl, "%s %d", "S0", i);
-    psio_read_entry(EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
+    psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &(S0_old), sizeof(double));
     S0 += S0_old;
-    psio_write_entry(EOM_SIA, lbl, (char *) &(S0), sizeof(double));
+    psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &(S0), sizeof(double));
   }
 #ifdef EOM_DEBUG
   check_sum("Sigma0D",i,C_irr);
@@ -113,15 +113,15 @@ void sigmaSS_full(int i, int C_irr) {
   char lbl[32];
 	double reference_expectation_value;
 
-  psio_read_entry(CC_HBAR, "Reference expectation value",
+  psio_read_entry(PSIF_CC_HBAR, "Reference expectation value",
 		(char *) &(reference_expectation_value), sizeof(double));
 
   if (params.eom_ref == 0) { /* RHF */
   /* SIA += RIA * <0|Hbar|0> */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
     dpd_file2_axpy(&CME, &SIA, reference_expectation_value,0);
     dpd_file2_close(&CME);
     dpd_file2_close(&SIA);
@@ -142,15 +142,15 @@ void sigmaDD_full(int i, int C_irr) {
   char lbl[32];
   double reference_expectation_value;
 
-  psio_read_entry(CC_HBAR, "Reference expectation value",
+  psio_read_entry(PSIF_CC_HBAR, "Reference expectation value",
     (char *) &(reference_expectation_value), sizeof(double));
 
   if (params.eom_ref == 0) { /* RHF */
   /* Sijab += Rijab * <0|Hbar|0> */
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     dpd_buf4_axpy(&CMnEf, &SIjAb, reference_expectation_value);
     dpd_buf4_close(&CMnEf);
     dpd_buf4_close(&SIjAb);
@@ -169,13 +169,13 @@ void sigmaS0(int i, int C_irr) {
 	double reference_expectation_value;
 	char lbl[32];
 
-  psio_read_entry(CC_HBAR, "Reference expectation value",
+  psio_read_entry(PSIF_CC_HBAR, "Reference expectation value",
     (char *) &(reference_expectation_value), sizeof(double));
 
   if (C_irr == H_IRR) {
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_file2_init(&FAI, CC_OEI, H_IRR, 0, 1, "FAI residual");
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&FAI, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
 		dpd_file2_axpy(&FAI, &SIA, reference_expectation_value, 0);
 	  dpd_file2_close(&FAI);
 	  dpd_file2_close(&SIA);
@@ -193,13 +193,13 @@ void sigmaD0(int i, int C_irr) {
 	double reference_expectation_value;
 	char lbl[32];
 
-  psio_read_entry(CC_HBAR, "Reference expectation value",
+  psio_read_entry(PSIF_CC_HBAR, "Reference expectation value",
     (char *) &(reference_expectation_value), sizeof(double));
 
   if (C_irr == H_IRR) {
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_init(&WAbIj, CC_HBAR, H_IRR, 0, 5, 0, 5, 0, "WAbIj residual");
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&WAbIj, PSIF_CC_HBAR, H_IRR, 0, 5, 0, 5, 0, "WAbIj residual");
 		dpd_buf4_axpy(&WAbIj, &SIjAb, reference_expectation_value);
 	  dpd_buf4_close(&WAbIj);
 	  dpd_buf4_close(&SIjAb);
@@ -227,15 +227,15 @@ void sigmaDS_full(int i_root, int C_irr) {
   /* SIjAb += CIA * Fjb + Cjb * FIA */
   if (params.ref == 0) {
     sprintf(lbl, "%s %d", "CME", i_root);
-    dpd_file2_init(&CIA, EOM_CME, C_irr, 0, 1, lbl);
+    dpd_file2_init(&CIA, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 	  dpd_file2_mat_init(&CIA);
 	  dpd_file2_mat_rd(&CIA);
-    dpd_file2_init(&FBJ, CC_OEI, H_IRR, 0, 1, "FAI residual");
+    dpd_file2_init(&FBJ, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
 	  dpd_file2_mat_init(&FBJ);
 	  dpd_file2_mat_rd(&FBJ);
 
     sprintf(lbl, "%s %d", "SIjAb", i_root);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&SIjAb, h);

@@ -51,8 +51,8 @@ void diis(int iter, int L_irr)
 
   if(params.ref == 0) { /** RHF **/
     /* Compute the length of a single error vector */
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       vector_length += L1.params->rowtot[h] * L1.params->coltot[h^L_irr];
       vector_length += L2.params->rowtot[h] * L2.params->coltot[h^L_irr];
@@ -67,11 +67,11 @@ void diis(int iter, int L_irr)
     error = dpd_block_matrix(1,vector_length);
 
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     /*dpd_file2_print(&L1a,outfile);*/
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
-    dpd_file2_init(&L1b, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1b, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     /*dpd_file2_print(&L1b,outfile);*/
     dpd_file2_mat_init(&L1b);
     dpd_file2_mat_rd(&L1b);
@@ -86,9 +86,9 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1b);
     dpd_file2_close(&L1b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
     /*dpd_buf4_print(&L2a,outfile,1);*/
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     /*dpd_buf4_print(&L2b,outfile,1);*/
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
@@ -107,14 +107,14 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2b);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
 
     /* Store the current amplitude vector on disk */
     word=0;
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
     for(h=0; h < nirreps; h++)
@@ -124,7 +124,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -136,7 +136,7 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* If we haven't run through enough iterations, set the correct dimensions
@@ -156,7 +156,7 @@ void diis(int iter, int L_irr)
 
       start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
-      psio_read(CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[0],
+      psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[0],
                 vector_length*sizeof(double), start, &end);
 
       /*
@@ -172,7 +172,7 @@ void diis(int iter, int L_irr)
 
         start = psio_get_address(PSIO_ZERO, q*vector_length*sizeof(double));
 
-        psio_read(CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
+        psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[1],
                   vector_length*sizeof(double), start, &end);
 
         dot_arr(vector[1], vector[0], vector_length, &product);
@@ -225,7 +225,7 @@ void diis(int iter, int L_irr)
 
       start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
-      psio_read(CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0],
+      psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[0],
                 vector_length*sizeof(double), start, &end);
 
       for(q=0; q < vector_length; q++)
@@ -236,7 +236,7 @@ void diis(int iter, int L_irr)
 
     /* Now place these elements into the DPD amplitude arrays */
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < L1a.params->rowtot[h]; row++)
@@ -244,11 +244,11 @@ void diis(int iter, int L_irr)
           L1a.matrix[h][row][col] = error[0][word++];
     dpd_file2_mat_wrt(&L1a);
     dpd_file2_mat_close(&L1a);
-    dpd_file2_copy(&L1a, CC_LAMBDA, "New Lia"); /* to be removed after spin-adaptation */
+    dpd_file2_copy(&L1a, PSIF_CC_LAMBDA, "New Lia"); /* to be removed after spin-adaptation */
     /*dpd_file2_print(&L1a,outfile);*/
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -260,9 +260,9 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
 
     /* to be removed after spin-adaptation */
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 0, 5, 1, "New LIjAb");
-    dpd_buf4_copy(&L2a, CC_LAMBDA, "New LIJAB");
-    dpd_buf4_copy(&L2a, CC_LAMBDA, "New Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 0, 5, 1, "New LIjAb");
+    dpd_buf4_copy(&L2a, PSIF_CC_LAMBDA, "New LIJAB");
+    dpd_buf4_copy(&L2a, PSIF_CC_LAMBDA, "New Lijab");
     dpd_buf4_close(&L2a);
 
     /* Release memory and return */
@@ -276,9 +276,9 @@ void diis(int iter, int L_irr)
 
     /* Compute the length of a single error vector */
     /* RAK changed file nums here from CC_TMP0 */
-    dpd_file2_init(&L1, CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       vector_length += 2 * L1.params->rowtot[h] * L1.params->coltot[h^L_irr];
       vector_length += 2 * L2a.params->rowtot[h] * L2a.params->coltot[h^L_irr];
@@ -294,10 +294,10 @@ void diis(int iter, int L_irr)
     /* Build the current error vector and dump it to disk */
     error = dpd_block_matrix(1,vector_length);
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
-    dpd_file2_init(&L1b, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1b, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     dpd_file2_mat_init(&L1b);
     dpd_file2_mat_rd(&L1b);
     for(h=0; h < nirreps; h++)
@@ -309,10 +309,10 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1b);
     dpd_file2_close(&L1b);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
-    dpd_file2_init(&L1b, CC_LAMBDA, L_irr, 0, 1, "Lia");
+    dpd_file2_init(&L1b, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
     dpd_file2_mat_init(&L1b);
     dpd_file2_mat_rd(&L1b);
     for(h=0; h < nirreps; h++)
@@ -324,8 +324,8 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1b);
     dpd_file2_close(&L1b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -340,8 +340,8 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
     dpd_buf4_close(&L2b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -356,8 +356,8 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
     dpd_buf4_close(&L2b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -373,12 +373,12 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2b);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_ERR, "DIIS Error Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* Store the current amplitude vector on disk */
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
     for(h=0; h < nirreps; h++)
@@ -388,7 +388,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
     for(h=0; h < nirreps; h++)
@@ -398,7 +398,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -409,7 +409,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -420,7 +420,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -432,7 +432,7 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* If we haven't run through enough iterations, set the correct dimensions
@@ -449,7 +449,7 @@ void diis(int iter, int L_irr)
     vector = init_matrix(nvector, vector_length);
     next = PSIO_ZERO;
     for(p=0; p < nvector; p++)
-      psio_read(CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[p],
+      psio_read(PSIF_CC_DIIS_ERR, "DIIS Error Vectors", (char *) vector[p],
                 vector_length*sizeof(double), next, &next);
 
     /* Build B matrix of error vector products */
@@ -488,7 +488,7 @@ void diis(int iter, int L_irr)
     /* Grab the old amplitude vectors */
     next = PSIO_ZERO;
     for(p=0; p < nvector; p++)
-      psio_read(CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[p],
+      psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[p],
                 vector_length*sizeof(double), next, &next);
 
     /* Build the new amplitude vector from the old ones */
@@ -500,7 +500,7 @@ void diis(int iter, int L_irr)
 
     /* Now place these elements into the DPD amplitude arrays */
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < L1a.params->rowtot[h]; row++)
@@ -510,7 +510,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
     dpd_file2_mat_init(&L1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < L1a.params->rowtot[h]; row++)
@@ -520,7 +520,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -531,7 +531,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -542,7 +542,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -562,11 +562,11 @@ void diis(int iter, int L_irr)
   else if(params.ref == 2) { /** UHF **/
 
     /* Compute the length of a single error vector */
-    dpd_file2_init(&L1a, CC_TMP0, L_irr, 0, 1, "LIA");
-    dpd_file2_init(&L1b, CC_TMP0, L_irr, 2, 3, "Lia");
-    dpd_buf4_init(&L2a, CC_TMP0, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&L2b, CC_TMP0, L_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_buf4_init(&L2c, CC_TMP0, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    dpd_file2_init(&L1a, PSIF_CC_TMP0, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1b, PSIF_CC_TMP0, L_irr, 2, 3, "Lia");
+    dpd_buf4_init(&L2a, PSIF_CC_TMP0, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2b, PSIF_CC_TMP0, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    dpd_buf4_init(&L2c, PSIF_CC_TMP0, L_irr, 22, 28, 22, 28, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       vector_length += L1a.params->rowtot[h] * L1a.params->coltot[h^L_irr];
       vector_length += L1b.params->rowtot[h] * L1b.params->coltot[h^L_irr];
@@ -586,10 +586,10 @@ void diis(int iter, int L_irr)
     /* Build the current error vector and dump it to disk */
     error = dpd_block_matrix(1,vector_length);
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
-    dpd_file2_init(&L1b, CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_file2_init(&L1b, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     dpd_file2_mat_init(&L1b);
     dpd_file2_mat_rd(&L1b);
     for(h=0; h < nirreps; h++)
@@ -601,10 +601,10 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1b);
     dpd_file2_close(&L1b);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 2, 3, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
-    dpd_file2_init(&L1b, CC_LAMBDA, L_irr, 2, 3, "Lia");
+    dpd_file2_init(&L1b, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
     dpd_file2_mat_init(&L1b);
     dpd_file2_mat_rd(&L1b);
     for(h=0; h < nirreps; h++)
@@ -616,8 +616,8 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1b);
     dpd_file2_close(&L1b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -632,8 +632,8 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
     dpd_buf4_close(&L2b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -648,8 +648,8 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
     dpd_buf4_close(&L2b);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
-    dpd_buf4_init(&L2b, CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    dpd_buf4_init(&L2b, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -665,12 +665,12 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2b);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_ERR, "DIIS Error[0] Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* Store the current amplitude vector on disk */
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
     for(h=0; h < nirreps; h++)
@@ -680,7 +680,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 2, 3, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
     dpd_file2_mat_init(&L1a);
     dpd_file2_mat_rd(&L1a);
     for(h=0; h < nirreps; h++)
@@ -690,7 +690,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -701,7 +701,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -712,7 +712,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       dpd_buf4_mat_irrep_rd(&L2a, h);
@@ -724,7 +724,7 @@ void diis(int iter, int L_irr)
     dpd_buf4_close(&L2a);
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
-    psio_write(CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors" , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* If we haven't run through enough iterations, set the correct dimensions
@@ -741,7 +741,7 @@ void diis(int iter, int L_irr)
     vector = init_matrix(nvector, vector_length);
     next = PSIO_ZERO;
     for(p=0; p < nvector; p++)
-      psio_read(CC_DIIS_ERR, "DIIS Error[0] Vectors", (char *) vector[p],
+      psio_read(PSIF_CC_DIIS_ERR, "DIIS Error[0] Vectors", (char *) vector[p],
                 vector_length*sizeof(double), next, &next);
 
     /* Build B matrix of error[0] vector products */
@@ -780,7 +780,7 @@ void diis(int iter, int L_irr)
     /* Grab the old amplitude vectors */
     next = PSIO_ZERO;
     for(p=0; p < nvector; p++)
-      psio_read(CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[p],
+      psio_read(PSIF_CC_DIIS_AMP, "DIIS Amplitude Vectors", (char *) vector[p],
                 vector_length*sizeof(double), next, &next);
 
     /* Build the new amplitude vector from the old ones */
@@ -792,7 +792,7 @@ void diis(int iter, int L_irr)
 
     /* Now place these elements into the DPD amplitude arrays */
     word=0;
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 0, 1, "New LIA");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
     dpd_file2_mat_init(&L1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < L1a.params->rowtot[h]; row++)
@@ -802,7 +802,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_file2_init(&L1a, CC_LAMBDA, L_irr, 2, 3, "New Lia");
+    dpd_file2_init(&L1a, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
     dpd_file2_mat_init(&L1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < L1a.params->rowtot[h]; row++)
@@ -812,7 +812,7 @@ void diis(int iter, int L_irr)
     dpd_file2_mat_close(&L1a);
     dpd_file2_close(&L1a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -823,7 +823,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)
@@ -834,7 +834,7 @@ void diis(int iter, int L_irr)
     }
     dpd_buf4_close(&L2a);
 
-    dpd_buf4_init(&L2a, CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    dpd_buf4_init(&L2a, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&L2a, h);
       for(row=0; row < L2a.params->rowtot[h]; row++)

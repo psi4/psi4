@@ -82,8 +82,8 @@ void L2_build(struct L_Params L_params) {
      contributions to the L2 residual for use in the ccresponse code
      (specifically, HX1Y1 and LHX1Y1). */
   if(params.ref == 0 && params.dertype == 3) {
-    dpd_buf4_init(&L2, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-    dpd_buf4_copy(&L2, CC_LAMPS, "LHX1Y1 Residual I");
+    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    dpd_buf4_copy(&L2, PSIF_CC_LAMPS, "LHX1Y1 Residual I");
     dpd_buf4_close(&L2);
   }
 

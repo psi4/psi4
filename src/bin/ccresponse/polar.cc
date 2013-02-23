@@ -46,7 +46,7 @@ void polar(void)
   for(i=0; i < params.nomega; i++) {
 
     sprintf(lbl, "<<Mu;Mu>_(%5.3f)", params.omega[i]);
-    if(!params.restart || !psio_tocscan(CC_INFO, lbl)) {
+    if(!params.restart || !psio_tocscan(PSIF_CC_INFO, lbl)) {
 
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "Mu_%1s", cartcomp[alpha]);
@@ -66,14 +66,14 @@ void polar(void)
         }
       }
 
-      psio_write_entry(CC_INFO, lbl, (char *) tensor[i][0], 9*sizeof(double));
+      psio_write_entry(PSIF_CC_INFO, lbl, (char *) tensor[i][0], 9*sizeof(double));
 
-      psio_close(CC_LR, 0);
-      psio_open(CC_LR, 0);
+      psio_close(PSIF_CC_LR, 0);
+      psio_open(PSIF_CC_LR, 0);
     }
     else {
       fprintf(outfile, "Using %s tensor found on disk.\n", lbl);
-      psio_read_entry(CC_INFO, lbl, (char *) tensor[i], 9*sizeof(double));
+      psio_read_entry(PSIF_CC_INFO, lbl, (char *) tensor[i], 9*sizeof(double));
     }
 
     /* symmetrize the polarizability */
