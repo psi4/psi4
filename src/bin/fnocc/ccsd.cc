@@ -29,7 +29,7 @@ long int Position(long int i,long int j){
   return ((i*(i+1))>>1)+j;
 }
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 // diagrams for mp3 and mp4
 void DefineLinearTasks();
@@ -409,7 +409,7 @@ void CoupledCluster::WriteBanner(){
 
 /*===================================================================
 
-  solve qcisd equations
+  solve cc/qci equations
 
 ===================================================================*/
 PsiReturnType CoupledCluster::CCSDIterations() {
@@ -2163,61 +2163,61 @@ void CoupledCluster::DefineTasks(){
 
   ncctasks=0;
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::K;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::K;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"K                      ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::TwoJminusK;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::TwoJminusK;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"2J-K                   ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::I2ijkl;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::I2ijkl;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I(ij,kl)               ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::I2piajk;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::I2piajk;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I'(ia,jk)              ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmeni;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeni;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (mn|ei)         ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmaef;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmaef;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (me|af)         ");
 
   if (isccsd) {
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I2p_abci_refactored_term2;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I2p_abci_refactored_term2;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"I'(ab,ci)              ");
   }
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I1ab;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I(a,b)                 ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmeai;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeai;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (ma|ei)         ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I1pij_I1ia_lessmem;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I1pij_I1ia_lessmem;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I'(i,j), I(i,j), I(i,a)");
 
   if (options_.get_bool("VABCD_PACKED")){
      // mo basis, sjs packing
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd1;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd1;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)+        ");
      // this is the last diagram that contributes to doubles residual,
      // so we can keep it in memory rather than writing and rereading
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd2;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd2;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)-        ");
   }else{
      // mo basis, no sjs packing
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)         ");
   }
@@ -2335,7 +2335,7 @@ void CoupledCluster::MP4_SDQ(){
      fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
      fprintf(outfile,"\n");
   }else {
-     // guess for qcisd should be |1> + |2>
+     // guess for cc/qci should be |1> + |2>
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);

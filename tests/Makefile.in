@@ -15,7 +15,7 @@ cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc50 cc51 cc52 # cc5 these should be restored
 
 cepa_subdirs = cepa1 cepa2 cepa3
 
-qci_subdirs = qci1 qci2
+fnocc_subdirs = fnocc1 fnocc2 fnocc3
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
@@ -56,7 +56,7 @@ $(mp2_subdirs) \
 $(ci_subdirs) \
 $(cc_subdirs) \
 $(cepa_subdirs) \
-$(qci_subdirs) \
+$(fnocc_subdirs) \
 $(python_test_subdirs) \
 ${mcscf_subdirs} \
 $(psimrcc_subdirs) \
@@ -123,8 +123,8 @@ quicktests:
 cepa_tests:
 	$(call runtests, $(cepa_subdirs))
 
-qci_tests:
-	$(call runtests, $(qci_subdirs))
+fnocc_tests:
+	$(call runtests, $(fnocc_subdirs))
 
 cc_tests:
 	$(call runtests, $(cc_subdirs))

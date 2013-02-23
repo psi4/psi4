@@ -146,7 +146,7 @@ void MoldenWriter::write(const std::string &filename)
         int am = basisset.shell(i).am();
 
         int ncart = basisset.shell(i).nfunction();
-        if(am == 1 || (am > 0 && am < 5 && basisset.shell(i).is_cartesian())) {
+        if((am == 1 && basisset.has_puream()) || (am > 1 && am < 5 && basisset.shell(i).is_cartesian())) {
             for (int h=0; h<nirrep; ++h)
                 ncartpi[h] = ncart;
 

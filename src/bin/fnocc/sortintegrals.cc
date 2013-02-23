@@ -9,7 +9,7 @@
 using namespace psi;
 using namespace cepa;
 
-namespace psi{namespace qci{
+namespace psi{namespace fnocc{
 typedef long int ULI;
 struct integral{
   ULI ind;
@@ -42,7 +42,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
 void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim,ULI filestart,ULI nfiles);
 }}
 
-namespace psi{namespace qci{
+namespace psi{namespace fnocc{
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
   struct iwlbuf Buf; 
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
