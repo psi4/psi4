@@ -10,7 +10,7 @@ using namespace cepa;
 
 ================================================================*/
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 void CoupledCluster::DIIS(double*c,long int nvec,long int n){
   long int i,j,k;

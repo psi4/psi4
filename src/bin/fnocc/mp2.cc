@@ -19,11 +19,11 @@
 
 using namespace psi;
 using namespace cepa;
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
 }}
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 /**
   * canonical MP2

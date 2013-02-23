@@ -3,7 +3,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/lib/libPSI_qci.a
+PSITARGET = $(top_objdir)/lib/libPSI_fnocc.a
 
 CXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
