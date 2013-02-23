@@ -2425,8 +2425,11 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
                     err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
                            ") is not a subgroup of the highest detected point group (" <<
-                           PointGroup::bits_to_full_name(pg->bits()) << ")";
-                    throw PSIEXCEPTION(err.str());
+                           PointGroup::bits_to_full_name(pg->bits()) << "). " <<
+                           "If this is because the symmetry increased, try to start the calculation " <<
+                           "again from the last geometry, after checking any symmetry-dependent input, " <<
+                           "such as DOCC.";
+                    throw PSIEXCEPTION(err.str().c_str());
                 }
             }
 
