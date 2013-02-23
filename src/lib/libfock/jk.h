@@ -23,7 +23,7 @@ class PSIO;
 // => BASE CLASS <= //
 
 /**
- * Class JK 
+ * Class JK
  *
  * Class to compute Generalized Fock-Matrix Contributions
  * of the form:
@@ -34,16 +34,16 @@ class PSIO;
  *
  * These matrices appear prominently in Hartree-Fock, CIS,
  * and CPHF theory. This class (and associated subclasses)
- * attempt to provide a uniform framework for quickly 
- * obtaining these matrices using a variety of techniques. 
+ * attempt to provide a uniform framework for quickly
+ * obtaining these matrices using a variety of techniques.
  *
  * This class is abstract, specific instances must be obtained
  * by constructing an object corresponding to the desired
- * algorithm's subclass of JK, e.g., DFJK or DirectJK.  
+ * algorithm's subclass of JK, e.g., DFJK or DirectJK.
  *
  * This class is available for symmetric or nonsymmetric C
- * (this refers to C^left = C^right or not). Symmetric or 
- * nonsymmetric behavior is obtained by using the 
+ * (this refers to C^left = C^right or not). Symmetric or
+ * nonsymmetric behavior is obtained by using the
  * JKAlgorithm(C,basis) or JKAlgorithm(C,C,basis) constructors,
  * respectively. Note that nonsymmetric can be up to 2x slower
  * than symmetric for certain algorithms.
@@ -53,7 +53,7 @@ class PSIO;
  * takes a std::vector of C^left/C^right, which can be used
  * to provide spin-specialization in SCF, arbitrary numbers
  * of trial vectors in CIS, arbitrary numbers of perturbations
- * in CPHF, etc. The number of C^left/C^right pairs may change from 
+ * in CPHF, etc. The number of C^left/C^right pairs may change from
  * iteration to iteration, and the second dimension (typically
  * noccpi) may change from pair to pair or iteration to iteration.
  *
@@ -67,24 +67,24 @@ class PSIO;
  * backtransform to C1 for better sieving/scaling properties. The
  * results are available after each call to JK::compute() in the
  * methods JK::J(), JK::K(), JK::wK() and JK::D(), and will have the same
- * size and symmetry structure as the forcing C^left/C^right 
+ * size and symmetry structure as the forcing C^left/C^right
  * vectors. J(), K(), wK(), and D() all return in the USO basis.
  *
  * OpenMP and parallel BLAS/LAPACK threading are targeted
  * where possible.
  *
  * The typical calling convention for a JK instance is:
- * 
- *      // Constructor, Algorithm corresponds 
- *      // to Type 
+ *
+ *      // Constructor, Algorithm corresponds
+ *      // to Type
  *      boost::shared_ptr<JKType> jk(new JKType(
  *          basis, ...));
  *
  *      // Set any desired knobs
- *      
+ *
  *      // 8 GB Memory, 1 G doubles
- *      jk->set_memory(1000000000L);    
- *      // Cutoff of 1.0E-12   
+ *      jk->set_memory(1000000000L);
+ *      // Cutoff of 1.0E-12
  *      jk->set_cutoff(1.0E-12);
  *      // Do J/K, Not wK (superfluous)
  *      jk->set_do_J(true);
@@ -97,7 +97,7 @@ class PSIO;
  *
  *      // Enter iterations or whatever
  *      // In each iteration:
- *      
+ *
  *      // Clear and pack the C_left/C_right arrays
  *      // If C_left == C_right, only pack C_left
  *      // Make sure to declare your handles as references (&)
@@ -109,7 +109,7 @@ class PSIO;
  *      // Let jk compute for the given C_left/C_right
  *      jk->compute();
  *
- *      // In return for the flexibility I give you with 
+ *      // In return for the flexibility I give you with
  *      // C_left/C_right, I ask that you renew your reference
  *      // to the results J/K/D here. I only malloc where needed,
  *      // but if anything at all happens to C_left/C_right, last
@@ -134,11 +134,11 @@ protected:
     // => Utility Variables <= //
 
     /// Print flag, defaults to 1
-    int print_;     
+    int print_;
     /// Debug flag, defaults to 0
-    int debug_;     
+    int debug_;
     /// Bench flag, defaults to 0
-    int bench_;     
+    int bench_;
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
     unsigned long int memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, omp_get_max_thread() otherwise)
@@ -149,13 +149,13 @@ protected:
     bool allow_desymmetrization_;
 
     // => Tasks <= //
-    
+
     /// Do J matrices? Defaults to true
-    bool do_J_;     
+    bool do_J_;
     /// Do K matrices? Defaults to true
-    bool do_K_;     
+    bool do_K_;
     /// Do wK matrices? Defaults to false
-    bool do_wK_;    
+    bool do_wK_;
 
     /// Omega, defaults to 0.0
     double omega_;
@@ -163,11 +163,11 @@ protected:
     /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
 
-    // => Architecture-Level State Variables (Spatial Symmetry) <= // 
+    // => Architecture-Level State Variables (Spatial Symmetry) <= //
 
     /// Pseudo-occupied C matrices, left side
     std::vector<SharedMatrix > C_left_;
-    /// Pseudo-occupied C matrices, right side 
+    /// Pseudo-occupied C matrices, right side
     std::vector<SharedMatrix > C_right_;
     /// Pseudo-density matrices D_ls =  C_li^left C_si^right
     std::vector<SharedMatrix > D_;
@@ -178,7 +178,7 @@ protected:
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix > wK_;
 
-    // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= // 
+    // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
     /// Primary basis set
     boost::shared_ptr<BasisSet> primary_;
@@ -186,7 +186,7 @@ protected:
     SharedMatrix AO2USO_;
     /// Pseudo-occupied C matrices, left side
     std::vector<SharedMatrix > C_left_ao_;
-    /// Pseudo-occupied C matrices, right side 
+    /// Pseudo-occupied C matrices, right side
     std::vector<SharedMatrix > C_right_ao_;
     /// Pseudo-density matrices
     std::vector<SharedMatrix > D_ao_;
@@ -206,7 +206,7 @@ protected:
     /// Transform finished J_ao_/K_ao_ to J_/K_, after compute_JK()
     void AO2USO();
     /// Allocate J_/K_ should we be using SOs
-    void allocate_JK(); 
+    void allocate_JK();
     /// Common initialization
     void common_init();
 
@@ -215,11 +215,11 @@ protected:
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const = 0;
     /// Setup integrals, files, etc
-    virtual void preiterations() = 0; 
-    /// Compute J/K for current C/D 
+    virtual void preiterations() = 0;
+    /// Compute J/K for current C/D
     virtual void compute_JK() = 0;
     /// Delete integrals, files, etc
-    virtual void postiterations() = 0; 
+    virtual void postiterations() = 0;
 
     // => Helper Routines <= //
 
@@ -230,7 +230,7 @@ public:
     // => Constructors <= //
 
     /**
-     * @param primary primary basis set for this system. 
+     * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
@@ -242,15 +242,15 @@ public:
     virtual ~JK();
 
 
-    /** 
+    /**
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
-    * using knobs in options. 
+    * using knobs in options.
     * @param options Options reference, with preset parameters
     * @return abstract JK object, tuned in with preset options
     */
     static boost::shared_ptr<JK> build_JK();
 
-    // => Knobs <= // 
+    // => Knobs <= //
 
     /**
      * Certain codes operate in C1 under the hood, so they backtransform matrices
@@ -277,10 +277,10 @@ public:
      * to clamp this to some value smaller than the total number of
      * cores for machines with a high core-to-memory ratio to avoid
      * running out of memory due to integral generation objects
-     * @param omp_nthread Maximum number of threads to use in 
+     * @param omp_nthread Maximum number of threads to use in
      *        integral generation objects (BLAS/LAPACK can still
-     *        run with their original maximum number) 
-     */ 
+     *        run with their original maximum number)
+     */
     void set_omp_nthread(int omp_nthread) { omp_nthread_ = omp_nthread; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
@@ -291,13 +291,13 @@ public:
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
-    *        defaults to true 
+    *        defaults to true
     */
     void set_do_J(bool do_J) { do_J_ = do_J; }
     /**
     * Set to do K tasks
     * @param do_K do K matrices or not,
-    *        defaults to true 
+    *        defaults to true
     */
     void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
@@ -314,7 +314,7 @@ public:
 
     // => Computers <= //
 
-    /** 
+    /**
      * Initialize the integral technology.
      * MUST be called AFTER setting knobs
      * but BEFORE first call of compute()
@@ -330,14 +330,14 @@ public:
     void compute();
     /**
      * Method to clear off memory without
-     * totally destroying the object. The 
+     * totally destroying the object. The
      * object can be rebuilt later by calling
      * initialize()
      */
     void finalize();
 
     /**
-     * Virtual method to provide (ia|ia) integrals for 
+     * Virtual method to provide (ia|ia) integrals for
      * SO-basis C_mi and C_na matrices in O(N^4) or less
      * Only available in DF-type JK integrals
      * Throws by default
@@ -348,47 +348,47 @@ public:
 
     /**
      * Reference to C_left queue. It is YOUR job to
-     * allocate and fill this object out 
+     * allocate and fill this object out
      */
-    std::vector<SharedMatrix >& C_left() { return C_left_; } 
+    std::vector<SharedMatrix >& C_left() { return C_left_; }
     /**
      * Reference to C_right queue. It is YOUR job to
      * allocate and fill this object out. Only fill
-     * C_left if symmetric. 
+     * C_left if symmetric.
      */
-    std::vector<SharedMatrix >& C_right() { return C_right_; } 
+    std::vector<SharedMatrix >& C_right() { return C_right_; }
 
     /**
-     * Reference to J results. The reference to the 
+     * Reference to J results. The reference to the
      * std::vector<SharedMatrix > is valid
-     * throughout the life of the object. However, the 
+     * throughout the life of the object. However, the
      * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return J vector of J matrices
      */
     const std::vector<SharedMatrix >& J() const { return J_; }
     /**
-     * Reference to K results. The reference to the 
+     * Reference to K results. The reference to the
      * std::vector<SharedMatrix > is valid
-     * throughout the life of the object. However, the 
+     * throughout the life of the object. However, the
      * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return K vector of K matrices
      */
     const std::vector<SharedMatrix >& K() const { return K_; }
     /**
-     * Reference to wK results. The reference to the 
+     * Reference to wK results. The reference to the
      * std::vector<SharedMatrix > is valid
-     * throughout the life of the object. However, the 
+     * throughout the life of the object. However, the
      * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return wK vector of wK matrices
      */
     const std::vector<SharedMatrix >& wK() const { return wK_; }
     /**
-     * Reference to D results. The reference to the 
+     * Reference to D results. The reference to the
      * std::vector<SharedMatrix > is valid
-     * throughout the life of the object. However, the 
+     * throughout the life of the object. However, the
      * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return D vector of D matrices
@@ -407,7 +407,7 @@ public:
 /**
  * Class DiskJK
  *
- * JK implementation using disk-based PK 
+ * JK implementation using disk-based PK
  * integral technology
  */
 class DiskJK : public JK {
@@ -416,24 +416,24 @@ class DiskJK : public JK {
     int* so2index_;
     /// Absolute AO index to irrep
     int* so2symblk_;
-    
+
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return false; }
     /// Setup integrals, files, etc
-    virtual void preiterations(); 
-    /// Compute J/K for current C/D 
+    virtual void preiterations();
+    /// Compute J/K for current C/D
     virtual void compute_JK();
     /// Delete integrals, files, etc
-    virtual void postiterations(); 
+    virtual void postiterations();
 
     /// Common initialization
     void common_init();
 
 public:
     // => Constructors < = //
-        
+
     /**
-     * @param primary primary basis set for this system. 
+     * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
@@ -521,48 +521,45 @@ public:
     virtual void print_header() const;
 };
 
-
 /**
  * Class DirectJK
  *
- * JK implementation using sieved, threaded 
+ * JK implementation using sieved, threaded
  * integral-direct technology
  *
  * Note: This class builds a TwoBodyAOInt for each OpenMP
  * thread, for thread safety. This might be a bad idea if
  * you have a high core-to-memory ratio. Clamp the
- * openmp_nthread value if this fate befalls you.
+ * DF_INTS_NUM_THREADS value if this fate befalls you.
  */
 class DirectJK : public JK {
 
 protected:
 
-    /// Integral objects 
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri_;
-    /// Integral factory (must be retained for Spherical Transforms)
-    boost::shared_ptr<IntegralFactory> factory_;
+    /// Number of threads for DF integrals TODO: DF_INTS_NUM_THREADS
+    int df_ints_num_threads_;
     /// ERI Sieve
     boost::shared_ptr<ERISieve> sieve_;
 
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
-    virtual bool C1() const { return allow_desymmetrization_; }
+    virtual bool C1() const { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations(); 
-    /// Compute J/K for current C/D 
+    virtual void preiterations();
+    /// Compute J/K for current C/D
     virtual void compute_JK();
     /// Delete integrals, files, etc
-    virtual void postiterations(); 
+    virtual void postiterations();
 
     /// Common initialization
     void common_init();
 
 public:
     // => Constructors < = //
-        
+
     /**
-     * @param primary primary basis set for this system. 
+     * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
@@ -571,6 +568,14 @@ public:
     DirectJK(boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DirectJK();
+
+    // => Knobs <= //
+
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
 
@@ -584,7 +589,7 @@ public:
 /**
  * Class DFJK
  *
- * JK implementation using sieved, threaded 
+ * JK implementation using sieved, threaded
  * density-fitted technology
  */
 class DFJK : public JK {
@@ -596,7 +601,7 @@ protected:
     /// Auxiliary basis set
     boost::shared_ptr<BasisSet> auxiliary_;
     /// PSIO object
-    boost::shared_ptr<PSIO> psio_; 
+    boost::shared_ptr<PSIO> psio_;
     /// Cache action for three-index integrals
     std::string df_ints_io_;
     /// Number of threads for DF integrals
@@ -604,16 +609,16 @@ protected:
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
     /// File number for (Q|mn) tensor
-    unsigned int unit_; 
+    unsigned int unit_;
     /// Core or disk?
     bool is_core_;
     /// Maximum number of rows to handle at a time
     int max_rows_;
-    /// Maximum number of nocc in C vectors 
+    /// Maximum number of nocc in C vectors
     int max_nocc_;
     /// Sieve, must be static throughout the life of the object
     boost::shared_ptr<ERISieve> sieve_;
-    
+
     /// Main (Q|mn) Tensor (or chunk for disk-based)
     SharedMatrix Qmn_;
     /// (Q|P)^-1 (P|mn) for wK (or chunk for disk-based)
@@ -622,25 +627,25 @@ protected:
     SharedMatrix Qrmn_;
 
     // => Temps (built/destroyed in compute_JK) <= //
-    boost::shared_ptr<Vector> J_temp_; 
-    boost::shared_ptr<Vector> D_temp_; 
-    boost::shared_ptr<Vector> d_temp_; 
-    
-    SharedMatrix E_left_; 
-    SharedMatrix E_right_; 
-    std::vector<SharedMatrix > C_temp_; 
-    std::vector<SharedMatrix > Q_temp_; 
+    boost::shared_ptr<Vector> J_temp_;
+    boost::shared_ptr<Vector> D_temp_;
+    boost::shared_ptr<Vector> d_temp_;
+
+    SharedMatrix E_left_;
+    SharedMatrix E_right_;
+    std::vector<SharedMatrix > C_temp_;
+    std::vector<SharedMatrix > Q_temp_;
 
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations(); 
-    /// Compute J/K for current C/D 
+    virtual void preiterations();
+    /// Compute J/K for current C/D
     virtual void compute_JK();
     /// Delete integrals, files, etc
-    virtual void postiterations(); 
+    virtual void postiterations();
 
     /// Common initialization
     void common_init();
@@ -672,9 +677,9 @@ protected:
 
 public:
     // => Constructors < = //
-        
+
     /**
-     * @param primary primary basis set for this system. 
+     * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
@@ -688,7 +693,7 @@ public:
     virtual ~DFJK();
 
     /**
-     * Method to provide (ia|ia) integrals for 
+     * Method to provide (ia|ia) integrals for
      * SO-basis C_mi and C_na matrices in O(N^4) or less
      * Only available in DF-type JK integrals
      * Throws by default
@@ -713,13 +718,13 @@ public:
     /**
      * What action to take for caching three-index integrals
      * @param val One of NONE, LOAD, or SAVE
-     */ 
-    void set_df_ints_io(const std::string& val) { df_ints_io_ = val; }    
+     */
+    void set_df_ints_io(const std::string& val) { df_ints_io_ = val; }
     /**
-     * What number of threads to compute integrals on 
-     * @param val a positive integer 
-     */ 
-    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }    
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
 
@@ -730,6 +735,68 @@ public:
     virtual void print_header() const;
 };
 
+#if 0
+
+ // ==> Deprecated codes <== //
+
+/**
+ * Class DirectJK
+ *
+ * JK implementation using sieved, threaded
+ * integral-direct technology
+ *
+ * Note: This class builds a TwoBodyAOInt for each OpenMP
+ * thread, for thread safety. This might be a bad idea if
+ * you have a high core-to-memory ratio. Clamp the
+ * openmp_nthread value if this fate befalls you.
+ */
+class DirectJK : public JK {
+
+protected:
+
+    /// Integral objects
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > eri_;
+    /// Integral factory (must be retained for Spherical Transforms)
+    boost::shared_ptr<IntegralFactory> factory_;
+    /// ERI Sieve
+    boost::shared_ptr<ERISieve> sieve_;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return allow_desymmetrization_; }
+    /// Setup integrals, files, etc
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    DirectJK(boost::shared_ptr<BasisSet> primary);
+    /// Destructor
+    virtual ~DirectJK();
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+};
 /**
  * Class PSJK
  *
@@ -747,7 +814,7 @@ protected:
     /// Number of threads for three-center integrals
     int df_ints_num_threads_;
     /// File number for (Q|mn) tensor
-    unsigned int unit_; 
+    unsigned int unit_;
     /// Range separation for integrand smoothing
     double theta_;
     /// QUADRATURE, RENORMALIZATION, or DEALIASING
@@ -772,17 +839,17 @@ protected:
     SharedMatrix W_;
     /// Temporary triangular J
     SharedVector J_temp_;
-    
+
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return true; }
     /// Setup integrals, files, etc
-    virtual void preiterations(); 
-    /// Compute J/K for current C/D 
+    virtual void preiterations();
+    /// Compute J/K for current C/D
     virtual void compute_JK();
     /// Delete integrals, files, etc
-    virtual void postiterations(); 
+    virtual void postiterations();
 
     /// Common initialization
     void common_init();
@@ -792,19 +859,19 @@ protected:
     void build_Amn_disk(double theta, const std::string& entry);
     void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
     void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
-    void build_JK_SR(); 
-    void build_JK_LR(); 
+    void build_JK_SR();
+    void build_JK_LR();
 
     void build_JK_debug(const std::string& op = "", double theta = 0.0);
-    
+
     int max_rows();
 
 public:
 
     // => Constructors < = //
-        
+
     /**
-     * @param primary primary basis set for this system. 
+     * @param primary primary basis set for this system.
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
@@ -821,17 +888,17 @@ public:
 
     /**
      * What number of threads to compute integrals on?
-     * @param val a positive integer 
-     */ 
-    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }    
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
     /**
      * What value of range-separation parameter for integral smoothing?
      * @param theta a positive double
      */
     void set_theta(double theta) { theta_ = theta; }
-    /** 
+    /**
      * How to handle the renormalization or dealiasing?
-     * @param type QUADRATURE, RENORMALIZATION, or DEALIASING 
+     * @param type QUADRATURE, RENORMALIZATION, or DEALIASING
      */
     void set_dealiasing(const std::string& dealiasing) { dealiasing_ = dealiasing; }
     /**
@@ -854,6 +921,8 @@ public:
     virtual void print_header() const;
 
 };
+
+#endif
 
 }
 #endif

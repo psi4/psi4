@@ -7,8 +7,8 @@ using namespace psi;
 // Normal two-electron repulsion integrals
 /////////
 
-ERI::ERI(const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+ERI::ERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     // The +1 is needed for derivatives to work.
     fjt_ = new Taylor_Fjt(basis1()->max_am() +
@@ -27,8 +27,8 @@ ERI::~ERI()
 // F12
 /////////
 
-F12::F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+F12::F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12Fundamental(cf,
                               basis1()->max_am() +
@@ -47,8 +47,8 @@ F12::~F12()
 // F12 squared
 /////////
 
-F12Squared::F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+F12Squared::F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12SquaredFundamental(cf,
                                      basis1()->max_am() +
@@ -67,8 +67,8 @@ F12Squared::~F12Squared()
 // F12G12
 /////////
 
-F12G12::F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+F12G12::F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12G12Fundamental(cf,
                                  basis1()->max_am() +
@@ -87,8 +87,8 @@ F12G12::~F12G12()
 // F12DoubleCommutator
 /////////
 
-F12DoubleCommutator::F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+F12DoubleCommutator::F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     fjt_ = new F12DoubleCommutatorFundamental(cf,
                                               basis1()->max_am() +
@@ -104,14 +104,14 @@ F12DoubleCommutator::~F12DoubleCommutator()
 }
 
 /////////
-// ErfERI 
+// ErfERI
 /////////
 
-ErfERI::ErfERI(double omega, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+ErfERI::ErfERI(double omega, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     // The +1 is needed for derivatives to work.
-    fjt_ = new ErfFundamental(omega, 
+    fjt_ = new ErfFundamental(omega,
                           basis1()->max_am() +
                           basis2()->max_am() +
                           basis3()->max_am() +
@@ -130,14 +130,14 @@ void ErfERI::setOmega(double omega)
 }
 
 /////////
-// ErfComplementERI 
+// ErfComplementERI
 /////////
 
-ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral, int deriv, double schwarz)
-    : TwoElectronInt(integral, deriv, schwarz)
+ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral, int deriv, bool use_shell_pairs)
+    : TwoElectronInt(integral, deriv, use_shell_pairs)
 {
     // The +1 is needed for derivatives to work.
-    fjt_ = new ErfComplementFundamental(omega, 
+    fjt_ = new ErfComplementFundamental(omega,
                           basis1()->max_am() +
                           basis2()->max_am() +
                           basis3()->max_am() +
