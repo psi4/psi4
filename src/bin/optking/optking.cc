@@ -9,6 +9,7 @@
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
+#include "exception.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
   #include <libparallel/parallel.h>
@@ -417,6 +418,11 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
     close_output_dat();
     return OptReturnSuccess;
   }
+#if defined (OPTKING_PACKAGE_PSI)
+  catch (psi::PsiException e){
+      fprintf(outfile,"\t%s", e.what());
+  }
+#endif
   catch (...) {
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash("Exception thrown in optking() leading to abort.");
