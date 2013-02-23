@@ -82,7 +82,7 @@ void roa(void)
 
   if(compute_pl) {
     sprintf(lbl1, "<<P;L>>_(%5.3f)", 0.0);
-    if(!params.restart || !psio_tocscan(CC_INFO, lbl1)) {
+    if(!params.restart || !psio_tocscan(PSIF_CC_INFO, lbl1)) {
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "P_%1s", cartcomp[alpha]);
         pertbar(pert, moinfo.mu_irreps[alpha], 1);
@@ -103,17 +103,17 @@ void roa(void)
                   pert_y, moinfo.l_irreps[beta], 0.0);
         }
       }
-      psio_write_entry(CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
-      psio_close(CC_LR, 0);
-      psio_open(CC_LR, 0);
-      for(j=CC_TMP; j <= CC_TMP11; j++) {
+      psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
+      psio_close(PSIF_CC_LR, 0);
+      psio_open(PSIF_CC_LR, 0);
+      for(j=PSIF_CC_TMP; j <= PSIF_CC_TMP11; j++) {
         psio_close(j,0);
         psio_open(j,0);
       }
     }    
     else {
       fprintf(outfile, "Using %s tensor found on disk.\n", lbl1);
-      psio_read_entry(CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
+      psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor0[0], 9*sizeof(double));
     }
 
     if (params.wfn == "CC2")
@@ -143,10 +143,10 @@ void roa(void)
     sprintf(lbl4, "1/2 <<Mu;Q>>_(%5.3f)", params.omega[i]);
 
     if(!params.restart || 
-       ( (compute_rl && !psio_tocscan(CC_INFO,lbl1)) ||
-         (compute_pl && !psio_tocscan(CC_INFO,lbl2)) || 
-         !psio_tocscan(CC_INFO,lbl3) || 
-         !psio_tocscan(CC_INFO,lbl4) 
+       ( (compute_rl && !psio_tocscan(PSIF_CC_INFO,lbl1)) ||
+         (compute_pl && !psio_tocscan(PSIF_CC_INFO,lbl2)) || 
+         !psio_tocscan(PSIF_CC_INFO,lbl3) || 
+         !psio_tocscan(PSIF_CC_INFO,lbl4) 
        )
       ) {
 
@@ -218,7 +218,7 @@ void roa(void)
                   pert_y, moinfo.mu_irreps[beta], +params.omega[i]);
         }
       }
-      psio_write_entry(CC_INFO, lbl3, (char *) tensor_rr[0], 9*sizeof(double));
+      psio_write_entry(PSIF_CC_INFO, lbl3, (char *) tensor_rr[0], 9*sizeof(double));
 
       if(compute_rl) {
         fprintf(outfile, "\tComputing %s tensor.\n", lbl1); fflush(outfile);
@@ -231,7 +231,7 @@ void roa(void)
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
         }
-	psio_write_entry(CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
+	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
         fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
@@ -244,7 +244,7 @@ void roa(void)
 		    pert_y, moinfo.l_irreps[beta], params.omega[i]);
           }
         }
-	psio_write_entry(CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
+	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
       fprintf(outfile, "\tComputing %s tensor.\n", lbl4); fflush(outfile);
@@ -262,11 +262,11 @@ void roa(void)
       }
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++) 
-        psio_write(CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
+        psio_write(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
                    9*sizeof(double), next, &next);
 
       /* Clean up disk space */
-      for(j=CC_TMP; j <= CC_TMP11; j++) {
+      for(j=PSIF_CC_TMP; j <= PSIF_CC_TMP11; j++) {
 	psio_close(j,0);
 	psio_open(j,0);
       }
@@ -274,21 +274,21 @@ void roa(void)
     else {
       fprintf(outfile, "\n");
       fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
-      psio_read_entry(CC_INFO, lbl1, (char *) tensor_rr[i][0], 9*sizeof(double));
+      psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rr[i][0], 9*sizeof(double));
 
       if(compute_rl) {
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
-	psio_read_entry(CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
+	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl0[0], 9*sizeof(double));
       }
       if(compute_pl) {
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
-	psio_read_entry(CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
+	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl0[0], 9*sizeof(double));
       }
 
       fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl4); fflush(outfile);
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
-        psio_read(CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
+        psio_read(PSIF_CC_INFO, lbl4, (char *) tensor_rQ0[alpha][0], 
                   9*sizeof(double), next, & next);
 
     }
@@ -297,9 +297,9 @@ void roa(void)
     sprintf(lbl2, "1/2 <<P*;L*>>_(%5.3f)", params.omega[i]);
     sprintf(lbl3, "<<Mu;Q>>_(%5.3f)", -params.omega[i]);
     if(!params.restart || 
-       ( (compute_rl && !psio_tocscan(CC_INFO,lbl1)) || 
-         (compute_pl && !psio_tocscan(CC_INFO,lbl2)) ||
-         !psio_tocscan(CC_INFO,lbl3) )
+       ( (compute_rl && !psio_tocscan(PSIF_CC_INFO,lbl1)) || 
+         (compute_pl && !psio_tocscan(PSIF_CC_INFO,lbl2)) ||
+         !psio_tocscan(PSIF_CC_INFO,lbl3) )
       ) {
 
       if(compute_pl) {
@@ -346,7 +346,7 @@ void roa(void)
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
         }
-	psio_write_entry(CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
+	psio_write_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
 	fprintf(outfile, "\tComputing %s tensor.\n", lbl2); fflush(outfile);
@@ -359,7 +359,7 @@ void roa(void)
 		    pert_y, moinfo.l_irreps[beta], -params.omega[i]);
           }
         }
-	psio_write_entry(CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
+	psio_write_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
       fprintf(outfile, "\tComputing %s tensor.\n", lbl3); fflush(outfile);
@@ -377,10 +377,10 @@ void roa(void)
       }
 
       /* Clean up disk space */
-      psio_close(CC_LR, 0);
-      psio_open(CC_LR, 0);
+      psio_close(PSIF_CC_LR, 0);
+      psio_open(PSIF_CC_LR, 0);
 
-      for(j=CC_TMP; j <= CC_TMP11; j++) {
+      for(j=PSIF_CC_TMP; j <= PSIF_CC_TMP11; j++) {
 	psio_close(j,0);
 	psio_open(j,0);
       }
@@ -390,17 +390,17 @@ void roa(void)
       fprintf(outfile, "\n");
       if(compute_rl) {
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl1); fflush(outfile);
-	psio_read_entry(CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
+	psio_read_entry(PSIF_CC_INFO, lbl1, (char *) tensor_rl1[0], 9*sizeof(double));
       }
       if(compute_pl) {
 	fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl2); fflush(outfile);
-	psio_read_entry(CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
+	psio_read_entry(PSIF_CC_INFO, lbl2, (char *) tensor_pl1[0], 9*sizeof(double));
       }
 
       fprintf(outfile, "\tUsing %s tensor found on disk.\n", lbl3); fflush(outfile);
       next = PSIO_ZERO;
       for(alpha=0; alpha < 3; alpha++)
-        psio_read(CC_INFO, lbl3, (char *) tensor_rQ1[alpha][0], 
+        psio_read(PSIF_CC_INFO, lbl3, (char *) tensor_rQ1[alpha][0], 
                   9*sizeof(double), next, &next);
     }
 

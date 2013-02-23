@@ -36,8 +36,8 @@ void scf_check_uhf(void)
   aocc_off = moinfo.aocc_off;
   bocc_off = moinfo.bocc_off;
 
-  dpd_file2_init(&hIJ, CC_OEI, 0, 0, 0, "h(I,J)");
-  dpd_file2_init(&hij, CC_OEI, 0, 2, 2, "h(i,j)");
+  dpd_file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  dpd_file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
   dpd_file2_mat_init(&hIJ);
   dpd_file2_mat_init(&hij);
   dpd_file2_mat_rd(&hIJ);
@@ -55,7 +55,7 @@ void scf_check_uhf(void)
   dpd_file2_mat_close(&hIJ);
   dpd_file2_mat_close(&hij);
 
-  dpd_buf4_init(&A, CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
+  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
   E2AA = 0.0;
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&A, h);
@@ -75,7 +75,7 @@ void scf_check_uhf(void)
   }
   dpd_buf4_close(&A);
 
-  dpd_buf4_init(&A, CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
+  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
   E2BB = 0.0;
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&A, h);
@@ -95,7 +95,7 @@ void scf_check_uhf(void)
   }
   dpd_buf4_close(&A);
 
-  dpd_buf4_init(&A, CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
+  dpd_buf4_init(&A, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
   E2AB = 0.0;
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&A, h);
@@ -146,7 +146,7 @@ void scf_check_rhf(void)
   openpi = moinfo.openpi;
 
   /* One-electron (frozen-core) contributions */
-  dpd_file2_init(&Hoo, CC_OEI, 0, 0, 0, "h(i,j)");
+  dpd_file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
   dpd_file2_mat_init(&Hoo);
   dpd_file2_mat_rd(&Hoo);
 
@@ -166,8 +166,8 @@ void scf_check_rhf(void)
   /* Two-electron contributions */
 
   /* Prepare the A integral buffers */
-  dpd_buf4_init(&AInts_anti, CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
-  dpd_buf4_init(&AInts, CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
+  dpd_buf4_init(&AInts_anti, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <ij|kl>");
+  dpd_buf4_init(&AInts, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 0, "A <ij|kl>");
 
   E2AA = E2BB = E2AB = 0.0;
   for(h=0; h < nirreps; h++) {

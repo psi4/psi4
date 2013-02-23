@@ -35,7 +35,7 @@ void diag(void)
     for(h=0; h < moinfo.nirreps; h++)
       singlet_evals[h] = init_array(params.rpi[h]);
 
-    dpd_buf4_init(&A_AA, CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+    dpd_buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
 
     for(h=0; h < moinfo.nirreps; h++) {
       dim = A_AA.params->rowtot[h];
@@ -66,7 +66,7 @@ void diag(void)
       for(root=0; root < params.rpi[h]; root++) {
 
 	sprintf(lbl, "BIA(%d)[%d] singlet", root, h);
-	dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+	dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
 	dpd_file2_mat_init(&B);
 	for(ck=0; ck < dim; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
@@ -96,7 +96,7 @@ void diag(void)
     for(h=0; h < moinfo.nirreps; h++)
       triplet_evals[h] = init_array(params.rpi[h]);
 
-    dpd_buf4_init(&A_AA, CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
+    dpd_buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
 
     for(h=0; h < moinfo.nirreps; h++) {
       dim = A_AA.params->rowtot[h];
@@ -122,7 +122,7 @@ void diag(void)
       for(root=0; root < params.rpi[h]; root++) {
 
 	sprintf(lbl, "BIA(%d)[%d] triplet", root, h);
-	dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+	dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
 	dpd_file2_mat_init(&B);
 	for(ck=0; ck < dim; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
@@ -157,9 +157,9 @@ void diag(void)
     for(h=0; h < moinfo.nirreps; h++)
       uhf_evals[h] = init_array(params.rpi[h]);
 
-    dpd_buf4_init(&A_AA, CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
-    dpd_buf4_init(&A_BB, CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
-    dpd_buf4_init(&A_AB, CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
+    dpd_buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
+    dpd_buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
+    dpd_buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
     for(h=0; h < moinfo.nirreps; h++) {
       dim_A = A_AA.params->rowtot[h];
       dim_B = A_BB.params->rowtot[h];
@@ -209,7 +209,7 @@ void diag(void)
       /* Store the eigenvectors in DPD entries and save the eigenvalues */
       for(root=0; root < params.rpi[h]; root++) {
 	sprintf(lbl, "BIA(%d)[%d]", root, h);
-	dpd_file2_init(&B, CC_OEI, h, 0, 1, lbl);
+	dpd_file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
 	dpd_file2_mat_init(&B);
 	for(ck=0; ck < dim_A; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
@@ -227,7 +227,7 @@ void diag(void)
 	dpd_file2_close(&B);
 
 	sprintf(lbl, "Bia(%d)[%d]", root, h);
-	dpd_file2_init(&B, CC_OEI, h, 2, 3, lbl);
+	dpd_file2_init(&B, PSIF_CC_OEI, h, 2, 3, lbl);
 	dpd_file2_mat_init(&B);
 	for(ck=0; ck < dim_B; ck++) {
 	  c = A_BB.params->roworb[h][ck][0];

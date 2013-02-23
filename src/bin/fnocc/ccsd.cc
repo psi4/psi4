@@ -29,7 +29,7 @@ long int Position(long int i,long int j){
   return ((i*(i+1))>>1)+j;
 }
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 // diagrams for mp3 and mp4
 void DefineLinearTasks();
@@ -61,32 +61,37 @@ void CoupledCluster::common_init() {
   mp3_only = options_.get_bool("RUN_MP3");
   isccsd   = options_.get_bool("RUN_CCSD");
 
-  // grab variables and options
-  escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-  long int nirreps = reference_wavefunction_->nirrep();
-  int * sorbs   = reference_wavefunction_->nsopi();
-  int * orbs    = reference_wavefunction_->nmopi();
-  int * docc    = reference_wavefunction_->doccpi();
-  int * fzc     = reference_wavefunction_->frzcpi();
-  int * fzv     = reference_wavefunction_->frzvpi();
+  escf    = reference_wavefunction_->reference_energy();
+  doccpi_ = reference_wavefunction_->doccpi();
+  soccpi_ = reference_wavefunction_->soccpi();
+  frzcpi_ = reference_wavefunction_->frzcpi();
+  frzvpi_ = reference_wavefunction_->frzvpi();
+  nmopi_  = reference_wavefunction_->nmopi();
+
+  Da_ = SharedMatrix(reference_wavefunction_->Da());
+  Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+  Fa_ = SharedMatrix(reference_wavefunction_->Fa());
+  epsilon_a_= boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
+  epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+  nalpha_ = reference_wavefunction_->nalpha();
+  nbeta_  = reference_wavefunction_->nbeta();
 
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-  for (long int h=0; h<nirreps; h++){
-      nfzc   += fzc[h];
-      nfzv   += fzv[h];
-      nso    += sorbs[h];
-      nmo    += orbs[h]-fzc[h]-fzv[h];
-      ndocc  += docc[h];//-fzc[h];
+  for (int h=0; h<nirrep_; h++){
+      nfzc   += frzcpi_[h];
+      nfzv   += frzvpi_[h];
+      nso    += nsopi_[h];
+      nmo    += nmopi_[h]-frzcpi_[h]-frzvpi_[h];
+      ndocc  += doccpi_[h];
   }
-
   if (reference_wavefunction_->isCIM()){
      ndoccact = reference_wavefunction_->CIMActiveOccupied();
-     nvirt = reference_wavefunction_->CIMActiveVirtual();
-     nfzc = ndocc - ndoccact;
-     nmo = ndoccact + nvirt;
+     nvirt    = reference_wavefunction_->CIMActiveVirtual();
+     nfzc     = ndocc - ndoccact;
+     nmo      = ndoccact + nvirt;
   }else{
      ndoccact = ndocc - nfzc;
-     nvirt  = nmo - ndoccact;
+     nvirt    = nmo - ndoccact;
   }
 
   // for triples, we use nvirt_no in case we've truncated the virtual space:
@@ -158,13 +163,13 @@ void CoupledCluster::common_init() {
       int count=0;
       eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
       boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-      for (int h=0; h<nirreps; h++){
-          for (int norb = fzc[h]; norb<docc[h]; norb++){
+      for (int h=0; h<nirrep_; h++){
+          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
               eps[count++] = eps_test->get(h,norb);
           }
       }
-      for (int h=0; h<nirreps; h++){
-          for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+      for (int h=0; h<nirrep_; h++){
+          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
               eps[count++] = eps_test->get(h,norb);
           }
       }
@@ -191,6 +196,8 @@ void CoupledCluster::finalize() {
           free(CCTasklist[i].name);
       }
   }
+  // there is something weird with chkpt_ ... reset it
+  chkpt_.reset();
 }
 
 double CoupledCluster::compute_energy() {
@@ -373,6 +380,8 @@ double CoupledCluster::compute_energy() {
   }
   free(t1);
 
+  finalize();
+
   return Process::environment.globals["CURRENT ENERGY"];
 }
 
@@ -400,7 +409,7 @@ void CoupledCluster::WriteBanner(){
 
 /*===================================================================
 
-  solve qcisd equations
+  solve cc/qci equations
 
 ===================================================================*/
 PsiReturnType CoupledCluster::CCSDIterations() {
@@ -2154,61 +2163,61 @@ void CoupledCluster::DefineTasks(){
 
   ncctasks=0;
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::K;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::K;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"K                      ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::TwoJminusK;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::TwoJminusK;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"2J-K                   ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::I2ijkl;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::I2ijkl;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I(ij,kl)               ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::I2piajk;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::I2piajk;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I'(ia,jk)              ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmeni;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeni;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (mn|ei)         ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmaef;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmaef;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (me|af)         ");
 
   if (isccsd) {
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I2p_abci_refactored_term2;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I2p_abci_refactored_term2;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"I'(ab,ci)              ");
   }
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I1ab;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I(a,b)                 ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_t1_vmeai;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeai;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"t1 <-- (ma|ei)         ");
 
-  CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::CPU_I1pij_I1ia_lessmem;
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::CPU_I1pij_I1ia_lessmem;
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I'(i,j), I(i,j), I(i,a)");
 
   if (options_.get_bool("VABCD_PACKED")){
      // mo basis, sjs packing
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd1;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd1;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)+        ");
      // this is the last diagram that contributes to doubles residual,
      // so we can keep it in memory rather than writing and rereading
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd2;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd2;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)-        ");
   }else{
      // mo basis, no sjs packing
-     CCTasklist[ncctasks].func  = &psi::qci::CoupledCluster::Vabcd;
+     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd;
      CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
      sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)         ");
   }
@@ -2326,7 +2335,7 @@ void CoupledCluster::MP4_SDQ(){
      fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
      fprintf(outfile,"\n");
   }else {
-     // guess for qcisd should be |1> + |2>
+     // guess for cc/qci should be |1> + |2>
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);

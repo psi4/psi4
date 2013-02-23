@@ -33,21 +33,21 @@ void get_params(Options& options)
   excited_method = cc_excited(params.wfn);
 
   if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
-    psio_read_entry(CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
+    psio_read_entry(PSIF_CC_INFO, "CC2 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC2 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CC2 energy    (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
   else if(params.wfn == "CCSD" || params.wfn == "EOM_CCSD") {
-    psio_read_entry(CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
+    psio_read_entry(PSIF_CC_INFO, "CCSD Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCCSD energy         (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CCSD energy   (CC_INFO) = %20.15f\n",
             moinfo.eref+moinfo.ecc);
   }
   else if(params.wfn == "CC3" || params.wfn == "EOM_CC3") {
-    psio_read_entry(CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
+    psio_read_entry(PSIF_CC_INFO, "CC3 Energy", (char *) &(moinfo.ecc),
                     sizeof(double));
     fprintf(outfile,  "\tCC3 energy          (CC_INFO) = %20.15f\n",moinfo.ecc);
     fprintf(outfile,  "\tTotal CC3 energy    (CC_INFO) = %20.15f\n",
@@ -219,7 +219,7 @@ void get_params(Options& options)
   if (params.zeta) { /* only use Xi to solve for Zeta */
           params.nstates = 1;
     pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
-    psio_read_entry(CC_INFO, "XI Irrep", (char *) &i,sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "XI Irrep", (char *) &i,sizeof(int));
     fprintf(outfile,"\tIrrep of Zeta       (CC_INFO) = %d\n", i);
     pL_params[0].irrep = prop_sym = i; /* is this always A1? I forget */
     pL_params[0].root = prop_root = 0;
@@ -257,21 +257,21 @@ void get_params(Options& options)
       pL_params[0].ground = 0;
       if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
       }
       else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
       }
       else if(params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[0].R0),sizeof(double));
       }
       sprintf(pL_params[0].L1A_lbl,"LIA %d %d",prop_sym, prop_root);
       sprintf(pL_params[0].L1B_lbl,"Lia %d %d",prop_sym, prop_root);
@@ -360,21 +360,21 @@ void get_params(Options& options)
 
             if(params.wfn == "EOM_CC2") {
               sprintf(lbl,"EOM CC2 Energy for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CC2 R0 for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
             }
             else if(params.wfn == "EOM_CCSD") {
               sprintf(lbl,"EOM CCSD Energy for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CCSD R0 for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
             }
             else if(params.wfn == "EOM_CC3") {
               sprintf(lbl,"EOM CC3 Energy for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].cceom_energy),sizeof(double));
               sprintf(lbl,"EOM CC3 R0 for root %d %d", i, j);
-              psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
+              psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[k].R0),sizeof(double));
             }
 
             sprintf(pL_params[k].L1A_lbl,"LIA %d %d",i, j);
@@ -394,21 +394,21 @@ void get_params(Options& options)
 
       if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
       }
       else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
       }
       else if(params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].cceom_energy),sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d", prop_sym, prop_root);
-        psio_read_entry(CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO, lbl, (char *) &(pL_params[1].R0),sizeof(double));
       }
 
       sprintf(pL_params[1].L1A_lbl,"LIA %d %d", prop_sym, prop_root);

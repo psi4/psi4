@@ -1,5 +1,7 @@
 #include"ccsd.h"
 #include<libmints/wavefunction.h>
+#include<libmints/matrix.h>
+#include<libmints/vector.h>
 #include<../src/bin/cepa/blas.h>
 #ifdef _OPENMP
    #include<omp.h>
@@ -8,9 +10,9 @@
 using namespace psi;
 using namespace cepa;
 
-namespace psi{namespace qci{
+namespace psi{ namespace fnocc{
 
-PsiReturnType CoupledCluster::lowmemory_triples() {
+PsiReturnType CoupledCluster::local_triples() {
 
   char*name = new char[10];
   char*space = new char[10];
@@ -40,6 +42,19 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 
   int o = ndoccact;
   int v = nvirt_no;
+
+  // CIM QLMO->LMO transformation matrix
+  SharedMatrix tempRii = reference_wavefunction_->CIMTransformationMatrix();
+  double**tempRii_pointer = tempRii->pointer();
+  double *Rii = (double*)malloc(o*o*sizeof(double));
+  for (int i=0; i<o; i++){
+      for (int j=0; j<o; j++){
+          Rii[i*o+j] = tempRii_pointer[i][j];
+      }
+  }
+  // CIM orbital factors:
+  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
 
   double *F  = eps;
   double *E2ijak,**E2abci;
@@ -112,6 +127,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
       Z3[i]     = (double*)malloc(o*o*o*sizeof(double));
       Z4[i]     = (double*)malloc(o*o*o*sizeof(double));
   }
+
 
   double *tempt = (double*)malloc(o*o*v*v*sizeof(double));
 
@@ -290,6 +306,11 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
          
          int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
 
+         // transform one index of Z2 and Z3 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+         F_DCOPY(o*o*o,Z4[thread],1,E2abci[thread],1);
+         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+
          // contribute to energy:
          double tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -297,10 +318,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += Z3[thread][ijk] * Z2[thread][ijk];
+                     dum         += Z4[thread][ijk] * E2abci[thread][ijk];
                  }
              }
-             tripval += dum;
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += 3.0*tripval*abcfac;
 
@@ -330,6 +351,11 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
+         // transform one index of of E2abci and Z3 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+         F_DCOPY(o*o*o,Z4[thread],1,Z3[thread],1);
+         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+
          // contribute to energy:
          tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -337,10 +363,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += E2abci[thread][ijk] * Z3[thread][ijk];
+                     dum         += Z4[thread][ijk] * Z3[thread][ijk];
                  }
              }
-             tripval += dum;
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += tripval*abcfac;
 
@@ -370,6 +396,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              }
          }
 
+         // transform one index of E2abci and Z4 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z3[thread],o*o);
+         F_DGEMM('n','t',o*o,o,o,1.0,Z4[thread],o*o,Rii,o,0.0,Z2[thread],o*o);
+
          // contribute to energy:
          tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -377,10 +407,10 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += Z4[thread][ijk] * E2abci[thread][ijk];
+                     dum         += Z2[thread][ijk] * Z3[thread][ijk];
                  }
              }
-             tripval += dum;
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += tripval*abcfac;
 
@@ -439,6 +469,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
   delete space;
 
   // free memory:
+  free(Rii);
   free(E2ijak);
   for (int i=0; i<nthreads; i++){  
       free(E2abci[i]);
@@ -458,7 +489,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
 }
 
 
-}} // end of namespaces
+}} // end of namespace
 
 
 

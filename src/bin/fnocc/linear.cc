@@ -14,7 +14,7 @@
 using namespace psi;
 using namespace cepa;
 
-namespace psi{ namespace qci{
+namespace psi{ namespace fnocc{
 
 void CoupledCluster::CPU_t1_vmeai_linear(CCTaskParams params){
   long int o = ndoccact;
@@ -665,18 +665,18 @@ void CoupledCluster::DefineLinearTasks(){
 
   nltasks=0;
 
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::I2iabj_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::I2iajb_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::I2ijkl_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::I2piajk_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::CPU_t1_vmeni_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::CPU_t1_vmaef_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::CPU_I2p_abci_refactored_term1_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::CPU_t1_vmeai_linear;
-  LTasklist[nltasks++].func  = &psi::qci::CoupledCluster::Vabcd1_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::I2iabj_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::I2iajb_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::I2ijkl_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::I2piajk_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeni_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmaef_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::CPU_I2p_abci_refactored_term1_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::CPU_t1_vmeai_linear;
+  LTasklist[nltasks++].func  = &psi::fnocc::CoupledCluster::Vabcd1_linear;
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  LTasklist[nltasks++].func        = &psi::qci::CoupledCluster::Vabcd2_linear;
+  LTasklist[nltasks++].func        = &psi::fnocc::CoupledCluster::Vabcd2_linear;
 }
 
 /**
@@ -688,11 +688,11 @@ void CoupledCluster::DefineQuadraticTasks(){
 
   nqtasks=0;
 
-  QTasklist[nqtasks++].func  = &psi::qci::CoupledCluster::I2iabj_quadratic;
-  QTasklist[nqtasks++].func  = &psi::qci::CoupledCluster::I2ijkl_quadratic;
-  QTasklist[nqtasks++].func  = &psi::qci::CoupledCluster::CPU_I1ab_quadratic;
-  QTasklist[nqtasks++].func  = &psi::qci::CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic;
-  QTasklist[nqtasks++].func  = &psi::qci::CoupledCluster::I2iajb_quadratic;
+  QTasklist[nqtasks++].func  = &psi::fnocc::CoupledCluster::I2iabj_quadratic;
+  QTasklist[nqtasks++].func  = &psi::fnocc::CoupledCluster::I2ijkl_quadratic;
+  QTasklist[nqtasks++].func  = &psi::fnocc::CoupledCluster::CPU_I1ab_quadratic;
+  QTasklist[nqtasks++].func  = &psi::fnocc::CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic;
+  QTasklist[nqtasks++].func  = &psi::fnocc::CoupledCluster::I2iajb_quadratic;
 
 }
 
