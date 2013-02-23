@@ -250,6 +250,9 @@ public:
     std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
+    /// Returns the true atomic number of an atom
+    int true_atomic_number(int atom) const;
+    int ftrue_atomic_number(int atom) const;
     /// Returns mass atom atom
     double fmass(int atom) const;
     /// Returns label of atom
@@ -555,7 +558,7 @@ public:
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
     /// Sets whether this molecule contains at least one zmatrix entry
-    bool set_has_zmatrix(bool tf) {zmat_ = tf;}
+    void set_has_zmatrix(bool tf) {zmat_ = tf;}
     /// Whether this molecule has at least one zmatrix entry
     bool has_zmatrix() const {return zmat_;}
     /// Assigns the value val to the variable labelled string in the list of geometry variables.

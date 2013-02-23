@@ -2718,6 +2718,20 @@ double Molecule::fcharge(int atom) const
     return full_atoms_[atom]->charge();
 }
 
+int Molecule::true_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[atoms_[atom]->symbol()];
+}
+
+int Molecule::ftrue_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[full_atoms_[atom]->symbol()];
+}
+
 void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)
 {
     std::string uc = boost::to_upper_copy(name);

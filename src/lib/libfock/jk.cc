@@ -18,9 +18,6 @@
 #include <omp.h>
 #endif
 
-#define PRINT_ME fprintf(stdout,"If in %d\n",__LINE__);
-#define PRINT_ME
-
 using namespace std;
 using namespace psi;
 
@@ -103,9 +100,12 @@ boost::shared_ptr<JK> JK::build_JK()
             jk->set_debug(options.get_int("DEBUG"));
         if (options["BENCH"].has_changed())
             jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
         return boost::shared_ptr<JK>(jk);
 
+#if 0
     } else if (options.get_str("SCF_TYPE") == "PS") {
 
         PSJK* jk = new PSJK(primary,options);
@@ -132,7 +132,7 @@ boost::shared_ptr<JK> JK::build_JK()
         }
 
         return boost::shared_ptr<JK>(jk);
-
+#endif
     } else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
@@ -457,7 +457,7 @@ void JK::AO2USO()
     }
     delete[] temp;
 }
-void JK::   initialize()
+void JK::initialize()
 {
     preiterations();
 }
@@ -1689,6 +1689,10 @@ DirectJK::~DirectJK()
 }
 void DirectJK::common_init()
 {
+    df_ints_num_threads_ = 1;
+    #ifdef _OPENMP
+        df_ints_num_threads_ = omp_get_max_threads();
+    #endif
 }
 void DirectJK::print_header() const
 {
@@ -1700,154 +1704,37 @@ void DirectJK::print_header() const
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
-        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
-        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        //fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations()
 {
     sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
-    factory_= boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
-    eri_.clear();
-    for (int thread = 0; thread < omp_nthread_; thread++) {
-        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
-    }
 }
 void DirectJK::compute_JK()
 {
-    // Correctness always counts
-    const double* buffer = eri_[0]->buffer();
-    for (int M = 0; M < primary_->nshell(); ++M) {
-    for (int N = 0; N < primary_->nshell(); ++N) {
-    for (int R = 0; R < primary_->nshell(); ++R) {
-    for (int S = 0; S < primary_->nshell(); ++S) {
+    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
 
-        eri_[0]->compute_shell(M,N,R,S);
-
-        int nM = primary_->shell(M).nfunction();
-        int nN = primary_->shell(N).nfunction();
-        int nR = primary_->shell(R).nfunction();
-        int nS = primary_->shell(S).nfunction();
-
-        int sM = primary_->shell(M).function_index();
-        int sN = primary_->shell(N).function_index();
-        int sR = primary_->shell(R).function_index();
-        int sS = primary_->shell(S).function_index();
-
-        for (int oM = 0, index = 0; oM < nM; oM++) {
-        for (int oN = 0; oN < nN; oN++) {
-        for (int oR = 0; oR < nR; oR++) {
-        for (int oS = 0; oS < nS; oS++, index++) {
-
-            double val = buffer[index];
-
-            int m = oM + sM;
-            int n = oN + sN;
-            int r = oR + sR;
-            int s = oS + sS;
-
-            if (do_J_) {
-                for (int N = 0; N < J_ao_.size(); N++) {
-                    J_ao_[N]->add(0,m,n, D_ao_[N]->get(0,r,s)*val);
-                }
-            }
-
-            if (do_K_) {
-                for (int N = 0; N < K_ao_.size(); N++) {
-                    K_ao_[N]->add(0,m,s, D_ao_[N]->get(0,n,r)*val);
-                }
-            }
-
-        }}}}
-
-    }}}}
-
-    // Faster version, not finished
-    /**
-    sieve_->set_sieve(cutoff_);
-    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    unsigned long int nMN = shell_pairs.size();
-    unsigned long int nMNRS = nMN * nMN;
-    int nthread = eri_.size();
-
-    #pragma omp parallel for schedule(dynamic,30) num_threads(nthread)
-    for (unsigned long int index = 0L; index < nMNRS; ++index) {
-
-        int thread = 0;
-        #ifdef _OPENMP
-            thread = omp_get_thread_num();
-        #endif
-
-        const double* buffer = eri_[thread]->buffer();
-
-        unsigned long int MN = index / nMN;
-        unsigned long int RS = index % nMN;
-        if (MN < RS) continue;
-
-        int M = shell_pairs[MN].first;
-        int N = shell_pairs[MN].second;
-        int R = shell_pairs[RS].first;
-        int S = shell_pairs[RS].second;
-
-        eri_[thread]->compute_shell(M,N,R,S);
-
-        int nM = primary_->shell(M)->nfunction();
-        int nN = primary_->shell(N)->nfunction();
-        int nR = primary_->shell(R)->nfunction();
-        int nS = primary_->shell(S)->nfunction();
-
-        int sM = primary_->shell(M)->function_index();
-        int sN = primary_->shell(N)->function_index();
-        int sR = primary_->shell(R)->function_index();
-        int sS = primary_->shell(S)->function_index();
-
-        for (int oM = 0, index = 0; oM < nM; oM++) {
-        for (int oN = 0; oN < nN; oN++) {
-        for (int oR = 0; oR < nR; oR++) {
-        for (int oS = 0; oS < nS; oS++, index++) {
-
-            int m = oM + sM;
-            int n = oN + sN;
-            int r = oR + sR;
-            int s = oS + sS;
-
-            if ((n > m) || (s > r) || ((r*(r+1) >> 1) + s > (m*(m+1) >> 1) + n)) continue;
-
-            double val = buffer[index];
-
-            if (do_J_) {
-                for (int N = 0; N < J_ao_.size(); N++) {
-                    double** Dp = D_ao_[N]->pointer();
-                    double** Jp = J_ao_[N]->pointer();
-
-                    // I've given you all the unique ones
-                    // Make sure to use #pragma omp atomic
-                    // TODO
-                }
-            }
-
-            if (do_K_) {
-                for (int N = 0; N < K_ao_.size(); N++) {
-                    double** Dp = D_ao_[N]->pointer();
-                    double** Kp = J_ao_[N]->pointer();
-
-                    // I've given you all the unique ones
-                    // Make sure to use #pragma omp atomic
-                    // TODO
-                }
-            }
-
-        }}}}
-
+    if (do_wK_) {
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        for (int thread = 0; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        }
     }
-    **/
+
+    if (do_J_ && do_K_) {
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        for (int thread = 0; thread < df_ints_num_threads_; thread++) {
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+        }
+    }
+
 }
 void DirectJK::postiterations()
 {
     sieve_.reset();
-    factory_.reset();
-    eri_.clear();
 }
 
 DFJK::DFJK(boost::shared_ptr<BasisSet> primary,
@@ -2206,7 +2093,7 @@ void DFJK::free_w_temps()
 }
 void DFJK::preiterations()
 {
-    // DF requires constant sieve, must be static througout object life
+    // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
         sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
@@ -3745,6 +3632,8 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
     }
 }
 
+#if 0
+
 PSJK::PSJK(boost::shared_ptr<BasisSet> primary,
     Options& options) :
     JK(primary), options_(options)
@@ -4401,5 +4290,172 @@ void PSJK::build_JK_debug(const std::string& op, double theta)
         }
     }
 }
+
+DirectJK::DirectJK(boost::shared_ptr<BasisSet> primary) :
+   JK(primary)
+{
+    common_init();
+}
+DirectJK::~DirectJK()
+{
+}
+void DirectJK::common_init()
+{
+}
+void DirectJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_)
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+    }
+}
+void DirectJK::preiterations()
+{
+    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    factory_= boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_,primary_,primary_,primary_));
+    eri_.clear();
+    for (int thread = 0; thread < omp_nthread_; thread++) {
+        eri_.push_back(boost::shared_ptr<TwoBodyAOInt>(factory_->eri()));
+    }
+}
+void DirectJK::compute_JK()
+{
+    // Correctness always counts
+    const double* buffer = eri_[0]->buffer();
+    for (int M = 0; M < primary_->nshell(); ++M) {
+    for (int N = 0; N < primary_->nshell(); ++N) {
+    for (int R = 0; R < primary_->nshell(); ++R) {
+    for (int S = 0; S < primary_->nshell(); ++S) {
+
+        eri_[0]->compute_shell(M,N,R,S);
+
+        int nM = primary_->shell(M).nfunction();
+        int nN = primary_->shell(N).nfunction();
+        int nR = primary_->shell(R).nfunction();
+        int nS = primary_->shell(S).nfunction();
+
+        int sM = primary_->shell(M).function_index();
+        int sN = primary_->shell(N).function_index();
+        int sR = primary_->shell(R).function_index();
+        int sS = primary_->shell(S).function_index();
+
+        for (int oM = 0, index = 0; oM < nM; oM++) {
+        for (int oN = 0; oN < nN; oN++) {
+        for (int oR = 0; oR < nR; oR++) {
+        for (int oS = 0; oS < nS; oS++, index++) {
+
+            double val = buffer[index];
+
+            int m = oM + sM;
+            int n = oN + sN;
+            int r = oR + sR;
+            int s = oS + sS;
+
+            if (do_J_) {
+                for (int N = 0; N < J_ao_.size(); N++) {
+                    J_ao_[N]->add(0,m,n, D_ao_[N]->get(0,r,s)*val);
+                }
+            }
+
+            if (do_K_) {
+                for (int N = 0; N < K_ao_.size(); N++) {
+                    K_ao_[N]->add(0,m,s, D_ao_[N]->get(0,n,r)*val);
+                }
+            }
+
+        }}}}
+
+    }}}}
+
+    // Faster version, not finished
+    /**
+    sieve_->set_sieve(cutoff_);
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    unsigned long int nMN = shell_pairs.size();
+    unsigned long int nMNRS = nMN * nMN;
+    int nthread = eri_.size();
+
+    #pragma omp parallel for schedule(dynamic,30) num_threads(nthread)
+    for (unsigned long int index = 0L; index < nMNRS; ++index) {
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        const double* buffer = eri_[thread]->buffer();
+
+        unsigned long int MN = index / nMN;
+        unsigned long int RS = index % nMN;
+        if (MN < RS) continue;
+
+        int M = shell_pairs[MN].first;
+        int N = shell_pairs[MN].second;
+        int R = shell_pairs[RS].first;
+        int S = shell_pairs[RS].second;
+
+        eri_[thread]->compute_shell(M,N,R,S);
+
+        int nM = primary_->shell(M)->nfunction();
+        int nN = primary_->shell(N)->nfunction();
+        int nR = primary_->shell(R)->nfunction();
+        int nS = primary_->shell(S)->nfunction();
+
+        int sM = primary_->shell(M)->function_index();
+        int sN = primary_->shell(N)->function_index();
+        int sR = primary_->shell(R)->function_index();
+        int sS = primary_->shell(S)->function_index();
+
+        for (int oM = 0, index = 0; oM < nM; oM++) {
+        for (int oN = 0; oN < nN; oN++) {
+        for (int oR = 0; oR < nR; oR++) {
+        for (int oS = 0; oS < nS; oS++, index++) {
+
+            int m = oM + sM;
+            int n = oN + sN;
+            int r = oR + sR;
+            int s = oS + sS;
+
+            if ((n > m) || (s > r) || ((r*(r+1) >> 1) + s > (m*(m+1) >> 1) + n)) continue;
+
+            double val = buffer[index];
+
+            if (do_J_) {
+                for (int N = 0; N < J_ao_.size(); N++) {
+                    double** Dp = D_ao_[N]->pointer();
+                    double** Jp = J_ao_[N]->pointer();
+
+                    // I've given you all the unique ones
+                    // Make sure to use #pragma omp atomic
+                    // TODO
+                }
+            }
+
+            if (do_K_) {
+                for (int N = 0; N < K_ao_.size(); N++) {
+                    double** Dp = D_ao_[N]->pointer();
+                    double** Kp = J_ao_[N]->pointer();
+
+                    // I've given you all the unique ones
+                    // Make sure to use #pragma omp atomic
+                    // TODO
+                }
+            }
+
+        }}}}
+
+    }
+    **/
+}
+
+#endif
 
 }

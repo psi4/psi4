@@ -314,7 +314,7 @@ void DFTGrid::buildGridFromOptions()
 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
-        alphap[A] = BSRadii_[molecule_->Z(A)] * options_.get_double("DFT_BS_RADIUS_ALPHA");
+        alphap[A] = BSRadii_[molecule_->true_atomic_number(A)] * options_.get_double("DFT_BS_RADIUS_ALPHA");
     }
 
     std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
@@ -734,7 +734,7 @@ void PseudospectralGrid::buildGridFromOptions()
 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
-        alphap[A] = BSRadii_[molecule_->Z(A)] * options_.get_double("PS_BS_RADIUS_ALPHA");
+        alphap[A] = BSRadii_[molecule_->true_atomic_number(A)] * options_.get_double("PS_BS_RADIUS_ALPHA");
     }
 
     std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
@@ -1066,10 +1066,10 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
     double *Xp = X->pointer();
 
     for (int A = 0; A < natom; A++) {
-        Xp[0] += mol->x(A) * mol->Z(A);
-        Xp[1] += mol->y(A) * mol->Z(A);
-        Xp[2] += mol->z(A) * mol->Z(A);
-        Z += mol->Z(A);
+        Xp[0] += mol->x(A) * mol->true_atomic_number(A);
+        Xp[1] += mol->y(A) * mol->true_atomic_number(A);
+        Xp[2] += mol->z(A) * mol->true_atomic_number(A);
+        Z += mol->true_atomic_number(A);
     }
 
     Xp[0] /= Z;
@@ -1081,12 +1081,12 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
     double** Ip = I->pointer();
 
     for (int A = 0; A < natom; A++) {
-        Ip[0][0] += (mol->x(A) - Xp[0]) * (mol->x(A) - Xp[0]) * mol->Z(A);
-        Ip[0][1] += (mol->x(A) - Xp[0]) * (mol->y(A) - Xp[1]) * mol->Z(A);
-        Ip[0][2] += (mol->x(A) - Xp[0]) * (mol->z(A) - Xp[2]) * mol->Z(A);
-        Ip[1][1] += (mol->y(A) - Xp[1]) * (mol->y(A) - Xp[1]) * mol->Z(A);
-        Ip[1][2] += (mol->y(A) - Xp[1]) * (mol->z(A) - Xp[2]) * mol->Z(A);
-        Ip[2][2] += (mol->z(A) - Xp[2]) * (mol->z(A) - Xp[2]) * mol->Z(A);
+        Ip[0][0] += (mol->x(A) - Xp[0]) * (mol->x(A) - Xp[0]) * mol->true_atomic_number(A);
+        Ip[0][1] += (mol->x(A) - Xp[0]) * (mol->y(A) - Xp[1]) * mol->true_atomic_number(A);
+        Ip[0][2] += (mol->x(A) - Xp[0]) * (mol->z(A) - Xp[2]) * mol->true_atomic_number(A);
+        Ip[1][1] += (mol->y(A) - Xp[1]) * (mol->y(A) - Xp[1]) * mol->true_atomic_number(A);
+        Ip[1][2] += (mol->y(A) - Xp[1]) * (mol->z(A) - Xp[2]) * mol->true_atomic_number(A);
+        Ip[2][2] += (mol->z(A) - Xp[2]) * (mol->z(A) - Xp[2]) * mol->true_atomic_number(A);
     }
     Ip[1][0] = Ip[0][1];
     Ip[2][0] = Ip[0][2];
@@ -1283,7 +1283,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         // tuple is fabs(Zp), -sgn(Zp), fabs(Rp), Z, index
         std::vector<boost::tuple<double, int, double, int, int> > tests;
         for (int A = 0; A < natom; A++) {
-            tests.push_back(boost::tuple<double,int,double,int,int>(fabs(Zp[A]), (int) (Zp[A] < 0) - (int) (Zp[A] > 0), Rp[A], mol->Z(A), A));
+            tests.push_back(boost::tuple<double,int,double,int,int>(fabs(Zp[A]), (int) (Zp[A] < 0) - (int) (Zp[A] > 0), Rp[A], mol->true_atomic_number(A), A));
         }
 
         std::sort(tests.begin(), tests.end());
@@ -1566,7 +1566,7 @@ void MolecularGrid::applyBeckeWeights()
 
     for (int i = 0; i < natom; i++) {
         for (int j = 0; j < i; j++) {
-            chip[i][j] = BSRadii_[molecule_->Z(i)] / BSRadii_[molecule_->Z(j)];
+            chip[i][j] = BSRadii_[molecule_->true_atomic_number(i)] / BSRadii_[molecule_->true_atomic_number(j)];
             chip[j][i] = 1.0 / chip[i][j];
         }
     }
@@ -1586,7 +1586,7 @@ void MolecularGrid::applyTreutlerWeights()
 
     for (int i = 0; i < natom; i++) {
         for (int j = 0; j < i; j++) {
-            chip[i][j] = sqrt(BSRadii_[molecule_->Z(i)] / BSRadii_[molecule_->Z(j)]);
+            chip[i][j] = sqrt(BSRadii_[molecule_->true_atomic_number(i)] / BSRadii_[molecule_->true_atomic_number(j)]);
             chip[j][i] = 1.0 / chip[i][j];
         }
     }

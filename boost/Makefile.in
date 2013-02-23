@@ -2,6 +2,7 @@ srcdir = @srcdir@
 dont_compile_boost = @have_boost@
 
 PYTHON = @PYTHON@
+BOOSTVER = @BOOSTVER@
 
 all: default
 default: boost.compiled
@@ -13,14 +14,14 @@ clean:
 dclean:
 
 # Steps taken:
-#  1. If directory boost_1_48_0 does not exist, untar the source file.
+#  1. If directory BOOSTVER does not exist, untar the source file.
 #  2. Build Boost with the components we need and move the libraries to a
 #     central location (bin.v2/libs)
 #  3. Touch the target file so that the above dependencies will be fulfilled.
 boost.compiled:
 ifeq ($(dont_compile_boost),0)
-	if [ ! -d boost_1_48_0 ]; then tar zxf $(srcdir)/boost_1_48_0.tar.gz; fi
-	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=$(PYTHON) && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	if [ ! -d $(BOOSTVER) ]; then tar zxf $(srcdir)/$(BOOSTVER).tar.gz; fi
+	(cd $(BOOSTVER) && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread --with-python=$(PYTHON) && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
 	touch boost.compiled
 endif
 
