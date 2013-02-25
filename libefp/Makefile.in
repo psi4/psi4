@@ -1,19 +1,32 @@
-LIBEFP_VERSION = 0.9.1
+top_srcdir = @top_srcdir@
+top_objdir = ..
+
+CDEF = @CDEF@
+COPT = @COPT@
+COTH = @COTH@
+CDBG = @CDBG@
+CINC = @CINC@
+
+CC = @CC@
+CPPFLAGS = @CPPFLAGS@
+CFLAGS = @CFLAGS@
+LDFLAGS = @LDFLAGS@
+AR = @AR@
+ARFLAGS = @ARFLAGS@
+OBJSUF = @OBJSUF@
+MKDIRS = @MKDIRS@
+RANLIB = @RANLIB@
 srcdir = @srcdir@
-libefp_install_dir = $(CURDIR)/install
 
-all: default
-default: efp.compiled
+VPATH = @srcdir@/libefp/src
+PSITARGET = $(top_objdir)/libefp/libefp.a
+TRUECSRC = $(notdir $(wildcard $(srcdir)/libefp/src/*.c))
+LIBOBJ = $(TRUECSRC:%.c=%.o)
 
-install:
+all: $(PSITARGET)
 
-clean:
-
-dclean:
-
-efp.compiled:
-	tar xf $(srcdir)/libefp-$(LIBEFP_VERSION).tar.gz && \
-	cd libefp-$(LIBEFP_VERSION) && \
-	./configure --disable-efpmd --prefix=$(libefp_install_dir) && \
-	$(MAKE) && $(MAKE) install
-	touch efp.compiled
+$(PSITARGET): $(LIBOBJ)
+	$(MKDIRS) `dirname $(PSITARGET)`
+	rm -f $(PSITARGET)
+	$(AR) $(ARFLAGS) $(PSITARGET) $^
+	$(RANLIB) $(PSITARGET)

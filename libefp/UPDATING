@@ -1,5 +1,3 @@
-Download a new version of libefp from www.libefp.org and place it here
-
-Update version number in Makefile.in
-
+Remove old libefp
+Download a new version of libefp from www.libefp.org and extract it in libefp dir
 Update potential data files in lib/fraglib with the ones from new archive

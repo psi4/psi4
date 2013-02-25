@@ -4,7 +4,6 @@
  * EFP header
  */
 
-// TODO: add -I to compilation
 #include<libmints/molecule.h>
 
 struct efp;
