@@ -26,7 +26,7 @@
 #endif
 
 #include "efp_solver.h"
-#include "../../libefp/install/include/efp.h"
+#include "../../libefp/libefp/src/efp.h"
 
 using namespace boost;
 using namespace std;
@@ -207,7 +207,7 @@ void EFP::common_init() {
        char *frag_names = make_name_list();
        char *file_names = make_potential_file_list(frag_names, fraglib_path.c_str(), ".");
 
-       if ((res = efp_init(&efp_, &opts, NULL, file_names, frag_names))) {
+       if ((res = efp_init(&efp_, &opts, file_names, frag_names))) {
                fprintf(outfile, "%s", efp_result_to_string(res));
                throw PsiException("efp",__FILE__,__LINE__);
        }
@@ -300,30 +300,44 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     }
 
     // workspace for efp_get_multipoles.
-    double ** xyz = (double**)malloc(4*sizeof(double*));
-    double **   z = (double**)malloc(4*sizeof(double*));
-    for (int i = 0; i < 4; i++) {
-        xyz[i] = (double*)malloc(3*n_multipole[i]*sizeof(double));
-        for (int j = 0; j < 3*n_multipole[i]; j++) xyz[i][j] = 0.0;
-    }
-    z[0] = (double*)malloc(n_multipole[0]*sizeof(double));
-    z[1] = (double*)malloc(3*n_multipole[1]*sizeof(double));
-    z[2] = (double*)malloc(6*n_multipole[2]*sizeof(double));
-    z[3] = (double*)malloc(10*n_multipole[3]*sizeof(double));
+    //double ** xyz = (double**)malloc(4*sizeof(double*));
+    //double **   z = (double**)malloc(4*sizeof(double*));
+    //for (int i = 0; i < 4; i++) {
+    //    xyz[i] = (double*)malloc(3*n_multipole[i]*sizeof(double));
+    //    for (int j = 0; j < 3*n_multipole[i]; j++) xyz[i][j] = 0.0;
+    //}
+    //z[0] = (double*)malloc(n_multipole[0]*sizeof(double));
+    //z[1] = (double*)malloc(3*n_multipole[1]*sizeof(double));
+    //z[2] = (double*)malloc(6*n_multipole[2]*sizeof(double));
+    //z[3] = (double*)malloc(10*n_multipole[3]*sizeof(double));
 
-    for (int j = 0; j < n_multipole[0]; j++)    z[0][j] = 0.0;
-    for (int j = 0; j < 3*n_multipole[1]; j++)  z[1][j] = 0.0;
-    for (int j = 0; j < 6*n_multipole[2]; j++)  z[2][j] = 0.0;
-    for (int j = 0; j < 10*n_multipole[3]; j++) z[3][j] = 0.0;
+    //for (int j = 0; j < n_multipole[0]; j++)    z[0][j] = 0.0;
+    //for (int j = 0; j < 3*n_multipole[1]; j++)  z[1][j] = 0.0;
+    //for (int j = 0; j < 6*n_multipole[2]; j++)  z[2][j] = 0.0;
+    //for (int j = 0; j < 10*n_multipole[3]; j++) z[3][j] = 0.0;
 
     // get multipoles from libefp
     // dipoles stored as     x,y,z
     // quadrupoles stored as xx,yy,zz,xy,xz,yz
     // octupoles stored as   xxx,yyy,zzz,xxy,xxz,xyy,yyz,xzz,yzz,xyz
-    err = efp_get_multipoles(efp_,xyz,z);
-    if ( err != EFP_RESULT_SUCCESS ) {
-        throw PsiException("libefp failed to return multipole moments",__FILE__,__LINE__);
-    }
+    //
+    // err = efp_get_grag_atoms - for atom charges
+    // err = efp_get_multipole_values - for electrostatics multipones
+    // err = efp_get_induced_dipole_values - for polarization induced dipoles
+    // err = efp_get_induced_dipole_conj_values - for polarization induced dipoles
+    //
+    // induced dipoles
+    //
+    // int n_id;
+    // check_fail(efp_get_induced_dipole_count(impl_->efp, &n_id));
+    // double *xyz_id = new double[n_id * 3];
+    // check_fail(efp_get_induced_dipole_coordinates(impl_->efp, xyz_id));
+    // double *id = new double[n_id * 3];
+    // check_fail(efp_get_induced_dipole_values(impl_->efp, id));
+    // double *idt = new double[n_id * 3];
+    // check_fail(efp_get_induced_dipole_conj_values(impl_->efp, idt));
+    //
+    // take avarage of id and idt, 0.5*(id+idt)
 
     // get electrostatic potential at each point returned in the xyz array
     // TODO: need this function
@@ -354,13 +368,13 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     boost::shared_ptr<Matrix> V = matrix->create_shared_matrix("EFP V contribution");
 
     // free workspace memory needed by libefp
-    free(n_multipole);
-    for (int i = 0; i < 4; i++) {
-        free(xyz[i]);
-        free(z[i]);
-    }
-    free(xyz);
-    free(z);
+    //free(n_multipole);
+    //for (int i = 0; i < 4; i++) {
+    //    free(xyz[i]);
+    //    free(z[i]);
+    //}
+    //free(xyz);
+    //free(z);
    
     return V;
 }
@@ -368,7 +382,7 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
 // compute efp contribution to scf energy
 double EFP::scf_energy_update() {
     double efp_energy;
-    efp_scf_update(efp_, &efp_energy);
+    efp_get_wavefunction_dependent_energy(efp_, &efp_energy);
     return efp_energy;
 }
 
