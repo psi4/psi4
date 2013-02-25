@@ -270,7 +270,7 @@ There are two primary purposes for interacting with options in the python driver
   .. note:: Some options (BASIS, BASIS-like, and PUREAM) should always
      be used globally (no module argument) with the OptionsState objects.
      Similarly, within the body of the function, they should always be
-     queried and set globally.
+     queried and set globally. Same for FREEZE_CORE.
 
 - **Setting-Up Calculations**
 

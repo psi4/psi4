@@ -1026,21 +1026,22 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, doubl
     // Make sure libint is compiled to handle our max AM
     if (max_am >= LIBINT_MAX_AM) {
         fprintf(stderr, "ERROR: ERI - libint cannot handle angular momentum this high.\n"
-                        "       Recompile libint for higher angular momentum, then recompile this program.\n");
-        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\nRecompile libint for higher angular momentum, then recompile this program.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
+                        "       In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.\n");
+        throw LimitExceeded<int>("ERI - libint cannot handle angular momentum this high.\n"
+                                 "In a fresh object directory, reconfigure libint for higher angular momentum, then recompile.", LIBINT_MAX_AM, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 1 && max_am >= LIBDERIV_MAX_AM1) {
         fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
-                        "     Recompile libderiv for higher angular momentum, then recompile this program.\n");
+                        "     In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
-                                 "Recompile libderiv for higher angular momentum, then recompile this program.",
+                                 "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM1, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ == 2 && max_am >= LIBDERIV_MAX_AM12) {
         fprintf(stderr, "ERROR: ERI - libderiv cannot handle angular momentum this high.\n"
-                        "     Recompile libderiv for higher angular momentum, then recompile this program.\n");
+                        "       In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.\n");
         throw LimitExceeded<int>("ERI - libderiv cannot handle angular momentum this high.\n"
-                                 "Recompile libderiv for higher angular momentum, this recompile this program.",
+                                 "In a fresh object directory, reconfigure libderiv for higher angular momentum, then recompile.",
                                  LIBDERIV_MAX_AM12, max_am, __FILE__, __LINE__);
     }
     else if (deriv_ > 2) {
