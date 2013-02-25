@@ -40,18 +40,18 @@ void check_sum(const char *term_lbl, int index, int irrep) {
 
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, EOM_SIA, irrep, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_sort(&SIjAb, EOM_SIjAb, pqsr, 0, 5, "SIjbA"); 
-    dpd_buf4_init(&SIjbA, EOM_SIjAb, irrep, 0, 5, 0, 5, 0, "SIjbA");
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_sort(&SIjAb, PSIF_EOM_SIjAb, pqsr, 0, 5, "SIjbA"); 
+    dpd_buf4_init(&SIjbA, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, "SIjbA");
 
     if (!params.full_matrix) {
       norm = norm_C_rhf(&SIA, &SIjAb, &SIjbA);
 		}
     else {
       sprintf(lbl, "%s %d", "S0", index);
-      psio_read_entry(EOM_SIA, lbl, (char *) &S0, sizeof(double));
+      psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &S0, sizeof(double));
       norm = norm_C_rhf_full(S0, &SIA, &SIjAb, &SIjbA);
 		}
 
@@ -61,15 +61,15 @@ void check_sum(const char *term_lbl, int index, int irrep) {
   }
   else if (params.eom_ref == 1) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, EOM_SIA, irrep, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", index);
-    dpd_file2_init(&Sia, EOM_Sia, irrep, 0, 1, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIJAB", index);
-    dpd_buf4_init(&SIJAB, EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", index);
-    dpd_buf4_init(&Sijab, EOM_Sijab, irrep, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 0, 5, 0, 5, 0, lbl);
 
     norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb); 
 
@@ -81,15 +81,15 @@ void check_sum(const char *term_lbl, int index, int irrep) {
   }
   else if (params.eom_ref == 2) {
     sprintf(lbl, "%s %d", "SIA", index);
-    dpd_file2_init(&SIA, EOM_SIA, irrep, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, irrep, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", index);
-    dpd_file2_init(&Sia, EOM_Sia, irrep, 2, 3, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, irrep, 2, 3, lbl);
     sprintf(lbl, "%s %d", "SIJAB", index);
-    dpd_buf4_init(&SIJAB, EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, irrep, 2, 7, 2, 7, 0, lbl);
     sprintf(lbl, "%s %d", "Sijab", index);
-    dpd_buf4_init(&Sijab, EOM_Sijab, irrep, 12, 17, 12, 17, 0, lbl);
+    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, irrep, 12, 17, 12, 17, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", index);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, irrep, 22, 28, 22, 28, 0, lbl);
 
     norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb);
 

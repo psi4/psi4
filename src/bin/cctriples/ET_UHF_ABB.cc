@@ -58,12 +58,12 @@ double ET_UHF_ABB(void)
   bocc_off = moinfo.bocc_off;
   bvir_off = moinfo.bvir_off;
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
-  dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_init(&fia, CC_OEI, 0, 2, 3, "fia");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_init(&fij);
   dpd_file2_mat_init(&fAB);
@@ -77,27 +77,27 @@ double ET_UHF_ABB(void)
   dpd_file2_mat_rd(&fIA);
   dpd_file2_mat_rd(&fia);
 
-  dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_file2_mat_init(&T1A);
   dpd_file2_mat_rd(&T1A);
-  dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+  dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
   dpd_file2_mat_init(&T1B);
   dpd_file2_mat_rd(&T1B);
 
-  dpd_buf4_init(&T2BB, CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-  dpd_buf4_init(&T2AB, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-  dpd_buf4_init(&T2BA, CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
+  dpd_buf4_init(&T2BB, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+  dpd_buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+  dpd_buf4_init(&T2BA, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
 
-  dpd_buf4_init(&FBBints, CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-  dpd_buf4_init(&FABints, CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
-  dpd_buf4_init(&FBAints, CC_FINTS, 0, 27, 29, 27, 29, 0, "F <iA|bC>");
+  dpd_buf4_init(&FBBints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
+  dpd_buf4_init(&FABints, PSIF_CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
+  dpd_buf4_init(&FBAints, PSIF_CC_FINTS, 0, 27, 29, 27, 29, 0, "F <iA|bC>");
 
-  dpd_buf4_init(&EBBints, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-  dpd_buf4_init(&EABints, CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
-  dpd_buf4_init(&EBAints, CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
+  dpd_buf4_init(&EBBints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
+  dpd_buf4_init(&EABints, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
+  dpd_buf4_init(&EBAints, PSIF_CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
 
-  dpd_buf4_init(&DBBints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-  dpd_buf4_init(&DABints, CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  dpd_buf4_init(&DBBints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+  dpd_buf4_init(&DABints, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
 
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2BB, h);

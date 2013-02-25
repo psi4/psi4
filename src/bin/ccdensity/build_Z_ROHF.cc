@@ -82,7 +82,7 @@ void build_Z_ROHF(void)
 
   /* Place all the elements of the orbital rotation gradient, X into a
      linear array, Z */
-  dpd_file2_init(&X1, CC_MISC, 0, 1, 0, "X(A,I)");
+  dpd_file2_init(&X1, PSIF_CC_MISC, 0, 1, 0, "X(A,I)");
   dpd_file2_mat_init(&X1);
   dpd_file2_mat_rd(&X1);
   num_ai = 0;
@@ -106,7 +106,7 @@ void build_Z_ROHF(void)
     C_DGEMV('n',num_ai, num_ai, 1.0, &(T[0][0]), num_ai, &(Z[0][0]), 1, 0.0, &(X[0][0]), 1);
 
   /* Now, grab only irrep 0 of the orbital Hessian */
-  dpd_buf4_init(&A, CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   dpd_buf4_mat_irrep_init(&A, 0);
   dpd_buf4_mat_irrep_rd(&A, 0);
 
@@ -145,7 +145,7 @@ void build_Z_ROHF(void)
 
   /* Build the orbital component of Dai --- we'll build these as separate
      spin cases for future simplicity (e.g., UHF-based codes)*/
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
   dpd_file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
@@ -158,7 +158,7 @@ void build_Z_ROHF(void)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
   dpd_file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++) 

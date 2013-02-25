@@ -1007,8 +1007,8 @@ namespace {
 
 } // end namespace
 
-TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, double schwarz)
-    : TwoBodyAOInt(integral, deriv)
+TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, bool use_shell_pairs)
+    : TwoBodyAOInt(integral, deriv), use_shell_pairs_(use_shell_pairs)
 {
     // Initialize libint static data
     init_libint_base();
@@ -1096,20 +1096,17 @@ TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, doubl
     }
     memset(source_, 0, sizeof(double)*size);
 
-    screen_ = false;
-    if (schwarz != 0.0)
-        schwarz2_ = schwarz*schwarz;
-    else
-        schwarz2_ = 0.0;
+    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
+        use_shell_pairs_ = false;
+    }
 
-    // Default to use shell pairs
-    use_shell_pairs_ = true;
-
-    // Precompute a bunch of information
-    init_shell_pairs12();
-    // If basis3 and basis4 equals basis1 and basis2, then the following function will do nothing,
-    // except assign pairs34_ to pairs12_
-    init_shell_pairs34();
+    if (use_shell_pairs_) {
+        // Precompute a bunch of information
+        init_shell_pairs12();
+        // If basis3 and basis4 equals basis1 and basis2, then the following function will do nothing,
+        // except assign pairs34_ to pairs12_
+        init_shell_pairs34();
+    }
 }
 
 TwoElectronInt::~TwoElectronInt()
@@ -1120,8 +1117,6 @@ TwoElectronInt::~TwoElectronInt()
     free_libint(&libint_);
     if (deriv_)
         free_libderiv(&libderiv_);
-    if (screen_)
-        free(schwarz_norm_);
     free_shell_pairs12();
     free_shell_pairs34();       // This shouldn't do anything, but this might change in the future
 }
@@ -1134,11 +1129,6 @@ void TwoElectronInt::init_shell_pairs12()
     size_t memd;
     double a1, a2, ab2, gam, c1, c2;
     double *curr_stack_ptr;
-
-    if (basis1() != basis2() || basis1() != basis3() || basis2() != basis4()) {
-        use_shell_pairs_ = false;
-        return;
-    }
 
     // Estimate memory needed by allocated space for the dynamically allocated parts of ShellPair structure
     memd = TwoElectronInt::memory_to_store_shell_pairs(basis1(), basis2());
@@ -1429,46 +1419,6 @@ void TwoElectronInt::compute_shell(const AOShellCombinationsIterator& shellIter)
 
 void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
 {
-    //SCHWARZ SIEVE
-    //Determines if shell needs to be computed.
-    //If false, places zeros in target_
-    //If true, standard algorithm continues
-    //
-    //NOTE: Schwarz Sieve only holds if all indices correspond to the same basis.
-    //A calling code may only access the schwarz screening functionality by literally
-    //specifying a cutoff index. This should only be done for ERIs all based on the same basis set
-    if (schwarz2_ != 0.0) {
-#ifdef MINTS_TIMER
-    timer_on("sieving");
-#endif
-
-        if (screen_ == false)
-            form_sieve();
-
-        if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_) {
-            size_t nfill = 1;
-
-            if (force_cartesian_) {
-                nfill *= bs1_->shell(sh1).ncartesian();
-                nfill *= bs2_->shell(sh2).ncartesian();
-                nfill *= bs3_->shell(sh3).ncartesian();
-                nfill *= bs4_->shell(sh4).ncartesian();
-            }
-            else {
-                nfill *= bs1_->shell(sh1).nfunction();
-                nfill *= bs2_->shell(sh2).nfunction();
-                nfill *= bs3_->shell(sh3).nfunction();
-                nfill *= bs4_->shell(sh4).nfunction();
-            }
-            memset(target_, 0, sizeof(double)*nfill);
-            return;
-        }
-#ifdef MINTS_TIMER
-    timer_off("sieving");
-#endif
-    }
-    //END OF SCHWARZ SIEVE
-
 #ifdef MINTS_TIMER
     timer_on("ERI::compute_shell");
 #endif
@@ -2535,71 +2485,4 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
     // Results are in source_
 }
 
-int TwoElectronInt::shell_is_zero(int sh1, int sh2, int sh3, int sh4)
-{
-    if (schwarz2_ != 0.0)
-        if (screen_ == false)
-        form_sieve();
-
-    //fprintf(outfile,"\nSchwarz val is %f",schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]);
-    if (screen_ == true)
-    {
-        if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
-        {
-            //fprintf(outfile," Shell (%d,%d|%d,%d) is zero",sh1,sh2,sh3,sh4);
-            return true;
-        }
-        else
-        {
-            //fprintf(outfile," Shell (%d,%d|%d,%d) is nonzero",sh1,sh2,sh3,sh4);
-            return false;
-        }
-    }
-    return false;
-}
-
-void TwoElectronInt::form_sieve()
-{
-    //fprintf(outfile,"Starting Sieve"); fflush(outfile);
-
-    int nshell = original_bs1_->nprimitive();
-    //fprintf(outfile,"Read"); fflush(outfile);
-    schwarz_norm_ = init_array(nshell*(nshell+1)/2);
-
-    double cut = schwarz2_;
-    schwarz2_ = 0.0;
-
-    double max;
-    int MU,NU,numMU,numNU,N,M, MN, ind;
-    for (MU = 0, MN = 0; MU < nshell; MU++) {
-        for (NU = 0; NU <= MU; NU++, MN++) {
-            compute_shell(MU,NU,MU,NU);
-
-            if (force_cartesian_) {
-                numMU = original_bs1_->shell(MU).ncartesian();
-                numNU = original_bs1_->shell(NU).ncartesian();
-            }
-            else {
-                numMU = original_bs1_->shell(MU).nfunction();
-                numNU = original_bs1_->shell(NU).nfunction();
-            }
-            max = 0.0;
-
-            for (M = 0, ind = 0; M<numMU*numMU; M++)
-                for (N = 0; N<numNU*numNU; N++, ind++)
-                    if (fabs(target_[ind])>max)
-                        max = fabs(target_[ind]);
-
-            schwarz_norm_[ioff[MU]+NU] = max;
-        }
-    }
-    schwarz2_ = cut;
-    screen_ = true;
-
-    //fprintf(outfile,"Norm:\n");
-    //for (int ij = 0; ij<nshell*(nshell+1)/2; ij++)
-    //fprintf(outfile,"%20.10f\n",schwarz_norm_[ij]);
-
-    //fprintf(outfile,"Iterations done\n"); fflush(outfile);
-}
 

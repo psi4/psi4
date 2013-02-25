@@ -44,20 +44,20 @@ void projections(struct L_Params *pL_params) {
   /* assumes that the excited-Rs are available */
 
   if (params.ref == 0) {
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
   }
   else if (params.ref == 1) {
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&T1B, CC_OEI, 0, 0, 1, "tia");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
   }
   else if (params.ref == 2) {
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
-    dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
   }
 
   for (i=1; i<params.nstates;++i) {
-    psio_close(CC_TMP, 0);
-    psio_open(CC_TMP, PSIO_OPEN_NEW);
+    psio_close(PSIF_CC_TMP, 0);
+    psio_open(PSIF_CC_TMP, PSIO_OPEN_NEW);
 
     IRR = pL_params[i].irrep;
     R0 = pL_params[i].R0;
@@ -75,15 +75,15 @@ void projections(struct L_Params *pL_params) {
     sprintf(L2AB_lbl2, "2LIjAb - LIjbA %d %d", IRR, root);
     
     if (params.ref == 0) {
-      dpd_file2_init(&L1A, CC_LAMPS, IRR, 0, 1, L1A_lbl);
+      dpd_file2_init(&L1A, PSIF_CC_LAMPS, IRR, 0, 1, L1A_lbl);
     }
     else if (params.ref == 1) {
-      dpd_file2_init(&L1A, CC_LAMPS, IRR, 0, 1, L1A_lbl);
-      dpd_file2_init(&L1B, CC_LAMPS, IRR, 0, 1, L1B_lbl);
+      dpd_file2_init(&L1A, PSIF_CC_LAMPS, IRR, 0, 1, L1A_lbl);
+      dpd_file2_init(&L1B, PSIF_CC_LAMPS, IRR, 0, 1, L1B_lbl);
     }
     else if (params.ref == 2) {
-      dpd_file2_init(&L1A, CC_LAMPS, IRR, 0, 1, L1A_lbl);
-      dpd_file2_init(&L1B, CC_LAMPS, IRR, 2, 3, L1B_lbl);
+      dpd_file2_init(&L1A, PSIF_CC_LAMPS, IRR, 0, 1, L1A_lbl);
+      dpd_file2_init(&L1B, PSIF_CC_LAMPS, IRR, 2, 3, L1B_lbl);
     }
 
     if (IRR == 0) {
@@ -98,90 +98,90 @@ void projections(struct L_Params *pL_params) {
 
       /* dot_L2T2 = <0|Lmnef Tmnef|0> */
       if (params.ref == 0) {
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
-        dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "2 tIjAb - tIjBa");
         dot_L2T2 = dpd_buf4_dot(&L2, &T2);
         dpd_buf4_close(&T2);
         dpd_buf4_close(&L2);
       }
       else if (params.ref == 1) {
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
-        dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
         dot_L2T2 = dpd_buf4_dot(&L2, &T2);
         dpd_buf4_close(&T2);
         dpd_buf4_close(&L2);
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2BB_lbl);
-        dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2BB_lbl);
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
         dot_L2T2 += dpd_buf4_dot(&L2, &T2);
         dpd_buf4_close(&T2);
         dpd_buf4_close(&L2);
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
-        dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+        dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         dot_L2T2 += dpd_buf4_dot(&L2, &T2);
         dpd_buf4_close(&T2);
         dpd_buf4_close(&L2);
       }
       else if (params.ref == 2) {
-       dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
-       dpd_buf4_init(&T2, CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+       dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
+       dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
        dot_L2T2 = dpd_buf4_dot(&L2, &T2);
        dpd_buf4_close(&T2);
        dpd_buf4_close(&L2);
-       dpd_buf4_init(&L2, CC_LAMPS, IRR, 12, 17, 12, 17, 0, L2BB_lbl);
-       dpd_buf4_init(&T2, CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+       dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 12, 17, 12, 17, 0, L2BB_lbl);
+       dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
        dot_L2T2 += dpd_buf4_dot(&L2, &T2);
        dpd_buf4_close(&T2);
        dpd_buf4_close(&L2);
-       dpd_buf4_init(&L2, CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
-       dpd_buf4_init(&T2, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+       dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
+       dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
        dot_L2T2 += dpd_buf4_dot(&L2, &T2);
        dpd_buf4_close(&T2);
        dpd_buf4_close(&L2);
      }
      /* dot_L2T1T1 = TNF (TME LMNEF) + Tnf (Tme Lmnef) + 2*Tnf(TME LMnEf)  */
      if (params.ref == 0) {
-        dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X(N,F)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X(N,F)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
         dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 = 2.0 * dpd_file2_dot(&T1A, &I1);
         dpd_file2_close(&I1);
      }
      else if (params.ref == 1) {
-        dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X(N,F)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X(N,F)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
         dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 = dpd_file2_dot(&T1A, &I1);
         dpd_file2_close(&I1);
-        dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X(n,f)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2BB_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X(n,f)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2BB_lbl);
         dpd_dot13(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 += dpd_file2_dot(&T1B, &I1);
         dpd_file2_close(&I1);
-        dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X(n,f)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X(n,f)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
         dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 += 2.0 * dpd_file2_dot(&T1B, &I1);
         dpd_file2_close(&I1);
       }
       else if (params.ref == 2) {
-        dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X(N,F)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X(N,F)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
         dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 = dpd_file2_dot(&T1A, &I1);
         dpd_file2_close(&I1);
-        dpd_file2_init(&I1, CC_TMP, IRR, 2, 3, "X(n,f)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 10, 15, 12, 17, 0, L2BB_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 2, 3, "X(n,f)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 10, 15, 12, 17, 0, L2BB_lbl);
         dpd_dot13(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 += dpd_file2_dot(&T1B, &I1);
         dpd_file2_close(&I1);
-        dpd_file2_init(&I1, CC_TMP, IRR, 2, 3, "X(n,f)");
-        dpd_buf4_init(&L2, CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
+        dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 2, 3, "X(n,f)");
+        dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
         dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
         dpd_buf4_close(&L2);
         dot_L2T1T1 += 2.0 * dpd_file2_dot(&T1B, &I1);
@@ -191,15 +191,15 @@ void projections(struct L_Params *pL_params) {
 
     /* open R files */
     if (params.ref == 0) {
-      dpd_file2_init(&R1A, CC_RAMPS, IRR, 0, 1, R1A_lbl);
+      dpd_file2_init(&R1A, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
     }
     else if (params.ref == 1) {
-      dpd_file2_init(&R1A, CC_RAMPS, IRR, 0, 1, R1A_lbl);
-      dpd_file2_init(&R1B, CC_RAMPS, IRR, 0, 1, R1B_lbl);
+      dpd_file2_init(&R1A, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
+      dpd_file2_init(&R1B, PSIF_CC_RAMPS, IRR, 0, 1, R1B_lbl);
     }
     else if (params.ref == 2) {
-      dpd_file2_init(&R1A, CC_RAMPS, IRR, 0, 1, R1A_lbl);
-      dpd_file2_init(&R1B, CC_RAMPS, IRR, 2, 3, R1B_lbl);
+      dpd_file2_init(&R1A, PSIF_CC_RAMPS, IRR, 0, 1, R1A_lbl);
+      dpd_file2_init(&R1B, PSIF_CC_RAMPS, IRR, 2, 3, R1B_lbl);
     }
 
     /* dot_L1R1 = Lme Rme */
@@ -213,42 +213,42 @@ void projections(struct L_Params *pL_params) {
 
     /* dot_L2R2 = <0|Lmnef Rmnef|0> */
     if (params.ref == 0) {
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 0, 5, 0, 5, 0, R2AB_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, R2AB_lbl);
       dot_L2R2 = dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
     }
     else if (params.ref == 1) {
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2AA_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2AA_lbl);
       dot_L2R2 = dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2BB_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2BB_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2BB_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2BB_lbl);
       dot_L2R2 += dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 0, 5, 0, 5, 0, R2AB_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 0, 5, 0, 5, 0, R2AB_lbl);
       dot_L2R2 += dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
     }
     else if (params.ref == 2) {
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2AA_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 2, 7, 2, 7, 0, L2AA_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 2, 7, 2, 7, 0, R2AA_lbl);
       dot_L2R2 = dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 12, 17, 12, 17, 0, L2BB_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 12, 17, 12, 17, 0, R2BB_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 12, 17, 12, 17, 0, L2BB_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 12, 17, 12, 17, 0, R2BB_lbl);
       dot_L2R2 += dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
-      dpd_buf4_init(&R2, CC_RAMPS, IRR, 22, 28, 22, 28, 0, R2AB_lbl);
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
+      dpd_buf4_init(&R2, PSIF_CC_RAMPS, IRR, 22, 28, 22, 28, 0, R2AB_lbl);
       dot_L2R2 += dpd_buf4_dot(&L2, &R2);
       dpd_buf4_close(&R2);
       dpd_buf4_close(&L2);
@@ -257,60 +257,60 @@ void projections(struct L_Params *pL_params) {
     /* dot_L2T1R1 = RNF (TME LMNEF) + Rnf (Tme Lmnef) */
     /*            + RNF (Tme LNmFe) + Rnf (TME LMnEf) */
     if (params.ref == 0) {
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(N,F)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl2);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(N,F)");
       dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 = 2.0 * dpd_file2_dot(&R1A, &I1);
       dpd_file2_close(&I1);
     }
     else if (params.ref == 1) {
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(N,F)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(N,F)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
       dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 = dpd_file2_dot(&R1A, &I1);
       dpd_file2_close(&I1);
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(n,f)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2BB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(n,f)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2BB_lbl);
       dpd_dot13(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1B, &I1);
       dpd_file2_close(&I1);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(N,F)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(N,F)");
       dpd_dot24(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1A, &I1);
       dpd_file2_close(&I1);
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(n,f)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(n,f)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 0, 5, 0, L2AB_lbl);
       dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1B, &I1);
       dpd_file2_close(&I1);
     }
     else if (params.ref == 2) {
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(N,F)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(N,F)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 0, 5, 2, 7, 0, L2AA_lbl);
       dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 = dpd_file2_dot(&R1A, &I1);
       dpd_file2_close(&I1);
-      dpd_file2_init(&I1, CC_TMP, IRR, 2, 3, "X2(n,f)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 10, 15, 12, 17, 0, L2BB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 2, 3, "X2(n,f)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 10, 15, 12, 17, 0, L2BB_lbl);
       dpd_dot13(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1B, &I1);
       dpd_file2_close(&I1);
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
-      dpd_file2_init(&I1, CC_TMP, IRR, 0, 1, "X2(N,F)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 0, 1, "X2(N,F)");
       dpd_dot24(&T1B, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1A, &I1);
       dpd_file2_close(&I1);
-      dpd_file2_init(&I1, CC_TMP, IRR, 2, 3, "X2(n,f)");
-      dpd_buf4_init(&L2, CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
+      dpd_file2_init(&I1, PSIF_CC_TMP, IRR, 2, 3, "X2(n,f)");
+      dpd_buf4_init(&L2, PSIF_CC_LAMPS, IRR, 22, 28, 22, 28, 0, L2AB_lbl);
       dpd_dot13(&T1A, &L2, &I1, 0, 0, 1.0, 0.0);
       dpd_buf4_close(&L2);
       dot_L2T1R1 += dpd_file2_dot(&R1B, &I1);

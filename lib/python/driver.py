@@ -93,6 +93,8 @@ procedures = {
             'uscf'          : run_scf,
             'roscf'         : run_scf,
             'df-scf'        : run_scf,
+            'qcisd'         : run_fnocc,
+            'qcisd(t)'      : run_fnocc,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -225,11 +227,15 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | bccd                    | Brueckner coupled cluster doubles (BCCD)                                              |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd                   | quadratic configuration interaction singles doubles (QCISD)                           |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc3                     | approximate coupled cluster singles, doubles, and triples (CC3)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd(t)                 | CCSD with perturbative triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | bccd(t)                 | BCCD with perturbative triples                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd(t)                | QCISD with perturbative triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -278,6 +284,8 @@ def energy(name, **kwargs):
     | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa0                   | coupled electron pair approximation, it is identical to linearized CCD                |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | gaussian-2 (g2)         | gaussian-2 composite method                                                           |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -728,7 +736,7 @@ def gradient(name, **kwargs):
 
         # Obtain the gradient
         PsiMod.fd_1_0(energies)
-
+        
         # The last item in the list is the reference energy, return it
         optstash.restore()
         return energies[-1]
@@ -954,7 +962,19 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
+    PsiMod.get_active_molecule().update_geometry()
+    mol = PsiMod.get_active_molecule()
+    mol.update_geometry()
+    initial_sym = mol.schoenflies_symbol()
     while n <= PsiMod.get_global_option('GEOM_MAXITER'):
+        mol = PsiMod.get_active_molecule()
+        mol.update_geometry()
+        current_sym = mol.schoenflies_symbol()
+        if initial_sym != current_sym:
+            raise Exception("Point group changed!  You should restart using " +\
+                            "the last geometry in the output, after carefully "+\
+                            "making sure all symmetry-dependent information in "+\
+                            "the input, such as DOCC, is correct.")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1017,7 +1037,6 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
-
         PsiMod.print_out('\n    Structure for next step:\n')
         PsiMod.get_active_molecule().print_in_input_format()
 
@@ -1029,6 +1048,7 @@ def optimize(name, **kwargs):
         n += 1
 
     PsiMod.print_out('\tOptimizer: Did not converge!')
+
     optstash.restore()
     return 0.0
 
@@ -1333,6 +1353,10 @@ def frequency(name, **kwargs):
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
+
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
+
         return energies[-1]
 
 ##  Aliases  ##

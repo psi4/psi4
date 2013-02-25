@@ -5,10 +5,12 @@
 */
 #include <cstdio>
 #include <fstream>
+#include <iostream>
 #include "globals.h"
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
+#include "exception.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
   #include <libparallel/parallel.h>
@@ -313,7 +315,7 @@ OptReturnType optking(void) {
         close_output_dat();
         return OptReturnEndloop;
       }
-cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
+std::cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
 //   TODO : could delete old opt_data entries
       //delete all entries but those on reaction path
       //assuming coord has already been incremented; is >=1
@@ -417,6 +419,11 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
     close_output_dat();
     return OptReturnSuccess;
   }
+#if defined (OPTKING_PACKAGE_PSI)
+  catch (psi::PsiException e){
+      fprintf(outfile,"\t%s", e.what());
+  }
+#endif
   catch (...) {
 #if defined (OPTKING_PACKAGE_QCHEM)
       QCrash("Exception thrown in optking() leading to abort.");

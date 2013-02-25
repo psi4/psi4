@@ -41,7 +41,7 @@ void analyze(void)
   nocc = moinfo.occpi[0];
   nso = moinfo.nso;
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_buf4_mat_irrep_init(&T2, 0);
   dpd_buf4_mat_irrep_rd(&T2, 0);
   T2trans = block_matrix(nocc*nocc, nso*nso);
@@ -97,7 +97,7 @@ void analyze(void)
   ffile(&efile, (char *) "t1amps.dat", 1);
   amp_array = init_array(num_div);
 
-  dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_file2_print(&T1, outfile);
   dpd_file2_mat_init(&T1);
   dpd_file2_mat_rd(&T1);

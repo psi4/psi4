@@ -26,11 +26,11 @@ void init_X(const char *pert, int irrep, double omega)
   dpdbuf4 X2, mu2;
 
   sprintf(lbl, "%sBAR_IA", pert);
-  dpd_file2_init(&mu1, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&mu1, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-  if(!params.restart || !psio_tocscan(CC_OEI, lbl)) {
-    dpd_file2_copy(&mu1, CC_OEI, lbl);
-    dpd_file2_init(&X1, CC_OEI, irrep, 0, 1, lbl);
+  if(!params.restart || !psio_tocscan(PSIF_CC_OEI, lbl)) {
+    dpd_file2_copy(&mu1, PSIF_CC_OEI, lbl);
+    dpd_file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
     if(params.local && local.filter_singles) local_filter_T1(&X1);
     else denom1(&X1, omega);
     dpd_file2_close(&X1);
@@ -39,11 +39,11 @@ void init_X(const char *pert, int irrep, double omega)
   dpd_file2_close(&mu1);
 
   sprintf(lbl, "%sBAR_IjAb", pert);
-  dpd_buf4_init(&mu2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  dpd_buf4_init(&mu2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
   sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-  if(!params.restart || !psio_tocscan(CC_LR, lbl)) {
-    dpd_buf4_copy(&mu2, CC_LR, lbl);
-    dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  if(!params.restart || !psio_tocscan(PSIF_CC_LR, lbl)) {
+    dpd_buf4_copy(&mu2, PSIF_CC_LR, lbl);
+    dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     if(params.local) local_filter_T2(&X2);
     else denom2(&X2, omega);
     dpd_buf4_close(&X2);

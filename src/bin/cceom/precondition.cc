@@ -32,7 +32,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
 
   dpd_file2_mat_init(RIA);
   dpd_file2_mat_rd(RIA);
-  dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+  dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
   dpd_file2_mat_init(&DIA);
   dpd_file2_mat_rd(&DIA);
   for(h=0; h < nirreps; h++)
@@ -49,9 +49,9 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
   dpd_file2_mat_init(Ria);
   dpd_file2_mat_rd(Ria);
   if (params.eom_ref == 1)
-    dpd_file2_init(&Dia, EOM_D, C_irr, 0, 1, "Dia");
+    dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 0, 1, "Dia");
   else if (params.eom_ref == 2)
-    dpd_file2_init(&Dia, EOM_D, C_irr, 2, 3, "Dia");
+    dpd_file2_init(&Dia, PSIF_EOM_D, C_irr, 2, 3, "Dia");
   dpd_file2_mat_init(&Dia);
   dpd_file2_mat_rd(&Dia);
   for(h=0; h < nirreps; h++)
@@ -66,7 +66,7 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
   dpd_file2_close(&Dia);
 
 
-  dpd_buf4_init(&DIJAB, EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
+  dpd_buf4_init(&DIJAB, PSIF_EOM_D, C_irr, 2, 7, 2, 7, 0, "DIJAB");
   for(h=0; h < RIJAB->params->nirreps; h++) {
     dpd_buf4_mat_irrep_init(RIJAB, h);
     dpd_buf4_mat_irrep_init(&DIJAB, h);
@@ -85,9 +85,9 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
 
 
   if (params.eom_ref == 1)
-    dpd_buf4_init(&Dijab, EOM_D, C_irr, 2, 7, 2, 7, 0, "Dijab");
+    dpd_buf4_init(&Dijab, PSIF_EOM_D, C_irr, 2, 7, 2, 7, 0, "Dijab");
   else if (params.eom_ref == 2)
-    dpd_buf4_init(&Dijab, EOM_D, C_irr, 12, 17, 12, 17, 0, "Dijab");
+    dpd_buf4_init(&Dijab, PSIF_EOM_D, C_irr, 12, 17, 12, 17, 0, "Dijab");
   for(h=0; h < Rijab->params->nirreps; h++) {
     dpd_buf4_mat_irrep_init(Rijab, h);
     dpd_buf4_mat_irrep_init(&Dijab, h);
@@ -106,9 +106,9 @@ void precondition(dpdfile2 *RIA, dpdfile2 *Ria,
 
 
   if (params.eom_ref == 1)
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
   else if (params.eom_ref == 2)
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 22, 28, 22, 28, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 22, 28, 22, 28, 0, "DIjAb");
   for(h=0; h < RIjAb->params->nirreps; h++) {
     dpd_buf4_mat_irrep_init(RIjAb, h);
     dpd_buf4_mat_irrep_init(&DIjAb, h);
@@ -153,13 +153,13 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
     local.pairdom_nrlen = init_int_array(nocc*nocc);
     local.eps_occ = init_array(nocc);
     local.weak_pairs = init_int_array(nocc*nocc);
-    psio_read_entry(CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
 		    nocc*nocc*sizeof(int));
-    psio_read_entry(CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *) local.pairdom_nrlen,
+    psio_read_entry(PSIF_CC_INFO, "Local Pair Domain Length (Non-redundant basis)", (char *) local.pairdom_nrlen,
 		    nocc*nocc*sizeof(int));
-    psio_read_entry(CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
 		    nocc*sizeof(double));
-    psio_read_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
+    psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
 		    nocc*nocc*sizeof(int));
 
     local.W = (double ***) malloc(nocc * nocc * sizeof(double **));
@@ -168,19 +168,19 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.eps_vir[ij] = init_array(local.pairdom_nrlen[ij]);
-      psio_read(CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
+      psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
 		local.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.V[ij] = block_matrix(nvir,local.pairdom_len[ij]);
-      psio_read(CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
+      psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
 		nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
     }
     next = PSIO_ZERO;
     for(ij=0; ij < nocc*nocc; ij++) {
       local.W[ij] = block_matrix(local.pairdom_len[ij],local.pairdom_nrlen[ij]);
-      psio_read(CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
+      psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
 		local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
     }
 
@@ -232,7 +232,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
   else {
     dpd_file2_mat_init(RIA);
     dpd_file2_mat_rd(RIA);
-    dpd_file2_init(&DIA, EOM_D, C_irr, 0, 1, "DIA");
+    dpd_file2_init(&DIA, PSIF_EOM_D, C_irr, 0, 1, "DIA");
     dpd_file2_mat_init(&DIA);
     dpd_file2_mat_rd(&DIA);
     for(h=0; h < nirreps; h++)
@@ -326,7 +326,7 @@ void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval)
   }
   else {
 
-    dpd_buf4_init(&DIjAb, EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
+    dpd_buf4_init(&DIjAb, PSIF_EOM_D, C_irr, 0, 5, 0, 5, 0, "DIjAb");
     for(h=0; h < RIjAb->params->nirreps; h++) {
       dpd_buf4_mat_irrep_init(RIjAb, h);
       dpd_buf4_mat_irrep_init(&DIjAb, h);

@@ -336,18 +336,19 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     # Write dftd3_geometry file that supplies geometry to dispersion calc
     geomfile = './dftd3_geometry.xyz'
     gfile = open(geomfile, 'w')
-    gfile.write('%d\n' % (self.natom()))
-    gfile.write(self.save_string_xyz())
+    numAtoms = self.natom()
+    geom = self.save_string_xyz()
+    reals = []
+    for line in geom.splitlines():
+      if line.split()[0] == 'Gh':
+        numAtoms -= 1
+      else:
+        reals.append(line)
+        
+    gfile.write(str(numAtoms)+'\n')
+    for line in reals:
+      gfile.write(line.strip()+'\n')
     gfile.close()
-    # TODO: either scram this procedure if ghost atoms are present or
-    #   update save_string_xyz to only print out reals. We've been having
-    #   it print Gh(N) or something but that's mostly b/c we've used xyzs
-    #   to carry geometry info where we should have been using Molecule.
-    #   Only printing reals is more compatible with visualization and dftd3 programs.
-    #   Also need to consider ghosts and gradients.
-    for line in self.save_string_xyz().splitlines():
-        if re.match('Gh ', line):
-            raise ValidationError('DFTD3 program is not compatible with ghost atoms.')
 
     # Call dftd3 program
     try:
@@ -372,9 +373,18 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     derivfile = './dftd3_gradient'
     dfile = open(derivfile, 'r')
     dashdderiv = []
-    for at in dfile.readlines():
-        dashdderiv.append([float(x.replace('D', 'E')) for x in at.split()])
+    i = 0
+    for line in geom.splitlines():
+      if i == 0:
+        i += 1
+      else:
+        if line.split()[0] == 'Gh':
+          dashdderiv.append([0.0, 0.0, 0.0])
+        else:
+          temp = dfile.readline()
+          dashdderiv.append([float(x.replace('D', 'E')) for x in temp.split()])
     dfile.close()
+
     if len(dashdderiv) != self.natom():
         raise ValidationError('Program dftd3 gradient file has %d atoms- %d expected.' % \
             (len(dashdderiv), self.natom()))

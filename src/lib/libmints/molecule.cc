@@ -639,28 +639,27 @@ int Molecule::nfrozen_core(const std::string& depth)
     if (local == "FALSE") {
         return 0;
     }
-    else if (local == "TRUE" || local == "SMALL") {
+    else if (local == "TRUE") {
         int nfzc = 0;
+        // Freeze the number of core electrons corresponding to the 
+        // nearest previous noble gas atom.  This means that the 4p block
+        // will still have 3d electrons active.  Alkali earth atoms will
+        // have one valence electron in this scheme.
         for (int A = 0; A < natom(); A++) {
-            if (Z(A) > 2 && Z(A) <= 10)
-                nfzc++;
-            else if (Z(A) > 10)
-                nfzc+=2;
-        }
-        return nfzc;
-    }
-    else if (local == "LARGE") {
-        int nfzc = 0;
-        for (int A = 0; A < natom(); A++) {
-            if (Z(A) > 2 && Z(A) <= 10)
-                nfzc++;
-            else if (Z(A) > 10)
-                nfzc+=5;
+            if (Z(A) > 2)  nfzc += 1;
+            if (Z(A) > 10) nfzc += 4;
+            if (Z(A) > 18) nfzc += 4;
+            if (Z(A) > 36) nfzc += 9;
+            if (Z(A) > 54) nfzc += 9;
+            if (Z(A) > 86) nfzc += 16;
+            if (Z(A) > 108) {
+                throw PSIEXCEPTION("Invalid atomic number"); 
+            }
         }
         return nfzc;
     }
     else {
-        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false, small, large}.");
+        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
     }
 }
 
@@ -972,6 +971,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     zVals.load_values();
     int currentAtom = 0, rTo, aTo, dTo;
     string atomSym, atomLabel;
+    bool zmatrix = false;
 
     std::vector<std::string>::iterator line = lines.begin();
     for(; line != lines.end(); ++line) {
@@ -1018,11 +1018,13 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
+            zmatrix = true;
             mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
                                                                                       an2masses[(int)zVal], atomSym, atomLabel)));
         }
         else if(numEntries == 3) {
             // This is the second line of a Z-Matrix
+            zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1038,6 +1040,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(numEntries == 5) {
             // This is the third line of a Z-Matrix
+            zmatrix = true;
             rTo = mol->get_anchor_atom(splitLine[1], *line);
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
@@ -1100,6 +1103,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         ++currentAtom;
     }
 
+    mol->set_has_zmatrix(zmatrix);
+
     if(pubcheminput)
         mol->symmetrize_to_abelian_group(1.0e-3);
 
@@ -1151,6 +1156,14 @@ void Molecule::reinterpret_coordentries()
         molecular_charge_ = temp_charge;
         multiplicity_ = temp_multiplicity;
     }
+
+    if(zmat_){
+        // Even if the user asked us to lock the frame, we should reorient here for zmatrices
+        SharedMatrix frame = symmetry_frame();
+        rotate_full(*frame.get());
+        move_to_com();
+    }
+
 }
 
 void Molecule::update_geometry()
@@ -1162,17 +1175,12 @@ void Molecule::update_geometry()
     if (lock_frame_) 
         return;
 
-//    fprintf(outfile, "beginning update_geometry:\n"); print_full();
 
     if (reinterpret_coordentries_)
         reinterpret_coordentries();
 
-//    fprintf(outfile, "after reinterpret_coordentries:\n"); print_full();
-
-    if (move_to_com_) {
+    if (move_to_com_)
         move_to_com();
-//        fprintf(outfile, "after com:\n"); print_full();
-    }
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
@@ -1183,19 +1191,14 @@ void Molecule::update_geometry()
         // the the user might have provided.
         SharedMatrix frame = symmetry_frame();
         rotate_full(*frame.get());
-//        fprintf(outfile, "after rotate:\n"); print_full();
     }
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
     set_full_point_group();
 
-    // Disabling symmetrize for now if orientation is fixed, as it is not correct.  We may want
-    // to fix this in the future, but in some cases of finite-differences the set geometry is not
-    // totally symmetric anyway.
-    //if (!fix_orientation_)
     symmetrize(); // Symmetrize the molecule to remove any noise.
-//    fprintf(outfile, "after symmetry:\n"); print_full();
+
     lock_frame_ = true;
 }
 
@@ -2421,8 +2424,11 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
                     err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
                            ") is not a subgroup of the highest detected point group (" <<
-                           PointGroup::bits_to_full_name(pg->bits()) << ")";
-                    throw PSIEXCEPTION(err.str());
+                           PointGroup::bits_to_full_name(pg->bits()) << "). " <<
+                           "If this is because the symmetry increased, try to start the calculation " <<
+                           "again from the last geometry, after checking any symmetry-dependent input, " <<
+                           "such as DOCC.";
+                    throw PSIEXCEPTION(err.str().c_str());
                 }
             }
 
@@ -2715,6 +2721,20 @@ double Molecule::fcharge(int atom) const
     return full_atoms_[atom]->charge();
 }
 
+int Molecule::true_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[atoms_[atom]->symbol()];
+}
+
+int Molecule::ftrue_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[full_atoms_[atom]->symbol()];
+}
+
 void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)
 {
     std::string uc = boost::to_upper_copy(name);
@@ -2845,19 +2865,19 @@ void Molecule::set_orientation_fixed(bool _fix) {
     if (_fix) {
         fix_orientation_ = true; // tells update_geometry() not to change orientation
 
-        // Compute original cartesian coordinates - code coped from update_geometry()
-        atoms_.clear();
-        EntryVectorIter iter;
-        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
-            (*iter)->invalidate();
+//        // Compute original cartesian coordinates - code coped from update_geometry()
+//        atoms_.clear();
+//        EntryVectorIter iter;
+//        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
+//            (*iter)->invalidate();
 
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-                full_atoms_[atom]->compute();
-                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-            }
-        }
+//        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+//            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+//                full_atoms_[atom]->compute();
+//                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+//                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+//            }
+//        }
     }
     else { // release orientation to be free
         fix_orientation_ = false;
