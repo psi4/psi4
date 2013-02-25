@@ -1,3 +1,4 @@
+#include <psi4-dec.h>
 #include <libparallel/parallel.h>
 #include <libparallel/openmp.h>
 

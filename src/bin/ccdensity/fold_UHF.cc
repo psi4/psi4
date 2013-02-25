@@ -68,16 +68,16 @@ void fold_UHF(struct RHO_Params rho_params)
   fprintf(outfile, "\n\tEnergies re-computed from Fock-adjusted CC density:\n");
   fprintf(outfile,   "\t---------------------------------------------------\n");
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 0, 0, "h(I,J)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
   /*  fprintf(outfile, "\tDIJ = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 2, 2, "h(i,j)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -85,8 +85,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDij = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 1, 1, "h(A,B)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -94,8 +94,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDAB = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 3, 3, "h(a,b)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -103,8 +103,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDab = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 0, 1, "h(I,A)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -112,8 +112,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDIA = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 2, 3, "h(i,a)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -121,8 +121,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDia = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 0, 1, "h(I,A)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -130,8 +130,8 @@ void fold_UHF(struct RHO_Params rho_params)
   /*  fprintf(outfile, "\tDAI = %20.15f\n", this_energy); */
   one_energy += this_energy;
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
-  dpd_file2_init(&F, CC_OEI, 0, 2, 3, "h(i,a)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
   this_energy = dpd_file2_dot(&D, &F);
   dpd_file2_close(&F);
   dpd_file2_close(&D);
@@ -142,11 +142,11 @@ void fold_UHF(struct RHO_Params rho_params)
   fprintf(outfile, "\tOne-electron energy        = %20.15f\n", one_energy);
   fflush(outfile);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 2, 2, 0, "GIJKL");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -180,7 +180,7 @@ void fold_UHF(struct RHO_Params rho_params)
   }
       
   two_energy = 0.0;
-  dpd_buf4_init(&Aints, CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
+  dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 0, 0, 0, 0, 1, "A <IJ|KL>");
   two_energy += 0.25 * dpd_buf4_dot(&Aints, &G);
   dpd_buf4_close(&Aints);
 
@@ -189,11 +189,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 10, 10, 12, 12, 0, "Gijkl");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 12, 12, 0, "Gijkl");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -226,7 +226,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&Aints, CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
+  dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 10, 10, 10, 10, 1, "A <ij|kl>");
   two_energy += 0.25 * dpd_buf4_dot(&Aints, &G);
   dpd_buf4_close(&Aints);
 
@@ -235,11 +235,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -272,11 +272,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 22, 22, 22, 0, "GIjKl");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -304,7 +304,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&Aints, CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
+  dpd_buf4_init(&Aints, PSIF_CC_AINTS, 0, 22, 22, 22, 22, 0, "A <Ij|Kl>");
   two_energy += dpd_buf4_dot(&Aints, &G);
   dpd_buf4_close(&Aints);
 
@@ -317,14 +317,14 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D1, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
   dpd_file2_mat_init(&D1);
   dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
   dpd_file2_mat_init(&D2);
   dpd_file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 0, 20, 2, 20, 0, "GIJKA");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 20, 2, 20, 0, "GIJKA");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -357,7 +357,7 @@ void fold_UHF(struct RHO_Params rho_params)
   }
 
   two_energy = 0.0;
-  dpd_buf4_init(&E, CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
   two_energy += dpd_buf4_dot(&E, &G);
   dpd_buf4_close(&E);
 
@@ -368,14 +368,14 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D2);
   dpd_file2_close(&D2);
 
-  dpd_file2_init(&D1, CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
   dpd_file2_mat_init(&D1);
   dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
   dpd_file2_mat_init(&D2);
   dpd_file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -406,7 +406,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_wrt(&G, h);
     dpd_buf4_mat_irrep_close(&G, h);
   }
-  dpd_buf4_init(&E, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
   two_energy += dpd_buf4_dot(&E, &G);
   dpd_buf4_close(&E);
 
@@ -417,14 +417,14 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D2);
   dpd_file2_close(&D2);
 
-  dpd_file2_init(&D1, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
   dpd_file2_mat_init(&D1);
   dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
   dpd_file2_mat_init(&D2);
   dpd_file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 23, 27, 23, 27, 0, "GiJkA");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 23, 27, 23, 27, 0, "GiJkA");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -453,7 +453,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&E, CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
   two_energy += 2 * dpd_buf4_dot(&E, &G);
   dpd_buf4_close(&E);
 
@@ -465,14 +465,14 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D2);
 
 
-  dpd_file2_init(&D1, CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+  dpd_file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
   dpd_file2_mat_init(&D1);
   dpd_file2_mat_rd(&D1);
-  dpd_file2_init(&D2, CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+  dpd_file2_init(&D2, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
   dpd_file2_mat_init(&D2);
   dpd_file2_mat_rd(&D2);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 24, 22, 24, 0, "GIjKa");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -501,7 +501,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&E, CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
+  dpd_buf4_init(&E, PSIF_CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
   two_energy += 2 * dpd_buf4_dot(&E, &G);
   dpd_buf4_close(&E);
 
@@ -517,21 +517,21 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D2);
 
   two_energy = 0.0;
-  dpd_buf4_init(&DInts, CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
+  dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
   two_energy += dpd_buf4_dot(&G, &DInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&DInts);
 
 
-  dpd_buf4_init(&DInts, CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 12, 17, 12, 17, 0, "Gijab");
+  dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 12, 17, 12, 17, 0, "Gijab");
   two_energy += dpd_buf4_dot(&G, &DInts); 
   dpd_buf4_close(&G);
   dpd_buf4_close(&DInts);
 
-  dpd_buf4_init(&DInts, CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");
+  dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 22, 28, 22, 28, 0, "GIjAb");
   two_energy += dpd_buf4_dot(&G, &DInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&DInts);
@@ -541,11 +541,11 @@ void fold_UHF(struct RHO_Params rho_params)
   fprintf(outfile, "\tIJAB energy                = %20.15f\n", two_energy);
   fflush(outfile);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 20, 20, 20, 20, 0, "GIBJA");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -574,7 +574,7 @@ void fold_UHF(struct RHO_Params rho_params)
   }
 
   two_energy = 0.0;
-  dpd_buf4_init(&C, CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA||JB>");
+  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 20, 20, 20, 20, 0, "C <IA||JB>");
   two_energy += dpd_buf4_dot(&C, &G);
   dpd_buf4_close(&C);
 
@@ -584,11 +584,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 30, 30, 30, 30, 0, "Gibja");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -616,7 +616,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&C, CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia||jb>");
+  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 30, 30, 30, 30, 0, "C <ia||jb>");
   two_energy += dpd_buf4_dot(&C, &G);
   dpd_buf4_close(&C);
 
@@ -626,11 +626,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 24, 24, 24, 24, 0, "GIbJa");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 24, 24, 24, 0, "GIbJa");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -658,7 +658,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&C, CC_CINTS, 0, 24, 24, 24, 24, 0, "C <Ia|Jb>");
+  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 24, 24, 24, 24, 0, "C <Ia|Jb>");
   two_energy += dpd_buf4_dot(&C, &G);
   dpd_buf4_close(&C);
 
@@ -668,11 +668,11 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
 
-  dpd_buf4_init(&G, CC_GAMMA, 0, 27, 27, 27, 27, 0, "GiBjA");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 27, 27, 27, 27, 0, "GiBjA");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&G, h);
     dpd_buf4_mat_irrep_rd(&G, h);
@@ -699,7 +699,7 @@ void fold_UHF(struct RHO_Params rho_params)
     dpd_buf4_mat_irrep_close(&G, h);
   }
 
-  dpd_buf4_init(&C, CC_CINTS, 0, 27, 27, 27, 27, 0, "C <iA|jB>");
+  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 27, 27, 27, 27, 0, "C <iA|jB>");
   two_energy += dpd_buf4_dot(&C, &G); 
   dpd_buf4_close(&C);
 
@@ -709,14 +709,14 @@ void fold_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
 
-  dpd_buf4_init(&DInts, CC_DINTS, 0, 24, 27, 24, 27, 0, "D <Ij|Ab> (Ib,jA)");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 24, 27, 24, 27, 0, "GIbjA");
+  dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 24, 27, 24, 27, 0, "D <Ij|Ab> (Ib,jA)");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 24, 27, 24, 27, 0, "GIbjA");
   two_energy -= dpd_buf4_dot(&G, &DInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&DInts);
 
-  dpd_buf4_init(&DInts, CC_DINTS, 0, 27, 24, 27, 24, 0, "D <iJ|aB> (iB,Ja)");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 27, 24, 27, 24, 0, "GiBJa");
+  dpd_buf4_init(&DInts, PSIF_CC_DINTS, 0, 27, 24, 27, 24, 0, "D <iJ|aB> (iB,Ja)");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 27, 24, 27, 24, 0, "GiBJa");
   two_energy -= dpd_buf4_dot(&G, &DInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&DInts);
@@ -727,26 +727,26 @@ void fold_UHF(struct RHO_Params rho_params)
 
   two_energy = 0.0;
 
-  dpd_buf4_init(&FInts, CC_FINTS, 0, 21, 7, 21, 5, 1, "F <AI|BC>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 21, 7, 21, 7, 0, "GCIAB");
+  dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 21, 7, 21, 5, 1, "F <AI|BC>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 21, 7, 21, 7, 0, "GCIAB");
   two_energy += dpd_buf4_dot(&G, &FInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&FInts);
 
-  dpd_buf4_init(&FInts, CC_FINTS, 0, 31, 17, 31, 15, 1, "F <ai|bc>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 31, 17, 31, 17, 0, "Gciab");
+  dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 31, 17, 31, 15, 1, "F <ai|bc>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 31, 17, 31, 17, 0, "Gciab");
   two_energy += dpd_buf4_dot(&G, &FInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&FInts);
 
-  dpd_buf4_init(&FInts, CC_FINTS, 0, 25, 29, 25, 29, 0, "F <aI|bC>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 25, 29, 25, 29, 0, "GcIaB");
+  dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 25, 29, 25, 29, 0, "F <aI|bC>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 25, 29, 25, 29, 0, "GcIaB");
   two_energy += dpd_buf4_dot(&G, &FInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&FInts);
 
-  dpd_buf4_init(&FInts, CC_FINTS, 0, 26, 28, 26, 28, 0, "F <Ai|Bc>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 26, 28, 26, 28, 0, "GCiAb");
+  dpd_buf4_init(&FInts, PSIF_CC_FINTS, 0, 26, 28, 26, 28, 0, "F <Ai|Bc>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 26, 28, 26, 28, 0, "GCiAb");
   two_energy += dpd_buf4_dot(&G, &FInts); 
   dpd_buf4_close(&G);
   dpd_buf4_close(&FInts);
@@ -758,20 +758,20 @@ void fold_UHF(struct RHO_Params rho_params)
 
   two_energy = 0.0;
 
-  dpd_buf4_init(&BInts, CC_BINTS, 0, 7, 7, 5, 5, 1, "B <AB|CD>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
+  dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 7, 7, 5, 5, 1, "B <AB|CD>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
   two_energy += dpd_buf4_dot(&G, &BInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&BInts);
 
-  dpd_buf4_init(&BInts, CC_BINTS, 0, 17, 17, 15, 15, 1, "B <ab|cd>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 17, 17, 17, 17, 0, "Gabcd");
+  dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 17, 17, 15, 15, 1, "B <ab|cd>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 17, 17, 17, 17, 0, "Gabcd");
   two_energy += dpd_buf4_dot(&G, &BInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&BInts);
 
-  dpd_buf4_init(&BInts, CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
-  dpd_buf4_init(&G, CC_GAMMA, 0, 28, 28, 28, 28, 0, "GAbCd");
+  dpd_buf4_init(&BInts, PSIF_CC_BINTS, 0, 28, 28, 28, 28, 0, "B <Ab|Cd>");
+  dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 28, 28, 28, 28, 0, "GAbCd");
   two_energy += dpd_buf4_dot(&G, &BInts);
   dpd_buf4_close(&G);
   dpd_buf4_close(&BInts);

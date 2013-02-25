@@ -32,11 +32,11 @@ static double new_d1diag_t1_rohf(void)
 
   nirreps = moinfo.nirreps;
 
-  dpd_file2_init(&T1_a, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1_a, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_file2_mat_init(&T1_a);
   dpd_file2_mat_rd(&T1_a);
       
-  dpd_file2_init(&T1_b, CC_OEI, 0, 0, 1, "tia");
+  dpd_file2_init(&T1_b, PSIF_CC_OEI, 0, 0, 1, "tia");
   dpd_file2_mat_init(&T1_b);
   dpd_file2_mat_rd(&T1_b);
 

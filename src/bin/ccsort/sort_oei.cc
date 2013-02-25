@@ -87,12 +87,12 @@ void sort_oei_uhf(void)
   filter(tmp_oei,b_oei,ioff,nmo,moinfo.nfzc,moinfo.nfzv);
   free(tmp_oei);
 
-  dpd_file2_init(&hIJ, CC_OEI, 0, 0, 0, "h(I,J)");
-  dpd_file2_init(&hij, CC_OEI, 0, 2, 2, "h(i,j)");
-  dpd_file2_init(&hAB, CC_OEI, 0, 1, 1, "h(A,B)");
-  dpd_file2_init(&hab, CC_OEI, 0, 3, 3, "h(a,b)");
-  dpd_file2_init(&hIA, CC_OEI, 0, 0, 1, "h(I,A)");
-  dpd_file2_init(&hia, CC_OEI, 0, 2, 3, "h(i,a)");
+  dpd_file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  dpd_file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
+  dpd_file2_init(&hAB, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
+  dpd_file2_init(&hab, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
+  dpd_file2_init(&hIA, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
+  dpd_file2_init(&hia, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
 
   dpd_file2_mat_init(&hIJ);
   dpd_file2_mat_init(&hij);
@@ -215,9 +215,9 @@ void sort_oei_rhf(void)
     print_array(oei, nactive, outfile);
   }
 
-  dpd_file2_init(&Hoo, CC_OEI, 0, 0, 0, "h(i,j)");
-  dpd_file2_init(&Hvv, CC_OEI, 0, 1, 1, "h(a,b)");
-  dpd_file2_init(&Hov, CC_OEI, 0, 0, 1, "h(i,a)");
+  dpd_file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+  dpd_file2_init(&Hvv, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+  dpd_file2_init(&Hov, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
 
   dpd_file2_mat_init(&Hoo);
   dpd_file2_mat_init(&Hvv);

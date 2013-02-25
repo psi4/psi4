@@ -23,9 +23,9 @@ void b_sort(void)
   /* B(+) = <ab|cd> + <ab|dc> */
   /* B(-) = <ab|cd> - <ab|dc> */
   if(params.ref == 0) { /* RHF references only */
-    dpd_buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
-    dpd_buf4_init(&B_s, CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
-    dpd_buf4_init(&B_a, CC_BINTS, 0, 9, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
+    dpd_buf4_init(&B, PSIF_CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+    dpd_buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+    dpd_buf4_init(&B_a, PSIF_CC_BINTS, 0, 9, 9, 9, 9, 0, "B(-) <ab|cd> - <ab|dc>");
     dpd_buf4_scm(&B_s, 0);
     dpd_buf4_scm(&B_a, 0);
     for(h=0; h < moinfo.nirreps; h++) {
@@ -101,7 +101,7 @@ void b_sort(void)
 
     /* Generate <ab|cc> components of B(+) */
     for(h=0,nvirt=0; h < moinfo.nirreps; h++) nvirt += moinfo.virtpi[h];
-    dpd_buf4_init(&B_s, CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
+    dpd_buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
 
     rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + nvirt);
     if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
@@ -122,7 +122,7 @@ void b_sort(void)
 	    cc = B_s.params->colidx[c][c];
 	    B_diag[ab][c] = B_s.matrix[0][ab][cc];
 	  }
-      psio_write(CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_per_bucket*nvirt*sizeof(double), next, &next);
+      psio_write(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_per_bucket*nvirt*sizeof(double), next, &next);
     }
     if(rows_left) {
       row_start = m * rows_per_bucket;
@@ -134,7 +134,7 @@ void b_sort(void)
 	    cc = B_s.params->colidx[c][c];
 	    B_diag[ab][c] = B_s.matrix[0][ab][cc];
 	  }
-      psio_write(CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_left*nvirt*sizeof(double), next, &next);
+      psio_write(PSIF_CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_left*nvirt*sizeof(double), next, &next);
     }
     dpd_free_block(B_diag, rows_per_bucket, nvirt);
     dpd_buf4_mat_irrep_close_block(&B_s, 0, rows_per_bucket);

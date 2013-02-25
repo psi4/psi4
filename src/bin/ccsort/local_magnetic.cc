@@ -41,7 +41,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
   /* grab the occupied MOs */
   next = PSIO_ZERO;
   C = block_matrix(moinfo.nso, moinfo.occpi[0]);
-  psio_read(CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) C[0],
+  psio_read(PSIF_CC_INFO, "RHF/ROHF Active Occupied Orbitals", (char *) C[0],
 	    nso*moinfo.occpi[0]*sizeof(double), next, &next);
 
   /* grab the usotao matrix */
@@ -76,7 +76,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
+    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_X_AI");
     dpd_file2_mat_init(&U);
     dpd_file2_mat_rd(&U);
 
@@ -170,7 +170,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
+    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Y_AI");
     dpd_file2_mat_init(&U);
     dpd_file2_mat_rd(&U);
 
@@ -263,7 +263,7 @@ void local_magnetic(const char *cart, int **domain, int *domain_len,
     C_DGEMM('n', 'n', nso, moinfo.occpi[0], nso, 1, &(TMP[0][0]), nao, &(C[0][0]), moinfo.occpi[0],
 	    0, &(L[0][0]), moinfo.occpi[0]);
 
-    dpd_file2_init(&U, CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
+    dpd_file2_init(&U, PSIF_CC_OEI, 0, 1, 0, "CPHF Ub_Z_AI");
     dpd_file2_mat_init(&U);
     dpd_file2_mat_rd(&U);
 
