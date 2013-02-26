@@ -173,9 +173,17 @@ Bibliography
    F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
    *J. Chem. Phys.* **132**, 074107 (2010).
 
-.. [Wennmohs:2008]
+.. [Wennmohs:2008:217]
    F. Wennmohs and F. Neese,
    *Chem. Phys.* **343**, 217-230 (2008).
+
+.. [DePrince:2013:293]
+   A. E. DePrince III and C. D. Sherrill,
+   *J. Chem. Theory Comput.* **9**, 293-299 (2013).
+
+.. [Pople:1987:5968]
+   J. A. Pople, M. Head-Gordon, and K. J. Raghavachari, 
+   *Chem. Phys.* **87**, 5968 (1987).
 
 .. [Sherrill:1998:od]
    C. D. Sherrill, A. I. Krylov, E. F. C. Byrd, and M. Head-Gordon,
