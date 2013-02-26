@@ -631,6 +631,10 @@ CPPFLAGS=$SAVE_CPPFLAGS
 
 AC_SUBST(have_boost)
 
+# Newer Boost implementations need to link librt on Linux
+BOOST_LDFLAGS=''
+AC_SEARCH_LIBS(clock_gettime, rt, BOOST_LDFLAGS='-lrt')
+
 if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
@@ -639,7 +643,6 @@ if test "x${have_boost}" == "x0"; then
     AC_SUBST(BOOSTVER)
 
     BOOST_CPPFLAGS='-I$(top_objdir)/boost/$(BOOSTVER)'
-    BOOST_LDFLAGS=''
     
     BOOST_FILESYSTEM_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_filesystem.a'
     BOOST_PYTHON_LIB='../../../boost/$(BOOSTVER)/bin.v2/libs/libboost_python.a'
