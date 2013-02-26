@@ -24,6 +24,7 @@ A complete list of standard keywords is provided in Appendix
    sapt
    cepa
    cc
+   fnocc
    psimrcc
    mrcc
    detci
