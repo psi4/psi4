@@ -2613,6 +2613,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Convergence for the CC energy.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-8);
+      /*- Convergence criterion for Breuckner orbitals. The convergence
+         is determined based on the largest $T_1$ amplitude. -*/
+      options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
+      /*- Maximum number of iterations for Brueckner orbitals optimization -*/
+      options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("R_CONVERGENCE", 1.0e-7);
@@ -2631,7 +2636,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
       /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
-          ( only valid if |qci__nat_orbs| = true ) -*/
+          ( only valid if |fnocc__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
@@ -2655,6 +2660,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
+
+      /*- Do use density fitting in CC? This keyword is used internally
+          by the driver. Changing its value will have no effect on the 
+          computation. -*/
+      options.add_bool("DFCC",false);
+      /*- Auxilliary basis for df-ccsd(t). -*/
+      options.add_str("DF_BASIS_CC","");
+      /*- tolerance for Cholesky decomposition of (vv|vv) -*/
+      options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
+      /*- do write (ov|vv) to disk for triples? valid for dfcc only-*/
+      options.add_bool("TRIPLES_ON_DISK",true);
   }
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. -*/

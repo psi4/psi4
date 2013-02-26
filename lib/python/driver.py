@@ -95,6 +95,8 @@ procedures = {
             'df-scf'        : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
+            'df-ccsd'       : run_fnodfcc,
+            'df-ccsd(t)'    : run_fnodfcc,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
