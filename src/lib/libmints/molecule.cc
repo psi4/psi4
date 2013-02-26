@@ -639,28 +639,27 @@ int Molecule::nfrozen_core(const std::string& depth)
     if (local == "FALSE") {
         return 0;
     }
-    else if (local == "TRUE" || local == "SMALL") {
+    else if (local == "TRUE") {
         int nfzc = 0;
+        // Freeze the number of core electrons corresponding to the 
+        // nearest previous noble gas atom.  This means that the 4p block
+        // will still have 3d electrons active.  Alkali earth atoms will
+        // have one valence electron in this scheme.
         for (int A = 0; A < natom(); A++) {
-            if (Z(A) > 2 && Z(A) <= 10)
-                nfzc++;
-            else if (Z(A) > 10)
-                nfzc+=2;
-        }
-        return nfzc;
-    }
-    else if (local == "LARGE") {
-        int nfzc = 0;
-        for (int A = 0; A < natom(); A++) {
-            if (Z(A) > 2 && Z(A) <= 10)
-                nfzc++;
-            else if (Z(A) > 10)
-                nfzc+=5;
+            if (Z(A) > 2)  nfzc += 1;
+            if (Z(A) > 10) nfzc += 4;
+            if (Z(A) > 18) nfzc += 4;
+            if (Z(A) > 36) nfzc += 9;
+            if (Z(A) > 54) nfzc += 9;
+            if (Z(A) > 86) nfzc += 16;
+            if (Z(A) > 108) {
+                throw PSIEXCEPTION("Invalid atomic number"); 
+            }
         }
         return nfzc;
     }
     else {
-        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false, small, large}.");
+        throw std::invalid_argument("Frozen core spec is not supported, options are {true, false}.");
     }
 }
 
@@ -2425,8 +2424,11 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
                     err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
                            ") is not a subgroup of the highest detected point group (" <<
-                           PointGroup::bits_to_full_name(pg->bits()) << ")";
-                    throw PSIEXCEPTION(err.str());
+                           PointGroup::bits_to_full_name(pg->bits()) << "). " <<
+                           "If this is because the symmetry increased, try to start the calculation " <<
+                           "again from the last geometry, after checking any symmetry-dependent input, " <<
+                           "such as DOCC.";
+                    throw PSIEXCEPTION(err.str().c_str());
                 }
             }
 
@@ -2717,6 +2719,20 @@ double Molecule::charge(int atom) const
 double Molecule::fcharge(int atom) const
 {
     return full_atoms_[atom]->charge();
+}
+
+int Molecule::true_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[atoms_[atom]->symbol()];
+}
+
+int Molecule::ftrue_atomic_number(int atom) const
+{
+    Element_to_Z Z;
+    Z.load_values();
+    return (int)Z[full_atoms_[atom]->symbol()];
 }
 
 void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)

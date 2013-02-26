@@ -54,16 +54,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
-  ``TRUE`` will default to freezing the standard default number of core orbitals.
-  For heavier elements, there can be some ambiguity in how many core
-  orbitals to freeze; in such cases, ``SMALL`` picks the most conservative
-  standard setting (freezes fewer orbitals), and ``LARGE`` picks the least
-  conservative standard setting (freezes more orbitals).  More precise
-  control over the number of frozen orbitals can be attained by using
-  the keywords |globals__num_frozen_docc| (gives the total number of orbitals to
-  freeze, program picks the lowest-energy orbitals) or |globals__frozen_docc| (gives
-  the number of orbitals to freeze per irreducible representation) -*/
-  options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
+  ``TRUE`` will default to freezing the standard default number of core 
+  orbitals.  For PSI, the standard number of core orbitals is the
+  number of orbitals in the nearest previous noble gas atom.
+  More precise control over the number of frozen orbitals can be attained 
+  by using the keywords |globals__num_frozen_docc| (gives the total number 
+  of orbitals to freeze, program picks the lowest-energy orbitals) 
+  or |globals__frozen_docc| (gives the number of orbitals to freeze per 
+  irreducible representation) -*/
+  options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
   /*- Do use pure angular momentum basis functions?
   If not explicitly set, the default comes from the basis set. -*/
@@ -735,7 +734,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The scope of core orbitals to freeze in evaluation of SAPT
     $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
     for all SAPT computations -*/
-    options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
+    options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE");
     /*- The amount of information to print to the output file for the sapt
     module. For 0, only the header and final results are printed. For 1,
     (recommended for large calculations) some intermediate quantities are also

@@ -738,7 +738,7 @@ def gradient(name, **kwargs):
 
         # Obtain the gradient
         PsiMod.fd_1_0(energies)
-
+        
         # The last item in the list is the reference energy, return it
         optstash.restore()
         return energies[-1]
@@ -964,7 +964,19 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
+    PsiMod.get_active_molecule().update_geometry()
+    mol = PsiMod.get_active_molecule()
+    mol.update_geometry()
+    initial_sym = mol.schoenflies_symbol()
     while n <= PsiMod.get_global_option('GEOM_MAXITER'):
+        mol = PsiMod.get_active_molecule()
+        mol.update_geometry()
+        current_sym = mol.schoenflies_symbol()
+        if initial_sym != current_sym:
+            raise Exception("Point group changed!  You should restart using " +\
+                            "the last geometry in the output, after carefully "+\
+                            "making sure all symmetry-dependent information in "+\
+                            "the input, such as DOCC, is correct.")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1027,7 +1039,6 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
-
         PsiMod.print_out('\n    Structure for next step:\n')
         PsiMod.get_active_molecule().print_in_input_format()
 
@@ -1039,6 +1050,7 @@ def optimize(name, **kwargs):
         n += 1
 
     PsiMod.print_out('\tOptimizer: Did not converge!')
+
     optstash.restore()
     return 0.0
 
@@ -1343,6 +1355,10 @@ def frequency(name, **kwargs):
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
+
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
+
         return energies[-1]
 
 ##  Aliases  ##
