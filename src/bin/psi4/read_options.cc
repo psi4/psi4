@@ -2607,8 +2607,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "FNOCC"|| options.read_globals()) {
       /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
-      /*- Do determine convergence based on energy alone? -*/
-      options.add_bool("CC_CONVERGE_E_ONLY",false);
       /*- Convergence for the CC energy.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-8);
@@ -2666,10 +2664,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
       options.add_str("DF_BASIS_CC","");
-      /*- tolerance for Cholesky decomposition of (vv|vv) -*/
+      /*- tolerance for Cholesky decomposition of the ERI tensor -*/
       options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
-      /*- do write (ov|vv) to disk for triples? valid for dfcc only-*/
-      options.add_bool("TRIPLES_ON_DISK",true);
   }
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. -*/
