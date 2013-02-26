@@ -681,8 +681,17 @@ to |PSIfour|::
     
     memory 2000000 Kb
 
-One convenient way to override the |PSIfour| default memory is to place a memory
-command in the |psirc| file, as detailed in Sec. :ref:`sec:psirc`.
+One convenient way to override the |PSIfour| default memory is to place a
+memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
+the following makes the default memory 2 Gb. However, unless you're
+assured of having only one job running on a node at a time (and all nodes
+on the filesystem with |psirc| have similar memory capacities), it is
+advised to set memory in the input file on a per-calculation basis.::
+
+    set_memory(2000000000)
+
+For parallel jobs, the ``memory`` keyword represents the total memory
+available to the job, *not* the memory per thread.
 
 .. _`sec:psiVariables`:
 
