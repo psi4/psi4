@@ -35,23 +35,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
-  optimized in MCSCF
-  This trumps |globals__num_frozen_docc|
-  This trumps |globals__freeze_core|
-  -*/
+  optimized in MCSCF. This trumps |globals__num_frozen_docc| and 
+  |globals__freeze_core|. -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
   irrep (these are not populated in a correlated wavefunction, nor can they be
-  optimized in MCSCF
-  This trumps |globals__num_frozen_uocc|
-  -*/
+  optimized in MCSCF.  This trumps |globals__num_frozen_uocc|. -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The number of core orbitals to freeze in later correlated computations.
-  This trumps |globals__freeze_core|
-  -*/
+  This trumps |globals__freeze_core|.  -*/
   options.add_int("NUM_FROZEN_DOCC", 0);
-  /*- The number of virtual orbitals to freeze in later correlated computations.
-  -*/
+  /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
   ``TRUE`` will default to freezing the standard default number of core 
