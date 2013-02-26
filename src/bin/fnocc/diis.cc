@@ -130,7 +130,7 @@ double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int i
   // return convergence
   return nrm;
 }
-void CoupledCluster::DIISNewAmplitudes(int diis_iter){
+void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
   long int o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
@@ -153,6 +153,7 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter){
   int max = diis_iter;
   if (max > maxdiis) max = maxdiis;
 
+  double min = 1.e9;
   for (long int j=1; j<=max; j++){
       addr = PSIO_ZERO;
       sprintf(oldvector,"oldvector%li",j);
@@ -160,6 +161,10 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter){
       F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
       psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
       F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
+      if ( fabs( diisvec[j-1] ) < min ) {
+          min = fabs( diisvec[j-1] );
+          replace_diis_iter = j;
+      }
   }
   psio->close(PSIF_DCC_OVEC,1);
   free(oldvector);

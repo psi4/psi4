@@ -13,14 +13,15 @@ namespace psi{
 namespace psi{namespace fnocc{
 
 // base class
-class FrozenNO : public Wavefunction{
+class FrozenNO : public Wavefunction {
   public:
     FrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options);
     ~FrozenNO();
 
     double compute_energy();
-    virtual bool same_a_b_orbs() const { return false; }
-    virtual bool same_a_b_dens() const { return false; }
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+    void ComputeNaturalOrbitals();
 
   protected:
 
@@ -29,10 +30,26 @@ class FrozenNO : public Wavefunction{
     long int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,nvirt_no;
 
     void common_init();
-    void ComputeNaturalOrbitals();
     void TransformIntegrals(double*Dab);
     void TransformOVOV();
 };
+class DFFrozenNO : public FrozenNO {
+  public:
+    DFFrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options);
+    ~DFFrozenNO();
+
+    double compute_energy();
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+    void ComputeNaturalOrbitals();
+
+  protected:
+
+    void ModifyCa(double*Dab);
+    void ModifyCa_occ(double*Dij);
+    void BuildFock(long int nQ,double*Qso,double*F);
+};
+
 }}
 
 #endif

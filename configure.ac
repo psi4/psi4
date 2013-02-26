@@ -1066,6 +1066,7 @@ AC_CONFIG_FILES([
           tests/fnocc1/Makefile
           tests/fnocc2/Makefile
           tests/fnocc3/Makefile
+          tests/fnocc4/Makefile
           tests/cepa1/Makefile
           tests/cepa2/Makefile
           tests/cepa3/Makefile

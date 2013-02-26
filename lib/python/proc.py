@@ -1931,6 +1931,59 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_fnodfcc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DF-CCSD(T) computation.
+
+    >>> energy('df-ccsd(t)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # stash user options
+    optstash = OptionsState(
+        ['FNOCC','COMPUTE_TRIPLES'],
+        ['FNOCC','DFCC'],
+        ['SCF','SCF_TYPE'])
+
+    PsiMod.set_local_option('FNOCC','DFCC', True)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
+
+    # override symmetry:
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+
+    # triples?
+    if (lowername == 'df-ccsd'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+    if (lowername == 'df-ccsd(t)'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+
+    # set scf-type to df unless the user wants something else
+    if PsiMod.has_option_changed('SCF','SCF_TYPE') == False:
+       PsiMod.set_local_option('SCF','SCF_TYPE', 'DF')
+
+
+    if PsiMod.get_option('FNOCC','DF_BASIS_CC') == '':
+       basis   = PsiMod.get_global_option('BASIS')
+       dfbasis = corresponding_rifit(basis)
+       PsiMod.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
+
+    scf_helper(name,**kwargs)
+    PsiMod.fnocc()
+
+    # restore options
+    optstash.restore()
+
+    return PsiMod.get_variable("CURRENT ENERGY")
+
 def run_fnocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a QCISD(T), CCSD(T), MP2.5, MP3, and MP4 computation.
@@ -1950,7 +2003,10 @@ def run_fnocc(name, **kwargs):
         ['FNOCC','RUN_CCSD'],
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
+        ['FNOCC','DFCC'],
         ['FNOCC','NAT_ORBS'])
+
+    PsiMod.set_local_option('FNOCC','DFCC', False)
 
     # override symmetry for fno-cc
     if (PsiMod.get_option('FNOCC','NAT_ORBS')):
