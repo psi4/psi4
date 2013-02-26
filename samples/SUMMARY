@@ -355,6 +355,9 @@ mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification,
 mints5:       Tests to determine full point group symmetry.  Currently, these only matter for the rotational symmetry number in thermodynamic computations.
 
 
+mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
+
+
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
 
 
@@ -502,6 +505,12 @@ pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Mol
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
 
 
+qci1:         Test QCISD(T) for H2O/cc-pvdz Energy
+
+
+qci2:         Test G2 method for H2O
+
+
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
 
@@ -530,6 +539,9 @@ sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the
 
 
 scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
+
+
+scf-guess-read:  Sample UHF/cc-pVDZ H2O computation on a doublet cation, using  RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
 
 
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
