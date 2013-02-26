@@ -385,7 +385,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   psio->close(PSIF_DCC_R2,1);
 
   if (t2_on_disk || options_.get_bool("NAT_ORBS")){
-     psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->write_entry(PSIF_DCC_T2,"t1",(char*)&tempt[0],o*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
@@ -2281,44 +2281,60 @@ void CoupledCluster::MP4_SDQ(){
   }
 
   if (mp4_only) {
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-     fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-     fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-     fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
-     fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
-     fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
-     fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
-     fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
-     fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
-     fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os/emp2_os_fac+emp3_os+emp4_sd_os+emp4_q_os);
-     fprintf(outfile,"        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss+emp4_sd_ss+emp4_q_os);
-     fprintf(outfile,"        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
-     fprintf(outfile,"      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
-     fprintf(outfile,"\n");
+      double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
+      double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
+      double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+ 
+      emp2 += delta_emp2;
+      emp2_os += delta_emp2_os;
+      emp2_ss += delta_emp2_ss;
+ 
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+      fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+      fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
+      fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
+      fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
+      fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
+      fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
+      fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
+      fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
+      fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_os/emp2_os_fac+emp3_os+emp4_sd_os+emp4_q_os);
+      fprintf(outfile,"        SS MP4(SDQ) correlation energy:  %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss+emp4_sd_ss+emp4_q_os);
+      fprintf(outfile,"        MP4(SDQ) correlation energy:     %20.12lf\n",emp2+emp3+emp4_sd+emp4_q);
+      fprintf(outfile,"      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
+      fprintf(outfile,"\n");
   }else if (mp3_only){
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
-     fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
-     fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
-     fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
-     fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
-     fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
-     fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
-     fprintf(outfile,"\n");
-     fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
-     fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
-     fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
-     fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
-     fprintf(outfile,"\n");
+      double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
+      double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
+      double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+ 
+      emp2 += delta_emp2;
+      emp2_os += delta_emp2_os;
+      emp2_ss += delta_emp2_ss;
+ 
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+      fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+      fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2);
+      fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2+escf);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP2.5 correlation energy:     %20.12lf\n",emp2_os/emp2_os_fac+0.5*emp3_os);
+      fprintf(outfile,"        SS MP2.5 correlation energy:     %20.12lf\n",emp2_ss/emp2_ss_fac+0.5*emp3_ss);
+      fprintf(outfile,"        MP2.5 correlation energy:        %20.12lf\n",emp2+0.5*emp3);
+      fprintf(outfile,"      * MP2.5 total energy:              %20.12lf\n",emp2+0.5*emp3+escf);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        OS MP3 correlation energy:       %20.12lf\n",emp2_os/emp2_os_fac+emp3_os);
+      fprintf(outfile,"        SS MP3 correlation energy:       %20.12lf\n",emp2_ss/emp2_ss_fac+emp3_ss);
+      fprintf(outfile,"        MP3 correlation energy:          %20.12lf\n",emp2+emp3);
+      fprintf(outfile,"      * MP3 total energy:                %20.12lf\n",emp2+emp3+escf);
+      fprintf(outfile,"\n");
   }else {
      // guess for cc/qci should be |1> + |2>
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
@@ -2599,11 +2615,11 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
       double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
 
-      emp2 += delta_emp2;
+      emp2    += delta_emp2;
       emp2_os += delta_emp2_os;
       emp2_ss += delta_emp2_ss;
 
-      eccsd += delta_emp2;
+      eccsd    += delta_emp2;
       eccsd_os += delta_emp2_os;
       eccsd_ss += delta_emp2_ss;
 
