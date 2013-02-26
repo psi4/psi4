@@ -2111,9 +2111,18 @@ def run_fnocc(name, **kwargs):
     if ( lowername == '_mp3' ):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
+    if ( lowername == 'fno-mp3' ):
+        PsiMod.set_variable("CURRENT ENERGY",emp3)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
     elif ( lowername == '_mp4(sdq)'):
         PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
+    elif ( lowername == 'fno-mp4(sdq)'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
+    elif ( lowername == 'fno-mp4'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
     elif ( lowername == '_mp4'):
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
