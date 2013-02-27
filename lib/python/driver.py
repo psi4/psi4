@@ -70,6 +70,7 @@ procedures = {
             'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
+            'detci-mp'      : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
             'cisd'          : run_detci,
             'cisdt'         : run_detci,
@@ -107,6 +108,7 @@ procedures = {
             'df-ccsd(t)'    : run_fnodfcc,
             'fno-df-ccsd'   : run_fnodfcc,
             'fno-df-ccsd(t)': run_fnodfcc,
+            'fnocc-mp'      : run_fnocc,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -1129,6 +1131,16 @@ def parse_arbitrary_order(name):
             # Let 'mp2' pass through as itself
             if (namestump == 'mp') and (namelevel == 2):
                 return namelower, None
+            elif (namestump == 'mp') and (namelevel == 3):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 3
+                else:
+                    return 'detci-mp', 3
+            elif (namestump == 'mp') and (namelevel == 4):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 4
+                else:
+                    return 'detci-mp', 4
             # Otherwise return method and order
             else:
                 return namestump, namelevel

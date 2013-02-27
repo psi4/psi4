@@ -2000,6 +2000,7 @@ def run_fnocc(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
+    level = kwargs['level']
 
     # stash user options:
     optstash = OptionsState(
@@ -2071,6 +2072,12 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'fnocc-mp') and (level == 3):
+        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
+    elif (lowername == 'fnocc-mp') and (level == 4):
+        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
 
     # override symmetry for fno-cc
     if (PsiMod.get_option('FNOCC','NAT_ORBS')):
