@@ -95,6 +95,7 @@ procedures = {
             'df-scf'        : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
+            'mp4(sdq)'      : run_fnocc,
             'fno-ccsd'      : run_fnocc,
             'fno-ccsd(t)'   : run_fnocc,
             'fno-qcisd'     : run_fnocc,

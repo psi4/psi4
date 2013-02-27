@@ -2062,7 +2062,7 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == '_mp4(sdq)'):
+    elif (lowername == 'mp4(sdq)'):
         PsiMod.set_local_option('FNOCC','RUN_MP4', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
@@ -2114,7 +2114,7 @@ def run_fnocc(name, **kwargs):
     if ( lowername == 'fno-mp3' ):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
-    elif ( lowername == '_mp4(sdq)'):
+    elif ( lowername == 'mp4(sdq)'):
         PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
     elif ( lowername == 'fno-mp4(sdq)'):

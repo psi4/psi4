@@ -2281,13 +2281,20 @@ void CoupledCluster::MP4_SDQ(){
   }
 
   if (mp4_only) {
-      double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
-      double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
-      double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+      if ( options_.get_bool("NAT_ORBS") ) {
+          double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
+          double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
+          double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
  
-      emp2 += delta_emp2;
-      emp2_os += delta_emp2_os;
-      emp2_ss += delta_emp2_ss;
+          emp2 += delta_emp2;
+          emp2_os += delta_emp2_os;
+          emp2_ss += delta_emp2_ss;
+
+          fprintf(outfile,"\n");
+          fprintf(outfile,"        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
+          fprintf(outfile,"        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
+          fprintf(outfile,"        MP2 FNO correction:             %20.12lf\n",delta_emp2);
+      }
  
       fprintf(outfile,"\n");
       fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
@@ -2311,13 +2318,20 @@ void CoupledCluster::MP4_SDQ(){
       fprintf(outfile,"      * MP4(SDQ) total energy:           %20.12lf\n",emp2+emp3+emp4_sd+emp4_q+escf);
       fprintf(outfile,"\n");
   }else if (mp3_only){
-      double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
-      double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
-      double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+      if ( options_.get_bool("NAT_ORBS") ) {
+          double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
+          double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
+          double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
  
-      emp2 += delta_emp2;
-      emp2_os += delta_emp2_os;
-      emp2_ss += delta_emp2_ss;
+          emp2 += delta_emp2;
+          emp2_os += delta_emp2_os;
+          emp2_ss += delta_emp2_ss;
+
+          fprintf(outfile,"\n");
+          fprintf(outfile,"        OS MP2 FNO correction:          %20.12lf\n",delta_emp2_os);
+          fprintf(outfile,"        SS MP2 FNO correction:          %20.12lf\n",delta_emp2_ss);
+          fprintf(outfile,"        MP2 FNO correction:             %20.12lf\n",delta_emp2);
+      }
  
       fprintf(outfile,"\n");
       fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
