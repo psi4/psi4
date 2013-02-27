@@ -213,7 +213,9 @@ Supported methods
 
 The various methods supported by the FNOCC module in |Psifour| are detailed
 in Table :ref:`FNOCC Methods <table:fnocc_methods>`.  Note that these methods
-are implemented for closed-shell references only.
+are implemented for closed-shell references only.  For open-shell references,
+the calls ``energy('mp2.5')``, ``energy('mp3')``, and ``energy('mp4')`` will
+default to the :ref:`DETCI <sec:ci>` implementations of these methods.
 
     .. _`table:fnocc_methods`:
 
