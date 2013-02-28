@@ -1094,7 +1094,7 @@ def run_detci(name, **kwargs):
             PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
             PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif (name.lower() == 'detci-mp'):
+    elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
         PsiMod.set_local_option('DETCI', 'MPN', 'TRUE')
