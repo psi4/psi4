@@ -572,7 +572,7 @@ def process_input(raw_input, print_level=1):
     #   your data is in capture group #3
 
     # Nuke all comments
-    comment = re.compile(r'#.*')
+    comment = re.compile(r'[^\\]#.*')
     temp = re.sub(comment, '', raw_input)
 
     # Check the brackets and parentheses match up, as long as this is not a pickle input file
