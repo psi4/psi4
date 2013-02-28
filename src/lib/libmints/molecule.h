@@ -589,7 +589,7 @@ public:
     /// Fix the orientation at its current frame
     void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix;}
     /// Fix the center of mass at its current frame
-    void set_com_fixed(bool fix = false) {move_to_com_ = fix;}
+    void set_com_fixed(bool fix = true) {move_to_com_ = !fix;}
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group
