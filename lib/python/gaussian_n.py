@@ -85,14 +85,14 @@ def run_gaussian_2(name, **kwargs):
 
     # correction for diffuse functions
     PsiMod.set_global_option('BASIS',"6-311+G(D_P)")
-    run_fnocc('_mp4',**kwargs)
+    energy('mp4')
     emp4_6311pg_dp = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp2_6311pg_dp = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
 
     # correction for polarization functions
     PsiMod.set_global_option('BASIS',"6-311G(2DF_P)")
-    run_fnocc('_mp4',**kwargs)
+    energy('mp4')
     emp4_6311g2dfp = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp2_6311g2dfp = PsiMod.get_variable("MP2 TOTAL ENERGY")
     PsiMod.clean()
