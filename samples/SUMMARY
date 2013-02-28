@@ -316,6 +316,18 @@ fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4
 fd-gradient:  SCF STO-3G finite-difference tests
 
 
+fnocc1:       Test QCISD(T) for H2O/cc-pvdz Energy
+
+
+fnocc2:       Test G2 method for H2O
+
+
+fnocc3:       Test FNO-QCISD(T) computation
+
+
+fnocc4:       Test FNO-DF-CCSD(T) energy
+
+
 frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
 
 
@@ -503,12 +515,6 @@ pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Mol
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
-
-
-qci1:         Test QCISD(T) for H2O/cc-pvdz Energy
-
-
-qci2:         Test G2 method for H2O
 
 
 rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
