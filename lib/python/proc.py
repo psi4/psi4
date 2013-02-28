@@ -2122,6 +2122,10 @@ def run_mrcc(name, **kwargs):
     # Save current directory location
     current_directory = os.getcwd()
 
+    # Find environment by merging PSIPATH and PATH environment variables
+    lenv = os.environ
+    lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
+
     # Need to move to the scratch directory, perferrably into a separate directory in that location
     psi_io = psi4.IOManager.shared_object()
     os.chdir(psi_io.get_default_path())
@@ -2166,9 +2170,9 @@ def run_mrcc(name, **kwargs):
     # Call dmrcc, directing all screen output to the output file
     try:
         if psi4.outfile_name() == 'stdout':
-            retcode = subprocess.call('dmrcc', shell=True)
+            retcode = subprocess.call('dmrcc', shell=True, env=lenv)
         else:
-            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True)
+            retcode = subprocess.call('dmrcc >> ' + current_directory + '/' + psi4.outfile_name(), shell=True, env=lenv)
 
         if retcode < 0:
             print('MRCC was terminated by signal %d' % -retcode, file=sys.stderr)

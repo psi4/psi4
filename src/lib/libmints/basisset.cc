@@ -28,6 +28,7 @@
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
+#include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
@@ -452,7 +453,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     mol->update_geometry();
 
     // For each one try to load the basis set
-    const list<string>& user_list = Process::environment.user_basis_files;
+    list<string>& user_list = Process::environment.user_basis_files;
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
@@ -479,14 +480,29 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
-         bool not_found = true;
+//fprintf(outfile, "Working on basis %s\n", basis.first.c_str());
+        bool not_found = true;
+        user_list.clear();
+        std::string psiPath = Process::environment("PSIPATH") + ":./";
+        boost::char_separator<char> sep(":");
+        typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
+        tokenizer tokens(psiPath, sep);
+        for( tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter) {
+            std::string psiPathWithBasis = *tok_iter + "/" + BasisSet::make_filename(basis.first);
+//fprintf(outfile, "file %s\n", psiPathWithBasis.c_str());
+            try {
+                parser->load_file(psiPathWithBasis); 
+                user_list.push_front(psiPathWithBasis.c_str());
+            }
+            catch (BasisSetFileNotFound& e) {}
+        }   
 
         BOOST_FOREACH(string user_file, user_list)
         {
             boost::filesystem::path bf_path;
             bf_path = boost::filesystem::system_complete(user_file);
             // Load in the basis set and remove it from atomsymbol_to_basisname
-            vector<string> file = parser->load_file(bf_path.string(), basis.first);
+            vector<string> file = parser->load_file(bf_path.string());
 
             BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
                 string symbol = atom.first;
