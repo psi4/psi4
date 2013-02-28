@@ -587,9 +587,9 @@ public:
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
     /// Fix the orientation at its current frame
-    void set_orientation_fixed(bool _fix = true);
+    void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix;}
     /// Fix the center of mass at its current frame
-    void set_com_fixed(bool _fix = true);
+    void set_com_fixed(bool fix = false) {move_to_com_ = fix;}
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group

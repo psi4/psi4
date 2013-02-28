@@ -2861,29 +2861,6 @@ std::string Molecule::schoenflies_symbol() const
     return point_group()->symbol();
 }
 
-void Molecule::set_orientation_fixed(bool _fix) {
-    if (_fix) {
-        fix_orientation_ = true; // tells update_geometry() not to change orientation
-
-//        // Compute original cartesian coordinates - code coped from update_geometry()
-//        atoms_.clear();
-//        EntryVectorIter iter;
-//        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
-//            (*iter)->invalidate();
-
-//        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-//            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-//                full_atoms_[atom]->compute();
-//                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-//                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-//            }
-//        }
-    }
-    else { // release orientation to be free
-        fix_orientation_ = false;
-    }
-}
-
 // RAK, 4-2012, return true if all atoms correctly map onto other atoms
 bool Molecule::valid_atom_map(double tol) const {
     double np[3];
@@ -2912,30 +2889,6 @@ bool Molecule::valid_atom_map(double tol) const {
     return true;
 }
 
-// we may not need this capability
-void Molecule::set_com_fixed(bool _fix) {
-
-    if (_fix) {
-        move_to_com_ = false; // tells update_geometry() not to shift
-
-        // Compute original cartesian coordinates - code coped from update_geometry()
-        atoms_.clear();
-        EntryVectorIter iter;
-        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
-            (*iter)->invalidate();
-
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-                full_atoms_[atom]->compute();
-                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-            }
-        }
-    }
-    else { // release com to be shifted
-        move_to_com_ = true;
-    }
-}
 
 // These two declarations are left here as it's not clear that anyone else will use them:
 

@@ -339,7 +339,7 @@ void export_mints()
             def("name", &Molecule::name, "Gets molecule name").
             def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry, "Do reinterpret coordinate entries during update_geometry().").
             def("fix_orientation", &Molecule::set_orientation_fixed, "Fix the orientation at its current frame").
-            //def("fix_com", &Molecule::set_com_fixed).
+            def("fix_com", &Molecule::set_com_fixed, "Whether to fix the Cartesian position, or to translate to the C.O.M.").
             def("init_with_checkpoint", &Molecule::init_with_chkpt, "Populate arg1 member data with information from checkpoint file arg2").
             def("save_to_checkpoint", &Molecule::save_to_chkpt, "Saves molecule information to checkpoint file arg2 with prefix arg3").
             def("init_with_io", &Molecule::init_with_psio, "Creates a new checkpoint file with information from arg2").
