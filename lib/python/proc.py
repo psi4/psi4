@@ -2000,7 +2000,11 @@ def run_fnocc(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
-    level = kwargs['level']
+    if 'level' in kwargs:
+        level = kwargs['level']
+    else:
+        level = 0
+      
 
     # stash user options:
     optstash = OptionsState(
@@ -2023,7 +2027,7 @@ def run_fnocc(name, **kwargs):
     elif (lowername == '_ccsd(t)'):
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
-    if (lowername == 'fno-ccsd'):
+    elif (lowername == 'fno-ccsd'):
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
         PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
@@ -2047,17 +2051,9 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
     elif (lowername == '_mp2'):
         PsiMod.set_local_option('FNOCC','RUN_MP2', True)
-    elif (lowername == '_mp2.5'):
-        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
-    elif (lowername == '_mp3'):
-        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
     elif (lowername == 'fno-mp3'):
         PsiMod.set_local_option('FNOCC','RUN_MP3', True)
         PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
-    elif (lowername == '_mp4'):
-        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
-        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
-        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
     elif (lowername == 'fno-mp4'):
         PsiMod.set_local_option('FNOCC','RUN_MP4', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
@@ -2086,7 +2082,6 @@ def run_fnocc(name, **kwargs):
         molecule.reset_point_group('c1')
 
     # throw an exception for open-shells
-    # TODO: for mp2.5, mp3, and mp4, should pass the buck to detci
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
@@ -2107,18 +2102,16 @@ def run_fnocc(name, **kwargs):
     PsiMod.fnocc()
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    emp2     = PsiMod.get_variable("MP2 TOTAL ENERGY")
     emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
     emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
-    cemp2    = PsiMod.get_variable("MP2 CORRELATION ENERGY")
     cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
     cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
     cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
-    if ( lowername == '_mp3' ):
+    if (lowername == 'fnocc-mp') and (level == 3):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
-    if ( lowername == 'fno-mp3' ):
+    elif ( lowername == 'fno-mp3' ):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
     elif ( lowername == 'mp4(sdq)'):
@@ -2130,12 +2123,9 @@ def run_fnocc(name, **kwargs):
     elif ( lowername == 'fno-mp4'):
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-    elif ( lowername == '_mp4'):
+    elif (lowername == 'fnocc-mp') and (level == 4):
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-    elif ( lowername == '_mp2.5'):
-        PsiMod.set_variable("CURRENT ENERGY",0.5*(emp2+emp3))
-        PsiMod.set_variable("CURRENT CORRELATION ENERGY",0.5*(cemp2+cemp3))
 
     # restore options
     optstash.restore()
