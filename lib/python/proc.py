@@ -1094,7 +1094,7 @@ def run_detci(name, **kwargs):
             PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 2)
         else:
             PsiMod.set_local_option('DETCI', 'MPN_ORDER_SAVE', 1)
-    elif (name.lower() == 'mp'):
+    elif (name.lower() == 'detci-mp') or (name.lower() == 'mp'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'DETCI')
         PsiMod.set_local_option('DETCI', 'WFN', 'DETCI')
         PsiMod.set_local_option('DETCI', 'MPN', 'TRUE')
@@ -1931,6 +1931,66 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+def run_fnodfcc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DF-CCSD(T) computation.
+
+    >>> energy('df-ccsd(t)')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # stash user options
+    optstash = OptionsState(
+        ['FNOCC','COMPUTE_TRIPLES'],
+        ['FNOCC','DFCC'],
+        ['FNOCC','NAT_ORBS'],
+        ['SCF','SCF_TYPE'])
+
+    PsiMod.set_local_option('FNOCC','DFCC', True)
+
+    # throw an exception for open-shells
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
+
+    # override symmetry:
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
+
+    # triples?
+    if (lowername == 'df-ccsd'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+    if (lowername == 'df-ccsd(t)'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+    if (lowername == 'fno-df-ccsd'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    if (lowername == 'fno-df-ccsd(t)'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+
+    # set scf-type to df unless the user wants something else
+    if PsiMod.has_option_changed('SCF','SCF_TYPE') == False:
+       PsiMod.set_local_option('SCF','SCF_TYPE', 'DF')
+
+
+    if PsiMod.get_option('FNOCC','DF_BASIS_CC') == '':
+       basis   = PsiMod.get_global_option('BASIS')
+       dfbasis = corresponding_rifit(basis)
+       PsiMod.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
+
+    scf_helper(name,**kwargs)
+    PsiMod.fnocc()
+
+    # restore options
+    optstash.restore()
+
+    return PsiMod.get_variable("CURRENT ENERGY")
+
 def run_fnocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a QCISD(T), CCSD(T), MP2.5, MP3, and MP4 computation.
@@ -1940,6 +2000,11 @@ def run_fnocc(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
+    if 'level' in kwargs:
+        level = kwargs['level']
+    else:
+        level = 0
+      
 
     # stash user options:
     optstash = OptionsState(
@@ -1950,13 +2015,10 @@ def run_fnocc(name, **kwargs):
         ['FNOCC','RUN_CCSD'],
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
+        ['FNOCC','DFCC'],
         ['FNOCC','NAT_ORBS'])
 
-    # override symmetry for fno-cc
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule = PsiMod.get_active_molecule()
-        molecule.update_geometry()
-        molecule.reset_point_group('c1')
+    PsiMod.set_local_option('FNOCC','DFCC', False)
 
     # which method?
     if (lowername == '_ccsd'):
@@ -1965,33 +2027,63 @@ def run_fnocc(name, **kwargs):
     elif (lowername == '_ccsd(t)'):
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
-    if (lowername == 'qcisd'):
+    elif (lowername == 'fno-ccsd'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'fno-ccsd(t)'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', True)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'qcisd'):
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
     elif (lowername == 'qcisd(t)'):
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
+    elif (lowername == 'fno-qcisd'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'fno-qcisd(t)'):
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+        PsiMod.set_local_option('FNOCC','RUN_CCSD', False)
     elif (lowername == '_mp2'):
         PsiMod.set_local_option('FNOCC','RUN_MP2', True)
-    elif (lowername == '_mp2.5'):
+    elif (lowername == 'fno-mp3'):
         PsiMod.set_local_option('FNOCC','RUN_MP3', True)
-    elif (lowername == '_mp3'):
-        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
-    elif (lowername == '_mp4'):
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'fno-mp4'):
         PsiMod.set_local_option('FNOCC','RUN_MP4', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-    elif (lowername == '_mp4(sdq)'):
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'mp4(sdq)'):
         PsiMod.set_local_option('FNOCC','RUN_MP4', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+    elif (lowername == 'fno-mp4(sdq)'):
+        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+    elif (lowername == 'fnocc-mp') and (level == 3):
+        PsiMod.set_local_option('FNOCC','RUN_MP3', True)
+    elif (lowername == 'fnocc-mp') and (level == 4):
+        PsiMod.set_local_option('FNOCC','RUN_MP4', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+
+    # override symmetry for fno-cc
+    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
+        molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+        molecule.reset_point_group('c1')
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
-        PsiMod.print_out("\n")
-        PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
-        PsiMod.print_out("\n")
-        sys.exit(1)
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     # scf
     scf_helper(name,**kwargs)
@@ -2010,26 +2102,30 @@ def run_fnocc(name, **kwargs):
     PsiMod.fnocc()
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    emp2     = PsiMod.get_variable("MP2 TOTAL ENERGY")
     emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
     emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
     emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
-    cemp2    = PsiMod.get_variable("MP2 CORRELATION ENERGY")
     cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
     cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
     cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
-    if ( lowername == '_mp3' ):
+    if (lowername == 'fnocc-mp') and (level == 3):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
-    elif ( lowername == '_mp4(sdq)'):
+    elif ( lowername == 'fno-mp3' ):
+        PsiMod.set_variable("CURRENT ENERGY",emp3)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
+    elif ( lowername == 'mp4(sdq)'):
         PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
-    elif ( lowername == '_mp4'):
+    elif ( lowername == 'fno-mp4(sdq)'):
+        PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
+    elif ( lowername == 'fno-mp4'):
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-    elif ( lowername == '_mp2.5'):
-        PsiMod.set_variable("CURRENT ENERGY",0.5*(emp2+emp3))
-        PsiMod.set_variable("CURRENT CORRELATION ENERGY",0.5*(cemp2+cemp3))
+    elif (lowername == 'fnocc-mp') and (level == 4):
+        PsiMod.set_variable("CURRENT ENERGY",emp4)
+        PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
 
     # restore options
     optstash.restore()

@@ -70,6 +70,7 @@ procedures = {
             'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
+            'detci-mp'      : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
             'cisd'          : run_detci,
             'cisdt'         : run_detci,
@@ -95,6 +96,19 @@ procedures = {
             'df-scf'        : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
+            'mp4(sdq)'      : run_fnocc,
+            'fno-ccsd'      : run_fnocc,
+            'fno-ccsd(t)'   : run_fnocc,
+            'fno-qcisd'     : run_fnocc,
+            'fno-qcisd(t)'  : run_fnocc,
+            'fno-mp3'       : run_fnocc,
+            'fno-mp4(sdq)'  : run_fnocc,
+            'fno-mp4'       : run_fnocc,
+            'fnocc-mp'      : run_fnocc,
+            'df-ccsd'       : run_fnodfcc,
+            'df-ccsd(t)'    : run_fnodfcc,
+            'fno-df-ccsd'   : run_fnodfcc,
+            'fno-df-ccsd(t)': run_fnodfcc,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -189,7 +203,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    | scf                     | Hartree--Fock (HF) or density functional theory (:ref:`DFT <sec:dft>`)                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -235,11 +249,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | bccd(t)                 | BCCD with perturbative triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | qcisd(t)                | QCISD with perturbative triples                                                        |
+    | qcisd(t)                | QCISD with perturbative triples                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory                                     |
+    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory :ref:`[manual] <sec:arbpt>`         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1117,6 +1131,16 @@ def parse_arbitrary_order(name):
             # Let 'mp2' pass through as itself
             if (namestump == 'mp') and (namelevel == 2):
                 return namelower, None
+            elif (namestump == 'mp') and (namelevel == 3):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 3
+                else:
+                    return 'detci-mp', 3
+            elif (namestump == 'mp') and (namelevel == 4):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 4
+                else:
+                    return 'detci-mp', 4
             # Otherwise return method and order
             else:
                 return namestump, namelevel

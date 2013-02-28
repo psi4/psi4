@@ -15,7 +15,7 @@ namespace psi{ namespace fnocc{
 class CoupledCluster: public Wavefunction{
   public:
 
-    CoupledCluster(boost::shared_ptr<psi::Wavefunction> reference_wavefunction,Options &options);
+    CoupledCluster(boost::shared_ptr<Wavefunction> reference_wavefunction,Options &options);
     ~CoupledCluster();
 
     double compute_energy();
@@ -24,8 +24,11 @@ class CoupledCluster: public Wavefunction{
 
   protected:
 
+    int iter;
+    int brueckner_iter;
+
     void common_init();
-    virtual void finalize();
+    void finalize();
 
     /// is t2 on disk or held in main memory?
     bool t2_on_disk;
@@ -146,7 +149,7 @@ class CoupledCluster: public Wavefunction{
     void DIIS(double*c,long int nvec,long int n);
     void DIISOldVector(long int iter,int diis_iter,int replace_diis_iter);
     double DIISErrorVector(int diis_iter,int replace_diis_iter,int iter);
-    void DIISNewAmplitudes(int diis_iter);
+    void DIISNewAmplitudes(int diis_iter,int&replace_diis_iter);
     long int maxdiis;
     double*diisvec;
 
@@ -186,6 +189,71 @@ class CoupledCluster: public Wavefunction{
     long int tilesize,lasttile,maxelem;
     long int ntiles,novtiles,nov2tiles;
 };
-}};
+
+// DF CC class
+class DFCoupledCluster : public CoupledCluster{
+
+  public:
+    DFCoupledCluster(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    ~DFCoupledCluster();
+
+    double compute_energy();
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+
+  protected:
+    void finalize();
+
+    /// CCSD iterations
+    PsiReturnType CCSDIterations();
+
+    /// (t)
+    PsiReturnType triples();
+
+    void WriteBanner();
+
+    /// allocate memory
+    void AllocateMemory();
+
+    /// update t1 amplitudes
+    void UpdateT1();
+
+    /// update t2 amplitudes
+    void UpdateT2();
+
+    /// v^4 CC diagram
+    void Vabcd1();
+
+    /// workspace buffers.
+    double*Abij,*Sbij;
+
+    /// check energy
+    double CheckEnergy();
+
+    ///  3-index integrals for density fitting.
+    bool ischolesky_;
+    long int nQ;
+    double*Qmo,*Qov,*Qvv,*Qoo;
+    void  ThreeIndexIntegrals();
+
+    /// more 3-index stuff for t1-transformed integrals
+    double * Ca_L, * Ca_R, **Ca;
+    double *Fij, *Fab, *Fia, *Fai;
+    SharedMatrix H;
+
+    /// generate t1-transformed 3-index integrals
+    virtual void T1Integrals();
+
+    /// evaluate cc diagrams
+    void CCResidual();
+
+    /// SCS-MP2 function and variables
+    void SCS_MP2();
+
+    /// SCS-CCSD function and variables
+    void SCS_CCSD();
+};
+
+}}
 
 #endif

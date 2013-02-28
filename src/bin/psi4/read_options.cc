@@ -35,23 +35,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
-  optimized in MCSCF
-  This trumps |globals__num_frozen_docc|
-  This trumps |globals__freeze_core|
-  -*/
+  optimized in MCSCF. This trumps |globals__num_frozen_docc| and 
+  |globals__freeze_core|. -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
   irrep (these are not populated in a correlated wavefunction, nor can they be
-  optimized in MCSCF
-  This trumps |globals__num_frozen_uocc|
-  -*/
+  optimized in MCSCF.  This trumps |globals__num_frozen_uocc|. -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The number of core orbitals to freeze in later correlated computations.
-  This trumps |globals__freeze_core|
-  -*/
+  This trumps |globals__freeze_core|.  -*/
   options.add_int("NUM_FROZEN_DOCC", 0);
-  /*- The number of virtual orbitals to freeze in later correlated computations.
-  -*/
+  /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
   ``TRUE`` will default to freezing the standard default number of core 
@@ -2607,11 +2601,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "FNOCC"|| options.read_globals()) {
       /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
-      /*- Do determine convergence based on energy alone? -*/
-      options.add_bool("CC_CONVERGE_E_ONLY",false);
       /*- Convergence for the CC energy.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-8);
+      /*- Convergence criterion for Breuckner orbitals. The convergence
+         is determined based on the largest $T_1$ amplitude. -*/
+      options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
+      /*- Maximum number of iterations for Brueckner orbitals optimization -*/
+      options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("R_CONVERGENCE", 1.0e-7);
@@ -2630,7 +2627,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do use MP2 NOs to truncate virtual space for QCISD/CCSD and (T)? -*/
       options.add_bool("NAT_ORBS", false);
       /*- Cutoff for occupation of MP2 NO orbitals in FNO-QCISD/CCSD(T)
-          ( only valid if |qci__nat_orbs| = true ) -*/
+          ( only valid if |fnocc__nat_orbs| = true ) -*/
       options.add_double("OCC_TOLERANCE", 1.0e-6);
       /*- Do SCS-MP2? -*/
       options.add_bool("SCS_MP2", false);
@@ -2654,6 +2651,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
+
+      /*- Do use density fitting in CC? This keyword is used internally
+          by the driver. Changing its value will have no effect on the 
+          computation. -*/
+      options.add_bool("DFCC",false);
+      /*- Auxilliary basis for df-ccsd(t). -*/
+      options.add_str("DF_BASIS_CC","");
+      /*- tolerance for Cholesky decomposition of the ERI tensor -*/
+      options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
   }
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. -*/
