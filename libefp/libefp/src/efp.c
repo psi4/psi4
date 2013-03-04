@@ -106,75 +106,76 @@ update_fragment(struct frag *frag)
 }
 
 static enum efp_result
-set_coord_xyzabc(struct efp *efp, const double *coord)
+set_coord_xyzabc(struct frag *frag, const double *coord)
 {
-	for (int i = 0; i < efp->n_frag; i++, coord += 6) {
-		struct frag *frag = efp->frags + i;
+	frag->x = coord[0];
+	frag->y = coord[1];
+	frag->z = coord[2];
 
-		frag->x = coord[0];
-		frag->y = coord[1];
-		frag->z = coord[2];
+	euler_to_matrix(coord[3], coord[4], coord[5], &frag->rotmat);
 
-		euler_to_matrix(coord[3], coord[4], coord[5], &frag->rotmat);
-		update_fragment(frag);
-	}
-
+	update_fragment(frag);
 	return EFP_RESULT_SUCCESS;
 }
 
 static enum efp_result
-set_coord_points(struct efp *efp, const double *coord)
+set_coord_points(struct frag *frag, const double *coord)
 {
-	for (int i = 0; i < efp->n_frag; i++, coord += 9) {
-		struct frag *frag = efp->frags + i;
+	if (frag->n_atoms < 3)
+		return EFP_RESULT_NEED_THREE_ATOMS;
 
-		if (frag->n_atoms < 3)
-			return EFP_RESULT_NEED_THREE_ATOMS;
+	double ref[9] = {
+		frag->lib->atoms[0].x, frag->lib->atoms[0].y, frag->lib->atoms[0].z,
+		frag->lib->atoms[1].x, frag->lib->atoms[1].y, frag->lib->atoms[1].z,
+		frag->lib->atoms[2].x, frag->lib->atoms[2].y, frag->lib->atoms[2].z
+	};
 
-		double ref[9] = {
-			frag->lib->atoms[0].x, frag->lib->atoms[0].y, frag->lib->atoms[0].z,
-			frag->lib->atoms[1].x, frag->lib->atoms[1].y, frag->lib->atoms[1].z,
-			frag->lib->atoms[2].x, frag->lib->atoms[2].y, frag->lib->atoms[2].z
-		};
+	vec_t p1;
+	mat_t rot1, rot2;
 
-		vec_t p1;
-		mat_t rot1, rot2;
+	points_to_matrix(coord, &rot1);
+	points_to_matrix(ref, &rot2);
+	rot2 = mat_transpose(&rot2);
+	frag->rotmat = mat_mat(&rot1, &rot2);
+	p1 = mat_vec(&frag->rotmat, VEC(frag->lib->atoms[0].x));
 
-		points_to_matrix(coord, &rot1);
-		points_to_matrix(ref, &rot2);
-		rot2 = mat_transpose(&rot2);
-		frag->rotmat = mat_mat(&rot1, &rot2);
-		p1 = mat_vec(&frag->rotmat, VEC(frag->lib->atoms[0].x));
+	/* center of mass */
+	frag->x = coord[0] - p1.x;
+	frag->y = coord[1] - p1.y;
+	frag->z = coord[2] - p1.z;
 
-		/* center of mass */
-		frag->x = coord[0] - p1.x;
-		frag->y = coord[1] - p1.y;
-		frag->z = coord[2] - p1.z;
-
-		update_fragment(frag);
-	}
-
+	update_fragment(frag);
 	return EFP_RESULT_SUCCESS;
 }
 
 static enum efp_result
-set_coord_rotmat(struct efp *efp, const double *coord)
+set_coord_rotmat(struct frag *frag, const double *coord)
 {
-	for (int i = 0; i < efp->n_frag; i++, coord += 12) {
-		struct frag *frag = efp->frags + i;
+	if (!check_rotation_matrix((const mat_t *)(coord + 3)))
+		return EFP_RESULT_INVALID_ROTATION_MATRIX;
 
-		if (!check_rotation_matrix((const mat_t *)(coord + 3)))
-			return EFP_RESULT_INVALID_ROTATION_MATRIX;
+	frag->x = coord[0];
+	frag->y = coord[1];
+	frag->z = coord[2];
 
-		frag->x = coord[0];
-		frag->y = coord[1];
-		frag->z = coord[2];
+	memcpy(&frag->rotmat, coord + 3, sizeof(mat_t));
 
-		memcpy(&frag->rotmat, coord + 3, sizeof(mat_t));
-		update_fragment(frag);
-	}
-
+	update_fragment(frag);
 	return EFP_RESULT_SUCCESS;
+}
+
+static size_t
+get_coord_count(enum efp_coord_type coord_type)
+{
+	switch (coord_type) {
+		case EFP_COORD_TYPE_XYZABC:
+			return 6;
+		case EFP_COORD_TYPE_POINTS:
+			return 9;
+		case EFP_COORD_TYPE_ROTMAT:
+			return 12;
+	}
+	return 0;
 }
 
 static void
@@ -590,21 +591,44 @@ efp_get_point_charge_values(struct efp *efp, double *q)
 
 EFP_EXPORT enum efp_result
 efp_set_coordinates(struct efp *efp, enum efp_coord_type coord_type,
-		    const double *coord)
+			const double *coord)
+{
+	size_t stride;
+	enum efp_result res;
+
+	if (!initialized(efp))
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if ((stride = get_coord_count(coord_type)) == 0)
+		return EFP_RESULT_INCORRECT_ENUM_VALUE;
+
+	for (int i = 0; i < efp->n_frag; i++, coord += stride)
+		if ((res = efp_set_frag_coordinates(efp, i, coord_type, coord)))
+			return res;
+
+	return EFP_RESULT_SUCCESS;
+}
+
+EFP_EXPORT enum efp_result
+efp_set_frag_coordinates(struct efp *efp, int frag_idx,
+	enum efp_coord_type coord_type, const double *coord)
 {
 	if (!initialized(efp))
 		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (frag_idx < 0 || frag_idx >= efp->n_frag)
+		return EFP_RESULT_INDEX_OUT_OF_RANGE;
 
 	if (!coord)
 		return EFP_RESULT_INVALID_ARGUMENT;
 
 	switch (coord_type) {
 		case EFP_COORD_TYPE_XYZABC:
-			return set_coord_xyzabc(efp, coord);
+			return set_coord_xyzabc(efp->frags + frag_idx, coord);
 		case EFP_COORD_TYPE_POINTS:
-			return set_coord_points(efp, coord);
+			return set_coord_points(efp->frags + frag_idx, coord);
 		case EFP_COORD_TYPE_ROTMAT:
-			return set_coord_rotmat(efp, coord);
+			return set_coord_rotmat(efp->frags + frag_idx, coord);
 	}
 
 	return EFP_RESULT_INCORRECT_ENUM_VALUE;

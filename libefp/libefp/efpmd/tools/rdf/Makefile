@@ -1,6 +1,12 @@
-PROG = rdf
-SRCS = rdf.c
-WARNINGS_SET = HIGH
-LDADD = -lm
+CC= gcc
+CFLAGS= -std=c99 -O2
+LIBS= -lm
+RM= rm -f
 
-.include <prog.mk>
+all:
+	$(CC) $(CFLAGS) $(LIBS) -o rdf rdf.c
+
+clean:
+	$(RM) rdf
+
+.PHONY: all clean

@@ -66,16 +66,24 @@ static char *make_name_list(const struct config *config)
 	for (int i = 0; i < config->n_frags; i++)
 		len += strlen(config->frags[i].name) + 1;
 
-	char *names = xmalloc(len), *ptr = names;
+	char *names = xcalloc(1, len);
 
-	for (int i = 0; i < config->n_frags; i++) {
-		strcpy(ptr, config->frags[i].name);
-		ptr += strlen(config->frags[i].name);
-		*ptr++ = '\n';
-	}
+	for (int i = 0; i < config->n_frags - 1; i++)
+		strcat(strcat(names, config->frags[i].name), "\n");
 
-	*(--ptr) = '\0';
-	return names;
+	return strcat(names, config->frags[config->n_frags - 1].name);
+}
+
+static bool is_lib(const char *name)
+{
+	size_t len = strlen(name);
+
+	return name[len - 2] == '_' && (name[len - 1] == 'l' || name[len - 1] == 'L');
+}
+
+static size_t name_len(const char *name)
+{
+	return is_lib(name) ? strlen(name) - 2 : strlen(name);
 }
 
 /*
@@ -88,55 +96,32 @@ static char *make_name_list(const struct config *config)
  */
 static char *make_potential_file_list(const struct config *config)
 {
-	const char *unique[config->n_frags];
+	int i, n_uniq;
+	size_t len;
+	const char *uniq[config->n_frags];
 
-	for (int i = 0; i < config->n_frags; i++)
-		unique[i] = config->frags[i].name;
+	for (i = 0; i < config->n_frags; i++)
+		uniq[i] = config->frags[i].name;
 
-	qsort(unique, config->n_frags, sizeof(char *), string_compare);
+	qsort(uniq, config->n_frags, sizeof(char *), string_compare);
 
-	int n_unique = 1;
+	for (i = 1, n_uniq = 1; i < config->n_frags; i++)
+		if (efp_strcasecmp(uniq[i - 1], uniq[i]) != 0)
+			uniq[n_uniq++] = uniq[i];
 
-	for (int i = 1; i < config->n_frags; i++) {
-		if (efp_strcasecmp(unique[i - 1], unique[i]) != 0) {
-			unique[n_unique] = unique[i];
-			n_unique++;
-		}
+	for (i = 0, len = 0; i < n_uniq; i++) {
+		const char *path = is_lib(uniq[i]) ? config->fraglib_path : config->userlib_path;
+		len += strlen(path) + name_len(uniq[i]) + strlen(".efp\n") + 1;
 	}
 
-	size_t len = 0;
+	char *files = xcalloc(1, len + 1);
 
-	for (int i = 0; i < n_unique; i++) {
-		const char *name = unique[i];
-		size_t n = strlen(name);
-
-		if (n > 2 && efp_strcasecmp(name + n - 2, "_l") == 0)
-			len += strlen(config->fraglib_path) + n + 4;
-		else
-			len += strlen(config->userlib_path) + n + 6;
+	for (i = 0; i < n_uniq; i++) {
+		const char *path = is_lib(uniq[i]) ? config->fraglib_path : config->userlib_path;
+		strcat(strncat(strcat(strcat(files, path), "/"), uniq[i], name_len(uniq[i])), ".efp\n");
 	}
 
-	char *files = xmalloc(len), *ptr = files;
-
-	for (int i = 0; i < n_unique; i++) {
-		const char *name = unique[i];
-		size_t n = strlen(name);
-
-		if (n > 2 && efp_strcasecmp(name + n - 2, "_l") == 0) {
-			strcat(strcpy(ptr, config->fraglib_path), "/");
-			strcat(strncat(ptr, name, n - 2), ".efp");
-			ptr += strlen(config->fraglib_path) + n + 3;
-			*ptr++ = '\n';
-		}
-		else {
-			strcat(strcpy(ptr, config->userlib_path), "/");
-			strcat(strcat(ptr, name), ".efp");
-			ptr += strlen(config->userlib_path) + n + 5;
-			*ptr++ = '\n';
-		}
-	}
-
-	*(--ptr) = '\0';
+	files[len - 1] = '\0';
 	return files;
 }
 

@@ -420,6 +420,44 @@ enum efp_result efp_set_coordinates(struct efp *efp,
 				    const double *coord);
 
 /**
+ * Update position and orientation of the specified effective fragment.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[in] frag_idx Index of a fragment. Must be a value between zero and
+ * the total number of fragments minus one.
+ *
+ * \param[in] coord_type Specifies the type of coordinates in the \a coord
+ * array (see #efp_coord_type).
+ *
+ * \param[in] coord Array of coordinates specifying fragment position and
+ * orientation.
+ *
+ * If \p coord_type is \a EFP_COORD_TYPE_XYZABC then the \p coord array should
+ * contain \a x \a y \a z components of the center of mass position and three
+ * Euler rotation angles representing orientation of a fragment. The \coord
+ * array must contain a total of 6 elements.
+ *
+ * If \p coord_type is \a EFP_COORD_TYPE_POINTS then the \p coord array should
+ * contain the coordinates of 3 points in space. Point 1 and first atom of
+ * fragment are made to coincide. The vector connecting points 1 and 2 is
+ * aligned with the corresponding vector connecting fragment atoms. The plane
+ * defined by points 1, 2, and 3 is made to coincide with the corresponding
+ * fragment plane. The \coord array must contain a total of 9 elements.
+ *
+ * If \p coord_type is \a EFP_COORD_TYPE_ROTMAT then the \p coord array should
+ * contain \a x \a y \a z components of the center of mass position and nine
+ * elements of the rotation matrix representing orientation of a fragment. The
+ * \coord array must contain a total of 12 elements.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_set_frag_coordinates(struct efp *efp,
+					 int frag_idx,
+					 enum efp_coord_type coord_type,
+					 const double *coord);
+
+/**
  * Get center of mass positions and Euler angles of the effective fragments.
  *
  * \param[in] efp The efp structure.
