@@ -81,6 +81,10 @@ public:
         Real,    /*!< Include, as normal */
         Ghost    /*!< Include, but with ghost atoms */
     };
+    enum FragmentLevel {
+        QM,      /*!< Quantum mechanical */
+        EFP      /*!< Effective fragment potential */
+    };
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
@@ -158,6 +162,8 @@ protected:
     std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragment_types_;
+    /// A list describing the treatment level of each fragment
+    std::vector<FragmentLevel> fragment_levels_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
     /// Reinterpret the coord entries or not
