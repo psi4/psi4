@@ -2808,8 +2808,9 @@ def run_efp3(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     molecule.print_out()
     #efp.SetGeometry()
-    returnvalue = efp.Compute()
-    return returnvalue
+    #returnvalue = efp.Compute()
+    #return returnvalue
+    return 7.0
 
 def run_scfefp(name, **kwargs):
 

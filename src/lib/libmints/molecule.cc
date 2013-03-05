@@ -1085,6 +1085,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 // Save the actual atom symbol (H1 => H)
                 std::string atomSym = reMatches[1].str();
  
+                // TODO: need to handle dummies
+
                 // Store as Cartesian entry; libefp works entirely in Bohr
                 boost::shared_ptr<CoordValue> xval(new NumberValue(frag_atom_coord[3*at]  /mol->input_units_to_au_));
                 boost::shared_ptr<CoordValue> yval(new NumberValue(frag_atom_coord[3*at+1]/mol->input_units_to_au_));
@@ -1104,6 +1106,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         // Exit if molecule is pure efp
         if(!lines.size())
 
+    // temp
     mol->fragments_.push_back(std::make_pair(0, currentAtom));
     mol->fragment_types_.push_back(Real);
     mol->fragment_levels_.push_back(EFP);
