@@ -2803,6 +2803,14 @@ def run_property(name, **kwargs):
     return junk
 
 
+def run_efp3(name, **kwargs):
+    efp = PsiMod.efp_init()
+    molecule = PsiMod.get_active_molecule()
+    molecule.print_out()
+    #efp.SetGeometry()
+    returnvalue = efp.Compute()
+    return returnvalue
+
 def run_scfefp(name, **kwargs):
 
     lowername = name.lower()

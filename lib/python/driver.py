@@ -156,6 +156,8 @@ procedures = {
             'dci'           : run_cepa,
             'efp2'          : run_efp2,
             'scfefp'        : run_scfefp,
+            'efp'           : run_efp,
+            'efpmol'        : run_efp3,
             # Upon adding a method to this list, add it to the docstring in energy() below
             # If you must add an alias to this list (e.g., dfmp2/df-mp2), please search the
             #    whole driver to find uses of name in return values and psi variables and
