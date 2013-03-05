@@ -1,0 +1,62 @@
+
+# This is an imposter molecule/calc for the code to pass
+#   through to get EFP properly initialized
+molecule {
+O 0.0 0.0 0.0 
+H 0.0 1.0 0.0
+H 0.0 0.0 1.0
+--
+O 4.0 0.0 0.0 
+H 4.0 1.0 0.0
+H 4.0 0.0 1.0
+--              # RULE 1: imposter molecule must have same
+                #   number of fragments as target molecule
+O 7.0 0.0 0.0 
+H 7.0 1.0 0.0
+H 7.0 0.0 1.0
+}
+
+set basis sto-3g
+set frags ['h2o_l', 'h2o_l','ch3oh_l']  # RULE 2: These frags are right for
+                                        #   the target molecule/calc below
+
+energy('efpmol')  # RULE 3: run efp here so Process::environment.get_efp() not NULL
+clean()
+
+
+# This is the target molecule/calc
+molecule efp_spec {
+ efp h2o_l
+  0.0 0.0 0.0  # H2O 
+ -1.0 0.0 0.0
+  0.0 1.0 0.0
+ --
+ efp h2o_l
+  4.0 4.0 4.0  # H2O
+  3.0 4.0 4.0
+  4.0 5.0 4.0
+ --
+ efp ch3oh_l
+  1.275    -2.447    -4.673  # CH3OH
+  0.709    -3.191    -3.592
+  2.213    -1.978    -4.343
+no_reorient
+no_com
+}
+
+
+set {
+  basis sto-3g
+  efp_disp no
+  efp_exch no
+  frags ['h2o_l', 'h2o_l', 'ch3oh_l']
+}
+
+set efp {
+  print 1
+}
+
+energy('efpmol')
+#compare_values(-0.006608, get_variable('CURRENT ENERGY'), 6, 'EFP Total')  #TEST
+clean()
+
