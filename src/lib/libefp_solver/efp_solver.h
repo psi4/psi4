@@ -70,6 +70,20 @@ class EFP {
         /// Returns the center of mass of a given fragment
         double *get_com(int frag_idx);
 
+        ///
+        void set_nfragments(int nfrag) { nfrag_ = nfrag; }
+
+        ///
+        int get_nfragments(void) { return nfrag_; }
+
+        /// Sets the geometry hints for all fragments at once
+        void set_coordinates(int type, double * coords);
+
+        /// Returns xyz coordinates of all atoms in a given fragment
+        double *get_frag_atom_coord(int frag_idx);
+
+        /// Returns atom label of all atoms in a given fragment
+        std::vector<std::string> get_frag_atom_label(int frag_idx);
 };
 
 }
