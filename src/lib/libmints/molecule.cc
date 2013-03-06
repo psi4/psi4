@@ -46,6 +46,7 @@
 #include <libparallel/parallel.h>
 #include <libciomr/libciomr.h>
 #include <libefp_solver/efp_solver.h>
+#include "../../libefp/libefp/src/efp.h"  // for efp_coord_type enum
 
 #include "vector3.h"
 #include "coordentry.h"
@@ -944,54 +945,56 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
     // EFP library wants all its fragments at once so collect them before QM atoms
     // Note that Ilya's adding some functionality to libefp so we can parse fragments one-by-one
-    unsigned int nefpfrag = 0;
+    unsigned int efp_nfrag = 0;
     unsigned int fragstype = 0;  // 0 for unset, 1 for xyzabc, 4 for points (length of efp entry in lines)
-    std::vector<std::string> fragsfilenames;  // replaces FRAGS in options
+    std::vector<std::string> efp_fnames;  // replaces FRAGS in options
+    std::vector<efp_coord_type> efp_ctypes;
     
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
-        // First pass through lines counts number of efp fragments and checks they're of consistent type
+        // First pass through lines counts number of efp fragments and checks their name and coord type fir efp_init()
         if(regex_match(lines[lineNumber], reMatches, efpFileMarker_)) {
+            efp_fnames.push_back(reMatches[1].str());
             if((regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 1)) {
                 // xyzabc efp spec
-                if(fragstype == 4)
-                    throw PSIEXCEPTION("Mixing of points and xyzabc EFP fragments in geometry");
-                else
-                    fragstype = 1;
-                nefpfrag++;
+                efp_ctypes.push_back(EFP_COORD_TYPE_XYZABC);
+                efp_nfrag++;
             }
             else if((regex_match(lines[lineNumber+4], reMatches, fragmentMarker_)) || (lineNumber == lines.size() - 4)) {
                 // points efp spec
-                if(fragstype == 1)
-                    throw PSIEXCEPTION("Mixing of points and xyzabc EFP fragments in geometry");
-                else
-                    fragstype = 4;
-                nefpfrag++;
+                efp_ctypes.push_back(EFP_COORD_TYPE_POINTS);
+                efp_nfrag++;
             }
             else
                 throw PSIEXCEPTION("Nonconforming EFP fragment in geometry");
         }
-        fprintf(outfile, "Line %d and efp fragment %d\n", lineNumber, nefpfrag);
     }
-    fprintf(outfile, "Found %d efp fragments\n", nefpfrag);
+    fprintf(outfile, "Found %d efp fragments\n", efp_nfrag);
 
-    if(Process::environment.get_efp())
-        fprintf(outfile, "environment EFP object gotten\n");
-    else
-        fprintf(outfile, "environment EFP object NOT gotten\n");
 
-    if(nefpfrag>0) {
+    if(efp_nfrag>0) {
         double *coords = NULL;
-        coords = new double[9 * nefpfrag];  // room for points (9*nefpfrag) or xyzabc (6*nefpfrag)
+        coords = new double[12];  // room for xyzabc (6), points (9), or rotmat (12)
         double *pcoords = coords;
         int currentAtom = 0;  // temp
+        unsigned int currentFragment = efp_nfrag - 1;
+
+        // Check that EFP object is properly initialized
+        if(!Process::environment.get_efp())
+            throw PSIEXCEPTION("EFP object needed by Molecule is unavailable");
+        else
+            fprintf(outfile, "environment EFP object gotten\n");
 
         std::vector<std::string> splitLine;
         for (int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber) {
+            fprintf(outfile, "line %d frag %d name %s type %d\n", lineNumber, currentFragment, efp_fnames[currentFragment].c_str(), efp_ctypes[currentFragment]);
             // Second pass through lines collects efp fragment info to feed libefp
             if(regex_match(lines[lineNumber], reMatches, efpFileMarker_)) {
+                //fprintf(outfile, "found efp marker line %d name %s at %s assigned %s %d\n", lineNumber, reMatches[1].str().c_str(), lines[lineNumber].c_str(), efp_fnames[currentFragment].c_str(), efp_ctypes[currentFragment]);
                 // Process file name
-                fragsfilenames.push_back(reMatches[1].str());
-                if(fragstype == 1) {
+                if(efp_fnames[currentFragment] != reMatches[1].str())
+                    throw PSIEXCEPTION("EFP fragment names not in sync (" + efp_fnames[currentFragment] + " vs." + reMatches[1].str());
+
+                if(efp_ctypes[currentFragment] == EFP_COORD_TYPE_XYZABC) {
                     // Process xyzabc hint
                     boost::algorithm::trim(lines[lineNumber]);
                     boost::split(splitLine, lines[lineNumber], boost::is_any_of("\t ,"),token_compress_on);
@@ -1002,38 +1005,54 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                     *pcoords++ = str_to_double(splitLine[6]);
                     *pcoords++ = str_to_double(splitLine[7]);
                     // Nuke fragment lines
+                    if((lineNumber+1 != lines.size()) && (regex_match(lines[lineNumber+1], reMatches, fragmentMarker_)))
+                        lines.erase(lines.begin() + lineNumber + 1);
                     lines.erase(lines.begin() + lineNumber);
-                    if((lineNumber != 0) && (regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)))
-                        lines.erase(lines.begin() + lineNumber - 1);
                 }
-                else if(fragstype == 4) {
+                else if(efp_ctypes[currentFragment] == EFP_COORD_TYPE_POINTS) {
                     // Process points hint
+                    fprintf(outfile, "processing line %d of %s\n", lineNumber+1, lines[lineNumber+1].c_str());
                     boost::algorithm::trim(lines[lineNumber+1]);
                     boost::split(splitLine, lines[lineNumber+1], boost::is_any_of("\t ,"),token_compress_on);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                    fprintf(outfile, "processing line %d of %s\n", lineNumber+2, lines[lineNumber+2].c_str());
                     boost::algorithm::trim(lines[lineNumber+2]);
                     boost::split(splitLine, lines[lineNumber+2], boost::is_any_of("\t ,"),token_compress_on);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
+                    fprintf(outfile, "processing line %d of %s\n", lineNumber+3, lines[lineNumber+3].c_str());
                     boost::algorithm::trim(lines[lineNumber+3]);
                     boost::split(splitLine, lines[lineNumber+3], boost::is_any_of("\t ,"),token_compress_on);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[0]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[1]);
                     *pcoords++ = mol->input_units_to_au_ * str_to_double(splitLine[2]);
                     // Nuke fragment lines
+                    if((lineNumber+4 != lines.size()) && (regex_match(lines[lineNumber+4], reMatches, fragmentMarker_))) {
+                        fprintf(outfile, "deleting line %d of %s\n", lineNumber+4, lines[lineNumber+4].c_str());
+                        lines.erase(lines.begin() + lineNumber + 4);
+                    }
+                    fprintf(outfile, "deleting line %d of %s\n", lineNumber+3, lines[lineNumber+3].c_str());
                     lines.erase(lines.begin() + lineNumber + 3);
+                    fprintf(outfile, "deleting line %d of %s\n", lineNumber+2, lines[lineNumber+2].c_str());
                     lines.erase(lines.begin() + lineNumber + 2);
+                    fprintf(outfile, "deleting line %d of %s\n", lineNumber+1, lines[lineNumber+1].c_str());
                     lines.erase(lines.begin() + lineNumber + 1);
+                    fprintf(outfile, "deleting line %d of %s\n", lineNumber, lines[lineNumber].c_str());
                     lines.erase(lines.begin() + lineNumber);
-                    if((lineNumber != 0) && (regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)))
-                        lines.erase(lines.begin() + lineNumber - 1);
                 }
-                else
+                else {
                     throw PSIEXCEPTION("Illegal geometry specification line : " + lines[lineNumber] +
                            ".  You should provide either points or xyzabc EFP input");
+                }
+                // initializing coordinates in libefp
+                //Process::environment.get_efp()->set_coordinates(efp_ctypes[currentFragment], coords);
+                Process::environment.get_efp()->set_frag_coordinates(currentFragment, efp_ctypes[currentFragment], coords);
+                fprintf(outfile, "setting type %d for efp fragment %d\n", efp_ctypes[currentFragment], currentFragment);
+                pcoords = coords;
+                currentFragment--;
             }
         }
 
@@ -1041,18 +1060,22 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             fprintf(outfile, "Remaining line %d is %s\n", lineNumber, lines[lineNumber].c_str());
     
         fprintf(outfile, "files are\n");
-        for(int i=0; i<fragsfilenames.size(); i++) { fprintf(outfile, "file %s\n", fragsfilenames[i].c_str()); }
+        for(int i=0; i<efp_fnames.size(); i++) { fprintf(outfile, "file %s\n", efp_fnames[i].c_str()); }
 
-        Process::environment.get_efp()->set_nfragments(nefpfrag);
-        fprintf(outfile, "setting %d efp fragments\n", nefpfrag);
+        // TODO: revert to get_frag_count. see that nfrag_ is set other than by elements of FRAGS 
+        //Process::environment.get_efp()->set_nfragments(efp_nfrag);
+        //fprintf(outfile, "setting %d efp fragments\n", efp_nfrag);
 
         int fromnfrag = Process::environment.get_efp()->get_nfragments();
         fprintf(outfile, "getting %d efp fragments\n", fromnfrag);
 
-        Process::environment.get_efp()->set_coordinates(fragstype, coords);
-        fprintf(outfile, "setting type %d efp fragments\n", fragstype);
+        for(int fr=0; fr<efp_nfrag; fr++) {
 
-        for(int fr=0; fr<nefpfrag; fr++) {
+            //Process::environment.get_efp()->set_coordinates(efp_ctypes[currentFragment], coords);
+            //fprintf(outfile, "setting type %d efp fragments\n", efp_ctypes[currentFragment]);
+            //Process::environment.get_efp()->set_coordinates(fragstype, coords);
+            //fprintf(outfile, "setting type %d efp fragments\n", fragstype);
+
 
             unsigned int nefpatom = Process::environment.get_efp()->get_frag_atom_count(fr);
             fprintf(outfile, "\nfound %d atoms in efp fragment %d\n", nefpatom, fr);
@@ -1105,14 +1128,12 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }    
         // Exit if molecule is pure efp
         if(!lines.size())
-
-    // temp
-    mol->fragments_.push_back(std::make_pair(0, currentAtom));
-    mol->fragment_types_.push_back(Real);
-    mol->fragment_levels_.push_back(EFP);
-    mol->fragment_multiplicities_.push_back(0);
-    mol->fragment_charges_.push_back(0);
-
+            // temp
+            mol->fragments_.push_back(std::make_pair(0, currentAtom));
+            mol->fragment_types_.push_back(Real);
+            mol->fragment_levels_.push_back(EFP);
+            mol->fragment_multiplicities_.push_back(0);
+            mol->fragment_charges_.push_back(0);
 
             return mol;
     }

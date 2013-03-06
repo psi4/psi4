@@ -1,30 +1,55 @@
+# Problem: The EFP is initialized through PsiMod calls in run_efp and this
+# ensures that it gets its options object, not libmints or scf or whatever
+# else might construct the EFP object. So, run_efp in proc.py calls
+# PsiMod.efp_init() which calls py_psi_efp_init in python.cc that calls
+# efp_init() in src/bin/efp/efp.cc that calls common_init() in
+# src/lib/libefp_solver.cc (that, for the moment, needs FRAGS option already
+# set). However, by the time run_efp is launched the molecule has already
+# been processed, and the molecule needs to be able to grab the EFP object
+# through Process::environment.get_efp() in order to interact with libefp
+# and have a geometry waiting.
+# 
+# Temporary Solution: If you just have a regular molecule in an input file
+# that involved efp fragments, you will get the dreaded null pointer
+# (Assertion failed: (px != 0)). Two routes around this are below.
+
+
+# ==> Solution 1 <==
 
 # This is an imposter molecule/calc for the code to pass
 #   through to get EFP properly initialized
-molecule {
-O 0.0 0.0 0.0 
-H 0.0 1.0 0.0
-H 0.0 0.0 1.0
---
-O 4.0 0.0 0.0 
-H 4.0 1.0 0.0
-H 4.0 0.0 1.0
---              # RULE 1: imposter molecule must have same
-                #   number of fragments as target molecule
-O 7.0 0.0 0.0 
-H 7.0 1.0 0.0
-H 7.0 0.0 1.0
-}
+#molecule {
+#O 0.0 0.0 0.0 
+#H 0.0 1.0 0.0
+#H 0.0 0.0 1.0
+#--
+#O 4.0 0.0 0.0 
+#H 4.0 1.0 0.0
+#H 4.0 0.0 1.0
+#--              # RULE 1: imposter molecule must have same
+#                #   number of fragments as target molecule
+#O 7.0 0.0 0.0 
+#H 7.0 1.0 0.0
+#H 7.0 0.0 1.0
+#}
+#
+#set basis sto-3g
+#set frags ['h2o_l', 'h2o_l','ch3oh_l']  # RULE 2: These frags are right for
+#                                        #   the target molecule/calc below
+#
+#energy('efpmol')  # RULE 3: run efp here so Process::environment.get_efp() not NULL
+#clean()
 
-set basis sto-3g
+
+# ==> Solution 2 <==
+
 set frags ['h2o_l', 'h2o_l','ch3oh_l']  # RULE 2: These frags are right for
                                         #   the target molecule/calc below
-
-energy('efpmol')  # RULE 3: run efp here so Process::environment.get_efp() not NULL
-clean()
+efpinit()
 
 
-# This is the target molecule/calc
+# ==> Target Calc <==
+
 molecule efp_spec {
  efp h2o_l
   0.0 0.0 0.0  # H2O 

@@ -2812,6 +2812,9 @@ def run_efp3(name, **kwargs):
     #return returnvalue
     return 7.0
 
+def efpinit():
+    efp = PsiMod.efp_init()
+
 def run_scfefp(name, **kwargs):
 
     lowername = name.lower()
