@@ -272,6 +272,7 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
 
 
 void EFP::SetGeometry(){
+/*
        enum efp_result res;
        fprintf(outfile, "\n\n");
        fprintf(outfile, "%s", efp_banner());
@@ -328,6 +329,7 @@ void EFP::SetGeometry(){
                fprintf(outfile, "%s", efp_result_to_string(res));
                 throw PsiException("efp",__FILE__,__LINE__);
        }
+*/
 } // end of SetGeometry()
 
 // this function returns a shared matrix containing the efp contribution to the potential
