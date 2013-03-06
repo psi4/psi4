@@ -39,9 +39,9 @@ namespace psi{ namespace occwave{
   
 void OCCWave::coord_grad()
 {
+      if (wfn_type_ == "OCEPA") ocepa_tpdm_vvvv();
       gfock_diag();
       dump_ints();
-      if (wfn_type_ == "OCEPA") ocepa_tpdm_vvvv();
       dump_pdms();
 }// 
 
