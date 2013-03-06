@@ -49,11 +49,11 @@ class EFP {
         /// Returns EFP contribution to V
         boost::shared_ptr<Matrix> modify_Fock();
 
-	// Make list of frag names
-	char *make_name_list();
+	    // Make list of frag names
+	    char *make_name_list();
 
-	// Make list of .efp file names
-	char *make_potential_file_list(const char *, const char *, const char *);
+	    // Make list of .efp file names
+	    char *make_potential_file_list(const char *, const char *, const char *);
 
         /// Returns the number of EFP fragments
         int get_frag_count(void);
@@ -78,6 +78,9 @@ class EFP {
 
         /// Sets the geometry hints for all fragments at once
         void set_coordinates(int type, double * coords);
+
+        /// Sets the geometry hints for a given fragment
+        void set_frag_coordinates(int frag_idx, int type, double * coords);
 
         /// Returns xyz coordinates of all atoms in a given fragment
         double *get_frag_atom_coord(int frag_idx);

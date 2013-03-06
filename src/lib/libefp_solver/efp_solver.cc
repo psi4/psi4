@@ -233,19 +233,42 @@ void EFP::SetQMAtoms(){
  * Set points or xyzabc coordinates for all fragments simultaneously
  */
 void EFP::set_coordinates(int type, double * coords) {
-       enum efp_result res;
-        enum efp_coord_type ctype;
+    enum efp_result res;
+    enum efp_coord_type ctype;
 
-        if(type == 1)
-            ctype = EFP_COORD_TYPE_XYZABC;
-        else if(type == 4)
-            ctype = EFP_COORD_TYPE_POINTS;
+    if(type == 0)
+        ctype = EFP_COORD_TYPE_XYZABC;
+    else if(type == 2)
+        ctype = EFP_COORD_TYPE_POINTS;
+    else if(type == 2)
+        ctype = EFP_COORD_TYPE_ROTMAT;
 
-       if ((res = efp_set_coordinates(efp_, ctype, coords))) {
-               fprintf(outfile, "%s", efp_result_to_string(res));
-                throw PsiException("efp",__FILE__,__LINE__);
-       }
-}  // end of set_coordinates
+    if ((res = efp_set_coordinates(efp_, ctype, coords))) {
+        fprintf(outfile, "%s", efp_result_to_string(res));
+        throw PsiException("efp",__FILE__,__LINE__);
+    }
+}
+
+/*
+ * Set points or xyzabc coordinates for all atoms in a fragment
+ */
+void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
+//void EFP::set_frag_coordinates(int frag_idx, efp_coord_type ctype, double * coords) {
+    enum efp_result res;
+    enum efp_coord_type ctype;
+
+    if(type == 0)
+        ctype = EFP_COORD_TYPE_XYZABC;
+    else if(type == 1)
+        ctype = EFP_COORD_TYPE_POINTS;
+    else if(type == 2)
+        ctype = EFP_COORD_TYPE_ROTMAT;
+
+    if ((res = efp_set_frag_coordinates(efp_, frag_idx, ctype, coords))) {
+        fprintf(outfile, "%s", efp_result_to_string(res));
+        throw PsiException("efp",__FILE__,__LINE__);
+    }
+}
 
 
 void EFP::SetGeometry(){
@@ -471,20 +494,24 @@ void EFP::Compute() {
 
 }
 
-// Get number of fragments
+/**
+ * Get number of fragments
+ */
 int EFP::get_frag_count(void) {
-  return nfrag_;
+    return nfrag_;
 }
 
-// Get number of atoms in a fragment
+/**
+ * Get number of atoms in a fragment
+ */
 int EFP::get_frag_atom_count(int frag_idx) {
-  int n=0;
-  enum efp_result res;
-  res = efp_get_frag_atom_count(efp_, frag_idx, &n);
-  return n;
+    int n=0;
+    enum efp_result res;
+    res = efp_get_frag_atom_count(efp_, frag_idx, &n);
+    return n;
 }
 
-/*
+/**
  * Get atomic numbers of atoms in a fragment
  */
 double *EFP::get_frag_atom_Z(int frag_idx) {
@@ -507,7 +534,7 @@ double *EFP::get_frag_atom_Z(int frag_idx) {
     return frag_atom_Z;
 }
 
-/*
+/**
  * Get the mass of all atoms in a fragment
  */
 double *EFP::get_frag_atom_mass(int frag_idx) {
@@ -542,7 +569,7 @@ double *EFP::get_com(int frag_idx) {
   return com;
 }
 
-/*
+/**
  * Get the xyz coordinates of all atoms in a fragment
  */
 double *EFP::get_frag_atom_coord(int frag_idx) {
@@ -569,7 +596,7 @@ double *EFP::get_frag_atom_coord(int frag_idx) {
     return frag_atom_coord;
 }
 
-/*
+/**
  * Get the atom label of all atoms in a fragment
  */
 std::vector<std::string> EFP::get_frag_atom_label(int frag_idx) {
