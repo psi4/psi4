@@ -12,6 +12,8 @@
  #include <qchem.h>
 #endif
 
+#include <sstream>
+
 namespace opt {
 
 void print_params(void);
@@ -305,11 +307,11 @@ void set_params(void)
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 
-  Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
-
   // if steepest-descent, then make much larger default
   if (Opt_params.step_type == OPT_PARAMS::SD && !(options["CONSECUTIVE_BACKSTEPS"].has_changed()))
     Opt_params.consecutive_backsteps_allowed = 10;
+
+  Opt_params.geom_maxiter = options.get_int("GEOM_MAXITER");
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -453,7 +455,11 @@ void set_params(void)
     Opt_params.efp_fragments_only = false;
   }
 
-  Opt_params.consecutive_backsteps_allowed = 1;
+  Opt_params.consecutive_backsteps_allowed = rem_read(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS);
+
+  // if steepest-descent, then make much larger default
+  if (Opt_params.step_type == OPT_PARAMS::SD && RemUninitialized(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS))
+    Opt_params.consecutive_backsteps_allowed = 10;
 
 //TO DO: initialize IRC_step_size for Q-Chem
 
@@ -465,7 +471,45 @@ void set_params(void)
   Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
   Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
 #elif defined(OPTKING_PACKAGE_QCHEM)
-  // TODO
+  // Read QChem input and write all the frozen distances into a string
+  if (rem_read(REM_GEOM_OPT2_FROZEN_DISTANCES) > 0) {
+    INTEGER n_frozen = rem_read(REM_GEOM_OPT2_FROZEN_DISTANCES);
+    double* fd = init_array(2*n_frozen);
+    FileMan(FM_READ,FILE_FROZEN_DISTANCES,FM_DP,2*n_frozen,0,FM_BEG,fd);
+
+    std::stringstream atoms;
+    for (int i=0; i<2*n_frozen; ++i)
+      atoms << (int) fd[i] << ' ';
+    Opt_params.frozen_distance_str = atoms.str(); 
+    
+    free_array(fd);
+  }
+  // Read QChem input and write all the frozen bends into a string
+  if (rem_read(REM_GEOM_OPT2_FROZEN_BENDS) > 0) {
+    INTEGER n_frozen = rem_read(REM_GEOM_OPT2_FROZEN_BENDS);
+    double* fd = init_array(3*n_frozen);
+    FileMan(FM_READ,FILE_FROZEN_BENDS,FM_DP,3*n_frozen,0,FM_BEG,fd);
+
+    std::stringstream atoms;
+    for (int i=0; i<3*n_frozen; ++i)
+      atoms << (int) fd[i] << ' ';
+    Opt_params.frozen_bend_str = atoms.str(); 
+    
+    free_array(fd);
+  }
+  // Read QChem input and write all the frozen dihedrals into a string
+  if (rem_read(REM_GEOM_OPT2_FROZEN_DIHEDRALS) > 0) {
+    INTEGER n_frozen = rem_read(REM_GEOM_OPT2_FROZEN_DIHEDRALS);
+    double* fd = init_array(4*n_frozen);
+    FileMan(FM_READ,FILE_FROZEN_DIHEDRALS,FM_DP,4*n_frozen,0,FM_BEG,fd);
+
+    std::stringstream atoms;
+    for (int i=0; i<4*n_frozen; ++i)
+      atoms << (int) fd[i] << ' ';
+    Opt_params.frozen_dihedral_str = atoms.str(); 
+    
+    free_array(fd);
+  }
 #endif
 
 // ** Items are below unlikely to need modified
@@ -635,6 +679,8 @@ void print_params(void) {
   else
   fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
 
+  fprintf(outfile, "frozen_distances: \n");
+  fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
 }
 
 }

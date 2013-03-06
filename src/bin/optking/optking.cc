@@ -10,9 +10,9 @@
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
-#include "exception.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
+  #include "exception.h"
   #include <libparallel/parallel.h>
 #endif
 
@@ -315,7 +315,7 @@ OptReturnType optking(void) {
         close_output_dat();
         return OptReturnEndloop;
       }
-std::cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
+      std::cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
 //   TODO : could delete old opt_data entries
       //delete all entries but those on reaction path
       //assuming coord has already been incremented; is >=1
