@@ -199,6 +199,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     multiplicity_specified_  = other.multiplicity_specified_;
     reinterpret_coordentries_= other.reinterpret_coordentries_;
     lock_frame_              = other.lock_frame_;
+    zmat_                    = other.zmat_;
 
     // These are symmetry related variables, and are filled in by the following functions
     pg_             = boost::shared_ptr<PointGroup>();
