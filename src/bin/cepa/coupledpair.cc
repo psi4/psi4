@@ -189,7 +189,7 @@ void CoupledPair::common_init(){
 
 // the cepa procedure, including integral sorting
 double CoupledPair::compute_energy(){
-  PsiReturnType status;
+  PsiReturnType status = Success;
 
   // integral transformation.  only needed if not cim or integral direct
   if ( !reference_wavefunction_->isCIM() && options_.get_bool("CEPA_VABCD_DIRECT")) {
