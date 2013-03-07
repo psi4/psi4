@@ -2417,41 +2417,110 @@ double DFCoupledCluster::compute_energy() {
       long int o = ndoccact;
       long int v = nvirt;
 
-      // write (ov|vv) integrals, formerly E2abci, for (t)
-      double *tempq = (double*)malloc(v*nQ*sizeof(double));
-      // the buffer integrals was at least 2v^3, so these should definitely fit.
-      double *Z     = (double*)malloc(v*v*v*sizeof(double));
-      double *Z2    = (double*)malloc(v*v*v*sizeof(double));
-      boost::shared_ptr<PSIO> psio(new PSIO());
-      psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
-      psio_address addr2 = PSIO_ZERO;
-      for (long int i=0; i<o; i++){
-          #pragma omp parallel for schedule (static)
-          for (long int q=0; q<nQ; q++){
-              for (long int b=0; b<v; b++){
-                  tempq[q*v+b] = Qov[q*o*v+i*v+b];
+      if (!isLowMemory) {
+          // write (ov|vv) integrals, formerly E2abci, for (t)
+          double *tempq = (double*)malloc(v*nQ*sizeof(double));
+          // the buffer integrals was at least 2v^3, so these should definitely fit.
+          double *Z     = (double*)malloc(v*v*v*sizeof(double));
+          double *Z2    = (double*)malloc(v*v*v*sizeof(double));
+          boost::shared_ptr<PSIO> psio(new PSIO());
+          psio->open(PSIF_DCC_ABCI,PSIO_OPEN_NEW);
+          psio_address addr2 = PSIO_ZERO;
+          for (long int i=0; i<o; i++){
+              #pragma omp parallel for schedule (static)
+              for (long int q=0; q<nQ; q++){
+                  for (long int b=0; b<v; b++){
+                      tempq[q*v+b] = Qov[q*o*v+i*v+b];
+                  }
+              }      
+              F_DGEMM('n','t',v,v*v,nQ,1.0,tempq,v,Qvv,v*v,0.0,&Z[0],v);
+              #pragma omp parallel for schedule (static)
+              for (long int a=0; a<v; a++){
+                  for (long int b=0; b<v; b++){
+                      for (long int c=0; c<v; c++){
+                          Z2[a*v*v+b*v+c] = Z[a*v*v+c*v+b];
+                      }
+                  }
               }
-          }      
-          F_DGEMM('n','t',v,v*v,nQ,1.0,tempq,v,Qvv,v*v,0.0,&Z[0],v);
-          #pragma omp parallel for schedule (static)
-          for (long int a=0; a<v; a++){
-              for (long int b=0; b<v; b++){
-                  for (long int c=0; c<v; c++){
-                      Z2[a*v*v+b*v+c] = Z[a*v*v+c*v+b];
+              psio->write(PSIF_DCC_ABCI,"E2abci",(char*)&Z2[0],v*v*v*sizeof(double),addr2,&addr2);
+          }
+          psio->close(PSIF_DCC_ABCI,1);
+          free(tempq);
+          free(Z);
+          free(Z2);
+      } else {
+          psio_address addr = PSIO_ZERO;
+          double * temp1 = (double*)malloc(( nQ*v > o*v*v ? nQ*v : o*v*v)*sizeof(double));
+          double * temp2 = (double*)malloc(o*v*v*sizeof(double));
+          boost::shared_ptr<PSIO> psio(new PSIO());
+          psio->open(PSIF_DCC_ABCI4,PSIO_OPEN_NEW);
+          for (long int a = 0; a < v; a++) {
+              #pragma omp parallel for schedule (static)
+              for (long int q = 0; q < nQ; q++) {
+                  for (long int c = 0; c < v; c++) {
+                      temp1[q*v+c] = Qvv[q*v*v+a*v+c];
+                  }
+              }
+              F_DGEMM('n','t',o*v,v,nQ,1.0,Qov,o*v,temp1,v,0.0,temp2,o*v);
+              #pragma omp parallel for schedule (static)
+              for (long int b = 0; b < v; b++) {
+                  for (long int i = 0; i < o; i++) {
+                      for (long int c = 0; c < v; c++) {
+                          temp1[b*o*v+i*v+c] = temp2[c*o*v+i*v+b];
+                      }
+                  }
+              }
+              psio->write(PSIF_DCC_ABCI4,"E2abci4",(char*)&temp1[0],o*v*v*sizeof(double),addr,&addr);
+          }
+          psio->close(PSIF_DCC_ABCI4,1);
+          free(temp1);
+          free(temp2);
+// need to write E2abci2 into file E2abci4 ...
+// E2abci2 :     abic = (ib|ac)
+// loop over a:
+//     I(qc) = B(q,ac)
+//     I(cib) = sum_q B(q,ib) * I(qc)
+      }
+
+      free(Qvv);
+
+      double * temp1 = (double*)malloc(o*o*v*v*sizeof(double));
+      double * temp2 = (double*)malloc(o*o*v*v*sizeof(double));
+
+      // write (oo|ov) integrals, formerly E2ijak, for (t)
+      F_DGEMM('n','t',o*o,o*v,nQ,1.0,Qoo,o*o,Qov,o*v,0.0,temp1,o*o);
+      for (int i=0; i<o; i++){
+          for (int j=0; j<o; j++){
+              for (int k=0; k<o; k++){
+                  for (int a=0; a<v; a++){
+                      temp2[j*o*o*v+i*o*v+k*v+a] = temp1[i*o*o*v+a*o*o+j*o+k];
                   }
               }
           }
-          psio->write(PSIF_DCC_ABCI,"E2abci",(char*)&Z2[0],v*v*v*sizeof(double),addr2,&addr2);
       }
-      psio->close(PSIF_DCC_ABCI,1);
-      free(tempq);
-      free(Z);
-      free(Z2);
-      free(Qvv);
+      boost::shared_ptr<PSIO> psio(new PSIO());
+      psio->open(PSIF_DCC_IJAK,PSIO_OPEN_NEW);
+      psio->write_entry(PSIF_DCC_IJAK,"E2ijak",(char*)&temp2[0],o*o*o*v*sizeof(double));
+      psio->close(PSIF_DCC_IJAK,1);
 
-      tstart();
+      // df (ov|ov) integrals, formerly E2klcd
+      F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,temp1,o*v);
+      psio->open(PSIF_DCC_IAJB,PSIO_OPEN_NEW);
+      psio->write_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&temp1[0],o*o*v*v*sizeof(double));
+      psio->close(PSIF_DCC_IAJB,1);
+
+      free(Qov);
+      free(Qoo);
+      free(temp1);
+      free(temp2);
+
       // triples
-      status = triples();
+      tstart();
+
+      ccmethod = 0;
+      if (isLowMemory) status = lowmemory_triples();
+      else             status = triples();
+
       if (status == Failure){
          throw PsiException(
             "Whoops, the (T) correction died.",__FILE__,__LINE__);
@@ -3054,19 +3123,13 @@ void DFCoupledCluster::AllocateMemory() {
   if (options_.get_bool("COMPUTE_TRIPLES")) {
       long int nthreads = omp_get_max_threads();
       double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
-      // TODO: enable low-memory algorithm for df-ccsd(t)
       if (tempmem > memory) {
-          fprintf(outfile,"\n");
-          fprintf(outfile,"  error: not enough memory for (t).  increase available memory by %7.2lf mb\n",tempmem-1.0*memory/1024./1024.);
-          fprintf(outfile,"\n");
-          fflush(outfile);
-          throw PsiException("not enough memory (ccsd(t)).",__FILE__,__LINE__);
-          //fprintf(outfile,"\n  <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          fprintf(outfile,"\n  <<< warning! >>> switched to low-memory (t) algorithm\n\n");
       }
-      //if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
-      //   isLowMemory = true;
-      //   tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
-      //}
+      if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
+         isLowMemory = true;
+         tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
+      }
       fprintf(outfile,"  memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
 
