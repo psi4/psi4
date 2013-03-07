@@ -139,7 +139,7 @@ void CoupledCluster::finalize() {
 }
 
 double CoupledCluster::compute_energy() {
-  PsiReturnType status;
+  PsiReturnType status = Success;
 
   if (options_.get_bool("RUN_MP2")) {
       tstart();
@@ -2375,7 +2375,7 @@ DFCoupledCluster::~DFCoupledCluster()
 
 double DFCoupledCluster::compute_energy() {
 
-  PsiReturnType status;
+  PsiReturnType status = Success;
 
   tstart();
   WriteBanner();
