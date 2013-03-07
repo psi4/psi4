@@ -2559,45 +2559,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           -*/
       options.add_int("MRCC_METHOD", 1);
   }
-  if (name == "CEPA"|| options.read_globals()) {
-      /*- Desired convergence for the t1 and t2 amplitudes, defined as
-      the norm of the change in the amplitudes between iterations.-*/
-      options.add_double("R_CONVERGENCE", 1.0e-7);
-      /*- Maximum number of iterations to converge the t1 and t2
-      amplitudes. -*/
-      options.add_int("MAXITER", 100);
-      /*- Number of vectors to store for DIIS extrapolation. -*/
-      options.add_int("DIIS_MAX_VECS", 8);
-      /*- Opposite-spin scaling factor for SCS-MP2. -*/
-      options.add_double("MP2_SCALE_OS",1.20);
-      /*- Same-spin scaling factor for SCS-MP2-*/
-      options.add_double("MP2_SCALE_SS",1.0/3.0);
-      /*- Perform SCS-CEPA? If true, note that the
-      default values for the spin component scaling factors
-      are optimized for the CCSD method. -*/
-      options.add_bool("SCS_CEPA", false);
-      /*- Oppposite-spin scaling factor for SCS-CEPA. -*/
-      options.add_double("CEPA_SCALE_OS", 1.27);
-      /*- Same-spin scaling factor for SCS-CEPA. -*/
-      options.add_double("CEPA_SCALE_SS",1.13);
-      /*- Which coupled-pair method is called?  This parameter is
-      used internally by the python driver.  Changing its value
-      won't have any effect on the procedure. -*/
-      options.add_str("CEPA_LEVEL","CEPA(0)");
-      /*- Compute the dipole moment? Note that quadrupole moments
-      will also be computed if PRINT >= 2. -*/
-      options.add_bool("DIPMOM",false);
-      /*- Flag to exclude singly excited configurations from the
-      computation. Note that this algorithm is not optimized for
-      doubles-only computations. -*/
-      options.add_bool("CEPA_NO_SINGLES",false);
-      /*- Use integral-direct implementation of the (ac|bd) t(ij,cd)
-      contraction? AO integrals will be generated on the fly. The
-      CEPA iterations will be slower, but the AO->MO integral
-      transform will be faster, and the out-of-core sort of the
-      (AC|BD) integrals will be avoided. -*/
-      options.add_bool("CEPA_VABCD_DIRECT",false);
-  }
   if (name == "FNOCC"|| options.read_globals()) {
       /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
@@ -2633,6 +2594,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("SCS_MP2", false);
       /*- Do SCS-CCSD? -*/
       options.add_bool("SCS_CCSD", false);
+      /*- Do SCS-CEPA? Note that the scaling factors will be identical
+      to those for SCS-CCSD. -*/
+      options.add_bool("SCS_CEPA", false);
       /*- Opposite-spin scaling factor for SCS-MP2 -*/
       options.add_double("MP2_SCALE_OS",1.20);
       /*- Same-spin scaling factor for SCS-MP2 -*/
@@ -2663,15 +2627,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- Is this a CEPA job? This parameter is used internally
       by the pythond driver.  Changing its value won't have any
-      effect on the procedure. */
+      effect on the procedure. !expert -*/
       options.add_bool("RUN_CEPA",false);
       /*- Which coupled-pair method is called?  This parameter is
       used internally by the python driver.  Changing its value
-      won't have any effect on the procedure. -*/
+      won't have any effect on the procedure. !expert -*/
       options.add_str("CEPA_LEVEL","CEPA(0)");
-      /*- Compute the dipole moment? Note that quadrupole moments
-      will also be computed if PRINT >= 2. This parameter only
-      applies to coupled-pair jobs.  -*/
+      /*- Compute the dipole moment? Note that dipole moments
+      are only available in the FNOCC module for the ACPF, 
+      AQCC, CISD, and CEPA(0) methods. -*/
       options.add_bool("DIPMOM",false);
       /*- Flag to exclude singly excited configurations from a 
       coupled-pair computation.  -*/
