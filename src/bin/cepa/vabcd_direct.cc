@@ -3,7 +3,7 @@
 #include <libmints/sointegral_twobody.h>
 #include<libpsio/psio.hpp>
 #include"coupledpair.h"
-#include"blas.h"
+#include<../bin/fnocc/blas.h>
 #ifdef _OPENMP
     #include<omp.h>
 #endif

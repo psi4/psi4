@@ -1,12 +1,13 @@
 #include<libmints/mints.h>
 #include<psifiles.h>
 #include <libqt/qt.h>
-#include<../bin/fnocc/blas.h>
-#include"coupledpair.h"
+#include"blas.h"
+#include"ccsd.h"
 
 using namespace psi;
+using namespace cepa;
 
-namespace psi{ namespace cepa{
+namespace psi{ namespace fnocc{
 
 double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level);
 void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*ta,double*tb,double c0,double*D1);

@@ -2660,6 +2660,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("DF_BASIS_CC","");
       /*- tolerance for Cholesky decomposition of the ERI tensor -*/
       options.add_double("CHOLESKY_TOLERANCE",1.0e-4);
+
+      /*- Is this a CEPA job? This parameter is used internally
+      by the pythond driver.  Changing its value won't have any
+      effect on the procedure. */
+      options.add_bool("RUN_CEPA",false);
+      /*- Which coupled-pair method is called?  This parameter is
+      used internally by the python driver.  Changing its value
+      won't have any effect on the procedure. -*/
+      options.add_str("CEPA_LEVEL","CEPA(0)");
+      /*- Compute the dipole moment? Note that quadrupole moments
+      will also be computed if PRINT >= 2. This parameter only
+      applies to coupled-pair jobs.  -*/
+      options.add_bool("DIPMOM",false);
+      /*- Flag to exclude singly excited configurations from a 
+      coupled-pair computation.  -*/
+      options.add_bool("CEPA_NO_SINGLES",false);
   }
   if (name == "THERMO"|| options.read_globals()) {
       /*- Temperature in Kelvin for thermodynamic analysis. -*/

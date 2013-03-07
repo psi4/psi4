@@ -12,7 +12,7 @@
     #define omp_get_max_threads() 1
 #endif
 
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 #include"ccsd.h"
 #include<libmints/basisset.h>
 #include<libmints/basisset_parser.h>
@@ -453,7 +453,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
       time_t iter_stop = time(NULL);
       fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter-1,replace_diis_iter-1,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
       iter++;
 
@@ -2684,7 +2684,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
       time_t iter_stop = time(NULL);
       fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter-1,replace_diis_iter-1,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
       iter++;
       if (iter==1){
@@ -3746,5 +3746,696 @@ void DFCoupledCluster::CCResidual(){
         fprintf(outfile,"        A2 =      t(c,d,i,j) (ac|bd)                                    %6.2lf\n",omp_get_wtime()-start);
     }
 }
+
+CoupledPair::CoupledPair(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
+        CoupledCluster(reference_wavefunction,options)
+{
+    reference_wavefunction_ = reference_wavefunction;
+    common_init();
+
+    // which cepa level? 0,1,2,3
+    // also, -1 = cisd
+    // also, -2 = acpf
+    // also, -3 = aqcc
+    std::string cepa = options_.get_str("CEPA_LEVEL");
+
+    // set the wavefunction name
+    name_ = cepa;
+
+    if (cepa == "CEPA(0)") cepa_level = 0;
+    if (cepa == "CEPA(1)") cepa_level = 1;
+    if (cepa == "CEPA(2)") cepa_level = 2;
+    if (cepa == "CEPA(3)") cepa_level = 3;
+    if (cepa == "CISD") cepa_level = -1;
+    if (cepa == "ACPF") cepa_level = -2;
+    if (cepa == "AQCC") cepa_level = -3;
+    cepa_type = (char*)malloc(100*sizeof(char));
+    if (cepa_level == 0)       sprintf(cepa_type,"CEPA(0)");
+    else if (cepa_level == 1)  sprintf(cepa_type,"CEPA(1)");
+    else if (cepa_level == 2)  sprintf(cepa_type,"CEPA(2)");
+    else if (cepa_level == 3)  sprintf(cepa_type,"CEPA(3)");
+    else if (cepa_level == -1) sprintf(cepa_type,"CISD");
+    else if (cepa_level == -2) sprintf(cepa_type,"ACPF");
+    else if (cepa_level == -3) sprintf(cepa_type,"AQCC");
+}
+
+CoupledPair::~CoupledPair()
+{
+}
+
+void CoupledPair::WriteBanner(){
+  fflush(outfile);
+  fprintf(outfile,"\n\n");
+  fprintf(outfile, "        *******************************************************\n");
+  fprintf(outfile, "        *                                                     *\n");
+  if (options_.get_str("CEPA_LEVEL")=="CEPA(0)"){
+     fprintf(outfile, "        *                       CEPA(0)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA(1)"){
+     fprintf(outfile, "        *                       CEPA(1)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options_.get_str("CEPA_LEVEL")=="CEPA(2)"){
+     fprintf(outfile, "        *                       CEPA(2)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  if (options_.get_str("CEPA_LEVEL")=="CEPA(3)"){
+     fprintf(outfile, "        *                       CEPA(3)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options_.get_str("CEPA_LEVEL")=="ACPF"){
+     fprintf(outfile, "        *                        ACPF                         *\n");
+     fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
+  }
+  else if (options_.get_str("CEPA_LEVEL")=="AQCC"){
+     fprintf(outfile, "        *                        AQCC                         *\n");
+     fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
+  }
+  else if (options_.get_str("CEPA_LEVEL")=="CISD"){
+     fprintf(outfile, "        *                        CISD                         *\n");
+     fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
+  }
+
+
+  fprintf(outfile, "        *                                                     *\n");
+  fprintf(outfile, "        *                   Eugene DePrince                   *\n");
+  fprintf(outfile, "        *                                                     *\n");
+  fprintf(outfile, "        *******************************************************\n");
+  fprintf(outfile,"\n\n");
+  fflush(outfile);
+}
+
+double CoupledPair::compute_energy() {
+  PsiReturnType status = Success;
+
+  // integral sort
+  tstart();
+  SortIntegrals(nfzc,nfzv,nmo+nfzc+nfzv,ndoccact,nvirt,options_,reference_wavefunction_->isCIM());
+  tstop();
+
+  // solve cepa equations
+  tstart();
+  WriteBanner();
+  AllocateMemory();
+  status = CEPAIterations();
+  tstop();
+
+  // mp2 energy
+  Process::environment.globals["MP2 CORRELATION ENERGY"]               = emp2;
+  Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
+  Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"]     = emp2_ss;
+  Process::environment.globals["MP2 TOTAL ENERGY"]                     = emp2 + escf;
+
+  // cepa energy
+  char*cepatype = (char*)malloc(100*sizeof(char));
+  if (cepa_level == 0){
+     Process::environment.globals["CEPA(0) CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["CEPA(0) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["CEPA(0) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["CEPA(0) TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == 1){
+     Process::environment.globals["CEPA(1) CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["CEPA(1) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["CEPA(1) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["CEPA(1) TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == 2){
+     Process::environment.globals["CEPA(2) CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["CEPA(2) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["CEPA(2) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["CEPA(2) TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == 3){
+     Process::environment.globals["CEPA(3) CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["CEPA(3) OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["CEPA(3) SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["CEPA(3) TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == -1){
+     Process::environment.globals["CISD CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["CISD OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["CISD SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["CISD TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == -2){
+     Process::environment.globals["ACPF CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["ACPF OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["ACPF SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["ACPF TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  if (cepa_level == -3){
+     Process::environment.globals["AQCC CORRELATION ENERGY"]               = eccsd;
+     Process::environment.globals["AQCC OPPOSITE-SPIN CORRELATION ENERGY"] = eccsd_os;
+     Process::environment.globals["AQCC SAME-SPIN CORRELATION ENERGY"]     = eccsd_ss;
+     Process::environment.globals["AQCC TOTAL ENERGY"]                     = eccsd + escf;
+  }
+  Process::environment.globals["CURRENT ENERGY"] = eccsd + escf;
+  Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd;
+
+  // build opdm in case we want properties.  don't build if cim.
+  if ( cepa_level<=0 && !reference_wavefunction_->isCIM() ) {
+      if (options_.get_bool("NAT_ORBS")) {
+          //fprintf(outfile,"\n");
+          //fprintf(outfile,"\n");
+          //fprintf(outfile,"       <<< Warning >>>  %s OPDM will have no correction for FNO truncation.\n",cepa_type);
+          //fprintf(outfile,"\n");
+      } else {
+          OPDM();
+      }
+  }
+
+  free(cepatype);
+
+  finalize();
+
+  return eccsd+escf;
+}
+
+/*===================================================================
+
+  solve cepa equations
+
+===================================================================*/
+PsiReturnType CoupledPair::CEPAIterations(){
+
+  long int o = ndoccact;
+  long int v = nvirt;
+
+  iter                  = 0;
+  int diis_iter         = 0;
+  int replace_diis_iter = 1;
+  double nrm            = 1.0;
+  double Eold           = 1.0e9;
+  eccsd                 = 0.0;
+
+  fprintf(outfile,"\n");
+  fprintf(outfile,
+    "  Begin %s iterations\n\n",cepa_type);
+  fprintf(outfile,
+    "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
+  fflush(outfile);
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio_address addr;
+
+  // zero residual
+  psio->open(PSIF_DCC_R2,PSIO_OPEN_NEW);
+  memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
+  psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_R2,1);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
+     psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+  }
+  pair_energy = (double*)malloc(o*o*sizeof(double));
+
+  // cepa diagrams split up as tasks
+  DefineLinearTasks();
+
+  // start timing the iterations
+  struct tms total_tmstime;
+  const long clk_tck = sysconf(_SC_CLK_TCK);
+  times(&total_tmstime);
+
+  time_t time_start = time(NULL);
+  double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+  double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+
+  while(iter<maxiter && nrm > r_conv){
+      time_t iter_start = time(NULL);
+
+      // evaluate cepa diagrams
+      if (iter>0){
+         memset((void*)w1,'\0',o*v*sizeof(double));
+         for (int i=0; i<nltasks; i++) {
+             (*this.*LTasklist[i].func)(LParams[i]);
+         }
+      }
+
+      // update the amplitudes and check the energy
+      Eold = eccsd;
+      PairEnergy();
+      UpdateT1();
+      UpdateT2();
+
+      // add vector to list for diis
+      DIISOldVector(iter,diis_iter,replace_diis_iter);
+
+      // diis error vector and convergence check
+      nrm = DIISErrorVector(diis_iter,replace_diis_iter,iter);
+
+      // diis extrapolation
+      if (diis_iter>1){
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         DIISNewAmplitudes(diis_iter,replace_diis_iter);
+      }
+      // if cepa_no_singles, zero t1
+      if (options_.get_bool("CEPA_NO_SINGLES")){
+         memset((void*)t1,'\0',o*v*sizeof(double));
+      }
+      eccsd = CheckEnergy();
+
+      if (diis_iter < maxdiis ) {
+         replace_diis_iter++;
+      }else {
+          double min = 1.0e9;
+          for (int j = 1; j <= (diis_iter < maxdiis ? diis_iter : maxdiis); j++) {
+              if ( fabs( diisvec[j-1] ) < min ) {
+                  min = fabs( diisvec[j-1] );
+                  replace_diis_iter = j;
+              }
+          }
+      }
+
+      if (diis_iter<=maxdiis) diis_iter++;
+      //else if (replace_diis_iter<maxdiis) replace_diis_iter++;
+      //else replace_diis_iter = 1;
+
+      time_t iter_stop = time(NULL);
+      fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
+            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+      fflush(outfile);
+      iter++;
+      if (iter==1) emp2 = eccsd;
+      if (iter==1) SCS_MP2();
+  }
+  times(&total_tmstime);
+  time_t time_stop = time(NULL);
+  double user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+  double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+  psio.reset();
+
+  if (iter==maxiter){
+     throw PsiException("  CEPA iterations did not converge.",__FILE__,__LINE__);
+  }
+
+  // is this a cim-cepa computation?
+  if (reference_wavefunction_->isCIM()){
+     Local_SCS_CEPA();
+     eccsd = eccsd_os + eccsd_ss;
+  }
+  else{
+     SCS_CEPA();
+  }
+
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  %s iterations converged!\n",cepa_type);
+  fprintf(outfile,"\n");
+
+  // delta mp2 correction for fno computations:
+  if (options_.get_bool("NAT_ORBS")){
+      double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
+      double delta_emp2_os = Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] - emp2_os;
+      double delta_emp2_ss = Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] - emp2_ss;
+
+      emp2 += delta_emp2;
+      emp2_os += delta_emp2_os;
+      emp2_ss += delta_emp2_ss;
+
+      eccsd += delta_emp2;
+      eccsd_os += delta_emp2_os;
+      eccsd_ss += delta_emp2_ss;
+
+      fprintf(outfile,"        OS MP2 FNO correction:             %20.12lf\n",delta_emp2_os);
+      fprintf(outfile,"        SS MP2 FNO correction:             %20.12lf\n",delta_emp2_ss);
+      fprintf(outfile,"        MP2 FNO correction:                %20.12lf\n",delta_emp2);
+      fprintf(outfile,"\n");
+  }
+
+  fprintf(outfile,"        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac);
+  fprintf(outfile,"        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss*emp2_ss_fac);
+  fprintf(outfile,"        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+  fprintf(outfile,"      * SCS-MP2 total energy:              %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
+  fprintf(outfile,"\n");
+  fprintf(outfile,"        OS MP2 correlation energy:         %20.12lf\n",emp2_os);
+  fprintf(outfile,"        SS MP2 correlation energy:         %20.12lf\n",emp2_ss);
+  fprintf(outfile,"        MP2 correlation energy:            %20.12lf\n",emp2);
+  fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
+  fprintf(outfile,"\n");
+  if (cepa_level>=0){
+     if (options_.get_bool("SCS_CEPA")){
+        fprintf(outfile,"        OS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
+        fprintf(outfile,"        SS SCS-%s correlation energy: %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
+        fprintf(outfile,"        SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        fprintf(outfile,"      * SCS-%s total energy:          %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        fprintf(outfile,"\n");
+     }
+     fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_os);
+     fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,eccsd_ss);
+     fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,eccsd);
+     fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,eccsd+escf);
+  }else{
+     if (options_.get_bool("SCS_CEPA")){
+        fprintf(outfile,"        OS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac);
+        fprintf(outfile,"        SS SCS-%s correlation energy:    %20.12lf\n",cepa_type,eccsd_ss*eccsd_ss_fac);
+        fprintf(outfile,"        SCS-%s correlation energy:       %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+        fprintf(outfile,"      * SCS-%s total energy:             %20.12lf\n",cepa_type,eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+        fprintf(outfile,"\n");
+     }
+     fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_os);
+     fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,eccsd_ss);
+     fprintf(outfile,"        %s correlation energy:           %20.12lf\n",cepa_type,eccsd);
+     fprintf(outfile,"      * %s total energy:                 %20.12lf\n",cepa_type,eccsd+escf);
+  }
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  Total time for %s iterations: %10.2lf s (user)\n",cepa_type,user_stop-user_start);
+  fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
+  fprintf(outfile,"                                  %10d s (total)\n",(int)time_stop-(int)time_start);
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  Time per iteration:             %10.2lf s (user)\n",(user_stop-user_start)/(iter-1));
+  fprintf(outfile,"                                  %10.2lf s (system)\n",(sys_stop-sys_start)/(iter-1));
+  fprintf(outfile,"                                  %10.2lf s (total)\n",((double)time_stop-(double)time_start)/(iter-1));
+  fflush(outfile);
+
+  free(pair_energy);
+  return Success;
+}
+
+void CoupledPair::PairEnergy(){
+
+  if (cepa_level<1) return;
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempt;
+  }
+
+  for (long int i=0; i<o; i++){
+      for (long int j=0; j<o; j++){
+          double energy=0.0;
+          for (long int a=o; a<rs; a++){
+              for (long int b=o; b<rs; b++){
+                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  energy += integrals[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+              }
+          }
+          pair_energy[i*o+j] = energy;
+      }
+  }
+}
+
+void CoupledPair::UpdateT2() {
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
+
+  double fac = 1.0;
+  if (cepa_level == 0)       fac = 0.0;
+  else if (cepa_level == -1) fac = 1.0;
+  else if (cepa_level == -2) fac = 1.0/o;
+  else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
+  double energy = eccsd * fac;
+
+  for (long int i=0; i<o; i++){
+      double di = - eps[i];
+      for (long int j=0; j<o; j++){
+          double dij = di-eps[j];
+
+          if (cepa_level == 1){
+             energy = 0.0;
+             for (long int k=0; k<o; k++){
+                 energy += 0.5*(pair_energy[i*o+k]+pair_energy[j*o+k]);
+             }
+          }else if (cepa_level == 2){
+             energy = pair_energy[i*o+j];
+          }else if (cepa_level == 3){
+             energy = -pair_energy[i*o+j];
+             for (long int k=0; k<o; k++){
+                 energy += (pair_energy[i*o+k]+pair_energy[j*o+k]);
+             }
+          }
+
+          for (long int a=o; a<rs; a++){
+              double dija = dij + eps[a];
+              for (long int b=o; b<rs; b++){
+                  double dijab = dija + eps[b];
+
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+
+                  double tnew = - (integrals[iajb] + tempv[ijab])/(dijab-energy);
+                  tempt[ijab] = tnew;
+              }
+          }
+      }
+  }
+
+  // error vectors for diis are in tempv:
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+  }else{
+     F_DCOPY(o*o*v*v,tb,1,tempv,1);
+  }
+  F_DAXPY(o*o*v*v,-1.0,tempt,1,tempv,1);
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+  }else{
+     F_DCOPY(o*o*v*v,tempt,1,tb,1);
+  }
+
+  psio.reset();
+}
+
+void CoupledPair::UpdateT1() {
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  double fac = 1.0;
+  if (cepa_level == 0)       fac = 0.0;
+  else if (cepa_level == -1) fac = 1.0;
+  else if (cepa_level == -2) fac = 1.0/o;
+  else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
+  double energy = eccsd * fac;
+
+  for (long int i=0; i<o; i++){
+
+      if (cepa_level == 1){
+         energy = 0.0;
+         for (long int k=0; k<o; k++){
+             energy += (pair_energy[i*o+k]);
+         }
+      }else if (cepa_level == 2){
+         energy = pair_energy[i*o+i];
+      }else if (cepa_level == 3){
+         energy = -pair_energy[i*o+i];
+         for (long int k=0; k<o; k++){
+             energy += 2.0*(pair_energy[i*o+k]);
+         }
+      }
+
+      for (long int a=o; a<rs; a++){
+          double dia = -eps[i]+eps[a];
+          double tnew = - (w1[(a-o)*o+i])/(dia-energy);
+          w1[(a-o)*o+i] = tnew;
+      }
+  }
+  // error vector for diis is in tempv:
+  F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
+  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  F_DCOPY(o*v,w1,1,t1,1);
+}
+
+void CoupledPair::Local_SCS_CEPA(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
+
+  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
+  double**Rii_pointer = Rii->pointer();
+
+  // transform E2iajb back from quasi-canonical basis
+  for (long int i=0; i<o; i++){
+      for (long int a=0; a<v; a++){
+          for (long int j=0; j<o; j++){
+              for (long int b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii_pointer[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempv;
+  }
+
+  // transform t2 back from quasi-canonical basis
+  for (long int a=0; a<v; a++){
+      for (long int b=0; b<v; b++){
+          for (long int i=0; i<o; i++){
+              for (long int j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+
+  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  for (long int a=o; a<rs; a++){
+      for (long int b=o; b<rs; b++){
+          for (long int i=0; i<o; i++){
+              for (long int j=0; j<o; j++){
+
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int jaib = iajb + (i-j)*v*(1-v*o);
+                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*factor_pointer[i];
+              }
+          }
+      }
+  }
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
+
+  psio.reset();
+}
+void CoupledPair::SCS_CEPA(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempv;
+  }
+
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  for (long int a=o; a<rs; a++){
+      for (long int b=o; b<rs; b++){
+          for (long int i=0; i<o; i++){
+              for (long int j=0; j<o; j++){
+
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int jaib = iajb + (i-j)*v*(1-v*o);
+                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+
+                  osenergy += integrals[iajb]*(tb[ijab]);
+                  ssenergy += integrals[iajb]*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+              }
+          }
+      }
+  }
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
+
+  psio.reset();
+}
+double CoupledPair::CheckEnergy(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_DCC_IAJB,1);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempv;
+  }
+
+  double energy = 0.0;
+  for (long int a=o; a<rs; a++){
+      for (long int b=o; b<rs; b++){
+          for (long int i=0; i<o; i++){
+              for (long int j=0; j<o; j++){
+
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int jaib = iajb + (i-j)*v*(1-v*o);
+                  long int ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+
+                  energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]);
+              }
+          }
+      }
+  }
+
+  psio.reset();
+
+  return energy;
+}
+
+void CoupledPair::finalize(){
+  free(integrals);
+  free(tempt);
+  free(tempv);
+  if (!t2_on_disk){
+     free(tb);
+  }
+  free(w1);
+  free(t1);
+  free(I1);
+  free(I1p);
+  free(diisvec);
+
+  // there is something weird with chkpt_ ... reset it
+  chkpt_.reset();
+}
+
 
 }} // end of namespaces

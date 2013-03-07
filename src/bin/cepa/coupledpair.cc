@@ -11,7 +11,7 @@
     #include<omp.h>
 #endif
 
-#include"blas.h"
+#include<../bin/fnocc/blas.h>
 #include"coupledpair.h"
 
 using namespace psi;

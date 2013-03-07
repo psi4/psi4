@@ -1946,9 +1946,11 @@ def run_fnodfcc(name, **kwargs):
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','DFCC'],
         ['FNOCC','NAT_ORBS'],
+        ['FNOCC','RUN_CEPA'],
         ['SCF','SCF_TYPE'])
 
     PsiMod.set_local_option('FNOCC','DFCC', True)
+    PsiMod.set_local_option('FNOCC','RUN_CEPA', False)
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
@@ -2016,9 +2018,11 @@ def run_fnocc(name, **kwargs):
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FNOCC','DFCC'],
+        ['FNOCC','RUN_CEPA'],
         ['FNOCC','NAT_ORBS'])
 
     PsiMod.set_local_option('FNOCC','DFCC', False)
+    PsiMod.set_local_option('FNOCC','RUN_CEPA', False)
 
     # which method?
     if (lowername == '_ccsd'):
@@ -2143,37 +2147,57 @@ def run_cepa(name, **kwargs):
     uppername = name.upper()
     kwargs = kwargs_lower(kwargs)
 
-
     # save user options
     optstash = OptionsState(
         ['TRANSQT2', 'WFN'],
-        ['CEPA', 'CEPA_NO_SINGLES'])
+        ['FNOCC', 'NAT_ORBS'],
+        ['FNOCC', 'RUN_CEPA'],
+        ['FNOCC', 'CEPA_NO_SINGLES'])
 
-    # override symmetry if integral direct
-    if PsiMod.get_option('CEPA', 'CEPA_VABCD_DIRECT'):
-        molecule = PsiMod.get_active_molecule()
-        molecule.update_geometry()
-        molecule.reset_point_group('c1')
-        #molecule.fix_orientation(1)
-        #molecule.update_geometry()
-
-    # throw an exception for open-shells
-    if (PsiMod.get_option('SCF', 'REFERENCE') != 'RHF'):
-        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
+    PsiMod.set_local_option('FNOCC','RUN_CEPA', True)
 
     # what type of cepa?
     cepa_level = uppername
     if (lowername == 'cepa(2)'):
-        #cepa_level = 'CEPA(2)'
-        # throw an exception for cepa(2)
-        PsiMod.print_out("\n")
-        PsiMod.print_out("Error: %s not implemented\n" % lowername)
-        PsiMod.print_out("\n")
+        raise ValidationError("Error: %s not implemented\n" % lowername)
     if (lowername == 'dci'):
         cepa_level = 'CISD'
     if (lowername == 'sdci'):
         cepa_level = 'CISD'
-    PsiMod.set_local_option('CEPA', 'CEPA_LEVEL', cepa_level)
+
+    if (lowername == 'fno-cepa(0)'):
+        cepa_level = 'CEPA(0)'
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+    if (lowername == 'fno-cepa(1)'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'CEPA(1)'
+    if (lowername == 'fno-cepa(3)'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'CEPA(3)'
+    if (lowername == 'fno-acpf'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'ACPF'
+    if (lowername == 'fno-aqcc'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'AQCC'
+    if (lowername == 'fno-sdci'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'CISD'
+    if (lowername == 'fno-dci'):
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
+        cepa_level = 'CISD'
+
+    PsiMod.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level)
+
+    # override symmetry for fno-cepa
+    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
+        molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+        molecule.reset_point_group('c1')
+
+    # throw an exception for open-shells
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
 
     PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
     scf_helper(name, **kwargs)
@@ -2183,22 +2207,27 @@ def run_cepa(name, **kwargs):
         mints = PsiMod.MintsHelper()
         mints.integrals()
 
-    # only call transqt2() if (ac|bd) is not integral direct
-    if PsiMod.get_option('CEPA', 'CEPA_VABCD_DIRECT') == False:
-        PsiMod.transqt2()
+    if PsiMod.get_option('FNOCC','NAT_ORBS') == False:
+       PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+       PsiMod.transqt2()
 
-    PsiMod.cepa()
+    # run cepa
+    returnvalue = PsiMod.fnocc()
 
     # one-electron properties
-    if PsiMod.get_option('CEPA', 'DIPMOM'):
+    if PsiMod.get_option('FNOCC', 'DIPMOM'):
         if cepa_level == "CEPA(1)" or cepa_level == "CEPA(3)":
+            PsiMod.print_out("\n")
+            PsiMod.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
+            PsiMod.print_out("\n")
+        elif PsiMod.get_option('FNOCC','NAT_ORBS'):
             PsiMod.print_out("\n")
             PsiMod.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
             PsiMod.print_out("\n")
         else:
             oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
 
-    # restore options ( transqt2/wfn, cepa/cepa_no_singles )
+    # restore options 
     optstash.restore()
 
     return PsiMod.get_variable("CURRENT ENERGY")

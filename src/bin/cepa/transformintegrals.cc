@@ -12,7 +12,7 @@
 #endif
 
 #include"coupledpair.h"
-#include"blas.h"
+#include<../bin/fnocc/blas.h>
 
 using namespace psi;
 namespace psi{ namespace cepa{
