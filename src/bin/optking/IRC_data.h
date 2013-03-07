@@ -9,8 +9,6 @@
 #include <fstream>
 #include <vector>
 
-#include "package.h"
-
 #include "linear_algebra.h"
 #include "molecule.h"
 #include "print.h"

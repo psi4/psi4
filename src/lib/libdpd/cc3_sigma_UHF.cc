@@ -59,8 +59,8 @@ void cc3_sigma_UHF_AAA(dpdbuf4 *CMNEF, dpdbuf4 *WABEI, dpdbuf4 *WMBIJ,
   virtpi = avirtpi;
   vir_off = avir_off;
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
 
   if (do_singles) {
     dpd_file2_mat_init(SIA);
@@ -290,8 +290,8 @@ void cc3_sigma_UHF_BBB(dpdbuf4 *Cmnef, dpdbuf4 *Wabei, dpdbuf4 *Wmbij,
   virtpi = bvirtpi;
   vir_off = bvir_off;
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_init(&fAB, CC_OEI, 0, 3, 3, "fab");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
 
   if (do_singles) {
 
@@ -578,10 +578,10 @@ void cc3_sigma_UHF_AAB(dpdbuf4 *C2AA, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
     }
   }
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
 
   /* target T3 amplitudes go in here */
   W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -1115,16 +1115,16 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
 
     /* put result here until end of function */
     S_irr = SIjAb->file.my_irrep;
-    dpd_buf4_init(&SiJaB, CC_TMP0, S_irr, 23, 29, 23, 29, 0, "CC3 SiJaB");
+    dpd_buf4_init(&SiJaB, PSIF_CC_TMP0, S_irr, 23, 29, 23, 29, 0, "CC3 SiJaB");
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&SiJaB, h);
     }
   }
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
-  dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
 
   /* target T3 amplitudes go in here */
   W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -1563,9 +1563,9 @@ void cc3_sigma_UHF_BBA(dpdbuf4 *C2BB, dpdbuf4 *C2AB, dpdbuf4 *C2BA,
       dpd_buf4_mat_irrep_wrt(&SiJaB, h);
       dpd_buf4_mat_irrep_close(&SiJaB, h);
     }
-    dpd_buf4_sort(&SiJaB, CC_TMP0, qpsr, 22, 28, "CC3 SIjAb");
+    dpd_buf4_sort(&SiJaB, PSIF_CC_TMP0, qpsr, 22, 28, "CC3 SIjAb");
     dpd_buf4_close(&SiJaB);
-    dpd_buf4_init(&SiJaB, CC_TMP0, S_irr, 22, 28, 22, 28, 0, "CC3 SIjAb");
+    dpd_buf4_init(&SiJaB, PSIF_CC_TMP0, S_irr, 22, 28, 22, 28, 0, "CC3 SIjAb");
     dpd_buf4_axpy(&SiJaB, SIjAb, 1.0);
     dpd_buf4_close(&SiJaB);
   }

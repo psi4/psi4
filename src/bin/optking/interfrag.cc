@@ -211,7 +211,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[2][xyz] = fragment_com[xyz];
 
-    double **axes, *moi;
+    double **axes=NULL, *moi=NULL;
     int i = A->principal_axes(new_geom_A, axes, moi);
 
     fprintf(outfile,"Number of principal axes returned is %d\n", i);

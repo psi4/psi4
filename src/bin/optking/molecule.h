@@ -325,6 +325,7 @@ printf("adding %d auxiliary bonds\n", n);
   void prfo_step(void);
   void backstep(void);
   void sd_step(void);
+  void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);
   void check_intrafragment_zero_angles(double const * const dq);
@@ -364,7 +365,7 @@ printf("adding %d auxiliary bonds\n", n);
   // function to obtain geometry and gradient
   void read_geom_grad(void);
 
-  // tell whether internal coordinate is frozen
+  // Compute constraint matrix
   double ** compute_constraints(void);
 
   void add_efp_fragments(void);
@@ -374,6 +375,9 @@ printf("adding %d auxiliary bonds\n", n);
 
   // determine whether a linear combination of intcos breaks symmetry
   bool intco_combo_is_symmetric(double *intco_combo, int dim);
+
+  // Apply string list of user-specified internals to be frozen.
+  bool apply_input_constraints();
 
 };
 

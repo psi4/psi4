@@ -38,23 +38,23 @@ void pertbar(const char *pert, int irrep, int anti)
 
   /** XXBAR_ME **/
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "%s_ME", prefix2);
-  dpd_file2_copy(&f, CC_OEI, lbl);
+  dpd_file2_copy(&f, PSIF_CC_OEI, lbl);
   dpd_file2_close(&f);
 
   /** XXBAR_MI **/
   sprintf(lbl, "%s_IJ", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 0, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
   sprintf(lbl, "%s_MI", prefix2);
-  dpd_file2_copy(&f, CC_OEI, lbl);
+  dpd_file2_copy(&f, PSIF_CC_OEI, lbl);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_MI", prefix2);
-  dpd_file2_init(&fbar1, CC_OEI, irrep, 0, 0, lbl);
+  dpd_file2_init(&fbar1, PSIF_CC_OEI, irrep, 0, 0, lbl);
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_contract222(&f, &t1, &fbar1, 0, 0, 1, 1);
   dpd_file2_close(&t1);
   dpd_file2_close(&f);
@@ -62,16 +62,16 @@ void pertbar(const char *pert, int irrep, int anti)
 
   /** XXBAR_AE **/
   sprintf(lbl, "%s_AB", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 1, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
   sprintf(lbl, "%s_AE", prefix2);
-  dpd_file2_copy(&f, CC_OEI, lbl);
+  dpd_file2_copy(&f, PSIF_CC_OEI, lbl);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_AE", prefix2);
-  dpd_file2_init(&fbar1, CC_OEI, irrep, 1, 1, lbl);
+  dpd_file2_init(&fbar1, PSIF_CC_OEI, irrep, 1, 1, lbl);
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_contract222(&t1, &f, &fbar1, 1, 1, -1, 1);
   dpd_file2_close(&t1);
   dpd_file2_close(&f);
@@ -79,41 +79,41 @@ void pertbar(const char *pert, int irrep, int anti)
 
   /** XXBAR_IA **/
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "%s_IA", prefix2);
-  dpd_file2_copy(&f, CC_OEI, lbl);
+  dpd_file2_copy(&f, PSIF_CC_OEI, lbl);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_IA", prefix2);
-  dpd_file2_init(&fbar1, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&fbar1, PSIF_CC_OEI, irrep, 0, 1, lbl);
   if(anti) dpd_file2_scm(&fbar1, -1);
 
   sprintf(lbl, "%s_AB", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 1, 1, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_contract222(&t1, &f, &fbar1, 0, 0, 1, 1);
   dpd_file2_close(&t1);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_IJ", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 0, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_contract222(&f, &t1, &fbar1, 1, 1, -1, 1);
   dpd_file2_close(&t1);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
   dpd_contract422(&t2, &f, &fbar1, 0, 0, 1, 1);
   dpd_buf4_close(&t2);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_MI", prefix3);
-  dpd_file2_init(&z, CC_TMP0, irrep, 0, 0, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&z, PSIF_CC_TMP0, irrep, 0, 0, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   dpd_contract222(&f, &t1, &z, 0, 0, 1, 0);
   dpd_file2_close(&f);
   dpd_contract222(&z, &t1, &fbar1, 1, 1, -1, 1);
@@ -124,10 +124,10 @@ void pertbar(const char *pert, int irrep, int anti)
 
   /** LBAR_MbIj **/
   sprintf(lbl, "%s_MbIj", prefix2);
-  dpd_buf4_init(&fbar2, CC_LR, irrep, 10, 0, 10, 0, 0, lbl);
+  dpd_buf4_init(&fbar2, PSIF_CC_LR, irrep, 10, 0, 10, 0, 0, lbl);
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract244(&f, &t2, &fbar2, 1, 2, 0, 1, 0);
   dpd_buf4_close(&t2);
   dpd_file2_close(&f);
@@ -135,41 +135,41 @@ void pertbar(const char *pert, int irrep, int anti)
 
   /** LBAR_IjAb **/
   sprintf(lbl, "%s_IjAb", prefix2);
-  dpd_buf4_init(&fbar2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  dpd_buf4_init(&fbar2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
 
   sprintf(lbl, "%s_AB", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 1, 1, lbl);
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract424(&t2, &f, &fbar2, 3, 1, 0, 1, 0);
   dpd_contract244(&f, &t2, &fbar2, 1, 2, 1, 1, 1);
   dpd_buf4_close(&t2);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_IJ", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 0, lbl);
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract424(&t2, &f, &fbar2, 1, 0, 1, -1, 1);
   dpd_contract244(&f, &t2, &fbar2, 0, 0, 0, -1, 1);
   dpd_buf4_close(&t2);
   dpd_file2_close(&f);
 
   sprintf(lbl, "%s_AE", prefix3);
-  dpd_file2_init(&z, CC_TMP0, irrep, 1, 1, lbl);
-  dpd_file2_init(&t1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&z, PSIF_CC_TMP0, irrep, 1, 1, lbl);
+  dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   sprintf(lbl, "%s_IA", prefix1);
-  dpd_file2_init(&f, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
   dpd_contract222(&t1, &f, &z, 1, 1, -1, 0);
   dpd_file2_close(&f);
   dpd_file2_close(&t1);
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract424(&t2, &z, &fbar2, 3, 1, 0, 1, 1);
   dpd_contract244(&z, &t2, &fbar2, 1, 2, 1, 1, 1);
   dpd_buf4_close(&t2);
   dpd_file2_close(&z);
 
   sprintf(lbl, "%s_MI", prefix3);
-  dpd_file2_init(&z, CC_TMP0, irrep, 0, 0, lbl); /* generated above */
-  dpd_buf4_init(&t2, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_file2_init(&z, PSIF_CC_TMP0, irrep, 0, 0, lbl); /* generated above */
+  dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
   dpd_contract424(&t2, &z, &fbar2, 1, 0, 1, -1, 1);
   dpd_contract244(&z, &t2, &fbar2, 0, 0, 0, -1, 1);
   dpd_buf4_close(&t2);

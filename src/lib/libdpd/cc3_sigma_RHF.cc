@@ -56,15 +56,15 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
   nirreps = CIjAb->params->nirreps;
 
   /* these are sent to T3 function */
-  dpd_file2_init(&fIJ2, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB2, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ2, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB2, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fIJ2);
   dpd_file2_mat_init(&fAB2);
   dpd_file2_mat_rd(&fIJ2);
   dpd_file2_mat_rd(&fAB2);
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_init(&fAB);
   dpd_file2_mat_rd(&fIJ);
@@ -82,11 +82,11 @@ void cc3_sigma_RHF(dpdbuf4 *CIjAb, dpdbuf4 *WAbEi, dpdbuf4 *WMbIj,
     exit(1);
   }
   if (do_singles) {
-    dpd_file2_init(&SIA_inc, CC_TMP0, GS, 0, 1, "CC3 SIA");  /* T3->S1 increment */
+    dpd_file2_init(&SIA_inc, PSIF_CC_TMP0, GS, 0, 1, "CC3 SIA");  /* T3->S1 increment */
     dpd_file2_mat_init(&SIA_inc);
   }
   if (do_doubles) {
-    dpd_buf4_init(&SIjAb_inc, CC_TMP0, GS, 0, 5, 0, 5, 0, "CC3 SIjAb");
+    dpd_buf4_init(&SIjAb_inc, PSIF_CC_TMP0, GS, 0, 5, 0, 5, 0, "CC3 SIjAb");
     dpd_buf4_scm(&SIjAb_inc, 0);
   }
 

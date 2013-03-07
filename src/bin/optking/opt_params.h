@@ -7,6 +7,8 @@
 #ifndef _opt_opt_params_h_
 #define _opt_opt_params_h_
 
+#include <string>
+
 namespace opt {
 
 struct OPT_PARAMS {
@@ -39,7 +41,7 @@ struct OPT_PARAMS {
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
   // Newton-Raphson (NR), rational function optimization step, steepest descent step
-  enum STEP_TYPE {NR, RFO, P_RFO, SD} step_type;
+  enum STEP_TYPE {NR, RFO, P_RFO, SD, LINESEARCH_STATIC} step_type;
 
   // Hessian guess
   // Note the Lindh "intrafragment" option is cartesian so it applies to all coordinates.
@@ -86,6 +88,11 @@ struct OPT_PARAMS {
   bool efp_fragments_only;
 
   int consecutive_backsteps_allowed;
+
+  // list of atoms for frozen bonds, angles, dihedrals provided by user in input
+  std::string frozen_distance_str;
+  std::string frozen_bend_str;  
+  std::string frozen_dihedral_str;
 
 // ** Unlikely to need modified **
 
@@ -138,7 +145,11 @@ struct OPT_PARAMS {
   // for intcos with user-specified equilibrium values - this is the force constant
   double fixed_eq_val_force_constant;
 
-
+  // If a static line search is being done (which currently just outputs N geometries)
+  // these control the min and the max of the largest internal coordinate displacement.
+  int linesearch_static_N;
+  double linesearch_static_min;
+  double linesearch_static_max;
 };
 
 }

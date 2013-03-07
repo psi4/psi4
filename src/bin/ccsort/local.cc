@@ -766,7 +766,7 @@ void local_init(Options & options)
   /* Grab the MO-basis Fock matrix */
   Fmo = block_matrix(nso, nso);
   for(i=0; i < nfzc; i++) Fmo[i][i] = eps_all[i];
-  dpd_file2_init(&fock, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fock);
   dpd_file2_mat_rd(&fock);
   for(i=0; i < nocc; i++)
@@ -775,7 +775,7 @@ void local_init(Options & options)
   dpd_file2_mat_close(&fock);
   dpd_file2_close(&fock);
 
-  dpd_file2_init(&fock, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fock, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fock);
   dpd_file2_mat_rd(&fock);
   for(i=0; i < nvir; i++)
@@ -989,38 +989,38 @@ void local_done(void)
   nvir = local.nvir;
   natom = local.natom;
 
-  psio_write_entry(CC_INFO, "Local Cutoff", (char *) &local.cutoff,
+  psio_write_entry(PSIF_CC_INFO, "Local Cutoff", (char *) &local.cutoff,
                    sizeof(double));
-  psio_write_entry(CC_INFO, "Local Domain Length", (char *) local.domain_len,
+  psio_write_entry(PSIF_CC_INFO, "Local Domain Length", (char *) local.domain_len,
                    nocc*sizeof(int));
-  psio_write_entry(CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
+  psio_write_entry(PSIF_CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
                    nocc*nocc*sizeof(int));
-  psio_write_entry(CC_INFO, "Local Pair Domain NR Length", (char *) local.pairdom_nrlen,
+  psio_write_entry(PSIF_CC_INFO, "Local Pair Domain NR Length", (char *) local.pairdom_nrlen,
                    nocc*nocc*sizeof(int));
-  psio_write_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
+  psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
                    nocc*nocc*sizeof(int));
-  psio_write_entry(CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
+  psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
                    nocc*sizeof(double));
 
   next = PSIO_ZERO;
   for(i=0; i<nocc; i++)
-    psio_write(CC_INFO, "Local Domains", (char *) local.domain[i],
+    psio_write(PSIF_CC_INFO, "Local Domains", (char *) local.domain[i],
                natom*sizeof(int), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij<nocc*nocc; ij++)
-    psio_write(CC_INFO, "Local Pair Domains", (char *) local.pairdomain[ij],
+    psio_write(PSIF_CC_INFO, "Local Pair Domains", (char *) local.pairdomain[ij],
                natom*sizeof(int), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
-      psio_write(CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
+      psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
                  local.pairdom_nrlen[ij]*sizeof(double), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
-      psio_write(CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
+      psio_write(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
                  local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
-      psio_write(CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
+      psio_write(PSIF_CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
                  nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
 
   if(params.ref == 0 || params.ref == 1) {

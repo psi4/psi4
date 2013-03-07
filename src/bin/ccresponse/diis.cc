@@ -55,8 +55,8 @@ void diis(int iter, const char *pert, int irrep, double omega)
 
   if(params.ref == 0) { /** RHF **/
     /* Compute the length of a single error vector */
-    dpd_file2_init(&T1, CC_MISC, irrep, 0, 1, "XXX");
-    dpd_buf4_init(&T2, CC_MISC, irrep, 0, 5, 0, 5, 0, "XXX");
+    dpd_file2_init(&T1, PSIF_CC_MISC, irrep, 0, 1, "XXX");
+    dpd_buf4_init(&T2, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, "XXX");
     for(h=0; h < nirreps; h++) {
       vector_length += T1.params->rowtot[h] * T1.params->coltot[h^irrep];
       vector_length += T2.params->rowtot[h] * T2.params->coltot[h^irrep];
@@ -72,11 +72,11 @@ void diis(int iter, const char *pert, int irrep, double omega)
 
     word=0;
     sprintf(lbl, "New X_%s_IA (%5.3f)", pert, omega);
-    dpd_file2_init(&T1a, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&T1a, PSIF_CC_OEI, irrep, 0, 1, lbl);
     dpd_file2_mat_init(&T1a);
     dpd_file2_mat_rd(&T1a);
     sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-    dpd_file2_init(&T1b, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&T1b, PSIF_CC_OEI, irrep, 0, 1, lbl);
     dpd_file2_mat_init(&T1b);
     dpd_file2_mat_rd(&T1b);
     for(h=0; h < nirreps; h++)
@@ -89,9 +89,9 @@ void diis(int iter, const char *pert, int irrep, double omega)
     dpd_file2_close(&T1b);
 
     sprintf(lbl, "New X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_buf4_init(&T2a, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&T2a, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_buf4_init(&T2b, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&T2b, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&T2a, h);
       dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -108,14 +108,14 @@ void diis(int iter, const char *pert, int irrep, double omega)
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
     sprintf(lbl, "DIIS %s Error Vectors", pert);
-    psio_write(CC_DIIS_ERR, lbl , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_ERR, lbl , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* Store the current amplitude vector on disk */
     word=0;
 
     sprintf(lbl, "New X_%s_IA (%5.3f)", pert, omega);
-    dpd_file2_init(&T1a, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&T1a, PSIF_CC_OEI, irrep, 0, 1, lbl);
     dpd_file2_mat_init(&T1a);
     dpd_file2_mat_rd(&T1a);
     for(h=0; h < nirreps; h++)
@@ -126,7 +126,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
     dpd_file2_close(&T1a);
 
     sprintf(lbl, "New X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_buf4_init(&T2a, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&T2a, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&T2a, h);
       dpd_buf4_mat_irrep_rd(&T2a, h);
@@ -139,7 +139,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
 
     start = psio_get_address(PSIO_ZERO, diis_cycle*vector_length*sizeof(double));
     sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
-    psio_write(CC_DIIS_AMP, lbl , (char *) error[0],
+    psio_write(PSIF_CC_DIIS_AMP, lbl , (char *) error[0],
                vector_length*sizeof(double), start, &end);
 
     /* If we haven't run through enough iterations, set the correct dimensions
@@ -160,7 +160,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
       start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
       sprintf(lbl, "DIIS %s Error Vectors", pert);
-      psio_read(CC_DIIS_ERR, lbl, (char *) vector[0],
+      psio_read(PSIF_CC_DIIS_ERR, lbl, (char *) vector[0],
                 vector_length*sizeof(double), start, &end);
 
       dot_arr(vector[0], vector[0], vector_length, &product);
@@ -172,7 +172,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
         start = psio_get_address(PSIO_ZERO, q*vector_length*sizeof(double));
 
         sprintf(lbl, "DIIS %s Error Vectors", pert);
-        psio_read(CC_DIIS_ERR, lbl, (char *) vector[1],
+        psio_read(PSIF_CC_DIIS_ERR, lbl, (char *) vector[1],
                   vector_length*sizeof(double), start, &end);
 
         dot_arr(vector[1], vector[0], vector_length, &product);
@@ -219,7 +219,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
       start = psio_get_address(PSIO_ZERO, p*vector_length*sizeof(double));
 
       sprintf(lbl, "DIIS %s Amplitude Vectors", pert);
-      psio_read(CC_DIIS_AMP, lbl, (char *) vector[0],
+      psio_read(PSIF_CC_DIIS_AMP, lbl, (char *) vector[0],
                 vector_length*sizeof(double), start, &end);
 
       for(q=0; q < vector_length; q++)
@@ -231,7 +231,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
     /* Now place these elements into the DPD amplitude arrays */
     word=0;
     sprintf(lbl, "New X_%s_IA (%5.3f)", pert, omega);
-    dpd_file2_init(&T1a, CC_OEI, irrep, 0, 1, lbl);
+    dpd_file2_init(&T1a, PSIF_CC_OEI, irrep, 0, 1, lbl);
     dpd_file2_mat_init(&T1a);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1a.params->rowtot[h]; row++)
@@ -242,7 +242,7 @@ void diis(int iter, const char *pert, int irrep, double omega)
     dpd_file2_close(&T1a);
 
     sprintf(lbl, "New X_%s_IjAb (%5.3f)", pert, omega);
-    dpd_buf4_init(&T2a, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&T2a, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&T2a, h);
       for(row=0; row < T2a.params->rowtot[h]; row++)

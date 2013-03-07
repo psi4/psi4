@@ -50,6 +50,23 @@ boost::shared_ptr<JKGrad> JKGrad::build_JKGrad()
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
 
         return boost::shared_ptr<JKGrad>(jk);
+    } else if (options.get_str("SCF_TYPE") == "DIRECT" || options.get_str("SCF_TYPE") == "PK" || options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
+
+        DirectJKGrad* jk = new DirectJKGrad(primary);
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        // TODO: rename every DF case
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+
+        return boost::shared_ptr<JKGrad>(jk);
 
     } else {
         throw PSIEXCEPTION("JKGrad::build_JKGrad: Unknown SCF Type");
@@ -60,7 +77,7 @@ void JKGrad::common_init()
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
-    
+
     memory_ = 32000000L;
     omp_num_threads_ = 1;
     #ifdef _OPENMP
@@ -102,7 +119,7 @@ void DFJKGrad::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
-        if (do_wK_) 
+        if (do_wK_)
             fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_num_threads_);
         fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
@@ -116,11 +133,11 @@ void DFJKGrad::print_header() const
 }
 void DFJKGrad::compute_gradient()
 {
-    if (!do_J_ && !do_K_ && !do_wK_) 
+    if (!do_J_ && !do_K_ && !do_wK_)
         return;
 
     if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
-        throw PSIEXCEPTION("Occupation/Density not set");    
+        throw PSIEXCEPTION("Occupation/Density not set");
 
     // => Set up gradients <= //
     int natom = primary_->molecule()->natom();
@@ -172,7 +189,7 @@ void DFJKGrad::compute_gradient()
     timer_on("JKGrad: Awmnx");
     build_Amn_x_lr_terms();
     timer_off("JKGrad: Awmnx");
- 
+
     // => Close temp files <= //
     psio_->close(unit_a_, 0);
     psio_->close(unit_b_, 0);
@@ -186,12 +203,12 @@ void DFJKGrad::build_Amn_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
- 
+
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Memory Constraints <= //
 
     int max_rows;
@@ -199,13 +216,13 @@ void DFJKGrad::build_Amn_terms()
     ULI row_cost = 0L;
     row_cost += nso * (ULI) nso;
     if (do_K_ || do_wK_) {
-        row_cost += nso * (ULI) na; 
+        row_cost += nso * (ULI) na;
         row_cost += na * (ULI) na;
     }
     ULI rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);   
-    rows = (rows < maxP ? maxP : rows);   
-    max_rows = (int) rows;    
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < maxP ? maxP : rows);
+    max_rows = (int) rows;
 
     // => Block Sizing <= //
 
@@ -223,7 +240,7 @@ void DFJKGrad::build_Amn_terms()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Temporary Buffers <= //
-    
+
     SharedVector c;
     double* cp;
 
@@ -241,12 +258,12 @@ void DFJKGrad::build_Amn_terms()
     double** Aijp;
 
     if (true) {
-        Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso)); 
+        Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso));
         Amnp = Amn->pointer();
     }
     if (do_K_ || do_wK_) {
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na)); 
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na)); 
+        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
+        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
@@ -264,14 +281,14 @@ void DFJKGrad::build_Amn_terms()
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
-    } 
+    }
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -282,7 +299,7 @@ void DFJKGrad::build_Amn_terms()
 
         // > Clear Integrals Register < //
         ::memset((void*) Amnp[0], '\0', sizeof(double) * np * nso * nso);
-        
+
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
         #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
@@ -297,8 +314,8 @@ void DFJKGrad::build_Amn_terms()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell(P,0,M,N); 
+
+            eri[thread]->compute_shell(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -314,10 +331,10 @@ void DFJKGrad::build_Amn_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        Amnp[p + oP][(m + oM) * nso + (n + oN)] = 
-                        Amnp[p + oP][(n + oN) * nso + (m + oM)] = 
+                        Amnp[p + oP][(m + oM) * nso + (n + oN)] =
+                        Amnp[p + oP][(n + oN) * nso + (m + oM)] =
                         *buffer++;
-                    }                   
+                    }
                 }
             }
 
@@ -325,7 +342,7 @@ void DFJKGrad::build_Amn_terms()
 
         // > (A|mn) D_mn -> c_A < //
         if (do_J_) {
-            C_DGEMV('N',np,nso*(ULI)nso,1.0,Amnp[0],nso*(ULI)nso,Dtp[0],1,0.0,&cp[pstart],1);  
+            C_DGEMV('N',np,nso*(ULI)nso,1.0,Amnp[0],nso*(ULI)nso,Dtp[0],1,0.0,&cp[pstart],1);
         }
 
         // > Alpha < //
@@ -334,7 +351,7 @@ void DFJKGrad::build_Amn_terms()
             C_DGEMM('N','N',np*(ULI)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Amip[0],na);
 
             // > (A|mi) C_mj -> (A|ij) < //
-            #pragma omp parallel for 
+            #pragma omp parallel for
             for (int p = 0; p < np; p++) {
                 C_DGEMM('T','N',na,na,nso,1.0,Amip[p],na,Cap[0],na,0.0,&Aijp[0][p * (ULI) na * na],na);
             }
@@ -373,24 +390,24 @@ void DFJKGrad::build_Amn_lr_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
- 
+
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Memory Constraints <= //
 
     int max_rows;
     int maxP = auxiliary_->max_function_per_shell();
     ULI row_cost = 0L;
     row_cost += nso * (ULI) nso;
-    row_cost += nso * (ULI) na; 
+    row_cost += nso * (ULI) na;
     row_cost += na * (ULI) na;
     ULI rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);   
-    rows = (rows < maxP ? maxP : rows);   
-    max_rows = (int) rows;    
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < maxP ? maxP : rows);
+    max_rows = (int) rows;
 
     // => Block Sizing <= //
 
@@ -417,9 +434,9 @@ void DFJKGrad::build_Amn_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso)); 
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na)); 
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na)); 
+    Amn = SharedMatrix(new Matrix("Amn", max_rows, nso * (ULI) nso));
+    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
+    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
 
     Amnp = Amn->pointer();
     Amip = Ami->pointer();
@@ -437,14 +454,14 @@ void DFJKGrad::build_Amn_lr_terms()
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_)));
-    } 
+    }
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -455,7 +472,7 @@ void DFJKGrad::build_Amn_lr_terms()
 
         // > Clear Integrals Register < //
         ::memset((void*) Amnp[0], '\0', sizeof(double) * np * nso * nso);
-        
+
         // > Integrals < //
         int nthread_df = df_ints_num_threads_;
         #pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
@@ -470,8 +487,8 @@ void DFJKGrad::build_Amn_lr_terms()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell(P,0,M,N); 
+
+            eri[thread]->compute_shell(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -487,10 +504,10 @@ void DFJKGrad::build_Amn_lr_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        Amnp[p + oP][(m + oM) * nso + (n + oN)] = 
-                        Amnp[p + oP][(n + oN) * nso + (m + oM)] = 
+                        Amnp[p + oP][(m + oM) * nso + (n + oN)] =
+                        Amnp[p + oP][(n + oN) * nso + (m + oM)] =
                         *buffer++;
-                    }                   
+                    }
                 }
             }
 
@@ -535,11 +552,11 @@ void DFJKGrad::build_AB_inv_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
 
     // => Fitting Metric Full Inverse <= //
- 
+
     boost::shared_ptr<FittingMetric> metric(new FittingMetric(auxiliary_, true));
     metric->form_full_eig_inverse();
     SharedMatrix J = metric->get_metric();
@@ -552,11 +569,11 @@ void DFJKGrad::build_AB_inv_terms()
         double* cp = c->pointer();
         double* dp = d->pointer();
 
-        psio_->read_entry(unit_c_, "c", (char*) cp, sizeof(double) * naux); 
+        psio_->read_entry(unit_c_, "c", (char*) cp, sizeof(double) * naux);
 
         C_DGEMV('N',naux,naux,1.0,Jp[0],naux,cp,1,0.0,dp,1);
-    
-        psio_->write_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux); 
+
+        psio_->write_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
     }
 
     if (!(do_K_ || do_wK_))
@@ -566,15 +583,15 @@ void DFJKGrad::build_AB_inv_terms()
     ULI effective_memory = memory_ - 1L * naux * naux;
     ULI col_cost = 2L * naux;
     ULI cols = effective_memory / col_cost;
-    cols = (cols > na * (ULI) na ? na * (ULI) na : cols); 
-    cols = (cols < na ? na : cols); 
+    cols = (cols > na * (ULI) na ? na * (ULI) na : cols);
+    cols = (cols < na ? na : cols);
     max_cols = (int) cols;
 
     SharedMatrix Aij(new Matrix("Aij", naux, max_cols));
     SharedMatrix Bij(new Matrix("Bij", naux, max_cols));
     double** Aijp = Aij->pointer();
     double** Bijp = Bij->pointer();
-    
+
     // > Alpha < //
     if (true) {
         psio_address next_Aija = PSIO_ZERO;
@@ -591,7 +608,7 @@ void DFJKGrad::build_AB_inv_terms()
             // > GEMM <//
             C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
 
-            // > Stripe < // 
+            // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
                 next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
                 psio_->write(unit_a_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
@@ -616,16 +633,16 @@ void DFJKGrad::build_AB_inv_terms()
             // > GEMM <//
             C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
 
-            // > Stripe < // 
+            // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
                 next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
                 psio_->write(unit_b_,"(A|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
         }
-    }   
+    }
 
-    if (!do_wK_) 
+    if (!do_wK_)
         return;
 
     // > Alpha < //
@@ -644,7 +661,7 @@ void DFJKGrad::build_AB_inv_terms()
             // > GEMM <//
             C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
 
-            // > Stripe < // 
+            // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
                 next_Aija = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) na * na + ij));
                 psio_->write(unit_a_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aija, &next_Aija);
@@ -669,14 +686,14 @@ void DFJKGrad::build_AB_inv_terms()
             // > GEMM <//
             C_DGEMM('N','N',naux,ncols,naux,1.0,Jp[0],naux,Aijp[0],max_cols,0.0,Bijp[0],max_cols);
 
-            // > Stripe < // 
+            // > Stripe < //
             for (int Q = 0; Q < naux; Q++) {
                 next_Aijb = psio_get_address(PSIO_ZERO,sizeof(double) * (Q * (ULI) nb * nb + ij));
                 psio_->write(unit_b_,"(A|w|ij)",(char*) Bijp[Q], sizeof(double) * ncols, next_Aijb, &next_Aijb);
             }
 
         }
-    }   
+    }
 }
 void DFJKGrad::build_UV_terms()
 {
@@ -688,14 +705,14 @@ void DFJKGrad::build_UV_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
- 
+
     SharedMatrix V = SharedMatrix(new Matrix("W", naux, naux));
     double** Vp = V->pointer();
 
     // => Memory Constraints <= //
-    
+
     int max_rows;
     ULI effective_memory = memory_ - 1L * naux * naux;
     ULI row_cost = 2L * na * (ULI) na;
@@ -712,7 +729,7 @@ void DFJKGrad::build_UV_terms()
     double** Bijp = Bij->pointer();
 
     // => V < = //
-    
+
     // > Alpha < //
     if (true) {
         psio_address next_Aij = PSIO_ZERO;
@@ -725,8 +742,8 @@ void DFJKGrad::build_UV_terms()
                 psio_->read(unit_a_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
 
                 C_DGEMM('N','T',nP,nQ,na*(ULI)na,1.0,Aijp[0],na*(ULI)na,Bijp[0],na*(ULI)na,0.0,&Vp[P][Q],naux);
-            }    
-        }    
+            }
+        }
     }
     // > Beta < //
     if (!restricted) {
@@ -740,18 +757,18 @@ void DFJKGrad::build_UV_terms()
                 psio_->read(unit_b_,"(A|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
 
                 C_DGEMM('N','T',nP,nQ,nb*(ULI)nb,1.0,Aijp[0],nb*(ULI)nb,Bijp[0],nb*(ULI)nb,1.0,&Vp[P][Q],naux);
-            }    
-        }    
+            }
+        }
     } else {
         V->scale(2.0);
-    }        
+    }
     psio_->write_entry(unit_c_,"V",(char*) Vp[0], sizeof(double) * naux * naux);
 
     if (!do_wK_)
         return;
 
     // => W < = //
-    
+
     // > Alpha < //
     if (true) {
         psio_address next_Aij = PSIO_ZERO;
@@ -764,8 +781,8 @@ void DFJKGrad::build_UV_terms()
                 psio_->read(unit_a_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*na*na, next_Bij, &next_Bij);
 
                 C_DGEMM('N','T',nP,nQ,na*(ULI)na,1.0,Aijp[0],na*(ULI)na,Bijp[0],na*(ULI)na,0.0,&Vp[P][Q],naux);
-            }    
-        }    
+            }
+        }
     }
     // > Beta < //
     if (!restricted) {
@@ -779,11 +796,11 @@ void DFJKGrad::build_UV_terms()
                 psio_->read(unit_b_,"(A|w|ij)",(char*) Bijp[0], sizeof(double)*nQ*nb*nb, next_Bij, &next_Bij);
 
                 C_DGEMM('N','T',nP,nQ,nb*(ULI)nb,1.0,Aijp[0],nb*(ULI)nb,Bijp[0],nb*(ULI)nb,1.0,&Vp[P][Q],naux);
-            }    
-        }    
+            }
+        }
     } else {
         V->scale(2.0);
-    }        
+    }
     psio_->write_entry(unit_c_,"W",(char*) Vp[0], sizeof(double) * naux * naux);
 }
 void DFJKGrad::build_AB_x_terms()
@@ -799,7 +816,7 @@ void DFJKGrad::build_AB_x_terms()
     SharedMatrix V;
     SharedMatrix W;
     SharedVector d;
-    
+
     double** Vp;
     double** Wp;
     double*  dp;
@@ -813,19 +830,19 @@ void DFJKGrad::build_AB_x_terms()
         V = SharedMatrix(new Matrix("V", naux, naux));
         Vp = V->pointer();
         psio_->read_entry(unit_c_, "V", (char*) Vp[0], sizeof(double) * naux * naux);
-    }    
+    }
     if (do_wK_) {
         W = SharedMatrix(new Matrix("W", naux, naux));
         Wp = W->pointer();
         psio_->read_entry(unit_c_, "W", (char*) Wp[0], sizeof(double) * naux * naux);
-    }    
+    }
 
     // => Integrals <= //
 
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
     std::vector<boost::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));        
+        Jint.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
     // => Temporary Gradients <= //
@@ -836,19 +853,19 @@ void DFJKGrad::build_AB_x_terms()
     for (int t = 0; t < df_ints_num_threads_; t++) {
         if (do_J_) {
             Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
-        }    
+        }
         if (do_K_) {
             Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
-        }    
+        }
         if (do_wK_) {
             wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
-        }    
-    } 
+        }
+    }
 
     std::vector<std::pair<int,int> > PQ_pairs;
     for (int P = 0; P < auxiliary_->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int,int>(P,Q));    
+            PQ_pairs.push_back(std::pair<int,int>(P,Q));
         }
     }
 
@@ -862,11 +879,11 @@ void DFJKGrad::build_AB_x_terms()
         int thread = 0;
         #ifdef _OPENMP
             thread = omp_get_thread_num();
-        #endif 
+        #endif
 
         Jint[thread]->compute_shell_deriv1(P,0,Q,0);
         const double* buffer = Jint[thread]->buffer();
-        
+
         int nP = auxiliary_->shell(P).nfunction();
         int cP = auxiliary_->shell(P).ncartesian();
         int aP = auxiliary_->shell(P).ncenter();
@@ -900,9 +917,9 @@ void DFJKGrad::build_AB_x_terms()
         if (do_wK_) {
             grad_wKp = wKtemps[thread]->pointer();
         }
-    
+
         for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) { 
+            for (int q = 0; q < nQ; q++) {
 
                 if (do_J_) {
                     double Uval = 0.5 * perm * dp[p + oP] * dp[q + oQ];
@@ -980,12 +997,12 @@ void DFJKGrad::build_Amn_x_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
- 
+
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Memory Constraints <= //
 
     int max_rows;
@@ -994,17 +1011,17 @@ void DFJKGrad::build_Amn_x_terms()
         ULI row_cost = 0L;
         row_cost += nso * (ULI) nso;
         if (do_wK_) {
-            row_cost += nso * (ULI) nso; 
+            row_cost += nso * (ULI) nso;
         }
         row_cost += nso * (ULI) na;
         row_cost += na * (ULI) na;
         ULI rows = memory_ / row_cost;
-        rows = (rows > naux ? naux : rows);   
-        rows = (rows < maxP ? maxP : rows);   
+        rows = (rows > naux ? naux : rows);
+        rows = (rows < maxP ? maxP : rows);
         max_rows = (int) rows;
     } else {
         max_rows = auxiliary_->nshell();
-    }    
+    }
 
     // => Block Sizing <= //
 
@@ -1022,7 +1039,7 @@ void DFJKGrad::build_Amn_x_terms()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Temporary Buffers <= //
-    
+
     SharedVector d;
     double* dp;
 
@@ -1043,15 +1060,15 @@ void DFJKGrad::build_Amn_x_terms()
     double** Aijp;
 
     if (do_K_ || do_wK_) {
-        Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso)); 
-        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na)); 
-        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na)); 
+        Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso));
+        Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
+        Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
         Jmnp = Jmn->pointer();
         Amip = Ami->pointer();
         Aijp = Aij->pointer();
     }
     if (do_wK_) {
-        Kmn = SharedMatrix(new Matrix("Kmn", max_rows, nso * (ULI) nso)); 
+        Kmn = SharedMatrix(new Matrix("Kmn", max_rows, nso * (ULI) nso));
         Kmnp = Kmn->pointer();
     }
 
@@ -1070,7 +1087,7 @@ void DFJKGrad::build_Amn_x_terms()
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-    } 
+    }
 
     // => Temporary Gradients <= //
 
@@ -1080,25 +1097,25 @@ void DFJKGrad::build_Amn_x_terms()
     for (int t = 0; t < df_ints_num_threads_; t++) {
         if (do_J_) {
             Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
-        }    
+        }
         if (do_K_) {
             Ktemps.push_back(SharedMatrix(new Matrix("Ktemp", natom, 3)));
-        }    
+        }
         if (do_wK_) {
             wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
-        }    
-    } 
+        }
+    }
 
     // => R/U doubling factor <= //
 
     double factor = (restricted ? 2.0 : 1.0);
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -1107,7 +1124,7 @@ void DFJKGrad::build_Amn_x_terms()
         int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
         int np = pstop - pstart;
 
-        // => J_mn^A <= // 
+        // => J_mn^A <= //
 
         // > Alpha < //
         if (do_K_ || do_wK_) {
@@ -1141,7 +1158,7 @@ void DFJKGrad::build_Amn_x_terms()
             C_DGEMM('N','T',np * (ULI) nso, nso, nb, 1.0, Amip[0], na, Cbp[0], nb, 1.0, Jmnp[0], nso);
         }
 
-        // => K_mn^A <= // 
+        // => K_mn^A <= //
 
         // > Alpha < //
         if (do_wK_) {
@@ -1189,8 +1206,8 @@ void DFJKGrad::build_Amn_x_terms()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell_deriv1(P,0,M,N); 
+
+            eri[thread]->compute_shell_deriv1(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -1239,7 +1256,7 @@ void DFJKGrad::build_Amn_x_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        
+
                         if (do_J_) {
                             double Ival = 1.0 * perm * dp[p + oP + pstart] * Dtp[m + oM][n + oN];
                             grad_Jp[aP][0] += Ival * (*Px);
@@ -1252,9 +1269,9 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Jp[aN][1] += Ival * (*Ny);
                             grad_Jp[aN][2] += Ival * (*Nz);
                         }
-                        
+
                         if (do_K_) {
-                            double Jval = 1.0 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)]; 
+                            double Jval = 1.0 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
                             grad_Kp[aP][0] += Jval * (*Px);
                             grad_Kp[aP][1] += Jval * (*Py);
                             grad_Kp[aP][2] += Jval * (*Pz);
@@ -1265,9 +1282,9 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_Kp[aN][1] += Jval * (*Ny);
                             grad_Kp[aN][2] += Jval * (*Nz);
                         }
-                        
+
                         if (do_wK_) {
-                            double Kval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)]; 
+                            double Kval = 0.5 * perm * Kmnp[p + oP][(m + oM) * nso + (n + oN)];
                             grad_wKp[aP][0] += Kval * (*Px);
                             grad_wKp[aP][1] += Kval * (*Py);
                             grad_wKp[aP][2] += Kval * (*Pz);
@@ -1279,16 +1296,16 @@ void DFJKGrad::build_Amn_x_terms()
                             grad_wKp[aN][2] += Kval * (*Nz);
                         }
 
-                        Px++; 
-                        Py++; 
-                        Pz++; 
-                        Mx++; 
-                        My++; 
-                        Mz++; 
-                        Nx++; 
-                        Ny++; 
-                        Nz++; 
-                    }                   
+                        Px++;
+                        Py++;
+                        Pz++;
+                        Mx++;
+                        My++;
+                        Mz++;
+                        Nx++;
+                        Ny++;
+                        Nz++;
+                    }
                 }
             }
         }
@@ -1331,12 +1348,12 @@ void DFJKGrad::build_Amn_x_lr_terms()
     int naux = auxiliary_->nbf();
     int na = Ca_->colspi()[0];
     int nb = Cb_->colspi()[0];
-  
+
     bool restricted = (Ca_ == Cb_);
- 
+
     const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
-    int npairs = shell_pairs.size(); 
- 
+    int npairs = shell_pairs.size();
+
     // => Memory Constraints <= //
 
     int max_rows;
@@ -1346,8 +1363,8 @@ void DFJKGrad::build_Amn_x_lr_terms()
     row_cost += nso * (ULI) na;
     row_cost += na * (ULI) na;
     ULI rows = memory_ / row_cost;
-    rows = (rows > naux ? naux : rows);   
-    rows = (rows < maxP ? maxP : rows);   
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < maxP ? maxP : rows);
     max_rows = (int) rows;
 
     // => Block Sizing <= //
@@ -1366,7 +1383,7 @@ void DFJKGrad::build_Amn_x_lr_terms()
     Pstarts.push_back(auxiliary_->nshell());
 
     // => Temporary Buffers <= //
-    
+
     SharedMatrix Jmn;
     SharedMatrix Ami;
     SharedMatrix Aij;
@@ -1375,9 +1392,9 @@ void DFJKGrad::build_Amn_x_lr_terms()
     double** Amip;
     double** Aijp;
 
-    Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso)); 
-    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na)); 
-    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na)); 
+    Jmn = SharedMatrix(new Matrix("Jmn", max_rows, nso * (ULI) nso));
+    Ami = SharedMatrix(new Matrix("Ami", max_rows, nso * (ULI) na));
+    Aij = SharedMatrix(new Matrix("Aij", max_rows, na * (ULI) na));
     Jmnp = Jmn->pointer();
     Amip = Ami->pointer();
     Aijp = Aij->pointer();
@@ -1394,25 +1411,25 @@ void DFJKGrad::build_Amn_x_lr_terms()
     std::vector<boost::shared_ptr<TwoBodyAOInt> > eri;
     for (int t = 0; t < df_ints_num_threads_; t++) {
         eri.push_back(boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_,1)));
-    } 
+    }
 
     // => Temporary Gradients <= //
 
     std::vector<SharedMatrix> wKtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
          wKtemps.push_back(SharedMatrix(new Matrix("wKtemp", natom, 3)));
-    } 
+    }
 
     // => R/U doubling factor <= //
 
     double factor = (restricted ? 2.0 : 1.0);
 
     // => Master Loop <= //
-    
+
     for (int block = 0; block < Pstarts.size() - 1; block++) {
-    
+
         // > Sizing < //
-    
+
         int Pstart = Pstarts[block];
         int Pstop  = Pstarts[block+1];
         int NP = Pstop - Pstart;
@@ -1421,7 +1438,7 @@ void DFJKGrad::build_Amn_x_lr_terms()
         int pstop  = (Pstop == auxiliary_->nshell() ? naux : auxiliary_->shell(Pstop ).function_index());
         int np = pstop - pstart;
 
-        // => J_mn^A <= // 
+        // => J_mn^A <= //
 
         // > Alpha < //
         if (true) {
@@ -1469,8 +1486,8 @@ void DFJKGrad::build_Amn_x_lr_terms()
             int MN = PMN % npairs;
             int M = shell_pairs[MN].first;
             int N = shell_pairs[MN].second;
-         
-            eri[thread]->compute_shell_deriv1(P,0,M,N); 
+
+            eri[thread]->compute_shell_deriv1(P,0,M,N);
 
             const double* buffer = eri[thread]->buffer();
 
@@ -1507,8 +1524,8 @@ void DFJKGrad::build_Amn_x_lr_terms()
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        
-                        double Kval = 0.5 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)]; 
+
+                        double Kval = 0.5 * perm * Jmnp[p + oP][(m + oM) * nso + (n + oN)];
                         grad_wKp[aP][0] += Kval * (*Px);
                         grad_wKp[aP][1] += Kval * (*Py);
                         grad_wKp[aP][2] += Kval * (*Pz);
@@ -1519,16 +1536,16 @@ void DFJKGrad::build_Amn_x_lr_terms()
                         grad_wKp[aN][1] += Kval * (*Ny);
                         grad_wKp[aN][2] += Kval * (*Nz);
 
-                        Px++; 
-                        Py++; 
-                        Pz++; 
-                        Mx++; 
-                        My++; 
-                        Mz++; 
-                        Nx++; 
-                        Ny++; 
-                        Nz++; 
-                    }                   
+                        Px++;
+                        Py++;
+                        Pz++;
+                        Mx++;
+                        My++;
+                        Mz++;
+                        Nx++;
+                        Ny++;
+                        Nz++;
+                    }
                 }
             }
         }
@@ -1544,5 +1561,279 @@ void DFJKGrad::build_Amn_x_lr_terms()
 
     //gradients_["Exchange,LR"]->print();
 }
+DirectJKGrad::DirectJKGrad(boost::shared_ptr<BasisSet> primary) :
+    JKGrad(primary)
+{
+    common_init();
+}
+DirectJKGrad::~DirectJKGrad()
+{
+}
+void DirectJKGrad::common_init()
+{
+    ints_num_threads_ = 1;
+    #ifdef _OPENMP
+        ints_num_threads_ = omp_get_max_threads();
+    #endif
+}
+void DirectJKGrad::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> DirectJKGrad: Integral-Direct SCF Gradients <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_)
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        fprintf(outfile, "    Integrals threads: %11d\n", ints_num_threads_);
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "\n");
+    }
+}
+void DirectJKGrad::compute_gradient()
+{
+    if (!do_J_ && !do_K_ && !do_wK_)
+        return;
+
+    if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
+        throw PSIEXCEPTION("Occupation/Density not set");
+
+    // => Set up gradients <= //
+    int natom = primary_->molecule()->natom();
+    gradients_.clear();
+    if (do_J_) {
+        gradients_["Coulomb"] = SharedMatrix(new Matrix("Coulomb Gradient",natom,3));
+    }
+    if (do_K_) {
+        gradients_["Exchange"] = SharedMatrix(new Matrix("Exchange Gradient",natom,3));
+    }
+    if (do_wK_) {
+        gradients_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Gradient",natom,3));
+    }
+
+    // => Build ERI Sieve <= //
+    sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+
+    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_,primary_,primary_,primary_));
+
+    if (do_J_ || do_K_) {
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        for (int thread = 0; thread < ints_num_threads_; thread++) {
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri(1)));
+        }
+        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute(ints);
+        if (do_J_) {
+            gradients_["Coulomb"]->copy(vals["J"]);
+        }
+        if (do_K_) {
+            gradients_["Exchange"]->copy(vals["K"]);
+        }
+    }
+    if (do_wK_) {
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+        for (int thread = 0; thread < ints_num_threads_; thread++) {
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_,1)));
+        }
+        std::map<std::string, boost::shared_ptr<Matrix> > vals = compute(ints);
+        gradients_["Exchange,LR"]->copy(vals["K"]);
+    }
+}
+std::map<std::string, boost::shared_ptr<Matrix> > DirectJKGrad::compute(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints)
+{
+    int nthreads = ints.size();
+
+    int natom = primary_->molecule()->natom();
+
+    std::vector<boost::shared_ptr<Matrix> > Jgrad;
+    std::vector<boost::shared_ptr<Matrix> > Kgrad;
+    for (int thread = 0; thread < nthreads; thread++) {
+        Jgrad.push_back(SharedMatrix(new Matrix("JGrad",natom,3)));
+        Kgrad.push_back(SharedMatrix(new Matrix("KGrad",natom,3)));
+    }
+
+    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    size_t npairs = shell_pairs.size();
+    size_t npairs2 = npairs * npairs;
+
+    double** Dtp = Dt_->pointer();
+    double** Dap = Da_->pointer();
+    double** Dbp = Db_->pointer();
+
+    #pragma omp parallel for num_threads(nthreads) schedule(dynamic)
+    for (size_t index = 0L; index < npairs2; index++) {
+
+        size_t PQ = index / npairs;
+        size_t RS = index % npairs;
+
+        if (RS > PQ) continue;
+
+        int P = shell_pairs[PQ].first;
+        int Q = shell_pairs[PQ].second;
+        int R = shell_pairs[RS].first;
+        int S = shell_pairs[RS].second;
+
+        if (!sieve_->shell_significant(P,Q,R,S)) continue;
+
+        //fprintf(outfile,"(%d,%d,%d,%d)\n", P,Q,R,S);
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        ints[thread]->compute_shell_deriv1(P,Q,R,S);
+
+        const double* buffer = ints[thread]->buffer();
+
+        double** Jp = Jgrad[thread]->pointer();
+        double** Kp = Kgrad[thread]->pointer();
+
+        int Psize = primary_->shell(P).nfunction();
+        int Qsize = primary_->shell(Q).nfunction();
+        int Rsize = primary_->shell(R).nfunction();
+        int Ssize = primary_->shell(S).nfunction();
+
+        int Pncart = primary_->shell(P).ncartesian();
+        int Qncart = primary_->shell(Q).ncartesian();
+        int Rncart = primary_->shell(R).ncartesian();
+        int Sncart = primary_->shell(S).ncartesian();
+
+        int Poff = primary_->shell(P).function_index();
+        int Qoff = primary_->shell(Q).function_index();
+        int Roff = primary_->shell(R).function_index();
+        int Soff = primary_->shell(S).function_index();
+
+        int Pcenter = primary_->shell(P).ncenter();
+        int Qcenter = primary_->shell(Q).ncenter();
+        int Rcenter = primary_->shell(R).ncenter();
+        int Scenter = primary_->shell(S).ncenter();
+
+        double prefactor = 1.0;
+        if (P != Q)   prefactor *= 2.0;
+        if (R != S)   prefactor *= 2.0;
+        if (PQ != RS) prefactor *= 2.0;
+
+        size_t stride = Pncart * Qncart * Rncart * Sncart;
+
+        double val;
+        double Dpq, Drs;
+        size_t delta;
+        double Ax, Ay, Az;
+        double Bx, By, Bz;
+        double Cx, Cy, Cz;
+        double Dx, Dy, Dz;
+
+        // => Coulomb Term <= //
+
+        Ax = 0.0; Ay = 0.0; Az = 0.0;
+        Bx = 0.0; By = 0.0; Bz = 0.0;
+        Cx = 0.0; Cy = 0.0; Cz = 0.0;
+        Dx = 0.0; Dy = 0.0; Dz = 0.0;
+        delta = 0L;
+        for (int p = 0; p < Psize; p++) {
+        for (int q = 0; q < Qsize; q++) {
+        for (int r = 0; r < Rsize; r++) {
+        for (int s = 0; s < Ssize; s++) {
+            Dpq = Dtp[p + Poff][q + Qoff];
+            Drs = Dtp[r + Roff][s + Soff];
+            val = prefactor * Dpq * Drs;
+            Ax += val * buffer[0 * stride + delta];
+            Ay += val * buffer[1 * stride + delta];
+            Az += val * buffer[2 * stride + delta];
+            Cx += val * buffer[3 * stride + delta];
+            Cy += val * buffer[4 * stride + delta];
+            Cz += val * buffer[5 * stride + delta];
+            Dx += val * buffer[6 * stride + delta];
+            Dy += val * buffer[7 * stride + delta];
+            Dz += val * buffer[8 * stride + delta];
+            delta++;
+        }}}}
+        Bx = -(Ax + Cx + Dx);
+        By = -(Ay + Cy + Dy);
+        Bz = -(Az + Cz + Dz);
+
+        Jp[Pcenter][0] += Ax;
+        Jp[Pcenter][1] += Ay;
+        Jp[Pcenter][2] += Az;
+        Jp[Qcenter][0] += Bx;
+        Jp[Qcenter][1] += By;
+        Jp[Qcenter][2] += Bz;
+        Jp[Rcenter][0] += Cx;
+        Jp[Rcenter][1] += Cy;
+        Jp[Rcenter][2] += Cz;
+        Jp[Scenter][0] += Dx;
+        Jp[Scenter][1] += Dy;
+        Jp[Scenter][2] += Dz;
+
+        // => Exchange Term <= //
+
+        Ax = 0.0; Ay = 0.0; Az = 0.0;
+        Bx = 0.0; By = 0.0; Bz = 0.0;
+        Cx = 0.0; Cy = 0.0; Cz = 0.0;
+        Dx = 0.0; Dy = 0.0; Dz = 0.0;
+        delta = 0L;
+        for (int p = 0; p < Psize; p++) {
+        for (int q = 0; q < Qsize; q++) {
+        for (int r = 0; r < Rsize; r++) {
+        for (int s = 0; s < Ssize; s++) {
+            val = 0.0;
+            Dpq = Dap[p + Poff][r + Roff];
+            Drs = Dap[q + Qoff][s + Soff];
+            val += prefactor * Dpq * Drs;
+            Dpq = Dap[p + Poff][s + Soff];
+            Drs = Dap[q + Qoff][r + Roff];
+            val += prefactor * Dpq * Drs;
+            Dpq = Dbp[p + Poff][r + Roff];
+            Drs = Dbp[q + Qoff][s + Soff];
+            val += prefactor * Dpq * Drs;
+            Dpq = Dbp[p + Poff][s + Soff];
+            Drs = Dbp[q + Qoff][r + Roff];
+            val += prefactor * Dpq * Drs;
+            val *= 0.5;
+            Ax += val * buffer[0 * stride + delta];
+            Ay += val * buffer[1 * stride + delta];
+            Az += val * buffer[2 * stride + delta];
+            Cx += val * buffer[3 * stride + delta];
+            Cy += val * buffer[4 * stride + delta];
+            Cz += val * buffer[5 * stride + delta];
+            Dx += val * buffer[6 * stride + delta];
+            Dy += val * buffer[7 * stride + delta];
+            Dz += val * buffer[8 * stride + delta];
+            delta++;
+        }}}}
+        Bx = -(Ax + Cx + Dx);
+        By = -(Ay + Cy + Dy);
+        Bz = -(Az + Cz + Dz);
+
+        Kp[Pcenter][0] += Ax;
+        Kp[Pcenter][1] += Ay;
+        Kp[Pcenter][2] += Az;
+        Kp[Qcenter][0] += Bx;
+        Kp[Qcenter][1] += By;
+        Kp[Qcenter][2] += Bz;
+        Kp[Rcenter][0] += Cx;
+        Kp[Rcenter][1] += Cy;
+        Kp[Rcenter][2] += Cz;
+        Kp[Scenter][0] += Dx;
+        Kp[Scenter][1] += Dy;
+        Kp[Scenter][2] += Dz;
+
+    }
+
+    for (int thread = 1; thread < nthreads; thread++) {
+        Jgrad[0]->add(Jgrad[thread]);
+        Kgrad[0]->add(Kgrad[thread]);
+    }
+
+    Jgrad[0]->scale(0.5);
+    Kgrad[0]->scale(0.5);
+
+    std::map<std::string, boost::shared_ptr<Matrix> > val;
+    val["J"] = Jgrad[0];
+    val["K"] = Kgrad[0];
+    return val;
+}
+
 
 }} // Namespaces

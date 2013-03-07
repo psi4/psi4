@@ -42,6 +42,7 @@ procedures = {
             'ocepa'         : run_ocepa,
             'cepa0'         : run_cepa0,
             'dftsapt'       : run_dftsapt,
+            'infsapt'       : run_infsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
@@ -69,6 +70,7 @@ procedures = {
             'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
+            'detci-mp'      : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
             'cisd'          : run_detci,
             'cisdt'         : run_detci,
@@ -92,6 +94,21 @@ procedures = {
             'uscf'          : run_scf,
             'roscf'         : run_scf,
             'df-scf'        : run_scf,
+            'qcisd'         : run_fnocc,
+            'qcisd(t)'      : run_fnocc,
+            'mp4(sdq)'      : run_fnocc,
+            'fno-ccsd'      : run_fnocc,
+            'fno-ccsd(t)'   : run_fnocc,
+            'fno-qcisd'     : run_fnocc,
+            'fno-qcisd(t)'  : run_fnocc,
+            'fno-mp3'       : run_fnocc,
+            'fno-mp4(sdq)'  : run_fnocc,
+            'fno-mp4'       : run_fnocc,
+            'fnocc-mp'      : run_fnocc,
+            'df-ccsd'       : run_fnodfcc,
+            'df-ccsd(t)'    : run_fnodfcc,
+            'fno-df-ccsd'   : run_fnodfcc,
+            'fno-df-ccsd(t)': run_fnodfcc,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -186,7 +203,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    | scf                     | Hartree--Fock (HF) or density functional theory (:ref:`DFT <sec:dft>`)                |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -224,15 +241,19 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | bccd                    | Brueckner coupled cluster doubles (BCCD)                                              |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd                   | quadratic configuration interaction singles doubles (QCISD)                           |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc3                     | approximate coupled cluster singles, doubles, and triples (CC3)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd(t)                 | CCSD with perturbative triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | bccd(t)                 | BCCD with perturbative triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd(t)                | QCISD with perturbative triples                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory                                     |
+    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory :ref:`[manual] <sec:arbpt>`         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -277,6 +298,8 @@ def energy(name, **kwargs):
     | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa0                   | coupled electron pair approximation, it is identical to linearized CCD                |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | gaussian-2 (g2)         | gaussian-2 composite method                                                           |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -727,7 +750,7 @@ def gradient(name, **kwargs):
 
         # Obtain the gradient
         PsiMod.fd_1_0(energies)
-
+        
         # The last item in the list is the reference energy, return it
         optstash.restore()
         return energies[-1]
@@ -953,7 +976,19 @@ def optimize(name, **kwargs):
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
+    PsiMod.get_active_molecule().update_geometry()
+    mol = PsiMod.get_active_molecule()
+    mol.update_geometry()
+    initial_sym = mol.schoenflies_symbol()
     while n <= PsiMod.get_global_option('GEOM_MAXITER'):
+        mol = PsiMod.get_active_molecule()
+        mol.update_geometry()
+        current_sym = mol.schoenflies_symbol()
+        if initial_sym != current_sym:
+            raise Exception("Point group changed!  You should restart using " +\
+                            "the last geometry in the output, after carefully "+\
+                            "making sure all symmetry-dependent information in "+\
+                            "the input, such as DOCC, is correct.")
         kwargs['opt_iter'] = n
 
         # Use orbitals from previous iteration as a guess
@@ -1016,7 +1051,6 @@ def optimize(name, **kwargs):
 
             optstash.restore()
             return thisenergy
-
         PsiMod.print_out('\n    Structure for next step:\n')
         PsiMod.get_active_molecule().print_in_input_format()
 
@@ -1028,6 +1062,7 @@ def optimize(name, **kwargs):
         n += 1
 
     PsiMod.print_out('\tOptimizer: Did not converge!')
+
     optstash.restore()
     return 0.0
 
@@ -1096,6 +1131,16 @@ def parse_arbitrary_order(name):
             # Let 'mp2' pass through as itself
             if (namestump == 'mp') and (namelevel == 2):
                 return namelower, None
+            elif (namestump == 'mp') and (namelevel == 3):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 3
+                else:
+                    return 'detci-mp', 3
+            elif (namestump == 'mp') and (namelevel == 4):
+                if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
+                    return 'fnocc-mp', 4
+                else:
+                    return 'detci-mp', 4
             # Otherwise return method and order
             else:
                 return namestump, namelevel
@@ -1217,6 +1262,10 @@ def frequency(name, **kwargs):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
+
+        # call thermo module
+        PsiMod.thermo()
+
         return PsiMod.reference_wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
@@ -1277,6 +1326,11 @@ def frequency(name, **kwargs):
         # But not this one, it always goes back to True
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
+        # call thermo module
+        PsiMod.thermo()
+
+        # TODO: add return statement
+
     else:  # Assume energy points
         # If not, perform finite difference of energies
         info = 'Performing finite difference calculations by energies'
@@ -1332,6 +1386,13 @@ def frequency(name, **kwargs):
 
         # The last item in the list is the reference energy, return it
         optstash.restore()
+
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
+
+        # call thermo module
+        PsiMod.thermo()
+
         return energies[-1]
 
 ##  Aliases  ##

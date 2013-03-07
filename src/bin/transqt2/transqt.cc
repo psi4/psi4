@@ -331,7 +331,7 @@ void init_io()
 
   if(params.print_lvl) tstart();
 
-  psio_open(CC_INFO, PSIO_OPEN_NEW);
+  psio_open(PSIF_CC_INFO, PSIO_OPEN_NEW);
 }
 
 void title(void)
@@ -350,7 +350,7 @@ void title(void)
 
 void exit_io(void)
 {
-  psio_close(CC_INFO,1);
+  psio_close(PSIF_CC_INFO,1);
   if(params.print_lvl) tstop();
 }
 

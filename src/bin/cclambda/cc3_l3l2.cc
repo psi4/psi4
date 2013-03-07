@@ -77,45 +77,45 @@ void cc3_l3l2_RHF_AAA(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_buf4_init(&WMAFE, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_buf4_init(&WMNIE, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  dpd_buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&WMNIE, h);
     dpd_buf4_mat_irrep_rd(&WMNIE, h);
   }
 
-  dpd_buf4_init(&L2new, CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
+  dpd_buf4_init(&L2new, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_init(&L2new, h);
 
-  dpd_buf4_init(&ZIGDE, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
+  dpd_buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
   dpd_buf4_scm(&ZIGDE, 0.0); /* must be cleared in each iteration */
 
-  dpd_buf4_init(&ZDMAE, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
+  dpd_buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
   dpd_buf4_scm(&ZDMAE, 0.0);
 
-  dpd_buf4_init(&ZLMAO, CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
+  dpd_buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_init(&ZLMAO, h);
 
-  dpd_buf4_init(&ZIMLE, CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
+  dpd_buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_init(&ZIMLE, h);
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2, h);
     dpd_buf4_mat_irrep_rd(&T2, h);
   }
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
 
-  dpd_buf4_init(&L, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_buf4_init(&F, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
-  dpd_buf4_init(&E, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
+  dpd_buf4_init(&L, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
+  dpd_buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
 
-  dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  dpd_buf4_init(&LIJAB, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_file2_init(&LIA, CC_LAMBDA, 0, 0, 1, "LIA");
-  dpd_file2_init(&FME, CC_OEI, 0, 0, 1, "FME");
+  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+  dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
 
   W1 = (double ***) malloc(nirreps * sizeof(double **));
   W2 = (double ***) malloc(nirreps * sizeof(double **));
@@ -398,10 +398,10 @@ void cc3_l3l2_RHF_AAA(void)
     dpd_buf4_mat_irrep_wrt(&L2new, h);
     dpd_buf4_mat_irrep_close(&L2new, h);
   }
-  dpd_buf4_init(&D2, CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  dpd_buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
   dpd_buf4_dirprd(&D2, &L2new);
   dpd_buf4_close(&D2);
-  dpd_buf4_init(&L2, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
+  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
   dpd_buf4_axpy(&L2new, &L2, 1);
   dpd_buf4_close(&L2);
   dpd_buf4_close(&L2new);
@@ -448,14 +448,14 @@ void cc3_l3l2_RHF_AAB(void)
   virtpi = moinfo.virtpi;
   vir_off = moinfo.vir_off;
 
-  dpd_buf4_init(&L2AAnew, CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
+  dpd_buf4_init(&L2AAnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIJAB");
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_init(&L2AAnew, h);
 
-  dpd_buf4_init(&L2ABnew, CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIjAb");
+  dpd_buf4_init(&L2ABnew, PSIF_CC3_MISC, 0, 0, 5, 0, 5, 0, "CC3 LIjAb");
   for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_init(&L2ABnew, h);
 
-  dpd_buf4_init(&T2AB, CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&T2AA, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_buf4_init(&T2AA, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2AB, h);
     dpd_buf4_mat_irrep_rd(&T2AB, h);
@@ -464,20 +464,20 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_rd(&T2AA, h);
   }
 
-  dpd_buf4_init(&ZIGDE, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
+  dpd_buf4_init(&ZIGDE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIGDE");
   dpd_buf4_scm(&ZIGDE, 0.0); /* this must be cleared in each iteration */
-  dpd_buf4_init(&ZIgDe, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIgDe");
+  dpd_buf4_init(&ZIgDe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZIgDe");
   dpd_buf4_scm(&ZIgDe, 0.0); /* this must be cleared in each iteration */
 
-  dpd_buf4_init(&ZDMAE, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
+  dpd_buf4_init(&ZDMAE, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDMAE (MD,AE)");
   dpd_buf4_scm(&ZDMAE, 0.0); /* must be cleared in each iteration */
-  dpd_buf4_init(&ZDmAe, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDmAe (mD,Ae)");
+  dpd_buf4_init(&ZDmAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZDmAe (mD,Ae)");
   dpd_buf4_scm(&ZDmAe, 0.0); /* must be cleared in each iteration */
-  dpd_buf4_init(&ZdMAe, CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZdMAe (Md,Ae)");
+  dpd_buf4_init(&ZdMAe, PSIF_CC3_MISC, 0, 10, 5, 10, 5, 0, "CC3 ZdMAe (Md,Ae)");
   dpd_buf4_scm(&ZdMAe, 0.0); /* must be cleared in each iteration */
 
-  dpd_buf4_init(&ZLMAO, CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
-  dpd_buf4_init(&ZLmAo, CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLmAo");
+  dpd_buf4_init(&ZLMAO, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLMAO");
+  dpd_buf4_init(&ZLmAo, PSIF_CC3_MISC, 0, 0, 11, 0, 11, 0, "CC3 ZLmAo");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&ZLMAO, h);
     dpd_buf4_mat_irrep_rd(&ZLMAO, h);
@@ -485,9 +485,9 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_init(&ZLmAo, h);
   }
 
-  dpd_buf4_init(&ZIMLE, CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
-  dpd_buf4_init(&ZImLe, CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImLe");
-  dpd_buf4_init(&ZImlE, CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImlE");
+  dpd_buf4_init(&ZIMLE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZIMLE");
+  dpd_buf4_init(&ZImLe, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImLe");
+  dpd_buf4_init(&ZImlE, PSIF_CC3_MISC, 0, 0, 10, 0, 10, 0, "CC3 ZImlE");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&ZIMLE, h);
     dpd_buf4_mat_irrep_rd(&ZIMLE, h);
@@ -496,13 +496,13 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_init(&ZImlE, h);
   }
 
-  dpd_buf4_init(&WmAfE, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
-  dpd_buf4_init(&WMAFE, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-  dpd_buf4_init(&WMaFe, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
+  dpd_buf4_init(&WmAfE, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+  dpd_buf4_init(&WMAFE, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+  dpd_buf4_init(&WMaFe, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
 
-  dpd_buf4_init(&WMnIe, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
-  dpd_buf4_init(&WMNIE, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
-  dpd_buf4_init(&WmNiE, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
+  dpd_buf4_init(&WMnIe, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+  dpd_buf4_init(&WMNIE, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+  dpd_buf4_init(&WmNiE, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&WMnIe, h);
     dpd_buf4_mat_irrep_rd(&WMnIe, h);
@@ -512,29 +512,29 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_rd(&WmNiE, h);
   }
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fij");
-  dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fab");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
 
-  dpd_buf4_init(&L2AA, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_buf4_init(&L2AB, CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
-  dpd_buf4_init(&L2BA, CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LiJaB");
-  dpd_buf4_init(&FAA, CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
-  dpd_buf4_init(&FAB, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaMeF (Ma,Fe)");
-  dpd_buf4_init(&FBA, CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,fE)");
-  dpd_buf4_init(&EAA, CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
-  dpd_buf4_init(&EAB, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
-  dpd_buf4_init(&EBA, CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmNiE (mN,iE)");
+  dpd_buf4_init(&L2AA, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+  dpd_buf4_init(&L2BA, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LiJaB");
+  dpd_buf4_init(&FAA, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WAMEF (MA,F>E)");
+  dpd_buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaMeF (Ma,Fe)");
+  dpd_buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAmEf (mA,fE)");
+  dpd_buf4_init(&EAA, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMNIE (M>N,IE)");
+  dpd_buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMnIe (Mn,Ie)");
+  dpd_buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmNiE (mN,iE)");
 
-  dpd_buf4_init(&DAAints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-  dpd_buf4_init(&DABints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_init(&LIJAB, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-  dpd_buf4_init(&LIjAb, CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
-  dpd_file2_init(&LIA, CC_LAMBDA, 0, 0, 1, "LIA");
-  dpd_file2_init(&Lia, CC_LAMBDA, 0, 0, 1, "Lia");
-  dpd_file2_init(&FME, CC_OEI, 0, 0, 1, "FME");
-  dpd_file2_init(&Fme, CC_OEI, 0, 0, 1, "Fme");
+  dpd_buf4_init(&DAAints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+  dpd_buf4_init(&DABints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+  dpd_file2_init(&LIA, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+  dpd_file2_init(&Lia, PSIF_CC_LAMBDA, 0, 0, 1, "Lia");
+  dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
+  dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 0, 1, "Fme");
 
   W1 = (double ***) malloc(nirreps * sizeof(double **));
   W2 = (double ***) malloc(nirreps * sizeof(double **));
@@ -1494,10 +1494,10 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_wrt(&L2AAnew, h);
     dpd_buf4_mat_irrep_close(&L2AAnew, h);
   }
-  dpd_buf4_init(&D2, CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  dpd_buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
   dpd_buf4_dirprd(&D2, &L2AAnew);
   dpd_buf4_close(&D2);
-  dpd_buf4_init(&L2, CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
+  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "New LIJAB");
   dpd_buf4_axpy(&L2AAnew, &L2, 1);
   dpd_buf4_close(&L2);
   dpd_buf4_close(&L2AAnew);
@@ -1506,19 +1506,19 @@ void cc3_l3l2_RHF_AAB(void)
     dpd_buf4_mat_irrep_wrt(&L2ABnew, h);
     dpd_buf4_mat_irrep_close(&L2ABnew, h);
   }
-  dpd_buf4_init(&D2, CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+  dpd_buf4_init(&D2, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
   dpd_buf4_dirprd(&D2, &L2ABnew);
   dpd_buf4_close(&D2);
-  dpd_buf4_init(&L2, CC_LAMBDA, 0, 0, 5, 0, 5, 0, "New LIjAb");
+  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "New LIjAb");
   dpd_buf4_axpy(&L2ABnew, &L2, 1);
   dpd_buf4_close(&L2);
   dpd_buf4_close(&L2ABnew);
 
   /* Spin adaptation will remove this.  And yes, this means that all the above
      calculations for LIJAB were pointless... -TDC */
-  dpd_buf4_init(&L2, CC_LAMBDA, 0, 2, 7, 0, 5, 1, "New LIjAb");
-  dpd_buf4_copy(&L2, CC_LAMBDA, "New LIJAB");
-  dpd_buf4_copy(&L2, CC_LAMBDA, "New Lijab");
+  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "New LIjAb");
+  dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "New LIJAB");
+  dpd_buf4_copy(&L2, PSIF_CC_LAMBDA, "New Lijab");
   dpd_buf4_close(&L2);
 
 }

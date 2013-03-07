@@ -120,32 +120,32 @@ timer_on("RESTART");
   /* Form restart vectors Ci = Sum_j(alpha[j][i]*Cj) */
   for (i=0; i<num; ++i) {
     sprintf(lbl, "%s %d", "CME", L+i);
-    dpd_file2_init(&C1, EOM_CME, C_irr, A_OCC, A_VIR, lbl);
+    dpd_file2_init(&C1, PSIF_EOM_CME, C_irr, A_OCC, A_VIR, lbl);
     dpd_file2_scm(&C1, 0.0);
 		C10 = 0.0;
     for (j=0;j<L;++j) {
       sprintf(lbl, "%s %d", "CME", j);
-      dpd_file2_init(&CME, EOM_CME, C_irr, A_OCC, A_VIR, lbl);
+      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, A_OCC, A_VIR, lbl);
       dpd_file2_axpy(&CME, &C1, alpha_tot[j][i], 0);
       dpd_file2_close(&CME);
       if (params.full_matrix) {
 		    sprintf(lbl, "%s %d", "C0", j);
-			  psio_read_entry(EOM_CME, lbl, (char *) &CME0, sizeof(double));
+			  psio_read_entry(PSIF_EOM_CME, lbl, (char *) &CME0, sizeof(double));
 				C10 += alpha_tot[j][i] * CME0;
 		  }
     }
     if (params.full_matrix) {
 		  sprintf(lbl, "%s %d", "C0", L+i);
-	    psio_write_entry(EOM_CME, lbl, (char *) &C10, sizeof(double));
+	    psio_write_entry(PSIF_EOM_CME, lbl, (char *) &C10, sizeof(double));
 		}
     dpd_file2_close(&C1);
 
     sprintf(lbl, "%s %d", "CMnEf", L+i);
-    dpd_buf4_init(&C2, EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+    dpd_buf4_init(&C2, PSIF_EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
     dpd_buf4_scm(&C2, 0.0);
     for (j=0;j<L;++j) {
       sprintf(lbl, "%s %d", "CMnEf", j);
-      dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
       dpd_buf4_axpy(&CMnEf, &C2, alpha_tot[j][i]);
       dpd_buf4_close(&CMnEf);
     }
@@ -153,33 +153,33 @@ timer_on("RESTART");
 
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Cme", L+i);
-      dpd_file2_init(&C1, EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
+      dpd_file2_init(&C1, PSIF_EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
       dpd_file2_scm(&C1, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "Cme", j);
-        dpd_file2_init(&Cme, EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
+        dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
         dpd_file2_axpy(&Cme, &C1, alpha_tot[j][i], 0);
         dpd_file2_close(&Cme);
       }
       dpd_file2_close(&C1);
 
       sprintf(lbl, "%s %d", "CMNEF", L+i);
-      dpd_buf4_init(&C2, EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+      dpd_buf4_init(&C2, PSIF_EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
       dpd_buf4_scm(&C2, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "CMNEF", j);
-        dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+        dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
         dpd_buf4_axpy(&CMNEF, &C2, alpha_tot[j][i]);
         dpd_buf4_close(&CMNEF);
       }
       dpd_buf4_close(&C2);
 
       sprintf(lbl, "%s %d", "Cmnef", L+i);
-      dpd_buf4_init(&C2, EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+      dpd_buf4_init(&C2, PSIF_EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
       dpd_buf4_scm(&C2, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "Cmnef", j);
-        dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+        dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
         dpd_buf4_axpy(&Cmnef, &C2, alpha_tot[j][i]);
         dpd_buf4_close(&Cmnef);
       }
@@ -187,32 +187,32 @@ timer_on("RESTART");
     }
 
     sprintf(lbl, "%s %d", "SIA", L+i);
-    dpd_file2_init(&C1, EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
+    dpd_file2_init(&C1, PSIF_EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
     dpd_file2_scm(&C1, 0.0);
 		C10 = 0.0;
     for (j=0;j<L;++j) {
       sprintf(lbl, "%s %d", "SIA", j);
-      dpd_file2_init(&SIA, EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
+      dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
       dpd_file2_axpy(&SIA, &C1, alpha_tot[j][i], 0);
       dpd_file2_close(&SIA);
       if (params.full_matrix) {
 		    sprintf(lbl, "%s %d", "S0", j);
-			  psio_read_entry(EOM_SIA, lbl, (char *) &S0, sizeof(double));
+			  psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &S0, sizeof(double));
 				C10 += alpha_tot[j][i] * S0;
 		  }
     }
     if (params.full_matrix) {
 		  sprintf(lbl, "%s %d", "S0", L+i);
-		  psio_write_entry(EOM_SIA, lbl, (char *) &C10, sizeof(double));
+		  psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &C10, sizeof(double));
 		}
     dpd_file2_close(&C1);
 
     sprintf(lbl, "%s %d", "SIjAb", L+i);
-    dpd_buf4_init(&C2, EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+    dpd_buf4_init(&C2, PSIF_EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
     dpd_buf4_scm(&C2, 0.0);
     for (j=0;j<L;++j) {
       sprintf(lbl, "%s %d", "SIjAb", j);
-      dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+      dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
       dpd_buf4_axpy(&SIjAb, &C2, alpha_tot[j][i]);
       dpd_buf4_close(&SIjAb);
     }
@@ -220,33 +220,33 @@ timer_on("RESTART");
 
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Sia", L+i);
-      dpd_file2_init(&C1, EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
+      dpd_file2_init(&C1, PSIF_EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
       dpd_file2_scm(&C1, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "Sia", j);
-        dpd_file2_init(&Sia, EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
+        dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
         dpd_file2_axpy(&Sia, &C1, alpha_tot[j][i], 0);
         dpd_file2_close(&Sia);
       }
       dpd_file2_close(&C1);
 
       sprintf(lbl, "%s %d", "SIJAB", L+i);
-      dpd_buf4_init(&C2, EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+      dpd_buf4_init(&C2, PSIF_EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
       dpd_buf4_scm(&C2, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "SIJAB", j);
-        dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+        dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
         dpd_buf4_axpy(&SIJAB, &C2, alpha_tot[j][i]);
         dpd_buf4_close(&SIJAB);
       }
       dpd_buf4_close(&C2);
 
       sprintf(lbl, "%s %d", "Sijab", L+i);
-      dpd_buf4_init(&C2, EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+      dpd_buf4_init(&C2, PSIF_EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
       dpd_buf4_scm(&C2, 0.0);
       for (j=0;j<L;++j) {
         sprintf(lbl, "%s %d", "Sijab", j);
-        dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+        dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
         dpd_buf4_axpy(&Sijab, &C2, alpha_tot[j][i]);
         dpd_buf4_close(&Sijab);
       }
@@ -258,72 +258,72 @@ timer_on("RESTART");
   /* Copy restart vectors to beginning of file */
   for (i=0; i<num; ++i) {
     sprintf(lbl, "%s %d", "CME", L+i);
-    dpd_file2_init(&CME, EOM_CME, C_irr, A_OCC, A_VIR, lbl);
+    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, A_OCC, A_VIR, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_copy(&CME, EOM_CME, lbl);
+    dpd_file2_copy(&CME, PSIF_EOM_CME, lbl);
     dpd_file2_close(&CME);
     sprintf(lbl, "%s %d", "CMnEf", L+i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_copy(&CMnEf, EOM_CMnEf, lbl);
+    dpd_buf4_copy(&CMnEf, PSIF_EOM_CMnEf, lbl);
     dpd_buf4_close(&CMnEf);
 		if (params.full_matrix) {
       sprintf(lbl, "%s %d", "C0", L+i);
-			psio_read_entry(EOM_CME, lbl, (char *) &CME0, sizeof(double));
+			psio_read_entry(PSIF_EOM_CME, lbl, (char *) &CME0, sizeof(double));
       sprintf(lbl, "%s %d", "C0", i);
-			psio_write_entry(EOM_CME, lbl, (char *) &CME0, sizeof(double));
+			psio_write_entry(PSIF_EOM_CME, lbl, (char *) &CME0, sizeof(double));
 		}
 
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Cme", L+i);
-      dpd_file2_init(&Cme, EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
+      dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, B_OCC, B_VIR, lbl);
       sprintf(lbl, "%s %d", "Cme", i);
-      dpd_file2_copy(&Cme, EOM_Cme, lbl);
+      dpd_file2_copy(&Cme, PSIF_EOM_Cme, lbl);
       dpd_file2_close(&Cme);
       sprintf(lbl, "%s %d", "CMNEF", L+i);
-      dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+      dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
       sprintf(lbl, "%s %d", "CMNEF", i);
-      dpd_buf4_copy(&CMNEF, EOM_CMNEF, lbl);
+      dpd_buf4_copy(&CMNEF, PSIF_EOM_CMNEF, lbl);
       dpd_buf4_close(&CMNEF);
       sprintf(lbl, "%s %d", "Cmnef", L+i);
-      dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+      dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
       sprintf(lbl, "%s %d", "Cmnef", i);
-      dpd_buf4_copy(&Cmnef, EOM_Cmnef, lbl);
+      dpd_buf4_copy(&Cmnef, PSIF_EOM_Cmnef, lbl);
       dpd_buf4_close(&Cmnef);
     }
 
     sprintf(lbl, "%s %d", "SIA", L+i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, A_OCC, A_VIR, lbl);
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_copy(&SIA, EOM_SIA, lbl);
+    dpd_file2_copy(&SIA, PSIF_EOM_SIA, lbl);
     dpd_file2_close(&SIA);
     sprintf(lbl, "%s %d", "SIjAb", L+i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
+    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, AB_OCC, AB_VIR, AB_OCC, AB_VIR, 0, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_copy(&SIjAb, EOM_SIjAb, lbl);
+    dpd_buf4_copy(&SIjAb, PSIF_EOM_SIjAb, lbl);
     dpd_buf4_close(&SIjAb);
 		if (params.full_matrix) {
       sprintf(lbl, "%s %d", "S0", L+i);
-			psio_read_entry(EOM_SIA, lbl, (char *) &S0, sizeof(double));
+			psio_read_entry(PSIF_EOM_SIA, lbl, (char *) &S0, sizeof(double));
       sprintf(lbl, "%s %d", "S0", i);
-			psio_write_entry(EOM_SIA, lbl, (char *) &S0, sizeof(double));
+			psio_write_entry(PSIF_EOM_SIA, lbl, (char *) &S0, sizeof(double));
 		}
     
     if (params.eom_ref > 0) {
       sprintf(lbl, "%s %d", "Sia", L+i);
-      dpd_file2_init(&Sia, EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
+      dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, B_OCC, B_VIR, lbl);
       sprintf(lbl, "%s %d", "Sia", i);
-      dpd_file2_copy(&Sia, EOM_Sia, lbl);
+      dpd_file2_copy(&Sia, PSIF_EOM_Sia, lbl);
       dpd_file2_close(&Sia);
       sprintf(lbl, "%s %d", "SIJAB", L+i);
-      dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
+      dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, AA_OCC, AA_VIR, AA_OCC, AA_VIR, 0, lbl);
       sprintf(lbl, "%s %d", "SIJAB", i);
-      dpd_buf4_copy(&SIJAB, EOM_SIJAB, lbl);
+      dpd_buf4_copy(&SIJAB, PSIF_EOM_SIJAB, lbl);
       dpd_buf4_close(&SIJAB);
       sprintf(lbl, "%s %d", "Sijab", L+i);
-      dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
+      dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, BB_OCC, BB_VIR, BB_OCC, BB_VIR, 0, lbl);
       sprintf(lbl, "%s %d", "Sijab", i);
-      dpd_buf4_copy(&Sijab, EOM_Sijab, lbl); 
+      dpd_buf4_copy(&Sijab, PSIF_EOM_Sijab, lbl); 
       dpd_buf4_close(&Sijab);
     }
   }

@@ -45,7 +45,7 @@ double diagnostic(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     t1diag = dpd_file2_dot_self(&T1A);
     dpd_file2_close(&T1A);
 
@@ -55,10 +55,10 @@ double diagnostic(void)
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1A);
     dpd_file2_mat_rd(&T1A);
-    dpd_file2_init(&T1B, CC_OEI, 0, 0, 1, "tia");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 0, 1, "tia");
     dpd_file2_mat_init(&T1B);
     dpd_file2_mat_rd(&T1B);
 
@@ -102,10 +102,10 @@ double diagnostic(void)
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+    dpd_file2_init(&T1A, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_mat_init(&T1A);
     dpd_file2_mat_rd(&T1A);
-    dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+    dpd_file2_init(&T1B, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_file2_mat_init(&T1B);
     dpd_file2_mat_rd(&T1B);
 

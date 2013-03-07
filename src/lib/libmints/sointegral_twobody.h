@@ -1129,16 +1129,17 @@ void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
                            "environment variable to MPI or LOCAL.\n");
 #endif
     }
-    else if (comm_ == "LOCAL") {
+    //else if (comm_ == "LOCAL") {
+    else {
         boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
                                                                  SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
         this->compute_quartets(shellIter, functor);
     }
-    else {
-        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
-                           "Please change your COMMUNICATOR "
-                           "environment variable.\n");
-    }
+//    else {
+//        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
+//                           "Please change your COMMUNICATOR "
+//                           "environment variable.\n");
+//    }
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -1171,7 +1172,8 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
                            "environment variable to MPI or LOCAL.\n");
 #endif
     }
-    else if (comm_ == "LOCAL") {
+    //else if (comm_ == "LOCAL") {
+    else {
         boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
         size_t pair_number = 0;
         for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
@@ -1180,11 +1182,11 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
             pair_number++;
         }
     }
-    else {
-        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
-                           "Please change your COMMUNICATOR "
-                           "environment variable.\n");
-    }
+//    else {
+//        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
+//                           "Please change your COMMUNICATOR "
+//                           "environment variable.\n");
+//    }
 }
 
 typedef boost::shared_ptr<OneBodySOInt> SharedOneBodySOInt;

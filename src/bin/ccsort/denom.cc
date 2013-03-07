@@ -41,23 +41,23 @@ void denom_uhf(void)
   avir_off = moinfo.avir_off;
   bvir_off = moinfo.bvir_off;
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_rd(&fIJ);
   
-  dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
   dpd_file2_mat_init(&fij);
   dpd_file2_mat_rd(&fij);
   
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fAB);
   dpd_file2_mat_rd(&fAB);
   
-  dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
   dpd_file2_mat_init(&fab);
   dpd_file2_mat_rd(&fab);
 
-  dpd_file2_init(&dIA, CC_OEI, 0, 0, 1, "dIA");
+  dpd_file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
   dpd_file2_mat_init(&dIA);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < aoccpi[h]; i++) {
@@ -72,7 +72,7 @@ void denom_uhf(void)
   dpd_file2_mat_close(&dIA);
   dpd_file2_close(&dIA);
 
-  dpd_file2_init(&dIA, CC_OEI, 0, 2, 3, "dia");
+  dpd_file2_init(&dIA, PSIF_CC_OEI, 0, 2, 3, "dia");
   dpd_file2_mat_init(&dIA);
   for(h=0; h < nirreps; h++) {
       for(i=0; i < boccpi[h]; i++) {
@@ -87,7 +87,7 @@ void denom_uhf(void)
   dpd_file2_mat_close(&dIA);
   dpd_file2_close(&dIA);
 
-  dpd_file4_init(&dIJAB, CC_DENOM, 0, 1, 6, "dIJAB");
+  dpd_file4_init(&dIJAB, PSIF_CC_DENOM, 0, 1, 6, "dIJAB");
   for(h=0; h < nirreps; h++) {
       dpd_file4_mat_irrep_init(&dIJAB, h);
       for(ij=0; ij < dIJAB.params->rowtot[h]; ij++) {
@@ -118,7 +118,7 @@ void denom_uhf(void)
     }
   dpd_file4_close(&dIJAB);
 
-  dpd_file4_init(&dIJAB, CC_DENOM, 0, 11, 16, "dijab");
+  dpd_file4_init(&dIJAB, PSIF_CC_DENOM, 0, 11, 16, "dijab");
   for(h=0; h < nirreps; h++) {
       dpd_file4_mat_irrep_init(&dIJAB, h);
       for(ij=0; ij < dIJAB.params->rowtot[h]; ij++) {
@@ -149,7 +149,7 @@ void denom_uhf(void)
     }
   dpd_file4_close(&dIJAB);
 
-  dpd_file4_init(&dIJAB, CC_DENOM, 0, 22, 28, "dIjAb");
+  dpd_file4_init(&dIJAB, PSIF_CC_DENOM, 0, 22, 28, "dIjAb");
   for(h=0; h < nirreps; h++) {
       dpd_file4_mat_irrep_init(&dIJAB, h);
       for(ij=0; ij < dIJAB.params->rowtot[h]; ij++) {
@@ -210,24 +210,24 @@ void denom_rhf(void)
   occ_off = moinfo.occ_off; vir_off = moinfo.vir_off;
 
   /* Grab Fock matrices from disk */
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_rd(&fIJ);
   
-  dpd_file2_init(&fij, CC_OEI, 0, 0, 0, "fij");
+  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
   dpd_file2_mat_init(&fij);
   dpd_file2_mat_rd(&fij);
   
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_mat_init(&fAB);
   dpd_file2_mat_rd(&fAB);
   
-  dpd_file2_init(&fab, CC_OEI, 0, 1, 1, "fab");
+  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
   dpd_file2_mat_init(&fab);
   dpd_file2_mat_rd(&fab);
 
   /* Alpha one-electron denominator */
-  dpd_file2_init(&dIA, CC_OEI, 0, 0, 1, "dIA");
+  dpd_file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
   dpd_file2_mat_init(&dIA);
 
   for(h=0; h < nirreps; h++) {
@@ -249,7 +249,7 @@ void denom_rhf(void)
   dpd_file2_close(&dIA);
 
   /* Beta one-electron denominator */
-  dpd_file2_init(&dia, CC_OEI, 0, 0, 1, "dia");
+  dpd_file2_init(&dia, PSIF_CC_OEI, 0, 0, 1, "dia");
   dpd_file2_mat_init(&dia);
 
   for(h=0; h < nirreps; h++) {
@@ -271,7 +271,7 @@ void denom_rhf(void)
   dpd_file2_close(&dia);
 
   /* Alpha-alpha two-electron denominator */
-  dpd_file4_init(&dIJAB, CC_DENOM, 0, 1, 6, "dIJAB");
+  dpd_file4_init(&dIJAB, PSIF_CC_DENOM, 0, 1, 6, "dIJAB");
 
   for(h=0; h < nirreps; h++) {
 
@@ -320,7 +320,7 @@ void denom_rhf(void)
   dpd_file4_close(&dIJAB);
 
   /* Beta-beta two-electron denominator */
-  dpd_file4_init(&dijab, CC_DENOM, 0, 1, 6, "dijab");
+  dpd_file4_init(&dijab, PSIF_CC_DENOM, 0, 1, 6, "dijab");
 
   for(h=0; h < nirreps; h++) {
 
@@ -369,7 +369,7 @@ void denom_rhf(void)
   dpd_file4_close(&dijab);
 
   /* Alpha-beta two-electron denominator */
-  dpd_file4_init(&dIjAb, CC_DENOM, 0, 0, 5, "dIjAb");
+  dpd_file4_init(&dIjAb, PSIF_CC_DENOM, 0, 0, 5, "dIjAb");
 
   for(h=0; h < nirreps; h++) {
 

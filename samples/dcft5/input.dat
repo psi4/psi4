@@ -1,4 +1,4 @@
-#! DCFT-06 calculation for the O2 molecule (triplet ground state). This performs 
+#! DC-06 calculation for the O2 molecule (triplet ground state). This performs 
 #! geometry optimization using two-step and simultaneous solution of the 
 #! response equations for the analytic gradient.
 

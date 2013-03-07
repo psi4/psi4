@@ -65,7 +65,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   O_b = block_matrix(nmo,nmo);
 
   /* Sort A components first */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, rho_params.DIJ_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -80,7 +80,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, rho_params.DAB_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -97,7 +97,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DAI_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -113,7 +113,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, rho_params.DIA_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -130,7 +130,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
   /* Sort B components */
-  dpd_file2_init(&D, CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, rho_params.Dij_lbl);
   dpd_file2_mat_init(&D); 
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -145,7 +145,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, rho_params.Dab_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -162,7 +162,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, rho_params.Dai_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
@@ -178,7 +178,7 @@ void sortone_UHF(struct RHO_Params rho_params)
   dpd_file2_mat_close(&D);
   dpd_file2_close(&D);
 
-  dpd_file2_init(&D, CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 3, rho_params.Dia_lbl);
   dpd_file2_mat_init(&D);
   dpd_file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
