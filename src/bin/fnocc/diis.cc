@@ -161,10 +161,10 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
       F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
       psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
       F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
-      if ( fabs( diisvec[j-1] ) < min ) {
-          min = fabs( diisvec[j-1] );
-          replace_diis_iter = j;
-      }
+      //if ( fabs( diisvec[j-1] ) < min ) {
+      //    min = fabs( diisvec[j-1] );
+      //    replace_diis_iter = j;
+      //}
   }
   psio->close(PSIF_DCC_OVEC,1);
   free(oldvector);
