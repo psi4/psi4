@@ -38,10 +38,9 @@ def run_gaussian_2(name, **kwargs):
     frequency('scf')
 
     # thermodynamic properties
-    PsiMod.thermo()
-    du = PsiMod.get_variable('DU')
-    dh = PsiMod.get_variable('DH')
-    dg = PsiMod.get_variable('DG')
+    du = PsiMod.get_variable('INTERNAL ENERGY CORRECTION')
+    dh = PsiMod.get_variable('ENTHALPY CORRECTION')
+    dg = PsiMod.get_variable('GIBBS FREE ENERGY CORRECTION')
 
     ref     = PsiMod.reference_wavefunction()
     freqs   = ref.frequencies()

@@ -662,8 +662,8 @@ void OPT_DATA::increase_trust_radius(void) const {
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
 #elif defined(OPTKING_PACKAGE_QCHEM)
-    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000 + 0.5);
-    rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT); // tell QChem current iteration number
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000);
+    rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
 #endif
   }
   return;
@@ -680,6 +680,9 @@ void OPT_DATA::decrease_trust_radius(void) const {
             Opt_params.intrafragment_step_limit);
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+    int qchem_limit_val = (int) (Opt_params.intrafragment_step_limit * 1000);
+    rem_write(qchem_limit_val, REM_GEOM_OPT2_INTRAFRAG_STEP_LIMIT);
 #endif
   }
   return;

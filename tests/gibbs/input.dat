@@ -20,7 +20,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 compare_values( N2_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "N2 Gibbs Free Energy") #TEST
 
 #
@@ -39,7 +38,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 compare_values( H2O_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "H2O Gibbs Free Energy") #TEST
 
 #
@@ -58,7 +56,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 compare_values( NH3_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "NH3 Gibbs Free Energy") #TEST
 
 #
@@ -79,6 +76,5 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 compare_values( CH4_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "CH4 Gibbs Free Energy") #TEST
 

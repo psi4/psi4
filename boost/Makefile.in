@@ -10,6 +10,7 @@ default: boost.compiled
 install:
 
 clean:
+	rm boost.compiled
 
 dclean:
 

@@ -1266,6 +1266,10 @@ def frequency(name, **kwargs):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
+
+        # call thermo module
+        PsiMod.thermo()
+
         return PsiMod.reference_wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
@@ -1326,6 +1330,11 @@ def frequency(name, **kwargs):
         # But not this one, it always goes back to True
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
+        # call thermo module
+        PsiMod.thermo()
+
+        # TODO: add return statement
+
     else:  # Assume energy points
         # If not, perform finite difference of energies
         info = 'Performing finite difference calculations by energies'
@@ -1384,6 +1393,9 @@ def frequency(name, **kwargs):
 
         # Clear the "parent" symmetry now
         PsiMod.set_parent_symmetry("")
+
+        # call thermo module
+        PsiMod.thermo()
 
         return energies[-1]
 
