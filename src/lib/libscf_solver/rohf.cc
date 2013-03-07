@@ -53,8 +53,8 @@ void ROHF::common_init()
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
     Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
     Cb_      = Ca_;
-    Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
-    Db_      = SharedMatrix(factory_->create_matrix("Beta density matrix"));
+    Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
+    Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
