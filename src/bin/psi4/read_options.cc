@@ -2129,6 +2129,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
+    /*- Do relax the one-particle density matrix? -*/
+    options.add_bool("OPDM_RELAX",true);
+    /*- Do compute one-particle density matrix? -*/
+    options.add_bool("ONEPDM",false);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by

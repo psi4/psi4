@@ -888,6 +888,75 @@ def run_cc_property(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
+def run_dfmp2_property(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DFMP2 property calculation.
+
+    """
+    optstash = OptionsState(
+        ['DF_BASIS_SCF'],
+        ['DF_BASIS_MP2'],
+        ['SCF_TYPE'])
+
+    PsiMod.set_global_option('ONEPDM', 'TRUE')
+    PsiMod.set_global_option('OPDM_RELAX', 'TRUE')
+
+    # Alter default algorithm
+    if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
+        #PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')  # insufficient b/c SCF option read in DFMP2
+        PsiMod.set_global_option('SCF_TYPE', 'DF')
+
+    if not PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        raise ValidationError('DF-MP2 properties need DF-SCF reference, for now.')
+
+    if 'restart_file' in kwargs:
+        restartfile = kwargs.pop('restart_file')
+        # Rename the checkpoint file to be consistent with psi4's file system
+        psioh = PsiMod.IOManager.shared_object()
+        psio = PsiMod.IO.shared_object()
+        filepath = psioh.get_file_path(32)
+        namespace = psio.get_default_namespace()
+        pid = str(os.getpid())
+        prefix = 'psi'
+        targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.32'
+        if(PsiMod.me() == 0):
+            shutil.copy(restartfile, targetfile)
+    else:
+        # if the df_basis_scf basis is not set, pick a sensible one.
+        if PsiMod.get_global_option('DF_BASIS_SCF') == '':
+            jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
+            if jkbasis:
+                PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
+                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+            else:
+                raise ValidationError('Keyword DF_BASIS_SCF is required.')
+
+        scf_helper(name, **kwargs)
+
+    PsiMod.print_out('\n')
+    banner('DFMP2')
+    PsiMod.print_out('\n')
+
+    # if the df_basis_mp2 basis is not set, pick a sensible one.
+    if PsiMod.get_global_option('DF_BASIS_MP2') == '':
+        ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
+        if ribasis:
+            PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
+            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+        else:
+            raise ValidationError('Keyword DF_BASIS_MP2 is required.')
+
+    PsiMod.dfmp2grad()
+    e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+
+    optstash.restore()
+
+    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+        return e_scs_dfmp2
+    elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
+        return e_dfmp2
+
 
 def run_eom_cc(name, **kwargs):
     """Function encoding sequence of PSI module calls for

@@ -8,8 +8,7 @@
 
 namespace psi{ namespace dcft{
 
-void
-DCFTSolver::compute_gradient()
+SharedMatrix DCFTSolver::compute_gradient()
 {
     bool responseDone = false;
 
@@ -200,6 +199,8 @@ DCFTSolver::compute_gradient()
     compute_lagrangian_VV();
     // Compute the energy-weighted density matrix
     compute_ewdm();
+
+    return SharedMatrix(new Matrix("NULL", 0, 0));
 
 }
 

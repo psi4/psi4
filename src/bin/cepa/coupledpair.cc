@@ -48,8 +48,11 @@ void CoupledPair::common_init(){
   nmopi_  = reference_wavefunction_->nmopi();
 
   Da_ = SharedMatrix(reference_wavefunction_->Da());
+  Db_ = Da_;
   Ca_ = SharedMatrix(reference_wavefunction_->Ca());
+  Cb_ = Ca_;
   Fa_ = SharedMatrix(reference_wavefunction_->Fa());
+  Fb_ = Fa_;
   epsilon_a_= boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
   epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
   nalpha_ = reference_wavefunction_->nalpha();

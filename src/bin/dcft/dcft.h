@@ -85,7 +85,7 @@ protected:
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     // DCFT analytic gradient subroutines
-    void compute_gradient();
+    virtual SharedMatrix compute_gradient();
     void response_guess();
     void gradient_init();
     void compute_density();

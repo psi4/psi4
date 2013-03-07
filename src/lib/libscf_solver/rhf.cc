@@ -69,7 +69,7 @@ void RHF::common_init()
     Cb_        = Ca_;
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
-    Da_        = SharedMatrix(factory_->create_matrix("D"));
+    Da_        = SharedMatrix(factory_->create_matrix("SCF density"));
     Db_        = Da_;
     Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
     D_         = Da_;

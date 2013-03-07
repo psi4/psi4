@@ -142,6 +142,8 @@ procedures = {
             'scf'  : run_scf_property,
             'cc2'  : run_cc_property,
             'ccsd' : run_cc_property,
+            'df-mp2' : run_dfmp2_property,
+            'dfmp2'  : run_dfmp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'eom_cc2'  : run_cc_property,
@@ -776,6 +778,8 @@ def property(name, **kwargs):
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2                  | MP2 with density fitting                                                              |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+

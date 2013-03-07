@@ -99,6 +99,7 @@ void CoupledPair::OPDM(){
   // set Da_ for properties with oeprop ... note Da needs to be in so basis
   int symm = opdm_a->symmetry();
   int nirrep = opdm_a->nirrep();
+  Da_->set_name("CEPA unrelaxed density");
 
   double* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
   for (int h = 0; h < nirrep; h++) {
