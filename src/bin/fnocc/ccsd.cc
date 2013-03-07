@@ -2475,13 +2475,7 @@ double DFCoupledCluster::compute_energy() {
           psio->close(PSIF_DCC_ABCI4,1);
           free(temp1);
           free(temp2);
-// need to write E2abci2 into file E2abci4 ...
-// E2abci2 :     abic = (ib|ac)
-// loop over a:
-//     I(qc) = B(q,ac)
-//     I(cib) = sum_q B(q,ib) * I(qc)
       }
-
       free(Qvv);
 
       double * temp1 = (double*)malloc(o*o*v*v*sizeof(double));
