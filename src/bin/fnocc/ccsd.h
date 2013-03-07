@@ -207,9 +207,6 @@ class DFCoupledCluster : public CoupledCluster{
     /// CCSD iterations
     PsiReturnType CCSDIterations();
 
-    /// (t)
-    PsiReturnType triples();
-
     void WriteBanner();
 
     /// allocate memory
