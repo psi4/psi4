@@ -143,6 +143,8 @@ protected:
     bool reinterpret_coordentries_;
     /// Nilpotence boolean (flagged upon first determination of symmetry frame, reset each time a substantiative change is made)
     bool lock_frame_;
+    /// Whether this molecule has at least one zmatrix entry
+    bool zmat_;
 
 public:
     Molecule();
@@ -248,6 +250,9 @@ public:
     std::string label(int atom) const;
     /// Returns charge of atom
     double charge(int atom) const;
+    /// Returns the true atomic number of an atom
+    int true_atomic_number(int atom) const;
+    int ftrue_atomic_number(int atom) const;
     /// Returns mass atom atom
     double fmass(int atom) const;
     /// Returns label of atom
@@ -326,6 +331,9 @@ public:
     /// Computes nuclear repulsion energy second derivatives.
     Matrix nuclear_repulsion_energy_deriv2() const;
 
+    /// Computes the nuclear repuslion energy between this and another Molecule
+    double pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> other) const;
+
     /// Translates molecule by r
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
@@ -351,6 +359,9 @@ public:
 
     /// Print the molecule
     void print() const;
+
+    /// Print the molecule, adding spacers
+    void print_cluster() const;
 
     /// Print full atom list
     void print_full() const;
@@ -546,6 +557,10 @@ public:
      */
     boost::shared_ptr<Molecule> py_extract_subsets_6(int reals);
 
+    /// Sets whether this molecule contains at least one zmatrix entry
+    void set_has_zmatrix(bool tf) {zmat_ = tf;}
+    /// Whether this molecule has at least one zmatrix entry
+    bool has_zmatrix() const {return zmat_;}
     /// Assigns the value val to the variable labelled string in the list of geometry variables.
     /// Also calls update_geometry()
     void set_variable(const std::string &str, double val);
@@ -572,9 +587,9 @@ public:
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
     /// Fix the orientation at its current frame
-    void set_orientation_fixed(bool _fix = true);
+    void set_orientation_fixed(bool fix = true) { fix_orientation_ = fix;}
     /// Fix the center of mass at its current frame
-    void set_com_fixed(bool _fix = true);
+    void set_com_fixed(bool fix = true) {move_to_com_ = !fix;}
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
     /// Check if current geometry fits current point group

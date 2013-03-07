@@ -220,22 +220,22 @@ cisd-sp:      6-31G** H2O Test CISD Energy Point
 cisd-sp-2:    6-31G** H2O Test CISD Energy Point
 
 
-dcft1:        DCFT-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+dcft1:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
-dcft2:        DCFT-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+dcft2:        DC-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
-dcft3:        DCFT-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
+dcft3:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
 
-dcft4:        DCFT calculation for the HF+ using DCFT-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DCFT-06X functional with the same algorithms.
+dcft4:        DCFT calculation for the HF+ using DC-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DC-12 functional with the same algorithms.
 
 
-dcft5:        DCFT-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
+dcft5:        DC-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
 
 
-dcft6:        DCFT calculation for the triplet O2 using DCFT-06, DCFT-06X and CEPA0 functionals.  Only two-step algorithm is tested.
+dcft6:        DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals.  Only two-step algorithm is tested.
 
 
 dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
@@ -316,6 +316,18 @@ fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4
 fd-gradient:  SCF STO-3G finite-difference tests
 
 
+fnocc1:       Test QCISD(T) for H2O/cc-pvdz Energy
+
+
+fnocc2:       Test G2 method for H2O
+
+
+fnocc3:       Test FNO-QCISD(T) computation
+
+
+fnocc4:       Test FNO-DF-CCSD(T) energy
+
+
 frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
 
 
@@ -355,6 +367,9 @@ mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification,
 mints5:       Tests to determine full point group symmetry.  Currently, these only matter for the rotational symmetry number in thermodynamic computations.
 
 
+mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
+
+
 mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
 
 
@@ -382,6 +397,9 @@ ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
 ocepa2:       OCEPA cc-pVDZ energy with B3LYP initial guess for the NO radical
 
 
+ocepa3:       OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
+
+
 omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
 
 
@@ -394,6 +412,9 @@ omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 omp2-4:       OMP2 cc-pVDZ energy for the NO radical
 
 
+omp2-5:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
+
+
 omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
 
 
@@ -404,6 +425,9 @@ omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
 omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
+
+
+omp3-5:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
 
 
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
@@ -425,6 +449,9 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
 
 opt5:         6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atoms, just for demo and testing purposes.
+
+
+opt6:         Various constrained energy minimizations of HOOH with cc-pvdz RHF
 
 
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
@@ -518,6 +545,9 @@ sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the
 
 
 scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
+
+
+scf-guess-read:  Sample UHF/cc-pVDZ H2O computation on a doublet cation, using  RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
 
 
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.

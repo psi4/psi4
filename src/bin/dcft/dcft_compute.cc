@@ -60,17 +60,19 @@ DCFTSolver::compute_energy()
         dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                       ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
         DIISManager scfDiisManager(maxdiis_, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
-        scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(),
-                                                DIISEntry::Matrix, scf_error_b_.get());
-        scfDiisManager.set_vector_size(2, DIISEntry::Matrix, Fa_.get(),
-                                          DIISEntry::Matrix, Fb_.get());
         DIISManager lambdaDiisManager(maxdiis_, "DCFT DIIS Lambdas",DIISManager::LargestError,DIISManager::InCore);
-        lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa,
-                                                   DIISEntry::DPDBuf4, &Lab,
-                                                   DIISEntry::DPDBuf4, &Lbb);
-        lambdaDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Laa,
-                                             DIISEntry::DPDBuf4, &Lab,
-                                             DIISEntry::DPDBuf4, &Lbb);
+        if ((nalpha_ + nbeta_) > 1) {
+            scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(),
+                                                 DIISEntry::Matrix, scf_error_b_.get());
+            scfDiisManager.set_vector_size(2, DIISEntry::Matrix, Fa_.get(),
+                                           DIISEntry::Matrix, Fb_.get());
+            lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa,
+                                                    DIISEntry::DPDBuf4, &Lab,
+                                                    DIISEntry::DPDBuf4, &Lbb);
+            lambdaDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Laa,
+                                              DIISEntry::DPDBuf4, &Lab,
+                                              DIISEntry::DPDBuf4, &Lbb);
+        }
         dpd_buf4_close(&Laa);
         dpd_buf4_close(&Lab);
         dpd_buf4_close(&Lbb);
@@ -130,7 +132,7 @@ DCFTSolver::compute_energy()
                     lambda_convergence_ = compute_lambda_residual();
                     // Update density cumulant tensor
                     update_lambda_from_residual();
-                    if(lambda_convergence_ < diis_start_thresh_){
+                    if(lambda_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
                         //Store the DIIS vectors
                         dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
                         dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
@@ -226,11 +228,11 @@ DCFTSolver::compute_energy()
                 // Check SCF convergence
                 scf_convergence_ = compute_scf_error_vector();
                 scfDone = scf_convergence_ < scf_threshold_;
-                if(scf_convergence_ < diis_start_thresh_){
+                if(scf_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
                     if(scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
                         diisString += "S";
                 }
-                if(scfDiisManager.subspace_size() > mindiisvecs_){
+                if(scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1){
                     diisString += "/E";
                     scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
                 }

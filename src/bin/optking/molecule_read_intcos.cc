@@ -8,12 +8,18 @@
 
 #include "molecule.h"
 
-#include <cmath>
 #include <iostream>
 #include <sstream>
 
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
+
 // maximum number of atoms that can be used to define a referent point
 #define MAX_REF_ATOM_INTCO (20)
 

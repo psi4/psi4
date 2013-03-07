@@ -8,7 +8,7 @@ namespace psi {
 
 #define PSIO_KEYLEN 80
 #define PSIO_MAXVOL 8
-#define PSIO_MAXUNIT 300
+#define PSIO_MAXUNIT 500
 #define PSIO_PAGELEN 65536
 
 #define PSIO_ERROR_INIT       1

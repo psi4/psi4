@@ -146,21 +146,21 @@ void get_rho_params(Options& options)
     else {
       if(params.wfn == "EOM_CC2") {
         sprintf(lbl,"EOM CC2 Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CC2 R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
       }
       else if(params.wfn == "EOM_CCSD") {
         sprintf(lbl,"EOM CCSD Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CCSD R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
       }
       else if( params.wfn == "EOM_CC3") {
         sprintf(lbl,"EOM CC3 Energy for root %d %d", rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].cceom_energy), sizeof(double));
         sprintf(lbl,"EOM CC3 R0 for root %d %d",rho_params[i].R_irr, rho_params[i].R_root);
-        psio_read_entry(CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
+        psio_read_entry(PSIF_CC_INFO,lbl,(char*)&(rho_params[i].R0),sizeof(double));
       }
     }
     if (rho_params[i].L_ground)
@@ -208,7 +208,7 @@ void get_rho_params(Options& options)
     }
   }
 
-  psio_write_entry(CC_INFO, "Num. of CC densities", (char *) &(params.nstates), sizeof(int));
+  psio_write_entry(PSIF_CC_INFO, "Num. of CC densities", (char *) &(params.nstates), sizeof(int));
 
   fprintf(outfile,"\tNumber of States = %-d\n",params.nstates);
 

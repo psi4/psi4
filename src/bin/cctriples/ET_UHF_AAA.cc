@@ -50,9 +50,9 @@ double ET_UHF_AAA(void)
   occ_off = moinfo.aocc_off;
   vir_off = moinfo.avir_off;
 
-  dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
+  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
   dpd_file2_mat_init(&fIJ);
   dpd_file2_mat_init(&fAB);
   dpd_file2_mat_init(&fIA);
@@ -60,14 +60,14 @@ double ET_UHF_AAA(void)
   dpd_file2_mat_rd(&fAB);
   dpd_file2_mat_rd(&fIA);
 
-  dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
+  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
   dpd_file2_mat_init(&T1); 
   dpd_file2_mat_rd(&T1);
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-  dpd_buf4_init(&Fints, CC_FINTS, 0, 20, 5, 20, 5, 1, "F <IA|BC>");
-  dpd_buf4_init(&Eints, CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
-  dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+  dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 20, 5, 20, 5, 1, "F <IA|BC>");
+  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
+  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
   for(h=0; h < nirreps; h++) {
     dpd_buf4_mat_irrep_init(&T2, h);
     dpd_buf4_mat_irrep_rd(&T2, h);

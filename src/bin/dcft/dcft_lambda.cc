@@ -91,7 +91,8 @@ DCFTSolver::compute_lambda_residual()
 
     dcft_timer_off("DCFTSolver::compute_lambda_residual()");
 
-    return sqrt(sumSQ / nElements);
+    if (nElements > 0) return sqrt(sumSQ / nElements);
+    else return 0.0;
 }
 
 

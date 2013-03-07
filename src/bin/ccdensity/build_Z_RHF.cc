@@ -35,13 +35,13 @@ void build_Z_RHF(void)
   nirreps = moinfo.nirreps;
 
   /* Grab only irrep 0 of the orbital Hessian */
-  dpd_buf4_init(&A, CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_buf4_init(&A, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   dpd_buf4_mat_irrep_init(&A, 0);
   dpd_buf4_mat_irrep_rd(&A, 0);
 
   /* Place all the elements of the orbital rotation gradient, X into a
      linear array, Z */
-  dpd_file2_init(&X1, CC_OEI, 0, 1, 0, "XAI");
+  dpd_file2_init(&X1, PSIF_CC_OEI, 0, 1, 0, "XAI");
   dpd_file2_mat_init(&X1);
   dpd_file2_mat_rd(&X1);
   X = init_array(A.params->rowtot[0]);
@@ -57,7 +57,7 @@ void build_Z_RHF(void)
   pople(A.matrix[0], X, A.params->rowtot[0], 1, 1e-12, outfile, 0);
 
   /* Build the orbital component of Dai */
-  dpd_file2_init(&D, CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
   dpd_file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)

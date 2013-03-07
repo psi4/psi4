@@ -32,9 +32,9 @@ void get_frozen(void)
   /* Get full orbital list occpi and virtpi arrays */
   frozen.occpi = init_int_array(moinfo.nirreps);
   frozen.virtpi = init_int_array(moinfo.nirreps);
-  psio_read_entry(CC_INFO, "All Occ Orbs Per Irrep",
+  psio_read_entry(PSIF_CC_INFO, "All Occ Orbs Per Irrep",
 		  (char *) frozen.occpi, sizeof(int)*moinfo.nirreps);
-  psio_read_entry(CC_INFO, "All Virt Orbs Per Irrep",
+  psio_read_entry(PSIF_CC_INFO, "All Virt Orbs Per Irrep",
 		  (char *) frozen.virtpi, sizeof(int)*moinfo.nirreps);
 
   /* Get CC->QT and QT->CC full occupied and virtual reordering arrays */
@@ -42,13 +42,13 @@ void get_frozen(void)
   frozen.qt_vir = init_int_array(moinfo.nmo);
   frozen.allcc_occ = init_int_array(moinfo.nmo);
   frozen.allcc_vir = init_int_array(moinfo.nmo);
-  psio_read_entry(CC_INFO, "CC->QT All Occ Order",
+  psio_read_entry(PSIF_CC_INFO, "CC->QT All Occ Order",
 		   (char *) frozen.qt_occ, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "CC->QT All Virt Order",
+  psio_read_entry(PSIF_CC_INFO, "CC->QT All Virt Order",
 		   (char *) frozen.qt_vir, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "QT->CC All Occ Order",
+  psio_read_entry(PSIF_CC_INFO, "QT->CC All Occ Order",
 		   (char *) frozen.allcc_occ, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "QT->CC All Virt Order",
+  psio_read_entry(PSIF_CC_INFO, "QT->CC All Virt Order",
 		   (char *) frozen.allcc_vir, sizeof(int)*moinfo.nmo);
 
   /* Build active-only cc_occ and cc_vir, inserting -1s for frozen orbitals */
@@ -67,28 +67,28 @@ void get_frozen(void)
   /* Get full orbital list symmetry arrays */
   frozen.occ_sym = init_int_array(moinfo.nmo);
   frozen.vir_sym = init_int_array(moinfo.nmo);
-  psio_read_entry(CC_INFO, "All Occ Orb Symmetry",
+  psio_read_entry(PSIF_CC_INFO, "All Occ Orb Symmetry",
 		  (char *) frozen.occ_sym, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "All Virt Orb Symmetry",
+  psio_read_entry(PSIF_CC_INFO, "All Virt Orb Symmetry",
 		  (char *) frozen.vir_sym, sizeof(int)*moinfo.nmo);
 
   /* Get full orbtial list offset arrays for occupied and virtual */
   frozen.occ_off = init_int_array(moinfo.nirreps);
   frozen.vir_off = init_int_array(moinfo.nirreps);
-  psio_read_entry(CC_INFO, "All Occ Orb Offsets",
+  psio_read_entry(PSIF_CC_INFO, "All Occ Orb Offsets",
 		   (char *) frozen.occ_off, sizeof(int)*moinfo.nirreps);
-  psio_read_entry(CC_INFO, "All Virt Orb Offsets",
+  psio_read_entry(PSIF_CC_INFO, "All Virt Orb Offsets",
 		   (char *) frozen.vir_off, sizeof(int)*moinfo.nirreps);
 
   /* Get boolean arrays for orbital classification routines */
   frozen.occ = init_int_array(moinfo.nmo);
   frozen.vir = init_int_array(moinfo.nmo);
   frozen.socc = init_int_array(moinfo.nmo);
-  psio_read_entry(CC_INFO, "All Occ Orbital Boolean",
+  psio_read_entry(PSIF_CC_INFO, "All Occ Orbital Boolean",
 		  (char *) frozen.occ, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "All Virt Orbital Boolean",
+  psio_read_entry(PSIF_CC_INFO, "All Virt Orbital Boolean",
 		  (char *) frozen.vir, sizeof(int)*moinfo.nmo);
-  psio_read_entry(CC_INFO, "All Socc Orbital Boolean",
+  psio_read_entry(PSIF_CC_INFO, "All Socc Orbital Boolean",
 		  (char *) frozen.socc, sizeof(int)*moinfo.nmo);
 }
 

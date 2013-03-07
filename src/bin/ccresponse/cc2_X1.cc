@@ -26,38 +26,38 @@ void cc2_X1_build(const char *pert, int irrep, double omega)
   char lbl[32];
 
   sprintf(lbl, "%sBAR_IA", pert);
-  dpd_file2_init(&X1new, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&X1new, PSIF_CC_OEI, irrep, 0, 1, lbl);
   sprintf(lbl, "New X_%s_IA (%5.3f)", pert, omega);
-  dpd_file2_copy(&X1new, CC_OEI, lbl);
+  dpd_file2_copy(&X1new, PSIF_CC_OEI, lbl);
   dpd_file2_close(&X1new);
-  dpd_file2_init(&X1new, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&X1new, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
   /*** S-S ***/
 
   sprintf(lbl, "X_%s_IA (%5.3f)", pert, omega);
-  dpd_file2_init(&X1, CC_OEI, irrep, 0, 1, lbl);
+  dpd_file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
 
   dpd_file2_axpy(&X1, &X1new, -omega, 0);
 
-  dpd_file2_init(&F, CC_OEI, 0, 1, 1, "FAE");
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAE");
   dpd_contract222(&X1, &F, &X1new, 0, 0, 1, 1);
   dpd_file2_close(&F);
 
-  dpd_file2_init(&F, CC_OEI, 0, 0, 0, "FMI");
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "FMI");
   dpd_contract222(&F, &X1, &X1new, 1, 1, -1, 1);
   dpd_file2_close(&F);
 
-  dpd_buf4_init(&W, CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
+  dpd_buf4_init(&W, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
   dpd_contract422(&W, &X1, &X1new, 0, 0, 1, 1);
   dpd_buf4_close(&W);
 
   sprintf(lbl, "X_%s_ME", pert);
-  dpd_file2_init(&Xme, CC_OEI, irrep, 0, 1, lbl);
-  dpd_buf4_init(&D, CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
+  dpd_file2_init(&Xme, PSIF_CC_OEI, irrep, 0, 1, lbl);
+  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
   dpd_contract422(&D, &X1, &Xme, 0, 0, 1, 0);
   dpd_buf4_close(&D);
 
-  dpd_buf4_init(&T2, CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
   dpd_contract422(&T2, &Xme, &X1new, 0, 0, 1, 1);
   dpd_buf4_close(&T2);
   dpd_file2_close(&Xme);
@@ -67,14 +67,14 @@ void cc2_X1_build(const char *pert, int irrep, double omega)
 
   /*** S-D ***/
 
-  dpd_file2_init(&F, CC_OEI, 0, 0, 1, "FME");
+  dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
   sprintf(lbl, "X_%s_(2IjAb-IjbA) (%5.3f)", pert, omega);
-  dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
   dpd_dot24(&F, &X2, &X1new, 0, 0, 1, 1);
   dpd_file2_close(&F);
 
   /** begin out of core contract442 **/
-  dpd_buf4_init(&W, CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+  dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
   GW = W.file.my_irrep;
   GX2 = X2.file.my_irrep;
   GX1 = X1new.my_irrep;
@@ -125,8 +125,8 @@ void cc2_X1_build(const char *pert, int irrep, double omega)
   dpd_buf4_close(&X2);
 
   sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-  dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-  dpd_buf4_init(&W, CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
+  dpd_buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+  dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
   dpd_contract442(&W, &X2, &X1new, 3, 3, 1, 1);
   dpd_buf4_close(&W);
   dpd_buf4_close(&X2);

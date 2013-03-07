@@ -5,7 +5,6 @@
 
 #include "molecule.h"
 
-#include <cmath>
 #include <iostream>
 #include <sstream>
 
@@ -16,6 +15,12 @@
 
 #define EXTERN
 #include "globals.h"
+
+#if defined(OPTKING_PACKAGE_PSI)
+ #include <cmath>
+#elif defined (OPTKING_PACKAGE_QCHEM)
+ #include "qcmath.h"
+#endif
 
 namespace opt {
 
@@ -92,7 +97,7 @@ void MOLECULE::backstep(void) {
 
   fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
 
-  double *fq = p_Opt_data->g_last_forces_pointer();
+  double *fq = p_Opt_data->g_forces_pointer();
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
@@ -116,7 +121,7 @@ void MOLECULE::backstep(void) {
 #if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_atom_offset(I)]) );
+    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step

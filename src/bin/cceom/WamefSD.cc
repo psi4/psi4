@@ -38,10 +38,10 @@ void WamefSD(int i, int C_irr) {
 
     /* OOC code below added 7/27/05, -TDC */
     /* S(i,a) += [ 2 C(im,ef) - C(im,fe) ] * W(am,ef) */
-    dpd_buf4_init(&C, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
-    dpd_buf4_init(&W, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
+    dpd_buf4_init(&C, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&S, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&S, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     dpd_file2_mat_init(&S);
     dpd_file2_mat_rd(&S);
     for(Gam=0; Gam < moinfo.nirreps; Gam++) {
@@ -85,35 +85,35 @@ void WamefSD(int i, int C_irr) {
   }
   else if (params.eom_ref == 1) { /* ROHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
 
     /* SIA += 0.5 CIMEF* WAMEF + CImEf * WAmEf */
-    dpd_buf4_init(&WAMEF, CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "WAMEF");
+    dpd_buf4_init(&WAMEF, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "WAMEF");
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, lbl);
     dpd_contract442(&CMNEF, &WAMEF, &SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMNEF);
     dpd_buf4_close(&WAMEF);
 
-    dpd_buf4_init(&WAmEf, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
+    dpd_buf4_init(&WAmEf, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
     dpd_contract442(&CMnEf, &WAmEf, &SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_buf4_close(&WAmEf);
 
     /* Sia += 0.5 Cimef * Wamef + CiMeF * WaMeF */
-    dpd_buf4_init(&Wamef, CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "Wamef");
+    dpd_buf4_init(&Wamef, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "Wamef");
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 0, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 0, 7, 2, 7, 0, lbl);
     dpd_contract442(&Cmnef, &Wamef, &Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&Cmnef);
     dpd_buf4_close(&Wamef);
 
-    dpd_buf4_init(&WaMeF, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WaMeF");
-    dpd_buf4_init(&CmNeF, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CmNeF");
+    dpd_buf4_init(&WaMeF, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WaMeF");
+    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CmNeF");
     dpd_contract442(&CmNeF, &WaMeF, &Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CmNeF);
     dpd_buf4_close(&WaMeF);
@@ -125,35 +125,35 @@ void WamefSD(int i, int C_irr) {
   else { /* UHF */
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
 
     /* SIA += 0.5 CIMEF* WAMEF + CImEf * WAmEf */
-    dpd_buf4_init(&WAMEF, CC_HBAR, H_IRR, 21, 7, 21, 7, 0, "WAMEF");
+    dpd_buf4_init(&WAMEF, PSIF_CC_HBAR, H_IRR, 21, 7, 21, 7, 0, "WAMEF");
     sprintf(lbl, "%s %d", "CMNEF", i);
-    dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, lbl);
+    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, lbl);
     dpd_contract442(&CMNEF, &WAMEF, &SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMNEF);
     dpd_buf4_close(&WAMEF);
 
-    dpd_buf4_init(&WAmEf, CC_HBAR, H_IRR, 26, 28, 26, 28, 0, "WAmEf");
+    dpd_buf4_init(&WAmEf, PSIF_CC_HBAR, H_IRR, 26, 28, 26, 28, 0, "WAmEf");
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
+    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
     dpd_contract442(&CMnEf, &WAmEf, &SIA, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CMnEf);
     dpd_buf4_close(&WAmEf);
 
     /* Sia += 0.5 Cimef * Wamef + CiMeF * WaMeF */
-    dpd_buf4_init(&Wamef, CC_HBAR, H_IRR, 31, 17, 31, 17, 0, "Wamef");
+    dpd_buf4_init(&Wamef, PSIF_CC_HBAR, H_IRR, 31, 17, 31, 17, 0, "Wamef");
     sprintf(lbl, "%s %d", "Cmnef", i);
-    dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 10, 17, 12, 17, 0, lbl);
+    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 17, 12, 17, 0, lbl);
     dpd_contract442(&Cmnef, &Wamef, &Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&Cmnef);
     dpd_buf4_close(&Wamef);
 
-    dpd_buf4_init(&WaMeF, CC_HBAR, H_IRR, 25, 29, 25, 29, 0, "WaMeF");
-    dpd_buf4_init(&CmNeF, EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
+    dpd_buf4_init(&WaMeF, PSIF_CC_HBAR, H_IRR, 25, 29, 25, 29, 0, "WaMeF");
+    dpd_buf4_init(&CmNeF, PSIF_EOM_TMP, C_irr, 23, 29, 23, 29, 0, "CmNeF");
     dpd_contract442(&CmNeF, &WaMeF, &Sia, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&CmNeF);
     dpd_buf4_close(&WaMeF);
