@@ -12,7 +12,7 @@
     #define omp_get_wtime() 0.0
 #endif
 
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 #include"ccsd.h"
 
 using namespace psi;

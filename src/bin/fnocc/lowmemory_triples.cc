@@ -1,6 +1,6 @@
 #include"ccsd.h"
+#include"blas.h"
 #include<libmints/wavefunction.h>
-#include<../src/bin/cepa/blas.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif

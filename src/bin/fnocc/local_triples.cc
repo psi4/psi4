@@ -2,7 +2,7 @@
 #include<libmints/wavefunction.h>
 #include<libmints/matrix.h>
 #include<libmints/vector.h>
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 #ifdef _OPENMP
    #include<omp.h>
 #endif

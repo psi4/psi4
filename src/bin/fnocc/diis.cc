@@ -1,5 +1,5 @@
 #include"ccsd.h"
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 
 using namespace psi;
 using namespace cepa;
