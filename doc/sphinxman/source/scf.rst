@@ -1,8 +1,8 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:scf`:
 .. index:: SCF, HF, Hartree-Fock
+.. _`sec:scf`:
 
 HF: Hartree--Fock Theory
 ========================
