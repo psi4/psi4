@@ -16,7 +16,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 
 #
 
@@ -34,7 +33,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 
 #
 
@@ -52,7 +50,6 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 
 #
 
@@ -72,5 +69,4 @@ set globals {
 
 optimize('scf')
 frequencies('scf')
-thermo()
 
