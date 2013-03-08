@@ -132,11 +132,11 @@ def frac_traverse(mol, **kwargs):
             C = 0
 
         if (LUMO > 0):
-            ref = PsiMod.reference_wavefunction()
+            ref = PsiMod.wavefunction()
             eps = ref.epsilon_a()
             potentials.append(eps[int(LUMO)-1])
         else:
-            ref = PsiMod.reference_wavefunction()
+            ref = PsiMod.wavefunction()
             eps = ref.epsilon_b()
             potentials.append(eps[-int(LUMO)-1])
 
@@ -183,11 +183,11 @@ def frac_traverse(mol, **kwargs):
             C = 0
 
         if (LUMO > 0):
-            ref = PsiMod.reference_wavefunction()
+            ref = PsiMod.wavefunction()
             eps = ref.epsilon_a()
             potentials.append(eps[int(HOMO)-1])
         else:
-            ref = PsiMod.reference_wavefunction()
+            ref = PsiMod.wavefunction()
             eps = ref.epsilon_b()
             potentials.append(eps[-int(HOMO)-1])
 
@@ -287,7 +287,7 @@ def frac_nuke(mol, **kwargs):
     energy('scf')
 
     # Determine HOMO
-    ref = PsiMod.reference_wavefunction()
+    ref = PsiMod.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     if (Na == Nb):
@@ -331,11 +331,11 @@ def frac_nuke(mol, **kwargs):
                 C = 0
 
             if (HOMO > 0):
-                ref = PsiMod.reference_wavefunction()
+                ref = PsiMod.wavefunction()
                 eps = ref.epsilon_a()
                 potentials.append(eps[HOMO-1])
             else:
-                ref = PsiMod.reference_wavefunction()
+                ref = PsiMod.wavefunction()
                 eps = ref.epsilon_b()
                 potentials.append(eps[-HOMO-1])
 
@@ -353,7 +353,7 @@ def frac_nuke(mol, **kwargs):
         mol.set_multiplicity(mult)
 
         # Determine HOMO
-        ref = PsiMod.reference_wavefunction()
+        ref = PsiMod.wavefunction()
         eps_a = ref.epsilon_a()
         eps_b = ref.epsilon_b()
         if (Na == Nb):
@@ -459,7 +459,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     PsiMod.set_global_option("DF_INTS_IO", "LOAD")
 
     # Determine HOMO, to determine mult1
-    ref = PsiMod.reference_wavefunction()
+    ref = PsiMod.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     if (Na == Nb):
@@ -503,7 +503,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     mol.set_multiplicity(mult0)
     PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n')
     E0r = energy('scf')
-    ref = PsiMod.reference_wavefunction()
+    ref = PsiMod.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     E_HOMO = 0.0;
@@ -557,7 +557,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     mol.set_multiplicity(mult0)
     PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Left Endpoint <==\n')
     E0l = energy('scf')
-    ref = PsiMod.reference_wavefunction()
+    ref = PsiMod.wavefunction()
     eps_a = ref.epsilon_a()
     eps_b = ref.epsilon_b()
     E_HOMO = 0.0;
@@ -618,7 +618,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
         mol.set_multiplicity(mult0)
         PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Omega = %11.3E <==\n' % omega)
         E0 = energy('scf')
-        ref = PsiMod.reference_wavefunction()
+        ref = PsiMod.wavefunction()
         eps_a = ref.epsilon_a()
         eps_b = ref.epsilon_b()
         E_HOMO = 0.0;
