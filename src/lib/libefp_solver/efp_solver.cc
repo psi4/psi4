@@ -49,7 +49,7 @@ static int string_compare(const void *a, const void *b)
        const char *s1 = *(const char **)a;
        const char *s2 = *(const char **)b;
 
-       return strcasecmp(s1, s2);
+       return strcmp(s1, s2);
 }
 
 static bool is_lib(const char *name)
@@ -81,9 +81,15 @@ void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *
 
 	for (i = 0; i < n_uniq; i++) {
 		const char *prefix = is_lib(uniq[i]) ? fraglib_path : userlib_path;
+		char name[256];
 
-		strcat(strncat(strcat(strcpy(path, prefix), "/"), uniq[i],
-			name_len(uniq[i])), ".efp");
+		strcpy(name, uniq[i]);
+
+		for (char *p = name; *p; p++)
+			*p = tolower(*p);
+
+		strcat(strncat(strcat(strcpy(path, prefix), "/"), name,
+			name_len(name)), ".efp");
 		if (efp_add_potential(efp, path))
 			throw PsiException("efp", __FILE__, __LINE__);
 	}
