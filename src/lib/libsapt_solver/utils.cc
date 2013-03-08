@@ -1350,6 +1350,27 @@ double **SAPT2::get_DF_ints(int filenum, const char *label, int startA,
   return(A);
 }
 
+double **SAPT2::get_DF_ints_nongimp(int filenum, const char *label, int startA, 
+  int stopA, int startB, int stopB)
+{
+  int lengthA = stopA-startA;
+  int lengthB = stopB-startB;
+  int lengthAB = lengthA * lengthB;
+
+  double** AA = get_DF_ints(filenum,label,startA,stopA,startB,stopB);
+  
+  double** A = block_matrix(lengthAB,ndf_);
+  for (int ab = 0; ab < lengthAB; ab++) {
+    ::memcpy((void*) A[ab],(void*) AA[ab], sizeof(double) * ndf_); 
+  }   
+
+  free_block(AA);
+
+  return(A);
+}
+
+
+
 void SAPT2::antisym(double *A, int nocc, int nvir)
 {
   double *X = init_array(nvir);
