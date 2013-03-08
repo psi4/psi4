@@ -2,7 +2,6 @@
 #include"blas.h"
 
 using namespace psi;
-using namespace cepa;
 
 /*================================================================
 

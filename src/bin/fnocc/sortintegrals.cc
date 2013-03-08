@@ -7,7 +7,6 @@
 #include"blas.h"
 
 using namespace psi;
-using namespace cepa;
 
 namespace psi{namespace fnocc{
 typedef long int ULI;

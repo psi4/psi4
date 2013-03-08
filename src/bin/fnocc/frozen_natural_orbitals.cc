@@ -23,7 +23,6 @@
 
 
 using namespace psi;
-using namespace cepa;
 using namespace boost;
 
 namespace psi{namespace fnocc{

@@ -19,7 +19,6 @@
 #include<lib3index/3index.h>
 
 using namespace psi;
-using namespace cepa;
 using namespace boost;
 
 // position in a symmetric packed matrix
