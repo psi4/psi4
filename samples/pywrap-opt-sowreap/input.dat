@@ -1,15 +1,14 @@
 #! Finite difference optimization, run in sow/reap mode.
 
 molecule h2s {
-S
-H 1 1.336
-H 1 1.336 2 92.1
+O
+H 1 1.0
+H 1 1.0 2 104.5
 }
 
 set {
-   basis sto-3g
-   geom_maxiter 4
+   basis 6-31g
+   geom_maxiter 6
 }
 
 optimize('mp3',mode='sow')
-
