@@ -37,11 +37,11 @@ using namespace psi;
 namespace psi { namespace efp {
 EFP::EFP(Options& options): options_(options) 
 {
-    common_init();
+	common_init();
 }
 
 EFP::~EFP(){
-       efp_shutdown(efp_);
+	efp_shutdown(efp_);
 }
 
 static int string_compare(const void *a, const void *b)
@@ -52,105 +52,43 @@ static int string_compare(const void *a, const void *b)
        return strcasecmp(s1, s2);
 }
 
-char *EFP::make_name_list()
+static bool is_lib(const char *name)
 {
-	size_t len = 0;
+	size_t len = strlen(name);
 
-	for (int i = 0; i < nfrag_; i++) {
-		std::string name = options_["FRAGS"][i].to_string();
-		len += name.length() + 1;
-	}
-
-	char *names = new char[len], *ptr = names;
-
-	for (int i = 0; i < nfrag_; i++) {
-		std::string name = options_["FRAGS"][i].to_string();
-		strcpy(ptr, name.c_str());
-		ptr += strlen(name.c_str());
-		*ptr++ = '\n';
-	}
-
-	*(--ptr) = '\0';
-	ptr = names;
-
-	while (*ptr) {
-		*ptr = tolower(*ptr);
-		ptr++;
-	}
-
-	return names;
+	return name[len - 2] == '_' && (name[len - 1] == 'l' || name[len - 1] == 'L');
 }
 
-/*
- * This function constructs the list of library potential data files from
- * the list of fragment names.
- *
- * For each unique fragment: if fragment name contains an _l suffix append
- * fraglib_path prefix and remove _l suffix. Otherwise append userlib_path
- * prefix. Add ".efp" extension in both cases.
- */
-char *EFP::make_potential_file_list(const char *name_list, const char *fraglib_path,
-		const char *userlib_path)
+static size_t name_len(const char *name)
 {
-	const char **unique = new const char *[nfrag_];
-	char *names = new char[strlen(name_list)], *names_ptr = names;
-	strcpy(names, name_list);
+	return is_lib(name) ? strlen(name) - 2 : strlen(name);
+}
 
-	for (int i = 0; i < nfrag_; i++) {
-		unique[i] = names_ptr;
-		names_ptr = strchr(names_ptr, '\n');
-		if (names_ptr)
-			*names_ptr++ = '\0';
+void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *userlib_path)
+{
+	int i, n_uniq;
+	const char **uniq = new const char*[nfrag_];
+	char path[256];
+
+	for (i = 0; i < nfrag_; i++)
+		uniq[i] = options_["FRAGS"][i].to_string().c_str();
+
+	qsort(uniq, nfrag_, sizeof(char *), string_compare);
+
+	for (i = 1, n_uniq = 1; i < nfrag_; i++)
+		if (strcmp(uniq[i - 1], uniq[i]) != 0)
+			uniq[n_uniq++] = uniq[i];
+
+	for (i = 0; i < n_uniq; i++) {
+		const char *prefix = is_lib(uniq[i]) ? fraglib_path : userlib_path;
+
+		strcat(strncat(strcat(strcpy(path, prefix), "/"), uniq[i],
+			name_len(uniq[i])), ".efp");
+		if (efp_add_potential(efp, path))
+			throw PsiException("efp", __FILE__, __LINE__);
 	}
 
-	std::qsort(unique, nfrag_, sizeof(char *), string_compare);
-
-	int n_unique = 1;
-
-	for (int i = 1; i < nfrag_; i++) {
-		if (strcmp(unique[i - 1], unique[i])) {
-			unique[n_unique] = unique[i];
-			n_unique++;
-		}
-	}
-
-	size_t len = 0;
-
-	for (int i = 0; i < n_unique; i++) {
-		printf("%s\n", unique[i]);
-		const char *name = unique[i];
-		size_t n = strlen(name);
-
-		if (n > 2 && strcmp(name + n - 2, "_l") == 0)
-			len += strlen(fraglib_path) + n + 4;
-		else
-			len += strlen(userlib_path) + n + 6;
-	}
-
-	char *files = new char[len], *ptr = files;
-
-	for (int i = 0; i < n_unique; i++) {
-		const char *name = unique[i];
-		size_t n = strlen(name);
-
-		if (n > 2 && strcmp(name + n - 2, "_l") == 0) {
-			strcat(strcpy(ptr, fraglib_path), "/");
-			strcat(strncat(ptr, name, n - 2), ".efp");
-			ptr += strlen(fraglib_path) + n + 3;
-			*ptr++ = '\n';
-		}
-		else {
-			strcat(strcpy(ptr, userlib_path), "/");
-			strcat(strcat(ptr, name), ".efp");
-			ptr += strlen(userlib_path) + n + 5;
-			*ptr++ = '\n';
-		}
-	}
-
-	*(--ptr) = '\0';
-	delete[] unique;
-	delete[] names;
-	return files;
+	delete[] uniq;
 }
 
 void EFP::common_init() {
@@ -202,16 +140,19 @@ void EFP::common_init() {
     std::string psi_data_dir = Process::environment("PSIDATADIR");
     std::string fraglib_path = psi_data_dir + "/fraglib";
 
-    char *frag_names = make_name_list();
-    char *file_names = make_potential_file_list(frag_names, fraglib_path.c_str(), ".");
+    efp_ = efp_create();
 
-    if ((res = efp_init(&efp_, &opts, file_names, frag_names))) {
-        fprintf(outfile, "%s", efp_result_to_string(res));
-        throw PsiException("efp",__FILE__,__LINE__);
-    }
+    if (!efp_)
+		throw PsiException("efp", __FILE__, __LINE__);
 
-    delete[] file_names;
-    delete[] frag_names;
+    if (efp_set_opts(efp_, &opts))
+		throw PsiException("efp", __FILE__, __LINE__);
+
+	add_potentials(efp_, fraglib_path.c_str(), ".");
+
+	for (int i = 0; i < nfrag_; i++)
+		if (efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
+			throw PsiException("efp", __FILE__, __LINE__);
 
     fprintf(outfile, "  ==> Calculation Information <==\n\n");
     fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
@@ -323,8 +264,8 @@ void EFP::SetGeometry(){
        }
 
        if ((res = efp_set_coordinates(efp_, EFP_COORD_TYPE_POINTS, coords))) {
-               fprintf(outfile, "%s", efp_result_to_string(res));
-                throw PsiException("efp",__FILE__,__LINE__);
+	       fprintf(outfile, "%s", efp_result_to_string(res));
+	       throw PsiException("efp",__FILE__,__LINE__);
        }
 */
 } // end of SetGeometry()

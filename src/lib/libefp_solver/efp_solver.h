@@ -49,12 +49,6 @@ class EFP {
         /// Returns EFP contribution to V
         boost::shared_ptr<Matrix> modify_Fock();
 
-	    // Make list of frag names
-	    char *make_name_list();
-
-	    // Make list of .efp file names
-	    char *make_potential_file_list(const char *, const char *, const char *);
-
         /// Returns the number of EFP fragments
         int get_frag_count(void);
         

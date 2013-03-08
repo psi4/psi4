@@ -44,10 +44,10 @@
 
 struct test_data {
 	/** Paths to EFP data files. */
-	const char *files;
+	const char **files;
 
 	/** Fragment names. */
-	const char *names;
+	const char **names;
 
 	/**
 	 * If not NULL geometry will be set up using EFP_COORD_TYPE_XYZABC. */

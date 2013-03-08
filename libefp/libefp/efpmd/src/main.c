@@ -59,21 +59,6 @@ static int string_compare(const void *a, const void *b)
 	return efp_strcasecmp(s1, s2);
 }
 
-static char *make_name_list(const struct config *config)
-{
-	size_t len = 0;
-
-	for (int i = 0; i < config->n_frags; i++)
-		len += strlen(config->frags[i].name) + 1;
-
-	char *names = xcalloc(1, len);
-
-	for (int i = 0; i < config->n_frags - 1; i++)
-		strcat(strcat(names, config->frags[i].name), "\n");
-
-	return strcat(names, config->frags[config->n_frags - 1].name);
-}
-
 static bool is_lib(const char *name)
 {
 	size_t len = strlen(name);
@@ -86,18 +71,9 @@ static size_t name_len(const char *name)
 	return is_lib(name) ? strlen(name) - 2 : strlen(name);
 }
 
-/*
- * This function constructs the list of library potential data files from
- * the list of fragment names.
- *
- * For each unique fragment: if fragment name contains an _l suffix append
- * fraglib_path prefix and remove _l suffix. Otherwise append userlib_path
- * prefix. Add ".efp" extension in both cases.
- */
-static char *make_potential_file_list(const struct config *config)
+static void add_potentials(struct efp *efp, const struct config *config)
 {
 	int i, n_uniq;
-	size_t len;
 	const char *uniq[config->n_frags];
 
 	for (i = 0; i < config->n_frags; i++)
@@ -109,30 +85,16 @@ static char *make_potential_file_list(const struct config *config)
 		if (efp_strcasecmp(uniq[i - 1], uniq[i]) != 0)
 			uniq[n_uniq++] = uniq[i];
 
-	for (i = 0, len = 0; i < n_uniq; i++) {
-		const char *path = is_lib(uniq[i]) ? config->fraglib_path : config->userlib_path;
-		len += strlen(path) + name_len(uniq[i]) + strlen(".efp\n") + 1;
-	}
-
-	char *files = xcalloc(1, len + 1);
-
 	for (i = 0; i < n_uniq; i++) {
-		const char *path = is_lib(uniq[i]) ? config->fraglib_path : config->userlib_path;
-		strcat(strncat(strcat(strcat(files, path), "/"), uniq[i], name_len(uniq[i])), ".efp\n");
-	}
+		const char *prefix = is_lib(uniq[i]) ?
+			config->fraglib_path : config->userlib_path;
+		size_t size = strlen(prefix) + name_len(uniq[i]) + strlen(".efp") + 2;
+		char path[size];
 
-	files[len - 1] = '\0';
-	return files;
-}
-
-static int get_coord_count(enum efp_coord_type coord_type)
-{
-	switch (coord_type) {
-		case EFP_COORD_TYPE_XYZABC: return  6;
-		case EFP_COORD_TYPE_POINTS: return  9;
-		case EFP_COORD_TYPE_ROTMAT: return 12;
+		strcat(strncat(strcat(strcpy(path, prefix), "/"), uniq[i],
+			name_len(uniq[i])), ".efp");
+		check_fail(efp_add_potential(efp, path));
 	}
-	assert(0);
 }
 
 static struct efp *init_sim(const struct config *config)
@@ -147,19 +109,19 @@ static struct efp *init_sim(const struct config *config)
 		.swf_cutoff = config->swf_cutoff
 	};
 
-	char *files = make_potential_file_list(config);
-	char *names = make_name_list(config);
+	struct efp *efp = efp_create();
 
-	struct efp *efp;
-	check_fail(efp_init(&efp, &opts, files, names));
+	if (!efp)
+		error("unable to create efp object");
 
-	int n_coord = get_coord_count(config->coord_type);
-	double coord[n_coord * config->n_frags];
+	check_fail(efp_set_opts(efp, &opts));
+	add_potentials(efp, config);
 
-	for (int i = 0; i < config->n_frags; i++)
-		memcpy(coord + n_coord * i, config->frags[i].coord, n_coord * sizeof(double));
-
-	check_fail(efp_set_coordinates(efp, config->coord_type, coord));
+	for (int i = 0; i < config->n_frags; i++) {
+		check_fail(efp_add_fragment(efp, config->frags[i].name));
+		check_fail(efp_set_frag_coordinates(efp, i, config->coord_type,
+					config->frags[i].coord));
+	}
 
 	if (config->enable_pbc) {
 		double x = config->box[0];
@@ -168,9 +130,6 @@ static struct efp *init_sim(const struct config *config)
 
 		check_fail(efp_set_periodic_box(efp, x, y, z));
 	}
-
-	free(files);
-	free(names);
 
 	return efp;
 }

@@ -84,6 +84,15 @@ struct swf efp_make_swf(struct efp *efp, const struct frag *fr_i, const struct f
 	return swf;
 }
 
+const struct frag *efp_find_lib(struct efp *efp, const char *name)
+{
+	for (int i = 0; i < efp->n_lib; i++)
+		if (efp_strcasecmp(efp->lib[i]->name, name) == 0)
+			return efp->lib[i];
+
+	return NULL;
+}
+
 void efp_add_stress(const vec_t *dr, const vec_t *force, mat_t *stress)
 {
 #ifdef _OPENMP

@@ -36,7 +36,6 @@
 #define UNUSED __attribute__((unused))
 
 #define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
-#define EFP_INIT_MAGIC 0xEF2012AD
 
 struct frag {
 	/* fragment name */
@@ -150,7 +149,7 @@ struct efp {
 	int n_lib;
 
 	/* array with the library of fragment initial parameters */
-	struct frag *lib;
+	struct frag **lib;
 
 	/* callback which computes electric field from electrons */
 	efp_electron_density_field_fn get_electron_density_field;
@@ -181,13 +180,11 @@ struct efp {
 
 	/* EFP energy terms */
 	struct efp_energy energy;
-
-	/* initialization check */
-	unsigned magic;
 };
 
 int efp_skip_frag_pair(struct efp *, int, int);
 struct swf efp_make_swf(struct efp *, const struct frag *, const struct frag *);
+const struct frag *efp_find_lib(struct efp *, const char *);
 void efp_add_stress(const vec_t *, const vec_t *, mat_t *);
 void efp_add_force(struct frag *, const vec_t *, const vec_t *, const vec_t *);
 void efp_sub_force(struct frag *, const vec_t *, const vec_t *, const vec_t *);

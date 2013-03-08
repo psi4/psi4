@@ -1,19 +1,23 @@
 #include "test_common.h"
 
-static const char files[] =
-	"./fraglib/ch3oh.efp\n"
-	"./fraglib/dmso.efp\n"
-	"./fraglib/dcm.efp\n"
-	"./fraglib/acetone.efp";
+static const char *files[] = {
+	"./fraglib/ch3oh.efp",
+	"./fraglib/dmso.efp",
+	"./fraglib/dcm.efp",
+	"./fraglib/acetone.efp",
+	 NULL
+};
 
-static const char names[] =
-	"CH3OH_L\n"
-	"DMSO_L\n"
-	"DMSO_L\n"
-	"ACETONE_L\n"
-	"DCM_L\n"
-	"ACETONE_L\n"
-	"ACETONE_L";
+static const char *names[] = {
+	"CH3OH_L",
+	"DMSO_L",
+	"DMSO_L",
+	"ACETONE_L",
+	"DCM_L",
+	"ACETONE_L",
+	"ACETONE_L",
+	 NULL
+};
 
 static const double frag_xyzabc[] = {
 	BOHR( 0.0), BOHR(-1.0), BOHR( 0.0),  0.0,  1.1,  2.0,

@@ -1,14 +1,18 @@
 #include "test_common.h"
 
-static const char files[] =
-	"./fraglib/h2o.efp\n"
-	"./fraglib/c6h6.efp\n"
-	"./fraglib/nh3.efp";
+static const char *files[] = {
+	"./fraglib/h2o.efp",
+	"./fraglib/c6h6.efp",
+	"./fraglib/nh3.efp",
+	 NULL
+};
 
-static const char names[] =
-	"H2O_L\n"
-	"C6H6_L\n"
-	"NH3_L";
+static const char *names[] = {
+	"H2O_L",
+	"C6H6_L",
+	"NH3_L",
+	 NULL
+};
 
 static const double frag_xyzabc[] = {
 	BOHR(-1.6), BOHR( 4.7), BOHR( 1.4), -1.3,  0.1,  7.0,

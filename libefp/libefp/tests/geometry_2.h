@@ -1,13 +1,17 @@
-static const char files[] =
-	"./fraglib/h2o.efp\n"
-	"./fraglib/nh3.efp";
+static const char *files[] = {
+	"./fraglib/h2o.efp",
+	"./fraglib/nh3.efp",
+	 NULL
+};
 
-static const char names[] =
-	"H2O_L\n"
-	"NH3_L\n"
-	"H2O_L\n"
-	"H2O_L\n"
-	"NH3_L";
+static const char *names[] = {
+	"H2O_L",
+	"NH3_L",
+	"H2O_L",
+	"H2O_L",
+	"NH3_L",
+	 NULL
+};
 
 static const double xyzabc[] = { /* some random geometry */
 	BOHR(-1.0), BOHR( 3.7), BOHR( 0.4), -1.3,  0.0,  7.0,

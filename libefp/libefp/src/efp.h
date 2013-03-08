@@ -29,6 +29,8 @@
 
 /** \file efp.h
  * Public libefp interface.
+ *
+ * A note on units: masses are in AMU, everything else is in atomic units.
  */
 
 #ifdef __cplusplus
@@ -251,33 +253,62 @@ typedef enum efp_result (*efp_electron_density_field_fn)(
 const char *efp_banner(void);
 
 /**
+ * Create a new efp object.
+ *
+ * \return A new efp object or NULL on error.
+ */
+struct efp *efp_create(void);
+
+/**
  * Get default values of simulation options.
  *
- * \param[out] opts Structure to store the defaults.
+ * \param[out] opts Structure to store the defaults. See ::efp_opts.
  */
 void efp_opts_default(struct efp_opts *opts);
 
 /**
- * Initialize the EFP computation.
+ * Set computation options.
  *
- * \param[out] out Initialized efp structure.
+ * \param[in] efp The efp structure.
  *
- * \param[in] opts User defined options controlling the computation.
- *
- * \param[in] potential_file_list Zero-terminated string with paths to the EFP
- * parameter files separated by the new-line character. The last line must not
- * include the new-line character.
- *
- * \param[in] frag_name_list Zero-terminated string with names of the fragments
- * separated by the new-line character. The last line must not include the
- * new-line character.
+ * \param[in] opts New options for EFP computation. See ::efp_opts.
  *
  * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
  */
-enum efp_result efp_init(struct efp **out,
-			 const struct efp_opts *opts,
-			 const char *potential_file_list,
-			 const char *frag_name_list);
+enum efp_result efp_set_opts(struct efp *efp, const struct efp_opts *opts);
+
+/**
+ * Get currently set computation options.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[out] opts Current options for EFP computation. See ::efp_opts.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_get_opts(struct efp *efp, struct efp_opts *opts);
+
+/**
+ * Add EFP potential from a file.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[in] path Path to the EFP potential file, zero terminated string.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_add_potential(struct efp *efp, const char *path);
+
+/**
+ * Add a new fragment to the EFP subsystem.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[in] name Fragment name, zero terminated string.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_add_fragment(struct efp *efp, const char *name);
 
 /**
  * Set the callback function which computes electric field from electrons
@@ -435,7 +466,7 @@ enum efp_result efp_set_coordinates(struct efp *efp,
  *
  * If \p coord_type is \a EFP_COORD_TYPE_XYZABC then the \p coord array should
  * contain \a x \a y \a z components of the center of mass position and three
- * Euler rotation angles representing orientation of a fragment. The \coord
+ * Euler rotation angles representing orientation of a fragment. The \p coord
  * array must contain a total of 6 elements.
  *
  * If \p coord_type is \a EFP_COORD_TYPE_POINTS then the \p coord array should
@@ -443,12 +474,12 @@ enum efp_result efp_set_coordinates(struct efp *efp,
  * fragment are made to coincide. The vector connecting points 1 and 2 is
  * aligned with the corresponding vector connecting fragment atoms. The plane
  * defined by points 1, 2, and 3 is made to coincide with the corresponding
- * fragment plane. The \coord array must contain a total of 9 elements.
+ * fragment plane. The \p coord array must contain a total of 9 elements.
  *
  * If \p coord_type is \a EFP_COORD_TYPE_ROTMAT then the \p coord array should
  * contain \a x \a y \a z components of the center of mass position and nine
  * elements of the rotation matrix representing orientation of a fragment. The
- * \coord array must contain a total of 12 elements.
+ * \p coord array must contain a total of 12 elements.
  *
  * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
  */
@@ -521,6 +552,34 @@ enum efp_result efp_get_wavefunction_dependent_energy(
  * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
  */
 enum efp_result efp_compute(struct efp *efp, int do_gradient);
+
+/**
+ * Get total charge of a fragment.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[in] frag_idx Index of a fragment. Must be a value between zero and
+ * the total number of fragments minus one.
+ *
+ * \param[out] charge Total charge of a fragment.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_get_frag_charge(struct efp *efp, int frag_idx, double *charge);
+
+/**
+ * Get spin multiplicity of a fragment.
+ *
+ * \param[in] efp The efp structure.
+ *
+ * \param[in] frag_idx Index of a fragment. Must be a value between zero and
+ * the total number of fragments minus one.
+ *
+ * \param[out] mult Spin multiplicity of a fragment.
+ *
+ * \return ::EFP_RESULT_SUCCESS on success or error code otherwise.
+ */
+enum efp_result efp_get_frag_multiplicity(struct efp *efp, int frag_idx, int *mult);
 
 /**
  * Get total number of multipoles from EFP electrostatics.

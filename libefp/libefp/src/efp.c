@@ -29,14 +29,6 @@
 #include "elec.h"
 #include "private.h"
 
-enum efp_result efp_read_potential(struct efp *, const char *);
-
-static int
-initialized(struct efp *efp)
-{
-	return efp && efp->magic == EFP_INIT_MAGIC;
-}
-
 static int
 check_rotation_matrix(const mat_t *rotmat)
 {
@@ -299,16 +291,6 @@ copy_frag(struct frag *dest, const struct frag *src)
 	return EFP_RESULT_SUCCESS;
 }
 
-static const struct frag *
-find_frag_in_library(struct efp *efp, const char *name)
-{
-	for (int i = 0; i < efp->n_lib; i++)
-		if (efp_strcasecmp(efp->lib[i].name, name) == 0)
-			return efp->lib + i;
-
-	return NULL;
-}
-
 static enum efp_result
 check_opts(const struct efp_opts *opts)
 {
@@ -357,7 +339,7 @@ check_opts(const struct efp_opts *opts)
 }
 
 static enum efp_result
-check_params_frag(const struct efp_opts *opts, const struct frag *frag)
+check_frag_params(const struct efp_opts *opts, const struct frag *frag)
 {
 	if (opts->terms & EFP_TERM_ELEC) {
 		if (!frag->multipole_pts)
@@ -394,7 +376,7 @@ check_params(struct efp *efp)
 	enum efp_result res;
 
 	for (int i = 0; i < efp->n_frag; i++)
-		if ((res = check_params_frag(&efp->opts, efp->frags + i)))
+		if ((res = check_frag_params(&efp->opts, efp->frags + i)))
 			return res;
 
 	return EFP_RESULT_SUCCESS;
@@ -414,38 +396,26 @@ setup_disp(struct efp *efp)
 		for (int j = i + 1; j < efp->n_frag; j++)
 			size += efp->frags[i].n_lmo * efp->frags[j].n_lmo;
 
-		frag->overlap_int = malloc(size * sizeof(double));
-		if (!frag->overlap_int)
+		frag->overlap_int = realloc(frag->overlap_int,
+				size * sizeof(double));
+
+		if (size && !frag->overlap_int)
 			return EFP_RESULT_NO_MEMORY;
 
-		frag->overlap_int_deriv = malloc(size * sizeof(six_t));
-		if (!frag->overlap_int_deriv)
+		frag->overlap_int_deriv = realloc(frag->overlap_int_deriv,
+				size * sizeof(six_t));
+
+		if (size && !frag->overlap_int_deriv)
 			return EFP_RESULT_NO_MEMORY;
 	}
 
-	return EFP_RESULT_SUCCESS;
-}
-
-static enum efp_result
-setup_xr(struct efp *efp)
-{
-	for (int i = 0; i < efp->n_frag; i++) {
-		struct frag *frag = efp->frags + i;
-
-		for (int a = 0; a < 3; a++) {
-			size_t size = frag->xr_wf_size * frag->n_lmo;
-			frag->xr_wf_deriv[a] = calloc(size, sizeof(double));
-			if (!frag->xr_wf_deriv[a])
-				return EFP_RESULT_NO_MEMORY;
-		}
-	}
 	return EFP_RESULT_SUCCESS;
 }
 
 EFP_EXPORT enum efp_result
 efp_get_energy(struct efp *efp, struct efp_energy *energy)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!energy)
@@ -458,7 +428,7 @@ efp_get_energy(struct efp *efp, struct efp_energy *energy)
 EFP_EXPORT enum efp_result
 efp_get_gradient(struct efp *efp, int n_frags, double *grad)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!grad)
@@ -481,7 +451,7 @@ efp_get_gradient(struct efp *efp, int n_frags, double *grad)
 EFP_EXPORT enum efp_result
 efp_get_point_charge_gradient(struct efp *efp, double *grad)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!grad)
@@ -502,7 +472,7 @@ efp_get_point_charge_gradient(struct efp *efp, double *grad)
 EFP_EXPORT enum efp_result
 efp_get_point_charge_count(struct efp *efp, int *n_ptc)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!n_ptc)
@@ -516,7 +486,7 @@ EFP_EXPORT enum efp_result
 efp_set_point_charges(struct efp *efp, int n_ptc,
 			const double *q, const double *xyz)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (n_ptc < 0)
@@ -557,7 +527,7 @@ efp_set_point_charges(struct efp *efp, int n_ptc,
 EFP_EXPORT enum efp_result
 efp_get_point_charge_coordinates(struct efp *efp, double *xyz)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!xyz)
@@ -577,7 +547,7 @@ efp_get_point_charge_coordinates(struct efp *efp, double *xyz)
 EFP_EXPORT enum efp_result
 efp_get_point_charge_values(struct efp *efp, double *q)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!q)
@@ -596,7 +566,7 @@ efp_set_coordinates(struct efp *efp, enum efp_coord_type coord_type,
 	size_t stride;
 	enum efp_result res;
 
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if ((stride = get_coord_count(coord_type)) == 0)
@@ -613,7 +583,7 @@ EFP_EXPORT enum efp_result
 efp_set_frag_coordinates(struct efp *efp, int frag_idx,
 	enum efp_coord_type coord_type, const double *coord)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (frag_idx < 0 || frag_idx >= efp->n_frag)
@@ -637,7 +607,7 @@ efp_set_frag_coordinates(struct efp *efp, int frag_idx,
 EFP_EXPORT enum efp_result
 efp_get_coordinates(struct efp *efp, int n_frags, double *xyzabc)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!xyzabc)
@@ -659,13 +629,14 @@ efp_get_coordinates(struct efp *efp, int n_frags, double *xyzabc)
 		*xyzabc++ = b;
 		*xyzabc++ = c;
 	}
+
 	return EFP_RESULT_SUCCESS;
 }
 
 EFP_EXPORT enum efp_result
 efp_set_periodic_box(struct efp *efp, double x, double y, double z)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (x < 2.0 * efp->opts.swf_cutoff ||
@@ -683,7 +654,7 @@ efp_set_periodic_box(struct efp *efp, double x, double y, double z)
 EFP_EXPORT enum efp_result
 efp_get_stress_tensor(struct efp *efp, double *stress)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!stress)
@@ -700,7 +671,7 @@ efp_get_stress_tensor(struct efp *efp, double *stress)
 EFP_EXPORT enum efp_result
 efp_get_wavefunction_dependent_energy(struct efp *efp, double *energy)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!energy)
@@ -727,11 +698,19 @@ efp_compute(struct efp *efp, int do_gradient)
 		efp_compute_ai_elec
 	};
 
-	if (!initialized(efp))
+	enum efp_result res;
+
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	efp->do_gradient = do_gradient;
 	efp->stress = mat_zero;
+
+	if ((res = check_params(efp)))
+		return res;
+
+	if ((res = setup_disp(efp)))
+		return res;
 
 	for (int i = 0; i < efp->n_frag; i++) {
 		efp->frags[i].force = vec_zero;
@@ -740,8 +719,6 @@ efp_compute(struct efp *efp, int do_gradient)
 
 	for (int i = 0; i < efp->n_ptc; i++)
 		efp->point_charges[i].grad = vec_zero;
-
-	enum efp_result res;
 
 	for (size_t i = 0; i < ARRAY_SIZE(term_list); i++)
 		if ((res = term_list[i](efp)))
@@ -758,9 +735,50 @@ efp_compute(struct efp *efp, int do_gradient)
 }
 
 EFP_EXPORT enum efp_result
+efp_get_frag_charge(struct efp *efp, int frag_idx, double *charge)
+{
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (frag_idx < 0 || frag_idx >= efp->n_frag)
+		return EFP_RESULT_INDEX_OUT_OF_RANGE;
+
+	if (!charge)
+		return EFP_RESULT_INVALID_ARGUMENT;
+
+	struct frag *frag = efp->frags + frag_idx;
+	*charge = 0.0;
+
+	for (int i = 0; i < frag->n_atoms; i++)
+		*charge += frag->atoms[i].znuc;
+
+	for (int i = 0; i < frag->n_multipole_pts; i++)
+		*charge += frag->multipole_pts[i].monopole;
+
+	return EFP_RESULT_SUCCESS;
+}
+
+EFP_EXPORT enum efp_result
+efp_get_frag_multiplicity(struct efp *efp, int frag_idx, int *mult)
+{
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (frag_idx < 0 || frag_idx >= efp->n_frag)
+		return EFP_RESULT_INDEX_OUT_OF_RANGE;
+
+	if (!mult)
+		return EFP_RESULT_INVALID_ARGUMENT;
+
+	*mult = efp->frags[frag_idx].multiplicity;
+
+	return EFP_RESULT_SUCCESS;
+}
+
+EFP_EXPORT enum efp_result
 efp_get_multipole_count(struct efp *efp, int *n_mult)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!n_mult)
@@ -778,7 +796,7 @@ efp_get_multipole_count(struct efp *efp, int *n_mult)
 EFP_EXPORT enum efp_result
 efp_get_multipole_coordinates(struct efp *efp, double *xyz)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!xyz)
@@ -800,7 +818,7 @@ efp_get_multipole_coordinates(struct efp *efp, double *xyz)
 EFP_EXPORT enum efp_result
 efp_get_multipole_values(struct efp *efp, double *mult)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!mult)
@@ -832,7 +850,7 @@ efp_get_multipole_values(struct efp *efp, double *mult)
 EFP_EXPORT enum efp_result
 efp_get_induced_dipole_count(struct efp *efp, int *n_dip)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!n_dip)
@@ -850,7 +868,7 @@ efp_get_induced_dipole_count(struct efp *efp, int *n_dip)
 EFP_EXPORT enum efp_result
 efp_get_induced_dipole_coordinates(struct efp *efp, double *xyz)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!xyz)
@@ -874,7 +892,7 @@ efp_get_induced_dipole_coordinates(struct efp *efp, double *xyz)
 EFP_EXPORT enum efp_result
 efp_get_induced_dipole_values(struct efp *efp, double *dip)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!dip)
@@ -898,7 +916,7 @@ efp_get_induced_dipole_values(struct efp *efp, double *dip)
 EFP_EXPORT enum efp_result
 efp_get_induced_dipole_conj_values(struct efp *efp, double *dip)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!dip)
@@ -928,13 +946,48 @@ efp_shutdown(struct efp *efp)
 	for (int i = 0; i < efp->n_frag; i++)
 		free_frag(efp->frags + i);
 
-	for (int i = 0; i < efp->n_lib; i++)
-		free_frag(efp->lib + i);
+	for (int i = 0; i < efp->n_lib; i++) {
+		free_frag(efp->lib[i]);
+		free(efp->lib[i]);
+	}
 
 	free(efp->frags);
 	free(efp->lib);
 	free(efp->point_charges);
 	free(efp);
+}
+
+EFP_EXPORT enum efp_result
+efp_set_opts(struct efp *efp, const struct efp_opts *opts)
+{
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (!opts)
+		return EFP_RESULT_INVALID_ARGUMENT;
+
+	enum efp_result res;
+
+	if ((res = check_opts(opts)))
+		return res;
+
+	efp->opts = *opts;
+
+	return EFP_RESULT_SUCCESS;
+}
+
+EFP_EXPORT enum efp_result
+efp_get_opts(struct efp *efp, struct efp_opts *opts)
+{
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (!opts)
+		return EFP_RESULT_INVALID_ARGUMENT;
+
+	*opts = efp->opts;
+
+	return EFP_RESULT_SUCCESS;
 }
 
 EFP_EXPORT void
@@ -950,73 +1003,60 @@ efp_opts_default(struct efp_opts *opts)
 }
 
 EFP_EXPORT enum efp_result
-efp_init(struct efp **out, const struct efp_opts *opts,
-	 const char *potential_file_list, const char *frag_name_list)
+efp_add_fragment(struct efp *efp, const char *name)
 {
-	if (!out || !opts || !potential_file_list || !frag_name_list)
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
+
+	if (!name)
 		return EFP_RESULT_INVALID_ARGUMENT;
 
-	*out = calloc(1, sizeof(struct efp));
-	if (!*out)
+	enum efp_result res;
+	const struct frag *lib = efp_find_lib(efp, name);
+
+	if (!lib)
+		return EFP_RESULT_UNKNOWN_FRAGMENT;
+
+	efp->n_frag++;
+	efp->frags = realloc(efp->frags, efp->n_frag * sizeof(struct frag));
+
+	if (!efp->frags)
 		return EFP_RESULT_NO_MEMORY;
 
-	enum efp_result res;
-	struct efp *efp = *out;
+	struct frag *frag = efp->frags + efp->n_frag - 1;
 
-	if ((res = check_opts(opts)))
+	if ((res = copy_frag(frag, lib)))
 		return res;
 
-	memcpy(&efp->opts, opts, sizeof(struct efp_opts));
+	for (int a = 0; a < 3; a++) {
+		size_t size = frag->xr_wf_size * frag->n_lmo;
 
-	if ((res = efp_read_potential(efp, potential_file_list)))
-		return res;
+		frag->xr_wf_deriv[a] = malloc(size * sizeof(double));
 
-	for (const char *ptr = frag_name_list; ptr; ptr = strchr(ptr, '\n')) {
-		if (*ptr == '\n')
-			ptr++;
-
-		efp->n_frag++;
-
-		efp->frags = realloc(efp->frags, efp->n_frag * sizeof(struct frag));
-		if (!efp->frags)
+		if (!frag->xr_wf_deriv[a])
 			return EFP_RESULT_NO_MEMORY;
-
-		struct frag *frag = efp->frags + efp->n_frag - 1;
-		memset(frag, 0, sizeof(struct frag));
-
-		size_t len = 0;
-		while (ptr[len] && ptr[len] != '\n')
-			len++;
-
-		char name[len + 1];
-		strncpy(name, ptr, len);
-		name[len] = '\0';
-
-		const struct frag *lib = find_frag_in_library(efp, name);
-		if (!lib)
-			return EFP_RESULT_UNKNOWN_FRAGMENT;
-
-		if ((res = copy_frag(frag, lib)))
-			return res;
 	}
 
-	if ((res = setup_disp(efp)))
-		return res;
-
-	if ((res = setup_xr(efp)))
-		return res;
-
-	if ((res = check_params(efp)))
-		return res;
-
-	efp->magic = EFP_INIT_MAGIC;
 	return EFP_RESULT_SUCCESS;
+}
+
+EFP_EXPORT struct efp *
+efp_create(void)
+{
+	struct efp *efp = calloc(1, sizeof(struct efp));
+
+	if (!efp)
+		return NULL;
+
+	efp_opts_default(&efp->opts);
+
+	return efp;
 }
 
 EFP_EXPORT enum efp_result
 efp_set_electron_density_field_fn(struct efp *efp, efp_electron_density_field_fn fn)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	efp->get_electron_density_field = fn;
@@ -1027,7 +1067,7 @@ efp_set_electron_density_field_fn(struct efp *efp, efp_electron_density_field_fn
 EFP_EXPORT enum efp_result
 efp_set_electron_density_field_user_data(struct efp *efp, void *user_data)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	efp->get_electron_density_field_user_data = user_data;
@@ -1038,7 +1078,7 @@ efp_set_electron_density_field_user_data(struct efp *efp, void *user_data)
 EFP_EXPORT enum efp_result
 efp_get_frag_count(struct efp *efp, int *n_frag)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!n_frag)
@@ -1051,7 +1091,7 @@ efp_get_frag_count(struct efp *efp, int *n_frag)
 EFP_EXPORT enum efp_result
 efp_get_frag_name(struct efp *efp, int frag_idx, int size, char *frag_name)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!frag_name)
@@ -1070,7 +1110,7 @@ efp_get_frag_name(struct efp *efp, int frag_idx, int size, char *frag_name)
 EFP_EXPORT enum efp_result
 efp_get_frag_mass(struct efp *efp, int frag_idx, double *mass_out)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!mass_out)
@@ -1092,7 +1132,7 @@ efp_get_frag_mass(struct efp *efp, int frag_idx, double *mass_out)
 EFP_EXPORT enum efp_result
 efp_get_frag_inertia(struct efp *efp, int frag_idx, double *inertia_out)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!inertia_out)
@@ -1124,7 +1164,7 @@ efp_get_frag_inertia(struct efp *efp, int frag_idx, double *inertia_out)
 EFP_EXPORT enum efp_result
 efp_get_frag_atom_count(struct efp *efp, int frag_idx, int *n_atoms)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!n_atoms)
@@ -1141,7 +1181,7 @@ EFP_EXPORT enum efp_result
 efp_get_frag_atoms(struct efp *efp, int frag_idx,
 		   int size, struct efp_atom *atoms)
 {
-	if (!initialized(efp))
+	if (!efp)
 		return EFP_RESULT_NOT_INITIALIZED;
 
 	if (!atoms)

@@ -93,9 +93,9 @@ static void test_qm_numerical_grad(struct efp *efp, const double *grad)
 
 static void test_frag_numerical_grad(struct efp *efp, double *xyzabc, const double *grad)
 {
+	int n_frag;
 	enum efp_result res;
 
-	int n_frag;
 	if ((res = efp_get_frag_count(efp, &n_frag)))
 		lib_error("efp_get_frag_count", res);
 
@@ -140,10 +140,21 @@ static void test_frag_numerical_grad(struct efp *efp, double *xyzabc, const doub
 void run_test(const struct test_data *test_data)
 {
 	enum efp_result res;
-	struct efp *efp;
+	struct efp *efp = efp_create();
 
-	if ((res = efp_init(&efp, &test_data->opts, test_data->files, test_data->names)))
-		lib_error("efp_init", res);
+	if (!efp)
+		fail("efp_create failed\n");
+
+	if ((res = efp_set_opts(efp, &test_data->opts)))
+		lib_error("efp_set_opts", res);
+
+	for (int i = 0; test_data->files[i]; i++)
+		if ((res = efp_add_potential(efp, test_data->files[i])))
+			lib_error("efp_add_potential", res);
+
+	for (int i = 0; test_data->names[i]; i++)
+		if ((res = efp_add_fragment(efp, test_data->names[i])))
+			lib_error("efp_add_fragment", res);
 
 	if ((res = efp_set_electron_density_field_fn(efp,
 			test_data->electron_density_field_fn)))
