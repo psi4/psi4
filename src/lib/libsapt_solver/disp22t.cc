@@ -84,16 +84,15 @@ void SAPT2p::disp22tccd()
 
 
   if (nat_orbs_) {
-    e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes",foccA_,
-      noccA_,no_nvirA_,foccB_,noccB_,no_nvirB_,no_evalsA_,no_evalsB_,"T ARBS Natorb Amplitudes");
-      // TODO
+    e_disp220t = disp220tccd(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
+      PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
+      "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes","T BSAR Natorb Amplitudes", 
+      no_evalsA_,no_evalsB_,noccA_,no_nvirA_,foccA_,noccB_,no_nvirB_,foccB_);
   }
   else {
     e_disp220t = disp220tccd(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       PSIF_SAPT_AA_DF_INTS,"AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS RI Integrals",PSIF_SAPT_CCD,"T ARAR Amplitudes","T ARBS Amplitudes", 
+      "BS RI Integrals",PSIF_SAPT_CCD,"T ARAR Amplitudes","T BSAR Amplitudes", 
       evalsA_,evalsB_,noccA_,nvirA_,foccA_,noccB_,nvirB_,foccB_);
   }
 
@@ -105,66 +104,22 @@ void SAPT2p::disp22tccd()
   double e_disp202t;
 
   if (nat_orbs_) {
-    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-      "BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes",foccB_,
-      noccB_,no_nvirB_,foccA_,noccA_,no_nvirA_,no_evalsB_,no_evalsA_,"T BSAR Natorb Amplitudes");
-      // TODO
+    e_disp220t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+      PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
+      "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes","T ARBS Natorb Amplitudes", 
+      no_evalsB_,no_evalsA_,noccB_,no_nvirB_,foccB_,noccA_,no_nvirA_,foccA_);
   }
   else {
-    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-      "BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes",foccB_,
-      noccB_,nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_,"T BSAR Amplitudes");
-      // TODO
+    e_disp220t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+      PSIF_SAPT_BB_DF_INTS,"BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
+      "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes","T ARBS Amplitudes", 
+      evalsB_,evalsA_,noccB_,nvirB_,foccB_,noccA_,nvirA_,foccA_);
   }
 
   if (print_) {
     fprintf(outfile,"\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
     fflush(outfile);
   }
-
-#if 0
-
-  if (nat_orbs_) {
-    e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes",foccA_,
-      noccA_,no_nvirA_,foccB_,noccB_,no_nvirB_,no_evalsA_,no_evalsB_,"T ARBS Natorb Amplitudes");
-  }
-  else {
-    e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-      "AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS RI Integrals",PSIF_SAPT_CCD,"T ARAR Amplitudes",foccA_,
-      noccA_,nvirA_,foccB_,noccB_,nvirB_,evalsA_,evalsB_,"T ARBS Amplitudes");
-  }
-
-  if (print_) {
-    fprintf(outfile,"\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
-    fflush(outfile);
-  }
-
-  double e_disp202t;
-
-  if (nat_orbs_) {
-    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-      "BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes",foccB_,
-      noccB_,no_nvirB_,foccA_,noccA_,no_nvirA_,no_evalsB_,no_evalsA_,"T BSAR Natorb Amplitudes");
-  }
-  else {
-    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-      "BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes",foccB_,
-      noccB_,nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_,"T BSAR Amplitudes");
-  }
-
-  if (print_) {
-    fprintf(outfile,"\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
-    fflush(outfile);
-  }
-
-#endif
 
   e_disp22t_ccd_ = e_disp220t + e_disp202t;
 
@@ -191,7 +146,7 @@ void SAPT2p::disp22tccd()
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   const char *RRlabel, int BBfile, const char *BSlabel, int ampfile, 
   const char *tlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, 
-  int nvirB, double *evalsA, double *evalsB,const char *tARBSlabel)
+  int nvirB, double *evalsA, double *evalsB)
 {
   double energy = 0.0;
 
@@ -225,27 +180,20 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   for(int b=0,bs=0; b<aoccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
 
-    // Hack to get iterative ARBS amplitudes
-    if (tARBSlabel != NULL) {
-      psio_address next_BSAR = psio_get_address(PSIO_ZERO,bs*aoccA*nvirA*sizeof(double));
-      psio_->read(ampfile,tARBSlabel,(char *) tbsAR[0],sizeof(double)*
-        aoccA*nvirA,next_BSAR,&next_BSAR);
-    } else {
-      psio_address next_DF_BS = psio_get_address(PSIO_ZERO,
-        sizeof(double)*(b+foccB)*nvirB*(ndf_+3) + sizeof(double)*s*(ndf_+3));
-      psio_->read(BBfile,BSlabel,(char *) &(B_p_bs[0]),sizeof(double)*(ndf_+3),
-        next_DF_BS,&next_DF_BS);
+    psio_address next_DF_BS = psio_get_address(PSIO_ZERO,
+      sizeof(double)*(b+foccB)*nvirB*(ndf_+3) + sizeof(double)*s*(ndf_+3));
+    psio_->read(BBfile,BSlabel,(char *) &(B_p_bs[0]),sizeof(double)*(ndf_+3),
+      next_DF_BS,&next_DF_BS);
 
-      C_DGEMV('n',aoccA*nvirA,ndf_+3,1.0,B_p_AR[0],ndf_+3,B_p_bs,1,
-        0.0,tbsAR[0],1);
+    C_DGEMV('n',aoccA*nvirA,ndf_+3,1.0,B_p_AR[0],ndf_+3,B_p_bs,1,
+      0.0,tbsAR[0],1);
 
-      for(int a=0,ar=0; a<aoccA; a++) {
-      for(int r=0; r<nvirA; r++,ar++) {
-        double denom = evalsA[a+foccA]+evalsB[b+foccB]
-          -evalsA[r+noccA]-evalsB[s+noccB];
-        tbsAR[a][r] /= denom;
-      }}
-    }
+    for(int a=0,ar=0; a<aoccA; a++) {
+    for(int r=0; r<nvirA; r++,ar++) {
+      double denom = evalsA[a+foccA]+evalsB[b+foccB]
+        -evalsA[r+noccA]-evalsB[s+noccB];
+      tbsAR[a][r] /= denom;
+    }}
 
     C_DGEMV('n',aoccA*aoccA,ndf_+3,1.0,B_p_AA[0],ndf_+3,B_p_bs,1,
       0.0,vbsAA[0],1);
@@ -371,7 +319,7 @@ double SAPT2p::disp220tccd(int AAnum, char *AA_label, int Rnum, char *AR_label,
   for(int b=0,bs=0; b<noccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
   
-    psio_address next_DF_BS = psio_get_address(PSIO_ZERO,(foccB + b)*nvirB*
+    psio_address next_DF_BS = psio_get_address(PSIO_ZERO,((foccB + b)*nvirB + s)*
       (ndf_+3)*(ULI) sizeof(double));
     psio_->read(BBnum,BS_label,(char *) &(B_p_bs[0]),sizeof(double)*
       ndf_,next_DF_BS,&next_DF_BS);

@@ -42,7 +42,7 @@ protected:
 
   double disp220t(int, const char *, const char *, const char *, int, 
     const char *, int, const char *, int, int, int, int, int, int, double *, 
-    double *, const char* = NULL);
+    double *);
 
   // CCD Dispersion Values
 
