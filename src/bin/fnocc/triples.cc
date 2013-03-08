@@ -1,12 +1,11 @@
 #include"ccsd.h"
-#include<../bin/cepa/blas.h>
+#include"blas.h"
 #include<libmints/wavefunction.h>
 #ifdef _OPENMP
    #include<omp.h>
 #endif
 
 using namespace psi;
-using namespace cepa;
 
 namespace psi{namespace fnocc{
 

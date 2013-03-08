@@ -1,178 +1,511 @@
-adc1:         ADC/6-31G** on H2O
-
-
-adc2:         ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
-
-
-castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
-
-
-castup2:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup3) that output file doesn't depend on options (scf_type) being set global or local. This input uses global.
-
-
-castup3:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup2) that output file doesn't depend on options (scf_type) being set global or local. This input uses local.
+fnocc2:       Test G2 method for H2O
 
 
 cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
 
-cc10:         ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
+omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-cc11:         Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
+tu4-h2o-freq:  Frequencies for H2O HF/cc-pVDZ at optimized geometry
 
 
-cc12:         Single point energies of multiple excited states with EOM-CCSD
+rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
 
-cc13:         UHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4NH4
 
 
-cc13a:        UHF-CCSD(T)/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+pywrap-cbs1:  Various basis set extrapolation tests
 
 
-cc14:         ROHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+tu5-sapt:     Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene), test case 16 from the S22 database
 
 
-cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
+dft2:         DFT Functional Test
 
 
-cc16:         UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
+dfmp2-2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 
-cc17:         Single point energies of multiple excited states with EOM-CCSD
+opt5:         6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atoms, just for demo and testing purposes.
 
 
-cc18:         RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the water dimer.
+
+
+cisd-h2o+-2:  6-31G** H2O+ Test CISD Energy Point
+
+
+dft1:         DFT Functional Test
 
 
 cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
 
 
-cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
+sapt2:        SAPT0 aug-cc-pVDZ computation of the benzene-methane interaction energy, using the aug-pVDZ-JKFIT DF basis for SCF, the aug-cc-pVDZ-RI DF basis for SAPT0 induction and dispersion, and the aug-pVDZ-JKFIT DF basis for SAPT0 electrostatics and induction. This example uses frozen core as well as asyncronous I/O while forming the DF integrals and CPHF coefficients.
 
 
-cc21:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
+fd-freq-gradient:  STO-3G frequencies for H2O by finite-differences of gradients
 
 
-cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
+rasci-ne:     Ne atom RASCI/cc-pVQZ  Example of split-virtual CISD[TQ] from Sherrill and Schaefer, J. Phys. Chem. XXX This uses a "primary" virtual space 3s3p (RAS 2), a "secondary" virtual space 3d4s4p4d4f (RAS 3), and a "tertiary" virtual space consisting of the remaining virtuals.  First, an initial CISD computation is run to get the natural orbitals; this allows a meaningful partitioning of the virtual orbitals into groups of different importance.  Next, the RASCI is run.  The split-virtual CISD[TQ] takes all singles and doubles, and all triples and quadruples with no more than 2 electrons in the secondary virtual subspace (RAS 3).  If any electrons are present in the tertiary virtual subspace (RAS 4), then that excitation is only allowed if it is a single or double.
 
 
-cc23:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}B@@1$ state of H2O+ (A1 excitation)
+dft-psivar:   HF and DFT variants single-points on zmat methane, mostly to test that    PSI variables are set and computed correctly.
 
 
-cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
-
-
-cc25:         Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
-
-
-cc26:         Single-point gradient, analytic and via finite-differences of 2-1A1 state of H2O with EOM-CCSD
-
-
-cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
-
-
-cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H2O2
-
-
-cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H2O2
-
-
-cc3:          cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
-
-
-cc30:         CCSD/sto-3g optical rotation calculation (length gauge only) at two frequencies on methyloxirane
-
-
-cc31:         CCSD/sto-3g optical rotation calculation (both gauges) at two frequencies on methyloxirane
-
-
-cc32:         CC3/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
-
-
-cc33:         CC3(UHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
-
-
-cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
-
-
-cc35:         CC3(ROHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
-
-
-cc36:         CC2(RHF)/cc-pVDZ energy of H2O.
-
-
-cc37:         CC2(UHF)/cc-pVDZ energy of H2O+.
-
-
-cc38:         RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
-
-
-cc39:         RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
-
-
-cc4:          RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. After the computation, the checkpoint file is renamed, using the PSIO handler.
-
-
-cc40:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega = (589 355 nm)
-
-
-cc41:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega = (589 355 nm)
-
-
-cc42:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = length, omega = (589 355 nm)
-
-
-cc43:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = both, omega = (589 355 nm)
-
-
-cc44:         Test case for some of the PSI4 out-of-core codes.  The code is given only 2.0 MB of memory, which is insufficient to hold either the A1 or B2 blocks of an ovvv quantity in-core, but is sufficient to hold at least two copies of an oovv quantity in-core.
-
-
-cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
-
-
-cc46:         EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
-
-
-cc47:         EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
-
-
-cc48:         reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
-
-
-cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
-
-
-cc4a:         RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. This version tests the FROZEN_DOCC option explicitly
-
-
-cc5:          RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
+dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
 
 
 cc50:         EOM-CC3(ROHF) on CH radical with user-specified basis and properties for particular root
 
 
-cc51:         EOM-CC3/cc-pVTZ on H2O
+cc33:         CC3(UHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
-cc52:         CCSD Response for H2O2
+cc30:         CCSD/sto-3g optical rotation calculation (length gauge only) at two frequencies on methyloxirane
 
 
-cc54:         CCSD dipole with user-specified basis set
+sapt3:        SAPT2+3 aug-cc-pVDZ computation of the water dimer interaction energy,  using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
 
 
-cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
+mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
-cc6:          Frozen-core CCSD(T)/cc-pVDZ on C4H4N anion with disk ao algorithm
+cc42:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = length, omega = (589 355 nm)
+
+
+cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
+
+
+dcft1:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+
+
+cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
+
+
+tu1-h2o-energy:  Sample HF/cc-pVDZ H2O computation
+
+
+cepa3:        cc-pvdz H2O Test coupled-pair CISD against DETCI CISD
+
+
+mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.
+
+
+cc4a:         RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. This version tests the FROZEN_DOCC option explicitly
+
+
+cc12:         Single point energies of multiple excited states with EOM-CCSD
+
+
+mcscf2:       TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
+
+
+pywrap-all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
+
+
+cc26:         Single-point gradient, analytic and via finite-differences of 2-1A1 state of H2O with EOM-CCSD
+
+
+psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
+
+
+cc39:         RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
+
+
+cisd-h2o+-0:  6-31G** H2O+ Test CISD Energy Point
+
+
+omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+ci-multi:     BH single points, checking that program can run multiple instances of  DETCI in a single input, without an intervening clean() call
+
+
+mrcc1:        CCSDT cc-pVDZ energy for the H2O molecule using MRCC
+
+
+cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
+
+scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.
+
+
+pywrap-db2:   Database calculation, run in sow/reap mode.
+
+
+dcft2:        DC-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+
+
+cisd-h2o-clpse:  6-31G** H2O Test CISD Energy Point with subspace collapse
+
+
+cc14:         ROHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+
+
+mints2:       A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically lowered to account for the different basis sets.
+
+
+cc40:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega = (589 355 nm)
+
+
+castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
+
+
+dcft6:        DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals.  Only two-step algorithm is tested.
+
+
+ocepa3:       OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
+
+
+dft3:         DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation, using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
+
+
+cepa1:        cc-pvdz H2O Test CEPA(1) Energy
+
+
+mints1:       Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.
+
+
+dfmp2-3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
+
+
+psimrcc-ccsd_t-2:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
 cc8:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
 
 
+cisd-sp:      6-31G** H2O Test CISD Energy Point
+
+
+pywrap-alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
+
+
+cc25:         Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
+
+
+dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+
+
+cc46:         EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
+
+
+adc1:         ADC/6-31G** on H2O
+
+
+cisd-h2o+-1:  6-31G** H2O+ Test CISD Energy Point
+
+
+scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+
+
+pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
+
+
+cc23:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}B@@1$ state of H2O+ (A1 excitation)
+
+
+tu6-cp-ne2:   Example potential energy surface scan and CP-correction for Ne2
+
+
+cc41:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega = (589 355 nm)
+
+
+fnocc1:       Test QCISD(T) for H2O/cc-pvdz Energy
+
+
+cc10:         ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
+
+
+fnocc4:       Test FNO-DF-CCSD(T) energy
+
+
+tu3-h2o-opt:  Optimize H2O HF/cc-pVDZ
+
+
+mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
+
+
+mints3:       Test individual integral objects for correctness.
+
+
+fci-h2o-fzcv:  6-31G H2O Test FCI Energy Point
+
+
+opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
+
+
+dcft3:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
+
+
+fd-gradient:  SCF STO-3G finite-difference tests
+
+
+dftd3-grad:   DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN, calling Grimme's dftd3 program for -D2 gradients
+
+
+pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
+
+
+dft1-alt:     DFT Functional Test
+
+
 cc8a:         ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
+
+
+psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
+
+
+omp2-5:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
+
+
+fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
+
+
+frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
+
+
+cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
+
+
+omp3-5:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
+
+
+mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
+
+
+cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
+
+
+dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
+
+
+cc51:         EOM-CC3/cc-pVTZ on H2O
+
+
+scf3:         are specified explicitly.
+
+
+tu2-ch2-energy:  Sample UHF/6-31G** CH2 computation
+
+
+cc5:          RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
+
+
+psimrcc-fd-freq2:  Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
+
+
+cisd-opt-fd:  H2O CISD/6-31G** Optimize Geometry by Energies
+
+
+mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
+
+
+dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
+
+
+ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
+
+
+cc52:         CCSD Response for H2O2
+
+
+omp2-4:       OMP2 cc-pVDZ energy for the NO radical
+
+
+fci-h2o:      6-31G H2O Test FCI Energy Point
+
+
+rasci-h2o:    RASCI/6-31G** H2O Energy Point
+
+
+opt6:         Various constrained energy minimizations of HOOH with cc-pvdz RHF
+
+
+cc16:         UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
+
+
+cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H2O2
+
+
+cc17:         Single point energies of multiple excited states with EOM-CCSD
+
+
+fci-h2o-2:    6-31G H2O Test FCI Energy Point
+
+
+min_input:    This checks that all energy methods can run with a minimal input and set symmetry.
+
+
+mcscf1:       ROHF 6-31G** energy of the $^{3}B@@1$  state of CH2, with Z-matrix input. The occupations are specified explicitly.
+
+
+cc36:         CC2(RHF)/cc-pVDZ energy of H2O.
+
+
+sapt1:        SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+
+fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH4
+
+
+opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
+
+
+cc31:         CCSD/sto-3g optical rotation calculation (both gauges) at two frequencies on methyloxirane
+
+
+scf11-freq-from-energies:  Test frequencies by finite differences of energies for planar C4NH4 TS
+
+
+cepa2:        cc-pvdz H2O Test ACPF Energy/Properties
+
+
+cc54:         CCSD dipole with user-specified basis set
+
+
+psimrcc-fd-freq1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+
+scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+
+psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+
+cc13:         UHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+
+
+cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H2O2
+
+
+mp2-1:        All-electron MP2 6-31G** geometry optimization of water
+
+
+cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
+
+
+opt3:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
+
+
+mints5:       Tests to determine full point group symmetry.  Currently, these only matter for the rotational symmetry number in thermodynamic computations.
+
+
+cc4:          RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. After the computation, the checkpoint file is renamed, using the PSIO handler.
+
+
+dcft5:        DC-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
+
+
+cc32:         CC3/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
+
+
+sapt4:        SAPT2+(3) aug-cc-pVDZ computation of the formamide dimer interaction energy, using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI  for SAPT. This example uses frozen core as well as MP2 natural orbital  approximations.
+
+
+fci-tdm-2:    BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
+
+
+cc44:         Test case for some of the PSI4 out-of-core codes.  The code is given only 2.0 MB of memory, which is insufficient to hold either the A1 or B2 blocks of an ovvv quantity in-core, but is sufficient to hold at least two copies of an oovv quantity in-core.
+
+
+scf-guess-read:  Sample UHF/cc-pVDZ H2O computation on a doublet cation, using  RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
+
+
+props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
+
+
+cc3:          cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
+
+
+cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
+
+
+cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
+
+
+zaptn-nh2:    ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
+
+
+cc13a:        UHF-CCSD(T)/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
+
+
+adc2:         ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
+
+
+cc18:         RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+
+
+cc37:         CC2(UHF)/cc-pVDZ energy of H2O+.
+
+
+dftd3-energy:  Exercises the various DFT-D corrections, both through python directly and through c++
+
+
+cc9a:         ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical,  with Z-matrix input.
+
+
+omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
+
+
+ocepa2:       OCEPA cc-pVDZ energy with B3LYP initial guess for the NO radical
+
+
+dcft4:        DCFT calculation for the HF+ using DC-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DC-12 functional with the same algorithms.
+
+
+omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+pywrap-basis:  SAPT calculation on bimolecular complex where monomers are unspecified so driver auto-fragments it. Basis set and auxiliary basis sets are assigned by atom type.
+
+
+omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+castup2:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup3) that output file doesn't depend on options (scf_type) being set global or local. This input uses global.
+
+
+cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
+
+
+cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
+
+
+mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
+
+
+props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
+
+
+omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
+
+
+opt2:         SCF DZ allene geometry optimzation, with Cartesian input
+
+
+scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+
+
+gibbs:        Test Gibbs free energies at 298 K of N2, H2O, and CH4.
+
+
+scf6:         Tests RHF/ROHF/UHF SCF gradients
+
+
+cc6:          Frozen-core CCSD(T)/cc-pVDZ on C4H4N anion with disk ao algorithm
+
+
+props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials evaluated at the nuclear coordinates
+
+
+castup3:      SCF with various combinations of pk/density-fitting, castup/no-castup, and spherical/cartesian settings. Demonstrates that puream setting is getting set by orbital basis for all df/castup parts of calc. Demonstrates that answer doesn't depend on presence/absence of castup. Demonstrates (by comparison to castup2) that output file doesn't depend on options (scf_type) being set global or local. This input uses local.
+
+
+mcscf3:       RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
 
 
 cc8b:         ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the  CN radical, with Cartesian input.
@@ -181,414 +514,81 @@ cc8b:         ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of
 cc8c:         ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the  CN radical, with Cartesian input.
 
 
-cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
-
-
-cc9a:         ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical,  with Z-matrix input.
-
-
-cepa1:        cc-pvdz H2O Test CEPA(1) Energy
-
-
-cepa2:        cc-pvdz H2O Test ACPF Energy/Properties
-
-
-cepa3:        cc-pvdz H2O Test coupled-pair CISD against DETCI CISD
-
-
-ci-multi:     BH single points, checking that program can run multiple instances of  DETCI in a single input, without an intervening clean() call
-
-
-cisd-h2o+-0:  6-31G** H2O+ Test CISD Energy Point
-
-
-cisd-h2o+-1:  6-31G** H2O+ Test CISD Energy Point
-
-
-cisd-h2o+-2:  6-31G** H2O+ Test CISD Energy Point
-
-
-cisd-h2o-clpse:  6-31G** H2O Test CISD Energy Point with subspace collapse
-
-
-cisd-opt-fd:  H2O CISD/6-31G** Optimize Geometry by Energies
-
-
-cisd-sp:      6-31G** H2O Test CISD Energy Point
-
-
-cisd-sp-2:    6-31G** H2O Test CISD Energy Point
-
-
-dcft1:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
-
-
-dcft2:        DC-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
-
-
-dcft3:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
-
-
-dcft4:        DCFT calculation for the HF+ using DC-06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are first handled in the MO Basis for the first two energy computations. In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for  four-virtual case is avoided.  The computation is then repeated using the DC-12 functional with the same algorithms.
-
-
-dcft5:        DC-06 calculation for the O2 molecule (triplet ground state). This performs  geometry optimization using two-step and simultaneous solution of the  response equations for the analytic gradient.
-
-
-dcft6:        DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals.  Only two-step algorithm is tested.
-
-
-dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
-
-
-dfmp2-2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
-
-
-dfmp2-3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
-
-
-dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
-
-
-dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Table I in S. Grimme's J. Chem. Phys 124 034108 (2006) paper defining the functional.
-
-
-dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
-
-
-dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
-
-
-dft-pbe0-2:   Internal match to psi4, test to match to literature values in litref.in/litref.out
-
-
-dft-psivar:   HF and DFT variants single-points on zmat methane, mostly to test that    PSI variables are set and computed correctly.
-
-
-dft1:         DFT Functional Test
-
-
-dft1-alt:     DFT Functional Test
-
-
-dft2:         DFT Functional Test
-
-
-dft3:         DFT integral algorithms test, performing w-B97 RKS and UKS computations on water and its cation, using all of the different integral algorithms.  This tests both the ERI and ERF integrals.
-
-
-dftd3-energy:  Exercises the various DFT-D corrections, both through python directly and through c++
-
-
-dftd3-grad:   DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN, calling Grimme's dftd3 program for -D2 gradients
-
-
-fci-dipole:   6-31G H2O Test FCI Energy Point
-
-
-fci-h2o:      6-31G H2O Test FCI Energy Point
-
-
-fci-h2o-2:    6-31G H2O Test FCI Energy Point
-
-
-fci-h2o-fzcv:  6-31G H2O Test FCI Energy Point
-
-
-fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
-
-
-fci-tdm-2:    BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
-
-
-fd-freq-energy:  SCF STO-3G finite-difference frequencies from energies
-
-
-fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH4
-
-
-fd-freq-gradient:  STO-3G frequencies for H2O by finite-differences of gradients
-
-
-fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4NH4
-
-
-fd-gradient:  SCF STO-3G finite-difference tests
-
-
-fnocc1:       Test QCISD(T) for H2O/cc-pvdz Energy
-
-
-fnocc2:       Test G2 method for H2O
-
-
-fnocc3:       Test FNO-QCISD(T) computation
-
-
-fnocc4:       Test FNO-DF-CCSD(T) energy
-
-
-frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
-
-
-ghosts:       Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
-
-
-gibbs:        Test Gibbs free energies at 298 K of N2, H2O, and CH4.
-
-
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
-
-
-mcscf1:       ROHF 6-31G** energy of the $^{3}B@@1$  state of CH2, with Z-matrix input. The occupations are specified explicitly.
-
-
-mcscf2:       TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
-
-
-mcscf3:       RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
-
-
-min_input:    This checks that all energy methods can run with a minimal input and set symmetry.
-
-
-mints1:       Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.
-
-
-mints2:       A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically lowered to account for the different basis sets.
-
-
-mints3:       Test individual integral objects for correctness.
-
-
-mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.
-
-
-mints5:       Tests to determine full point group symmetry.  Currently, these only matter for the rotational symmetry number in thermodynamic computations.
-
-
-mints6:       Patch of a glycine with a methyl group, to make alanine, then DF-SCF  energy calculation with the cc-pVDZ basis set
-
-
-mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
-
-
-mp2-1:        All-electron MP2 6-31G** geometry optimization of water
-
-
-mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
-
-
-mrcc1:        CCSDT cc-pVDZ energy for the H2O molecule using MRCC
-
-
-mrcc2:        CCSDT(Q) cc-pVDZ energy for the H2O molecule using MRCC. This example builds up from CCSD. First CCSD, then CCSDT, finally CCSDT(Q).
-
-
-mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
-
-
-mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
-
-
-ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
-
-
-ocepa2:       OCEPA cc-pVDZ energy with B3LYP initial guess for the NO radical
-
-
-ocepa3:       OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
-
-
-omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
-
-
-omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
-
-
-omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
-
-
-omp2-4:       OMP2 cc-pVDZ energy for the NO radical
-
-
-omp2-5:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
-
-
-omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
-
-
-omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
-
-
-omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
-
-
-omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
-
-
-omp3-5:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
-
-
-opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
-
-
-opt1-fd:      SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences
-
-
-opt2:         SCF DZ allene geometry optimzation, with Cartesian input
-
-
-opt2-fd:      SCF DZ allene geometry optimzation, with Cartesian input
-
-
-opt3:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
-
-
-opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
-
-
-opt5:         6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atoms, just for demo and testing purposes.
-
-
-opt6:         Various constrained energy minimizations of HOOH with cc-pvdz RHF
-
-
-props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
-
-
-props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
-
-
-props3:       DF-SCF cc-pVDZ multipole moments of benzene, up to 7th order and electrostatic potentials evaluated at the nuclear coordinates
-
-
-psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
-
-
-psimrcc-ccsd_t-2:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
-
-
-psimrcc-ccsd_t-3:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
-
-
-psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
-
-
-psimrcc-fd-freq1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
-
-
-psimrcc-fd-freq2:  Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
-
-
-psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
-
-
-psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
-
-
-psithon1:     Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
-
-
-pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
-
-
-pywrap-alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
-
-
-pywrap-all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
-
-
-pywrap-basis:  SAPT calculation on bimolecular complex where monomers are unspecified so driver auto-fragments it. Basis set and auxiliary basis sets are assigned by atom type.
-
-
-pywrap-cbs1:  Various basis set extrapolation tests
 
 
 pywrap-db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
 
-pywrap-db2:   Database calculation, run in sow/reap mode.
+fd-freq-energy:  SCF STO-3G finite-difference frequencies from energies
 
 
-pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
+mrcc2:        CCSDT(Q) cc-pVDZ energy for the H2O molecule using MRCC. This example builds up from CCSD. First CCSD, then CCSDT, finally CCSDT(Q).
 
 
-pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
+psimrcc-ccsd_t-3:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
-rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
+pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
 
 
-rasci-h2o:    RASCI/6-31G** H2O Energy Point
-
-
-rasci-ne:     Ne atom RASCI/cc-pVQZ  Example of split-virtual CISD[TQ] from Sherrill and Schaefer, J. Phys. Chem. XXX This uses a "primary" virtual space 3s3p (RAS 2), a "secondary" virtual space 3d4s4p4d4f (RAS 3), and a "tertiary" virtual space consisting of the remaining virtuals.  First, an initial CISD computation is run to get the natural orbitals; this allows a meaningful partitioning of the virtual orbitals into groups of different importance.  Next, the RASCI is run.  The split-virtual CISD[TQ] takes all singles and doubles, and all triples and quadruples with no more than 2 electrons in the secondary virtual subspace (RAS 3).  If any electrons are present in the tertiary virtual subspace (RAS 4), then that excitation is only allowed if it is a single or double.
-
-
-sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
-
-
-sapt1:        SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
-
-
-sapt2:        SAPT0 aug-cc-pVDZ computation of the benzene-methane interaction energy, using the aug-pVDZ-JKFIT DF basis for SCF, the aug-cc-pVDZ-RI DF basis for SAPT0 induction and dispersion, and the aug-pVDZ-JKFIT DF basis for SAPT0 electrostatics and induction. This example uses frozen core as well as asyncronous I/O while forming the DF integrals and CPHF coefficients.
-
-
-sapt3:        SAPT2+3 aug-cc-pVDZ computation of the water dimer interaction energy,  using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
-
-
-sapt4:        SAPT2+(3) aug-cc-pVDZ computation of the formamide dimer interaction energy, using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI  for SAPT. This example uses frozen core as well as MP2 natural orbital  approximations.
-
-
-sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the water dimer.
+cisd-sp-2:    6-31G** H2O Test CISD Energy Point
 
 
 scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
 
 
-scf-guess-read:  Sample UHF/cc-pVDZ H2O computation on a doublet cation, using  RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
+cc43:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = both, omega = (589 355 nm)
 
 
-scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-scf11-freq-from-energies:  Test frequencies by finite differences of energies for planar C4NH4 TS
+opt1-fd:      SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences
 
 
-scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
 
 
-scf3:         are specified explicitly.
+fnocc3:       Test FNO-QCISD(T) computation
 
 
-scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.
+psithon1:     Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
 
 
-scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+cc21:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
 
 
-scf6:         Tests RHF/ROHF/UHF SCF gradients
+cc48:         reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
 
 
-tu1-h2o-energy:  Sample HF/cc-pVDZ H2O computation
+cc47:         EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
 
 
-tu2-ch2-energy:  Sample UHF/6-31G** CH2 computation
+cc35:         CC3(ROHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
-tu3-h2o-opt:  Optimize H2O HF/cc-pVDZ
+psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
-tu4-h2o-freq:  Frequencies for H2O HF/cc-pVDZ at optimized geometry
+dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
 
 
-tu5-sapt:     Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene), test case 16 from the S22 database
+dft-pbe0-2:   Internal match to psi4, test to match to literature values in litref.in/litref.out
 
 
-tu6-cp-ne2:   Example potential energy surface scan and CP-correction for Ne2
+cc38:         RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 
-zaptn-nh2:    ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
+opt2-fd:      SCF DZ allene geometry optimzation, with Cartesian input
+
+
+ghosts:       Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using explicit specification of ghost atoms.  This is equivalent to the dfmp2_1 sample but uses both (equivalent) specifications of ghost atoms in a manual counterpoise correction.
+
+
+fci-dipole:   6-31G H2O Test FCI Energy Point
+
+
+cc11:         Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
 
 
