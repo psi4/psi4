@@ -1,7 +1,7 @@
 #include"blas.h"
 #include<stdlib.h>
 
-namespace psi { namespace cepa{
+namespace psi { namespace fnocc{
 
 // position in a symmetric packed matrix
 long int Position(long int i,long int j){
