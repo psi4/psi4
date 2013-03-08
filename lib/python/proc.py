@@ -1494,7 +1494,7 @@ def run_dftsapt(name, **kwargs):
     if (sapt_basis == 'dimer'):
         PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
-    wfn_dimer = PsiMod.reference_wavefunction()
+    wfn_dimer = PsiMod.wavefunction()
     if (sapt_basis == 'dimer'):
         PsiMod.set_global_option('DF_INTS_IO', 'LOAD')
 
@@ -1506,7 +1506,7 @@ def run_dftsapt(name, **kwargs):
     banner('Monomer A HF')
     PsiMod.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
-    wfn_monomerA = PsiMod.reference_wavefunction()
+    wfn_monomerA = PsiMod.wavefunction()
 
     activate(monomerB)
     if (ri == 'DF' and sapt_basis == 'dimer'):
@@ -1516,7 +1516,7 @@ def run_dftsapt(name, **kwargs):
     banner('Monomer B HF')
     PsiMod.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
-    wfn_monomerB = PsiMod.reference_wavefunction()
+    wfn_monomerB = PsiMod.wavefunction()
 
     if (ri == 'DF' and sapt_basis == 'dimer'):
         PsiMod.IO.change_file_namespace(97, 'monomerB', 'dimer')
@@ -1598,7 +1598,7 @@ def run_infsapt(name, **kwargs):
     if (sapt_basis == 'dimer'):
         PsiMod.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
-    wfn_dimer = PsiMod.reference_wavefunction()
+    wfn_dimer = PsiMod.wavefunction()
     if (sapt_basis == 'dimer'):
         PsiMod.set_global_option('DF_INTS_IO', 'LOAD')
 
@@ -1610,7 +1610,7 @@ def run_infsapt(name, **kwargs):
     banner('Monomer A HF')
     PsiMod.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
-    wfn_monomerA = PsiMod.reference_wavefunction()
+    wfn_monomerA = PsiMod.wavefunction()
 
     activate(monomerB)
     if (ri == 'DF' and sapt_basis == 'dimer'):
@@ -1620,7 +1620,7 @@ def run_infsapt(name, **kwargs):
     banner('Monomer B HF')
     PsiMod.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
-    wfn_monomerB = PsiMod.reference_wavefunction()
+    wfn_monomerB = PsiMod.wavefunction()
 
     if (ri == 'DF' and sapt_basis == 'dimer'):
         PsiMod.IO.change_file_namespace(97, 'monomerB', 'dimer')

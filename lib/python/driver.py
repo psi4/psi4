@@ -611,7 +611,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        PsiMod.reference_wavefunction().energy()
+        PsiMod.wavefunction().energy()
 
         optstash.restore()
         return PsiMod.get_variable('CURRENT ENERGY')
@@ -1279,7 +1279,7 @@ def frequency(name, **kwargs):
         # call thermo module
         PsiMod.thermo()
 
-        return PsiMod.reference_wavefunction().energy()
+        return PsiMod.wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
         info = 'Performing finite difference by gradient calculations'
@@ -1384,7 +1384,7 @@ def frequency(name, **kwargs):
             # clean may be necessary when changing irreps of displacements
             PsiMod.clean()
 
-        # Obtain the gradient. This function stores the gradient into the reference wavefunction.
+        # Obtain the gradient. This function stores the gradient in the wavefunction.
         PsiMod.fd_freq_0(energies, irrep)
 
         print(' Computation complete.')
@@ -1426,7 +1426,7 @@ def molden(filename):
     format to *filename*
 
     """
-    m = PsiMod.MoldenWriter(PsiMod.reference_wavefunction())
+    m = PsiMod.MoldenWriter(PsiMod.wavefunction())
     m.write(filename)
 
 
