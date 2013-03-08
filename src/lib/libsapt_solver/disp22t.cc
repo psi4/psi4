@@ -104,13 +104,13 @@ void SAPT2p::disp22tccd()
   double e_disp202t;
 
   if (nat_orbs_) {
-    e_disp220t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+    e_disp202t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
       "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes","T ARBS Natorb Amplitudes", 
       no_evalsB_,no_evalsA_,noccB_,no_nvirB_,foccB_,noccA_,no_nvirA_,foccA_);
   }
   else {
-    e_disp220t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+    e_disp202t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       PSIF_SAPT_BB_DF_INTS,"BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
       "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes","T ARBS Amplitudes", 
       evalsB_,evalsA_,noccB_,nvirB_,foccB_,noccA_,nvirA_,foccA_);
