@@ -154,74 +154,72 @@ char *EFP::make_potential_file_list(const char *name_list, const char *fraglib_p
 }
 
 void EFP::common_init() {
-       enum efp_result res;
-       int print = options_.get_int("PRINT");
+    enum efp_result res;
+    int print = options_.get_int("PRINT");
 
-       struct efp_opts opts;
-       memset(&opts, 0, sizeof(struct efp_opts));
+    struct efp_opts opts;
+    memset(&opts, 0, sizeof(struct efp_opts));
 
-       elst_enabled_ = options_.get_bool("EFP_ELST");
-       pol_enabled_  = options_.get_bool("EFP_POL");
-       disp_enabled_ = options_.get_bool("EFP_DISP");
-       exch_enabled_ = options_.get_bool("EFP_EXCH");
+    elst_enabled_ = options_.get_bool("EFP_ELST");
+    pol_enabled_  = options_.get_bool("EFP_POL");
+    disp_enabled_ = options_.get_bool("EFP_DISP");
+    exch_enabled_ = options_.get_bool("EFP_EXCH");
 
-       std::string dertype = options_.get_str("DERTYPE");
-       do_grad_ = false;
-       if (dertype == "FIRST")
-           do_grad_ = true;
+    std::string dertype = options_.get_str("DERTYPE");
+    do_grad_ = false;
+    if (dertype == "FIRST")
+        do_grad_ = true;
 
-       if (elst_enabled_)
-               opts.terms |= EFP_TERM_ELEC;
-       if (pol_enabled_)
-               opts.terms |= EFP_TERM_POL;
-       if (disp_enabled_)
-               opts.terms |= EFP_TERM_DISP;
-       if (exch_enabled_)
-               opts.terms |= EFP_TERM_XR;
+    if (elst_enabled_)
+        opts.terms |= EFP_TERM_ELEC;
+    if (pol_enabled_)
+        opts.terms |= EFP_TERM_POL;
+    if (disp_enabled_)
+        opts.terms |= EFP_TERM_DISP;
+    if (exch_enabled_)
+        opts.terms |= EFP_TERM_XR;
 
-       std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
-       std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
+    std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
+    std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
 
-       if (elst_damping == "SCREEN") {
-               opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
-       } else if (elst_damping == "OVERLAP") {
-               opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
-       } else if (elst_damping == "OFF") {
-               opts.elec_damp = EFP_ELEC_DAMP_OFF;
-       }
+    if (elst_damping == "SCREEN")
+        opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
+    else if (elst_damping == "OVERLAP")
+        opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
+    else if (elst_damping == "OFF")
+        opts.elec_damp = EFP_ELEC_DAMP_OFF;
 
-       if (disp_damping == "TT") {
-           opts.disp_damp = EFP_DISP_DAMP_TT;
-       } else if (disp_damping == "OVERLAP") {
-           opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
-       } else if (disp_damping == "OFF") {
-           opts.disp_damp = EFP_DISP_DAMP_OFF;
-       }
+    if (disp_damping == "TT")
+        opts.disp_damp = EFP_DISP_DAMP_TT;
+    else if (disp_damping == "OVERLAP")
+        opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
+    else if (disp_damping == "OFF")
+        opts.disp_damp = EFP_DISP_DAMP_OFF;
 
-       nfrag_ = options_["FRAGS"].size();
-       molecule_ = Process::environment.molecule();
+    nfrag_ = options_["FRAGS"].size();
+    molecule_ = Process::environment.molecule();
 
-       std::string psi_data_dir = Process::environment("PSIDATADIR");
-       std::string fraglib_path = psi_data_dir + "/fraglib";
+    std::string psi_data_dir = Process::environment("PSIDATADIR");
+    std::string fraglib_path = psi_data_dir + "/fraglib";
 
-       char *frag_names = make_name_list();
-       char *file_names = make_potential_file_list(frag_names, fraglib_path.c_str(), ".");
+    char *frag_names = make_name_list();
+    char *file_names = make_potential_file_list(frag_names, fraglib_path.c_str(), ".");
 
-       if ((res = efp_init(&efp_, &opts, file_names, frag_names))) {
-               fprintf(outfile, "%s", efp_result_to_string(res));
-               throw PsiException("efp",__FILE__,__LINE__);
-       }
+    if ((res = efp_init(&efp_, &opts, file_names, frag_names))) {
+        fprintf(outfile, "%s", efp_result_to_string(res));
+        throw PsiException("efp",__FILE__,__LINE__);
+    }
 
-       delete[] file_names;
-       delete[] frag_names;
+    delete[] file_names;
+    delete[] frag_names;
 
-       fprintf(outfile, "  ==> Calculation Information <==\n\n");
-       fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
+    fprintf(outfile, "  ==> Calculation Information <==\n\n");
+    fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
 
-       if (disp_enabled_)
-               fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+    if (disp_enabled_)
+        fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
 
-       fprintf(outfile, "\n");
+    fprintf(outfile, "\n");
 }
 
 // Provid list of coordinates of quantum mechanical atoms
@@ -229,7 +227,7 @@ void EFP::SetQMAtoms(){
 // TODO: extend molecule class and coordentry class to separate qm and efp atoms
 }
 
-/*
+/**
  * Set points or xyzabc coordinates for all fragments simultaneously
  */
 void EFP::set_coordinates(int type, double * coords) {
@@ -238,7 +236,7 @@ void EFP::set_coordinates(int type, double * coords) {
 
     if(type == 0)
         ctype = EFP_COORD_TYPE_XYZABC;
-    else if(type == 2)
+    else if(type == 1)
         ctype = EFP_COORD_TYPE_POINTS;
     else if(type == 2)
         ctype = EFP_COORD_TYPE_ROTMAT;
@@ -253,7 +251,6 @@ void EFP::set_coordinates(int type, double * coords) {
  * Set points or xyzabc coordinates for all atoms in a fragment
  */
 void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
-//void EFP::set_frag_coordinates(int frag_idx, efp_coord_type ctype, double * coords) {
     enum efp_result res;
     enum efp_coord_type ctype;
 
@@ -430,54 +427,56 @@ double EFP::scf_energy_update() {
     return efp_energy;
 }
 
-// compute efp energy components and/or gradient
+/**
+ * Compute efp energy components and/or gradient
+ */
 void EFP::Compute() {
-       enum efp_result res;
-        double *grad = NULL;
+    enum efp_result res;
+    double *grad = NULL;
+    
+    // Main EFP computation routine 
+    if ((res = efp_compute(efp_, do_grad_ ? 1 : 0))) {
+        fprintf(outfile, "%s", efp_result_to_string(res));
+        throw PsiException("efp",__FILE__,__LINE__);
+    }
+    
+    struct efp_energy energy;
+    
+    if ((res = efp_get_energy(efp_, &energy))) {
+        fprintf(outfile, "%s", efp_result_to_string(res));
+        throw PsiException("efp",__FILE__,__LINE__);
+    }
+    
+    if (do_grad_) {
+        grad = new double[6 * nfrag_];
+        if ((res = efp_get_gradient(efp_, nfrag_, grad))) {
+            fprintf(outfile, "%s", efp_result_to_string(res));
+            throw PsiException("efp",__FILE__,__LINE__);
+        }
 
-       /* Main EFP computation routine */
-       if ((res = efp_compute(efp_, do_grad_ ? 1 : 0))) {
-               fprintf(outfile, "%s", efp_result_to_string(res));
-                throw PsiException("efp",__FILE__,__LINE__);
-       }
+        fprintf(outfile, "  ==> EFP Gradient <==\n\n");
 
-       struct efp_energy energy;
+        double *pgrad = grad;
+        for (int i = 0; i < nfrag_; i++) {
+            for (int j = 0; j < 6; j++) {
+                fprintf(outfile, "%14.6lf", *pgrad++);
+            }
+            fprintf(outfile, "\n");
+        }
+        fprintf(outfile, "\n");
 
-       if ((res = efp_get_energy(efp_, &energy))) {
-               fprintf(outfile, "%s", efp_result_to_string(res));
-                throw PsiException("efp",__FILE__,__LINE__);
-       }
+        SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6));
+        double ** psmgrad = smgrad->pointer();
+        pgrad = grad;
+        for (int i = 0; i < nfrag_; i++) {
+            for (int jj = 0; jj < 6; jj++) {
+                psmgrad[i][jj] = *pgrad++;
+            }
+        }
 
-       if (do_grad_) {
-                       grad = new double[6 * nfrag_];
-                       if ((res = efp_get_gradient(efp_, nfrag_, grad))) {
-                               fprintf(outfile, "%s", efp_result_to_string(res));
-                                throw PsiException("efp",__FILE__,__LINE__);
-                       }
-
-                       fprintf(outfile, "  ==> EFP Gradient <==\n\n");
-
-                       double *pgrad = grad;
-                       for (int i = 0; i < nfrag_; i++) {
-                                       for (int j = 0; j < 6; j++) {
-                                                       fprintf(outfile, "%14.6lf", *pgrad++);
-                                       }
-                                       fprintf(outfile, "\n");
-                       }
-                       fprintf(outfile, "\n");
-
-                       SharedMatrix smgrad(new Matrix("EFP Gradient", nfrag_, 6)); //
-                       double ** psmgrad = smgrad->pointer();
-                       pgrad = grad;
-                       for (int i = 0; i < nfrag_; i++) {
-                                       for (int jj = 0; jj < 6; jj++) {
-                                               psmgrad[i][jj] = *pgrad++;
-                                       }
-                       }
-
-                       psi::Process::environment.set_gradient(smgrad);
-                       smgrad->print();
-       }
+        psi::Process::environment.set_gradient(smgrad);
+        smgrad->print();
+    }
 
     fprintf(outfile, "  ==> Energetics <==\n\n");
 
@@ -492,8 +491,6 @@ void EFP::Compute() {
     Process::environment.globals["EFP DISP ENERGY"] = energy.dispersion;
     Process::environment.globals["EFP EXCH ENERGY"] = energy.exchange_repulsion;
     Process::environment.globals["CURRENT ENERGY"] = energy.total;
-
-
 }
 
 /**
@@ -557,18 +554,21 @@ double *EFP::get_frag_atom_mass(int frag_idx) {
     return frag_atom_mass;
 }
 
-// Fetch COM for fragment from libefp coordinates
+/**
+ * Get COM for a fragment from libefp coordinates
+ */
 double *EFP::get_com(int frag_idx) {
-  if (frag_idx >= nfrag_) return NULL;
+    if (frag_idx >= nfrag_) return NULL;
   
-  double *xyzabc = new double [6*nfrag_];
-  efp_get_coordinates(efp_, nfrag_, xyzabc);
-  double *com = new double[3];
-  com[0] = xyzabc[6*frag_idx+0];
-  com[1] = xyzabc[6*frag_idx+1];
-  com[2] = xyzabc[6*frag_idx+2];
+    double *xyzabc = new double [6*nfrag_];
+    efp_get_coordinates(efp_, nfrag_, xyzabc);
+
+    double *com = new double[3];
+    com[0] = xyzabc[6*frag_idx+0];
+    com[1] = xyzabc[6*frag_idx+1];
+    com[2] = xyzabc[6*frag_idx+2];
   
-  return com;
+    return com;
 }
 
 /**

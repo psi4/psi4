@@ -37,7 +37,7 @@ class EFP {
         /// Set geometry
         void SetGeometry();
 
-        /// Compute energy and/or gradietn
+        /// Compute energy and/or gradient
         void Compute();
 
         /// Designate which atoms are qm atoms
