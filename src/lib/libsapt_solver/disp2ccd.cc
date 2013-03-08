@@ -1342,8 +1342,6 @@ void SAPT2p::natural_orbitalify_ccd()
 {
   int occA = noccA_ - foccA_;
   int occB = noccB_ - foccB_;
-  int nnoA = noccA_ + no_nvirA_;
-  int nnoB = noccB_ + no_nvirB_;
 
   double **tARAR = block_matrix(occA*nvirA_,occA*nvirA_);
 
@@ -1353,15 +1351,15 @@ void SAPT2p::natural_orbitalify_ccd()
   double **tARAr = block_matrix(occA*nvirA_,occA*no_nvirA_);
 
   C_DGEMM('N','N',occA*nvirA_*occA,no_nvirA_,nvirA_,
-    1.0,tARAR[0],nvirA_,&(no_CA_[noccA_]
-    [noccA_]),nnoA,0.0,tARAr[0],no_nvirA_);
+    1.0,tARAR[0],nvirA_,no_CA_[0],
+    no_nvirA_,0.0,tARAr[0],no_nvirA_);
 
   free_block(tARAR);
   double **tArAr = block_matrix(occA*no_nvirA_,occA*no_nvirA_);
 
   for (int a=0; a<occA; a++) {
     C_DGEMM('T','N',no_nvirA_,occA*no_nvirA_,nvirA_,
-      1.0,&(no_CA_[noccA_][noccA_]),nnoA,
+      1.0,no_CA_[0],no_nvirA_,
       tARAr[a*nvirA_],occA*no_nvirA_,0.0,
       tArAr[a*no_nvirA_],occA*no_nvirA_);
   }
@@ -1381,15 +1379,15 @@ void SAPT2p::natural_orbitalify_ccd()
   double **tBSBs = block_matrix(occB*nvirB_,occB*no_nvirB_);
 
   C_DGEMM('N','N',occB*nvirB_*occB,no_nvirB_,nvirB_,
-    1.0,tBSBS[0],nvirB_,&(no_CB_[noccB_]
-    [noccB_]),nnoB,0.0,tBSBs[0],no_nvirB_);
+    1.0,tBSBS[0],nvirB_,no_CB_[0],
+    no_nvirB_,0.0,tBSBs[0],no_nvirB_);
 
   free_block(tBSBS);
   double **tBsBs = block_matrix(occB*no_nvirB_,occB*no_nvirB_);
 
   for (int b=0; b<occB; b++) {
     C_DGEMM('T','N',no_nvirB_,occB*no_nvirB_,nvirB_,
-      1.0,&(no_CB_[noccB_][noccB_]),nnoB,
+      1.0,no_CB_[0],no_nvirB_,
       tBSBs[b*nvirB_],occB*no_nvirB_,0.0,
       tBsBs[b*no_nvirB_],occB*no_nvirB_);
   }
@@ -1409,15 +1407,15 @@ void SAPT2p::natural_orbitalify_ccd()
   double **tARBs = block_matrix(occA*nvirA_,occB*no_nvirB_);
 
   C_DGEMM('N','N',occA*nvirA_*occB,no_nvirB_,nvirB_,
-    1.0,tARBS[0],nvirB_,&(no_CB_[noccB_]
-    [noccB_]),nnoB,0.0,tARBs[0],no_nvirB_);
+    1.0,tARBS[0],nvirB_,no_CB_[0],
+    no_nvirB_,0.0,tARBs[0],no_nvirB_);
 
   free_block(tARBS);
   double **tArBs = block_matrix(occA*no_nvirA_,occB*no_nvirB_);
 
   for (int a=0; a<occA; a++) {
     C_DGEMM('T','N',no_nvirA_,occB*no_nvirB_,nvirA_,
-      1.0,&(no_CA_[noccA_][noccA_]),nnoA,
+      1.0,no_CA_[0],no_nvirA_,
       tARBs[a*nvirA_],occB*no_nvirB_,0.0,
       tArBs[a*no_nvirA_],occB*no_nvirB_);
   }
