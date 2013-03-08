@@ -9,12 +9,26 @@ SAPT2p::SAPT2p(Options& options, boost::shared_ptr<PSIO> psio,
   e_disp22sdq_(0.0),
   e_disp22t_(0.0),
   e_est_disp22t_(0.0),
+  e_disp22t_ccd_(0.0),
+  e_est_disp22t_ccd_(0.0),
   e_sapt2p_(0.0)
 {
+  ccd_disp_ = options_.get_bool("DO_CCD_DISP");
+  ccd_maxiter_ = options_.get_int("CCD_MAXITER");
+  max_ccd_vecs_ = options_.get_int("MAX_CCD_DIISVECS");
+  min_ccd_vecs_ = options_.get_int("MIN_CCD_DIISVECS");
+  ccd_e_conv_ = options_.get_double("CCD_E_CONVERGENCE");
+  ccd_t_conv_ = options_.get_double("CCD_T_CONVERGENCE");
+  if (ccd_disp_) {
+    psio_->open(PSIF_SAPT_CCD,PSIO_OPEN_NEW);
+  }
 }
 
 SAPT2p::~SAPT2p()
 {
+  if (ccd_disp_) {
+    psio_->close(PSIF_SAPT_CCD,0);
+  }
 }
 
 double SAPT2p::compute_energy()
@@ -73,6 +87,17 @@ double SAPT2p::compute_energy()
     disp22t();
   timer_off("Disp22 (T)         ");
 
+  if (ccd_disp_) {
+ 
+  timer_on("Disp2(CCD)         ");
+    disp2ccd();
+  timer_off("Disp2(CCD)         ");
+  timer_on("Disp22 (T) (CCD)   ");
+    disp22tccd();
+  timer_off("Disp22 (T) (CCD)   ");
+
+  }
+
   print_results();
 
   return (e_sapt0_);
@@ -81,6 +106,8 @@ double SAPT2p::compute_energy()
 void SAPT2p::print_header()
 {
   fprintf(outfile,"        SAPT2+  \n");
+  if (ccd_disp_) 
+    fprintf(outfile,"     CCD+ST Disp   \n");
   fprintf(outfile,"    Ed Hohenstein\n") ;
   fprintf(outfile,"     6 June 2009\n") ;
   fprintf(outfile,"\n");

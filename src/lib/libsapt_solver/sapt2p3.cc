@@ -79,6 +79,18 @@ double SAPT2p3::compute_energy()
   timer_on("Disp22 (T)         ");
     disp22t();
   timer_off("Disp22 (T)         ");
+
+  if (ccd_disp_) {
+
+  timer_on("Disp2(CCD)         ");
+    disp2ccd();
+  timer_off("Disp2(CCD)         ");
+  timer_on("Disp22 (T) (CCD)   ");
+    disp22tccd();
+  timer_off("Disp22 (T) (CCD)   ");
+
+  }
+
   timer_on("Elst13             ");
     elst13();
   timer_off("Elst13             ");
@@ -117,6 +129,8 @@ void SAPT2p3::print_header()
     fprintf(outfile,"       SAPT2+3   \n");
   else
     fprintf(outfile,"      SAPT2+(3)  \n");
+  if (ccd_disp_) 
+    fprintf(outfile,"     CCD+ST Disp   \n");
   fprintf(outfile,"    Ed Hohenstein\n") ;
   fprintf(outfile,"     6 June 2009\n") ;
   fprintf(outfile,"\n");

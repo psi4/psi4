@@ -676,6 +676,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
+    /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
+    options.add_bool("DO_CCD_DISP",false);
+    /*- E converge value for CCD -*/
+    options.add_double("CCD_E_CONVERGENCE",1E-8);
+    /*- Convergence tolerance for CCD amplitudes -*/
+    options.add_double("CCD_T_CONVERGENCE",1E-8);
+    /*- Maximum number of vectors used in CCD-DIIS -*/
+    options.add_int("MAX_CCD_DIISVECS",10);
+    /*- Minimumnumber of vectors used in CCD-DIIS -*/
+    options.add_int("MIN_CCD_DIISVECS",4);
+    /*- Max CCD iterations -*/
+    options.add_int("CCD_MAXITER",50);
     /*- Do compute third-order corrections? !expert -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do natural orbitals to speed up evaluation of the triples
