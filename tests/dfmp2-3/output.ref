@@ -66,7 +66,7 @@ set {
 
 gradient("df-mp2")
 
-grad = PsiMod.reference_wavefunction().gradient()                                  #TEST
+grad = PsiMod.wavefunction().gradient()                                            #TEST
 compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST
 --------------------------------------------------------------------------
 
