@@ -8,7 +8,6 @@
 #endif
 
 using namespace psi;
-using namespace cepa;
 
 namespace psi{ namespace fnocc{
 
