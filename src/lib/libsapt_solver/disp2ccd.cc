@@ -136,6 +136,9 @@ timer_off("CCD Intra Prep     ");
     evalsB_,noccB_,nvirB_,foccB_,
     no_CB_,no_nvirB_);
 
+  e_disp2d_ccd_ = disp2_ccd;
+  fprintf(outfile,"    Disp2 (CCD)         = %18.12lf H\n",e_disp2d_ccd_);
+
   // => (S) <= //
 
   disp_s_prep("T AR Amplitudes","T(BS) AR","Theta ARAR Amplitudes",
@@ -156,9 +159,12 @@ timer_off("CCD Intra Prep     ");
     PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
     foccB_,noccB_,nvirB_);
 
+  e_disp22s_ccd_ = d220s + d202s;
+
   if (print_) {
-    fprintf(outfile,"disp220s           = %18.12lf  mH\n",d220s*1000.0);
-    fprintf(outfile,"disp202s           = %18.12lf  mH\n\n",d202s*1000.0);
+    fprintf(outfile,"\n    Disp220 (S)         = %18.12lf mH\n",d220s*1000.0);
+    fprintf(outfile,"    Disp202 (S)         = %18.12lf mH\n",d202s*1000.0);
+    fprintf(outfile,"    Disp22 (S)          = %18.12lf mH\n\n",e_disp22s_ccd_*1000.0);
     fflush(outfile);
   }
 
@@ -1332,39 +1338,38 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   timer_off("v^4 Term           ");
   return(t2AARR);
 }
-
 void SAPT2p::natural_orbitalify_ccd()
 {
   int occA = noccA_ - foccA_;
   int occB = noccB_ - foccB_;
-  int nnoA = noccA_ + nvirA_;
-  int nnoB = noccB_ + nvirB_;
+  int nnoA = noccA_ + no_nvirA_;
+  int nnoB = noccB_ + no_nvirB_;
 
   double **tARAR = block_matrix(occA*nvirA_,occA*nvirA_);
 
   psio_->read_entry(PSIF_SAPT_CCD,"T ARAR Amplitudes",(char *) tARAR[0],
     occA*nvirA_*occA*nvirA_*(ULI) sizeof(double));
 
-  double **tARAr = block_matrix(occA*nvirA_,occA*nvirA_);
+  double **tARAr = block_matrix(occA*nvirA_,occA*no_nvirA_);
 
-  C_DGEMM('N','N',occA*nvirA_*occA,nvirA_,nvirA_,
-    1.0,tARAR[0],nvirA_,&(CA_[noccA_]
-    [noccA_]),nnoA,0.0,tARAr[0],nvirA_);
+  C_DGEMM('N','N',occA*nvirA_*occA,no_nvirA_,nvirA_,
+    1.0,tARAR[0],nvirA_,&(no_CA_[noccA_]
+    [noccA_]),nnoA,0.0,tARAr[0],no_nvirA_);
 
   free_block(tARAR);
-  double **tArAr = block_matrix(occA*nvirA_,occA*nvirA_);
+  double **tArAr = block_matrix(occA*no_nvirA_,occA*no_nvirA_);
 
   for (int a=0; a<occA; a++) {
-    C_DGEMM('T','N',nvirA_,occA*nvirA_,nvirA_,
-      1.0,&(CA_[noccA_][noccA_]),nnoA,
-      tARAr[a*nvirA_],occA*nvirA_,0.0,
-      tArAr[a*nvirA_],occA*nvirA_);
+    C_DGEMM('T','N',no_nvirA_,occA*no_nvirA_,nvirA_,
+      1.0,&(no_CA_[noccA_][noccA_]),nnoA,
+      tARAr[a*nvirA_],occA*no_nvirA_,0.0,
+      tArAr[a*no_nvirA_],occA*no_nvirA_);
   }
 
   free_block(tARAr);
 
   psio_->write_entry(PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes",(char *)
-    tArAr[0],occA*nvirA_*occA*nvirA_*(ULI) sizeof(double));
+    tArAr[0],occA*no_nvirA_*occA*no_nvirA_*(ULI) sizeof(double));
 
   free_block(tArAr);
 
@@ -1373,26 +1378,26 @@ void SAPT2p::natural_orbitalify_ccd()
   psio_->read_entry(PSIF_SAPT_CCD,"T BSBS Amplitudes",(char *) tBSBS[0],
     occB*nvirB_*occB*nvirB_*(ULI) sizeof(double));
 
-  double **tBSBs = block_matrix(occB*nvirB_,occB*nvirB_);
+  double **tBSBs = block_matrix(occB*nvirB_,occB*no_nvirB_);
 
-  C_DGEMM('N','N',occB*nvirB_*occB,nvirB_,nvirB_,
-    1.0,tBSBS[0],nvirB_,&(CB_[noccB_]
-    [noccB_]),nnoB,0.0,tBSBs[0],nvirB_);
+  C_DGEMM('N','N',occB*nvirB_*occB,no_nvirB_,nvirB_,
+    1.0,tBSBS[0],nvirB_,&(no_CB_[noccB_]
+    [noccB_]),nnoB,0.0,tBSBs[0],no_nvirB_);
 
   free_block(tBSBS);
-  double **tBsBs = block_matrix(occB*nvirB_,occB*nvirB_);
+  double **tBsBs = block_matrix(occB*no_nvirB_,occB*no_nvirB_);
 
   for (int b=0; b<occB; b++) {
-    C_DGEMM('T','N',nvirB_,occB*nvirB_,nvirB_,
-      1.0,&(CB_[noccB_][noccB_]),nnoB,
-      tBSBs[b*nvirB_],occB*nvirB_,0.0,
-      tBsBs[b*nvirB_],occB*nvirB_);
+    C_DGEMM('T','N',no_nvirB_,occB*no_nvirB_,nvirB_,
+      1.0,&(no_CB_[noccB_][noccB_]),nnoB,
+      tBSBs[b*nvirB_],occB*no_nvirB_,0.0,
+      tBsBs[b*no_nvirB_],occB*no_nvirB_);
   }
 
   free_block(tBSBs);
 
   psio_->write_entry(PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes",(char *)
-    tBsBs[0],occB*nvirB_*occB*nvirB_*(ULI) sizeof(double));
+    tBsBs[0],occB*no_nvirB_*occB*no_nvirB_*(ULI) sizeof(double));
 
   free_block(tBsBs);
 
@@ -1401,37 +1406,37 @@ void SAPT2p::natural_orbitalify_ccd()
   psio_->read_entry(PSIF_SAPT_CCD,"T ARBS Amplitudes",(char *) tARBS[0],
     occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
 
-  double **tARBs = block_matrix(occA*nvirA_,occB*nvirB_);
+  double **tARBs = block_matrix(occA*nvirA_,occB*no_nvirB_);
 
-  C_DGEMM('N','N',occA*nvirA_*occB,nvirB_,nvirB_,
-    1.0,tARBS[0],nvirB_,&(CB_[noccB_]
-    [noccB_]),nnoB,0.0,tARBs[0],nvirB_);
+  C_DGEMM('N','N',occA*nvirA_*occB,no_nvirB_,nvirB_,
+    1.0,tARBS[0],nvirB_,&(no_CB_[noccB_]
+    [noccB_]),nnoB,0.0,tARBs[0],no_nvirB_);
 
   free_block(tARBS);
-  double **tArBs = block_matrix(occA*nvirA_,occB*nvirB_);
+  double **tArBs = block_matrix(occA*no_nvirA_,occB*no_nvirB_);
 
   for (int a=0; a<occA; a++) {
-    C_DGEMM('T','N',nvirA_,occB*nvirB_,nvirA_,
-      1.0,&(CA_[noccA_][noccA_]),nnoA,
-      tARBs[a*nvirA_],occB*nvirB_,0.0,
-      tArBs[a*nvirA_],occB*nvirB_);
+    C_DGEMM('T','N',no_nvirA_,occB*no_nvirB_,nvirA_,
+      1.0,&(no_CA_[noccA_][noccA_]),nnoA,
+      tARBs[a*nvirA_],occB*no_nvirB_,0.0,
+      tArBs[a*no_nvirA_],occB*no_nvirB_);
   }
 
   free_block(tARBs);
 
-  double **tBsAr = block_matrix(occB*nvirB_,occA*nvirA_);
+  double **tBsAr = block_matrix(occB*no_nvirB_,occA*no_nvirA_);
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
-  for(int r1=0; r1<nvirA_; r1++,a1r1++) {
+  for(int r1=0; r1<no_nvirA_; r1++,a1r1++) {
     for(int b1=0,b1s1=0; b1<occB; b1++) {
-    for(int s1=0; s1<nvirB_; s1++,b1s1++) {
+    for(int s1=0; s1<no_nvirB_; s1++,b1s1++) {
       tBsAr[b1s1][a1r1] = tArBs[a1r1][b1s1];
   }}}}
 
   psio_->write_entry(PSIF_SAPT_CCD,"T ARBS Natorb Amplitudes",(char *)
-    tArBs[0],occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    tArBs[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
   psio_->write_entry(PSIF_SAPT_CCD,"T BSAR Natorb Amplitudes",(char *)
-    tBsAr[0],occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+    tBsAr[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
 
   free_block(tArBs);
   free_block(tBsAr);

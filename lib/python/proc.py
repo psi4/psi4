@@ -1411,6 +1411,17 @@ def run_sapt(name, **kwargs):
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+    elif (name.lower() == 'sapt2+(ccd)'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
+    elif (name.lower() == 'sapt2+(3)(ccd)'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
+    elif (name.lower() == 'sapt2+3(ccd)'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
 
     # if the df_basis_sapt basis is not set, pick a sensible one.
     if PsiMod.get_global_option('DF_BASIS_SAPT') == '':
@@ -1739,6 +1750,17 @@ def run_sapt_ct(name, **kwargs):
     elif (name.lower() == 'sapt2+3-ct'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+    elif (name.lower() == 'sapt2+(ccd)-ct'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
+    elif (name.lower() == 'sapt2+(3)(ccd)-ct'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
+    elif (name.lower() == 'sapt2+3(ccd)-ct'):
+        PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
+        PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
     PsiMod.print_out('\n')
     banner('SAPT Charge Transfer')
     PsiMod.print_out('\n')

@@ -46,8 +46,11 @@ protected:
 
   // CCD Dispersion Values
 
+  double e_disp2d_ccd_;
+  double e_disp22s_ccd_;
   double e_disp22t_ccd_;
   double e_est_disp22t_ccd_;
+  double e_sapt2p_ccd_;
   
   // CCD Dispersion Parameters
   bool ccd_disp_;
