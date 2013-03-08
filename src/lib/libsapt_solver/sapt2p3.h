@@ -30,6 +30,8 @@ protected:
   double e_exch_disp30_;
   double e_sapt2pp3_;
   double e_sapt2p3_;
+  double e_sapt2pp3_ccd_;
+  double e_sapt2p3_ccd_;
 
   void Y3(int, const char *, const char *, const char *, int, const char *, 
     const char *, const char *, const char *, const char *, const char *, 
