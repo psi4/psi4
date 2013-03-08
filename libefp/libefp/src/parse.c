@@ -37,12 +37,10 @@ struct stream {
 	FILE *in;
 };
 
-enum efp_result efp_read_potential(struct efp *, const char *);
-
 static inline struct frag *
 get_last_frag(struct efp *efp)
 {
-	return efp->lib + efp->n_lib - 1;
+	return efp->lib[efp->n_lib - 1];
 }
 
 static char *
@@ -794,6 +792,7 @@ parse_fragment(struct efp *efp, struct stream *stream)
 static enum efp_result
 parse_file(struct efp *efp, struct stream *stream)
 {
+	char name[32];
 	enum efp_result res;
 
 	while (stream->ptr) {
@@ -804,16 +803,24 @@ parse_file(struct efp *efp, struct stream *stream)
 
 		stream->ptr += 2;
 
+		if (!tok_label(stream, sizeof(name), name))
+			return EFP_RESULT_SYNTAX_ERROR;
+
+		if (efp_find_lib(efp, name))
+			return EFP_RESULT_DUPLICATE_PARAMETERS;
+
+		struct frag *frag = calloc(1, sizeof(struct frag));
+		if (!frag)
+			return EFP_RESULT_NO_MEMORY;
+
 		efp->n_lib++;
-		efp->lib = realloc(efp->lib, efp->n_lib * sizeof(struct frag));
+		efp->lib = realloc(efp->lib, efp->n_lib * sizeof(struct frag *));
 		if (!efp->lib)
 			return EFP_RESULT_NO_MEMORY;
 
-		struct frag *frag = get_last_frag(efp);
-		memset(frag, 0, sizeof(struct frag));
-
-		if (!tok_label(stream, sizeof(frag->name), frag->name))
-			return EFP_RESULT_SYNTAX_ERROR;
+		frag->lib = frag;
+		strcpy(frag->name, name);
+		efp->lib[efp->n_lib - 1] = frag;
 
 		next_line(stream);
 		next_line(stream);
@@ -824,55 +831,32 @@ parse_file(struct efp *efp, struct stream *stream)
 	return EFP_RESULT_SUCCESS;
 }
 
-enum efp_result
-efp_read_potential(struct efp *efp, const char *files)
+EFP_EXPORT enum efp_result
+efp_add_potential(struct efp *efp, const char *path)
 {
-	for (const char *ptr = files; ptr; ptr = strchr(ptr, '\n')) {
-		if (*ptr == '\n')
-			ptr++;
+	if (!efp)
+		return EFP_RESULT_NOT_INITIALIZED;
 
-		size_t len = 0;
-		while (ptr[len] && ptr[len] != '\n')
-			len++;
+	if (!path)
+		return EFP_RESULT_INVALID_ARGUMENT;
 
-		char path[len + 1];
-		strncpy(path, ptr, len);
-		path[len] = '\0';
+	enum efp_result res;
 
-		struct stream stream = {
-			.buffer = NULL,
-			.ptr = NULL,
-			.in = fopen(path, "r")
-		};
+	struct stream stream = {
+		.buffer = NULL,
+		.ptr = NULL,
+		.in = fopen(path, "r")
+	};
 
-		if (!stream.in)
-			return EFP_RESULT_FILE_NOT_FOUND;
+	if (!stream.in)
+		return EFP_RESULT_FILE_NOT_FOUND;
 
-		next_line(&stream);
+	next_line(&stream);
+	res = parse_file(efp, &stream);
 
-		enum efp_result res;
+	if (stream.buffer)
+		free(stream.buffer);
+	fclose(stream.in);
 
-		if ((res = parse_file(efp, &stream))) {
-			if (stream.buffer)
-				free(stream.buffer);
-			fclose(stream.in);
-			return res;
-		}
-
-		if (stream.buffer)
-			free(stream.buffer);
-		fclose(stream.in);
-	}
-
-	/* check for duplicate fragments */
-	for (int i = 0; i < efp->n_lib; i++)
-		for (int j = i + 1; j < efp->n_lib; j++)
-			if (efp_strcasecmp(efp->lib[i].name, efp->lib[j].name) == 0)
-				return EFP_RESULT_DUPLICATE_PARAMETERS;
-
-	/* because of realloc we can't do this earlier */
-	for (int i = 0; i < efp->n_lib; i++)
-		efp->lib[i].lib = efp->lib + i;
-
-	return EFP_RESULT_SUCCESS;
+	return res;
 }

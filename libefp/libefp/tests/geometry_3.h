@@ -1,18 +1,22 @@
-static const char files[] =
-	"./fraglib/h2o.efp\n"
-	"./fraglib/nh3.efp\n"
-	"./fraglib/ch3oh.efp";
+static const char *files[] = {
+	"./fraglib/h2o.efp",
+	"./fraglib/nh3.efp",
+	"./fraglib/ch3oh.efp",
+	 NULL
+};
 
-static const char names[] =
-	"H2O_L\n"
-	"NH3_L\n"
-	"NH3_L\n"
-	"NH3_L\n"
-	"CH3OH_L\n"
-	"H2O_L\n"
-	"H2O_L\n"
-	"CH3OH_L\n"
-	"H2O_L";
+static const char *names[] = {
+	"H2O_L",
+	"NH3_L",
+	"NH3_L",
+	"NH3_L",
+	"CH3OH_L",
+	"H2O_L",
+	"H2O_L",
+	"CH3OH_L",
+	"H2O_L",
+	 NULL
+};
 
 static const double geometry[] = {
 	BOHR(-3.394), BOHR(-1.900), BOHR(-3.700), /* H2O */
