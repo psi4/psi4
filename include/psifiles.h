@@ -246,6 +246,8 @@
 #define PSIF_DCC_QSO           267  /*- DFCC 3-index integrals -*/
 #define PSIF_DCC_SORT_START    270  /*- CEPA/CC integral sort starting file number -*/
 
+#define PSIF_SAPT_CCD          271  /*- SAPT2+ CCD Utility File -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */

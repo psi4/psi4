@@ -8,11 +8,10 @@
     #include<omp.h>
 #endif
 
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 #include"ccsd.h"
 
 using namespace psi;
-using namespace cepa;
 
 namespace psi{ namespace fnocc{
 

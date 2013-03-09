@@ -27,8 +27,8 @@ b2_freqs.set(0, 0, anal_freqs[2]) #TEST
 # Compute all frequencies with default 3-point formula.
 frequencies('scf', dertype=1)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
-compare_vectors(anal_freqs, fd_freqs, 1,                 #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+compare_vectors(anal_freqs, fd_freqs, 1,       #TEST
  "Analytic vs. finite-difference (3-pt.) frequencies from gradients to 0.1 cm^-1") #TEST
 del fd_freqs   #TEST
 
@@ -36,8 +36,8 @@ del fd_freqs   #TEST
 # Compute A1 frequencies only.
 frequencies('scf', dertype=1, irrep=1)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
-compare_vectors(a1_freqs, fd_freqs, 1,                   #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+compare_vectors(a1_freqs, fd_freqs, 1,         #TEST
  "Analytic vs. finite-difference (3-pt.) A1 frequencies from gradients to 0.1 cm^-1") #TEST
 del fd_freqs   #TEST
 
@@ -45,8 +45,8 @@ del fd_freqs   #TEST
 # Compute B2 frequency only.
 frequencies('scf', dertype=1, irrep=4)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
-compare_vectors(b2_freqs, fd_freqs, 1,                   #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+compare_vectors(b2_freqs, fd_freqs, 1,         #TEST
  "Analytic vs. finite-difference (3-pt.) B2 frequencies from gradients to 0.1 cm^-1") #TEST
 del fd_freqs   #TEST
 
@@ -56,8 +56,8 @@ set findif { points 5 }
 
 frequencies('scf', dertype=1)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
-compare_vectors(anal_freqs, fd_freqs, 2,                 #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+compare_vectors(anal_freqs, fd_freqs, 2,       #TEST
  "Analytic vs. finite-difference (5-pt.) frequencies from gradients to 0.01 cm^-1") #TEST
 del fd_freqs   #TEST
 

@@ -955,7 +955,6 @@ AC_CONFIG_FILES([
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
-          src/bin/cepa/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile

@@ -15,7 +15,7 @@
 #include<libtrans/integraltransform.h>
 #include<libiwl/iwl.h>
 #include"ccsd.h"
-#include<../bin/cepa/blas.h>
+#include"blas.h"
 #include"frozen_natural_orbitals.h"
 #include<libciomr/libciomr.h>
 #include<lib3index/dftensor.h>
@@ -23,7 +23,6 @@
 
 
 using namespace psi;
-using namespace cepa;
 using namespace boost;
 
 namespace psi{namespace fnocc{
