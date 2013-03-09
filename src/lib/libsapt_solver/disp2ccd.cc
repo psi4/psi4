@@ -369,7 +369,7 @@ double SAPT2p::r_ccd_energy(char *TARBS, char *ARBS, int occA, int virA,
   double **tARBS = block_matrix(occA*virA,occB*virB);
 
   psio_->read_entry(PSIF_SAPT_CCD,ARBS,(char *) &(vARBS[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+    occA*virA*occB*virB*(ULI) sizeof(double));
   psio_->read_entry(PSIF_SAPT_CCD,TARBS,(char *) &(tARBS[0][0]),
     occA*virA*occB*virB*(ULI) sizeof(double));
 
