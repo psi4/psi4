@@ -77,7 +77,7 @@ class Diffuse(object):
 
         """
         PsiMod.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
-        self.wfn = PsiMod.reference_wavefunction()
+        self.wfn = PsiMod.wavefunction()
         self.Da = self.wfn.Da()
         self.basis = self.wfn.basisset()
         parser = PsiMod.Gaussian94BasisSetParser()

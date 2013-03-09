@@ -50,7 +50,7 @@ set {
 }
 
 gradient('bp86-d2gr')
-grad = PsiMod.reference_wavefunction().gradient()                          #TEST
+grad = PsiMod.wavefunction().gradient()                                    #TEST
 compare_matrices(ref, grad, 7, "Outsourced dft gradients called by name")  #TEST
 clean()
 
@@ -61,7 +61,7 @@ set {
 }
 
 gradient('bp86-d2gr')
-grad = PsiMod.reference_wavefunction().gradient()                          #TEST
+grad = PsiMod.wavefunction().gradient()                                      #TEST
 compare_matrices(ref, grad, 7, "Outsourced dft gradients called by options") #TEST
 --------------------------------------------------------------------------
 

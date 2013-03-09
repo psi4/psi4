@@ -76,7 +76,6 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace cepa       { PsiReturnType cepa(Options&);      }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
@@ -436,15 +435,6 @@ double py_psi_fnocc()
 {
     py_psi_prepare_options_for_module("FNOCC");
     if (fnocc::fnocc(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
-}
-double py_psi_cepa()
-{
-    py_psi_prepare_options_for_module("CEPA");
-    if (cepa::cepa(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -952,7 +942,7 @@ int py_psi_get_me()
     return WorldComm->me();
 }
 
-boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()
+boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 {
     return Process::environment.wavefunction();
 }
@@ -1029,7 +1019,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    def("reference_wavefunction", py_psi_reference_wavefunction, "Returns the current wavefunction object, from the most recent computation.");
+    def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");
@@ -1133,8 +1123,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    def("cepa", py_psi_cepa, "Runs the coupled electron pair approximation code");
-    def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4 energy code");
+    def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");

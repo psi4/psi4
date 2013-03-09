@@ -48,11 +48,17 @@ procedures = {
             'sapt2+'        : run_sapt,
             'sapt2+(3)'     : run_sapt,
             'sapt2+3'       : run_sapt,
+            'sapt2+(ccd)'   : run_sapt,
+            'sapt2+(3)(ccd)': run_sapt,
+            'sapt2+3(ccd)'  : run_sapt,
             'sapt0-ct'      : run_sapt_ct,
             'sapt2-ct'      : run_sapt_ct,
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+(3)-ct'  : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
+            'sapt2+(ccd)-ct'     : run_sapt_ct,
+            'sapt2+(3)(ccd)-ct'  : run_sapt_ct,
+            'sapt2+3(ccd)-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
             'ccsd'          : run_ccenergy,
@@ -109,6 +115,13 @@ procedures = {
             'df-ccsd(t)'    : run_fnodfcc,
             'fno-df-ccsd'   : run_fnodfcc,
             'fno-df-ccsd(t)': run_fnodfcc,
+            'fno-cepa(0)'   : run_cepa,
+            'fno-cepa(1)'   : run_cepa,
+            'fno-cepa(3)'   : run_cepa,
+            'fno-acpf'      : run_cepa,
+            'fno-aqcc'      : run_cepa,
+            'fno-sdci'      : run_cepa,
+            'fno-dci'       : run_cepa,
             'cepa(0)'       : run_cepa,
             'cepa(1)'       : run_cepa,
             'cepa(3)'       : run_cepa,
@@ -600,7 +613,7 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        PsiMod.reference_wavefunction().energy()
+        PsiMod.wavefunction().energy()
 
         optstash.restore()
         return PsiMod.get_variable('CURRENT ENERGY')
@@ -1270,7 +1283,7 @@ def frequency(name, **kwargs):
         # call thermo module
         PsiMod.thermo()
 
-        return PsiMod.reference_wavefunction().energy()
+        return PsiMod.wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
         info = 'Performing finite difference by gradient calculations'
@@ -1375,7 +1388,7 @@ def frequency(name, **kwargs):
             # clean may be necessary when changing irreps of displacements
             PsiMod.clean()
 
-        # Obtain the gradient. This function stores the gradient into the reference wavefunction.
+        # Obtain the gradient. This function stores the gradient in the wavefunction.
         PsiMod.fd_freq_0(energies, irrep)
 
         print(' Computation complete.')
@@ -1417,7 +1430,7 @@ def molden(filename):
     format to *filename*
 
     """
-    m = PsiMod.MoldenWriter(PsiMod.reference_wavefunction())
+    m = PsiMod.MoldenWriter(PsiMod.wavefunction())
     m.write(filename)
 
 

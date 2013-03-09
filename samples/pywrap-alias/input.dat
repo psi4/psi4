@@ -37,6 +37,22 @@ compare_values(-0.026794209037, get_variable('SCS-MP2 OPPOSITE-SPIN CORRELATION 
 # this second check will fail if a request for a mp2 calc gets routed to detci, rather than the mp2 module
 clean()
 
+banner('mp3')
+energy('mp3')
+compare_values(-5.57903326861, get_variable('MP3 TOTAL ENERGY'), 7, 'MP3 fnocc')
+compare_values(-0.025155295755, get_variable('MP2.5 CORRELATION ENERGY'), 6, '  MP3 route check')
+set reference rohf
+set_variable('MP3 TOTAL ENERGY',0.0)
+energy('mp3')
+compare_values(-5.57903326861, get_variable('MP3 TOTAL ENERGY'), 7, 'MP3 detci (energy and route check)')
+set reference rhf
+clean()
+
+banner('mp4')
+energy('mp4')
+compare_values(-5.58040727035, get_variable('MP4 TOTAL ENERGY'), 7, 'MP4 fnocc')
+clean()
+
 banner('mp11')
 energy('mp11')
 compare_values(-5.580830858501, get_variable('MP11 TOTAL ENERGY'), 7, "MP11 sp")
