@@ -139,12 +139,7 @@ bool UHF::test_convergency()
 {
     double ediff = E_ - Eold_;
 
-    // RMS of the density
-    Matrix Drms;
-    Drms.copy(Dt_);
-    Drms.subtract(Dtold_);
-    Drms_ = 0.5 * Drms.rms();
-
+    // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
@@ -252,23 +247,26 @@ double UHF::compute_E()
     return Etotal;
 }
 
-void UHF::save_fock()
+void UHF::compute_orbital_gradient(bool save_fock)
 {
-    SharedMatrix FDSmSDFa = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix FDSmSDFb = form_FDSmSDF(Fb_, Db_);
+    SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
+    Drms_ = 0.5*(gradient_a->rms() + gradient_b->rms());
 
-    if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
-        diis_manager_->set_error_vector_size(2,
-                                             DIISEntry::Matrix, FDSmSDFa.get(),
-                                             DIISEntry::Matrix, FDSmSDFb.get());
-        diis_manager_->set_vector_size(2,
-                                       DIISEntry::Matrix, Fa_.get(),
-                                       DIISEntry::Matrix, Fb_.get());
-        initialized_diis_manager_ = true;
+    if(save_fock){
+        if (initialized_diis_manager_ == false) {
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_->set_error_vector_size(2,
+                                                 DIISEntry::Matrix, gradient_a.get(),
+                                                 DIISEntry::Matrix, gradient_b.get());
+            diis_manager_->set_vector_size(2,
+                                           DIISEntry::Matrix, Fa_.get(),
+                                           DIISEntry::Matrix, Fb_.get());
+            initialized_diis_manager_ = true;
+        }
+
+        diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
     }
-
-    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(), Fb_.get());
 }
 
 bool UHF::diis()

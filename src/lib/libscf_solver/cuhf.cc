@@ -178,12 +178,7 @@ bool CUHF::test_convergency()
 {
     double ediff = E_ - Eold_;
 
-    // RMS of the density
-    Matrix Drms;
-    Drms.copy(Dt_);
-    Drms.subtract(Dtold_);
-    Drms_ = Drms.rms();
-
+    // Drms was already computed
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
@@ -352,28 +347,29 @@ double CUHF::compute_E()
     return Etotal;
 }
 
-void CUHF::save_fock()
+void CUHF::compute_orbital_gradient(bool save_diis)
 {
-    SharedMatrix FDSmSDFa = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix FDSmSDFb = form_FDSmSDF(Fb_, Db_);
-//    FDSmSDFa->add(FDSmSDFb);
+    SharedMatrix grad_a = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix grad_b = form_FDSmSDF(Fb_, Db_);
 
-    if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(
-            max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError,
-            DIISManager::OnDisk));
-//        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix,
-//            FDSmSDFa.get());
-        diis_manager_->set_error_vector_size(2, DIISEntry::Matrix,
-            FDSmSDFa.get(), DIISEntry::Matrix, FDSmSDFb.get());
-        diis_manager_->set_vector_size(2, DIISEntry::Matrix,
-            Fa_.get(), DIISEntry::Matrix, Fb_.get());
-        initialized_diis_manager_ = true;
+    // Store the RMS gradient for convergence checking
+    Drms_ = 0.5 * (grad_a->rms() + grad_b->rms());
+
+    if (save_diis){
+        if (initialized_diis_manager_ == false) {
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(
+                                                               max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError,
+                                                               DIISManager::OnDisk));
+            diis_manager_->set_error_vector_size(2, DIISEntry::Matrix,
+                                                 grad_a.get(), DIISEntry::Matrix, grad_b.get());
+            diis_manager_->set_vector_size(2, DIISEntry::Matrix,
+                                           Fa_.get(), DIISEntry::Matrix, Fb_.get());
+            initialized_diis_manager_ = true;
+        }
+
+        diis_manager_->add_entry(4, grad_a.get(), grad_b.get(), Fa_.get(),
+                                 Fb_.get());
     }
-
-//    diis_manager_->add_entry(3, FDSmSDFa.get(), Fa_.get(), Fb_.get());
-    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(),
-        Fb_.get());
 }
 
 bool CUHF::diis()
