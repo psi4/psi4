@@ -76,6 +76,9 @@ void HF::common_init()
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
+    current_ints_type_ = Standard;
+    df_to_direct_switch_ = 100;
+
     integral_threshold_ = options_.get_double("INTS_TOLERANCE");
 
     scf_type_ = options_.get_str("SCF_TYPE");
@@ -353,14 +356,29 @@ void HF::integrals()
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        mints->one_electron_integrals();
-        if (print_ && WorldComm->me() == 0)
-            fprintf(outfile, "  Building Direct Integral Objects...\n\n");
-//        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
-        for (int i=0; i<WorldComm->nthread(); ++i)
-             aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
-        eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
+        if(1 && current_ints_type_ == Standard){// We might also need to check that this is a serial run!
+            mints->one_electron_integrals();
+            current_ints_type_ = DFtoDirect;
+            if (print_ && WorldComm->me() == 0)
+                fprintf(outfile, "  Starting with a DF guess...\n\n");
+            energy_threshold_ *= df_to_direct_switch_;
+            density_threshold_ *= df_to_direct_switch_;
+            if(!options_["DF_BASIS_SCF"].has_changed())
+                molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+            scf_type_ = "DF";
+            options_.set_str("SCF", "SCF_TYPE","DF");
+        }else{
+            // Truly a direct calc
+            if (current_ints_type_ == Standard)
+                mints->one_electron_integrals();
+            if (print_ && WorldComm->me() == 0)
+                fprintf(outfile, "  Building Direct Integral Objects...\n\n");
+    //        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+            std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
+            for (int i=0; i<WorldComm->nthread(); ++i)
+                 aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
+            eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
+        }
     }
 
     // TODO: Relax the if statement. 
@@ -1444,7 +1462,7 @@ double HF::compute_energy()
 
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
-        fprintf(outfile, "                        Total Energy        Delta E     Density RMS\n\n");
+        fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
     }
     fflush(outfile);
 
@@ -1484,7 +1502,6 @@ double HF::compute_energy()
 	// compute 1e contributions
 	//}
 
-        E_ = compute_E();
 
 	// XXX
 	//if (has_efp) {
@@ -1494,8 +1511,11 @@ double HF::compute_energy()
 	//}
 
         timer_on("DIIS");
+        bool add_to_diis_subspace = false;
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-            save_fock();
+            add_to_diis_subspace = true;
+
+        compute_orbital_gradient(add_to_diis_subspace);
 
         if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
             diis_performed_ = diis();
@@ -1531,13 +1551,7 @@ double HF::compute_energy()
             status += "FRAC";
         }
 
-        if (WorldComm->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
-                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-            fflush(outfile);
-        }
 
-        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         timer_on("Form C");
         form_C();
@@ -1545,6 +1559,9 @@ double HF::compute_energy()
         timer_on("Form D");
         form_D();
         timer_off("Form D");
+
+        E_ = compute_E();
+        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         // After we've built the new D, damp the update if
         if(damping_performed_) damp_update();
@@ -1557,6 +1574,30 @@ double HF::compute_energy()
         }
 
         converged = test_convergency();
+
+        if (WorldComm->me() == 0) {
+            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
+                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
+            fflush(outfile);
+        }
+
+        // Check to see if we need to switch over to direct integrals
+        if(converged && (current_ints_type_ == DFtoDirect)){
+            // Reset convergence info, to the original settings
+            converged = false;
+            energy_threshold_ /= df_to_direct_switch_;
+            density_threshold_ /= df_to_direct_switch_;
+            if (print_ && WorldComm->me() == 0)
+                fprintf(outfile, "  DF guess converged!\n");
+            // Get all the integrals back to normal
+            current_ints_type_ = SwitchedToDirect;
+            scf_type_ = "DIRECT";
+            options_.set_str("SCF", "SCF_TYPE","DIRECT");
+            if(initialized_diis_manager_)
+                diis_manager_->reset_subspace();
+            integrals();
+        }
+
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
 

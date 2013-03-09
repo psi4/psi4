@@ -189,23 +189,26 @@ void RHF::save_information()
 {
 }
 
-void RHF::save_fock()
+void RHF::compute_orbital_gradient(bool save_fock)
 {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
-    SharedMatrix FDSmSDF = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
+    Drms_ = gradient->rms();
 
-    if (initialized_diis_manager_ == false) {
-        if (scf_type_ == "direct")
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
-        else
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
-        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, FDSmSDF.get());
-        diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
-        initialized_diis_manager_ = true;
+    if(save_fock){
+        if (initialized_diis_manager_ == false) {
+            if (scf_type_ == "direct")
+                diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
+            else
+                diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
+            diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
+            initialized_diis_manager_ = true;
+        }
+        diis_manager_->add_entry(2, gradient.get(), Fa_.get());
     }
-
-    diis_manager_->add_entry(2, FDSmSDF.get(), Fa_.get());
 }
+
 
 bool RHF::diis()
 {
@@ -217,12 +220,7 @@ bool RHF::test_convergency()
     // energy difference
     double ediff = E_ - Eold_;
 
-    // RMS of the density
-    Matrix D_rms;
-    D_rms.copy(D_);
-    D_rms.subtract(Dold_);
-    Drms_ = D_rms.rms();
-
+    // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else

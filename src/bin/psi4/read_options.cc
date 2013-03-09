@@ -929,13 +929,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Convergence & Algorithm <table:conv_scf>` for default convergence
     criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. In practice, the SCF energy
-    will be good to 1-4 more than this number of digits. (This means that
-    |scf__d_convergence| = 11 is overkill and will approach machine
-    precision.) See Table :ref:`SCF Convergence & Algorithm
+    /*- Convergence criterion for SCF density, which is defined as the RMS
+    value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("D_CONVERGENCE", 1e-6);
+    options.add_double("D_CONVERGENCE", 1e-8);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's

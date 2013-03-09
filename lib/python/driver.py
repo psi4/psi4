@@ -495,9 +495,9 @@ def energy(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
         if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
-            else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            else:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         returnvalue = procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
@@ -601,9 +601,9 @@ def gradient(name, **kwargs):
             PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
@@ -852,9 +852,9 @@ def property(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
         if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
@@ -1270,9 +1270,9 @@ def frequency(name, **kwargs):
             PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Does an analytic procedure exist for the requested method?
     if (dertype == 2 and func_existed == False):
