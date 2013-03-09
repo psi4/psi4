@@ -64,15 +64,16 @@ static size_t name_len(const char *name)
 	return is_lib(name) ? strlen(name) - 2 : strlen(name);
 }
 
-void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *userlib_path)
-{
+void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *userlib_path) {
+    enum efp_result res;
 	int i, n_uniq;
 	const char **uniq = new const char*[nfrag_];
 	char path[256];
 
-	for (i = 0; i < nfrag_; i++)
+	for (i = 0; i < nfrag_; i++) {
 		uniq[i] = options_["FRAGS"][i].to_string().c_str();
-
+        printf("1 uniq %s = %s \n", uniq[i], options_["FRAGS"][i].to_string().c_str());
+}
 	qsort(uniq, nfrag_, sizeof(char *), string_compare);
 
 	for (i = 1, n_uniq = 1; i < nfrag_; i++)
@@ -82,16 +83,19 @@ void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *
 	for (i = 0; i < n_uniq; i++) {
 		const char *prefix = is_lib(uniq[i]) ? fraglib_path : userlib_path;
 		char name[256];
+        printf("2 uniq %s\n", uniq[i]);
 
 		strcpy(name, uniq[i]);
 
 		for (char *p = name; *p; p++)
 			*p = tolower(*p);
 
+        printf("fraglib_path %s userlib_path %s name %s\n", fraglib_path, userlib_path, name);
+
 		strcat(strncat(strcat(strcpy(path, prefix), "/"), name,
 			name_len(name)), ".efp");
-		if (efp_add_potential(efp, path))
-			throw PsiException("efp", __FILE__, __LINE__);
+		if (res = efp_add_potential(efp, path))
+            throw PsiException("EFP::add_potentials(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 	}
 
 	delete[] uniq;
@@ -151,14 +155,16 @@ void EFP::common_init() {
     if (!efp_)
 		throw PsiException("efp", __FILE__, __LINE__);
 
-    if (efp_set_opts(efp_, &opts))
-		throw PsiException("efp", __FILE__, __LINE__);
+    if (res = efp_set_opts(efp_, &opts))
+        throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
 	add_potentials(efp_, fraglib_path.c_str(), ".");
 
-	for (int i = 0; i < nfrag_; i++)
-		if (efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
-			throw PsiException("efp", __FILE__, __LINE__);
+	for (int i = 0; i < nfrag_; i++) {
+        fprintf(outfile, "initializing fragment %s\n", options_["FRAGS"][i].to_string().c_str());
+        if (res = efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
+            throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)) + " " + options_["FRAGS"][i].to_string(),__FILE__,__LINE__);
+    }
 
     fprintf(outfile, "  ==> Calculation Information <==\n\n");
     fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
@@ -188,10 +194,8 @@ void EFP::set_coordinates(int type, double * coords) {
     else if(type == 2)
         ctype = EFP_COORD_TYPE_ROTMAT;
 
-    if ((res = efp_set_coordinates(efp_, ctype, coords))) {
-        fprintf(outfile, "%s", efp_result_to_string(res));
-        throw PsiException("efp",__FILE__,__LINE__);
-    }
+    if ((res = efp_set_coordinates(efp_, ctype, coords)))
+        throw PsiException("EFP::set_coordinates(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 }
 
 /*
@@ -208,15 +212,13 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
     else if(type == 2)
         ctype = EFP_COORD_TYPE_ROTMAT;
 
-    if ((res = efp_set_frag_coordinates(efp_, frag_idx, ctype, coords))) {
-        fprintf(outfile, "%s", efp_result_to_string(res));
-        throw PsiException("efp",__FILE__,__LINE__);
-    }
+    if ((res = efp_set_frag_coordinates(efp_, frag_idx, ctype, coords)))
+        throw PsiException("EFP::set_frag_coordinates(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 }
 
 
 void EFP::SetGeometry(){
-/*
+
        enum efp_result res;
        fprintf(outfile, "\n\n");
        fprintf(outfile, "%s", efp_banner());
@@ -269,11 +271,9 @@ void EFP::SetGeometry(){
         xyz->print();
        }
 
-       if ((res = efp_set_coordinates(efp_, EFP_COORD_TYPE_POINTS, coords))) {
-	       fprintf(outfile, "%s", efp_result_to_string(res));
-	       throw PsiException("efp",__FILE__,__LINE__);
-       }
-*/
+       if ((res = efp_set_coordinates(efp_, EFP_COORD_TYPE_POINTS, coords)))
+           throw PsiException("EFP::SetGeometry: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
 } // end of SetGeometry()
 
 // this function returns a shared matrix containing the efp contribution to the potential
@@ -367,10 +367,16 @@ boost::shared_ptr<Matrix> EFP::modify_Fock() {
     return V;
 }
 
-// compute efp contribution to scf energy
+/**
+ * compute efp contribution to scf energy
+ */
 double EFP::scf_energy_update() {
+    enum efp_result res;
     double efp_energy;
-    efp_get_wavefunction_dependent_energy(efp_, &efp_energy);
+
+    if (res = efp_get_wavefunction_dependent_energy(efp_, &efp_energy))
+        throw PsiException("EFP::scf_energy_update: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
     return efp_energy;
 }
 
@@ -382,24 +388,18 @@ void EFP::Compute() {
     double *grad = NULL;
     
     // Main EFP computation routine 
-    if ((res = efp_compute(efp_, do_grad_ ? 1 : 0))) {
-        fprintf(outfile, "%s", efp_result_to_string(res));
-        throw PsiException("efp",__FILE__,__LINE__);
-    }
+    if (res = efp_compute(efp_, do_grad_ ? 1 : 0))
+        throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     
     struct efp_energy energy;
     
-    if ((res = efp_get_energy(efp_, &energy))) {
-        fprintf(outfile, "%s", efp_result_to_string(res));
-        throw PsiException("efp",__FILE__,__LINE__);
-    }
+    if (res = efp_get_energy(efp_, &energy))
+        throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     
     if (do_grad_) {
         grad = new double[6 * nfrag_];
-        if ((res = efp_get_gradient(efp_, nfrag_, grad))) {
-            fprintf(outfile, "%s", efp_result_to_string(res));
-            throw PsiException("efp",__FILE__,__LINE__);
-        }
+        if (res = efp_get_gradient(efp_, nfrag_, grad))
+            throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
         fprintf(outfile, "  ==> EFP Gradient <==\n\n");
 
@@ -451,9 +451,12 @@ int EFP::get_frag_count(void) {
  * Get number of atoms in a fragment
  */
 int EFP::get_frag_atom_count(int frag_idx) {
-    int n=0;
     enum efp_result res;
-    res = efp_get_frag_atom_count(efp_, frag_idx, &n);
+    int n=0;
+
+    if (res = efp_get_frag_atom_count(efp_, frag_idx, &n))
+        throw PsiException("EFP::get_frag_atom_count: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
     return n;
 }
 
