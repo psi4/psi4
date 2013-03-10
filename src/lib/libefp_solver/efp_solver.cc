@@ -38,6 +38,7 @@ namespace psi { namespace efp {
 EFP::EFP(Options& options): options_(options) 
 {
 	common_init();
+    //common_init2();
 }
 
 EFP::~EFP(){
@@ -72,6 +73,8 @@ void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *
 
 	for (i = 0; i < nfrag_; i++) {
 		uniq[i] = options_["FRAGS"][i].to_string().c_str();
+        printf("0 uniq %s\n", uniq[i]);
+        printf("0 uniq %s\n", uniq[i]);
         printf("1 uniq %s = %s \n", uniq[i], options_["FRAGS"][i].to_string().c_str());
 }
 	qsort(uniq, nfrag_, sizeof(char *), string_compare);
@@ -94,7 +97,7 @@ void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *
 
 		strcat(strncat(strcat(strcpy(path, prefix), "/"), name,
 			name_len(name)), ".efp");
-		if (res = efp_add_potential(efp, path))
+        if (res = efp_add_potential(efp, path))
             throw PsiException("EFP::add_potentials(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 	}
 
@@ -160,12 +163,6 @@ void EFP::common_init() {
 
 	add_potentials(efp_, fraglib_path.c_str(), ".");
 
-	for (int i = 0; i < nfrag_; i++) {
-        fprintf(outfile, "initializing fragment %s\n", options_["FRAGS"][i].to_string().c_str());
-        if (res = efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
-            throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)) + " " + options_["FRAGS"][i].to_string(),__FILE__,__LINE__);
-    }
-
     fprintf(outfile, "  ==> Calculation Information <==\n\n");
     fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
 
@@ -175,9 +172,30 @@ void EFP::common_init() {
     fprintf(outfile, "\n");
 }
 
+void EFP::common_init2() {
+   enum efp_result res;
+
+	for (int i = 0; i < nfrag_; i++) {
+        fprintf(outfile, "initializing fragment %s\n", options_["FRAGS"][i].to_string().c_str());
+        if (res = efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
+            throw PsiException("EFP::common_init2(): " + std::string (efp_result_to_string(res)) + " " + options_["FRAGS"][i].to_string(),__FILE__,__LINE__);
+    }
+}
+
 // Provid list of coordinates of quantum mechanical atoms
 void EFP::SetQMAtoms(){
 // TODO: extend molecule class and coordentry class to separate qm and efp atoms
+}
+
+/**
+ * Add fragment by name
+ */
+void EFP::add_fragment(std::string fname) {
+    enum efp_result res;
+
+    fprintf(outfile, "new initializing fragment %s\n", fname.c_str());
+    if (res = efp_add_fragment(efp_, fname.c_str()))
+        throw PsiException("EFP::add_fragment(): " + std::string (efp_result_to_string(res)) + fname,__FILE__,__LINE__);
 }
 
 /**
