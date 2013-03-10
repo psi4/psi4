@@ -45,14 +45,6 @@ EFP::~EFP(){
 	efp_shutdown(efp_);
 }
 
-static int string_compare(const void *a, const void *b)
-{
-       const char *s1 = *(const char **)a;
-       const char *s2 = *(const char **)b;
-
-       return strcmp(s1, s2);
-}
-
 static bool is_lib(const char *name)
 {
 	size_t len = strlen(name);
@@ -63,45 +55,6 @@ static bool is_lib(const char *name)
 static size_t name_len(const char *name)
 {
 	return is_lib(name) ? strlen(name) - 2 : strlen(name);
-}
-
-void EFP::add_potentials(struct efp *efp, const char *fraglib_path, const char *userlib_path) {
-    enum efp_result res;
-	int i, n_uniq;
-	const char **uniq = new const char*[nfrag_];
-	char path[256];
-
-	for (i = 0; i < nfrag_; i++) {
-		uniq[i] = options_["FRAGS"][i].to_string().c_str();
-        printf("0 uniq %s\n", uniq[i]);
-        printf("0 uniq %s\n", uniq[i]);
-        printf("1 uniq %s = %s \n", uniq[i], options_["FRAGS"][i].to_string().c_str());
-}
-	qsort(uniq, nfrag_, sizeof(char *), string_compare);
-
-	for (i = 1, n_uniq = 1; i < nfrag_; i++)
-		if (strcmp(uniq[i - 1], uniq[i]) != 0)
-			uniq[n_uniq++] = uniq[i];
-
-	for (i = 0; i < n_uniq; i++) {
-		const char *prefix = is_lib(uniq[i]) ? fraglib_path : userlib_path;
-		char name[256];
-        printf("2 uniq %s\n", uniq[i]);
-
-		strcpy(name, uniq[i]);
-
-		for (char *p = name; *p; p++)
-			*p = tolower(*p);
-
-        printf("fraglib_path %s userlib_path %s name %s\n", fraglib_path, userlib_path, name);
-
-		strcat(strncat(strcat(strcpy(path, prefix), "/"), name,
-			name_len(name)), ".efp");
-        if (res = efp_add_potential(efp, path))
-            throw PsiException("EFP::add_potentials(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
-	}
-
-	delete[] uniq;
 }
 
 void EFP::common_init() {
