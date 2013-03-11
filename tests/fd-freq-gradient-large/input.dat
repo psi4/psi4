@@ -78,7 +78,7 @@ set globals {
 
 frequencies('scf', dertype=1)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
 compare_vectors(anal_freqs, fd_freqs, 1, "C4NH4 frequencies by gradients (3-pt.) to 0.1 cm^-1") #TEST
 del fd_freqs #TEST
 
@@ -90,7 +90,7 @@ set findif {
 
 frequencies('scf', dertype=1, irrep=2)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
 compare_vectors(a2_freqs, fd_freqs, 3, "C4NH4 frequencies (A2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 
@@ -98,7 +98,7 @@ del fd_freqs #TEST
 
 frequencies('scf', dertype=1, irrep=4)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+fd_freqs = PsiMod.wavefunction().frequencies() #TEST
 compare_vectors(b2_freqs, fd_freqs, 3, "C4NH4 frequencies (B2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 

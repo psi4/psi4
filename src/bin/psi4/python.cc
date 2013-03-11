@@ -942,7 +942,7 @@ int py_psi_get_me()
     return WorldComm->me();
 }
 
-boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()
+boost::shared_ptr<Wavefunction> py_psi_wavefunction()
 {
     return Process::environment.wavefunction();
 }
@@ -1019,7 +1019,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    def("reference_wavefunction", py_psi_reference_wavefunction, "Returns the current wavefunction object, from the most recent computation.");
+    def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
     def("set_memory", py_psi_set_memory, "Sets the memory available to Psi (in bytes).");

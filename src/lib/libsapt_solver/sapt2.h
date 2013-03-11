@@ -78,6 +78,7 @@ protected:
   void w_integrals();
 
   double **get_DF_ints(int, const char *, int, int, int, int);
+  double **get_DF_ints_nongimp(int, const char *, int, int, int, int);
   void antisym(double *, int, int);
   void antisym(double **, int, int);
 

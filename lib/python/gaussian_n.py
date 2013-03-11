@@ -42,7 +42,7 @@ def run_gaussian_2(name, **kwargs):
     dh = PsiMod.get_variable('ENTHALPY CORRECTION')
     dg = PsiMod.get_variable('GIBBS FREE ENERGY CORRECTION')
 
-    ref     = PsiMod.reference_wavefunction()
+    ref     = PsiMod.wavefunction()
     freqs   = ref.frequencies()
     nfreq   = freqs.dim(0)
     freqsum = 0.0
@@ -64,7 +64,7 @@ def run_gaussian_2(name, **kwargs):
     run_fnocc('qcisd(t)',**kwargs)
 
     # HLC: high-level correction based on number of valence electrons
-    ref    = PsiMod.reference_wavefunction()
+    ref    = PsiMod.wavefunction()
     nirrep = ref.nirrep()
     frzcpi = ref.frzcpi()
     nfzc = 0

@@ -15,7 +15,9 @@ SAPT2p3::SAPT2p3(Options& options, boost::shared_ptr<PSIO> psio,
   e_disp30_(0.0),
   e_exch_disp30_(0.0),
   e_sapt2pp3_(0.0),
-  e_sapt2p3_(0.0)
+  e_sapt2p3_(0.0),
+  e_sapt2pp3_ccd_(0.0),
+  e_sapt2p3_ccd_(0.0)
 {
   third_order_ = options_.get_bool("DO_THIRD_ORDER");
 }
@@ -79,6 +81,18 @@ double SAPT2p3::compute_energy()
   timer_on("Disp22 (T)         ");
     disp22t();
   timer_off("Disp22 (T)         ");
+
+  if (ccd_disp_) {
+
+  timer_on("Disp2(CCD)         ");
+    disp2ccd();
+  timer_off("Disp2(CCD)         ");
+  timer_on("Disp22 (T) (CCD)   ");
+    disp22tccd();
+  timer_off("Disp22 (T) (CCD)   ");
+
+  }
+
   timer_on("Elst13             ");
     elst13();
   timer_off("Elst13             ");
@@ -117,6 +131,8 @@ void SAPT2p3::print_header()
     fprintf(outfile,"       SAPT2+3   \n");
   else
     fprintf(outfile,"      SAPT2+(3)  \n");
+  if (ccd_disp_) 
+    fprintf(outfile,"    CCD+(ST) Disp   \n");
   fprintf(outfile,"    Ed Hohenstein\n") ;
   fprintf(outfile,"     6 June 2009\n") ;
   fprintf(outfile,"\n");
@@ -201,6 +217,22 @@ void SAPT2p3::print_results()
       + e_disp22t_ + e_disp30_ + e_exch_disp30_ + e_ind_disp30_ 
       + e_exch_ind_disp30_;
 
+  if (ccd_disp_) {
+    tot_disp = 0.0;
+    if (nat_orbs_)
+      tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_est_disp22t_ccd_;
+    else
+      tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_disp22t_ccd_;
+
+    tot_disp += e_disp30_ + e_exch_disp30_ + e_ind_disp30_ + e_exch_ind_disp30_;
+
+    e_sapt2p3_ccd_ = tot_elst + tot_exch + tot_ind + tot_disp;
+    e_sapt2pp3_ccd_ = e_sapt2p3_ccd_ - e_exch_disp30_ - e_ind_disp30_ 
+    - e_exch_ind_disp30_;
+    e_sapt2p_ccd_ = e_sapt2pp3_ccd_ - e_elst13_ - e_disp30_;
+  }
+
+
   fprintf(outfile,"\n    SAPT Results  \n");
   fprintf(outfile,"  --------------------------------------------------------------------------\n");
   fprintf(outfile,"    Electrostatics        %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -257,6 +289,17 @@ void SAPT2p3::print_results()
   if (nat_orbs_)
     fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
       e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
+  if (ccd_disp_) {
+    fprintf(outfile,"      Disp2 (CCD)         %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp2d_ccd_*1000.0,e_disp2d_ccd_*pc_hartree2kcalmol);
+    fprintf(outfile,"      Disp22 (S) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
+    fprintf(outfile,"      Disp22 (T) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
+    if (nat_orbs_)
+      fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
+        e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
+  }
   fprintf(outfile,"      Exch-Disp20         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_disp20_*1000.0,e_exch_disp20_*pc_hartree2kcalmol);
   if (third_order_) {
@@ -281,6 +324,15 @@ void SAPT2p3::print_results()
   if (third_order_)
     fprintf(outfile,"    Total SAPT2+3         %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2p3_*1000.0,e_sapt2p3_*pc_hartree2kcalmol);
+  if (ccd_disp_) {
+    fprintf(outfile,"    Total SAPT2+(CCD)     %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_sapt2p_ccd_*1000.0,e_sapt2p_ccd_*pc_hartree2kcalmol);
+    fprintf(outfile,"    Total SAPT2+(3)(CCD)  %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_sapt2pp3_ccd_*1000.0,e_sapt2pp3_ccd_*pc_hartree2kcalmol);
+    if (third_order_)
+      fprintf(outfile,"    Total SAPT2+3(CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
+        e_sapt2p3_ccd_*1000.0,e_sapt2p3_ccd_*pc_hartree2kcalmol);
+  }
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
@@ -298,6 +350,16 @@ void SAPT2p3::print_results()
     Process::environment.globals["SAPT ENERGY"] = e_sapt2pp3_;
   }
   Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+
+  if (ccd_disp_) {
+      Process::environment.globals["SAPT SAPT2+(CCD) ENERGY"] = e_sapt2p_ccd_;
+      Process::environment.globals["SAPT SAPT2+(3)(CCD) ENERGY"] = e_sapt2pp3_ccd_;
+      if (third_order_) {
+        Process::environment.globals["SAPT SAPT2+3(CCD) ENERGY"] = e_sapt2p3_ccd_;
+      }
+      Process::environment.globals["SAPT ENERGY"] = e_sapt2p3_ccd_;
+      Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+  }
 }
 
 }}
