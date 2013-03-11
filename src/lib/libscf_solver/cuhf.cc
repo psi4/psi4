@@ -38,6 +38,8 @@
 #include <physconst.h>
 #include "integralfunctors.h"
 
+#include <libefp_solver/efp_solver.h>
+
 #include "cuhf.h"
 
 using namespace std;
@@ -285,7 +287,7 @@ void CUHF::form_F()
     Fb_->subtract(Fm_);
 
     // add efp contribuation to Fock matrix
-    if ( Process::environment.get_efp() ) {
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
     }
 
     if (debug_) {

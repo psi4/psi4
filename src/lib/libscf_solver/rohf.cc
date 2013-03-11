@@ -38,6 +38,8 @@
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
+#include <libefp_solver/efp_solver.h>
+
 #include <libmints/view.h>
 #include "rohf.h"
 #include <psi4-dec.h>
@@ -340,7 +342,7 @@ void ROHF::form_F()
     Fb_->add(Gb_);
 
     // add efp contribuation to Fock matrix
-    if ( Process::environment.get_efp() ) {
+    if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
     }
 
     moFa_->transform(Fa_, Ca_);
