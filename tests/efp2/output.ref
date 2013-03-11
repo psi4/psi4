@@ -1,0 +1,226 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta2+ Driver
+
+               Git: Rev f6f835d45adc8fab9eb967087829577ea0284441
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  91622
+    PSI4DATADIR: /Users/loriab/linux/psihub/efp/psi4/objdir/../lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+# Problem: The EFP is initialized through PsiMod calls in run_efp and this
+# ensures that it gets its options object, not libmints or scf or whatever
+# else might construct the EFP object. So, run_efp in proc.py calls
+# PsiMod.efp_init() which calls py_psi_efp_init in python.cc that calls
+# efp_init() in src/bin/efp/efp.cc that calls common_init() in
+# src/lib/libefp_solver.cc (that, for the moment, needs FRAGS option already
+# set). However, by the time run_efp is launched the molecule has already
+# been processed, and the molecule needs to be able to grab the EFP object
+# through Process::environment.get_efp() in order to interact with libefp
+# and have a geometry waiting.
+# 
+# Temporary Solution: If you just have a regular molecule in an input file
+# that involved efp fragments, you will get the dreaded null pointer
+# (Assertion failed: (px != 0)). Two routes around this are below.
+
+
+molecule efp_spec {
+efp nh3_l 0.0 0.0 5.0 5 2 8
+--
+C  0.0 0.0 0.0  # H2O 
+O  0.0 1.5 0.0
+O  0.0 -1.5 0.0
+ --
+ efp h2o_l 5.0 0.0 0.0 5 2 8
+--
+He  -3.0 4.0 4.0
+He  -4.0 5.0 4.0
+ --
+efp ch3oh_l
+  1.275    -2.447    -4.673  # CH3OH
+  0.709    -3.191    -3.592
+  2.213    -1.978    -4.343
+no_reorient
+no_com
+}
+
+
+set basis sto-3g
+set efp print 1
+
+energy('efp')
+efp_spec.print_out()
+compare_values(242.328172712, efp_spec.nuclear_repulsion_energy(), 6, "EFP/QM Nuclear Repulsion Energy")
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'EFP/QM EFP Energy Total')  #TEST
+
+
+print efp_spec.nfragments()
+mol2 = efp_spec.extract_subsets(3)
+mol2.print_out()
+mol3 = efp_spec.extract_subsets(3,1)
+mol3.print_out()
+
+clean()
+
+
+molecule qm_spec {
+   N          0.055087421049     0.016295570630     5.026291100413
+   H          0.128381862929    -0.867016598067     4.565266551994
+   H         -0.231534750913     0.694847776341     4.351331300536
+   H         -0.662250798092    -0.054247485525     5.718104392084
+  --
+   C          0.000000000000     0.000000000000     0.000000000000
+   O          0.000000000000     1.500000000000     0.000000000000
+   O          0.000000000000    -1.500000000000     0.000000000000
+  --
+   O          4.985970698852     0.060880395590    -0.008339048709
+   H          5.439543656881    -0.500219144764    -0.610928026599
+   H          4.783111475858    -0.465996664447     0.743274747047
+  --
+  HE         -3.000000000000     4.000000000000     4.000000000000
+  HE         -4.000000000000     5.000000000000     4.000000000000
+  --
+   C          1.275000000000    -2.447000000000    -4.673000000000
+   O          0.721394541673    -3.174707528260    -3.615672260686
+   H          2.206087840006    -1.965868836036    -4.388715152432
+   H          0.563480535789    -1.680500500091    -4.943609736417
+   H          1.454294320520    -3.071335831769    -5.543220624398
+   H          1.308836138839    -3.855272557763    -3.346605816112
+no_reorient
+no_com
+}
+
+energy('efp')
+qm_spec.print_out()
+compare_values(242.328172712, qm_spec.nuclear_repulsion_energy(), 6, "QM Nuclear Repulsion Energy")
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'QM EFP Energy Total')  #TEST
+
+--------------------------------------------------------------------------
+
+
+LIBEFP ver. 0.9.8-beta
+Copyright (c) 2012-2013 Ilya Kaliman
+Project web site: http://www.libefp.org/
+
+
+  ==> Calculation Information <==
+
+  Electrostatics damping:       SCREEN
+  Dispersion damping:          OVERLAP
+  Electrostatics enabled:             1
+  Polarization enabled:               1
+  Dispersion enabled:                 1
+  Exchanged enabled:                  1
+  Gradient enabled:                   0
+
+
+  ==> Energetics <==
+
+  Electrostatics Energy =       0.0000849321010225 [H] *
+  Polarization Energy =        -0.0000050580150308 [H] *
+  Dispersion Energy =          -0.0000525362748749 [H] *
+  Exchange Energy =             0.0000002051312396 [H] *
+  Total Energy =                0.0000275429423564 [H] *
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N          0.055087421049     0.016295570630     5.026291100413
+           H          0.128381862929    -0.867016598067     4.565266551994
+           H         -0.231534750913     0.694847776341     4.351331300536
+           H         -0.662250798092    -0.054247485525     5.718104392084
+           C          0.000000000000     0.000000000000     0.000000000000
+           O          0.000000000000     1.500000000000     0.000000000000
+           O          0.000000000000    -1.500000000000     0.000000000000
+           O          4.985970698852     0.060880395590    -0.008339048709
+           H          5.439543656881    -0.500219144764    -0.610928026599
+           H          4.783111475858    -0.465996664447     0.743274747047
+          HE         -3.000000000000     4.000000000000     4.000000000000
+          HE         -4.000000000000     5.000000000000     4.000000000000
+           C          1.275000000000    -2.447000000000    -4.673000000000
+           O          0.721394541673    -3.174707528260    -3.615672260686
+           H          2.206087840006    -1.965868836036    -4.388715152432
+           H          0.563480535789    -1.680500500091    -4.943609736417
+           H          1.454294320520    -3.071335831769    -5.543220624398
+           H          1.308836138839    -3.855272557763    -3.346605816112
+
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          4.985970698852     0.060880395590    -0.008339048709
+           H          5.439543656881    -0.500219144764    -0.610928026599
+           H          4.783111475858    -0.465996664447     0.743274747047
+
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N(Gh)      0.055087421049     0.016295570630     5.026291100413
+           H(Gh)      0.128381862929    -0.867016598067     4.565266551994
+           H(Gh)     -0.231534750913     0.694847776341     4.351331300536
+           H(Gh)     -0.662250798092    -0.054247485525     5.718104392084
+           O          4.985970698852     0.060880395590    -0.008339048709
+           H          5.439543656881    -0.500219144764    -0.610928026599
+           H          4.783111475858    -0.465996664447     0.743274747047
+
+  ==> Energetics <==
+
+  Electrostatics Energy =       0.0000849321010225 [H] *
+  Polarization Energy =        -0.0000050580150308 [H] *
+  Dispersion Energy =          -0.0000525362748749 [H] *
+  Exchange Energy =             0.0000002051312396 [H] *
+  Total Energy =                0.0000275429423564 [H] *
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           N          0.055087421049     0.016295570630     5.026291100413
+           H          0.128381862929    -0.867016598067     4.565266551994
+           H         -0.231534750913     0.694847776341     4.351331300536
+           H         -0.662250798092    -0.054247485525     5.718104392084
+           C          0.000000000000     0.000000000000     0.000000000000
+           O          0.000000000000     1.500000000000     0.000000000000
+           O          0.000000000000    -1.500000000000     0.000000000000
+           O          4.985970698852     0.060880395590    -0.008339048709
+           H          5.439543656881    -0.500219144764    -0.610928026599
+           H          4.783111475858    -0.465996664447     0.743274747047
+          HE         -3.000000000000     4.000000000000     4.000000000000
+          HE         -4.000000000000     5.000000000000     4.000000000000
+           C          1.275000000000    -2.447000000000    -4.673000000000
+           O          0.721394541673    -3.174707528260    -3.615672260686
+           H          2.206087840006    -1.965868836036    -4.388715152432
+           H          0.563480535789    -1.680500500091    -4.943609736417
+           H          1.454294320520    -3.071335831769    -5.543220624398
+           H          1.308836138839    -3.855272557763    -3.346605816112
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

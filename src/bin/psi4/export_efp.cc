@@ -14,7 +14,8 @@ void export_efp()
     class_<EFP, boost::shared_ptr<EFP> >("EFP", "docstring", no_init).
         def(init<Options&>()).
         def("Compute", &EFP::Compute, "docstring").
-        def("SetQMAtoms", &EFP::SetQMAtoms, "docstring");
+        def("SetQMAtoms", &EFP::SetQMAtoms, "docstring").
+        def("print_out", &EFP::print_out, "docstring");
         //def("SetGeometry", &EFP::SetGeometry, "docstring");
 }
 

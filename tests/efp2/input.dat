@@ -14,54 +14,19 @@
 # (Assertion failed: (px != 0)). Two routes around this are below.
 
 
-# ==> Solution 1 <==
-
-# This is an imposter molecule/calc for the code to pass
-#   through to get EFP properly initialized
-#molecule {
-#O 0.0 0.0 0.0 
-#H 0.0 1.0 0.0
-#H 0.0 0.0 1.0
-#--
-#O 4.0 0.0 0.0 
-#H 4.0 1.0 0.0
-#H 4.0 0.0 1.0
-#--              # RULE 1: imposter molecule must have same
-#                #   number of fragments as target molecule
-#O 7.0 0.0 0.0 
-#H 7.0 1.0 0.0
-#H 7.0 0.0 1.0
-#}
-#
-#set basis sto-3g
-#set frags ['h2o_l', 'h2o_l','ch3oh_l']  # RULE 2: These frags are right for
-#                                        #   the target molecule/calc below
-#
-#energy('efpmol')  # RULE 3: run efp here so Process::environment.get_efp() not NULL
-#clean()
-
-
-# ==> Solution 2 <==
-
-set frags ['h2o_l', 'h2o_l','ch3oh_l']  # RULE 2: These frags are right for
-                                        #   the target molecule/calc below
-efpinit()
-
-
-# ==> Target Calc <==
-
 molecule efp_spec {
- efp h2o_l
-  0.0 0.0 0.0  # H2O 
- -1.0 0.0 0.0
-  0.0 1.0 0.0
+efp nh3_l 0.0 0.0 5.0 5 2 8
+--
+C  0.0 0.0 0.0  # H2O 
+O  0.0 1.5 0.0
+O  0.0 -1.5 0.0
  --
- efp h2o_l
-  4.0 4.0 4.0  # H2O
-  3.0 4.0 4.0
-  4.0 5.0 4.0
+ efp h2o_l 5.0 0.0 0.0 5 2 8
+--
+He  -3.0 4.0 4.0
+He  -4.0 5.0 4.0
  --
- efp ch3oh_l
+efp ch3oh_l
   1.275    -2.447    -4.673  # CH3OH
   0.709    -3.191    -3.592
   2.213    -1.978    -4.343
@@ -70,18 +35,53 @@ no_com
 }
 
 
-set {
-  basis sto-3g
-  efp_disp no
-  efp_exch no
-  frags ['h2o_l', 'h2o_l', 'ch3oh_l']
-}
+set basis sto-3g
+set efp print 1
 
-set efp {
-  print 1
-}
+energy('efp')
+efp_spec.print_out()
+compare_values(242.328172712, efp_spec.nuclear_repulsion_energy(), 6, "EFP/QM Nuclear Repulsion Energy")
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'EFP/QM EFP Energy Total')  #TEST
 
-energy('efpmol')
-#compare_values(-0.006608, get_variable('CURRENT ENERGY'), 6, 'EFP Total')  #TEST
+
+print efp_spec.nfragments()
+mol2 = efp_spec.extract_subsets(3)
+mol2.print_out()
+mol3 = efp_spec.extract_subsets(3,1)
+mol3.print_out()
+
 clean()
+
+
+molecule qm_spec {
+   N          0.055087421049     0.016295570630     5.026291100413
+   H          0.128381862929    -0.867016598067     4.565266551994
+   H         -0.231534750913     0.694847776341     4.351331300536
+   H         -0.662250798092    -0.054247485525     5.718104392084
+  --
+   C          0.000000000000     0.000000000000     0.000000000000
+   O          0.000000000000     1.500000000000     0.000000000000
+   O          0.000000000000    -1.500000000000     0.000000000000
+  --
+   O          4.985970698852     0.060880395590    -0.008339048709
+   H          5.439543656881    -0.500219144764    -0.610928026599
+   H          4.783111475858    -0.465996664447     0.743274747047
+  --
+  HE         -3.000000000000     4.000000000000     4.000000000000
+  HE         -4.000000000000     5.000000000000     4.000000000000
+  --
+   C          1.275000000000    -2.447000000000    -4.673000000000
+   O          0.721394541673    -3.174707528260    -3.615672260686
+   H          2.206087840006    -1.965868836036    -4.388715152432
+   H          0.563480535789    -1.680500500091    -4.943609736417
+   H          1.454294320520    -3.071335831769    -5.543220624398
+   H          1.308836138839    -3.855272557763    -3.346605816112
+no_reorient
+no_com
+}
+
+energy('efp')
+qm_spec.print_out()
+compare_values(242.328172712, qm_spec.nuclear_repulsion_energy(), 6, "QM Nuclear Repulsion Energy")
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'QM EFP Energy Total')  #TEST
 

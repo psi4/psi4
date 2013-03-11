@@ -84,6 +84,9 @@ class EFP {
 
         /// Returns multiplicity for a given fragment
         int get_frag_multiplicity(int frag_idx);
+
+        /// Prints private members of efp object
+        void print_out(void);
 };
 
 }
