@@ -1501,7 +1501,7 @@ double HF::compute_energy()
         E_ = compute_E();
 
         // add efp contribuation to energy
-        if ( Process::environment.get_efp() ) {
+        if ( Process::environment.get_efp()->get_frag_count() > 0 ) {
 	    double efp_energy = Process::environment.get_efp()->scf_energy_update();
 	    //fprintf(outfile,"    EFP SCF energy contribution: %20.12lf\n",efp_energy);
 	    E_ += efp_energy;

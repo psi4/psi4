@@ -44,7 +44,7 @@ compare_values(242.328172712, efp_spec.nuclear_repulsion_energy(), 6, "EFP/QM Nu
 compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'EFP/QM EFP Energy Total')  #TEST
 
 
-print efp_spec.nfragments()
+#print efp_spec.nfragments()
 mol2 = efp_spec.extract_subsets(3)
 mol2.print_out()
 mol3 = efp_spec.extract_subsets(3,1)
@@ -83,5 +83,5 @@ no_com
 energy('efp')
 qm_spec.print_out()
 compare_values(242.328172712, qm_spec.nuclear_repulsion_energy(), 6, "QM Nuclear Repulsion Energy")
-compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'QM EFP Energy Total')  #TEST
+compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'QM EFP Energy Total (whole mol, not quite right)')  #TEST
 
