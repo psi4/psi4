@@ -2802,18 +2802,16 @@ def run_property(name, **kwargs):
     junk = 1
     return junk
 
+def run_efp(name, **kwargs):
+    efp = PsiMod.efp_init()
+    returnvalue = efp.Compute()
+    return returnvalue
 
 def run_efp3(name, **kwargs):
     efp = PsiMod.efp_init()
-    molecule = PsiMod.get_active_molecule()
-    molecule.print_out()
-    #efp.SetGeometry()
     #returnvalue = efp.Compute()
-    #return returnvalue
-    return 7.0
-
-def efpinit():
-    efp = PsiMod.efp_init()
+    returnvalue = 7.0
+    return returnvalue
 
 def run_scfefp(name, **kwargs):
 
@@ -2822,8 +2820,6 @@ def run_scfefp(name, **kwargs):
 
     # initialize library
     efp = PsiMod.efp_init()
-    # set geometry
-    efp.SetGeometry()
     # set which atoms are qm
     efp.SetQMAtoms()
     # TODO: provide efp a callback function that computes electron density at arbitrary points

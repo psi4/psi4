@@ -34,9 +34,6 @@ class EFP {
         EFP(Options& options);
         ~EFP();
   
-        /// Set geometry
-        void SetGeometry();
-
         /// Compute energy and/or gradient
         void Compute();
 
@@ -48,6 +45,12 @@ class EFP {
 
         /// Returns EFP contribution to V
         boost::shared_ptr<Matrix> modify_Fock();
+
+        /// Add potential files and names for all fragments
+	    void add_fragments(std::vector<std::string> fnames);
+
+        /// Add EFP fragment
+        void add_fragment(std::string fname);
 
         /// Returns the number of EFP fragments
         int get_frag_count(void);
@@ -64,12 +67,6 @@ class EFP {
         /// Returns the center of mass of a given fragment
         double *get_com(int frag_idx);
 
-        ///
-        void set_nfragments(int nfrag) { nfrag_ = nfrag; }
-
-        ///
-        int get_nfragments(void) { return nfrag_; }
-
         /// Sets the geometry hints for all fragments at once
         void set_coordinates(int type, double * coords);
 
@@ -81,6 +78,12 @@ class EFP {
 
         /// Returns atom label of all atoms in a given fragment
         std::vector<std::string> get_frag_atom_label(int frag_idx);
+
+        /// Returns charge for a given fragment
+        double get_frag_charge(int frag_idx);
+
+        /// Returns multiplicity for a given fragment
+        int get_frag_multiplicity(int frag_idx);
 };
 
 }
