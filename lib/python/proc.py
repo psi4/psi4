@@ -2803,14 +2803,9 @@ def run_property(name, **kwargs):
     return junk
 
 def run_efp(name, **kwargs):
-    efp = PsiMod.efp_init()
+    #efp = PsiMod.efp_init()
+    efp = PsiMod.get_active_efp()
     returnvalue = efp.Compute()
-    return returnvalue
-
-def run_efp3(name, **kwargs):
-    efp = PsiMod.efp_init()
-    #returnvalue = efp.Compute()
-    returnvalue = 7.0
     return returnvalue
 
 def run_scfefp(name, **kwargs):

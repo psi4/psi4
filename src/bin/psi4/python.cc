@@ -961,6 +961,11 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+boost::shared_ptr<psi::efp::EFP> py_psi_get_active_efp()
+{
+    return Process::environment.get_efp();
+}
+
 void py_psi_set_gradient(SharedMatrix grad)
 {
     if (Process::environment.wavefunction()) {
@@ -1221,6 +1226,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("set_active_molecule", py_psi_set_active_molecule, "Activates a previously defined (in the input) molecule, by name.");
     def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
     def("wavefunction", py_psi_wavefunction, "Returns the current wavefunction object from the most recent computation.");
+    def("get_active_efp", &py_psi_get_active_efp, "Returns the currently active EFP object.");
     def("get_gradient", py_psi_get_gradient, "Returns the most recently computed gradient, as a N by 3 Matrix object.");
     def("set_gradient", py_psi_set_gradient, "Assigns the global gradient to the values stored in the N by 3 Matrix argument.");
     def("get_frequencies", py_psi_get_frequencies, "Returns the most recently computed frequencies, as a 3N-6 Vector object.");
@@ -1329,7 +1335,8 @@ BOOST_PYTHON_MODULE(psi4)
     def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    def("cchbar", py_psi_cchbar, "Runs the code to generate the similariry transformed Hamiltonian.");
+    def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");

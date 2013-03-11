@@ -122,6 +122,13 @@ void EFP::common_init() {
     if (disp_enabled_)
         fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
 
+    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
+    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
+    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
+    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    fprintf(outfile, "\n");
+
     fprintf(outfile, "\n");
 }
 
@@ -357,20 +364,20 @@ double EFP::scf_energy_update() {
 void EFP::Compute() {
     enum efp_result res;
     double *grad = NULL;
-    
+
     // Main EFP computation routine 
     if (res = efp_compute(efp_, do_grad_ ? 1 : 0))
-        throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        throw PsiException("EFP::Compute():efp_compute() " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     
     struct efp_energy energy;
     
     if (res = efp_get_energy(efp_, &energy))
-        throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        throw PsiException("EFP::Compute():efp_get_energy(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
     
     if (do_grad_) {
         grad = new double[6 * nfrag_];
         if (res = efp_get_gradient(efp_, nfrag_, grad))
-            throw PsiException("EFP::Compute: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+            throw PsiException("EFP::Compute():efp_get_gradient(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
         fprintf(outfile, "  ==> EFP Gradient <==\n\n");
 
@@ -545,6 +552,22 @@ std::vector<std::string> EFP::get_frag_atom_label(int frag_idx) {
     }
 
     return frag_atom_label;
+}
+
+/**
+ * Print simple private members of class
+ */
+void EFP::print_out() {
+
+    fprintf(outfile, "  Number of efp fragments: %12d\n", nfrag_);
+    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
+    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
+    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
+    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    fprintf(outfile, "\n");
+
+    //molecule_->print();  // TODO: used to work, broken now?
 }
 
 }

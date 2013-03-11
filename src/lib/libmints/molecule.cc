@@ -1169,7 +1169,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom+at, zVal, zVal,
                                                                                             an2masses[(int)zVal], atomSym, atomLabel,
                                                                                             xval, yval, zval)));
-                mol->full_atoms_.back()->print_in_input_format();
                 ++currentAtom;
             }
             ++efpCount;
@@ -1218,8 +1217,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVal, charge,
                                                                                             an2masses[(int)zVal], atomSym, atomLabel,
                                                                                             xval, yval, zval)));
-                mol->full_atoms_.back()->print_in_input_format();
-
             }
             else if(numEntries == 1) {
                 // This is the first line of a Z-Matrix

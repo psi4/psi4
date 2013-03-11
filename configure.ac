@@ -932,7 +932,7 @@ AC_CONFIG_FILES([
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
           src/util/Makefile src/util/MakeRules src/util/MakeVars
           src/bin/Makefile src/bin/MakeRules src/bin/MakeVars
-	  libefp/Makefile
+	      libefp/Makefile
 
           doc/MakeVars doc/MakeRules doc/Makefile
           doc/macros.tex
@@ -1065,6 +1065,8 @@ AC_CONFIG_FILES([
           tests/pywrap-cbs1/Makefile
           tests/pywrap-all/Makefile
           tests/pywrap-alias/Makefile
+          tests/efp1/Makefile
+          tests/efp2/Makefile
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile
