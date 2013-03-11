@@ -52,7 +52,7 @@ for n, displacement in enumerate(displacements):
   PsiMod.clean()
 
 PsiMod.fd_freq_1(gradients, -1)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 
 compare_vectors(anal_freqs, fd_freqs, 1,           #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from gradients to 0.1 cm^-1 (C1)")           #TEST

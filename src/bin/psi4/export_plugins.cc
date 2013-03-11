@@ -35,7 +35,8 @@ int py_psi_plugin_load(std::string fullpathname)
     int ret = 0;
 
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
 
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
@@ -61,7 +62,8 @@ int py_psi_plugin_load(std::string fullpathname)
 int py_psi_plugin(std::string fullpathname)
 {
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
     }
@@ -99,7 +101,8 @@ int py_psi_plugin(std::string fullpathname)
 void py_psi_plugin_close(std::string fullpathname)
 {
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
     if (plugins.count(uc) > 0) {
         plugin_info& info = plugins[uc];
         plugin_close(info);
