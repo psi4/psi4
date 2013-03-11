@@ -2813,12 +2813,12 @@ void DFCoupledCluster::T1Integrals(){
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_QSO,"qso",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
     psio->close(PSIF_DCC_QSO,1);
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
-        }
-    }
+    //#pragma omp parallel for schedule (static)
+    //for (int q = 0; q < nQ; q++) {
+    //    for (int mu = 0; mu < nso; mu++) {
+    //        F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
+    //    }
+    //}
     F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,temp,nso,0.0,Qmo,full);
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
@@ -3978,7 +3978,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
       // update the amplitudes and check the energy
       Eold = eccsd;
       PairEnergy();
-      UpdateT1();
+      if (!options_.get_bool("CEPA_NO_SINGLES")){
+          UpdateT1();
+      }
       UpdateT2();
 
       // add vector to list for diis
