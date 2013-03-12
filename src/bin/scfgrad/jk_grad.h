@@ -25,6 +25,8 @@ protected:
     int omp_num_threads_;
     /// Integral cutoff (defaults to 0.0)
     double cutoff_;
+    /// Maximum derivative level
+    int deriv_;
 
     boost::shared_ptr<BasisSet> primary_;
 
@@ -45,11 +47,12 @@ protected:
     double omega_;
 
     std::map<std::string, SharedMatrix> gradients_;
+    std::map<std::string, SharedMatrix> hessians_;
 
     void common_init();
 
 public:
-    JKGrad(boost::shared_ptr<BasisSet> primary);
+    JKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
     virtual ~JKGrad();
 
     /**
@@ -58,7 +61,7 @@ public:
     * @param options Options reference, with preset parameters
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JKGrad> build_JKGrad();
+    static boost::shared_ptr<JKGrad> build_JKGrad(int deriv = 1);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }
@@ -123,6 +126,7 @@ public:
     std::map<std::string, SharedMatrix>& gradients() { return gradients_; }
 
     virtual void compute_gradient() = 0;
+    virtual void compute_hessian() = 0;
 
     virtual void print_header() const = 0;
 };
@@ -157,10 +161,11 @@ protected:
     unsigned int unit_c_;
 
 public:
-    DFJKGrad(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary);
+    DFJKGrad(int deriv, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary);
     virtual ~DFJKGrad();
 
     void compute_gradient();
+    void compute_hessian();
 
     void print_header() const;
 
@@ -203,13 +208,15 @@ protected:
 
     void common_init();
 
-    std::map<std::string, boost::shared_ptr<Matrix> > compute(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints);
+    std::map<std::string, boost::shared_ptr<Matrix> > compute1(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints);
+    std::map<std::string, boost::shared_ptr<Matrix> > compute2(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints);
 public:
-    DirectJKGrad(boost::shared_ptr<BasisSet> primary);
+    DirectJKGrad(int deriv, boost::shared_ptr<BasisSet> primary);
     virtual ~DirectJKGrad();
 
     void compute_gradient();
-
+    void compute_hessian();
+    
     void print_header() const;
 
     /**
