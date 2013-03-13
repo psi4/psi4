@@ -244,6 +244,9 @@ class DFCoupledCluster : public CoupledCluster{
     /// evaluate cc diagrams
     void CCResidual();
 
+    /// evaluate triples
+    PsiReturnType triples();
+
     /// SCS-MP2 function and variables
     void SCS_MP2();
 
