@@ -537,7 +537,13 @@ ACX_MPI()
 AC_LANG([C++])
 
 BUILD_LIBEFP=1
+HAVE_LIBEFP=1
+AC_DEFINE_UNQUOTED(HAVE_LIBEFP,1)
+efplibs='$(top_objdir)/libefp'
+efpinc='-I$(top_objdir)/libefp/libefp/src'
 AC_SUBST(BUILD_LIBEFP)
+AC_SUBST(efplibs)
+AC_SUBST(efpinc)
 
 ########
 ## Check for types
@@ -981,6 +987,7 @@ AC_CONFIG_FILES([
           src/bin/detci/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
+          src/bin/efp/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile

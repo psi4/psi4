@@ -178,7 +178,7 @@ procedures = {
             'mp2.5'         : run_mp2_5_gradient,
             'omp2.5'        : run_omp2_5_gradient,
             'cepa0'         : run_cepa0_gradient,
-            'ocepa'         : run_ocepa_gradient
+            'ocepa'         : run_ocepa_gradient,
             'efp2'          : run_efp2_gradient,
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },

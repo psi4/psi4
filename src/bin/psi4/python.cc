@@ -34,6 +34,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libefp_solver/efp_solver.h>
 #include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
@@ -122,6 +123,7 @@ namespace psi {
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
+    namespace efp        { PsiReturnType efp_init(Options&);  }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
     namespace adc        { PsiReturnType adc(Options&);       }
@@ -493,6 +495,16 @@ double py_psi_cctriples()
     }
     else
         return 0.0;
+}
+
+boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
+{
+    py_psi_prepare_options_for_module("EFP");
+    if (psi::efp::efp_init(Process::environment.options) == Success) {
+        return Process::environment.get_efp();
+    }
+    else
+        throw PSIEXCEPTION("Unable to initialize EFP library.");
 }
 
 double py_psi_fnocc()
