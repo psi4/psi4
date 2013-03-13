@@ -18,7 +18,7 @@
 typedef long int integer;
 typedef double doublereal;
 
-namespace psi{ namespace cepa{
+namespace psi{ namespace fnocc{
 
 /**
  * fortran-ordered dgemv

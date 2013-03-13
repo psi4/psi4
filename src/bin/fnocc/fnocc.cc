@@ -21,9 +21,16 @@ PsiReturnType fnocc(Options &options) {
           wfn = Process::environment.wavefunction();
       }
 
-      boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
-      Process::environment.set_wavefunction(ccsd);
-      ccsd->compute_energy();
+      if ( !options.get_bool("RUN_CEPA") ) {
+          boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn,options));
+          Process::environment.set_wavefunction(ccsd);
+          ccsd->compute_energy();
+      } else {
+          boost::shared_ptr<CoupledPair> cepa (new CoupledPair(wfn,options));
+          Process::environment.set_wavefunction(cepa);
+          cepa->compute_energy();
+      }
+
   }else {
 
       // generate frozen natural orbitals?
