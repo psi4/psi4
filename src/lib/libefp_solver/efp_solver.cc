@@ -1,4 +1,4 @@
-/*
+/**
  * EFP solver
  */ 
 
@@ -38,7 +38,6 @@ namespace psi { namespace efp {
 EFP::EFP(Options& options): options_(options) 
 {
 	common_init();
-    //common_init2();
 }
 
 EFP::~EFP(){
@@ -57,6 +56,9 @@ static size_t name_len(const char *name)
 	return is_lib(name) ? strlen(name) - 2 : strlen(name);
 }
 
+/**
+ * Basic creation of EFP object and reading of options
+ */
 void EFP::common_init() {
     enum efp_result res;
     int print = options_.get_int("PRINT");
@@ -100,22 +102,19 @@ void EFP::common_init() {
     else if (disp_damping == "OFF")
         opts.disp_damp = EFP_DISP_DAMP_OFF;
 
-    nfrag_ = options_["FRAGS"].size();
     molecule_ = Process::environment.molecule();
-
-    std::string psi_data_dir = Process::environment("PSIDATADIR");
-    std::string fraglib_path = psi_data_dir + "/fraglib";
 
     efp_ = efp_create();
 
     if (!efp_)
-		throw PsiException("efp", __FILE__, __LINE__);
+        throw PsiException("EFP::common_init():", __FILE__, __LINE__);
 
     if (res = efp_set_opts(efp_, &opts))
         throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
-	add_potentials(efp_, fraglib_path.c_str(), ".");
-
+    fprintf(outfile, "\n\n");
+    fprintf(outfile, "%s", efp_banner());
+    fprintf(outfile, "\n\n");
     fprintf(outfile, "  ==> Calculation Information <==\n\n");
     fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
 
@@ -132,19 +131,55 @@ void EFP::common_init() {
     fprintf(outfile, "\n");
 }
 
-void EFP::common_init2() {
-   enum efp_result res;
+/**
+ * Add potential files and names for all fragments
+ */
+void EFP::add_fragments(std::vector<std::string> fnames)
+{
+    enum efp_result res;
+	int n_uniq;
+	char path[256];
+	std::vector<std::string> uniq;
 
-	for (int i = 0; i < nfrag_; i++) {
-        fprintf(outfile, "initializing fragment %s\n", options_["FRAGS"][i].to_string().c_str());
-        if (res = efp_add_fragment(efp_, options_["FRAGS"][i].to_string().c_str()))
-            throw PsiException("EFP::common_init2(): " + std::string (efp_result_to_string(res)) + " " + options_["FRAGS"][i].to_string(),__FILE__,__LINE__);
-    }
+    std::string psi_data_dir = Process::environment("PSIDATADIR");
+    std::string fraglib_path = psi_data_dir + "/fraglib";
+    std::string userlib_path = ".";
+
+    nfrag_ = fnames.size();
+
+    for (int i = 0; i < fnames.size(); i++) {
+        std::string name = fnames[i];
+		std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+		uniq.push_back(name);
+	}
+
+	std::sort(uniq.begin(), uniq.end());
+	n_uniq = 1;
+
+    for (int i = 1; i < fnames.size(); i++)
+		if (uniq[i - 1] != uniq[i])
+			uniq[n_uniq++] = uniq[i];
+
+	for (int i = 0; i < n_uniq; i++) {
+		std::string name = uniq[i];
+		const char *prefix = is_lib(name.c_str()) ? fraglib_path.c_str() : userlib_path.c_str();
+
+		strcat(strncat(strcat(strcpy(path, prefix), "/"), name.c_str(),
+			name_len(name.c_str())), ".efp");
+		if (res = efp_add_potential(efp_, path))
+            throw PsiException("EFP::add_fragments(): " + std::string (efp_result_to_string(res)) + name,__FILE__,__LINE__);
+	}
+
+    for (int i = 0; i < fnames.size(); i++)
+        if (res = efp_add_fragment(efp_, fnames[i].c_str()))
+            throw PsiException("EFP::add_fragments(): " + std::string (efp_result_to_string(res)) + " " + fnames[i],__FILE__,__LINE__);
 }
 
-// Provid list of coordinates of quantum mechanical atoms
+/**
+ * Provide list of coordinates of quantum mechanical atoms
+ */
 void EFP::SetQMAtoms(){
-// TODO: extend molecule class and coordentry class to separate qm and efp atoms
+    //TODO: extend molecule class and coordentry class to separate qm and efp atoms
 }
 
 /**
@@ -153,9 +188,8 @@ void EFP::SetQMAtoms(){
 void EFP::add_fragment(std::string fname) {
     enum efp_result res;
 
-    fprintf(outfile, "new initializing fragment %s\n", fname.c_str());
     if (res = efp_add_fragment(efp_, fname.c_str()))
-        throw PsiException("EFP::add_fragment(): " + std::string (efp_result_to_string(res)) + fname,__FILE__,__LINE__);
+        throw PsiException("EFP::add_fragment(): " + std::string (efp_result_to_string(res)) + " " + fname,__FILE__,__LINE__);
 }
 
 /**
@@ -190,69 +224,12 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
     else if(type == 2)
         ctype = EFP_COORD_TYPE_ROTMAT;
 
+    int local;
+    efp_get_frag_count(efp_, &local);
+
     if ((res = efp_set_frag_coordinates(efp_, frag_idx, ctype, coords)))
         throw PsiException("EFP::set_frag_coordinates(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 }
-
-
-void EFP::SetGeometry(){
-
-       enum efp_result res;
-       fprintf(outfile, "\n\n");
-       fprintf(outfile, "%s", efp_banner());
-       fprintf(outfile, "\n\n");
-
-       fprintf(outfile, "  ==> Geometry <==\n\n");
-
-       double *coords = NULL;
-
-       molecule_->print();
-       if (molecule_->nfragments() != nfrag_)
-               throw InputException("Molecule doesn't have FRAGS number of fragments.", "FRAGS", nfrag_, __FILE__, __LINE__);
-
-	// array of coordinates, 9 numbers for each fragment - first three atoms
-	coords = new double[9 * nfrag_];
-	double * pcoords = coords;
-
-       for (int i = 0; i < nfrag_; i++) {
-               std::vector<int> realsA;
-               realsA.push_back(i);
-               std::vector<int> ghostsA;
-               for (int j = 0; j < nfrag_; j++) {
-                               if (i != j)
-                                               ghostsA.push_back(j);
-               }
-               boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA, ghostsA);
-               monomerA->print();
-               monomerA->print_in_bohr();
-
-               int natomA = 0;
-               for (int n=0; n<monomerA->natom(); n++)
-                       if (monomerA->Z(n))
-                               natomA++;
-
-               if (natomA != 3)
-                       throw InputException("Fragment doesn't have three coordinate triples.", "natomA", natomA, __FILE__, __LINE__);
-       
-               SharedMatrix xyz = SharedMatrix (new Matrix("Fragment Cartesian Coordinates(x,y,z)", monomerA->natom(), 3));
-               double** xyzp = xyz->pointer();
-       
-               for (int j = 0; j < monomerA->natom(); j++) {
-                       if (monomerA->Z(j)) {
-                               *pcoords++ = xyzp[j][0] = monomerA->x(j);
-                               *pcoords++ = xyzp[j][1] = monomerA->y(j);
-                               *pcoords++ = xyzp[j][2] = monomerA->z(j);
-                       }
-               }
-
-        fprintf(outfile, "%s\n",  options_["FRAGS"][i].to_string().c_str());
-        xyz->print();
-       }
-
-       if ((res = efp_set_coordinates(efp_, EFP_COORD_TYPE_POINTS, coords)))
-           throw PsiException("EFP::SetGeometry: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
-
-} // end of SetGeometry()
 
 // this function returns a shared matrix containing the efp contribution to the potential
 // felt by qm atoms in an scf procedure.
@@ -353,7 +330,7 @@ double EFP::scf_energy_update() {
     double efp_energy;
 
     if (res = efp_get_wavefunction_dependent_energy(efp_, &efp_energy))
-        throw PsiException("EFP::scf_energy_update: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        throw PsiException("EFP::scf_energy_update(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     return efp_energy;
 }
@@ -422,7 +399,14 @@ void EFP::Compute() {
  * Get number of fragments
  */
 int EFP::get_frag_count(void) {
-    return nfrag_;
+    enum efp_result res;
+    int n=0;
+
+    if (res = efp_get_frag_count(efp_, &n))
+        throw PsiException("EFP::get_frag_count(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    nfrag_ = n;
+    return n;
 }
 
 /**
@@ -433,13 +417,43 @@ int EFP::get_frag_atom_count(int frag_idx) {
     int n=0;
 
     if (res = efp_get_frag_atom_count(efp_, frag_idx, &n))
-        throw PsiException("EFP::get_frag_atom_count: " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+        throw PsiException("EFP::get_frag_atom_count(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
     return n;
 }
 
 /**
+ * Get charge on a fragment
+ */
+double EFP::get_frag_charge(int frag_idx) {
+    enum efp_result res;
+    double charge=0.0;
+
+    if (res = efp_get_frag_charge(efp_, frag_idx, &charge))
+        throw PsiException("EFP::get_frag_charge(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    return charge;
+}
+
+/**
+ * Get multiplicity for a fragment
+ */
+int EFP::get_frag_multiplicity(int frag_idx) {
+    enum efp_result res;
+    int multiplicity=0;
+
+    if (res = efp_get_frag_multiplicity(efp_, frag_idx, &multiplicity))
+        throw PsiException("EFP::get_frag_multiplicity(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    return multiplicity;
+}
+
+/**
  * Get atomic numbers of atoms in a fragment
+ * NOTE: not sure if we need all these input checks here
+ *   as long as don't plan on making invalid calls,
+ *   can trap libefp errors instead and throw error
+ *   rather than returning NULL. Same for other fns below.
  */
 double *EFP::get_frag_atom_Z(int frag_idx) {
 
@@ -520,7 +534,6 @@ double *EFP::get_frag_atom_coord(int frag_idx) {
         frag_atom_coord[3*i]   = atoms[i].x;
         frag_atom_coord[3*i+1] = atoms[i].y;
         frag_atom_coord[3*i+2] = atoms[i].z;
-        //fprintf(outfile, "Atom %d from %8.4f %8.4f %8.4f to %8.4f %8.4f %8.4f\n", i, atoms[i].x, atoms[i].y, atoms[i].z, frag_atom_coord[3*i], frag_atom_coord[3*i+1], frag_atom_coord[3*i+2]);
     }
 
     return frag_atom_coord;
@@ -532,18 +545,18 @@ double *EFP::get_frag_atom_coord(int frag_idx) {
 std::vector<std::string> EFP::get_frag_atom_label(int frag_idx) {
 
     if (frag_idx >= nfrag_)
-        throw PsiException("efp",__FILE__,__LINE__);
+        throw PsiException("EFP::get_frag_atom_label():",__FILE__,__LINE__);
 
     int frag_natom = get_frag_atom_count(frag_idx);
     if (frag_natom == 0)
-        throw PsiException("efp",__FILE__,__LINE__);
+        throw PsiException("EFP::get_frag_atom_label():",__FILE__,__LINE__);
 
     struct efp_atom atoms[frag_natom];
     enum efp_result res;
     res = efp_get_frag_atoms(efp_, frag_idx, frag_natom, atoms);
 
     if (res != EFP_RESULT_SUCCESS)
-        throw PsiException("efp",__FILE__,__LINE__);
+        throw PsiException("EFP::get_frag_atom_label():",__FILE__,__LINE__);
 
     std::vector<std::string> frag_atom_label;
     for (int i=0; i<frag_natom; ++i) {
