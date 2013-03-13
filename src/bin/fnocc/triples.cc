@@ -558,15 +558,21 @@ PsiReturnType DFCoupledCluster::triples(){
 
       F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
       for (int a=0; a<v; a++){
-          double tai = 2.0*t1[a*o+i];
+          double tai = t1[a*o+i];
+          double fai = Fia[i*v+a];
           for (int b=0; b<v; b++){
               int ab = 1+(a==b);
-              double tbj = 2.0*t1[b*o+j];
+              double tbj = t1[b*o+j];
+              double fbj = Fia[j*v+b];
               double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
+              double t2iajb = tempt[i*v*v*o+j*v*v+a*v+b];
               for (int c=0; c<v; c++){
-                  Z2[thread][a*v*v+b*v+c] += fac*(tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                              tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                              2.0*t1[c*o+k]*E2iajb);
+                  Z2[thread][a*v*v+b*v+c] += fac*(tai    * E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                              tbj        * E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                              t1[c*o+k]  * E2iajb);
+                  Z2[thread][a*v*v+b*v+c] += fac*(fai    * tempt[j*v*v*o+k*v*v+b*v+c] +
+                                              fbj        * tempt[i*v*v*o+k*v*v+a*v+c] +
+                                              Fia[k*v+c] * t2iajb);
                   Z2[thread][a*v*v+b*v+c] /= (ab + (b==c) + (a==c));
               }
           }
@@ -588,99 +594,6 @@ PsiReturnType DFCoupledCluster::triples(){
       int ijkfac = ( 2-((i==j)+(j==k)+(i==k)) );
       // separate out these bits to save v^3 storage
       double tripval = 0.0;
-      for (int a=0; a<v; a++){
-          double dijka = dijk-F[a+o];
-          for (int b=0; b<=a; b++){
-              double dijkab = dijka-F[b+o];
-              for (int c=0; c<=b; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int acb = a*v*v+c*v+b;
-                  long int bac = b*v*v+a*v+c;
-                  long int cba = c*v*v+b*v+a;
-                  double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
-                                  + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
-                                  + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
-
-                  dum            =  (E2abci[thread][abc])
-                                 * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
-                                 +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
-                                 + 3.0*dum;
-                  double denom = dijkab-F[c+o];
-                  tripval += dum/denom;
-              }
-          }
-      }
-      etrip[thread] += tripval*ijkfac;
-      // the second bit
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              for (int c=0; c<v; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-
-                  E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
-              }
-          }
-      }
-      tripval = 0.0;
-      for (int a=0; a<v; a++){
-          double dijka = dijk-F[a+o];
-          for (int b=0; b<=a; b++){
-              double dijkab = dijka-F[b+o];
-              for (int c=0; c<=b; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int acb = a*v*v+c*v+b;
-                  long int bac = b*v*v+a*v+c;
-                  long int cba = c*v*v+b*v+a;
-
-                  double dum     = (E2abci[thread][abc])
-                                 * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab]
-                                 + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
-
-                  double denom = dijkab-F[c+o];
-                  tripval += dum/denom;
-              }
-          }
-      }
-      etrip[thread] += tripval*ijkfac;
-
-      // 4th order contribution when Fai != 0
-      F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
-      for (int a=0; a<v; a++){
-          double tai = 2.0*Fai[a*o+i];
-          for (int b=0; b<v; b++){
-              int ab = 1+(a==b);
-              double tbj = 2.0*Fai[b*o+j];
-              double E2iajb = tempt[i*v*v*o+j*v*v+a*v+b];
-              for (int c=0; c<v; c++){
-                  Z2[thread][a*v*v+b*v+c] += fac*(tai    * tempt[j*v*v*o+k*v*v+b*v+c] +
-                                              tbj        * tempt[i*v*v*o+k*v*v+a*v+c] +
-                                              2.0*Fai[c*o+k] * E2iajb);
-                  Z2[thread][a*v*v+b*v+c] /= (ab + (b==c) + (a==c));
-              }
-          }
-      }
-
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              for (int c=0; c<v; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bac = b*v*v+a*v+c;
-                  long int acb = a*v*v+c*v+b;
-                  long int cba = c*v*v+b*v+a;
-
-                  E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
-              }
-          }
-      }
-
-      // separate out these bits to save v^3 storage
-      tripval = 0.0;
       for (int a=0; a<v; a++){
           double dijka = dijk-F[a+o];
           for (int b=0; b<=a; b++){
@@ -766,7 +679,6 @@ PsiReturnType DFCoupledCluster::triples(){
 
   double myet = 0.0;
   for (int i=0; i<nthreads; i++) myet += etrip[i];
-  myet *= 0.5;
 
   // ccsd(t) or qcisd(t)
   if (ccmethod <= 1) {
