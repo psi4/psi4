@@ -58,7 +58,7 @@ $(cc_subdirs) \
 $(cepa_subdirs) \
 $(fnocc_subdirs) \
 $(python_test_subdirs) \
-${mcscf_subdirs} \
+$(mcscf_subdirs) \
 $(psimrcc_subdirs) \
 $(dcft_subdirs)
 
@@ -97,73 +97,83 @@ ifneq ($(have_mrcc),)
    subdirs += $(mrcc_subdirs)
 endif
 
-define runtests
-    for dir in $1; \
-	do \
-        (\
-        cd $${dir} &&\
-        echo "Testing $${dir}..." | tee -a ../../test-case-results &&\
-        $(MAKE) && cat $${dir}.test >> ../../test-case-results;\
-        );\
-        if [ $$? != 0 ]; then\
-         echo "\tFAILED" | tee -a ../test-case-results; exit 1;\
-        fi;\
-	done
+define gatherresults
+    ERRORS=0; \
+    echo > ../test-case-results; \
+    for dir in $1; do \
+        if [ -e $${dir}/$${dir}.passed ]; \
+        then echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.passed >> ../test-case-results;\
+        else ERRORS=1; \
+        fi; \
+    done; \
+    for dir in $1; do \
+        if [ ! -e $${dir}/$${dir}.passed ]; \
+        then echo "\n\nTEST FAILURE in $${dir}$$!!!";           \
+             cat $${dir}/$${dir}.test;                          \
+             echo;                                              \
+             echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.test >> ../test-case-results;  \
+             echo "\tFAILED" >>../test-case-results; \
+        fi; \
+    done; \
+    if [ $$ERRORS -eq 1 ]; then echo "One or more tests failed! Check test-case-results for more information.\n" && exit 1; fi;\
+    echo ERRORS = $$ERRORS
 endef
 
-tests:
-	$(call runtests, $(subdirs))
+tests: $(subdirs)
+	$(call gatherresults, $(subdirs))
 
-opttests:
-	$(call runtests, $(opt_subdirs))
+opttests: $(opt_subdirs)
+	$(call gatherresults, $(opt_subdirs))
 
-quicktests:
-	$(call runtests, $(quicktestdirs))
+quicktests: $(quicktestdirs)
+	$(call gatherresults, $(quicktestdirs))
 
-cepa_tests:
-	$(call runtests, $(cepa_subdirs))
+cepa_tests: $(cepa_subdirs)
+	$(call gatherresults, $(cepa_subdirs))
 
-fnocc_tests:
-	$(call runtests, $(fnocc_subdirs))
+fnocc_tests: $(fnocc_subdirs)
+	$(call gatherresults, $(fnocc_subdirs))
 
-cc_tests:
-	$(call runtests, $(cc_subdirs))
+cc_tests: $(cc_subdirs)
+	$(call gatherresults, $(cc_subdirs))
 
-ci_tests:
-	$(call runtests, $(ci_subdirs))
+ci_tests: $(ci_subdirs)
+	$(call gatherresults, $(ci_subdirs))
 
-mints_tests:
-	$(call runtests, $(mints_subdirs))
+mints_tests: $(mints_subdirs)
+	$(call gatherresults, $(mints_subdirs))
 
-mp2_tests:
-	$(call runtests, $(mp2_subdirs))
+mp2_tests: $(mp2_subdirs)
+	$(call gatherresults, $(mp2_subdirs))
 
-matrix_tests:
-	$(call runtests, $(matrix_subdirs))
+matrix_tests: $(matrix_subdirs)
+	$(call gatherresults, $(matrix_subdirs))
 
-mcscf_tests:
-	$(call runtests, $(mcscf_subdirs))
+mcscf_tests: $(mcscf_subdirs)
+	$(call gatherresults, $(mcscf_subdirs))
 
-scf_tests:
-	$(call runtests, $(scf_subdirs))
+scf_tests: $(scf_subdirs)
+	$(call gatherresults, $(scf_subdirs))
 
-df_tests:
-	$(call runtests, $(df_subdirs))
+df_tests: $(df_subdirs)
+	$(call gatherresults, $(df_subdirs))
 
-dcft_tests:
-	$(call runtests, $(dcft_subdirs))
+dcft_tests: $(dcft_subdirs)
+	$(call gatherresults, $(dcft_subdirs))
 
-psimrcc_tests:
-	$(call runtests, $(psimrcc_subdirs))
+psimrcc_tests: $(psimrcc_subdirs)
+	$(call gatherresults, $(psimrcc_subdirs))
 
-python_tests:
-	$(call runtests, $(python_test_subdirs))
+python_tests: $(python_test_subdirs)
+	$(call gatherresults, $(python_test_subdirs))
 
-dftd3_tests:
-	$(call runtests, $(dftd3_subdirs))
+dftd3_tests: $(dftd3_subdirs)
+	$(call gatherresults, $(dftd3_subdirs))
 
-longtests:
-	$(call runtests, $(longtest_subdirs))
+longtests: $(longtest_subdirs)
+	$(call gatherresults, $(longtest_subdirs)
 
 plugins:
 	for dir in $(plugin_subdirs); \
@@ -203,4 +213,9 @@ $(top_objdir)/config.status: $(top_srcdir)/configure
 
 Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
 	cd $(top_objdir) && CONFIG_FILES=tests/Makefile ./config.status
+
+.PHONY: $(subdirs)
+$(subdirs):
+	echo "Testing $@..."
+	$(MAKE) -C $@; true
 
