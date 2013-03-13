@@ -2396,8 +2396,8 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  free(Fia);
-  free(Fai);
+  //free(Fia);
+  //free(Fai);
   free(Qmo);
   free(Abij);
   free(Sbij);
@@ -2544,6 +2544,8 @@ double DFCoupledCluster::compute_energy() {
   }
 
   // free remaining memory
+  free(Fia);
+  free(Fai);
   free(t1);
   free(tb);
 
