@@ -80,7 +80,7 @@ set globals {
 set findif {print 3}
 
 frequencies('scf',dertype=0,irrep=2)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 clean()
 
 compare_vectors(a2_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
@@ -112,7 +112,7 @@ set globals {
 }
 
 frequencies('scf', irrep=1)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 clean()
 
 compare_vectors(a1_freqs, fd_freqs, 3, "A1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -141,7 +141,7 @@ set globals {
 }
 
 frequencies('scf', irrep=2)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 clean()
 
 compare_vectors(a2_freqs, fd_freqs, 3, "A2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -171,7 +171,7 @@ set globals {
 }
 
 frequencies('scf', irrep=3)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 clean()
 
 compare_vectors(b1_freqs, fd_freqs, 3, "B1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -201,7 +201,7 @@ set globals {
 }
 
 frequencies('scf', irrep=4)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = PsiMod.wavefunction().frequencies()
 
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
 del fd_freqs

@@ -244,11 +244,61 @@ class DFCoupledCluster : public CoupledCluster{
     /// evaluate cc diagrams
     void CCResidual();
 
+    /// evaluate triples
+    PsiReturnType triples();
+
     /// SCS-MP2 function and variables
     void SCS_MP2();
 
     /// SCS-CCSD function and variables
     void SCS_CCSD();
+};
+
+// coupled pair class
+class CoupledPair : public CoupledCluster{
+
+  public:
+    CoupledPair(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    ~CoupledPair();
+
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+    double compute_energy();
+
+  protected:
+
+    /// coupled pair iterations
+    PsiReturnType CEPAIterations();
+
+    /// free memory
+    void finalize();
+
+    /// pair energies
+    void PairEnergy();
+    double * pair_energy;
+
+    /// what kind of coupled pair method?
+    char * cepa_type;
+    int cepa_level;
+
+    /// check energy
+    double CheckEnergy();
+
+    /// update t1 amplitudes
+    void UpdateT1();
+
+    /// update t2 amplitudes
+    void UpdateT2();
+
+    /// scs functions 
+    void SCS_CEPA();
+    void Local_SCS_CEPA();
+
+    /// compute opdm - only valid for cisd, acpf, aqcc, and cepa(0)
+    void OPDM();
+
+    /// banner
+    void WriteBanner();
 };
 
 }}
