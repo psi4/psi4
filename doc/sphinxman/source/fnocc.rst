@@ -7,6 +7,7 @@
 .. index::
    single: QCISD(T)
    single: MP4
+   single: CEPA
    single: Frozen Natural Orbitals
    single: FNO-QCISD(T)
    single: FNO-MP4
@@ -14,8 +15,8 @@
    single: DF-CCSD(T)
    pair: CCSD(T); density-fitting
 
-FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), and MP4
-=============================================================
+FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
+===================================================================
 
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
@@ -25,17 +26,17 @@ FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), and MP4
 Frozen natural orbitals (FNO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The computational cost of the QCISD(T), CCSD(T), and MP4 methods can be reduced
-by constructing a compact representation of the virtual space based on the
-natural orbitals of second-order perturbation theory.  The most demanding 
-steps in the CCSD and (T) algorithms scale as :math:`{\cal{O}}(o^2v^4)` and
-:math:`{\cal{O}}(o^3v^4)`, where
-:math:`o` and :math:`v` represent the number of oribitals that are occupied 
-and unoccupied (virtual) in the reference function, respectively.
-By reducing the the size of the virtual space, the
-cost of evaluating these terms reduces by a factor of :math:`(v / v_{FNO})^4`,
-where :math:`v_{FNO}` represents the number of virtual orbitals retained
-after the FNO truncation. 
+The computational cost of the QCISD(T), CCSD(T), CEPA, and MP4 methods can
+be reduced by constructing a compact representation of the virtual space
+based on the natural orbitals of second-order perturbation theory.  The
+most demanding steps in the CCSD and (T) algorithms scale as
+:math:`{\cal{O}}(o^2v^4)` and :math:`{\cal{O}}(o^3v^4)`, where :math:`o`
+and :math:`v` represent the number of oribitals that are occupied and
+unoccupied (virtual) in the reference function, respectively.  By reducing
+the the size of the virtual space, the cost of evaluating these terms
+reduces by a factor of :math:`(v / v_{FNO})^4`, where :math:`v_{FNO}`
+represents the number of virtual orbitals retained after the FNO
+truncation.
 
 The general outline for the FNO procedure in |Psifour| is:
 
@@ -56,12 +57,13 @@ the energy call as ::
 
     energy('fno-ccsd(t)')
 
-QCISD(T), CCSD(T), and MP4
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+QCISD(T), CCSD(T), MP4, and CEPA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The FNOCC module in |Psifour| supports several related many-body quantum
-chemistry methods, including the CCSD(T) and QCISD(T) methods and several
-orders of many-body perturbation theory (MP2-MP4).
+chemistry methods, including the CCSD(T) and QCISD(T) methods, several
+orders of many-body perturbation theory (MP2-MP4), and a family methods
+related to the coupled electron pair approximation (CEPA).
 
 Quadratic configuration interaction and coupled cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -95,7 +97,7 @@ are nonlinear in :math:`T_1` and :math:`T_2`:
     \langle \Psi_{ij}^{ab}  | (H - E) (1 + T_1 + T_2 + \frac{1}{2}T_2^2)|\Psi_0\rangle = 0. \\
 
 QCISD is slightly cheaper that CCSD computationally, but it retains the
-:math:`{\cal{O}}(o^2v^4)` complexity of the original equations Just as in
+:math:`{\cal{O}}(o^2v^4)` complexity of the original equations. Just as in
 the familiar CCSD(T) method, the effects of connected triple excitations
 may be included noniteratively to yield the QCISD(T) method.  Both the
 QCISD(T) and CCSD(T) methods are implemented for closed-shell references
@@ -153,6 +155,100 @@ perturbation theory results.  The keywords for invoking perturbation
 theory computations are given below in
 Table :ref:`FNOCC Methods <table:fnocc_methods>`.  Full MP4 correlation
 energies are also available.
+
+Coupled electron pair approximation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Coupled-pair methods can be viewed as approximations to CCSD or as
+size-extensive modifications of CISD.  The methods have the same
+complexity as CISD, and solving the CISD or coupled-pair equations
+requires fewer floating point operations than solving the CCSD.  CISD,
+CCSD, and the coupled-pair methods discussed below all scale formally with
+the sixth power of system size, and, as with the QCISD method, CEPA
+methods retain :math:`{\cal{O}}(o^2v^4)` complexity of the CCSD equations.
+For a detailed discussion of the properties of various coupled-pair
+methods, see Ref. [Wennmohs:2008:217]_\.
+
+What follows is a very basic description of the practical differences in
+the equations that define each of the coupled-pair methods implemented in
+|Psifour|.  We begin with the CISD wave function
+
+.. math::
+    :label: CIwfn
+
+    | \Psi \rangle = | \Psi_0 \rangle + \sum_i^{occ} \sum_a^{vir} t_i^a | \Psi_i^a\rangle + \frac{1}{4}\sum_{ij}^{occ} \sum_{ab}^{vir} t_{ij}^{ab} | \Psi_{ij}^{ab}\rangle,
+
+where we have chosen the intermediate normalization, :math:`\langle \Psi_0
+| \Psi \rangle = 1`.  The CISD correlation energy is given by
+
+.. math::
+    :label: CIenergy
+    
+    E_c = \langle \Psi_0 | \hat{H} - E_0 | \Psi \rangle,
+
+and the amplitudes can be determined by the solution to the coupled set of
+eqations:
+
+.. math::
+    :label: CIeqns
+    
+    0   &= \langle \Psi_{ij}^{ab} | \hat{H} - E_0 - E_c | \Psi \rangle, \\
+    0   &= \langle \Psi_{i}^{a} | \hat{H} - E_0 - E_c | \Psi \rangle.
+
+The CISD method is not size-extensive, but this problem can be overcome by
+making very simple modifications to the amplitude equations.  We replace
+the correlation energy, :math:`E_c`, with generalized shifts for the
+doubles and singles equations, :math:`\Delta_{ij}` and :math:`\Delta_i`:
+
+.. math::
+    :label: CEPAeqns
+    
+    0   &= \langle \Psi_{ij}^{ab} | \hat{H} - E_0 - \Delta_{ij} | \Psi \rangle, \\
+    0   &= \langle \Psi_{i}^{a} | \hat{H} - E_0 - \Delta_i | \Psi \rangle.
+
+These shifts approximate the effects of triple and quadruple excitations.
+The values for :math:`\Delta_{ij}` and :math:`\Delta_i`  used in several
+coupled-pair methods are given in Table :ref:`CEPA Shifts
+<table:cepa_shifts>`.  Note that these shifts are defined in a spin-free
+formalism for closed-shell references only.
+
+    .. _`table:cepa_shifts`:
+
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | method                  | :math:`\Delta_{ij}`                                        |  :math:`\Delta_i`                            |
+    +=========================+============================================================+==============================================+
+    | sdci                    | :math:`E_c`                                                |  :math:`E_c`                                 |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | dci                     | :math:`E_c`                                                |  NA                                          |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | cepa(0)                 | 0                                                          |  0                                           |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | cepa(1)                 | :math:`\frac{1}{2}\sum_k(\epsilon_{ik}+\epsilon_{jk})`     | :math:`\sum_k \epsilon_{ik}`                 |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | cepa(3)                 | :math:`-\epsilon_{ij}+\sum_k(\epsilon_{ik}+\epsilon_{jk})` | :math:`-\epsilon_{ii}+2\sum_k \epsilon_{ik}` |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | acpf                    | :math:`\frac{2}{N} E_c`                                    | :math:`\frac{2}{N} E_c`                      |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+    | aqcc                    | :math:`[1-\frac{(N-3)(N-2)}{N(N-1)}]E_c`                   | :math:`[1-\frac{(N-3)(N-2)}{N(N-1)}]E_c`     |
+    +-------------------------+------------------------------------------------------------+----------------------------------------------+
+
+The pair correlation energy, :math:`\epsilon_{ij}`, is simply a partial
+sum of the correlation energy.  In a spin-free formalism, the pair energy
+is given by
+
+.. math::
+   :label: pair_energy
+
+   \epsilon_{ij} = \sum_{ab} v_{ij}^{ab} (2 t_{ij}^{ab} - t_{ij}^{ba})
+
+Methods whose shifts (:math:`\Delta_{ij}` and :math:`\Delta_i`) do not
+explicitly depend on orbitals :math:`i` or :math:`j` (CISD, CEPA(0), ACPF,
+and AQCC) have solutions that render the energy stationary with respect
+variations in the amplitudes.  This convenient property allows density
+matrices and 1-electron properties to be evaluated without any additional
+effort.  Note, however, that 1-electron properties are currently
+unavailable when coupling these stationary CEPA-like methods with frozen
+natural orbitals.
 
 Density-fitted coupled cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,6 +330,20 @@ default to the :ref:`DETCI <sec:ci>` implementations of these methods.
     +-------------------------+-------------------------------------------------------------+
     | mp4                     | full fourth-order perturbation theory                       |
     +-------------------------+-------------------------------------------------------------+
+    | cepa(0)                 | coupled electron pair approximation, variant 0              |
+    +-------------------------+-------------------------------------------------------------+
+    | cepa(1)                 | coupled electron pair approximation, variant 1              |
+    +-------------------------+-------------------------------------------------------------+
+    | cepa(3)                 | coupled electron pair approximation, variant 3              |
+    +-------------------------+-------------------------------------------------------------+
+    | acpf                    | averaged coupled-pair functional                            |
+    +-------------------------+-------------------------------------------------------------+
+    | aqcc                    | averaged quadratic coupled-cluster                          |
+    +-------------------------+-------------------------------------------------------------+
+    | sdci                    | configuration interaction with single and double excitations|
+    +-------------------------+-------------------------------------------------------------+
+    | dci                     | configuration interaction with double excitations           |
+    +-------------------------+-------------------------------------------------------------+
     | fno-qcisd               | qcisd with frozen natural orbitals                          |
     +-------------------------+-------------------------------------------------------------+
     | fno-qcisd(t)            | qcisd(t) with frozen natural orbitals                       |
@@ -247,6 +357,20 @@ default to the :ref:`DETCI <sec:ci>` implementations of these methods.
     | fno-mp4(sdq)            | mp4(sdq) with frozen natural orbitals                       |
     +-------------------------+-------------------------------------------------------------+
     | fno-mp4                 | mp4 with frozen natural orbitals                            |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-cepa(0)             | cepa(0) with frozen natural orbitals                        |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-cepa(1)             | cepa(1) with frozen natural orbitals                        |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-cepa(3)             | cepa(3) with frozen natural orbitals                        |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-acpf                | acpf with frozen natural orbitals                           |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-aqcc                | aqcc with frozen natural orbitals                           |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-sdci                | sdci with frozen natural orbitals                           |
+    +-------------------------+-------------------------------------------------------------+
+    | fno-dci                 | dci with frozen natural orbitals                            |
     +-------------------------+-------------------------------------------------------------+
     | df-ccsd                 | ccsd with denisty fitting                                   |
     +-------------------------+-------------------------------------------------------------+
@@ -274,6 +398,8 @@ Basic FNOCC Keywords
 .. include:: /autodir_options_c/fnocc__cc_timings.rst
 .. include:: /autodir_options_c/fnocc__df_basis_cc.rst
 .. include:: /autodir_options_c/fnocc__cholesky_tolerance.rst
+.. include:: /autodir_options_c/fnocc__cepa_no_singles.rst
+.. include:: /autodir_options_c/fnocc__dipmom.rst
 
 .. index:: FNOCC; advanced-keywords
 
@@ -289,7 +415,9 @@ Advanced FNOCC Keywords
 .. include:: /autodir_options_c/fnocc__run_mp3.rst
 .. include:: /autodir_options_c/fnocc__run_mp4.rst
 .. include:: /autodir_options_c/fnocc__run_ccsd.rst
+.. include:: /autodir_options_c/fnocc__run_cepa.rst
 .. include:: /autodir_options_c/fnocc__vabcd_packed.rst
 .. include:: /autodir_options_c/fnocc__compute_triples.rst
 .. include:: /autodir_options_c/fnocc__compute_mp4_triples.rst
 .. include:: /autodir_options_c/fnocc__dfcc.rst
+.. include:: /autodir_options_c/fnocc__cepa_level.rst
