@@ -654,12 +654,7 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
 
     // Transform Qso to MO basis:
     double * tmp = (double*)malloc(nso*nso*nQ*sizeof(double));
-    #pragma omp parallel for schedule (static)
-    for (long int q = 0; q < nQ; q++) {
-        for (long int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nso,Qso+q*nso*nso+mu*nso,1,tmp+q*nso*nso+mu,nso);
-        }
-    }
+    F_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
     F_DGEMM('n','n',nmo,nso*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
     #pragma omp parallel for schedule (static)
     for (long int q = 0; q < nQ; q++) {
