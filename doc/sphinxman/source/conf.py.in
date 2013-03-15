@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PSI4'
-copyright = u'2012, The Psi4 Project'
+copyright = u'2013, The Psi4 Project'
 
 def get_gitversion():
     file = '../../../src/bin/psi4/gitversion.h'
@@ -65,7 +65,6 @@ def get_gitversion():
     try:
         vers = f.readline().split()[3]
         f.close()
-        #print 'GIT_VERSION', vers[1:7]
         return vers[0:7]
     except IndexError:
         return ''
