@@ -133,6 +133,8 @@ described in the DETCI section of the Appendix :ref:`apdx:detci`.
 .. index:: 
    pair: CI; arbitrary-order perturbation theory
 
+.. _`sec:arbpt`:
+
 Arbitrary Order Perturbation Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
