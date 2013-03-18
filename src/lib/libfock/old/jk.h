@@ -224,7 +224,7 @@ protected:
     // => Helper Routines <= //
 
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
-    unsigned long int memory_overhead() const;
+    unsigned long int memory_overhead();
 
 public:
     // => Constructors <= //
@@ -651,9 +651,9 @@ protected:
     void common_init();
 
     bool is_core() const;
-    unsigned long int memory_temp() const;
-    int max_rows() const;
-    int max_nocc() const;
+    unsigned long int memory_temp();
+    int max_rows();
+    int max_nocc();
     void initialize_temps();
     void free_temps();
     void initialize_w_temps();
