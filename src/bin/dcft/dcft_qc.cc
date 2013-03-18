@@ -11,6 +11,15 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::run_qc_dcft()
 {
+    // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
+    // for the simultaneous optimization of the cumulant and the orbitals
+
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
+        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
+
+    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy       NR *\n"
+                         "\t*---------------------------------------------------------------------------------*\n");
 
     bool orbitalsDone     = false;
     bool cumulantDone     = false;
@@ -82,6 +91,10 @@ DCFTSolver::run_qc_dcft()
                                lambda_convergence_, __FILE__, __LINE__);
 
     // Make sure that the orbital phase is retained and the Fock matrix is diagonal for the gradients
+
+    scfDone_ = true;
+    lambdaDone_ = true;
+    densityConverged_ = true;
 
 }
 
