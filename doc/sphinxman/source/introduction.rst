@@ -53,7 +53,7 @@ The following citation should be used in any publication utilizing the
   Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
   Abrams, N. J.  Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl, W. D.
   Allen, H. F.  Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill, and T.
-  D. Crawford, *WIREs Comput. Mol. Sci.*, (2011) (doi: 10.1002/wcms.93)
+  D. Crawford, *WIREs Comput. Mol. Sci.* **2**, 556 (2012).
 
 
 Depending on the particular modules used, the user may also wish to
@@ -67,6 +67,14 @@ appropriate references for the underlying theory):
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
   **133**, 174122 (2010).
+
+* "Analytic gradients for density cumulant functional theory: The DCFT-06 model,"
+  A.Yu. Sokolov, J.J. Wilke, A.C. Simmonett, H.F. Schaefer, *J. Chem. Phys.*
+  **137**, 054105 (2012).
+
+* "Density cumulant functional theory: The DC-12 method, an improved description 
+  of the one-particle density matrix," A.Yu. Sokolov, A.C. Simmonett, 
+  H.F. Schaefer, *J. Chem. Phys.*  **138**, 024107 (2013).
 
 .. rubric:: ADC(2)
 
