@@ -84,6 +84,8 @@ protected:
     double compute_lambda_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
+    void run_twostep_dcft();
+    void run_simult_dcft();
     // DCFT analytic gradient subroutines
     void compute_gradient();
     void response_guess();
@@ -127,6 +129,14 @@ protected:
     bool augment_b(double *vec, double tol);
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
+    /// Controls convergence of the orbital updates
+    bool scfDone_    = false;
+    /// Controls convergence of the decnsity cumulant updates
+    bool lambdaDone_ = false;
+    /// Controls convergence of the idempotent one-particle density
+    bool densityConverged_ = false;
+    /// Controls convergence of the DCFT energy
+    bool energyConverged_ = false;
     /// The maximum number of lambda iterations per update
     int lambdamaxiter_;
     /// The maximum number of SCF iterations per update
