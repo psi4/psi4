@@ -4,6 +4,7 @@ top_objdir = ../..
 SRC_PSIDATADIR = $(top_srcdir)/lib
 TARGET_DIR = $(shell basename `pwd`)
 TARGET = $(TARGET_DIR).test
+PASSFILE = $(TARGET_DIR).passed
 
 PERL = @PERL@
 TESTFLAGS = -q

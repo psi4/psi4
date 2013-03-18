@@ -22,7 +22,6 @@ A complete list of standard keywords is provided in Appendix
    occ
    adc
    sapt
-   cepa
    cc
    fnocc
    psimrcc
