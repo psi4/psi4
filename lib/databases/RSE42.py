@@ -1,13 +1,13 @@
 """
 | Database of radical stabilization energies.
-| Geometries from Soydas and Bozkaya (unpublished).
-| Reference radical stabilization energies from Soydas and Bozkaya (unpublished) at CCSD(T)/cc-pCVTZ level.
+| Geometries from [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)].
+| Reference radical stabilization energies from [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)] at CCSD(T)/cc-pCVTZ level.
 
 
 - **benchmark**
 
-  - ``'RSE42'`` Soydas and Bozkaya (unpublished).
-  - |dl| ``'RSE42'`` |dr| Soydas and Bozkaya (unpublished).
+  - ``'RSE42'`` [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)].
+  - |dl| ``'RSE42'`` |dr| [E. Soydas and U. Bozkaya, JCTC, 9, 1452-1460 (2013)].
 
 - **subset**
 
