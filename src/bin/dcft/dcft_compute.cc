@@ -30,26 +30,23 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
 
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
-        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
-
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                     "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
-                     "\t*---------------------------------------------------------------------------------*\n");
-    // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
-    // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
-    // the desired cutoff, we're done
-
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DC-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "ALGORITHM = QC", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DC-06", "Analytic gradients", __FILE__, __LINE__);
 
+    // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
+    // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
+    // the desired cutoff, we're done
     if(options_.get_str("ALGORITHM") == "TWOSTEP"){
+
+        fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                             "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+                             "\t*---------------------------------------------------------------------------------*\n");
+
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager for the density cumulant and SCF iterations
         dpdbuf4 Laa, Lab, Lbb;
@@ -279,6 +276,10 @@ DCFTSolver::compute_energy()
     // This is the simultaneous orbital/lambda update algorithm
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS"){
 
+        fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                             "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
+                             "\t*---------------------------------------------------------------------------------*\n");
+
         SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
@@ -417,8 +418,13 @@ DCFTSolver::compute_energy()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
     else {
-        fprintf(outfile,    "\n\n\t\t        Quadratically-Convergent DCFT      \n");
-        fprintf(outfile,        "\t\t     by A.Yu. Sokolov and A.C. Simmonett   \n\n");
+
+        if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
+            fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
+
+        fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                             "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy       NR *\n"
+                             "\t*---------------------------------------------------------------------------------*\n");
 
         run_qc_dcft();
 

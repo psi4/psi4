@@ -112,7 +112,7 @@ protected:
     void compute_orbital_gradient();
     void form_idps();
     void compute_sigma_vector();
-    void iterate_conjugate_gradients();
+    int iterate_conjugate_gradients();
     void check_qc_convergence();
     void update_cumulant_and_orbitals();
     void run_davidson();
