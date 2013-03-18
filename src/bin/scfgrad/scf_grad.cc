@@ -527,6 +527,7 @@ SharedMatrix SCFGrad::compute_hessian()
     hessian_terms.push_back("Exchange,LR");
     hessian_terms.push_back("XC");
     hessian_terms.push_back("-D");
+    hessian_terms.push_back("Response");
     hessian_terms.push_back("Total");
 
     // => Densities <= //
@@ -802,13 +803,13 @@ SharedMatrix SCFGrad::compute_hessian()
         double** Sp = hessians["Overlap"]->pointer();
 
         // Overlap derivatives
-        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
+        boost::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
         const double* buffer = Sint->buffer();   
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             for (int Q = 0; Q <= P; Q++) {
 
-                Sint->compute_shell_deriv1(P,Q);
+                Sint->compute_shell_deriv2(P,Q);
                                 
                 int nP = basisset_->shell(P).nfunction();
                 int oP = basisset_->shell(P).function_index();
@@ -955,6 +956,13 @@ SharedMatrix SCFGrad::compute_hessian()
     if (functional && functional->dispersion()) {
         throw PSIEXCEPTION("-D Hessians not implemented");
         //hessians["-D"] = functional->dispersion()->compute_hessian(basisset_->molecule());
+    }
+
+    // => Response Terms (Brace Yourself) <= //
+    if (options_.get_str("REFERENCE") == "RHF") {
+        hessians["Response"] = rhf_hessian_response();
+    } else {
+        throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }
 
     // => Total Hessian <= //
