@@ -26,11 +26,11 @@ namespace dfmp2 {
 
 void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ)
 {
+    return;  // There's a bug, so deactivate this code, for now.
     // The density matrix
-    SharedMatrix D = Dnosym->clone();
     SharedMatrix c1MO_c1NO(new Matrix("NOs", nmo_, nmo_));
     SharedVector occ_c1(new Vector("NO Occupations", nmo_));
-    D->diagonalize(c1MO_c1NO, occ_c1);
+    Dnosym->diagonalize(c1MO_c1NO, occ_c1);
     // Rotate the canonical MOs to NOs
     SharedMatrix AO_c1MO = reference_wavefunction_->Ca_subset("AO");
     SharedMatrix AO_c1NO = AO_c1MO->clone();
@@ -49,10 +49,6 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
         }
     }
     // Now, copy over the full matrix, whenever nonzero columns are
-    Ca_ = reference_wavefunction_->Ca()->clone();
-    Cb_ = Ca_;
-    Ca_->set_name("DF-MP2 Natural Orbitals");
-    epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
     for(int h = 0; h < nirrep_; ++h){
         double **pC1 = SO_c1NO->pointer(h);
         int symcol = 0;
