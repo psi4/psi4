@@ -14,10 +14,10 @@ DCFTSolver::compute_gradient()
     bool responseDone = false;
 
     // Print out the header
-    fprintf(outfile,"\n\n\t  **********************************************\n");
-    fprintf(outfile,    "\t  *       DC-06 Analytic Gradients Code      *\n");
-    fprintf(outfile,    "\t  *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
-    fprintf(outfile,    "\t  **********************************************\n\n");
+    fprintf(outfile,"\n\n\t***************************************************\n");
+    fprintf(outfile,    "\t*         DC-06 Analytic Gradients Code           *\n");
+    fprintf(outfile,    "\t*       by A.Yu. Sokolov and A.C. Simmonett       *\n");
+    fprintf(outfile,    "\t***************************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -32,8 +32,8 @@ DCFTSolver::compute_gradient()
     // Start two-step algorithm for solution of the response equations
     if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
         fprintf(outfile, "\t*=================================================*\n"
-                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
-                "\t*-------------------------------------------------*");
+                         "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
+                         "\t*-------------------------------------------------*");
 
         // Start macro-iterations
         while(!responseDone && iter_++ < maxiter_){

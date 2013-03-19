@@ -76,10 +76,10 @@ quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
   cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 \
   fci-dipole cisd-h2o+-0 ci-multi \
   cisd-opt-fd rasci-h2o mpn-bh \
-  dcft1 mcscf1 sapt1 sad1 \
+  mcscf1 sapt1 sad1 \
   psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-1 omp2-2 omp2-3 \
-  omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3 pywrap-db1 pywrap-db2 \
-  pywrap-cbs1 pywrap-all pywrap-alias
+  omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3 \
+  dcft1 dcft2 dcft3 dcft4 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias  
 
 HAVE_MADNESS=@HAVE_MPI@
 ifeq ($(HAVE_MADNESS),1)

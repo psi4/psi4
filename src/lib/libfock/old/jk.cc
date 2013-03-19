@@ -18,6 +18,9 @@
 #include <omp.h>
 #endif
 
+#define PRINT_ME fprintf(stdout,"If in %d\n",__LINE__);
+#define PRINT_ME
+
 using namespace std;
 using namespace psi;
 
@@ -166,7 +169,7 @@ void JK::common_init()
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = SharedMatrix(pet->aotoso());
 }
-unsigned long int JK::memory_overhead() const
+unsigned long int JK::memory_overhead()
 {
     unsigned long int mem = 0L;
 
@@ -1428,8 +1431,6 @@ void PKJK::compute_JK()
      * The J terms
      */
     for(int N = 0; N < J_.size(); ++N){
-        if(D_[N]->symmetry())
-            throw PSIEXCEPTION("PK integrals cannot be used for this type of calculation.");
         double *J_vector = new double[pk_pairs_];
         ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
         J_vectors.push_back(J_vector);
@@ -1961,13 +1962,9 @@ void DFJK::print_header() const
 }
 bool DFJK::is_core() const
 {
-    size_t ntri = sieve_->function_pairs().size();
+    int ntri = sieve_->function_pairs().size();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-
-    size_t mem = memory_;
-    mem -= memory_overhead();
-    mem -= memory_temp();
 
     // Two is for buffer space in fitting
     if (do_wK_)
@@ -1975,7 +1972,7 @@ bool DFJK::is_core() const
     else
         return (three_memory + 2L*two_memory < memory_);
 }
-unsigned long int DFJK::memory_temp() const
+unsigned long int DFJK::memory_temp()
 {
     unsigned long int mem = 0L;
 
@@ -1986,7 +1983,7 @@ unsigned long int DFJK::memory_temp() const
 
     return mem;
 }
-int DFJK::max_rows() const
+int DFJK::max_rows()
 {
     // Start with all memory
     unsigned long int mem = memory_;
@@ -2011,7 +2008,7 @@ int DFJK::max_rows() const
 
     return (int) max_rows;
 }
-int DFJK::max_nocc() const
+int DFJK::max_nocc()
 {
     int max_nocc = 0;
     for (int N = 0; N < C_left_ao_.size(); N++) {

@@ -248,6 +248,8 @@
 
 #define PSIF_SAPT_CCD          271  /*- SAPT2+ CCD Utility File -*/
 
+#define PSIF_HESS              272  /*- Hessian Utility File -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
