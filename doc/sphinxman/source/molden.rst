@@ -23,10 +23,11 @@ plot atomic orbitals, densities, electrostatic potentials (ESP's), etc.
 atomic coordinates, basis set, and SCF orbital coefficients in the 
 so-called Molden format.  This file is
 written by the SCF module (see Section :ref:`SCF <sec:scf>`) 
-if the user provides a 
-name for the file via the |scf__molden_file| keyword.  This Molden file is 
+if the user sets the |scf__molden_write| keyword to true.  This Molden file is 
 also used to pass information between |PSIfour| and WebMO, if |PSIfour| 
-computations are invoked using the WebMO GUI (|PSIfour| input files created 
-by WebMO automatically set |scf__molden_file| to `output.molden`.
+computations are invoked using the WebMO GUI.  The filename of the 
+Molden file ends in ".molden", and the prefix is determined by 
+|globals__writer_file_label| (if set), or else by the name of the output
+file plus the name of the current molecule.
 
 

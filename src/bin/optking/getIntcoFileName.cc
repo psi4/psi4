@@ -3,7 +3,7 @@
 #include "package.h"
 
 #if defined(OPTKING_PACKAGE_PSI)
- #include <libpsio/psio.hpp>
+  #include <libmints/writer_file_prefix.h>
 #endif
 
 #if defined(OPTKING_PACKAGE_QCHEM)
@@ -20,7 +20,7 @@ const char* getIntcoFileName()
       getPrefix(pref);
       strintco = std::string(pref) + "intco.dat";
 #elif defined(OPTKING_PACKAGE_PSI)
-      strintco = psi::get_outfile_prefix() + ".intco";
+      strintco = psi::get_writer_file_prefix() + ".intco";
 #endif
    }
    return strintco.c_str();

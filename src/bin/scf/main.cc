@@ -16,6 +16,7 @@
 
 #include <libmints/mints.h>
 #include <libmints/writer.h>
+#include <libmints/writer_file_prefix.h>
 #include <psi4-dec.h>
 
 #include <libscf_solver/rhf.h>
@@ -23,6 +24,7 @@
 #include <libscf_solver/uhf.h>
 #include <libscf_solver/cuhf.h>
 #include <libscf_solver/ks.h>
+
 
 using namespace boost;
 using namespace std;
@@ -84,14 +86,9 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     WorldComm->sync();
 
     // Print a molden file
-    if ( options["MOLDEN_FILE"].has_changed() ) {
+    if ( options.get_bool("MOLDEN_WRITE") ) {
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
-       molden->write(options.get_str("MOLDEN_FILE"));
-    }
-    // Might as well always write it, should be cheap
-    else {
-       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
-       std::string filename = get_outfile_prefix() + ".molden";
+       std::string filename = get_writer_file_prefix() + ".molden";
        molden->write(filename);
     }
 

@@ -353,8 +353,6 @@ public:
     void set_pid(const std::string &pid) { pid_ = pid; }
 };
 
-  std::string get_outfile_prefix(void);
-
 }
 
 #endif /* header guard */
