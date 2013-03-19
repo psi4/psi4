@@ -7,6 +7,8 @@
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
+#include <libmints/writer_file_prefix.h>
+
 using namespace boost::python;
 
 namespace psi { namespace findif {
@@ -109,8 +111,9 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
   free(g_cart);
 
   GradientWriter grad(mol, gradient_matrix);
-  grad.write("psi.file11.dat");
-  fprintf(outfile,"\tGradient written to file11.\n");
+  std::string gradfile = get_writer_file_prefix() + ".grad";
+  grad.write(gradfile);
+  fprintf(outfile,"\tGradient written.\n");
 
   SharedMatrix sgradient(gradient_matrix.clone());
   if (Process::environment.wavefunction()) {
