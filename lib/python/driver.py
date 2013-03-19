@@ -155,6 +155,8 @@ procedures = {
             'scf'  : run_scf_property,
             'cc2'  : run_cc_property,
             'ccsd' : run_cc_property,
+            'df-mp2' : run_dfmp2_property,
+            'dfmp2'  : run_dfmp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
             'eom_cc2'  : run_cc_property,
@@ -192,8 +194,6 @@ def energy(name, **kwargs):
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | name                    | calls method                                                                          |
     .. comment    +=========================+=======================================================================================+
-    .. comment    | df-cc                   | coupled cluster with density fitting                                                  |
-    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | mp2c                    | coupled MP2 (MP2C)                                                                    |
     .. comment    +-------------------------+---------------------------------------------------------------------------------------+
     .. comment    | mp2-drpa                | random phase approximation?                                                           |
@@ -216,103 +216,121 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (:ref:`DFT <sec:dft>`)                |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | df-mp2                  | MP2 with density fitting                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mcscf                   | multiconfigurational self consistent field (SCF)                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT)                                 |
+    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2                   | 2nd-order SAPT, traditional definition                                                |
+    | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+                  | SAPT including all 2nd-order terms                                                    |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convmp2>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+(3)               | SAPT including perturbative triples                                                   |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:fnompn>`                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+3                 |                                                                                       |
+    | mp3                     | 3rd-order MP perturbation theory (MP3) :ref:`[manual] <sec:fnompn>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt0-ct                | 0th-order SAPT plus charge transfer (CT) calculation                                  |
+    | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2-ct                | SAPT2 plus CT                                                                         |
+    | mp4                     | full MP4 :ref:`[manual] <sec:fnompn>`                                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+-ct               | SAPT2+ plus CT                                                                        |
+    | mp\ *n*                 | *n*\ th-order Moller--Plesset (MP) perturbation theory :ref:`[manual] <sec:arbpt>`    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+(3)-ct            | SAPT2+(3) plus CT                                                                     |
+    | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT) :ref:`[manual] <sec:arbpt>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+3-ct              | SAPT2+3 plus CT                                                                       |
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:ompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cc2                     | approximate coupled cluster singles and doubles (CC2)                                 |
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:ompn>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:ompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | bccd                    | Brueckner coupled cluster doubles (BCCD)                                              |
+    | cepa0                   | coupled electron pair approximation, equiv. linearized CCD :ref:`[manual] <sec:ompn>` |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | qcisd                   | quadratic configuration interaction singles doubles (QCISD)                           |
+    | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cc3                     | approximate coupled cluster singles, doubles, and triples (CC3)                       |
+    | cepa(1)                 | coupled electron pair approximation variant 1 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd(t)                 | CCSD with perturbative triples                                                        |
+    | cepa(3)                 | coupled electron pair approximation variant 3 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | bccd(t)                 | BCCD with perturbative triples                                                        |
+    | acpf                    | averaged coupled-pair functional :ref:`[manual] <sec:fnocepa>`                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | qcisd(t)                | QCISD with perturbative triples                                                       |
+    | aqcc                    | averaged quadratic coupled cluster :ref:`[manual] <sec:fnocepa>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd                   | quadratic CI singles doubles (QCISD) :ref:`[manual] <sec:fnocc>`                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cc2                     | approximate coupled cluster singles and doubles (CC2) :ref:`[manual] <sec:cc>`        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | bccd                    | Brueckner coupled cluster doubles (BCCD) :ref:`[manual] <sec:cc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | qcisd(t)                | QCISD with perturbative triples :ref:`[manual] <sec:fnocc>`                           |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | fno-df-ccsd(t)          | CCSD(T) with density fitting and frozen natural orbitals :ref:`[manual] <sec:fnocc>`  |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | bccd(t)                 | BCCD with perturbative triples :ref:`[manual] <sec:cc>`                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cc3                     | approximate CC singles, doubles, and triples (CC3) :ref:`[manual] <sec:cc>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory :ref:`[manual] <sec:arbpt>`         |
+    | cisd                    | configuration interaction (CI) singles and doubles (CISD) :ref:`[manual] <sec:ci>`    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT)                                   |
+    | cisdt                   | CI singles, doubles, and triples (CISDT) :ref:`[manual] <sec:ci>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cisd                    | configuration interaction (CI) singles and doubles (CISD)                             |
+    | cisdtq                  | CI singles, doubles, triples, and quadruples (CISDTQ) :ref:`[manual] <sec:ci>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cisdt                   | CI singles, doubles, and triples (CISDT)                                              |
+    | ci\ *n*                 | *n*\ th-order CI :ref:`[manual] <sec:ci>`                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cisdtq                  | CI singles, doubles, triples, and quadruples (CISDTQ)                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ci\ *n*                 | *n*\ th-order CI                                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | fci                     | full configuration interaction (FCI)                                                  |
+    | fci                     | full configuration interaction (FCI) :ref:`[manual] <sec:ci>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | adc                     | 2nd-order algebraic diagrammatic construction (ADC)                                   |
+    | gaussian-2 (g2)         | gaussian-2 composite method :ref:`[manual] <sec:fnogn>`                               |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc2                 | EOM-CC2                                                                               |
+    | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT) :ref:`[manual] <sec:sapt>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
+    | sapt2                   | 2nd-order SAPT, traditional definition :ref:`[manual] <sec:sapt>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc3                 | EOM-CC3                                                                               |
+    | sapt2+                  | SAPT including all 2nd-order terms :ref:`[manual] <sec:sapt>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa(n)                 | coupled electron pair approximation, variants 0, 1, and 3                             |
+    | sapt2+(3)               | SAPT including perturbative triples :ref:`[manual] <sec:sapt>`                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | acpf                    | averaged coupled-pair functional                                                      |
+    | sapt2+3                 | SAPT including all 3rd-order terms :ref:`[manual] <sec:sapt>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | aqcc                    | averaged quadratic coupled cluster                                                    |
+    | sapt2+(ccd)             | SAPT2+ with CC-based dispersion :ref:`[manual] <sec:sapt>`                            |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    | sapt2+(3)(ccd)          | SAPT2+(3) with CC-based dispersion :ref:`[manual] <sec:sapt>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | scs-omp2                | spin-component scaled OMP2                                                            |
+    | sapt2+3(ccd)            | SAPT2+3 with CC-based dispersion :ref:`[manual] <sec:sapt>`                           |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sos-omp2                | spin-opposite scaled OMP2                                                             |
+    | sapt0-ct                | 0th-order SAPT plus charge transfer (CT) calculation :ref:`[manual] <sec:saptct>`     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp3                    | orbital-optimized third order Moller--Plesset perturbation theory                     |
+    | sapt2-ct                | SAPT2 plus CT :ref:`[manual] <sec:saptct>`                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | scs-omp3                | spin-component scaled OMP3                                                            |
+    | sapt2+-ct               | SAPT2+ plus CT :ref:`[manual] <sec:saptct>`                                           |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sos-omp3                | spin-opposite scaled OMP3                                                             |
+    | sapt2+(3)-ct            | SAPT2+(3) plus CT :ref:`[manual] <sec:saptct>`                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
+    | sapt2+3-ct              | SAPT2+3 plus CT :ref:`[manual] <sec:saptct>`                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation, it is identical to linearized CCD                |
+    | sapt2+(ccd)-ct          | SAPT2+(CCD) plus CT :ref:`[manual] <sec:saptct>`                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | gaussian-2 (g2)         | gaussian-2 composite method                                                           |
+    | sapt2+(3)(ccd)-ct       | SAPT2+(3)(CCD) plus CT :ref:`[manual] <sec:saptct>`                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | sapt2+3(ccd)-ct         | SAPT2+3(CCD) plus CT :ref:`[manual] <sec:saptct>`                                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | adc                     | 2nd-order algebraic diagrammatic construction (ADC) :ref:`[manual] <sec:adc>`         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-cc2                 | EOM-CC2 :ref:`[manual] <sec:eomcc>`                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-cc3                 | EOM-CC3 :ref:`[manual] <sec:eomcc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. _`table:energy_scf`:
@@ -342,7 +360,7 @@ def energy(name, **kwargs):
     .. _`table:energy_mrcc`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method in Kallay's MRCC program                                                 |
+    | name                    | calls method in Kallay's MRCC program :ref:`[manual] <sec:mrcc>`                      |
     +=========================+=======================================================================================+
     | mrccsd                  | CC through doubles                                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -416,26 +434,26 @@ def energy(name, **kwargs):
 
         The target molecule, if not the last molecule defined.
 
-    :type cast_up: :ref:`boolean <op_py_boolean>` or string
-    :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
+    .. comment :type cast_up: :ref:`boolean <op_py_boolean>` or string
+    .. comment :param cast_up: ``'on'`` || |dl| ``'off'`` |dr| || ``'3-21g'`` || ``'cc-pVDZ'`` || etc.
 
-        Indicates whether, to accelerate convergence for the scf portion of
-        the *name* calculation, a preliminary scf should be performed with a
-        small basis set (3-21G if a basis name is not supplied as keyword
-        value) followed by projection into the full target basis.
+    .. comment     Indicates whether, to accelerate convergence for the scf portion of
+    .. comment     the *name* calculation, a preliminary scf should be performed with a
+    .. comment     small basis set (3-21G if a basis name is not supplied as keyword
+    .. comment     value) followed by projection into the full target basis.
 
-    .. deprecated:: Sept-2012
-       Use option |scf__basis_guess| instead.
+    .. comment .. deprecated:: Sept-2012
+    .. comment    Use option |scf__basis_guess| instead.
 
-    :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
-    :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
+    .. comment :type cast_up_df: :ref:`boolean <op_py_boolean>` or string
+    .. comment :param cast_up_df: ``'on'`` || |dl| ``'off'`` |dr| || ``'cc-pVDZ-RI'`` || ``'aug-cc-pVDZ-JKFIT'`` || etc.
 
-        Indicates whether, when *cast_up* is active, to run the preliminary
-        scf in density-fitted mode or what fitting basis to employ (when
-        available for all elements, cc-pVDZ-RI is the default).
+    .. comment     Indicates whether, when *cast_up* is active, to run the preliminary
+    .. comment     scf in density-fitted mode or what fitting basis to employ (when
+    .. comment     available for all elements, cc-pVDZ-RI is the default).
 
-    .. deprecated:: Sept-2012
-       Use option |scf__df_basis_guess| instead.
+    .. comment .. deprecated:: Sept-2012
+    .. comment    Use option |scf__df_basis_guess| instead.
 
     :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
@@ -493,9 +511,9 @@ def energy(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 8)
         if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
-            else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            else:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         returnvalue = procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
@@ -599,9 +617,9 @@ def gradient(name, **kwargs):
             PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
@@ -790,6 +808,8 @@ def property(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | df-mp2                  | MP2 with density fitting                                                              |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
@@ -848,9 +868,9 @@ def property(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
         if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
             if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 5)
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
-                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
@@ -1266,9 +1286,9 @@ def frequency(name, **kwargs):
             PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
     if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
         if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
-            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 7)
+            PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
     # Does an analytic procedure exist for the requested method?
     if (dertype == 2 and func_existed == False):

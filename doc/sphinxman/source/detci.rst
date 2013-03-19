@@ -1,11 +1,12 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:ci`:
 .. index:: CI
 
 .. index::
    pair: CI; theory
+
+.. _`sec:ci`:
 
 CI: Configuration Interaction
 =============================

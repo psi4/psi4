@@ -20,7 +20,7 @@ print_stdout('                    prelims          %s %s %s %s %s %s' % (get_loc
 set scf_type pk
 banner('ITEM 1')
 energy('scf')
-compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 8, '[1]     scf default          %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 6, '[1]     scf default          %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type pk
@@ -28,7 +28,7 @@ set basis_guess on
 set df_basis_guess yes
 banner('ITEM 2')
 energy('scf')
-compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 8, '[2]     scf default   castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 6, '[2]     scf default   castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
@@ -38,7 +38,7 @@ clean()
 set scf_type df
 banner('ITEM 3')
 energy('scf')
-compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 8, '[3]  df-scf default          %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 6, '[3]  df-scf default          %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type df
@@ -46,7 +46,7 @@ set basis_guess true
 set df_basis_guess true
 banner('ITEM 4')
 energy('scf')
-compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 8, '[4]  df-scf default   castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 6, '[4]  df-scf default   castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
@@ -57,7 +57,7 @@ set scf_type pk
 set puream true
 banner('ITEM 5')
 energy('scf')
-compare_values(-37.5882734783, get_variable('SCF TOTAL ENERGY'), 8, '[5]     scf spherical        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5882734783, get_variable('SCF TOTAL ENERGY'), 6, '[5]     scf spherical        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type pk
@@ -66,7 +66,7 @@ set basis_guess true
 set df_basis_guess true
 banner('ITEM 6')
 energy('scf')
-compare_values(-37.5882734783, get_variable('SCF TOTAL ENERGY'), 8, '[6]     scf spherical castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5882734783, get_variable('SCF TOTAL ENERGY'), 6, '[6]     scf spherical castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
@@ -77,7 +77,7 @@ set scf_type df
 set puream true
 banner('ITEM 7')
 energy('scf')
-compare_values(-37.5882728035, get_variable('SCF TOTAL ENERGY'), 8, '[7]  df-scf spherical        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5882728035, get_variable('SCF TOTAL ENERGY'), 6, '[7]  df-scf spherical        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type df
@@ -86,7 +86,7 @@ set basis_guess true
 set df_basis_guess true
 banner('ITEM 8')
 energy('scf')
-compare_values(-37.5882728035, get_variable('SCF TOTAL ENERGY'), 8, '[8]  df-scf spherical castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5882728035, get_variable('SCF TOTAL ENERGY'), 6, '[8]  df-scf spherical castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
@@ -97,7 +97,7 @@ set scf_type pk
 set puream false
 banner('ITEM 9')
 energy('scf')
-compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 8, '[9]     scf cartesian        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 6, '[9]     scf cartesian        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type pk
@@ -106,7 +106,7 @@ set basis_guess true
 set df_basis_guess true
 banner('ITEM 10')
 energy('scf')
-compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 8, '[10]    scf cartesian castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885579065, get_variable('SCF TOTAL ENERGY'), 6, '[10]    scf cartesian castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
@@ -117,7 +117,7 @@ set scf_type df
 set puream false
 banner('ITEM 11')
 energy('scf')
-compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 8, '[11] df-scf cartesian        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 6, '[11] df-scf cartesian        %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 clean()
 
 set scf_type df
@@ -126,7 +126,7 @@ set basis_guess true
 set df_basis_guess true
 banner('ITEM 12')
 energy('scf')
-compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 8, '[12] df-scf cartesian castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
+compare_values(-37.5885589047, get_variable('SCF TOTAL ENERGY'), 6, '[12] df-scf cartesian castup %s %s %s %s %s %s' % (get_local_option('SCF', 'SCF_TYPE'), has_local_option_changed('SCF', 'SCF_TYPE'), get_global_option('SCF_TYPE'), has_global_option_changed('SCF_TYPE'), get_option('SCF', 'SCF_TYPE'), has_option_changed('SCF', 'SCF_TYPE')))  #TEST
 set basis_guess false
 set df_basis_guess false
 revoke_local_option_changed('SCF', 'BASIS_GUESS')
