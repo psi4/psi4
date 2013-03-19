@@ -1,7 +1,3 @@
-#include <libplugin/plugin.h>
-#include <liboptions/liboptions.h>
-#include <libciomr/libciomr.h>
-
 #include "occwave.h"
 
 using namespace boost;
