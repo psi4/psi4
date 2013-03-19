@@ -17,12 +17,12 @@ A complete list of standard keywords is provided in Appendix
 
    notes_c
    scf
+   dcft
    dft
    dfmp2
    occ
    adc
    sapt
-   cepa
    cc
    fnocc
    psimrcc
