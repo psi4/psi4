@@ -130,13 +130,13 @@ protected:
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// Controls convergence of the orbital updates
-    bool scfDone_    = false;
+    bool scfDone_;
     /// Controls convergence of the decnsity cumulant updates
-    bool lambdaDone_ = false;
+    bool lambdaDone_;
     /// Controls convergence of the idempotent one-particle density
-    bool densityConverged_ = false;
+    bool densityConverged_;
     /// Controls convergence of the DCFT energy
-    bool energyConverged_ = false;
+    bool energyConverged_;
     /// The maximum number of lambda iterations per update
     int lambdamaxiter_;
     /// The maximum number of SCF iterations per update
