@@ -67,8 +67,8 @@ protected:
 
     virtual void form_F();
     virtual void form_G();
+    virtual void compute_orbital_gradient(bool save_fock);
 
-    void save_fock();
     bool diis();
 
     bool test_convergency();
