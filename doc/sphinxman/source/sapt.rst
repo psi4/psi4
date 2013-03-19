@@ -238,6 +238,8 @@ Advanced Keywords Controlling MP2 NO Approximations
 
 .. index:: SAPT; charge-transfer
 
+.. _`sec:saptct`:
+
 Charge-Transfer in SAPT
 ^^^^^^^^^^^^^^^^^^^^^^^
 

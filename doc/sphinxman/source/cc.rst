@@ -168,6 +168,8 @@ cluster calculations with |PSIfour|:
   will help narrow where memory bottlenecks or other errors exist in the 
   event of a crash.
 
+.. _`sec:eomcc`:
+
 Excited State Coupled Cluster Calculations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

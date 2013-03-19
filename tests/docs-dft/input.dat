@@ -191,7 +191,7 @@ dispheader(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfou
 fenergy = open('autodoc_dft_energy.rst', 'w')
 fenergy.write('\n.. _`table:energy_dft`:\n\n')
 fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
-fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fenergy.write('| %-27s | %-140s |\n' % ('name', 'calls method DFT :ref:`[manual] <sec:dft>`'))
 fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
 fopt = open('autodoc_dft_opt.rst', 'w')
