@@ -1823,30 +1823,31 @@ void CoupledCluster::UpdateT2(long int iter){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib,ijab=0;
-  //double energy = 0.0;
+
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
+
   // we still have the residual in memory in tempv
   //psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=o; a<rs; a++){
-      da = eps[a];
-      for (b=o; b<rs; b++){
-          dab = da + eps[b];
-          for (i=0; i<o; i++){
-              dabi = dab - eps[i];
-              for (j=0; j<o; j++){
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      double da = eps[a];
+      for (long int b=o; b<rs; b++){
+          double dab = da + eps[b];
+          for (long int i=0; i<o; i++){
+              double dabi = dab - eps[i];
+              for (long int j=0; j<o; j++){
 
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  dijab = dabi-eps[j];
-                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
-                  tempt[ijab] = tnew;
-                  ijab++;
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
+
+                  double dijab = dabi-eps[j];
+                  double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
+                  tempt[ijab]  = tnew;
+
               }
           }
       }
@@ -1871,16 +1872,16 @@ void CoupledCluster::UpdateT2(long int iter){
   psio.reset();
 }
 void CoupledCluster::UpdateT1(long int iter){
+
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  long int id=0;
-  double tnew,dia;
-  for (a=o; a<rs; a++){
-      for (i=0; i<o; i++){
-          dia = -eps[i]+eps[a];
-          tnew = - (w1[(a-o)*o+i])/dia;
+
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      for (long int i=0; i<o; i++){
+          double dia    = -eps[i]+eps[a];
+          double tnew   = - (w1[(a-o)*o+i])/dia;
           w1[(a-o)*o+i] = tnew;
       }
   }
@@ -2396,8 +2397,8 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  free(Fia);
-  free(Fai);
+  //free(Fia);
+  //free(Fai);
   free(Qmo);
   free(Abij);
   free(Sbij);
@@ -2544,6 +2545,8 @@ double DFCoupledCluster::compute_energy() {
   }
 
   // free remaining memory
+  free(Fia);
+  free(Fai);
   free(t1);
   free(tb);
 
@@ -2813,12 +2816,12 @@ void DFCoupledCluster::T1Integrals(){
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_QSO,"qso",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
     psio->close(PSIF_DCC_QSO,1);
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
-        }
-    }
+    //#pragma omp parallel for schedule (static)
+    //for (int q = 0; q < nQ; q++) {
+    //    for (int mu = 0; mu < nso; mu++) {
+    //        F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
+    //    }
+    //}
     F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,temp,nso,0.0,Qmo,full);
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
@@ -3210,13 +3213,12 @@ void DFCoupledCluster::UpdateT1(){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  long int id=0;
-  double tnew,dia;
-  for (a=o; a<rs; a++){
-      for (i=0; i<o; i++){
-          dia = -eps[i]+eps[a];
-          tnew =  -w1[(a-o)*o+i]/dia;
+
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      for (long int i=0; i<o; i++){
+          double dia = -eps[i]+eps[a];
+          double tnew =  -w1[(a-o)*o+i]/dia;
           w1[(a-o)*o+i] = tnew + t1[(a-o)*o+i];
       }
   }
@@ -3230,9 +3232,7 @@ void DFCoupledCluster::UpdateT2(){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib,ijab=0;
+
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   // df (ai|bj)
@@ -3245,22 +3245,23 @@ void DFCoupledCluster::UpdateT2(){
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_R2,1);
+ 
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      double da = eps[a];
+      for (long int b=o; b<rs; b++){
+          double dab = da + eps[b];
+          for (long int i=0; i<o; i++){
+              double dabi = dab - eps[i];
+              for (long int j=0; j<o; j++){
 
-  for (a=o; a<rs; a++){
-      da = eps[a];
-      for (b=o; b<rs; b++){
-          dab = da + eps[b];
-          for (i=0; i<o; i++){
-              dabi = dab - eps[i];
-              for (j=0; j<o; j++){
-                  iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
-                  jaib = iajb + (i-j)*v*(1-v*o);
+                  long int iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
+                  long int jaib = iajb + (i-j)*v*(1-v*o);
+                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
 
-                  dijab = dabi-eps[j];
-
-                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
-                  tempt[ijab] = tnew + tb[ijab];
-                  ijab++;
+                  double dijab = dabi-eps[j];
+                  double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
+                  tempt[ijab]  = tnew + tb[ijab];
               }
           }
       }
@@ -3311,6 +3312,7 @@ void DFCoupledCluster::Vabcd1(){
   double * Vm   = integrals+v*v*v;
 
   // qvv transpose
+  #pragma omp parallel for schedule (static)
   for (int q = 0; q < nQ; q++) {
       F_DCOPY(v*v,Qvv+q*v*v,1,integrals+q,nQ);
   }
@@ -3381,6 +3383,7 @@ void DFCoupledCluster::Vabcd1(){
   psio->close(PSIF_DCC_R2,1);
 
   // qvv un-transpose
+  #pragma omp parallel for schedule (static)
   for (int q = 0; q < nQ; q++) {
       F_DCOPY(v*v,Qvv+q,nQ,integrals+q*v*v,1);
   }
@@ -3978,7 +3981,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
       // update the amplitudes and check the energy
       Eold = eccsd;
       PairEnergy();
-      UpdateT1();
+      if (!options_.get_bool("CEPA_NO_SINGLES")){
+          UpdateT1();
+      }
       UpdateT2();
 
       // add vector to list for diis

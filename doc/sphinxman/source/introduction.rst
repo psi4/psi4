@@ -22,7 +22,7 @@ In this section, we provide an overview of some of the features of
 |PSIfour| along with the prerequisite steps for running calculations.
 Sec. :ref:`Tutorial <sec:tutorial>` provides a brief tutorial to help new users
 get started.  Section :ref:`Psithon <sec:psithonInput>` offers further details into the
-structure of |PSIfour| input files, and how Python can be mixed with
+structure of |PSIfour| input files and how Python can be mixed with
 quantum chemistry directives in |PSIfour|. Section :ref:`Psithon Functions <sec:psithonFunc>`
 provides more detail on the Python functions provided by |PSIfour|
 and discusses some of the higher-level functions such as counterpoise
@@ -31,7 +31,7 @@ on an entire database of molecules at a time.  Later sections deal with
 the different types of computations which can be done using |PSIfour|
 (e.g., Hartree |--| Fock, MP2, coupled-cluster) and general procedures
 such as geometry optimization and vibrational frequency analysis.
-The Appendix includes a complete description of all possible input
+The :ref:`Appendices <sec:appendices>` include a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
 a listing of the sample input files available under :source:`samples`.
 
@@ -53,7 +53,7 @@ The following citation should be used in any publication utilizing the
   Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
   Abrams, N. J.  Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl, W. D.
   Allen, H. F.  Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill, and T.
-  D. Crawford, *WIREs Comput. Mol. Sci.*, (2011) (doi: 10.1002/wcms.93)
+  D. Crawford, *WIREs Comput. Mol. Sci.* **2**, 556 (2012).
 
 
 Depending on the particular modules used, the user may also wish to
@@ -67,6 +67,14 @@ appropriate references for the underlying theory):
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
   **133**, 174122 (2010).
+
+* "Analytic gradients for density cumulant functional theory: The DCFT-06 model,"
+  A.Yu. Sokolov, J.J. Wilke, A.C. Simmonett, H.F. Schaefer, *J. Chem. Phys.*
+  **137**, 054105 (2012).
+
+* "Density cumulant functional theory: The DC-12 method, an improved description 
+  of the one-particle density matrix," A.Yu. Sokolov, A.C. Simmonett, 
+  H.F. Schaefer, *J. Chem. Phys.*  **138**, 024107 (2013).
 
 .. rubric:: ADC(2)
 
@@ -202,8 +210,9 @@ extensively on systems other than Mac and Linux.  There is not a Windows
 version of |PSIfour|.
 
 |PSIfour| has been successfully compiled using Intel, GCC, and Clang
-compilers.  For the Intel compilers, use versions 11 or
-12.1 (we have had trouble with version 12.0).  
+compilers.  For the Intel compilers, use versions 11 or 12.1 (we have had
+trouble with version 12.0). See Sec. :ref:`Compiling and Installing
+<sec:installFile>` for details.
 
 
 Capabilities
@@ -221,48 +230,6 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
 
 .. _`table:methods`:
 
-.. comment table:: Summary of theoretical methods available in |PSIfour|
-
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | Method                  | Energy    | Gradient  |
-.. comment    +=========================+===========+===========+
-.. comment    | RHF/ROHF/UHF SCF        | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/ROHF/UHF DF-SCF     | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | CIS/RPA/TDHF            | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | UHF DCFT                | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF SAPT                | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF MP2                 | Y         | Y         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | UHF/ROHF MP2            | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF DF-MP2              | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF ADC(2)              | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/ROHF CI(n)          | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/ROHF RAS-CI         | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/ROHF MP(n)          | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/ROHF ZAPT(n)        | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/UHF/ROHF CC2        | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/UHF/ROHF CCSD       | Y         | Y         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/UHF/ROHF CCSD(T)    | Y         | Y [#f1]_  |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/UHF/ROHF EOM-CCSD   | Y         | Y         |
-.. comment    +-------------------------+-----------+-----------+
-.. comment    | RHF/UHF/ROHF CC3        | Y         | N         |
-.. comment    +-------------------------+-----------+-----------+
-
 .. table:: Summary of theoretical methods available in |PSIfour|
 
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -272,61 +239,61 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-SCF (HF and DFT)     | Y         | Y [#f4]_  | RHF/ROHF/UHF/RKS/UKS | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | CIS/RPA/TDHF            | Y         | ---       |                      |                             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DCFT                    | Y         | Y         | UHF                  | partially threaded          |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | SAPT                    | Y         | ---       | RHF                  | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP2                     | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2                  | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | ADC(2)                  | Y         | ---       | RHF/ROHF             | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | CI(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | RAS-CI                  | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | MP4                     | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | ZAPT(n)                 | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | OMP3                    | Y         | ---       | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | ACPF/AQCC               | Y         | ---       | RHF                  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | QCISD                   | Y         | ---       | RHF                  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | QCISD(T)                | Y         | ---       | RHF                  | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CC2                     | Y         | ---       | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CCSD                    | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-CCSD                 | Y         | N         | RHF                  | threaded [#f3]_             |
+    | DF-CCSD                 | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CCSD(T)                 | Y         | Y [#f1]_  | RHF/ROHF/UHF         | threaded (pthreads)         |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | DF-CCSD(T)              | Y         | N         | RHF                  | threaded [#f3]_             |
+    | DF-CCSD(T)              | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CC3                     | Y         | ---       | RHF/ROHF/UHF         | threaded (pthreads)         |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | Mk-MRPT2                | Y         | ---       | RHF/ROHF/TCSCF       | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | Mk-MRCCSD               | Y         | ---       | RHF/ROHF/TCSCF       | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | Mk-MRCCSD(T)            | Y         | ---       | RHF/ROHF/TCSCF       | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | CI(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | RAS-CI                  | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | SAPT                    | Y         | ---       | RHF                  | threaded                    |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | CIS/RPA/TDHF            | Y         | ---       |                      |                             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | ADC(2)                  | Y         | ---       | RHF/ROHF             | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | EOM-CCSD                | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | Mk-MRCCSD               | Y         | N         | RHF/ROHF/TCSCF       | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | Mk-MRCCSD(T)            | Y         | N         | RHF/ROHF/TCSCF       | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | Mk-MRPT2                | Y         | N         | RHF/ROHF/TCSCF       | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | CEPA(n), n=0,1,3        | Y         | N         | RHF                  | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | ACPF/AQCC               | Y         | N         | RHF                  | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | MP4                     | Y         | N         | RHF                  | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | QCISD                   | Y         | N         | RHF                  | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | QCISD(T)                | Y         | N         | RHF                  | threaded [#f3]_             |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP3                    | Y         | N         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
-    +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
 
 ..    | %HF DBOC                | Y         | N         |
@@ -348,7 +315,9 @@ computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
 |PSIfour| can also compute an extensive list of one-electron properties.
 
-.. index:: contact
+.. index::
+   single: contact
+   single: bugs
 
 Technical Support
 =================
@@ -363,6 +332,11 @@ For bug reports, specific and detailed information, with example
 inputs, would be appreciated.  Questions or comments regarding
 this user's manual may be sent to 
 `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_.
+
+Alternatively, bug reports and comments can be submitted to the `Issue
+tracker on GitHub <https://github.com/psi4/psi4.0b4/issues/new>`_ . This site
+is viewable by all, but reporting bugs requires signing up for a `free
+GitHub account <https://github.com/signup/free>`_.
 
 
 .. rubric:: Footnotes

@@ -86,7 +86,7 @@ class CoupledCluster: public Wavefunction{
     void WriteBanner();
 
     /// allocate memory
-    void AllocateMemory();
+    virtual void AllocateMemory();
 
     /// some cc/qci diagrams
     void CPU_t1_vmeai(CCTaskParams params);
@@ -210,7 +210,7 @@ class DFCoupledCluster : public CoupledCluster{
     void WriteBanner();
 
     /// allocate memory
-    void AllocateMemory();
+    virtual void AllocateMemory();
 
     /// update t1 amplitudes
     void UpdateT1();
@@ -219,7 +219,7 @@ class DFCoupledCluster : public CoupledCluster{
     void UpdateT2();
 
     /// v^4 CC diagram
-    void Vabcd1();
+    virtual void Vabcd1();
 
     /// workspace buffers.
     double*Abij,*Sbij;
@@ -243,6 +243,9 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// evaluate cc diagrams
     void CCResidual();
+
+    /// evaluate triples
+    PsiReturnType triples();
 
     /// SCS-MP2 function and variables
     void SCS_MP2();

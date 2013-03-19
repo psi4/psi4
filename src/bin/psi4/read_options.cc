@@ -817,8 +817,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations -*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
-      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert-*/
-      options.add_bool("TAU_SQUARED", false);
+//      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert-*/
+//      options.add_bool("TAU_SQUARED", false);
       /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation !expert-*/
       options.add_bool("TPDM", false);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).

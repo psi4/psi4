@@ -287,7 +287,7 @@ def run_scf_gradient(name, **kwargs):
             jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
             if jkbasis:
                 PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
-                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+                PsiMod.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
@@ -351,7 +351,7 @@ def scf_helper(name, **kwargs):
             jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
             if jkbasis:
                 PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
-                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+                PsiMod.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
@@ -598,7 +598,7 @@ def run_dfmp2_gradient(name, **kwargs):
             jkbasis = corresponding_jkfit(PsiMod.get_global_option('BASIS'))
             if jkbasis:
                 PsiMod.set_global_option('DF_BASIS_SCF', jkbasis)
-                PsiMod.print_out('\nNo DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
+                PsiMod.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
@@ -613,7 +613,7 @@ def run_dfmp2_gradient(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
@@ -1083,7 +1083,7 @@ def run_dft(name, **kwargs):
             ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
             if ribasis:
                 PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
-                PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+                PsiMod.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
@@ -1255,7 +1255,7 @@ def run_dfmp2(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
@@ -1313,7 +1313,7 @@ def run_mp2c(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_MP2', ribasis)
-            PsiMod.print_out('No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
@@ -1402,6 +1402,8 @@ def run_sapt(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+    if user_pg != 'c1':
+        PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     nfrag = molecule.nfragments()
     if nfrag != 2:
@@ -1497,7 +1499,7 @@ def run_sapt(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
@@ -1529,6 +1531,8 @@ def run_dftsapt(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+    if user_pg != 'c1':
+        PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     nfrag = molecule.nfragments()
     if nfrag != 2:
@@ -1598,7 +1602,7 @@ def run_dftsapt(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
@@ -1633,6 +1637,8 @@ def run_infsapt(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+    if user_pg != 'c1':
+        PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     nfrag = molecule.nfragments()
     if nfrag != 2:
@@ -1702,7 +1708,7 @@ def run_infsapt(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
@@ -1738,6 +1744,8 @@ def run_sapt_ct(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(True)
     molecule.update_geometry()
+    if user_pg != 'c1':
+        PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     nfrag = molecule.nfragments()
     if nfrag != 2:
@@ -1839,7 +1847,7 @@ def run_sapt_ct(name, **kwargs):
         ribasis = corresponding_rifit(PsiMod.get_global_option('BASIS'))
         if ribasis:
             PsiMod.set_global_option('DF_BASIS_SAPT', ribasis)
-            PsiMod.print_out('No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
+            PsiMod.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
         else:
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
@@ -2053,6 +2061,8 @@ def run_fnodfcc(name, **kwargs):
     molecule.reset_point_group('c1')
     molecule.fix_orientation(1)
     molecule.update_geometry()
+    if user_pg != 'c1':
+        PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # triples?
     if (lowername == 'df-ccsd'):
@@ -2175,6 +2185,8 @@ def run_fnocc(name, **kwargs):
         molecule = PsiMod.get_active_molecule()
         molecule.update_geometry()
         molecule.reset_point_group('c1')
+        if user_pg != 'c1':
+            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
@@ -2285,6 +2297,8 @@ def run_cepa(name, **kwargs):
         molecule = PsiMod.get_active_molecule()
         molecule.update_geometry()
         molecule.reset_point_group('c1')
+        if user_pg != 'c1':
+            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
