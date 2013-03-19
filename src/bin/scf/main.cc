@@ -88,6 +88,13 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
        molden->write(options.get_str("MOLDEN_FILE"));
     }
+    // Might as well always write it, should be cheap
+    else {
+       boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
+       std::string filename = get_outfile_prefix() + ".molden";
+       molden->write(filename);
+    }
+
     // Print molecular orbitals
     if ( options.get_bool("PRINT_MOS") ) {
        boost::shared_ptr<MOWriter> mo(new MOWriter(scf,options));
