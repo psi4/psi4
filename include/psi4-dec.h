@@ -18,6 +18,7 @@ enum PsiReturnType {Success, Failure, Balk, EndLoop};
 extern FILE *outfile;
 //  extern PSIO *psio;
 extern char *psi_file_prefix;
+extern std::string outfile_name;
 extern bool verbose;
 
 // Very useful regex for matching floating point numbers

@@ -24,6 +24,8 @@ public:
     SharedMatrix compute_gradient(); 
 
     SharedMatrix compute_hessian();
+
+    SharedMatrix rhf_hessian_response();
 };
 
 }} // Namespaces
