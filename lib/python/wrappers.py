@@ -1560,11 +1560,29 @@ def complete_basis_set(name, **kwargs):
 
            * scf
            * mp2
+           * mp2.5
+           * mp3
+           * mp4(sdq)
+           * mp4
+           * omp2
+           * omp3
+           * ocepa
+           * cepa0
+           * cepa(0)
+           * cepa(1)
+           * cepa(3)
+           * acpf
+           * aqcc
+           * qcisd
            * cc2
            * ccsd
+           * fno-df-ccsd
            * bccd
            * cc3
+           * qcisd(t)
            * ccsd(t)
+           * fno-df-ccsd(t)
+           * bccd(t)
            * cisd
            * cisdt
            * cisdtq
@@ -1720,6 +1738,61 @@ def complete_basis_set(name, **kwargs):
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
     VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY'}
+    VARH['mp2.5'] = {       'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY', 
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY', 
+                           'mp3corl': 'MP3 CORRELATION ENERGY'}
+    VARH['mp3'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY', 
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY', 
+                           'mp3corl': 'MP3 CORRELATION ENERGY'}
+    VARH['mp4(sdq)'] = {    'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY', 
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY', 
+                           'mp3corl': 'MP3 CORRELATION ENERGY', 
+                      'mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY'}
+    VARH['mp4'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY', 
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY', 
+                           'mp3corl': 'MP3 CORRELATION ENERGY', 
+                      'mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY', 
+                           'mp4corl': 'MP4(SDTQ) CORRELATION ENERGY'} 
+    VARH['omp2'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'omp2corl': 'OMP2 CORRELATION ENERGY'}
+    VARH['omp3'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'mp3corl': 'MP3 CORRELATION ENERGY',
+                          'omp3corl': 'OMP3 CORRELATION ENERGY'}
+    VARH['ocepa'] = {       'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'ocepacorl': 'OCEPA(0) CORRELATION ENERGY'}
+    VARH['cepa0'] = {       'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'cepa0corl': 'CEPA(0) CORRELATION ENERGY'}
+    VARH['cepa(0)'] = {     'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                       'cepa(0)corl': 'CEPA(0) CORRELATION ENERGY'}
+    VARH['cepa(1)'] = {     'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                       'cepa(1)corl': 'CEPA(1) CORRELATION ENERGY'}
+    VARH['cepa(3)'] = {     'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                       'cepa(3)corl': 'CEPA(3) CORRELATION ENERGY'}
+    VARH['acpf'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'acpfcorl': 'ACPF CORRELATION ENERGY'}
+    VARH['aqcc'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'aqcccorl': 'AQCC CORRELATION ENERGY'}
+    VARH['qcisd'] = {       'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY',
+                           'mp3corl': 'MP3 CORRELATION ENERGY',
+                      'mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY',
+                         'qcisdcorl': 'QCISD CORRELATION ENERGY'}
+
+
     VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc2corl': 'CC2 CORRELATION ENERGY'}
@@ -1732,10 +1805,28 @@ def complete_basis_set(name, **kwargs):
     VARH['cc3'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc3corl': 'CC3 CORRELATION ENERGY'}
+    VARH['fno-df-ccsd'] = { 'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                   'fno-df-ccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['fno-df-ccsd(t)'] = {'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'ccsdcorl': 'CCSD CORRELATION ENERGY',
+                'fno-df-ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+    VARH['qcisd(t)'] = {    'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                         'mp2.5corl': 'MP2.5 CORRELATION ENERGY',
+                           'mp3corl': 'MP3 CORRELATION ENERGY',
+                      'mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY',
+                         'qcisdcorl': 'QCISD CORRELATION ENERGY',
+                      'qcisd(t)corl': 'QCISD(T) CORRELATION ENERGY'}
     VARH['ccsd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+    VARH['bccd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'ccsdcorl': 'CCSD CORRELATION ENERGY',
+                       'bccd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
     VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
                           'cisdcorl': 'CISD CORRELATION ENERGY'}
     VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',

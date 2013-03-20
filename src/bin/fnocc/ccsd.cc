@@ -285,7 +285,7 @@ double CoupledCluster::compute_energy() {
 
      // ccsd(t) energy
      if (do_cc) {
-        Process::environment.globals["(T) CORRELATION ENERGY"] = et;
+        Process::environment.globals["(T) CORRECTION ENERGY"] = et;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
         Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
         if (isccsd) {
@@ -299,7 +299,7 @@ double CoupledCluster::compute_energy() {
 
      if (do_mp) {
         // mp4 triples:
-        Process::environment.globals["MP4(T) CORRELATION ENERGY"] = emp4_t;
+        Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
         Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
         Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
         Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
@@ -2538,7 +2538,7 @@ double DFCoupledCluster::compute_energy() {
       tstop();
 
       // ccsd(t) energy
-      Process::environment.globals["(T) CORRELATION ENERGY"] = et;
+      Process::environment.globals["(T) CORRECTION ENERGY"] = et;
       Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
       Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
       Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
