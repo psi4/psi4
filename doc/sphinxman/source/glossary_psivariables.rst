@@ -371,12 +371,6 @@ PSI Variables by Alpha
 
    .. math:: \sqrt{\frac{1}{n}\sum_{rxn}^{n}{(\textsf{\textsl{name}}_{rxn}-\text{REF}_{rxn})^2}}
 
-.. psivar:: DF-MP2 TOTAL ENERGY
-   DF-MP2 CORRELATION ENERGY
-
-   The total electronic energy [H] and correlation energy component [H]
-   for the density-fitted MP2 level of theory.
-
 .. psivar:: DFT FUNCTIONAL TOTAL ENERGY
 
    The total electronic energy [H] for the underlying functional of the
