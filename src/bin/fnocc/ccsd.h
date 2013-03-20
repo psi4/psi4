@@ -242,7 +242,7 @@ class DFCoupledCluster : public CoupledCluster{
     virtual void T1Integrals();
 
     /// evaluate cc diagrams
-    void CCResidual();
+    virtual void CCResidual();
 
     /// evaluate triples
     PsiReturnType triples();
