@@ -3,13 +3,13 @@
  \ingroup MINTS
  */
 
+#include <boost/regex.hpp>
 #include <cstdlib>
 #include <unistd.h>
 #include <cstring>
 #include <boost/shared_ptr.hpp>
 #include <psi4-dec.h>
 #include <libmints/molecule.h>
-#include <boost/regex.hpp>
 
 using namespace boost;
 
