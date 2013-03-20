@@ -1197,12 +1197,6 @@ AC_CONFIG_FILES([
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc
-          plugins/efp/Makefile
-          plugins/efp/__init__.py
-          plugins/efp/doc.rst
-          plugins/efp/efp.cc
-          plugins/efp/input.dat
-          plugins/efp/pymodule.py
 
           bin/psi4-config
 ])
