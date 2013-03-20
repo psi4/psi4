@@ -199,18 +199,22 @@ double CoupledCluster::compute_energy() {
   Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
   Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
 
-  // mp3 energy
-  Process::environment.globals["MP3 CORRELATION ENERGY"] = emp2 + emp3;
-  Process::environment.globals["MP3 TOTAL ENERGY"] = emp2 + emp3 + escf;
+  if ( !options_.get_bool("RUN_MP2") ) {
+      // mp3 energy
+      Process::environment.globals["MP3 CORRELATION ENERGY"] = emp2 + emp3;
+      Process::environment.globals["MP3 TOTAL ENERGY"] = emp2 + emp3 + escf;
 
-  // mp2.5 energy
-  Process::environment.globals["MP2.5 CORRELATION ENERGY"] = emp2 + 0.5*emp3 ;
-  Process::environment.globals["MP2.5 TOTAL ENERGY"] = emp2 + 0.5*emp3 + escf;
+      // mp2.5 energy
+      Process::environment.globals["MP2.5 CORRELATION ENERGY"] = emp2 + 0.5*emp3 ;
+      Process::environment.globals["MP2.5 TOTAL ENERGY"] = emp2 + 0.5*emp3 + escf;
+  }
 
   // mp4 energy
-  Process::environment.globals["MP4(SDQ) TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
-  Process::environment.globals["MP4(SDQ) CORRELATION ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q;
-  Process::environment.globals["MP4 TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
+  if ( !options_.get_bool("RUN_MP3") && !options_.get_bool("RUN_MP2") ) {
+      Process::environment.globals["MP4(SDQ) TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
+      Process::environment.globals["MP4(SDQ) CORRELATION ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q;
+      Process::environment.globals["MP4 TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
+  }
 
   // free some memory before triples 
   free(integrals);

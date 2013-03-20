@@ -2214,11 +2214,7 @@ def run_fnocc(name, **kwargs):
 
     # set current correlation energy and total energy.  only need to treat mpn here.
     emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
-    emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
-    emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
     cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
-    cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
-    cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
     if (lowername == 'fnocc-mp') and (level == 3):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
@@ -2226,15 +2222,23 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
     elif ( lowername == 'mp4(sdq)'):
+        emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
     elif ( lowername == 'fno-mp4(sdq)'):
+        emp4sdq  = PsiMod.get_variable("MP4(SDQ) TOTAL ENERGY")
+        cemp4sdq = PsiMod.get_variable("MP4(SDQ) CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4sdq)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4sdq)
     elif ( lowername == 'fno-mp4'):
+        emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
+        cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
     elif (lowername == 'fnocc-mp') and (level == 4):
+        emp4     = PsiMod.get_variable("MP4 TOTAL ENERGY")
+        cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
 
