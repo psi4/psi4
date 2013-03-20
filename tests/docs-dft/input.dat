@@ -197,7 +197,7 @@ fenergy.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 fopt = open('autodoc_dft_opt.rst', 'w')
 fopt.write('\n.. _`table:opt_dft`:\n\n')
 fopt.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
-fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method'))
+fopt.write('| %-27s | %-140s |\n' % ('name', 'calls method DFT :ref:`[manual] <sec:dft>`'))
 fopt.write('+=%27s=+=%140s=+\n' % (27 * '=', 140 * '='))
 
 for fctl in sorted(funcdict.iterkeys()):
@@ -238,7 +238,7 @@ for fctl in sorted(funcdict.iterkeys()):
     
         fenergy.write('+-%27s-+-%140s-+\n' % (27 * '-', 140 * '-'))
 
-        if not funcdict[fctl]['is_c_hybrid']:
+        if ((not funcdict[fctl]['is_c_hybrid']) and (not funcdict[fctl]['is_c_lrc']) and (not funcdict[fctl]['is_x_lrc'])):
             if funcdict[fctl]['dispersion']:
                 fopt.write('| %-27s | %-140s |\n' % 
                     (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
