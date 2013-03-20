@@ -2213,12 +2213,14 @@ def run_fnocc(name, **kwargs):
     PsiMod.fnocc()
 
     # set current correlation energy and total energy.  only need to treat mpn here.
-    emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
-    cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
     if (lowername == 'fnocc-mp') and (level == 3):
+        emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
+        cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
     elif ( lowername == 'fno-mp3' ):
+        emp3     = PsiMod.get_variable("MP3 TOTAL ENERGY")
+        cemp3    = PsiMod.get_variable("MP3 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp3)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp3)
     elif ( lowername == 'mp4(sdq)'):
