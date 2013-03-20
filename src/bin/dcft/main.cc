@@ -20,10 +20,10 @@ dcft(Options &options)
     // Start the timers
     tstart();
 
-    fprintf(outfile,"\n\n\t\t*******************************************\n");
-    fprintf(outfile,    "\t\t*  DCFT - A Density Cumulant Functional   *\n");
-    fprintf(outfile,    "\t\t*  Theory code written by Andy Simmonett  *\n");
-    fprintf(outfile,    "\t\t*******************************************\n\n");
+    fprintf(outfile,"\n\n\t***********************************************************************************\n");
+    fprintf(outfile,    "\t*                        Density Cumulant Functional Theory                       *\n");
+    fprintf(outfile,    "\t*                     by Alexander Sokolov and Andy Simmonett                     *\n");
+    fprintf(outfile,    "\t***********************************************************************************");
 
     boost::shared_ptr<Wavefunction> dcft = boost::shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.wavefunction(), options));
     Process::environment.set_wavefunction(dcft);

@@ -276,7 +276,7 @@ psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
 dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst dft.rst fnocc.rst \
 installfile.rst optionshandling.rst basissets_byfamily.rst psipep.rst \
-pep0001.rst dftd3.rst occ.rst molden.rst
+pep0001.rst dftd3.rst occ.rst molden.rst dcft.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

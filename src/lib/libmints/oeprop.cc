@@ -861,7 +861,6 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
-    fprintf(outfile, "\nProperties computed using the %s density matrix\n", wfn_->name().c_str());
     fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 
@@ -917,6 +916,17 @@ bool from_string(T& t,
 
 void OEProp::compute()
 {
+    std::string name(wfn_->Da()->name());
+
+    // We want to strip out the Alpha part of the name, because we really use the full density
+    size_t pos = name.find("Alpha ");
+    if(pos != std::string::npos)
+        name.replace(pos, 6, "");
+    pos = name.find("alpha ");
+    if(pos != std::string::npos)
+        name.replace(pos, 6, "");
+
+    fprintf(outfile, "\nProperties computed using the %s density matrix\n", name.c_str());
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();

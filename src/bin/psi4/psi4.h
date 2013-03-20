@@ -13,7 +13,6 @@
 namespace psi {
 
 EXT FILE* infile;
-EXT std::string outfile_name;
 
 /*! Directory location of the input file */
 EXT std::string infile_directory;

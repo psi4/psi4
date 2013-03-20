@@ -1,7 +1,6 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:fnocc`:
 .. index:: Frozen natural orbital coupled cluster, FNO-CC
 
 .. index::
@@ -14,6 +13,8 @@
    single: FNO-CCSD(T)
    single: DF-CCSD(T)
    pair: CCSD(T); density-fitting
+
+.. _`sec:fnocc`:
 
 FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
 ===================================================================
@@ -103,6 +104,8 @@ may be included noniteratively to yield the QCISD(T) method.  Both the
 QCISD(T) and CCSD(T) methods are implemented for closed-shell references
 in the FNOCC module.
 
+.. _`sec:fnompn`:
+
 Many-body perturbation theory 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -155,6 +158,8 @@ perturbation theory results.  The keywords for invoking perturbation
 theory computations are given below in
 Table :ref:`FNOCC Methods <table:fnocc_methods>`.  Full MP4 correlation
 energies are also available.
+
+.. _`sec:fnocepa`:
 
 Coupled electron pair approximation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -293,6 +298,7 @@ keyword |fnocc__cholesky_tolerance|.  Note that the keyword
 computation exploits DF technology in the SCF procedure, but one can
 override this behavior through this keyword.
 
+.. _`sec:fnogn`:
 
 Gn theory
 ~~~~~~~~~
@@ -372,13 +378,13 @@ default to the :ref:`DETCI <sec:ci>` implementations of these methods.
     +-------------------------+-------------------------------------------------------------+
     | fno-dci                 | dci with frozen natural orbitals                            |
     +-------------------------+-------------------------------------------------------------+
-    | df-ccsd                 | ccsd with denisty fitting                                   |
+    | df-ccsd                 | ccsd with density fitting                                   |
     +-------------------------+-------------------------------------------------------------+
-    | df-ccsd(t)              | ccsd(t) with denisty fitting                                |
+    | df-ccsd(t)              | ccsd(t) with density fitting                                |
     +-------------------------+-------------------------------------------------------------+
-    | fno-df-ccsd             | ccsd with denisty fitting and frozen natural orbitals       |
+    | fno-df-ccsd             | ccsd with density fitting and frozen natural orbitals       |
     +-------------------------+-------------------------------------------------------------+
-    | fno-df-ccsd(t)          | ccsd(t) with denisty fitting and frozen natural orbitals    |
+    | fno-df-ccsd(t)          | ccsd(t) with density fitting and frozen natural orbitals    |
     +-------------------------+-------------------------------------------------------------+
 
 .. index:: FNOCC; basic-keywords

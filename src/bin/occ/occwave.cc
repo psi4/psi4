@@ -1,24 +1,9 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
 #include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
 
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
-#include <libmints/mints.h>
-#include <liboptions/liboptions.h>
-#include <libdiis/diismanager.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
 
 #include "occwave.h"
-#include "defines.h"
 
 using namespace psi;
 using namespace boost;
