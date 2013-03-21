@@ -15,7 +15,7 @@ set globals {
 }
 
 set scf {
-    d_convergence 7
+    e_convergence 8
 }
 
 set mp2 scs on
