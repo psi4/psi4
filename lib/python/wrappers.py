@@ -952,6 +952,8 @@ def database(name, db_name, **kwargs):
     user_df_basis_sapt = PsiMod.get_global_option('DF_BASIS_SAPT')
     user_df_basis_elst = PsiMod.get_global_option('DF_BASIS_ELST')
 
+    user_writer_file_label = PsiMod.get_global_option('WRITER_FILE_LABEL')
+
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_global_option('REFERENCE')
     user_memory = PsiMod.get_memory()
@@ -1243,6 +1245,9 @@ def database(name, db_name, **kwargs):
             elif user_reference == 'RKS':
                 commands += """PsiMod.set_global_option('REFERENCE', 'UKS')\n"""
 
+        commands += """PsiMod.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + rgt)
+
         # all modes need to step through the reagents but all for different purposes
         # continuous: defines necessary commands, executes energy(method) call, and collects results into dictionary
         # sow: opens individual reagent input file, writes the necessary commands, and writes energy(method) call
@@ -1455,6 +1460,7 @@ def database(name, db_name, **kwargs):
     PsiMod.set_global_option("REFERENCE", user_reference)
     if not b_user_reference:
         PsiMod.revoke_global_option_changed('REFERENCE')
+    PsiMod.set_global_option('WRITER_FILE_LABEL', user_writer_file_label)
 
     DB_RGT.clear()
     DB_RGT.update(VRGT)
@@ -1791,8 +1797,6 @@ def complete_basis_set(name, **kwargs):
                            'mp3corl': 'MP3 CORRELATION ENERGY',
                       'mp4(sdq)corl': 'MP4(SDQ) CORRELATION ENERGY',
                          'qcisdcorl': 'QCISD CORRELATION ENERGY'}
-
-
     VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                            'cc2corl': 'CC2 CORRELATION ENERGY'}
@@ -1857,6 +1861,8 @@ def complete_basis_set(name, **kwargs):
     #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_global_option('WFN')
+
+    user_writer_file_label = PsiMod.get_global_option('WRITER_FILE_LABEL')
 
     # Make sure the molecule the user provided is the active one
     if 'molecule' in kwargs:
@@ -2074,6 +2080,9 @@ def complete_basis_set(name, **kwargs):
         # Build string of molecule and commands that are dependent on the database
         commands = '\n'
         commands += """\nPsiMod.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
+        commands += """PsiMod.set_global_option('WRITER_FILE_LABEL', '%s')\n""" % \
+            (user_writer_file_label + ('' if user_writer_file_label == '' else '-') + mc['f_wfn'].lower() + '-' + mc['f_basis'].lower())
+
         exec(commands)
 
         # Make energy() call
@@ -2165,6 +2174,8 @@ def complete_basis_set(name, **kwargs):
     PsiMod.set_global_option('WFN', user_wfn)
     if not b_user_wfn:
         PsiMod.revoke_global_option_changed('WFN')
+
+    PsiMod.set_global_option('WRITER_FILE_LABEL', user_writer_file_label)
 
     PsiMod.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CBS CORRELATION ENERGY', finalenergy - GRAND_NEED[0]['d_energy'])
