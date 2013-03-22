@@ -1502,6 +1502,7 @@ double HF::compute_energy()
 	// compute 1e contributions
 	//}
 
+        E_ = compute_E();
 
 	// XXX
 	//if (has_efp) {
@@ -1560,7 +1561,6 @@ double HF::compute_energy()
         form_D();
         timer_off("Form D");
 
-        E_ = compute_E();
         Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         // After we've built the new D, damp the update if
