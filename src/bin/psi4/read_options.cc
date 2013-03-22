@@ -84,6 +84,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
 
+  /*- Base filename for text files written by PSI, such as the
+  MOLDEN output file, the Hessian file, the internal coordinate file,
+  etc. Use the add_str_i function to make this string case sensitive. -*/
+  options.add_str_i("WRITER_FILE_LABEL", "");
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -910,9 +915,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- The name of a molden-style output file which is only generated
-    if the user specifies one -*/
-    options.add_str("MOLDEN_FILE", "");
+    /*- Write a MOLDEN output file?  If so, the filename will end in 
+    .molden, and the prefix is determined by |globals__writer_file_label| 
+    (if set), or else by the name of the output file plus the name of
+    the current molecule. -*/
+    options.add_bool("MOLDEN_WRITE", false);
+
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
     /*- Flag to print the basis set. -*/

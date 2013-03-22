@@ -908,36 +908,29 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second order Moller--Plesset perturbation theory                    |
+    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ocepa                   | orbital-optimized coupled electron pair approximation                                 |
+    | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convmp2>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | df-mp2                  | MP2 with density fitting                                                              |
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:ompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting)                                                |
+    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:ompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd(t)                 | CCSD with perturbative triples                                                        |
+    | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>`                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
+    | eom-ccsd                | equation of motion (EOM) CCSD :ref:`[manual] <sec:eomcc>`                             |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_opt.rst
 
-    .. warning:: For the present, file ``intco.dat`` is lodged in the submission
-       directory and defines the internal coordinates for an optimization.
-       Thus, it is unsafe to run multiple optimizations from a single
-       directory. Also, ``intco.dat`` can linger, so, unless you've
-       deliberately constructed it, be sure to clear it out before starting a
-       new optimization.
-    
     .. warning:: Optimizations where the molecule is specified in Z-matrix format 
        with dummy atoms will result in the geometry being converted to a Cartesian representation.
 
@@ -946,13 +939,13 @@ def optimize(name, **kwargs):
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`driver.energy`.
+        :py:func:`~driver.energy`.
 
     :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
         Indicates the type of calculation to be performed on the molecule.
-        The default dertype accesses``'gradient'`` or ``'energy'``, while
+        The default dertype accesses ``'gradient'`` or ``'energy'``, while
         ``'cbs'`` performs a multistage finite difference calculation.
         If a nested series of python functions is intended (see :ref:`sec:intercalls`),
         use keyword ``opt_func`` instead of ``func``.
@@ -1046,8 +1039,6 @@ def optimize(name, **kwargs):
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
 
-        # print 'full_hess_every', full_hess_every
-        # print 'steps_since_last_hessian', steps_since_last_hessian
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
             G = PsiMod.get_gradient()

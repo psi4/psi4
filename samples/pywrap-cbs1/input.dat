@@ -28,9 +28,10 @@ R = 1
 set globals {
     reference rhf
     guess core
+    mp2_type conv
 }
 
-e_cbs = cbs('conv-mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
 
 clean()
 
