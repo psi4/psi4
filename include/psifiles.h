@@ -24,8 +24,8 @@
 #define PSI_DEFAULT_FILE_PREFIX "psi"
 
 #define PSIF_OPTKING           1    /*-  -*/
-#define PSIF_FILE11            11   /*- geometry optimization, geometry, and gradient -*/
-#define PSIF_INTCO             12   /*- internal coordinates file, formerly intco.dat -*/
+#define PSIF_GRAD              11   /*- geometry optimization, geometry, and gradient; currently is an ASCII file like output.grad -*/
+#define PSIF_INTCO             12   /*- internal coordinates file, currently is ASCII file like output.intco -*/
 #define PSIF_3INDEX            16   /*-  -*/
 #define PSIF_DSCF              31   /*-  -*/
 #define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/

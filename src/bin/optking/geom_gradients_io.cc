@@ -18,6 +18,7 @@
  #include <libmints/matrix.h>
  #include <libmints/wavefunction.h>
  #include <libparallel/parallel.h>
+ #include <libmints/writer_file_prefix.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"
@@ -116,7 +117,8 @@ void MOLECULE::read_geom_grad(void) {
   int junk;
 
   try {
-    fin.open(FILENAME_GEOM_GRAD_IN, ios_base::in);
+    // CDS: File11 isn't named this way anymore
+    fin.open("psi.file11.dat", ios_base::in);
     fin.clear();
     fin.exceptions(ios_base::failbit);
     fin.seekg(0);
@@ -318,7 +320,8 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 #if defined(OPTKING_PACKAGE_PSI)
   std::ifstream if_Hcart;
   try {
-    if_Hcart.open(FILENAME_CARTESIAN_H, ios_base::in);
+    std::string hess_fname = psi::get_writer_file_prefix() + ".hess";
+    if_Hcart.open(hess_fname.c_str(), ios_base::in);
     int n;
     if_Hcart >> n; // read natom
     if_Hcart >> n; // read natom*6 (?)

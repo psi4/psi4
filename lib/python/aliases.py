@@ -21,9 +21,9 @@ from procutil import *
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 
-def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
+def sherrillgroup_gold_standard(name='mp2', **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
+    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
     performed according to :py:func:`~wrappers.corl_xtpl_helgaker_2`.
 
@@ -44,7 +44,7 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
         kwargs['scf_scheme'] = highest_1
 
     if not ('corl_wfn' in kwargs):
-        kwargs['corl_wfn'] = 'conv-mp2'
+        kwargs['corl_wfn'] = 'mp2'
     if not ('corl_basis' in kwargs):
         kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
     if not ('corl_scheme' in kwargs):
@@ -53,7 +53,7 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
     if not ('delta_wfn' in kwargs):
         kwargs['delta_wfn'] = 'ccsd(t)'
     if not ('delta_wfn_lesser' in kwargs):
-        kwargs['delta_wfn_lesser'] = 'conv-mp2'
+        kwargs['delta_wfn_lesser'] = 'mp2'
     if not ('delta_basis' in kwargs):
         kwargs['delta_basis'] = 'aug-cc-pVTZ'
     if not ('delta_scheme' in kwargs):
@@ -62,60 +62,60 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
     return cbs(name, **kwargs)
 
 
-#def run_mp2_5(name, **kwargs):
-#    r"""Function that computes MP2.5 energy from results of a DETCI
-#    MP3 calculation.
-#
-#    .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}
-#
-#    :PSI variables: 
-#
-#    .. hlist:: 
-#       :columns: 1 
-#     
-#       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>` 
-#       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>` 
-#
-#    >>> energy('mp2.5')
-#
-#    """
-#    lowername = name.lower()
-#    kwargs = kwargs_lower(kwargs)
-#
-#    # Run detci calculation and collect conventional quantities
-#    energy('mp3', **kwargs)
-#    e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
-#    ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
-#    ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
-#    e_mp2 = e_scf + ce_mp2
-#    e_mp3 = e_scf + ce_mp3
-#
-#    # Compute quantities particular to MP2.5
-#    ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
-#    e_mp25 = e_scf + ce_mp25
-#    PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
-#    PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
-#    PsiMod.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
-#    PsiMod.set_variable('CURRENT ENERGY', e_mp25)
-#
-#    # build string of title banner and print results
-#    banners = ''
-#    banners += """PsiMod.print_out('\\n')\n"""
-#    banners += """banner(' MP2.5 ')\n"""
-#    banners += """PsiMod.print_out('\\n')\n\n"""
-#    exec(banners)
-#
-#    tables = ''
-#    tables += """  SCF total energy:                        %16.8f\n""" % (e_scf)
-#    tables += """  MP2 total energy:                        %16.8f\n""" % (e_mp2)
-#    tables += """  MP2.5 total energy:                      %16.8f\n""" % (e_mp25)
-#    tables += """  MP3 total energy:                        %16.8f\n\n""" % (e_mp3)
-#    tables += """  MP2 correlation energy:                  %16.8f\n""" % (ce_mp2)
-#    tables += """  MP2.5 correlation energy:                %16.8f\n""" % (ce_mp25)
-#    tables += """  MP3 correlation energy:                  %16.8f\n""" % (ce_mp3)
-#    PsiMod.print_out(tables)
-#
-#    return e_mp25
+def run_mp2_5(name, **kwargs):
+    r"""Function that computes MP2.5 energy from results of a FNOCC
+    MP3 calculation.
+
+    .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}
+
+    :PSI variables: 
+
+    .. hlist:: 
+       :columns: 1 
+     
+       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>` 
+       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>` 
+
+    >>> energy('mp2.5')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    # Run detci calculation and collect conventional quantities
+    energy('mp3', **kwargs)
+    e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
+    ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
+    ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
+    e_mp2 = e_scf + ce_mp2
+    e_mp3 = e_scf + ce_mp3
+
+    # Compute quantities particular to MP2.5
+    ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
+    e_mp25 = e_scf + ce_mp25
+    PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
+    PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
+    PsiMod.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
+    PsiMod.set_variable('CURRENT ENERGY', e_mp25)
+
+    # build string of title banner and print results
+    banners = ''
+    banners += """PsiMod.print_out('\\n')\n"""
+    banners += """banner(' MP2.5 ')\n"""
+    banners += """PsiMod.print_out('\\n')\n\n"""
+    exec(banners)
+
+    tables = ''
+    tables += """  SCF total energy:                        %16.8f\n""" % (e_scf)
+    tables += """  MP2 total energy:                        %16.8f\n""" % (e_mp2)
+    tables += """  MP2.5 total energy:                      %16.8f\n""" % (e_mp25)
+    tables += """  MP3 total energy:                        %16.8f\n\n""" % (e_mp3)
+    tables += """  MP2 correlation energy:                  %16.8f\n""" % (ce_mp2)
+    tables += """  MP2.5 correlation energy:                %16.8f\n""" % (ce_mp25)
+    tables += """  MP3 correlation energy:                  %16.8f\n""" % (ce_mp3)
+    PsiMod.print_out(tables)
+
+    return e_mp25
 
 
 # A direct translation of a plugin input file into a function call. Function calls are the only
@@ -154,6 +154,6 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
 
 
 # Integration with driver routines
-#procedures['energy']['mp2.5'] = run_mp2_5
+procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
 #procedures['energy']['plugin_omega'] = run_plugin_omega
