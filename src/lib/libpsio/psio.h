@@ -55,7 +55,6 @@ namespace psi {
                             const char* kwdval);
   const char* psio_get_filescfg_kwd(const char* kwdgrp, const char* kwd,
                                     int unit);
-
 }
 
 #endif    /* #ifndef PSIO_H */

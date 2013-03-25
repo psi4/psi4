@@ -782,6 +782,26 @@ case $withval in
 esac
 ],CDBG='' CXXDBG='')
 
+# Adjust the profiling flags.
+# The default is to not profile.  --with-profiling will turn on profiling.
+# Note: This must happen *after* AC_ARG_WITH(debug, ...) because the
+# "--with-debug" option will overwrite $CDBG and $CXXDBG.
+AC_ARG_WITH(profiling,[  --with-profiling        will turn on profiling],[
+case $withval in
+  yes)
+        CDBG='-g -pg -DPSIDEBUG'
+        CXXDBG='-g -pg -DPSIDEBUG'
+        LDFLAGS="$LDFLAGS -pg"
+    ;;
+  no)
+    ;;
+  *)
+    CDBG="$withval"
+    CXXDBG="$withval"
+    ;;
+esac
+])
+
 # Adjust the optimize flags.
 # The default is to optimize.  --with-opt=no or --without-opt will turn
 # off optimization.
@@ -1197,12 +1217,6 @@ AC_CONFIG_FILES([
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc
-          plugins/efp/Makefile
-          plugins/efp/__init__.py
-          plugins/efp/doc.rst
-          plugins/efp/efp.cc
-          plugins/efp/input.dat
-          plugins/efp/pymodule.py
 
           bin/psi4-config
 ])
