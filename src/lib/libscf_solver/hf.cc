@@ -1110,6 +1110,12 @@ void HF::print_orbitals()
 
 void HF::guess()
 {
+    // don't save guess energy as "the" energy because we need to avoid
+    // a false positive test for convergence on the first iteration (that
+    // was happening before in tests/scf-guess-read before I removed
+    // the statements putting this into E_).  -CDS 3/25/13
+    double guess_E; 
+
     //What does the user want?
     //Options will be:
     // "READ"-try to read MOs from guess file, projecting if needed
@@ -1128,7 +1134,7 @@ void HF::guess()
         if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
-        load_orbitals();
+        load_orbitals(); // won't save the energy from here
         form_D();
 
     } else if (guess_type == "SAD") {
@@ -1138,7 +1144,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -1162,7 +1168,7 @@ void HF::guess()
         form_initial_C();
         find_occupation();
         form_D();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "CORE") {
 
@@ -1175,7 +1181,7 @@ void HF::guess()
         form_initial_C();
         find_occupation();
         form_D();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
     }
     if (print_ > 3) {
         Ca_->print();
@@ -1187,7 +1193,9 @@ void HF::guess()
     }
 
     if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
+        fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
+
+    E_ = 0.0; // don't use this guess in our convergence checks
 }
 
 void HF::save_orbitals()
