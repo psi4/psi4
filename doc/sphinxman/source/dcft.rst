@@ -23,8 +23,8 @@ Theory
 Density cumulant functional theory (DCFT) is a density-based *ab initio* theory
 that can compute electronic energies without the use of the wavefunction. The
 theory starts by writing the exact energy expression in terms of the one- and
-two-particle density matrices (OPDM and TPDM):.
-.
+two-particle density matrices (OPDM and TPDM):
+
 .. math:: 
 
     E &= h_p^q \gamma_q^p + \frac{1}{2} g_{pq}^{rs} \gamma_{rs}^{pq}
