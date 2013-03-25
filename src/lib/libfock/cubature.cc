@@ -2718,7 +2718,7 @@ double NuclearWeightMgr::GetStratmannCutoff(int A) const
                     :                     (1 + sqrt(4*aij*(aij + 0.64) + 1))/(2*aij) // aij < 0
                     ;
 
-    return distToNearestAtom * (1 - mucutoff)/2;
+    return distToNearestAtom * (1 + mucutoff)/2;
 }
 
 double NuclearWeightMgr::computeNuclearWeight(MassPoint mp, int A, double stratmannCutoff) const
