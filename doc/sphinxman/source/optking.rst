@@ -38,15 +38,8 @@ connectivity is lacking by default, then this value may be increased.
 Otherwise, the internal coordinate definitions may be modified.  If one
 desires to see or modify the internal coordinates being used, then one can set
 |optking__intcos_generate_exit| to true.  The internal coordinate
-definitions are provided in the file named "intco.dat".  See the :ref:`sec:optkingExamples`
+definitions are provided in the file with extension ".intco".  See the :ref:`sec:optkingExamples`
 section for more detail.
-
-.. warning:: For the present, file ``intco.dat`` is lodged in the submission
-   directory and defines the internal coordinates for an optimization.
-   Thus, it is unsafe to run multiple optimizations from a single
-   directory. Also, ``intco.dat`` can linger, so, unless you've
-   deliberately constructed it, be sure to clear it out before starting a
-   new optimization.
 
 .. warning:: Optimizations where the molecule is specified in Z-matrix format 
    with dummy atoms will result in the molecule being converted to a Cartesian representation.
@@ -191,7 +184,7 @@ Transition States, Reaction Paths, and Constrained Optimizations
    set intcos_generate_exit true
    optimize('scf')
 
-  The coordinates may then be found in the file "intco.dat".  In this case, the file contains::
+  The coordinates may then be found in the "intco" file.  In this case, the file contains::
   
      F 1 3
      R      1     2

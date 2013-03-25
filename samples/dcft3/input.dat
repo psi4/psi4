@@ -12,6 +12,7 @@ molecule he2 {
 
 set globals {
     r_convergence 11
+    e_convergence 11
     ao_basis    disk
     algorithm   twostep
     basis       6-31G**
