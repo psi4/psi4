@@ -7,6 +7,8 @@
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
+#include <libmints/writer_file_prefix.h>
+
 using namespace boost::python;
 
 #include <physconst.h>
@@ -410,7 +412,8 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
 
-  FILE *of_Hx = fopen("psi.file15.dat","w");
+  std::string hess_fname = get_writer_file_prefix() + ".hess";
+  FILE *of_Hx = fopen(hess_fname.c_str(),"w");
   fprintf(of_Hx,"%5d", Natom);
   fprintf(of_Hx,"%5d\n", 6*Natom);
 

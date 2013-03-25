@@ -1,35 +1,13 @@
 // p_so(pitzer) = p_symblk + PitzerOffset[h]; where h=mosym[p_symblk]
 // p_symblk = pitzer2symblk[p_so(pitzer)];
 
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
 #include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
 
-
-/** Required PSI3 includes */ 
 #include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-
 #include "occwave.h"
-#include "defines.h"
 
 using namespace boost;
 using namespace psi;

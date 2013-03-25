@@ -87,7 +87,7 @@ protected:
     void run_twostep_dcft();
     void run_simult_dcft();
     // DCFT analytic gradient subroutines
-    void compute_gradient();
+    virtual SharedMatrix compute_gradient();
     void response_guess();
     void gradient_init();
     void compute_density();

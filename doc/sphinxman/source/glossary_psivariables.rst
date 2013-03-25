@@ -20,6 +20,11 @@ PSI Variables by Alpha
 
    The coupled-cluster perturbative triples correction [H].
 
+.. psivar:: MP4(T) CORRECTION ENERGY
+
+   The MP4 triples component [H]. Quantity is second right-hand term in
+   Eq. :eq:`MP4terms`.
+
 .. psivar:: AAA (T) CORRECTION ENERGY
    AAB (T) CORRECTION ENERGY
    ABB (T) CORRECTION ENERGY
@@ -371,12 +376,6 @@ PSI Variables by Alpha
 
    .. math:: \sqrt{\frac{1}{n}\sum_{rxn}^{n}{(\textsf{\textsl{name}}_{rxn}-\text{REF}_{rxn})^2}}
 
-.. psivar:: DF-MP2 TOTAL ENERGY
-   DF-MP2 CORRELATION ENERGY
-
-   The total electronic energy [H] and correlation energy component [H]
-   for the density-fitted MP2 level of theory.
-
 .. psivar:: DFT FUNCTIONAL TOTAL ENERGY
 
    The total electronic energy [H] for the underlying functional of the
@@ -464,6 +463,27 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the MP3 level of theory.
 
+.. psivar:: MP4(SDQ) TOTAL ENERGY
+   MP4(SDQ) CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the MP4 singles, doubles, quadruples level of theory.  Quantity
+   :psivar:`MP4(SDQ) CORRELATION ENERGY <MP4(SDQ)CORRELATIONENERGY>` is
+   first right-hand term in Eq. :eq:`MP4terms`.
+
+.. psivar:: MP4 TOTAL ENERGY
+   MP4 CORRELATION ENERGY
+   MP4(SDTQ) TOTAL ENERGY
+   MP4(SDTQ) CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the full MP4 level of theory. Quantity :psivar:`MP4 CORRELATION
+   ENERGY <MP4CORRELATIONENERGY>` / :psivar:`MP4(SDTQ) CORRELATION ENERGY
+   <MP4(SDTQ)CORRELATIONENERGY>` is left-hand term in Eq. :eq:`MP4terms`.
+
+   .. math:: E_{\text{MP4}} = E_{\text{MP4(SDQ)}} + E_{\text{MP4(T)}}
+      :label: MP4terms
+
 .. psivar:: MPn TOTAL ENERGY
    MPn CORRELATION ENERGY
 
@@ -479,10 +499,42 @@ PSI Variables by Alpha
    .. math:: E_{NN} = \sum_{i, j<i}^{N_{atom}}\frac{Z_i Z_j}{|\mathbf{R}_i - \mathbf{R}_j|}
       :label: ENN
 
+.. psivar:: OCEPA(0) TOTAL ENERGY
+   OCEPA(0) CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the orbital-optimized CEPA(0) level of theory.
+
+.. psivar:: OMP2 TOTAL ENERGY
+   OMP2 CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the orbital-optimized MP2 level of theory.
+
+.. psivar:: OMP3 TOTAL ENERGY
+   OMP3 CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the orbital-optimized MP3 level of theory.
+
 .. psivar:: ONE-ELECTRON ENERGY
 
    The one-electron energy contribution [H] to the total SCF energy.
    Quantity :math:`E_{1e^-}` in Eq. :eq:`SCFterms`.
+
+.. psivar:: QCISD TOTAL ENERGY
+   QCISD CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the quadratic configuration interaction singles and doubles level
+   of theory.
+
+.. psivar:: QCISD(T) TOTAL ENERGY
+   QCISD(T) CORRELATION ENERGY
+
+   The total electronic energy [H] and correlation energy component [H]
+   for the quadratic configuration interaction singles and doubles with
+   perturbative triples correction level of theory.
 
 .. psivar:: SAPT DISP ENERGY
    SAPT ELST ENERGY
@@ -507,6 +559,13 @@ PSI Variables by Alpha
 
    The total electronic interaction energy [H] for the labeled SAPT level
    of theory.
+
+.. psivar:: SAPT SAPT2+(CCD) ENERGY
+   SAPT SAPT2+(3)(CCD) ENERGY
+   SAPT SAPT2+3(CCD) ENERGY
+
+   The total electronic interaction energy [H] for the labeled SAPT level
+   of theory that incorporates coupled-cluster dispersion.
 
 .. psivar:: SCF DIPOLE X
    SCF DIPOLE Y
