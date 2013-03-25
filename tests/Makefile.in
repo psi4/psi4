@@ -31,7 +31,7 @@ mints_subdirs = mints1 mints2 mints3 mints4 mints5 mints6
 
 matrix_subdirs = matrix1
 
-opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large gibbs
+opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large dft-freq gibbs
 
 mp2_subdirs = mp2-1 omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3
 
