@@ -21,9 +21,9 @@ from procutil import *
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 
-def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
+def sherrillgroup_gold_standard(name='mp2', **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
+    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
     performed according to :py:func:`~wrappers.corl_xtpl_helgaker_2`.
 
@@ -44,7 +44,7 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
         kwargs['scf_scheme'] = highest_1
 
     if not ('corl_wfn' in kwargs):
-        kwargs['corl_wfn'] = 'conv-mp2'
+        kwargs['corl_wfn'] = 'mp2'
     if not ('corl_basis' in kwargs):
         kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
     if not ('corl_scheme' in kwargs):
@@ -53,7 +53,7 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
     if not ('delta_wfn' in kwargs):
         kwargs['delta_wfn'] = 'ccsd(t)'
     if not ('delta_wfn_lesser' in kwargs):
-        kwargs['delta_wfn_lesser'] = 'conv-mp2'
+        kwargs['delta_wfn_lesser'] = 'mp2'
     if not ('delta_basis' in kwargs):
         kwargs['delta_basis'] = 'aug-cc-pVTZ'
     if not ('delta_scheme' in kwargs):
@@ -63,7 +63,7 @@ def sherrillgroup_gold_standard(name='conv-mp2', **kwargs):
 
 
 def run_mp2_5(name, **kwargs):
-    r"""Function that computes MP2.5 energy from results of a DETCI
+    r"""Function that computes MP2.5 energy from results of a FNOCC
     MP3 calculation.
 
     .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}

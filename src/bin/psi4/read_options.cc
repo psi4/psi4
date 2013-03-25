@@ -84,6 +84,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- PSI4 dies if energy does not converge. !expert -*/
   options.add_bool("DIE_IF_NOT_CONVERGED", true);
 
+  /*- Base filename for text files written by PSI, such as the
+  MOLDEN output file, the Hessian file, the internal coordinate file,
+  etc. Use the add_str_i function to make this string case sensitive. -*/
+  options.add_str_i("WRITER_FILE_LABEL", "");
+
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
   // That would create problems.  (This was formerly checked in DETCI
@@ -910,9 +915,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- The name of a molden-style output file which is only generated
-    if the user specifies one -*/
-    options.add_str("MOLDEN_FILE", "");
+    /*- Write a MOLDEN output file?  If so, the filename will end in 
+    .molden, and the prefix is determined by |globals__writer_file_label| 
+    (if set), or else by the name of the output file plus the name of
+    the current molecule. -*/
+    options.add_bool("MOLDEN_WRITE", false);
+
     /*- Flag to print the molecular orbitals. -*/
     options.add_bool("PRINT_MOS", false);
     /*- Flag to print the basis set. -*/
@@ -929,13 +937,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Convergence & Algorithm <table:conv_scf>` for default convergence
     criteria for different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. In practice, the SCF energy
-    will be good to 1-4 more than this number of digits. (This means that
-    |scf__d_convergence| = 11 is overkill and will approach machine
-    precision.) See Table :ref:`SCF Convergence & Algorithm
+    /*- Convergence criterion for SCF density, which is defined as the RMS
+    value of the orbital gradient.  See Table :ref:`SCF Convergence & Algorithm
     <table:conv_scf>` for default convergence criteria for different
     calculation types. -*/
-    options.add_double("D_CONVERGENCE", 1e-6);
+    options.add_double("D_CONVERGENCE", 1e-8);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -2141,6 +2147,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
+    /*- Do relax the one-particle density matrix? -*/
+    options.add_bool("OPDM_RELAX",true);
+    /*- Do compute one-particle density matrix? -*/
+    options.add_bool("ONEPDM",false);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by

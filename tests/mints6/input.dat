@@ -51,4 +51,4 @@ set  {
  
 E = energy('scf')
 
-compare_values(eSCF, E, 8, "cc-pVDZ DF-SCF Energy")                                      #TEST 
+compare_values(eSCF, E, 6, "cc-pVDZ DF-SCF Energy")                                      #TEST 
