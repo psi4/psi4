@@ -8,7 +8,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
   
 void OCCWave::omp3_t2_1st_general()
 {   

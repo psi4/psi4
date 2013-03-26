@@ -9,7 +9,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::t2_2nd_general()
 {   
@@ -177,6 +177,13 @@ if (reference_ == "RESTRICTED") {
     if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
 
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
 
     // Build T2 = T2(1) + T2(2)
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -785,6 +792,13 @@ else if (reference_ == "UNRESTRICTED") {
     if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
     
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
     // Beta-Beta spin case
     dpd_buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -810,6 +824,13 @@ else if (reference_ == "UNRESTRICTED") {
     if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
     
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o,o]"), ID("[v,v]"), 0, "T2_2 <oo|vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
     // Alpha-Beta spin case
     dpd_buf4_init(&Tnew, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -833,6 +854,14 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_copy(&Tnew, PSIF_OCC_DPD, "T2_2 <Oo|Vv>");
     if (print_ > 1) dpd_buf4_print(&Tnew, outfile, 1);
     dpd_buf4_close(&Tnew);
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "T2_2 <Oo|Vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
 /********************************************************************************************/
 /************************** Sum up 1st & 2nd order amplitudes *******************************/

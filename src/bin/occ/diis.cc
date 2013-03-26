@@ -7,7 +7,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{ 
+namespace psi{ namespace plugin_occ{ 
 
 void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new, Array1d *errvec_new)
 { 

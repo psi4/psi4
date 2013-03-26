@@ -41,6 +41,7 @@ procedures = {
             'sos-pi-omp3'   : run_sos_omp3,
             'ocepa'         : run_ocepa,
             'cepa0'         : run_cepa0,
+            'omp2.5'        : run_omp2_5,
             'dftsapt'       : run_dftsapt,
             'infsapt'       : run_infsapt,
             'sapt0'         : run_sapt,
@@ -145,6 +146,11 @@ procedures = {
             'eom-ccsd'      : run_eom_cc_gradient,
             'dcft'          : run_dcft_gradient,
             'omp2'          : run_omp2_gradient,
+            'omp3'          : run_omp3_gradient,
+            'mp3'           : run_mp3_gradient,
+            'mp2.5'         : run_mp2_5_gradient,
+            'omp2.5'        : run_omp2_5_gradient,
+            'cepa0'         : run_cepa0_gradient,
             'ocepa'         : run_ocepa_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
@@ -240,13 +246,15 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT) :ref:`[manual] <sec:arbpt>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:ompn>`      |
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:ompn>`       |
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:ompn>`      |
+    | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ>`                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation, equiv. linearized CCD :ref:`[manual] <sec:ompn>` |
+    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cepa0                   | coupled electron pair approximation, equiv. linearized CCD :ref:`[manual] <sec:occ>`  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -916,11 +924,21 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convmp2>`                  |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:ompn>`      |
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:ompn>`      |
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:occ>`                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ>`                                     |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | mp2.5                   | MP2.5 :ref:`[manual] <sec:occ>`                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cepa(0)                 | coupled electron pair approximation(0) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+

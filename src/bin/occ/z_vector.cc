@@ -10,14 +10,20 @@ using namespace std;
 
 namespace psi{ namespace plugin_occ{ 
 
-void OCCWave::kappa_orb_resp()
+void OCCWave::z_vector()
 { 
-//fprintf(outfile,"\n kappa_orb_resp is starting... \n"); fflush(outfile);
+//fprintf(outfile,"\n z_vector is starting... \n"); fflush(outfile);
 
 if (reference_ == "RESTRICTED") {
-    // Set the kappa to -negative of the mo grad
-    kappaA->copy(wogA);
-    kappaA->scale(-1.0);
+    // Mem alloc
+    zvectorA = new Array1d("Alpha Z-Vector", nidpA);
+    Aorb = new Array2d("MO Hessian Matrix", nidpA, nidpA);
+    zvectorA->zero();
+    Aorb->zero();
+
+    // Set the zvector to -negative of the mo grad
+    zvectorA->copy(wogA);
+    zvectorA->scale(-1.0);
 
     // Open dpd files
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -52,7 +58,6 @@ if (reference_ == "RESTRICTED") {
         int h =0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -71,7 +76,6 @@ if (reference_ == "RESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -90,7 +94,6 @@ if (reference_ == "RESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -118,10 +121,10 @@ if (reference_ == "RESTRICTED") {
 
     // Solve the orb-resp equations
     pcg_conver = 0;// here 0 means successfull
-    if (lineq == "CDGESV") Aorb->cdgesv(kappaA, pcg_conver);
+    if (lineq == "CDGESV") Aorb->cdgesv(zvectorA, pcg_conver);
     else if (lineq == "FLIN") {
          double det = 0.0;      
-         Aorb->lineq_flin(kappaA, &det);
+         Aorb->lineq_flin(zvectorA, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
              fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
              fprintf(outfile, "Determinant is %6.3E\n", det);
@@ -129,58 +132,52 @@ if (reference_ == "RESTRICTED") {
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
-    else if (lineq == "POPLE") Aorb->lineq_pople(kappaA, 6, cutoff);
+    else if (lineq == "POPLE") Aorb->lineq_pople(zvectorA, 6, cutoff);
     delete Aorb;
 
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
-       // Build kappa again
+       // Build zvector again
        for(int x = 0; x < nidpA; x++) {
 	  int a = idprowA[x];
 	  int i = idpcolA[x];
 	  int h = idpirrA[x];
 	  double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
-	  kappaA->set(x, -wogA->get(x) / (2.0*value));
+	  zvectorA->set(x, -wogA->get(x) / (2.0*value));
        }
 
        fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
        fflush(outfile);
     } // end if pcg_conver = 0
-
-        // find biggest_kappa 
-	biggest_kappaA=0;            
-	for (int i=0; i<nidpA;i++) { 
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
-	}
-
-        // Scale
-	if (biggest_kappaA > step_max) {   
-	    for (int i=0; i<nidpA;i++) kappaA->set(i, kappaA->get(i) *(step_max/biggest_kappaA));
-	}
-	 
-        // find biggest_kappa again 
-	if (biggest_kappaA > step_max)
-	{
-	  biggest_kappaA=0;            
-	  for (int i=0; i<nidpA;i++) 
-	  { 
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
-	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
-	      }
-	  }
-	}
 	
-        // norm
-	rms_kappaA=0;
-	rms_kappaA = kappaA->rms();
-	
-        // print
-        if(print_ > 2) kappaA->print();
+    // print
+    if (print_ > 2) zvectorA->print();
+
+    // Build Zmatrix
+    ZmatA = boost::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_)); 
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int h = idpirrA[x];
+	ZmatA->set(h, a + occpiA[h], i, zvectorA->get(x));
+	ZmatA->set(h, i, a + occpiA[h], zvectorA->get(x));
+    }
+
+    // Clean up!
+    delete wogA;
  
 }// end if (reference_ == "RESTRICTED") 
 
 else if (reference_ == "UNRESTRICTED") {
+    // Mem alloc
+    nidp_tot = nidpA + nidpB;
+    zvectorA = new Array1d("Alpha Z-Vector", nidpA);
+    zvectorB = new Array1d("Beta Z-Vector", nidpB);
+    zvector = new Array1d("Total Z-Vector", nidp_tot);
+    zvectorA->zero();
+    zvectorB->zero();
+    zvector->zero();
+
     // Open dpd files
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     dpdbuf4 K;
@@ -238,7 +235,6 @@ else if (reference_ == "UNRESTRICTED") {
         int h =0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -257,7 +253,6 @@ else if (reference_ == "UNRESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -276,7 +271,6 @@ else if (reference_ == "UNRESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -288,7 +282,6 @@ else if (reference_ == "UNRESTRICTED") {
         }
         dpd_buf4_mat_irrep_close(&K, h);
     dpd_buf4_close(&K);
-
 
     // Add Fock contribution
     for(int x = 0; x < nidpA; x++) {
@@ -320,7 +313,6 @@ else if (reference_ == "UNRESTRICTED") {
         h =0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -339,7 +331,6 @@ else if (reference_ == "UNRESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -358,7 +349,6 @@ else if (reference_ == "UNRESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -399,7 +389,6 @@ else if (reference_ == "UNRESTRICTED") {
         h = 0;
         dpd_buf4_mat_irrep_init(&K, h);
         dpd_buf4_mat_irrep_rd(&K, h);
-        //#pragma omp parallel for
         for(int ai = 0; ai < K.params->rowtot[h]; ++ai){
             int a = K.params->roworb[h][ai][0];
             int i = K.params->roworb[h][ai][1];
@@ -436,17 +425,17 @@ else if (reference_ == "UNRESTRICTED") {
     // Print
     if (print_ > 2) Aorb->print();
 
-    // Build total kappa
-    kappa->zero();
-    for (int x=0; x<nidpA;x++) kappa->set(x, -wogA->get(x)); 
-    for (int x=0; x<nidpB;x++) kappa->set(x + nidpA, -wogB->get(x)); 
+
+    // Build total zvector
+    for (int x=0; x<nidpA;x++) zvector->set(x, -wogA->get(x)); 
+    for (int x=0; x<nidpB;x++) zvector->set(x + nidpA, -wogB->get(x)); 
 
     // Solve the orb-resp equations
     pcg_conver = 0;// here 0 means successfull
-    if (lineq == "CDGESV") Aorb->cdgesv(kappa, pcg_conver);
+    if (lineq == "CDGESV") Aorb->cdgesv(zvector, pcg_conver);
     else if (lineq == "FLIN") {
          double det = 0.0;      
-         Aorb->lineq_flin(kappa, &det);
+         Aorb->lineq_flin(zvector, &det);
          if (fabs(det) < DIIS_MIN_DET) { 
          //if (fabs(det) < 1e-2) { 
              fprintf(outfile, "Warning!!! MO Hessian matrix is near-singular\n");
@@ -455,100 +444,55 @@ else if (reference_ == "UNRESTRICTED") {
              pcg_conver = 1;// here 1 means unsuccessful
          }
     }
-    else if (lineq == "POPLE") Aorb->lineq_pople(kappa, 6, cutoff);
+    else if (lineq == "POPLE") Aorb->lineq_pople(zvector, 6, cutoff);
     delete Aorb;
 
-    // Build kappaA and kappaB
-    //kappa->print();
-    kappaA->zero();
-    kappaB->zero();
-    for (int x=0; x<nidpA;x++) kappaA->set(x, kappa->get(x)); 
-    for (int x=0; x<nidpB;x++) kappaB->set(x, kappa->get(x + nidpA)); 
+    // Build zvectorA and zvectorB
+    //zvector->print();
+    zvectorA->zero();
+    zvectorB->zero();
+    for (int x=0; x<nidpA;x++) zvectorA->set(x, zvector->get(x)); 
+    for (int x=0; x<nidpB;x++) zvectorB->set(x, zvector->get(x + nidpA)); 
 
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
-       // Build kappa again
-       for(int x = 0; x < nidpA; x++) {
-	  int a = idprowA[x];
-	  int i = idpcolA[x];
-	  int h = idpirrA[x];
-	  double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
-	  kappaA->set(x, -wogA->get(x) / (2.0*value));
-       }
-
-	// beta
-	for(int x = 0; x < nidpB; x++) {
-	  int a = idprowB[x];
-	  int i = idpcolB[x];
-	  int h = idpirrB[x];
-	  double value = FockB->get(h, a + occpiB[h], a + occpiB[h]) - FockB->get(h, i, i);  
-	  kappaB->set(x, -wogB->get(x) / (2.0*value));
-	}
-       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
+       fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular\n");
        fflush(outfile);
     } // end if pcg_conver = 0
+	
+    // print
+    if (print_ > 2){
+       zvectorA->print();
+       zvectorB->print();
+    }
 
+    // Build Zmatrix
+    ZmatA = boost::shared_ptr<Matrix>(new Matrix("Alpha Z-Matrix", nirrep_, nmopi_, nmopi_)); 
+    ZmatB = boost::shared_ptr<Matrix>(new Matrix("Beta Z-Matrix", nirrep_, nmopi_, nmopi_)); 
+    for(int x = 0; x < nidpA; x++) {
+	int a = idprowA[x];
+	int i = idpcolA[x];
+	int h = idpirrA[x];
+	ZmatA->set(h, a + occpiA[h], i, zvectorA->get(x));
+	ZmatA->set(h, i, a + occpiA[h], zvectorA->get(x));
+    }
 
-        // find biggest_kappa 
-	biggest_kappaA=0;            
-	for (int i=0; i<nidpA;i++) { 
-	    if (fabs(kappaA->get(i)) > biggest_kappaA) biggest_kappaA=fabs(kappaA->get(i));
-	}
-	
-	biggest_kappaB=0;            
-	for (int i=0; i<nidpB;i++){ 
-	    if (fabs(kappaB->get(i)) > biggest_kappaB) biggest_kappaB=fabs(kappaB->get(i));
-	}
-	
-        // Scale
-	if (biggest_kappaA > step_max) {   
-	    for (int i=0; i<nidpA;i++) kappaA->set(i, kappaA->get(i) *(step_max/biggest_kappaA));
-	}
-	 
-	if (biggest_kappaB > step_max) {   
-	    for (int i=0; i<nidpB;i++) kappaB->set(i, kappaB->get(i) *(step_max/biggest_kappaB));
-	}
-	 
-        // find biggest_kappa again 
-	if (biggest_kappaA > step_max)
-	{
-	  biggest_kappaA=0;            
-	  for (int i=0; i<nidpA;i++) 
-	  { 
-	      if (fabs(kappaA->get(i)) > biggest_kappaA)
-	      {
-		  biggest_kappaA = fabs(kappaA->get(i));
-	      }
-	  }
-	}
-	
-	if (biggest_kappaB > step_max)
-	{
-	  biggest_kappaB=0;            
-	  for (int i=0; i<nidpB;i++) 
-	  { 
-	      if (fabs(kappaB->get(i)) > biggest_kappaB)
-	      {
-		  biggest_kappaB=fabs(kappaB->get(i));
-	      }
-	  }
-	}
+    for(int x = 0; x < nidpB; x++) {
+	int a = idprowB[x];
+	int i = idpcolB[x];
+	int h = idpirrB[x];
+	ZmatB->set(h, a + occpiB[h], i, zvectorB->get(x));
+	ZmatB->set(h, i, a + occpiB[h], zvectorB->get(x));
+    }
 
-        // norm
-	rms_kappaA=0;
-	rms_kappaB=0;
-	rms_kappaA = kappaA->rms();
-	rms_kappaB = kappaB->rms();
-	
-        // print
-        if(print_ > 2){
-          kappaA->print();
-          kappaB->print();
-        }
+    // Clean up!
+    delete wogA;
+    delete wogB;
+    delete zvector;
       
 }// end if (reference_ == "UNRESTRICTED") 
- //fprintf(outfile,"\n kappa_orb_resp done. \n"); fflush(outfile);
-}// end kappa_orb_resp
+ //fprintf(outfile,"\n zvector_orb_resp done. \n"); fflush(outfile);
+}// end z_vector
 }} // End Namespaces
 
 

@@ -9,7 +9,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::t2_amps()
 {   
@@ -182,8 +182,7 @@ if (reference_ == "RESTRICTED") {
     dpd_buf4_close(&Tnew);
 
     // DIIS
-    //if (wfn_type_ == "CEPA") {
-    if (wfn_type_ == "CEPA" || mo_optimized == 1) {
+    if (orb_opt_ == "FALSE" || mo_optimized == 1) {
     dpd_buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -779,7 +778,7 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&Tnew);
     
     // DIIS
-    if (wfn_type_ == "CEPA" || mo_optimized == 1) {
+    if (orb_opt_ == "FALSE" || mo_optimized == 1) {
     dpdbuf4 Raa, Rbb, Rab, Taa, Tbb, Tab;
     dpd_buf4_init(&Raa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "RT2 <OO|VV>");

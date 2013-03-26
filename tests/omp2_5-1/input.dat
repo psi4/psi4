@@ -1,0 +1,25 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+refnuc      =  9.18738642147759 #TEST
+refscf      = -76.02676109559437 #TEST
+refmp3      = -76.23417406459208 #TEST
+refomp3     = -76.23488803552839 #TEST
+
+memory 256 mb
+
+molecule {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776
+}
+
+set global {
+  basis cc-pvdz
+  guess sad
+}
+energy('omp2.5')
+
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");                        #TEST
+compare_values(refmp3, get_variable("MP2.5 TOTAL ENERGY"), 6, "MP2.5 Total Energy (a.u.)");               #TEST
+compare_values(refomp3, get_variable("OMP2.5 TOTAL ENERGY"), 6, "OMP2.5 Total Energy (a.u.)");               #TEST

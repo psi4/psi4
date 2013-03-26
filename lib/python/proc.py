@@ -132,6 +132,41 @@ def run_omp3(name, **kwargs):
     return PsiMod.occ()
 
 
+def run_omp3_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP3 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    run_omp3(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
+def run_mp3_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP3 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp3(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
 def run_scs_omp3(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a spin-component scaled OMP3 computation
@@ -207,9 +242,73 @@ def run_cepa0(name, **kwargs):
     a CEPA (LCCD) computation
 
     """
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_ocepa(name, **kwargs)
+
+    optstash.restore()
+
+def run_cepa0_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a CEPA(0) gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_ocepa(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
+def run_omp2_5(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    an orbital-optimized MP2.5 computation
+
+    """
     PsiMod.scf()
-    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'CEPA')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
     return PsiMod.occ()
+
+
+def run_omp2_5_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    OMP2.5 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    run_omp2_5(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
+def run_mp2_5_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP3 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp2_5(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
 
 
 def run_scf(name, **kwargs):
@@ -548,15 +647,12 @@ def run_mp2_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['TRANSQT2', 'WFN'],
-        ['CCSORT', 'WFN'],
-        ['MP2', 'WFN'],
-        ['DERTYPE'])
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
-    run_mp2(name, **kwargs)
-
-    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp2(name, **kwargs)
     PsiMod.deriv()
 
     optstash.restore()

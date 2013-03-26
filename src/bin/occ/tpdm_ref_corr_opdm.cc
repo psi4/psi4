@@ -1,5 +1,4 @@
 /* This code includes reference and correlation opdm contributions. */
-
 #include <libtrans/integraltransform.h>
 
 #include "occwave.h"
@@ -9,7 +8,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 /*=======================*/
 /*  tpdm_ref()           */

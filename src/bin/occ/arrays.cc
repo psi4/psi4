@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <libqt/qt.h>
 #include "arrays.h"
 
@@ -5,7 +6,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
   
 
 /********************************************************************************************/

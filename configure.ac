@@ -1176,6 +1176,8 @@ AC_CONFIG_FILES([
           tests/ocepa1/Makefile
           tests/ocepa2/Makefile
           tests/ocepa3/Makefile
+          tests/omp2_5-1/Makefile
+          tests/omp2_5-2/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile

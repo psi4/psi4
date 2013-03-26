@@ -9,7 +9,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
   
 void OCCWave::cepa_iterations()
 {
@@ -110,6 +110,7 @@ fflush(outfile);
 else if (conver == 0) {
   fprintf(outfile,"\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
   fflush(outfile);
+  throw PSIEXCEPTION("CEPA iterations did not converge");
 }
 
 }// end main

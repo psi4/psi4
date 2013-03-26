@@ -2434,6 +2434,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CUTOFF",14);
     /*- Maximum number of preconditioned conjugate gradient iterations.  -*/
     options.add_int("PCG_MAXITER",30);
+    /*- Maximum number of electron propagator iterations.  -*/
+    options.add_int("EP_MAXITER",30);
 
     /*- Convergence criterion for energy. -*/
     options.add_double("E_CONVERGENCE",1e-8);
@@ -2452,7 +2454,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- MP2 Spin-opposite scaling (SOS) value -*/
-    options.add_double("MP2_SOS_SCALE",1.3);
+    options.add_double("MP2_SOS_SCALE",1.3);  
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("MP2_SOS_SCALE2",1.2);
     /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
@@ -2472,13 +2474,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step
-     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
+     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation    
      parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both methods a DIIS extrapolation
      will be performed with the DO_DIIS = TRUE option. -*/
     options.add_str("OPT_METHOD","ORB_RESP","MSD ORB_RESP");
-    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
-      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the 
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian 
       explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
     options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2488,9 +2490,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of the SOS method -*/
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
-    options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA CEPA");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
-    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
+    options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA OMP2.5");
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
@@ -2518,6 +2520,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_DIIS",true);
     /*- Do compute CC Lambda energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE = COMPUTE" option. -*/
     options.add_bool("CCL_ENERGY",false);
+    /*- Do compute OCC poles for ionization potentials? Only valid OMP2. -*/
+    options.add_bool("IP_POLES",false);
+    /*- Do compute OCC poles for electron affinities? Only valid for OMP2. -*/
+    options.add_bool("EA_POLES",false);
+    /*- Do compute EP-OCC poles for ionization potentials? Only valid OMP2. -*/
+    options.add_bool("EP_IP_POLES",false);
+    /*- Do compute EP-OCC poles for electron affinities? Only valid for OMP2. -*/
+    options.add_bool("EP_EA_POLES",false);
+    /*- Do compute occupied orbital energies based on extended Koopmans' theorem? -*/
+    options.add_bool("EKT_IP",false);
+    /*- Do compute virtual orbital energies based on extended Koopmans' theorem?  -*/
+    options.add_bool("EKT_EA",false);
+    /*- Do optimize the orbitals?  -*/
+    options.add_bool("ORB_OPT",true);
   }
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
