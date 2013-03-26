@@ -7,7 +7,7 @@ using namespace boost;
 using namespace psi;
 
 
-namespace psi{ namespace plugin_occ{
+namespace psi{ namespace occwave{
   
 void OCCWave::occ_iterations()
 {

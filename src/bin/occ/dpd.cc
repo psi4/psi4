@@ -10,7 +10,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace plugin_occ{
+namespace psi{ namespace occwave{
 
 /********************************************************************************************/
 /************************** SymBlockMatrix **************************************************/

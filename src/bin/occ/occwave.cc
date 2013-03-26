@@ -8,7 +8,7 @@
 using namespace psi;
 using namespace boost;
 
-namespace psi { namespace plugin_occ{
+namespace psi { namespace occwave{
 
 OCCWave::OCCWave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
     : Wavefunction(options, _default_psio_lib_)
