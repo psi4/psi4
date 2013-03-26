@@ -12,7 +12,7 @@ namespace psi{
   
 class IntegralTransform;
   
-namespace plugin_occ{
+namespace occwave{
 
 class OCCWave : public Wavefunction
 {
