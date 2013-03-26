@@ -8,7 +8,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::trans_ints_uhf()
 {    
@@ -64,7 +64,8 @@ void OCCWave::trans_ints_uhf()
     else ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (VV|OV)");
     
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
+if (wfn_type_ != "OMP2") { 
     // Trans (VV|VV)
     timer_on("Trans (VV|VV)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);

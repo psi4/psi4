@@ -1,3 +1,4 @@
+// Semicanonicalizing RHF Fock matrix by diagonalizing active-occupied (AOCC-AOCC) and active-virtual (AVIR-AVIR) blocks
 #include "occwave.h"
 
 using namespace boost;
@@ -5,17 +6,19 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
  
 void OCCWave::semi_canonic()
 {
+        // tell other functions that orbitals are already semi canonical.
+        orbs_already_sc = 1;
 
-	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiA, aoccpiA));
-	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiA, avirtpiA));
-	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiA, aoccpiA));
-	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiA, avirtpiA));
-	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirrep_, aoccpiA));
-	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirrep_, avirtpiA));
+	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
+	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
+	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiA, occpiA));
+	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiA, virtpiA));
+	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirrep_, occpiA));
+	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirrep_, virtpiA));
 
 	UooA->zero();
 	UvvA->zero();
@@ -24,14 +27,14 @@ void OCCWave::semi_canonic()
      	
 	// OCC-OCC 
 	for(int h = 0; h < nirrep_; h++){
-	  for(int i = 0; i < aoccpiA[h]; i++){
+	  for(int i = 0; i < occpiA[h]; i++){
 	    eigooA->set(h,i,0.0);
 	  }
 	}
 	
 	// VIR-VIR
 	for(int h = 0; h < nirrep_; h++){
-	  for(int i = 0; i < avirtpiA[h]; i++){
+	  for(int i = 0; i < virtpiA[h]; i++){
 	    eigvvA->set(h,i,0.0);
 	  }
 	}
@@ -39,8 +42,8 @@ void OCCWave::semi_canonic()
        // Fockoo alpha spin case
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int i = 0 ; i < aoccpiA[h]; ++i){
-            for(int j = 0 ; j < aoccpiA[h]; ++j){
+	  for(int i = 0 ; i < occpiA[h]; ++i){
+            for(int j = 0 ; j < occpiA[h]; ++j){
                 FockooA->set(h, i, j, FockA->get(h, i, j));
             }
 	  }
@@ -49,8 +52,8 @@ void OCCWave::semi_canonic()
 	// Fockvv alpha spin case
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int a = 0 ; a < avirtpiA[h]; ++a){
-            for(int b = 0 ; b < avirtpiA[h]; ++b){
+	  for(int a = 0 ; a < virtpiA[h]; ++a){
+            for(int b = 0 ; b < virtpiA[h]; ++b){
                 int aa = a + occpiA[h];
                 int bb = b + occpiA[h];
                 FockvvA->set(h, a, b, FockA->get(h, aa, bb));
@@ -76,11 +79,11 @@ void OCCWave::semi_canonic()
 	  fprintf(outfile, "\t  Alpha occupied orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
-	    for (int i = 0; i < aoccpiA[h]; i++){
+	    for (int i = 0; i < occpiA[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooA->get(h,i));
 	      fflush(outfile);   
 	      count++;
-	    }// end loop over aoccpi
+	    }// end loop over occpi
 	  }// end loop over h
 	  
 	  
@@ -88,11 +91,11 @@ void OCCWave::semi_canonic()
 	  fprintf(outfile, "\n\t  Alpha virtual orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
-	    for (int i = 0; i < avirtpiA[h]; i++){
+	    for (int i = 0; i < virtpiA[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvA->get(h,i));
 	      fflush(outfile);
 	      count++;
-	    }// end loop over aoccpi
+	    }// end loop over occpi
 	  }// end loop over h
 	  
 	}// end main if
@@ -100,14 +103,14 @@ void OCCWave::semi_canonic()
         // Build U	
 	UorbA->zero();
 	
-	//set to identity
-	UorbA->identity();
+	//set to identity: it is necessary if we have frozen core or frozen virtual orbitals.
+	//UorbA->identity();
 	
 	// Uoo contribution alpha spin case
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int i = 0 ; i < aoccpiA[h]; ++i){
-            for(int j = 0 ; j < aoccpiA[h]; ++j){
+	  for(int i = 0 ; i < occpiA[h]; ++i){
+            for(int j = 0 ; j < occpiA[h]; ++j){
                 UorbA->set(h, i, j, UooA->get(h, i, j));
             }
 	  }
@@ -116,8 +119,8 @@ void OCCWave::semi_canonic()
 	// Uvv contribution alpha spin case
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int a = 0 ; a < avirtpiA[h]; ++a){
-            for(int b = 0 ; b < avirtpiA[h]; ++b){
+	  for(int a = 0 ; a < virtpiA[h]; ++a){
+            for(int b = 0 ; b < virtpiA[h]; ++b){
                 int aa = a + occpiA[h];
                 int bb = b + occpiA[h];
                 UorbA->set(h, aa, bb, UvvA->get(h, a, b));
@@ -147,12 +150,12 @@ void OCCWave::semi_canonic()
 
      // UHF REFERENCE
      if (reference_ == "UNRESTRICTED") {
-	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
-	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiB, avirtpiB));
-	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, aoccpiB, aoccpiB));
-	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, avirtpiB, avirtpiB));
-	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirrep_, aoccpiB));
-	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirrep_, avirtpiB));
+	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
+	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
+	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, occpiB, occpiB));
+	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirrep_, virtpiB, virtpiB));
+	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirrep_, occpiB));
+	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirrep_, virtpiB));
 
 	UooB->zero();
 	UvvB->zero();
@@ -161,14 +164,14 @@ void OCCWave::semi_canonic()
 
 	// occ-occ 
 	for(int h = 0; h < nirrep_; h++){
-	  for(int i = 0; i < aoccpiB[h]; i++){
+	  for(int i = 0; i < occpiB[h]; i++){
 	    eigooB->set(h,i,0.0);
 	  }
 	}
 	
 	// vir-vir
 	for(int h = 0; h < nirrep_; h++){
-	  for(int i = 0; i < avirtpiB[h]; i++){
+	  for(int i = 0; i < virtpiB[h]; i++){
 	    eigvvB->set(h,i,0.0);
 	  }
 	}
@@ -176,8 +179,8 @@ void OCCWave::semi_canonic()
 	// Fockoo beta spin case
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int i = 0 ; i < aoccpiB[h]; ++i){
-            for(int j = 0 ; j < aoccpiB[h]; ++j){
+	  for(int i = 0 ; i < occpiB[h]; ++i){
+            for(int j = 0 ; j < occpiB[h]; ++j){
                 FockooB->set(h, i, j, FockB->get(h, i, j));
             }
 	  }
@@ -186,8 +189,8 @@ void OCCWave::semi_canonic()
 	// Fockvv beta spin case
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int a = 0 ; a < avirtpiB[h]; ++a){
-            for(int b = 0 ; b < avirtpiB[h]; ++b){
+	  for(int a = 0 ; a < virtpiB[h]; ++a){
+            for(int b = 0 ; b < virtpiB[h]; ++b){
                 int aa = a + occpiB[h];
                 int bb = b + occpiB[h];
                 FockvvB->set(h, a, b, FockB->get(h, aa, bb));
@@ -214,11 +217,11 @@ void OCCWave::semi_canonic()
 	  fprintf(outfile, "\t  Beta occupied orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
-	    for (int i = 0; i < aoccpiB[h]; i++){
+	    for (int i = 0; i < occpiB[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigooB->get(h,i));
 	      fflush(outfile);
 	      count++;
-	    }// end loop over aoccpi
+	    }// end loop over occpi
 	  }// end loop over h
 	  
 	  
@@ -226,11 +229,11 @@ void OCCWave::semi_canonic()
 	  fprintf(outfile, "\n\t  Beta virtual orbitals\n");
 	  for (int h=0; h<nirrep_; h++){
 	    int count=1;
-	    for (int i = 0; i < avirtpiB[h]; i++){
+	    for (int i = 0; i < virtpiB[h]; i++){
 	      fprintf(outfile,"\t %2d%-3s %20.10f \n",count,ct.gamma(h).symbol(),eigvvB->get(h,i));
 	      fflush(outfile);
 	      count++;
-	    }// end loop over aoccpi
+	    }// end loop over occpi
 	  }// end loop over h
 	  
 	}// end main if
@@ -242,8 +245,8 @@ void OCCWave::semi_canonic()
 	// Uoo contribution beta spin case
         #pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int i = 0 ; i < aoccpiB[h]; ++i){
-            for(int j = 0 ; j < aoccpiB[h]; ++j){
+	  for(int i = 0 ; i < occpiB[h]; ++i){
+            for(int j = 0 ; j < occpiB[h]; ++j){
                 UorbB->set(h, i, j, UooB->get(h, i, j));
             }
 	  }
@@ -252,8 +255,8 @@ void OCCWave::semi_canonic()
 	// Uvv contribution beta spin case
 	#pragma omp parallel for
 	for(int h = 0; h < nirrep_; ++h){
-	  for(int a = 0 ; a < avirtpiB[h]; ++a){
-            for(int b = 0 ; b < avirtpiB[h]; ++b){
+	  for(int a = 0 ; a < virtpiB[h]; ++a){
+            for(int b = 0 ; b < virtpiB[h]; ++b){
                 int aa = a + occpiB[h];
                 int bb = b + occpiB[h];
                 UorbB->set(h, aa, bb, UvvB->get(h, a, b));
@@ -268,6 +271,7 @@ void OCCWave::semi_canonic()
 	Cb_->zero();
 	Cb_->copy(Cb_new);
 	Cb_new.reset();
+
 
 	if (print_ > 2) {
           UorbB->print();

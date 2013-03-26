@@ -1,5 +1,4 @@
 #include <libtrans/integraltransform.h>
-
 #include "defines.h"
 #include "occwave.h"
 
@@ -8,7 +7,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::ccl_energy()
 {      
@@ -238,7 +237,7 @@ void OCCWave::ccl_energy()
     Emp2L_old = Emp2L;
   } 
   
-  else if (wfn_type_ == "OMP3") {
+  else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
     EcorrL=Ecc_rdm-Escf;        
     Emp3L=Ecc_rdm;  
     DE = Emp3L - Emp3L_old;
@@ -251,8 +250,15 @@ void OCCWave::ccl_energy()
     DE = EcepaL - EcepaL_old;
     EcepaL_old = EcepaL;
   } 
+
+    Etpdm = Ecc_rdm - Eopdm;
     
-    //fprintf(outfile,"\n CC Total Energy via pdms       : %12.14f\n", Ecc_rdm); fflush(outfile);    
+    /*
+    fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Eopdm);
+    fprintf(outfile,"\tTPDM energy (a.u.)          : %12.14f\n", Etpdm);
+    fprintf(outfile,"\tTotal PDM energy (a.u.)     : %12.14f\n", Ecc_rdm);
+    fflush(outfile);
+    */
     //fprintf(outfile,"\n ccl_energy is done... \n"); fflush(outfile);
     
 } // end of ccl_energy

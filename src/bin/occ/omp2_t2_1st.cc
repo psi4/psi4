@@ -1,5 +1,4 @@
 #include <libtrans/integraltransform.h>
-
 #include "defines.h"
 #include "occwave.h"
 
@@ -8,7 +7,7 @@ using namespace psi;
 using namespace std;
 
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
   
 void OCCWave::omp2_t2_1st_sc()
 {   

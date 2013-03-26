@@ -217,6 +217,10 @@ Bibliography
    U. Bozkaya,
    *J. Chem. Phys.* **135**, 224103 (2011).
 
+.. [Bozkaya:2013:omp3]
+   E. Soydas and U. Bozkaya,
+   *J. Chem. Theory Comput.* **9**, 1452 (2013).
+
 .. [Bozkaya:2012:odtl]
    U. Bozkaya and H. F. Schaefer,
    *J. Chem. Phys.* **136**, 204114 (2012).

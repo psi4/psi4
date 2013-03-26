@@ -8,7 +8,7 @@
 using namespace psi;
 using namespace boost;
 
-namespace psi { namespace occwave {
+namespace psi { namespace plugin_occ{
 
 OCCWave::OCCWave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
     : Wavefunction(options, _default_psio_lib_)
@@ -39,6 +39,7 @@ void OCCWave::common_init()
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
 	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
+        ep_maxiter=options_.get_int("EP_MAXITER");
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -74,6 +75,13 @@ void OCCWave::common_init()
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         compute_ccl=options_.get_str("CCL_ENERGY"); 
         orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER"); 
+        ip_poles=options_.get_str("IP_POLES"); 
+        ea_poles=options_.get_str("EA_POLES"); 
+        ep_ip_poles=options_.get_str("EP_IP_POLES"); 
+        ep_ea_poles=options_.get_str("EP_EA_POLES"); 
+        ekt_ip_=options_.get_str("EKT_IP"); 
+        ekt_ea_=options_.get_str("EKT_EA"); 
+        orb_opt_=options_.get_str("ORB_OPT"); 
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
@@ -265,12 +273,16 @@ void OCCWave::title()
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile,"\n");
-   if (wfn_type_ == "OMP2") fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
-   else if (wfn_type_ == "OMP3") fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
-   else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
-   else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
+   if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
+   else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP3   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") fprintf(outfile,"                       CEPA   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision March 05, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision March 26, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -285,17 +297,18 @@ double OCCWave::compute_energy()
         
 	// Warnings 
 	if (nfrzc != 0 || nfrzv != 0) {
-	  fprintf(stderr,  "\tThe OMP2 method has been implemented for only all-electron computations, yet.\n");
-	  fprintf(outfile, "\tThe OMP2 method has been implemented for only all-electron computations, yet.\n");
-	  fflush(outfile);
-          return EXIT_FAILURE;
+          throw FeatureNotImplemented("OCC methods", "Frozen core/virtual", __FILE__, __LINE__);
 	}
 
         // Call the appropriate manager
-        if (wfn_type_ == "OMP2") omp2_manager();
-        else if (wfn_type_ == "OMP3") omp3_manager();
-        else if (wfn_type_ == "OCEPA") ocepa_manager();
-        else if (wfn_type_ == "CEPA") cepa_manager();
+        if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") omp2_manager();
+        else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") mp2_manager();
+        else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") omp3_manager();
+        else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") mp3_manager();
+        else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") ocepa_manager();
+        else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") cepa_manager();
+        else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
+        else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
 	
 	// Write MO coefficients to Cmo.psi
 	if (write_mo_coeff == "TRUE"){
@@ -336,7 +349,7 @@ double OCCWave::compute_energy()
         mem_release();
 
         if (wfn_type_ == "OMP2") return Emp2L;
-        else if (wfn_type_ == "OMP3") return Emp3L;
+        else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") return Emp3L;
         else if (wfn_type_ == "OCEPA") return EcepaL;
         else if (wfn_type_ == "CEPA") return Ecepa;
 } // end of compute_energy

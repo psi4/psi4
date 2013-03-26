@@ -1,12 +1,11 @@
 #include <libqt/qt.h>
-
 #include "occwave.h"
 
 using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::ocepa_response_pdms()
 {   

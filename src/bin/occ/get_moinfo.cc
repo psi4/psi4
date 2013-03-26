@@ -13,7 +13,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::get_moinfo()
 {      
@@ -76,6 +76,10 @@ if (reference_ == "RESTRICTED") {
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
+
+        // Read orbital energies
+        epsilon_a_ = reference_wavefunction_->epsilon_a();
+        //epsilon_a_ = SharedVector(reference_wavefunction_->epsilon_a());
 	
 	/* Build mosym arrays */
 	mosym = new int [nmo_];
@@ -439,6 +443,10 @@ else if (reference_ == "UNRESTRICTED") {
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
+
+        // Read orbital energies
+        epsilon_a_ = reference_wavefunction_->epsilon_a();
+        epsilon_b_ = reference_wavefunction_->epsilon_b();
 	
 	/* Build mosym arrays */
 	mosym = new int [nmo_];

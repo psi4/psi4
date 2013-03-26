@@ -7,7 +7,7 @@ using namespace boost;
 using namespace psi;
 using namespace std;
 
-namespace psi{ namespace occwave{
+namespace psi{ namespace plugin_occ{
 
 void OCCWave::gfock_diag()
 {
@@ -75,7 +75,8 @@ if (reference_ == "RESTRICTED") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// Fab += 4 * \sum{c,e,f} <ce|fa> * G_cefb
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[V,V]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[V,V]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <VV|VV>");
@@ -197,7 +198,8 @@ else if (reference_ == "UNRESTRICTED") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
         // FIJ += 4 * \sum{E,F,m} <Em|If> * G_EmJf = 4 * \sum{E,F,m} <If|Em> * G_JfEm => new 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");
@@ -269,7 +271,8 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// Fij += 4 * \sum{e,F,M} <Me|Fi> * G_MeFj => new 
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");
@@ -298,7 +301,8 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// FAB = 2 * \sum{E,F,C} <EF||CA> * G_EFCB => new
 	// FAB = 4 * \sum{E,F,C} <EF|CA> * G_EFCB => new
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[V,V]"), ints->DPD_ID("[V,V]"),
@@ -337,7 +341,8 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// FAB = 4 * \sum{M,n,e} <Me|An> * G_MeBn => new
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");
@@ -373,7 +378,8 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// Fab = 2 * \sum{efc} <ef||ca> * G_efcb => new
 	// Fab = 4 * \sum{efc} <ef|ca> * G_efcb => new
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[v,v]"), ints->DPD_ID("[v,v]"),
@@ -412,7 +418,8 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&G);
 	
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA") { 
+if (wfn_type_ != "OMP2") { 
 	// Fab = 4 * \sum{m,N,E} <Em|Na> * G_EmNb = 4 * \sum{M,n,e} <Na|Em> * G_NbEm => new
 	dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "MO Ints <Ov|Vo>");

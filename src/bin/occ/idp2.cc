@@ -6,7 +6,7 @@ using namespace std;
 
 namespace psi{ namespace plugin_occ{
 
-void OCCWave::idp()
+void OCCWave::idp2()
 {
      int dim;
 
@@ -23,15 +23,8 @@ if (reference_ == "RESTRICTED") {
     fflush(outfile);  
     
     if (nidpA != 0) {
-      idp_returnA = 1;
       wogA = new Array1d("Alpha MO grad vector", nidpA);
-      kappaA = new Array1d("Alpha orb rot params vector of current step", nidpA);
-      kappa_newA = new Array1d("Alpha New orb rot params vector of current step", nidpA);
-      kappa_barA = new Array1d("Alpha orb rot params vector with respect to scf MOs", nidpA);
-      wog_intA = new Array1d("Alpha Interpolated MO grad vector", nidpA);
       wogA->zero();
-      kappaA->zero();
-      kappa_barA->zero();
     }
     
     // allocate memory 
@@ -56,14 +49,14 @@ if (reference_ == "RESTRICTED") {
 	}
       }
     }
-
-    if(print_ > 2){
+     
+    if (print_ > 2){
      for(int i = 0; i < nidpA; i++){
         fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
 	fflush(outfile);
       }
     }
-     
+
 }// end if (reference_ == "RESTRICTED") 
 
 else if (reference_ == "UNRESTRICTED") {
@@ -84,25 +77,13 @@ else if (reference_ == "UNRESTRICTED") {
     if (nidpA != 0) {
       idp_returnA = 1;
       wogA = new Array1d("Alpha MO grad vector", nidpA);
-      kappaA = new Array1d("Alpha orb rot params vector of current step", nidpA);
-      kappa_newA = new Array1d("Alpha New orb rot params vector of current step", nidpA);
-      kappa_barA = new Array1d("Alpha orb rot params vector with respect to scf MOs", nidpA);
-      wog_intA = new Array1d("Alpha Interpolated MO grad vector", nidpA);
       wogA->zero();
-      kappaA->zero();
-      kappa_barA->zero();
     }
     
     if (nidpB != 0) {
       idp_returnB = 1;
       wogB = new Array1d("Beta MO grad vector", nidpB);
-      kappaB = new Array1d("Beta orb rot params vector of current step", nidpB);
-      kappa_newB = new Array1d("Beta New orb rot params vector of current step", nidpB);
-      kappa_barB = new Array1d("Beta orb rot params vector with respect to scf MOs", nidpB);
-      wog_intB = new Array1d("Beta Interpolated MO grad vector", nidpB);
       wogB->zero();
-      kappaB->zero();
-      kappa_barB->zero();
     }
  
     // allocate memory 
@@ -146,7 +127,7 @@ else if (reference_ == "UNRESTRICTED") {
 	}
       }
     }
-    
+
     if(print_ > 2){
      for(int i = 0; i < nidpA; i++){
         fprintf(outfile,"\n i, idpirrA, idprowA, idpcolA: %3d %3d %3d %3d\n", i, idpirrA[i], idprowA[i],idpcolA[i]);
@@ -160,7 +141,6 @@ else if (reference_ == "UNRESTRICTED") {
     }
       
 }// end if (reference_ == "UNRESTRICTED") 
-
 }// end of main
 }} // End Namespaces
 
