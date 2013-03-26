@@ -85,15 +85,15 @@ void SCF::save_info()
 
     return;
 
-//    // Writes out the total number of irreps in the point group in which the molecule is being considered which have non-zero number of basis functions.
-//      int n_so_typs = 0;
-//      for(int h = 0; h < nirreps; ++h){
-//        if( docc[h] + actv[h] > 0 ) n_so_typs++;
-//      }
-//      chkpt_->wt_nsymhf(n_so_typs);
+    // Writes out the total number of irreps in the point group in which the molecule is being considered which have non-zero number of basis functions.
+    //      int n_so_typs = 0;
+    //      for(int h = 0; h < nirreps; ++h){
+    //        if( docc[h] + actv[h] > 0 ) n_so_typs++;
+    //      }
+    //      chkpt_->wt_nsymhf(n_so_typs);
 
-//      // Write out the total number of molecular orbitals.
-//      chkpt_->wt_nmo(nso); // TODO: find nmo
+      // Write out the total number of molecular orbitals.
+      //      chkpt_->wt_nmo(nso); // TODO: find nmo
 
 //      // Write out the dimensionality of ALPHA and BETA vectors of two-electron coupling coefficients for open shells.
 //      int tmp_iopen = ioff[moinfo_scf->get_nactv()];

@@ -256,6 +256,9 @@ dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Tab
 dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
 
 
+dft-freq:     Frequencies for H2O B3LYP/6-31G* at optimized geometry
+
+
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
 
 
