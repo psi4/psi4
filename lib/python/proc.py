@@ -80,6 +80,32 @@ def run_omp2_gradient(name, **kwargs):
     optstash.restore()
 
 
+def run_mp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP2 calculation.
+
+    """
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp2(name, **kwargs)
+
+
+def run_mp2_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP2 gradient calculation.
+
+    """
+    optstash = OptionsState(
+        ['REFERENCE'],
+        ['GLOBALS', 'DERTYPE'])
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp2(name, **kwargs)
+    PsiMod.deriv()
+
+    optstash.restore()
+
+
 def run_scs_omp2(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a spin-component scaled OMP2 computation
@@ -147,6 +173,15 @@ def run_omp3_gradient(name, **kwargs):
     PsiMod.deriv()
 
     optstash.restore()
+
+
+def run_mp3(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP3 calculation.
+
+    """
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp3(name, **kwargs)
 
 
 def run_mp3_gradient(name, **kwargs):
@@ -291,6 +326,15 @@ def run_omp2_5_gradient(name, **kwargs):
     PsiMod.deriv()
 
     optstash.restore()
+
+
+def run_mp2_5(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP2.5 calculation.
+
+    """
+    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+    run_omp2_5(name, **kwargs)
 
 
 def run_mp2_5_gradient(name, **kwargs):
@@ -609,53 +653,6 @@ def run_mp2_select_gradient(name, **kwargs):
     else:
         return run_dfmp2_gradient(name, **kwargs)
 
-
-def run_mp2(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2 calculation.
-
-    """
-    optstash = OptionsState(
-        ['TRANSQT2', 'WFN'],
-        ['CCSORT', 'WFN'],
-        ['MP2', 'WFN'])
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
-        scf_helper(name, **kwargs)
-
-        # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
-            mints = PsiMod.MintsHelper()
-            mints.integrals()
-
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'MP2')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'MP2')
-    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
-
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.mp2()
-
-    optstash.restore()
-    return returnvalue
-
-
-def run_mp2_gradient(name, **kwargs):
-    """Function encoding sequence of PSI module calls for
-    a MP2 gradient calculation.
-
-    """
-    optstash = OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
-
-    PsiMod.set_global_option('DERTYPE', 'FIRST')
-    PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
-    PsiMod.deriv()
-
-    optstash.restore()
 
 
 def run_dfmp2_gradient(name, **kwargs):

@@ -24,6 +24,8 @@ procedures = {
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
             'conv-mp2'      : run_mp2,
+            'mp3'           : run_mp3,
+            'mp2.5'         : run_mp2_5,
             'mp2'           : run_mp2_select,
             'omp2'          : run_omp2,
             'scs-omp2'      : run_scs_omp2,
@@ -232,11 +234,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convmp2>`                  |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:fnompn>`                                   |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:fnompn>` and :ref:`[manual] <sec:occ>`     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | 3rd-order MP perturbation theory (MP3) :ref:`[manual] <sec:fnompn>`                   |
+    | mp3                     | MP3 :ref:`[manual] <sec:fnompn>` and :ref:`[manual] <sec:occ>`                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -938,7 +940,7 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa(0)                 | coupled electron pair approximation(0) :ref:`[manual] <sec:occ>`                      |
+    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -1177,7 +1179,7 @@ def parse_arbitrary_order(name):
                 if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
                     return 'fnocc-mp', 3
                 else:
-                    return 'detci-mp', 3
+                    return 'mp3', 3 
             elif (namestump == 'mp') and (namelevel == 4):
                 if PsiMod.get_option('SCF','REFERENCE') == 'RHF':
                     return 'fnocc-mp', 4
