@@ -1,8 +1,8 @@
 #! OMP2 cc-pVDZ energy for the H2O molecule.
 refnuc      =  25.59060766929188 #TEST
-refscf      = -129.25940696815246 #TEST
-refmp3      = -129.57807194046342 #TEST
-refomp3     = -129.58890135354457 #TEST
+refscf      = -129.25940696815948 #TEST
+refmp3      = -129.57807085316060 #TEST
+refomp3     = -129.58890135367628 #TEST
 
 memory 250 mb
 
