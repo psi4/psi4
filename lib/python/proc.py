@@ -32,7 +32,8 @@ def run_dcft(name, **kwargs):
     # DCFT module should probably take a REFERENCE keyword with only UHF allowed value
     PsiMod.set_global_option('REFERENCE', 'UHF')
     # Bypass routine scf if user did something special to get it to converge
-    scf_helper(name, **kwargs)
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
     returnvalue = PsiMod.dcft()
 
     optstash.restore()
@@ -60,7 +61,10 @@ def run_omp2(name, **kwargs):
     an orbital-optimized MP2 computation
 
     """
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
     return PsiMod.occ()
 
 
@@ -85,8 +89,14 @@ def run_mp2(name, **kwargs):
     a MP2 calculation.
 
     """
+    optstash = OptionsState(
+        ['OCC', 'ORB_OPT'])
+
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2(name, **kwargs)
+    returnvalue = run_omp2(name, **kwargs)
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_mp2_gradient(name, **kwargs):
@@ -111,8 +121,11 @@ def run_scs_omp2(name, **kwargs):
     a spin-component scaled OMP2 computation
 
     """
-    # Get calls method
     lowername = name.lower()
+
+    optstash = OptionsState(
+        ['OCC', 'SCS_TYPE'],
+        ['OCC', 'DO_SCS'])
 
     # what type of scs?
     if (lowername == 'scs-omp2'):
@@ -124,9 +137,15 @@ def run_scs_omp2(name, **kwargs):
     elif (lowername == 'scs-omp2-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
     PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_sos_omp2(name, **kwargs):
@@ -134,8 +153,11 @@ def run_sos_omp2(name, **kwargs):
     a spin-opposite scaled OMP2 computation
 
     """
-    # Get calls method
     lowername = name.lower()
+
+    optstash = OptionsState(
+        ['OCC', 'SOS_TYPE'],
+        ['OCC', 'DO_SOS'])
 
     # what type of sos?
     if (lowername == 'sos-omp2'):
@@ -143,9 +165,15 @@ def run_sos_omp2(name, **kwargs):
     elif (lowername == 'sos-pi-omp2'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
     PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_omp3(name, **kwargs):
@@ -153,9 +181,18 @@ def run_omp3(name, **kwargs):
     an orbital-optimized MP3 computation
 
     """
-    PsiMod.scf()
+    optstash = OptionsState(
+        ['OCC', 'WFN_TYPE'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_omp3_gradient(name, **kwargs):
@@ -180,8 +217,14 @@ def run_mp3(name, **kwargs):
     a MP3 calculation.
 
     """
+    optstash = OptionsState(
+        ['OCC', 'ORB_OPT'])
+
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp3(name, **kwargs)
+    returnvalue = run_omp3(name, **kwargs)
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_mp3_gradient(name, **kwargs):
@@ -207,8 +250,12 @@ def run_scs_omp3(name, **kwargs):
     a spin-component scaled OMP3 computation
 
     """
-    # Get calls method
     lowername = name.lower()
+
+    optstash = OptionsState(
+        ['OCC', 'SCS_TYPE'],
+        ['OCC', 'DO_SCS'],
+        ['OCC', 'WFN_TYPE'])
 
     # what type of scs?
     if (lowername == 'scs-omp3'):
@@ -220,10 +267,16 @@ def run_scs_omp3(name, **kwargs):
     elif (lowername == 'scs-omp3-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
     PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_sos_omp3(name, **kwargs):
@@ -231,8 +284,12 @@ def run_sos_omp3(name, **kwargs):
     a spin-opposite scaled OMP3 computation
 
     """
-    # Get calls method
     lowername = name.lower()
+
+    optstash = OptionsState(
+        ['OCC', 'SOS_TYPE'],
+        ['OCC', 'DO_SOS'],
+        ['OCC', 'WFN_TYPE'])
 
     # what type of sos?
     if (lowername == 'sos-omp3'):
@@ -240,10 +297,16 @@ def run_sos_omp3(name, **kwargs):
     elif (lowername == 'sos-pi-omp3'):
         PsiMod.set_local_option('OCC', 'SOS_TYPE', 'SOSPI')
 
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs) 
+
     PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_ocepa(name, **kwargs):
@@ -251,9 +314,18 @@ def run_ocepa(name, **kwargs):
     an orbital-optimized CEPA computation
 
     """
-    PsiMod.scf()
+    optstash = OptionsState(
+        ['OCC', 'WFN_TYPE'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs) 
+
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_ocepa_gradient(name, **kwargs):
@@ -277,11 +349,17 @@ def run_cepa0(name, **kwargs):
     a CEPA (LCCD) computation
 
     """
+    optstash = OptionsState(
+        ['OCC', 'WFN_TYPE'],
+        ['OCC', 'ORB_OUT'])
+
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_ocepa(name, **kwargs)
+    returnvalue = run_ocepa(name, **kwargs)
 
     optstash.restore()
+    return returnvalue
+
 
 def run_cepa0_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -306,9 +384,18 @@ def run_omp2_5(name, **kwargs):
     an orbital-optimized MP2.5 computation
 
     """
-    PsiMod.scf()
+    optstash = OptionsState(
+        ['OCC', 'WFN_TYPE'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs) 
+
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    return PsiMod.occ()
+    returnvalue = PsiMod.occ()
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_omp2_5_gradient(name, **kwargs):
@@ -333,8 +420,14 @@ def run_mp2_5(name, **kwargs):
     a MP2.5 calculation.
 
     """
+    optstash = OptionsState(
+        ['OCC', 'ORB_OPT'])
+
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    run_omp2_5(name, **kwargs)
+    returnvalue = run_omp2_5(name, **kwargs)
+
+    optstash.restore()
+    return returnvalue
 
 
 def run_mp2_5_gradient(name, **kwargs):
