@@ -19,7 +19,7 @@ if (reference_ == "RESTRICTED") {
       nidpA += virtpiA[h] * occpiA[h]; 
     }
 
-    fprintf(outfile,"\n\tNumber of independent-pairs: %3d\n", nidpA);
+    fprintf(outfile,"\tNumber of independent-pairs: %3d\n", nidpA);
     fflush(outfile);  
     
     if (nidpA != 0) {
@@ -70,7 +70,7 @@ else if (reference_ == "UNRESTRICTED") {
       nidpB += virtpiB[h] * occpiB[h]; 
     }
 
-    fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
+    fprintf(outfile,"\tNumber of alpha independent-pairs:%3d\n", nidpA);
     fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
     
