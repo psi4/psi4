@@ -236,9 +236,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:fnompn>` and :ref:`[manual] <sec:occ>`     |
+    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:occ>`          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | MP3 :ref:`[manual] <sec:fnompn>` and :ref:`[manual] <sec:occ>`                        |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:occ>`                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+

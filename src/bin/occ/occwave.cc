@@ -86,6 +86,11 @@ void OCCWave::common_init()
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
 
+        // Only UHF is allowed for the standard methods
+        if (reference != "UHF" && reference_ == "UNRESTRICTED" && orb_opt_ == "FALSE") {
+           throw PSIEXCEPTION("Only UHF reference is available for the standard methods!");
+        }
+
         if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
