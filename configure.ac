@@ -1178,6 +1178,22 @@ AC_CONFIG_FILES([
           tests/ocepa3/Makefile
           tests/omp2_5-1/Makefile
           tests/omp2_5-2/Makefile
+          tests/omp2-grad1/Makefile
+          tests/omp2-grad2/Makefile
+          tests/omp3-grad1/Makefile
+          tests/omp3-grad2/Makefile
+          tests/omp2_5-grad1/Makefile
+          tests/omp2_5-grad2/Makefile
+          tests/ocepa-grad1/Makefile
+          tests/ocepa-grad2/Makefile
+          tests/mp2-grad1/Makefile
+          tests/mp2-grad2/Makefile
+          tests/mp3-grad1/Makefile
+          tests/mp3-grad2/Makefile
+          tests/mp2_5-grad1/Makefile
+          tests/mp2_5-grad2/Makefile
+          tests/cepa0-grad1/Makefile
+          tests/cepa0-grad2/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
