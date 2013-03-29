@@ -351,7 +351,7 @@ def run_cepa0(name, **kwargs):
     """
     optstash = OptionsState(
         ['OCC', 'WFN_TYPE'],
-        ['OCC', 'ORB_OUT'])
+        ['OCC', 'ORB_OPT'])
 
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')

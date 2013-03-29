@@ -711,13 +711,16 @@ if (wfn_type_ != "OMP2") {
       }
       
       // Trans Fock matrix    
+      if (orb_opt_ == "TRUE") {
       timer_on("Build Fock");
       fock_alpha();      
       fock_beta();   
       timer_off("Build Fock");
+      }
 
       timer_on("Build Denominators");
-      denominators_uhf();
+      if (orb_opt_ == "TRUE") denominators_uhf();
+      else if (orb_opt_ == "FALSE") denominators_ump2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
       //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);

@@ -705,9 +705,7 @@ void OCCWave::mp3_manager()
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
-        timer_on("REF Energy");
-	ref_energy();
-        timer_off("REF Energy");
+        Eref = Escf;
         timer_on("T2(1)");
 	omp3_t2_1st_sc();
         timer_off("T2(1)");
@@ -1059,9 +1057,7 @@ void OCCWave::cepa_manager()
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
-        timer_on("REF Energy");
-	ref_energy();
-        timer_off("REF Energy");
+        Eref = Escf;
         timer_on("T2(1)");
 	ocepa_t2_1st_sc();
         timer_off("T2(1)");
@@ -1386,9 +1382,7 @@ void OCCWave::mp2_5_manager()
 	if (reference_ == "RESTRICTED") trans_ints_rhf();  
 	else if (reference_ == "UNRESTRICTED") trans_ints_uhf();  
         timer_off("trans_ints");
-        timer_on("REF Energy");
-	ref_energy();
-        timer_off("REF Energy");
+        Eref = Escf;
         timer_on("T2(1)");
 	omp3_t2_1st_sc();
         timer_off("T2(1)");
