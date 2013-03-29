@@ -186,7 +186,7 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
                            IntegralTransform::Restricted,
                            IntegralTransform::IWLAndDPD,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
 }
 
@@ -195,7 +195,7 @@ else {
                            IntegralTransform::Restricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
 }
                            
@@ -257,7 +257,7 @@ else if (reference_ == "UNRESTRICTED") {
                            IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
                            
                           
@@ -287,7 +287,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision March 26, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision March 29, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -301,8 +301,20 @@ double OCCWave::compute_energy()
 {   
         
 	// Warnings 
-	if (nfrzc != 0 || nfrzv != 0) {
-          throw FeatureNotImplemented("OCC methods", "Frozen core/virtual", __FILE__, __LINE__);
+	if (nfrzc != 0 && orb_opt_ == "TRUE") {
+          throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzv != 0 && orb_opt_ == "TRUE") {
+          throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzv != 0 && orb_opt_ == "FALSE") {
+          throw FeatureNotImplemented("OCC module standard methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzc != 0 && dertype != "NONE") {
+          throw FeatureNotImplemented("OCC module analytic gradients", "Frozen core/virtual", __FILE__, __LINE__);
 	}
 
         // Call the appropriate manager
