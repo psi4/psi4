@@ -162,6 +162,24 @@ Publications resulting from the use of the OCEPA code should cite the following 
 
 [Bozkaya:2011:omp2]_.
 
+Publications resulting from the use of the MP2 code should cite the following publication(s): 
+
+[Bozkaya:2011:omp2]_.
+
+Publications resulting from the use of the MP3 code should cite the following publications: 
+
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+
+Publications resulting from the use of the MP2.5 code should cite the following publications: 
+
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+
+Publications resulting from the use of the CEPA0 code should cite the following publication(s): 
+
+[Bozkaya:2011:omp2]_.
+
+
+
 Methods
 ~~~~~~~
 
