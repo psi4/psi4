@@ -181,9 +181,13 @@ available in |PSIfour| are provided below.
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Analytic energy gradients for the orbital-optimized second-order 
+   M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and C. D. Sherrill,
+  (ubpublished).
 
 .. rubric:: OMP3
 
@@ -192,13 +196,68 @@ available in |PSIfour| are provided below.
   Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
 
+* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants for Thermochemistry and Kinetics," 
+  E.Soydas and U. Bozkaya,  *J. Chem. Theory Comput.* **9**, 1452 (2013).
+
 .. rubric:: OCEPA
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Orbital-optimized coupled electron pair theory and its analytic gradients: Applications to equilibrium
+   geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," 
+   U. Bozkaya and C. D. Sherrill, (ubpublished).
+
+.. rubric:: OMP2.5
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+* U. Bozkaya and C. D. Sherrill, (ubpublished).
+
+
+.. rubric:: MP2
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+.. rubric:: MP3
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+.. rubric:: MP2.5
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+* U. Bozkaya and C. D. Sherrill, (ubpublished).
+
+.. rubric:: CEPA0
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Orbital-optimized coupled electron pair theory and its analytic gradients: Applications to equilibrium
+   geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," 
+   U. Bozkaya and C. D. Sherrill, (ubpublished).
+
 
 .. index:: architectures
 .. index:: compilers
