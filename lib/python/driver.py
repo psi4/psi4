@@ -21,6 +21,7 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
+            'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
             'conv-mp2'      : run_mp2,
@@ -177,7 +178,7 @@ for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
 
 for ssuper in superfunctional_list():
-    if not ssuper.is_c_hybrid():
+    if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
 def energy(name, **kwargs):
@@ -226,7 +227,7 @@ def energy(name, **kwargs):
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory                                                    |
+    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mcscf                   | multiconfigurational self consistent field (SCF)                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -920,7 +921,7 @@ def optimize(name, **kwargs):
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory                                                    |
+    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -928,15 +929,15 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
+    | mp2.5                   | MP2.5 :ref:`[manual] <sec:occ>`                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:occ>`                          |
     +-------------------------+---------------------------------------------------------------------------------------+
+    | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ>`                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | MP2.5 :ref:`[manual] <sec:occ>`                                                       |
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+

@@ -2130,6 +2130,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- A helpful option, used only in debugging the MADNESS version !expert-*/
     options.add_int("MADMP2_SLEEP", 0);
+    /*- Algorithm to use for the MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
     /*- Auxiliary basis set for MP2 density fitting computations.
@@ -2410,8 +2412,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DISP_SIZE", 0.005);
   }
   if (name == "OCC"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs orbital-optimized CC computations. -*/
+    /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
 
+    /*- Algorithm to use for non-OO MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/

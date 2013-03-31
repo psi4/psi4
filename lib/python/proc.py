@@ -99,6 +99,37 @@ def run_mp2(name, **kwargs):
     return returnvalue
 
 
+def run_oldmp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a MP2 calculation.
+
+    """
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['MP2', 'WFN'])
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
+
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'MP2')
+    PsiMod.set_local_option('CCSORT', 'WFN', 'MP2')
+    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
+
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    returnvalue = PsiMod.mp2()
+
+    optstash.restore()
+    return returnvalue
+
+
 def run_mp2_gradient(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a MP2 gradient calculation.
@@ -723,12 +754,10 @@ def scf_helper(name, **kwargs):
 
 def run_mp2_select(name, **kwargs):
     """Function selecting the algorithm for a MP2 energy call
-    and directing toward the MP2 or the DFMP2 modules.
+    and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
-        # PSI3 docs claimed to have an integral direct algorithm
-        #   but can't see it in the code.
+    if (PsiMod.get_option("DFMP2", "MP2_TYPE") == "CONV") or (PsiMod.get_option("OCC", "MP2_TYPE") == "CONV"):
         return run_mp2(name, **kwargs)
     else:
         return run_dfmp2(name, **kwargs)
@@ -736,16 +765,13 @@ def run_mp2_select(name, **kwargs):
 
 def run_mp2_select_gradient(name, **kwargs):
     """Function selecting the algorithm for a MP2 gradient call
-    and directing toward the MP2 or the DFMP2 modules.
+    and directing toward the OCC (conv MP2) or the DFMP2 modules.
 
     """
-    if PsiMod.get_option("MP2", "MP2_TYPE") == "CONV":
-        # PSI3 docs claimed to have an integral direct algorithm
-        #   but can't see it in the code.
+    if (PsiMod.get_option("DFMP2", "MP2_TYPE") == "CONV") or (PsiMod.get_option("OCC", "MP2_TYPE") == "CONV"):
         return run_mp2_gradient(name, **kwargs)
     else:
         return run_dfmp2_gradient(name, **kwargs)
-
 
 
 def run_dfmp2_gradient(name, **kwargs):
