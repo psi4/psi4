@@ -2644,8 +2644,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("CC_SCALE_OS", 1.27);
       /*- Same-spin scaling factor for SCS-CCSD -*/
       options.add_double("CC_SCALE_SS",1.13);
-      /*- Use packed storage for the (ac|bd) diagram? only valid in MO -*/
-      options.add_bool("VABCD_PACKED",true);
       /*- do only evaluate mp2 energy? !expert -*/
       options.add_bool("RUN_MP2",false);
       /*- do only evaluate mp3 energy? !expert -*/
