@@ -26,7 +26,7 @@ Notes on Options
 
 .. _`op_py_dertype`:
 
-.. note:: The derivative level type for :py:func:`~driver.optimize` and :py:func:`~driver.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative.
+.. note:: The derivative level type for :py:func:`~driver.optimize` and :py:func:`~driver.frequency` functions can be specified by ``energy``, ``none``, or ``0`` for 0th derivative, ``gradient``, ``first``, or ``1`` for 1st derivative, and ``hessian``, ``second``, or ``2`` for 2nd derivative. For finite difference, as opposed to analytic, derivatives, the :term:`POINTS <POINTS (FINDIF)>` option can be increased to ``5`` for greater accuracy at increased cost.
 
 .. _`op_py_function`:
 

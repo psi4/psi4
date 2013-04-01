@@ -1,0 +1,17 @@
+#! OMP2 cc-pVDZ energy for the H2O molecule.
+
+memory 250 mb
+
+molecule {
+0 2
+n
+o 1 1.158
+}
+
+set global {
+  basis cc-pvdz
+  guess gwh
+  reference uhf
+}
+energy('omp2.5')
+
