@@ -259,9 +259,16 @@ void OCCWave::mp2_manager()
         timer_on("trans_ints");
         if (reference_ == "RESTRICTED" && dertype == "NONE") trans_ints_rmp2(); 
         else if (reference_ == "RESTRICTED" && dertype == "FIRST") trans_ints_rhf();
-	else if (reference_ == "UNRESTRICTED" && dertype == "NONE") trans_ints_ump2();  
 	else if (reference_ == "UNRESTRICTED" && dertype == "FIRST") trans_ints_uhf();  
+	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference == "ROHF") trans_ints_uhf();  
+	else if (reference_ == "UNRESTRICTED" && dertype == "NONE" && reference != "ROHF") trans_ints_ump2();  
         timer_off("trans_ints");
+        // ROHF REF
+        if (reference == "ROHF") {
+        timer_on("T1(1)");
+	t1_1st_sc();
+        timer_off("T1(1)");
+        }// end if (reference == "ROHF") 
         timer_on("T2(1)");
 	omp2_t2_1st_sc();
         timer_off("T2(1)");
@@ -276,7 +283,8 @@ void OCCWave::mp2_manager()
         if (ep_ip_poles == "TRUE") ep2_ip();
 	
 	fprintf(outfile,"\n"); 
-	fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
+	if (reference == "ROHF") fprintf(outfile,"\tComputing MP2 energy using SCF MOs (ROHF-MP2)... \n"); 
+	else fprintf(outfile,"\tComputing MP2 energy using SCF MOs (Canonical MP2)... \n"); 
 	fprintf(outfile,"\t============================================================================== \n");
 	fprintf(outfile,"\tNuclear Repulsion Energy (a.u.)    : %12.14f\n", Enuc);
 	fprintf(outfile,"\tSCF Energy (a.u.)                  : %12.14f\n", Escf);
@@ -292,6 +300,8 @@ void OCCWave::mp2_manager()
 	fprintf(outfile,"\tSCS-MI-MP2 Total Energy (a.u.)     : %12.14f\n", Escsmimp2);
 	fprintf(outfile,"\tSCS-MP2-VDW Total Energy (a.u.)    : %12.14f\n", Escsmp2vdw);
 	fprintf(outfile,"\tSOS-PI-MP2 Total Energy (a.u.)     : %12.14f\n", Esospimp2);
+	if (reference == "ROHF") fprintf(outfile,"\tMP2 Singles Energy (a.u.)          : %12.14f\n", Emp2_t1);
+	if (reference == "ROHF") fprintf(outfile,"\tMP2 Doubles Energy (a.u.)          : %12.14f\n", Ecorr - Emp2_t1);
 	fprintf(outfile,"\tMP2 Correlation Energy (a.u.)      : %12.14f\n", Ecorr);
 	fprintf(outfile,"\tMP2 Total Energy (a.u.)            : %12.14f\n", Emp2);
 	fprintf(outfile,"\t============================================================================== \n");

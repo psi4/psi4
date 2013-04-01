@@ -1,5 +1,7 @@
 #include <libqt/qt.h>
 #include <libtrans/integraltransform.h>
+#include <libiwl/iwl.hpp>
+#include <psifiles.h>
 
 #include "occwave.h"
 #include "defines.h"
@@ -718,7 +720,16 @@ if (wfn_type_ != "OMP2") {
       timer_off("Build Fock");
       }
 
-      else if (orb_opt_ == "FALSE") {
+      else if (orb_opt_ == "FALSE" || reference == "ROHF") {
+	double *mo_ints = init_array(ntri);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, mo_ints, ntri, 0, 0, outfile);
+        FockA->set(mo_ints);
+        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, mo_ints, ntri, 0, 0, outfile);
+        FockB->set(mo_ints);
+        free(mo_ints);
+      }
+
+      else if (orb_opt_ == "FALSE" && reference != "ROHF") {
          for(int h = 0; h < nirrep_; ++h){
              for(int i = 0; i < occpiA[h]; ++i) FockA->set(h, i, i, epsilon_a_->get(h,i));
              for(int i = 0; i < occpiB[h]; ++i) FockB->set(h, i, i, epsilon_b_->get(h,i));
@@ -727,10 +738,9 @@ if (wfn_type_ != "OMP2") {
          }
       }
 
-
       timer_on("Build Denominators");
-      if (orb_opt_ == "TRUE") denominators_uhf();
-      else if (orb_opt_ == "FALSE") denominators_ump2();
+      if (orb_opt_ == "TRUE" || reference == "ROHF") denominators_uhf();
+      else if (orb_opt_ == "FALSE" && reference != "ROHF") denominators_ump2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
       //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);
