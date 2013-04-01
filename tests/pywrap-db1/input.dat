@@ -16,7 +16,7 @@ set globals {
     REFERENCE RHF
     SCF_TYPE DF
     PRINT 1
-    R_CONVERGENCE 11
+    E_CONVERGENCE 8
     JOBTYPE SP
     GUESS CORE
 }

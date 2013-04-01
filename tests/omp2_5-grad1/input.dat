@@ -1,0 +1,27 @@
+#! OMP2.5 cc-pVDZ gradient for the H2O molecule.
+
+ref_vals = [                                                       #TEST
+             [ 0.000000000000,  0.000000000000,  0.011479851839],  #TEST
+             [ 0.000000000000,  0.001567582963, -0.005739925920],  #TEST
+             [ 0.000000000000, -0.001567582963, -0.005739925920]   #TEST
+           ]                                                       #TEST
+ref = PsiMod.Matrix(3, 3)                                          #TEST
+ref.set(ref_vals)
+
+memory 250 mb
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+}
+gradient('omp2.5')
+
+grad = PsiMod.wavefunction().gradient()                           #TEST
+compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
+

@@ -1,31 +1,4 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <iomanip>
-#include <vector>
-
-/** Required PSI3 includes */ 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
-#include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-
 #include "defines.h"
 #include "occwave.h"
 
@@ -264,7 +237,7 @@ void OCCWave::ccl_energy()
     Emp2L_old = Emp2L;
   } 
   
-  else if (wfn_type_ == "OMP3") {
+  else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
     EcorrL=Ecc_rdm-Escf;        
     Emp3L=Ecc_rdm;  
     DE = Emp3L - Emp3L_old;
@@ -277,8 +250,15 @@ void OCCWave::ccl_energy()
     DE = EcepaL - EcepaL_old;
     EcepaL_old = EcepaL;
   } 
+
+    Etpdm = Ecc_rdm - Eopdm;
     
-    //fprintf(outfile,"\n CC Total Energy via pdms       : %12.14f\n", Ecc_rdm); fflush(outfile);    
+    /*
+    fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Eopdm);
+    fprintf(outfile,"\tTPDM energy (a.u.)          : %12.14f\n", Etpdm);
+    fprintf(outfile,"\tTotal PDM energy (a.u.)     : %12.14f\n", Ecc_rdm);
+    fflush(outfile);
+    */
     //fprintf(outfile,"\n ccl_energy is done... \n"); fflush(outfile);
     
 } // end of ccl_energy

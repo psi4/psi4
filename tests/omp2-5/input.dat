@@ -1,24 +1,25 @@
-#! OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
+#! SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
-refnuc      =   25.59060766929188  #TEST
-refscf      = -129.25292774600072 #TEST
-refomp2     = -129.66800278355504 #TEST
+refnuc      =  9.12293389624981 #TEST
+refscf      = -76.02621167524400 #TEST
+refsosomp2  = -76.21065166052178 #TEST
 
 memory 250 mb
 
-molecule no {
-0 2
-n
-o 1 1.158
+molecule h2o { 
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
 }
 
-set global {
-  basis cc-pcvdz
-  reference rohf
-  guess gwh
+set globals {
+    basis cc-pvdz
 }
-energy('omp2')
 
-compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+thisenergy = optimize('sos-omp2')
+
+compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
-compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy (a.u.)");                   #TEST
+compare_values(refsosomp2, thisenergy, 6, "SOS-OMP2 Total Energy (a.u.)");                #TEST
+

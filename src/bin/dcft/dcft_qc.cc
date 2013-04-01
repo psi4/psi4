@@ -11,6 +11,15 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::run_qc_dcft()
 {
+    // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
+    // for the simultaneous optimization of the cumulant and the orbitals
+
+    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
+        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
+
+    fprintf(outfile, "\n\n\t*=================================================================================*\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy       NR *\n"
+                         "\t*---------------------------------------------------------------------------------*\n");
 
     bool orbitalsDone     = false;
     bool cumulantDone     = false;
@@ -18,9 +27,12 @@ DCFTSolver::run_qc_dcft()
     bool densityConverged = false;
 
     int cycle = 0;
+    int cycle_NR = 0;
 
     // Allocate the memory
     qc_dcft_init();
+
+    scf_convergence_ = compute_scf_error_vector();
 
     while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_){
 
@@ -43,9 +55,9 @@ DCFTSolver::run_qc_dcft()
         // Check convergence of the total DCFT energy
         energyConverged = fabs(old_total_energy_ - new_total_energy_) < lambda_threshold_;
         // Print the iterative trace
-        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f       *\n",
+        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d *\n",
                 cycle, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
-                new_total_energy_);
+                new_total_energy_, cycle_NR);
         fflush(outfile);
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
         form_idps();
@@ -56,7 +68,7 @@ DCFTSolver::run_qc_dcft()
         // Compute sigma vector in the basis of IDPs
         compute_sigma_vector();
         // Solve the NR equations using conjugate gradients
-        iterate_conjugate_gradients();
+        cycle_NR = iterate_conjugate_gradients();
         // Check the convergence by computing the change in the orbitals and the cumulant
         check_qc_convergence();
         orbitalsDone = scf_convergence_ < scf_threshold_;
@@ -79,6 +91,10 @@ DCFTSolver::run_qc_dcft()
                                lambda_convergence_, __FILE__, __LINE__);
 
     // Make sure that the orbital phase is retained and the Fock matrix is diagonal for the gradients
+
+    scfDone_ = true;
+    lambdaDone_ = true;
+    densityConverged_ = true;
 
 }
 
@@ -1617,7 +1633,7 @@ DCFTSolver::compute_sigma_vector() {
 
 }
 
-void
+int
 DCFTSolver::iterate_conjugate_gradients() {
 
     // Conjugate gradients solution of the NR equations
@@ -1685,7 +1701,7 @@ DCFTSolver::iterate_conjugate_gradients() {
         converged = (residual_rms < lambda_threshold_);
 
         cycle++;
-        fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
+        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
         if (cycle > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
 
     }
@@ -1698,6 +1714,7 @@ DCFTSolver::iterate_conjugate_gradients() {
         X_->add(p, -epsilon * X_->get(p));
     }
 
+    return cycle;
 
 }
 

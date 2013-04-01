@@ -13,5 +13,5 @@ TEST_SCRIPT = ../runtest.pl
 # boolean for running the psitest.pl script automagically
 PSIAUTOTEST = false
 
-GARBAGE = output.dat psi.* timer.dat file14.dat *dboc.findif.out intco.dat *.rst
+GARBAGE = output.dat psi.* timer.dat file14.dat *dboc.findif.out *.intco *.rst *.molden *.grad
 

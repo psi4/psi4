@@ -432,6 +432,8 @@ def process_external_command(matchobj):
     extern += '%sqmmm.populateExtern()\n' % (spacing)
     extern += '%s%s = qmmm.extern\n' % (spacing, name)
 
+    extern += '%sPsiMod.set_global_option_python("EXTERN", extern)\n' % (spacing)
+
     return extern
 
 
