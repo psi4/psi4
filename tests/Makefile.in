@@ -79,9 +79,7 @@ quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
   mcscf1 sapt1 sad1 \
   psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-1 omp2-2 \
   omp3-1 omp3-2 omp2_5-1 omp2_5-2 ocepa1 fnocc2 fnocc4 \
-  omp2-grad1 omp2-grad2 omp3-grad1 omp3-grad2 omp2_5-grad1 \
-  omp2_5-grad2 ocepa-grad1 ocepa-grad2 mp2-grad1 mp2-grad2 \
-  mp3-grad1 mp3-grad2 mp2_5-grad1 mp2_5-grad2 cepa0-grad1 cepa0-grad2 \
+  mp2_5-grad1 ocepa-grad2 omp2-grad1 \
   dcft1 dcft2 dcft3 dcft4 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias  
 
 HAVE_MADNESS=@HAVE_MPI@
