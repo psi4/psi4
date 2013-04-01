@@ -41,6 +41,15 @@ set algorithm simultaneous
 energy('dcft')
 
 
+set algorithm qc
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
+
+
 set dcft_functional dc-12
 set algorithm twostep
 set ao_basis none
@@ -59,4 +68,12 @@ energy('dcft')
 set ao_basis disk
 energy('dcft')
 
+
+set algorithm qc
+set ao_basis none
+energy('dcft')
+
+
+set ao_basis disk
+energy('dcft')
 

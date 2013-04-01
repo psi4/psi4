@@ -23,4 +23,4 @@ basis_guess 3-21g
 thisenergy = energy('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
-compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                            #TEST

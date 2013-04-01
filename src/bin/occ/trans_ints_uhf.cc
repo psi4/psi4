@@ -1,32 +1,5 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
-
-
-/** Required PSI3 includes */ 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-/** Required libmints includes */
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-#include <libmints/mints.h>
-
 
 #include "occwave.h"
 #include "defines.h"
@@ -91,7 +64,8 @@ void OCCWave::trans_ints_uhf()
     else ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir, IntegralTransform::ReadAndKeep);
     timer_off("Trans (VV|OV)");
     
-if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
+//if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") { 
+if (wfn_type_ != "OMP2") { 
     // Trans (VV|VV)
     timer_on("Trans (VV|VV)");
     ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
@@ -737,13 +711,26 @@ if (wfn_type_ == "OMP3" || wfn_type_ == "OCEPA" || wfn_type_ == "CEPA") {
       }
       
       // Trans Fock matrix    
+      if (orb_opt_ == "TRUE") {
       timer_on("Build Fock");
       fock_alpha();      
       fock_beta();   
       timer_off("Build Fock");
+      }
+
+      else if (orb_opt_ == "FALSE") {
+         for(int h = 0; h < nirrep_; ++h){
+             for(int i = 0; i < occpiA[h]; ++i) FockA->set(h, i, i, epsilon_a_->get(h,i));
+             for(int i = 0; i < occpiB[h]; ++i) FockB->set(h, i, i, epsilon_b_->get(h,i));
+             for(int a = 0; a < virtpiA[h]; ++a) FockA->set(h, a + occpiA[h], a + occpiA[h], epsilon_a_->get(h, a + occpiA[h]));
+             for(int a = 0; a < virtpiB[h]; ++a) FockB->set(h, a + occpiB[h], a + occpiB[h], epsilon_b_->get(h, a + occpiB[h]));
+         }
+      }
+
 
       timer_on("Build Denominators");
-      denominators_uhf();
+      if (orb_opt_ == "TRUE") denominators_uhf();
+      else if (orb_opt_ == "FALSE") denominators_ump2();
       timer_off("Build Denominators");
       psio_->close(PSIF_LIBTRANS_DPD, 1);
       //fprintf(outfile,"\n trans_ints done. \n"); fflush(outfile);

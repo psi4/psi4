@@ -4,6 +4,7 @@
 .. index:: 
    single: Orbital-Optimized Methods, OMP2
    single: Orbital-Optimized Methods, OMP3
+   single: Orbital-Optimized Methods, OMP2.5
    single: Orbital-Optimized Methods, OCEPA
 
 .. index::
@@ -12,7 +13,7 @@
    pair: OMP3; theory
    pair: OCEPA; theory
 
-.. _`sec:ompn`:
+.. _`sec:occ`:
 
 OCC: Orbital-Optimized Coupled-Cluster and M\ |o_slash|\ ller--Plesset Perturbation Theories 
 ============================================================================================
@@ -149,13 +150,35 @@ Publications resulting from the use of the OMP2 code should cite the following p
 
 [Bozkaya:2011:omp2]_.
 
-Publications resulting from the use of the OMP3 code should cite the following publication(s): 
+Publications resulting from the use of the OMP3 code should cite the following publications: 
 
-[Bozkaya:2011:omp3]_.
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+
+Publications resulting from the use of the OMP2.5 code should cite the following publications: 
+
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
 
 Publications resulting from the use of the OCEPA code should cite the following publication(s): 
 
 [Bozkaya:2011:omp2]_.
+
+Publications resulting from the use of the MP2 code should cite the following publication(s): 
+
+[Bozkaya:2011:omp2]_.
+
+Publications resulting from the use of the MP3 code should cite the following publications: 
+
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+
+Publications resulting from the use of the MP2.5 code should cite the following publications: 
+
+[Bozkaya:2011:omp3]_ and [Bozkaya:2013:omp3]_.
+
+Publications resulting from the use of the CEPA0 code should cite the following publication(s): 
+
+[Bozkaya:2011:omp2]_.
+
+
 
 Methods
 ~~~~~~~
@@ -167,6 +190,8 @@ The orbital-optimized MP2 methods currently supported in |Psifour| are outlined 
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
     +=========================+==============================================================+=========+==========+========================+
+    | conv-mp2                | MP2                                                          |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | omp2                    | Orbital-Optimized MP2                                        |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scs-omp2                | Spin-Component Scaled Orbital-Optimized MP2                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
@@ -189,7 +214,9 @@ The orbital-optimized MP3 methods currently supported in |Psifour| are outlined 
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
     +=========================+==============================================================+=========+==========+========================+
-    | omp3                    | Orbital-Optimized MP3                                        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    | mp3                     | MP3                                                          |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | omp3                    | Orbital-Optimized MP3                                        |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scs-omp3                | Spin-Component Scaled Orbital-Optimized MP3                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
@@ -204,6 +231,19 @@ The orbital-optimized MP3 methods currently supported in |Psifour| are outlined 
     | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
+The orbital-optimized MP2.5 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2.5 Methods <table:omp2_5_calls>`.
+
+    .. _`table:omp2_5_calls`:
+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | mp2.5                   | MP2.5                                                        |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | omp2.5                  | Orbital-Optimized MP2.5                                      |    Y    |     Y    | RHF/ROHF/UHF/RKS/UKS   |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
+
 The orbital-optimized CEPA methods currently supported in |Psifour| are outlined in Table :ref:`OCEPA Methods <table:ocepa_calls>`.
 
     .. _`table:ocepa_calls`:
@@ -217,12 +257,13 @@ The orbital-optimized CEPA methods currently supported in |Psifour| are outlined
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | sos-ocepa               | Spin-Opposite Scaled Orbital-Optimized CEPA                  |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
-    | cepa0                   | CEPA0 (identical to Linearized CCD)                          |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+    | cepa0                   | CEPA(0) (identical to Linearized CCD)                        |    Y    |     Y    | RHF/UHF                |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 
 .. index:: OMP2; setting keywords
 .. index:: OMP3; setting keywords
+.. index:: OMP2.5; setting keywords
 .. index:: OCEPA; setting keywords
 
 Basic Keywords
@@ -234,6 +275,7 @@ Basic Keywords
 .. include:: /autodir_options_c/occ__max_mograd_convergence.rst
 .. include:: /autodir_options_c/occ__mo_maxiter.rst
 .. include:: /autodir_options_c/occ__wfn_type.rst
+.. include:: /autodir_options_c/occ__orb_opt.rst
 
 Advanced Keywords
 ~~~~~~~~~~~~~~~~~
