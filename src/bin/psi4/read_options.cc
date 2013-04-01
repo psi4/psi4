@@ -779,6 +779,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
 
+      /*- Reference wavefunction type -*/
+      options.add_str("REFERENCE", "UHF", "UHF");
       /*- The algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm (default) is usually more efficient for small
       systems, but for large systems the simultaneous algorithm is recommended.
@@ -919,7 +921,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- Write a MOLDEN output file?  If so, the filename will end in 
+    /*- Do write a MOLDEN output file?  If so, the filename will end in 
     .molden, and the prefix is determined by |globals__writer_file_label| 
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
@@ -1626,7 +1628,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF");
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
@@ -2130,6 +2132,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- A helpful option, used only in debugging the MADNESS version !expert-*/
     options.add_int("MADMP2_SLEEP", 0);
+    /*- Algorithm to use for the MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
     /*- Auxiliary basis set for MP2 density fitting computations.
@@ -2408,10 +2412,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
+      /*- Do write a gradient output file?  If so, the filename will end in 
+      .grad, and the prefix is determined by |globals__writer_file_label| 
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("GRADIENT_WRITE", false);
+      /*- Do write a hessian output file?  If so, the filename will end in 
+      .hess, and the prefix is determined by |globals__writer_file_label| 
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("HESSIAN_WRITE", false);
   }
   if (name == "OCC"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs orbital-optimized CC computations. -*/
+    /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
 
+    /*- Algorithm to use for non-OO MP2 computation -*/
+    options.add_str("MP2_TYPE", "DF", "DF CONV");
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("CC_MAXITER",50);
     /*- Maximum number of iterations to determine the orbitals -*/

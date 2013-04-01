@@ -412,23 +412,25 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
 
-  std::string hess_fname = get_writer_file_prefix() + ".hess";
-  FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-  fprintf(of_Hx,"%5d", Natom);
-  fprintf(of_Hx,"%5d\n", 6*Natom);
+  // Print a hessian file
+  if ( options.get_bool("HESSIAN_WRITE") ) {
+    std::string hess_fname = get_writer_file_prefix() + ".hess";
+    FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+    fprintf(of_Hx,"%5d", Natom);
+    fprintf(of_Hx,"%5d\n", 6*Natom);
 
-  int cnt = -1;
-  for (int i=0; i<3*Natom; ++i) {
-    for (int j=0; j<3*Natom; ++j) {
-      fprintf(of_Hx, "%20.10lf", Hx[i][j]);
-      if (++cnt == 2) {
-        fprintf(of_Hx,"\n");
-        cnt = -1;
+    int cnt = -1;
+    for (int i=0; i<3*Natom; ++i) {
+      for (int j=0; j<3*Natom; ++j) {
+        fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+        if (++cnt == 2) {
+          fprintf(of_Hx,"\n");
+          cnt = -1;
+        }
       }
     }
+    fclose(of_Hx);
   }
-
-  fclose(of_Hx);
   free_block(Hx);
 
   fprintf(outfile,"\n-------------------------------------------------------------\n");

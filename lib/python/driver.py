@@ -21,6 +21,7 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
+            'oldmp2'        : run_oldmp2,
             'dfmp2'         : run_dfmp2,
             'df-mp2'        : run_dfmp2,
             'conv-mp2'      : run_mp2,
@@ -74,9 +75,6 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
-            'eom_ccsd'      : run_eom_cc,
-            'eom_cc2'       : run_eom_cc,
-            'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'detci-mp'      : run_detci,  # arbitrary order mp(n)
@@ -102,7 +100,6 @@ procedures = {
             'rscf'          : run_scf,
             'uscf'          : run_scf,
             'roscf'         : run_scf,
-            'df-scf'        : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
             'mp4(sdq)'      : run_fnocc,
@@ -167,8 +164,6 @@ procedures = {
             'dfmp2'  : run_dfmp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
-            'eom_cc2'  : run_cc_property,
-            'eom_ccsd' : run_cc_property
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -177,7 +172,7 @@ for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
 
 for ssuper in superfunctional_list():
-    if not ssuper.is_c_hybrid():
+    if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
 def energy(name, **kwargs):
@@ -226,7 +221,7 @@ def energy(name, **kwargs):
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory                                                    |
+    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mcscf                   | multiconfigurational self consistent field (SCF)                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -234,11 +229,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:occ>`          |
+    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:convocc>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:occ>`                                      |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:convocc>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -256,7 +251,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation, equiv. linearized CCD :ref:`[manual] <sec:occ>`  |
+    | cepa0                   | coupled electron pair approximation, equiv. linear. CCD :ref:`[manual] <sec:convocc>` |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -361,8 +356,6 @@ def energy(name, **kwargs):
     | uscf                    | HF or DFT with unrestricted reference                                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | roscf                   | HF or DFT with restricted open-shell reference                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | df-scf                  | HF or DFT with density fitting                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_energy.rst
@@ -524,13 +517,13 @@ def energy(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        returnvalue = procedures['energy'][lowername](lowername, **kwargs)
+        procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
         raise ValidationError('Energy method %s not available.' % (lowername))
 
     optstash.restore()
-    return returnvalue
+    return PsiMod.get_variable('CURRENT ENERGY')
 
 
 def gradient(name, **kwargs):
@@ -920,27 +913,27 @@ def optimize(name, **kwargs):
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :ref:`[manual] <sec:scf>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | dcft                    | density cumulant functional theory                                                    |
+    | dcft                    | density cumulant functional theory :ref:`[manual] <sec:dcft>`                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convocc>`                  |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | mp2.5                   | MP2.5 :ref:`[manual] <sec:convocc>`                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:convocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:occ>`                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
     | omp2.5                  | orbital-optimized MP2.5 :ref:`[manual] <sec:occ>`                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | MP2.5 :ref:`[manual] <sec:occ>`                                                       |
+    | omp3                    | orbital-optimized third-order MP perturbation theory :ref:`[manual] <sec:occ>`        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:occ>`                      |
+    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:convocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -996,8 +989,8 @@ def optimize(name, **kwargs):
     >>> # [1] Analytic scf optimization
     >>> optimize('scf')
 
-    >>> # [2] Finite difference mp3 optimization
-    >>> opt('mp3')
+    >>> # [2] Finite difference mp5 optimization
+    >>> opt('mp5')
 
     >>> # [3] Forced finite difference ccsd optimization
     >>> optimize('ccsd', dertype=1)
@@ -1243,10 +1236,69 @@ def frequency(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
+    dertype = 2
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'])
+
+    # Order of precedence:
+    #    1. Default for wavefunction
+    #    2. Value obtained from kwargs, if user changed it
+    #    3. If user provides a custom 'func' use that
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
+    # 1. set the default to that of the provided name
+    if lowername in procedures['hessian']:
+        dertype = 2
+    elif lowername in procedures['gradient']:
+        dertype = 1
+        func = gradient
+    elif lowername in procedures['energy']:
+        dertype = 0
+        func = energy
+
+    # 2. Check if the user passes dertype into this function
+    if 'dertype' in kwargs:
+        freq_dertype = kwargs['dertype']
+
+        if der0th.match(str(freq_dertype)):
+            dertype = 0
+            func = energy
+        elif der1st.match(str(freq_dertype)):
+            dertype = 1
+            func = gradient
+        elif der2nd.match(str(freq_dertype)):
+            dertype = 2
+        else:
+            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
+
+    # 3. if the user provides a custom function THAT takes precedence
+    if ('freq_func' in kwargs) or ('func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['freq_func'] = kwargs['func']
+            del kwargs['func']
+        dertype = 0
+        func = kwargs['freq_func']
+
+    # Summary validation
+    if (dertype == 2) and (lowername in procedures['hessian']):
+        pass
+    elif (dertype == 1) and (func is gradient) and (lowername in procedures['gradient']):
+        pass
+    elif (dertype == 1) and not(func is gradient):
+        pass
+    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
+        pass
+    elif (dertype == 0) and not(func is energy):
+        pass
+    else:
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
+            % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
@@ -1255,35 +1307,6 @@ def frequency(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
-
-    types = ['energy', 'gradient', 'hessian']
-
-    dertype = 2
-    if ('dertype' in kwargs):
-        dertype = kwargs['dertype']
-        if not (lowername in procedures[types[dertype]]):
-            print('Frequencies: dertype = %d for frequencies is not available, switching to automatic determination.' % dertype)
-            dertype = -1
-
-    if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
-    else:
-        irrep = -1  # -1 implies do all irreps
-
-    # By default, set func to the energy function
-    func = energy
-    func_existed = False
-    if 'func' in kwargs:
-        func = kwargs['func']
-        func_existed = True
-
-    if (not('dertype' in kwargs) or dertype == -1):
-        if lowername in procedures['hessian']:
-            dertype = 2
-        elif lowername in procedures['gradient']:
-            dertype = 1
-        else:
-            dertype = 0
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
@@ -1297,8 +1320,14 @@ def frequency(name, **kwargs):
         else:
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
+    # Select certain irreps
+    if 'irrep' in kwargs:
+        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
+    else:
+        irrep = -1  # -1 implies do all irreps
+
     # Does an analytic procedure exist for the requested method?
-    if (dertype == 2 and func_existed == False):
+    if (dertype == 2):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
@@ -1307,7 +1336,8 @@ def frequency(name, **kwargs):
         PsiMod.thermo()
 
         return PsiMod.wavefunction().energy()
-    elif (dertype == 1 and func_existed == False):
+
+    elif (dertype == 1):
         # Ok, we're doing frequencies by gradients
         info = 'Performing finite difference by gradient calculations'
         print(info)

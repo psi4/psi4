@@ -687,7 +687,7 @@ void DFMP2::print_energies()
     energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
 
     fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ====================> MP2 Energies <==================== \n");
+    fprintf(outfile, "\t ==================> DF-MP2 Energies <=================== \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Singles Energy",           energies_["Singles Energy"]);
@@ -696,7 +696,7 @@ void DFMP2::print_energies()
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
     fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ==================> SCS-MP2 Energies <================== \n");
+    fprintf(outfile, "\t ================> DF-SCS-MP2 Energies <================= \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
     fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
@@ -708,7 +708,6 @@ void DFMP2::print_energies()
     fprintf(outfile, "\n");
     fflush(outfile);
 
-    // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["MP2 TOTAL ENERGY"] = energies_["Total Energy"];

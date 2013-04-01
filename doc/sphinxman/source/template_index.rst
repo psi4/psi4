@@ -20,8 +20,8 @@
    psithoninput
    basissets
    methods
-   psithonfunc
    interfacing
+   psithonfunc
    customizing
 .. #####  LATEX-USER STOP
 .. #####  HTML-USER STOP
