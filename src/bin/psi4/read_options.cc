@@ -2607,9 +2607,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Convergence for the CC energy.  Note that convergence is
           met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-8);
-      /*- Convergence criterion for Breuckner orbitals. The convergence
-         is determined based on the largest $T_1$ amplitude. -*/
-      options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
       /*- Maximum number of iterations for Brueckner orbitals optimization -*/
       options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is

@@ -3330,13 +3330,14 @@ void DFCoupledCluster::Vabcd1(){
       int nb = 0;
       // fill Iqdb for b > a
       double start1 = omp_get_wtime();
-      #pragma omp parallel for schedule (static)
-      for (long int b = a; b < v; b++) {
-          F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
-      }
+      //#pragma omp parallel for schedule (static)
+      //for (long int b = a; b < v; b++) {
+      //    F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
+      //}
       nb = v-a;
 
-      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      //F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+a*v*nQ,nQ,0.0,Vcdb,v);
 
       #pragma omp parallel for schedule (static)
       for (long int b = a; b < v; b++){
@@ -3970,8 +3971,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
   time_t time_start = time(NULL);
   double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+// TODO e_conv
 
-  while(iter<maxiter && nrm > r_conv){
+  while(iter < maxiter){
       time_t iter_start = time(NULL);
 
       // evaluate cepa diagrams
@@ -4031,6 +4033,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
+
+      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
   times(&total_tmstime);
   time_t time_stop = time(NULL);
