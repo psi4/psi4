@@ -20,6 +20,8 @@ from optproc import *
 from util import *
 # never import driver, wrappers, or aliases into this file
 
+# ATTN NEW ADDITIONS!
+# consult http://sirius.chem.vt.edu/psi4manual/master/proc_py.html
 
 def run_dcft(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -27,17 +29,18 @@ def run_dcft(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'])
+        ['SCF', 'REFERENCE'],
+        ['DCFT', 'REFERENCE'])
 
-    # DCFT module should probably take a REFERENCE keyword with only UHF allowed value
-    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.set_local_option('SCF', 'REFERENCE', 'UHF')
+    PsiMod.set_local_option('DCFT', 'REFERENCE', 'UHF')
+
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
-    returnvalue = PsiMod.dcft()
+    PsiMod.dcft()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_dcft_gradient(name, **kwargs):
@@ -46,7 +49,6 @@ def run_dcft_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
         ['GLOBALS', 'DERTYPE'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
@@ -93,10 +95,9 @@ def run_mp2(name, **kwargs):
         ['OCC', 'ORB_OPT'])
 
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    returnvalue = run_omp2(name, **kwargs)
+    run_omp2(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_oldmp2(name, **kwargs):
@@ -124,10 +125,9 @@ def run_oldmp2(name, **kwargs):
 
     PsiMod.transqt2()
     PsiMod.ccsort()
-    returnvalue = PsiMod.mp2()
+    PsiMod.mp2()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_mp2_gradient(name, **kwargs):
@@ -173,10 +173,9 @@ def run_scs_omp2(name, **kwargs):
         scf_helper(name, **kwargs)
 
     PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_sos_omp2(name, **kwargs):
@@ -201,10 +200,9 @@ def run_sos_omp2(name, **kwargs):
         scf_helper(name, **kwargs)
 
     PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_omp3(name, **kwargs):
@@ -220,10 +218,9 @@ def run_omp3(name, **kwargs):
         scf_helper(name, **kwargs)
 
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_omp3_gradient(name, **kwargs):
@@ -232,7 +229,7 @@ def run_omp3_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
+        ['OCC', 'WFN_TYPE'],
         ['GLOBALS', 'DERTYPE'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
@@ -252,10 +249,9 @@ def run_mp3(name, **kwargs):
         ['OCC', 'ORB_OPT'])
 
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    returnvalue = run_omp3(name, **kwargs)
+    run_omp3(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_mp3_gradient(name, **kwargs):
@@ -264,8 +260,9 @@ def run_mp3_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['OCC', 'WFN_TYPE'],
+        ['OCC', 'ORB_OPT'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
@@ -304,10 +301,9 @@ def run_scs_omp3(name, **kwargs):
 
     PsiMod.set_local_option('OCC', 'DO_SCS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_sos_omp3(name, **kwargs):
@@ -334,10 +330,9 @@ def run_sos_omp3(name, **kwargs):
 
     PsiMod.set_local_option('OCC', 'DO_SOS', 'TRUE')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP3')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_ocepa(name, **kwargs):
@@ -353,10 +348,9 @@ def run_ocepa(name, **kwargs):
         scf_helper(name, **kwargs) 
 
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_ocepa_gradient(name, **kwargs):
@@ -365,7 +359,6 @@ def run_ocepa_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
         ['GLOBALS', 'DERTYPE'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
@@ -386,10 +379,9 @@ def run_cepa0(name, **kwargs):
 
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    returnvalue = run_ocepa(name, **kwargs)
+    run_ocepa(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_cepa0_gradient(name, **kwargs):
@@ -398,8 +390,9 @@ def run_cepa0_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['OCC', 'WFN_TYPE'],
+        ['OCC', 'ORB_OPT'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
@@ -423,10 +416,9 @@ def run_omp2_5(name, **kwargs):
         scf_helper(name, **kwargs) 
 
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
-    returnvalue = PsiMod.occ()
+    PsiMod.occ()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_omp2_5_gradient(name, **kwargs):
@@ -435,8 +427,8 @@ def run_omp2_5_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['OCC', 'WFN_TYPE'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
@@ -455,10 +447,9 @@ def run_mp2_5(name, **kwargs):
         ['OCC', 'ORB_OPT'])
 
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
-    returnvalue = run_omp2_5(name, **kwargs)
+    run_omp2_5(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_mp2_5_gradient(name, **kwargs):
@@ -467,8 +458,9 @@ def run_mp2_5_gradient(name, **kwargs):
 
     """
     optstash = OptionsState(
-        ['REFERENCE'],
-        ['GLOBALS', 'DERTYPE'])
+        ['GLOBALS', 'DERTYPE'],
+        ['OCC', 'WFN_TYPE'],
+        ['OCC', 'ORB_OPT'])
 
     PsiMod.set_global_option('DERTYPE', 'FIRST')
     PsiMod.set_local_option('OCC', 'WFN_TYPE', 'OMP2.5')
@@ -495,9 +487,7 @@ def run_scf(name, **kwargs):
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    if lowername == 'df-scf':
-        PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
-    elif lowername == 'hf':
+    if lowername == 'hf':
         if PsiMod.get_option('SCF', 'REFERENCE') == 'RKS':
             PsiMod.set_local_option('SCF', 'REFERENCE', 'RHF')
         elif PsiMod.get_option('SCF', 'REFERENCE') == 'UKS':
@@ -526,10 +516,9 @@ def run_scf(name, **kwargs):
         else:
             PsiMod.set_local_option('SCF', 'REFERENCE', 'ROHF')
 
-    returnvalue = scf_helper(name, **kwargs)
+    scf_helper(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_scf_gradient(name, **kwargs):
@@ -545,7 +534,7 @@ def run_scf_gradient(name, **kwargs):
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    returnvalue = run_scf(name, **kwargs)
+    run_scf(name, **kwargs)
 
     if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
 
@@ -564,7 +553,6 @@ def run_scf_gradient(name, **kwargs):
         PsiMod.deriv()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_libfock(name, **kwargs):
@@ -655,7 +643,6 @@ def scf_helper(name, **kwargs):
         multp = molecule.multiplicity()
         if multp != 1:
             raise ValidationError('Broken symmetry is only for singlets.')
-        #if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and lowername != 'UHF':
         if PsiMod.get_option('SCF','REFERENCE') != 'UHF' and PsiMod.get_option('SCF','REFERENCE') != 'UKS':
             raise ValidationError('You must specify "set reference uhf" to use broken symmetry.')
         do_broken = True
@@ -680,7 +667,6 @@ def scf_helper(name, **kwargs):
     # broken set-up
     if do_broken:
         molecule.set_multiplicity(3)
-#        PsiMod.print_out("\n\n\tComputing high-spin triplet guess\n\n")
         PsiMod.print_out('\n')
         banner('  Computing high-spin triplet guess  ')
         PsiMod.print_out('\n')
@@ -892,10 +878,9 @@ def run_ccenergy(name, **kwargs):
 
     PsiMod.transqt2()
     PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+    PsiMod.ccenergy()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_cc_gradient(name, **kwargs):
@@ -903,24 +888,27 @@ def run_cc_gradient(name, **kwargs):
     a CCSD and CCSD(T) gradient calculation.
 
     """
+    optstash = OptionsState(
+        ['GLOBALS', 'DERTYPE'],
+        ['CCLAMBDA', 'WFN'],
+        ['CCDENSITY', 'WFN'])
+
     PsiMod.set_global_option('DERTYPE', 'FIRST')
 
     run_ccenergy(name, **kwargs)
     if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
+        PsiMod.set_local_option('CCLAMBDA', 'WFN', 'CCSD')
+        PsiMod.set_local_option('CCDENSITY', 'WFN', 'CCSD')
     elif (name.lower() == 'ccsd(t)'):
-        PsiMod.set_global_option('WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
+        PsiMod.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccdensity()
     PsiMod.deriv()
 
-    if (name.lower() != 'ccenergy'):
-        PsiMod.set_global_option('WFN', 'SCF')
-        PsiMod.revoke_global_option_changed('WFN')
-        PsiMod.set_global_option('DERTYPE', 'NONE')
-        PsiMod.revoke_global_option_changed('DERTYPE')
+    optstash.restore()
 
 
 def run_bccd(name, **kwargs):
@@ -928,11 +916,18 @@ def run_bccd(name, **kwargs):
     a Brueckner CCD calculation.
 
     """
+    optstash = OptionsState(
+        ['TRANSQT2', 'DELETE_TEI'],
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'])
+    
     if (name.lower() == 'bccd'):
-        PsiMod.set_global_option('WFN', 'BCCD')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'BCCD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'BCCD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'BCCD')
 
-    # Bypass routine scf if user did something special to get it to
-    # converge
+    # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
@@ -941,17 +936,17 @@ def run_bccd(name, **kwargs):
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
-    PsiMod.set_global_option('DELETE_TEI', 'false')
+    PsiMod.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
 
     while True:
         PsiMod.transqt2()
         PsiMod.ccsort()
-        returnvalue = PsiMod.ccenergy()
+        PsiMod.ccenergy()
         PsiMod.print_out('Brueckner convergence check: %d\n' % PsiMod.get_variable('BRUECKNER CONVERGED'))
         if (PsiMod.get_variable('BRUECKNER CONVERGED') == True):
             break
 
-    return returnvalue
+    optstash.restore()
 
 
 def run_bccd_t(name, **kwargs):
@@ -959,10 +954,20 @@ def run_bccd_t(name, **kwargs):
     a Brueckner CCD(T) calculation.
 
     """
-    PsiMod.set_global_option('WFN', 'BCCD_T')
-    run_bccd(name, **kwargs)
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'],
+        ['CCTRIPLES', 'WFN'])
 
-    return PsiMod.cctriples()
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'BCCD_T')
+    PsiMod.set_local_option('CCSORT', 'WFN', 'BCCD_T')
+    PsiMod.set_local_option('CCENERGY', 'WFN', 'BCCD_T')
+    PsiMod.set_local_option('CCTRIPLES', 'WFN', 'BCCD_T')
+    run_bccd(name, **kwargs)
+    PsiMod.cctriples()
+
+    optstash.restore()
 
 
 def run_scf_property(name, **kwargs):
@@ -978,10 +983,9 @@ def run_scf_property(name, **kwargs):
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
 
-    returnvalue = run_scf(name, **kwargs)
+    run_scf(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_cc_property(name, **kwargs):
@@ -1100,6 +1104,7 @@ def run_cc_property(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
+
 def run_dfmp2_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DFMP2 property calculation.
@@ -1175,26 +1180,39 @@ def run_eom_cc(name, **kwargs):
     an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.
 
     """
+    optstash = OptionsState(
+        ['TRANSQT2', 'WFN'],
+        ['CCSORT', 'WFN'],
+        ['CCENERGY', 'WFN'],
+        ['CCHBAR', 'WFN'],
+        ['CCEOM', 'WFN'])
+
     if (name.lower() == 'eom-ccsd'):
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCHBAR', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
         run_ccenergy('ccsd', **kwargs)
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
     elif (name.lower() == 'eom-cc2'):
-        PsiMod.set_global_option('WFN', 'EOM_CC2')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCHBAR', 'WFN', 'EOM_CC2')
+        PsiMod.set_local_option('CCEOM', 'WFN', 'EOM_CC2')
         run_ccenergy('cc2', **kwargs)
-        PsiMod.set_global_option('WFN', 'EOM_CC2')
     elif (name.lower() == 'eom-cc3'):
-        PsiMod.set_global_option('WFN', 'EOM_CC3')
+        PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC3')
+        PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC3')
+        PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC3')
+        PsiMod.set_local_option('CCHBAR', 'WFN', 'EOM_CC3')
+        PsiMod.set_local_option('CCEOM', 'WFN', 'EOM_CC3')
         run_ccenergy('cc3', **kwargs)
-        PsiMod.set_global_option('WFN', 'EOM_CC3')
 
     PsiMod.cchbar()
-    returnvalue = PsiMod.cceom()
+    PsiMod.cceom()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-    return returnvalue
+    optstash.restore()
 
 
 def run_eom_cc_gradient(name, **kwargs):
@@ -1213,12 +1231,10 @@ def run_eom_cc_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'FIRST')
 
     if (name.lower() == 'eom-ccsd'):
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
-        energy = run_eom_cc(name, **kwargs)
-        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
+        PsiMod.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
+        run_eom_cc(name, **kwargs)
 
-    PsiMod.set_local_option('CCLAMBDA', 'WFN', 'EOM_CCSD')
-    PsiMod.set_local_option('CCDENSITY', 'WFN', 'EOM_CCSD')
     PsiMod.set_local_option('CCLAMBDA', 'ZETA', 'FALSE')
     PsiMod.set_local_option('CCDENSITY', 'ZETA', 'FALSE')
     PsiMod.set_local_option('CCDENSITY', 'XI', 'TRUE')
@@ -1241,14 +1257,9 @@ def run_adc(name, **kwargs):
     .. caution:: Get rid of active molecule lines- should be handled in energy.
 
     """
-    molecule = PsiMod.get_active_molecule()
-    if 'molecule' in kwargs:
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet('no molecule found')
-
-    PsiMod.scf()
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
     return PsiMod.adc()
 
@@ -1315,7 +1326,6 @@ def run_dft(name, **kwargs):
         PsiMod.set_variable('CURRENT ENERGY', returnvalue)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_dft_gradient(name, **kwargs):
@@ -1344,10 +1354,9 @@ def run_dft_gradient(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    returnvalue = run_scf_gradient(name, **kwargs)
+    run_scf_gradient(name, **kwargs)
 
     optstash.restore()
-    return returnvalue
 
 
 def run_detci(name, **kwargs):
@@ -1421,10 +1430,9 @@ def run_detci(name, **kwargs):
             PsiMod.MintsHelper().integrals()
 
     PsiMod.transqt2()
-    returnvalue = PsiMod.detci()
+    PsiMod.detci()
 
     optstash.restore()
-    return returnvalue
 
 
 def run_dfmp2(name, **kwargs):
@@ -1489,8 +1497,7 @@ def run_psimrcc(name, **kwargs):
     """
     run_mcscf(name, **kwargs)
     PsiMod.psimrcc()
-    e_psimrcc = PsiMod.get_variable("Current Energy")
-    return e_psimrcc
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 
 def run_psimrcc_scf(name, **kwargs):
@@ -1498,11 +1505,12 @@ def run_psimrcc_scf(name, **kwargs):
      using a reference from the SCF module
 
     """
+    # Bypass routine scf if user did something special to get it to converge
+    if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
+        scf_helper(name, **kwargs)
 
-    scf_helper(name, **kwargs)
     PsiMod.psimrcc()
-    e_psimrcc = PsiMod.get_variable("Current Energy")
-    return e_psimrcc
+    return PsiMod.get_variable("CURRENT ENERGY")
 
 
 def run_mp2c(name, **kwargs):
@@ -1726,6 +1734,7 @@ def run_sapt(name, **kwargs):
     optstash.restore()
     return e_sapt
 
+
 def run_dftsapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DFT-SAPT calculation of any level.
@@ -1831,6 +1840,7 @@ def run_dftsapt(name, **kwargs):
 
     optstash.restore()
     return e_sapt
+
 
 def run_infsapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2242,6 +2252,7 @@ def run_mrcc(name, **kwargs):
 
     return e
 
+
 def run_fnodfcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a DF-CCSD(T) computation.
@@ -2260,8 +2271,8 @@ def run_fnodfcc(name, **kwargs):
         ['FNOCC','RUN_CEPA'],
         ['SCF','SCF_TYPE'])
 
-    PsiMod.set_local_option('FNOCC','DFCC', True)
-    PsiMod.set_local_option('FNOCC','RUN_CEPA', False)
+    PsiMod.set_local_option('FNOCC', 'DFCC', True)
+    PsiMod.set_local_option('FNOCC', 'RUN_CEPA', False)
 
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
@@ -2278,20 +2289,19 @@ def run_fnodfcc(name, **kwargs):
 
     # triples?
     if (lowername == 'df-ccsd'):
-        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
     if (lowername == 'df-ccsd(t)'):
-        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
     if (lowername == 'fno-df-ccsd'):
-        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', False)
-        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+        PsiMod.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
     if (lowername == 'fno-df-ccsd(t)'):
-        PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
-        PsiMod.set_local_option('FNOCC','NAT_ORBS', True)
+        PsiMod.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
+        PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
 
     # set scf-type to df unless the user wants something else
     if PsiMod.has_option_changed('SCF','SCF_TYPE') == False:
        PsiMod.set_local_option('SCF','SCF_TYPE', 'DF')
-
 
     if PsiMod.get_option('FNOCC','DF_BASIS_CC') == '':
        basis   = PsiMod.get_global_option('BASIS')
@@ -2308,6 +2318,7 @@ def run_fnodfcc(name, **kwargs):
     optstash.restore()
 
     return PsiMod.get_variable("CURRENT ENERGY")
+
 
 def run_fnocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -2466,6 +2477,7 @@ def run_fnocc(name, **kwargs):
 
     return PsiMod.get_variable("CURRENT ENERGY")
 
+
 def run_cepa(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a cepa-like calculation.
@@ -2545,7 +2557,7 @@ def run_cepa(name, **kwargs):
        PsiMod.transqt2()
 
     # run cepa
-    returnvalue = PsiMod.fnocc()
+    PsiMod.fnocc()
 
     # one-electron properties
     if PsiMod.get_option('FNOCC', 'DIPMOM'):

@@ -779,6 +779,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
       computations -*/
 
+      /*- Reference wavefunction type -*/
+      options.add_str("REFERENCE", "UHF", "UHF");
       /*- The algorithm to use for the density cumulant and orbital updates in the DCFT energy computation.
       Two-step algorithm (default) is usually more efficient for small
       systems, but for large systems the simultaneous algorithm is recommended.
@@ -1626,7 +1628,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF");
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/

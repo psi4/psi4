@@ -75,9 +75,6 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
-            'eom_ccsd'      : run_eom_cc,
-            'eom_cc2'       : run_eom_cc,
-            'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'detci-mp'      : run_detci,  # arbitrary order mp(n)
@@ -103,7 +100,6 @@ procedures = {
             'rscf'          : run_scf,
             'uscf'          : run_scf,
             'roscf'         : run_scf,
-            'df-scf'        : run_scf,
             'qcisd'         : run_fnocc,
             'qcisd(t)'      : run_fnocc,
             'mp4(sdq)'      : run_fnocc,
@@ -168,8 +164,6 @@ procedures = {
             'dfmp2'  : run_dfmp2_property,
             'eom-cc2'  : run_cc_property,
             'eom-ccsd' : run_cc_property,
-            'eom_cc2'  : run_cc_property,
-            'eom_ccsd' : run_cc_property
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
@@ -363,8 +357,6 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | roscf                   | HF or DFT with restricted open-shell reference                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | df-scf                  | HF or DFT with density fitting                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_energy.rst
 
@@ -525,13 +517,13 @@ def energy(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
-        returnvalue = procedures['energy'][lowername](lowername, **kwargs)
+        procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
         raise ValidationError('Energy method %s not available.' % (lowername))
 
     optstash.restore()
-    return returnvalue
+    return PsiMod.get_variable('CURRENT ENERGY')
 
 
 def gradient(name, **kwargs):
@@ -997,8 +989,8 @@ def optimize(name, **kwargs):
     >>> # [1] Analytic scf optimization
     >>> optimize('scf')
 
-    >>> # [2] Finite difference mp3 optimization
-    >>> opt('mp3')
+    >>> # [2] Finite difference mp5 optimization
+    >>> opt('mp5')
 
     >>> # [3] Forced finite difference ccsd optimization
     >>> optimize('ccsd', dertype=1)
