@@ -200,18 +200,3 @@ documented in the Appendix :ref:`apdx:dfmp2`). Some basic recommendations are in
 * MP2 is not suitable for systems with multireference character. The
   orbital energies will come together and an explosion will occur. 
 
-.. _`sec:convmp2`:
-
-Conventional MP2
-----------------
-
-*Module:* :ref:`Keywords <apdx:mp2>`, :ref:`PSI Variables <apdx:mp2_psivar>`, :source:`MP2 <src/bin/mp2>`
-
-|PSIfour| also has a non-density-fitted MP2 algorithm for RHF, UHF, and
-ROHF energies and RHF gradients. This code is not highly optimized, so the
-density-fitted module DFMP2 is always the default. To access the
-conventional MP2 code, set |mp2__mp2_type| to ``conv`` and call as usual 
-``energy('mp2')``/``optimize('mp2')``.
-
-.. include:: autodir_options_c/mp2__mp2_type.rst
-

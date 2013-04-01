@@ -229,11 +229,11 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:occ>`          |
+    | mp3                     | 3rd-order Moller-Plesset perturbation theory (MP3) :ref:`[manual] <sec:convocc>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:occ>`                                      |
+    | mp2.5                   | average of MP2 and MP3 :ref:`[manual] <sec:convocc>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp4(sdq)                | 4th-order MP perturbation theory (MP4) less triples :ref:`[manual] <sec:fnompn>`      |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -251,7 +251,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation, equiv. linearized CCD :ref:`[manual] <sec:occ>`  |
+    | cepa0                   | coupled electron pair approximation, equiv. linear. CCD :ref:`[manual] <sec:convocc>` |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cepa(0)                 | coupled electron pair approximation variant 0 :ref:`[manual] <sec:fnocepa>`           |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -919,11 +919,11 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | df-mp2                  | MP2 with density fitting :ref:`[manual] <sec:dfmp2>`                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:occ>`                      |
+    | conv-mp2                | conventional MP2 (non-density-fitting) :ref:`[manual] <sec:convocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2.5                   | MP2.5 :ref:`[manual] <sec:occ>`                                                       |
+    | mp2.5                   | MP2.5 :ref:`[manual] <sec:convocc>`                                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:occ>`                          |
+    | mp3                     | third-order MP perturbation theory :ref:`[manual] <sec:convocc>`                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | omp2                    | orbital-optimized second-order MP perturbation theory :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -933,7 +933,7 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ocepa                   | orbital-optimized coupled electron pair approximation :ref:`[manual] <sec:occ>`       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:occ>`                      |
+    | cepa0                   | coupled electron pair approximation(0) :ref:`[manual] <sec:convocc>`                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD) :ref:`[manual] <sec:cc>`                   |
     +-------------------------+---------------------------------------------------------------------------------------+

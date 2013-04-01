@@ -183,7 +183,7 @@ Publications resulting from the use of the CEPA0 code should cite the following 
 Methods
 ~~~~~~~
 
-The orbital-optimized MP2 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2 Methods <table:omp2_calls>`.
+The conventional and orbital-optimized MP2 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2 Methods <table:omp2_calls>`.
 
     .. _`table:omp2_calls`:
 
@@ -207,7 +207,7 @@ The orbital-optimized MP2 methods currently supported in |Psifour| are outlined 
     | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
-The orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
+The conventional and orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
 
     .. _`table:omp3_calls`:
 
@@ -231,7 +231,7 @@ The orbital-optimized MP3 methods currently supported in |Psifour| are outlined 
     | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
-The orbital-optimized MP2.5 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2.5 Methods <table:omp2_5_calls>`.
+The conventional and orbital-optimized MP2.5 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2.5 Methods <table:omp2_5_calls>`.
 
     .. _`table:omp2_5_calls`:
 
@@ -244,7 +244,7 @@ The orbital-optimized MP2.5 methods currently supported in |Psifour| are outline
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 
-The orbital-optimized CEPA methods currently supported in |Psifour| are outlined in Table :ref:`OCEPA Methods <table:ocepa_calls>`.
+The conventional and orbital-optimized CEPA methods currently supported in |Psifour| are outlined in Table :ref:`OCEPA Methods <table:ocepa_calls>`.
 
     .. _`table:ocepa_calls`:
 
@@ -291,4 +291,42 @@ Advanced Keywords
 .. include:: /autodir_options_c/occ__occ_orbs_print.rst
 .. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
 .. include:: /autodir_options_c/occ__do_diis.rst
+
+
+.. _`sec:convocc`:
+
+OCC: Conventional M\ |o_slash|\ ller--Plesset Perturbation Theories 
+===================================================================
+
+*Module:* :ref:`Keywords <apdx:occ>`, :ref:`PSI Variables <apdx:occ_psivar>`, :source:`OCC <src/bin/occ>`
+
+|PSIfour| also has a non-density-fitted MP2 algorithm for RHF and UHF
+energies and gradients. The
+density-fitted module DFMP2 is always the default, so to access the
+conventional MP2 code, set |occ__mp2_type| to ``conv`` and call as usual
+``energy('mp2')``/``optimize('mp2')``.
+
+Basic Keywords
+~~~~~~~~~~~~~~
+.. include:: autodir_options_c/occ__mp2_type.rst
+.. include:: /autodir_options_c/occ__mp2_os_scale.rst
+.. include:: /autodir_options_c/occ__mp2_ss_scale.rst
+
+Non-orbital-optimized counterparts to higher order MPn methods are also
+available. Summarizing from tables above, the following methods are
+available and can be controlled through OCC keywards.
+
+    .. _`table:nonoo`:
+
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | Name                    | Calls Method                                                 |  Energy | Gradient | Reference              |
+    +=========================+==============================================================+=========+==========+========================+
+    | conv-mp2                | MP2                                                          |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | mp3                     | MP3                                                          |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | mp2.5                   | MP2.5                                                        |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+    | cepa0                   | CEPA(0) (identical to Linearized CCD)                        |    Y    |     Y    | RHF/UHF                |
+    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
