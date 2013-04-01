@@ -3326,13 +3326,14 @@ void DFCoupledCluster::Vabcd1(){
       int nb = 0;
       // fill Iqdb for b > a
       double start1 = omp_get_wtime();
-      #pragma omp parallel for schedule (static)
-      for (long int b = a; b < v; b++) {
-          F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
-      }
+      //#pragma omp parallel for schedule (static)
+      //for (long int b = a; b < v; b++) {
+      //    F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
+      //}
       nb = v-a;
 
-      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      //F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+a*v*nQ,nQ,0.0,Vcdb,v);
 
       #pragma omp parallel for schedule (static)
       for (long int b = a; b < v; b++){
