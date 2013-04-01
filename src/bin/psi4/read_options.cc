@@ -921,7 +921,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- Write a MOLDEN output file?  If so, the filename will end in 
+    /*- Do write a MOLDEN output file?  If so, the filename will end in 
     .molden, and the prefix is determined by |globals__writer_file_label| 
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
@@ -2412,6 +2412,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
+      /*- Do write a gradient output file?  If so, the filename will end in 
+      .grad, and the prefix is determined by |globals__writer_file_label| 
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("GRADIENT_WRITE", false);
+      /*- Do write a hessian output file?  If so, the filename will end in 
+      .hess, and the prefix is determined by |globals__writer_file_label| 
+      (if set), or else by the name of the output file plus the name of
+      the current molecule. -*/
+      options.add_bool("HESSIAN_WRITE", false);
   }
   if (name == "OCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs orbital-optimized MPn and CC computations and conventional MPn computations. -*/
