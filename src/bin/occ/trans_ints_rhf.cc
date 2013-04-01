@@ -1,5 +1,7 @@
 #include <libqt/qt.h>
 #include <libtrans/integraltransform.h>
+#include <libiwl/iwl.hpp>
+#include <psifiles.h>
 
 #include "occwave.h"
 #include "defines.h"
@@ -140,9 +142,9 @@ if (wfn_type_ != "OMP2") {
       
       // Trans Fock matrix    
       if (orb_opt_ == "TRUE") {
-      timer_on("Build Fock");
-      fock_alpha();      
-      timer_off("Build Fock");
+          timer_on("Build Fock");
+          fock_alpha();      
+          timer_off("Build Fock");
       }
 
       else if (orb_opt_ == "FALSE") {
