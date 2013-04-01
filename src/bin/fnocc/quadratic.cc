@@ -34,7 +34,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -60,7 +60,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -122,7 +122,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -174,7 +174,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -216,7 +216,7 @@ void CoupledCluster::I2ijkl_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
@@ -270,7 +270,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -311,7 +311,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempt;
   }
@@ -334,7 +334,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
   // use I2iabj
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&integrals[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }
@@ -384,7 +384,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -414,7 +414,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
   // use I2iajb
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -447,7 +447,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&integrals[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }

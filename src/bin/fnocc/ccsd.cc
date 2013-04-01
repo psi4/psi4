@@ -2217,17 +2217,26 @@ void CoupledCluster::MP4_SDQ(){
       fprintf(outfile,"done.\n");
 
       // V|2> for S and D parts of mp4
-      psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
-      psio->write_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
+      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
       psio->write_entry(PSIF_DCC_T2,"second",(char*)&tempt[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
-      F_DCOPY(o*o*v*v,tempt,1,tb,1);
+      if (t2_on_disk) {
+          psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+          psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+          psio->close(PSIF_DCC_T2,1);
+      }else {
+          F_DCOPY(o*o*v*v,tempt,1,tb,1);
+      }
+
       fprintf(outfile,"        MP4(SD)....................................");
       memset((void*)w1,'\0',o*v*sizeof(double));
       for (int i=0; i<nltasks; i++) {
           (*this.*LTasklist[i].func)(LParams[i]);
       }
-      F_DCOPY(o*o*v*v,tb,1,tempt,1);
+      //F_DCOPY(o*o*v*v,tb,1,tempt,1);
+      if (t2_on_disk) {
+          tb = tempt;
+      }
       psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
       psio->read_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
