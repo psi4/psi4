@@ -1236,10 +1236,69 @@ def frequency(name, **kwargs):
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
+    dertype = 2
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'])
+
+    # Order of precedence:
+    #    1. Default for wavefunction
+    #    2. Value obtained from kwargs, if user changed it
+    #    3. If user provides a custom 'func' use that
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
+    # 1. set the default to that of the provided name
+    if lowername in procedures['hessian']:
+        dertype = 2
+    elif lowername in procedures['gradient']:
+        dertype = 1
+        func = gradient
+    elif lowername in procedures['energy']:
+        dertype = 0
+        func = energy
+
+    # 2. Check if the user passes dertype into this function
+    if 'dertype' in kwargs:
+        freq_dertype = kwargs['dertype']
+
+        if der0th.match(str(freq_dertype)):
+            dertype = 0
+            func = energy
+        elif der1st.match(str(freq_dertype)):
+            dertype = 1
+            func = gradient
+        elif der2nd.match(str(freq_dertype)):
+            dertype = 2
+        else:
+            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function frequency.' % (freq_dertype))
+
+    # 3. if the user provides a custom function THAT takes precedence
+    if ('freq_func' in kwargs) or ('func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['freq_func'] = kwargs['func']
+            del kwargs['func']
+        dertype = 0
+        func = kwargs['freq_func']
+
+    # Summary validation
+    if (dertype == 2) and (lowername in procedures['hessian']):
+        pass
+    elif (dertype == 1) and (func is gradient) and (lowername in procedures['gradient']):
+        pass
+    elif (dertype == 1) and not(func is gradient):
+        pass
+    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
+        pass
+    elif (dertype == 0) and not(func is energy):
+        pass
+    else:
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
+            % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
@@ -1248,35 +1307,6 @@ def frequency(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
-
-    types = ['energy', 'gradient', 'hessian']
-
-    dertype = 2
-    if ('dertype' in kwargs):
-        dertype = kwargs['dertype']
-        if not (lowername in procedures[types[dertype]]):
-            print('Frequencies: dertype = %d for frequencies is not available, switching to automatic determination.' % dertype)
-            dertype = -1
-
-    if 'irrep' in kwargs:
-        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
-    else:
-        irrep = -1  # -1 implies do all irreps
-
-    # By default, set func to the energy function
-    func = energy
-    func_existed = False
-    if 'func' in kwargs:
-        func = kwargs['func']
-        func_existed = True
-
-    if (not('dertype' in kwargs) or dertype == -1):
-        if lowername in procedures['hessian']:
-            dertype = 2
-        elif lowername in procedures['gradient']:
-            dertype = 1
-        else:
-            dertype = 0
 
     # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
     if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
@@ -1290,8 +1320,14 @@ def frequency(name, **kwargs):
         else:
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
 
+    # Select certain irreps
+    if 'irrep' in kwargs:
+        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
+    else:
+        irrep = -1  # -1 implies do all irreps
+
     # Does an analytic procedure exist for the requested method?
-    if (dertype == 2 and func_existed == False):
+    if (dertype == 2):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
         optstash.restore()
@@ -1300,7 +1336,8 @@ def frequency(name, **kwargs):
         PsiMod.thermo()
 
         return PsiMod.wavefunction().energy()
-    elif (dertype == 1 and func_existed == False):
+
+    elif (dertype == 1):
         # Ok, we're doing frequencies by gradients
         info = 'Performing finite difference by gradient calculations'
         print(info)
