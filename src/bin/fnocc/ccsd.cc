@@ -3971,8 +3971,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
   time_t time_start = time(NULL);
   double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+// TODO e_conv
 
-  while(iter<maxiter && nrm > r_conv){
+  while(iter < maxiter){
       time_t iter_start = time(NULL);
 
       // evaluate cepa diagrams
@@ -4032,6 +4033,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
+
+      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
   times(&total_tmstime);
   time_t time_stop = time(NULL);
