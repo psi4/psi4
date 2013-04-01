@@ -219,7 +219,7 @@ available in |PSIfour| are provided below.
   Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
 
-* U. Bozkaya and C. D. Sherrill, (ubpublished).
+* U. Bozkaya and C. D. Sherrill, (unpublished).
 
 
 .. rubric:: MP2
@@ -244,7 +244,7 @@ available in |PSIfour| are provided below.
   Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
 
-* U. Bozkaya and C. D. Sherrill, (ubpublished).
+* U. Bozkaya and C. D. Sherrill, (unpublished).
 
 .. rubric:: CEPA0
 
@@ -256,7 +256,7 @@ available in |PSIfour| are provided below.
 
 * "Orbital-optimized coupled electron pair theory and its analytic gradients: Applications to equilibrium
    geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," 
-   U. Bozkaya and C. D. Sherrill, (ubpublished).
+   U. Bozkaya and C. D. Sherrill, (unpublished).
 
 
 .. index:: architectures
@@ -312,9 +312,9 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP4                     | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | MP(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | MP(n)                   | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | ZAPT(n)                 | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | ZAPT(n)                 | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -352,9 +352,9 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | Mk-MRCCSD(T)            | Y         | ---       | RHF/ROHF/TCSCF       | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | CI(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | CI(n)                   | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | RAS-CI                  | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | RAS-CI                  | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | SAPT                    | Y         | ---       | RHF                  | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
