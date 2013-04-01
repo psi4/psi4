@@ -422,7 +422,6 @@ Advanced FNOCC Keywords
 .. include:: /autodir_options_c/fnocc__run_mp4.rst
 .. include:: /autodir_options_c/fnocc__run_ccsd.rst
 .. include:: /autodir_options_c/fnocc__run_cepa.rst
-.. include:: /autodir_options_c/fnocc__vabcd_packed.rst
 .. include:: /autodir_options_c/fnocc__compute_triples.rst
 .. include:: /autodir_options_c/fnocc__compute_mp4_triples.rst
 .. include:: /autodir_options_c/fnocc__dfcc.rst
