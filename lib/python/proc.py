@@ -816,8 +816,8 @@ def run_dfmp2_gradient(name, **kwargs):
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     PsiMod.dfmp2grad()
-    e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
-    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    e_dfmp2 = PsiMod.get_variable('MP2 TOTAL ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
 
@@ -1164,8 +1164,8 @@ def run_dfmp2_property(name, **kwargs):
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     PsiMod.dfmp2grad()
-    e_dfmp2 = PsiMod.get_variable('DF-MP2 ENERGY')
-    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    e_dfmp2 = PsiMod.get_variable('MP2 TOTAL ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
 
@@ -1293,7 +1293,8 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    returnvalue = run_scf(name, **kwargs)
+    run_scf(name, **kwargs)
+    returnvalue = PsiMod.get_variable('CURRENT ENERGY')
 
     for ssuper in superfunctional_list():
         if ssuper.name().lower() == name.lower():
@@ -1314,11 +1315,11 @@ def run_dft(name, **kwargs):
             PsiMod.set_local_option('DFMP2', 'MP2_OS_SCALE', dfun.c_os_alpha())
             PsiMod.set_local_option('DFMP2', 'MP2_SS_SCALE', dfun.c_ss_alpha())
             PsiMod.dfmp2()
-            vdh = dfun.c_alpha() * PsiMod.get_variable('SCS-DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('SCS-MP2 CORRELATION ENERGY')
 
         else:
             PsiMod.dfmp2()
-            vdh = dfun.c_alpha() * PsiMod.get_variable('DF-MP2 CORRELATION ENERGY')
+            vdh = dfun.c_alpha() * PsiMod.get_variable('MP2 CORRELATION ENERGY')
 
         PsiMod.set_variable('DOUBLE-HYBRID CORRECTION ENERGY', vdh)
         returnvalue += vdh
@@ -1480,7 +1481,7 @@ def run_dfmp2(name, **kwargs):
             raise ValidationError('Keyword DF_BASIS_MP2 is required.')
 
     e_dfmp2 = PsiMod.dfmp2()
-    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-MP2 TOTAL ENERGY')
 
     optstash.restore()
 
