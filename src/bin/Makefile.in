@@ -9,48 +9,53 @@ mrcc stable thermo psi4
 
 all: default
 
-buildsubdirs       = $(subdirs:%=build-%)
-installsubdirs     = $(subdirs:%=install-%)
-installincsubdirs  = $(subdirs:%=installinc-%)
-installmansubdirs  = $(subdirs:%=installman-%)
-dependsubdirs      = $(subdirs:%=depend-%)
-cleansubdirs       = $(subdirs:%=clean-%)
-dcleansubdirs      = $(subdirs:%=dclean-%)
-targetcleansubdirs = $(subdirs:%=targetclean-%)
-.PHONY: $(buildsubdirs) $(installsubdirs) $(installincsubdirs) $(installmansubdirs) $(dependsubdirs) $(cleansubdirs) $(dcleansubdirs) $(targetcleansubdirs)
+default:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir} && echo ... Making in $${dir} ... && $(MAKE) default) || exit 1; \
+          done
 
-default: $(buildsubdirs)
-$(buildsubdirs):
-	$(MAKE) -C $(@:build-%=%) default
+install:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install) || exit 1; \
+          done
 
-install: $(installsubdirs)
-$(installsubdirs): all
-	$(MAKE) -C $(@:install-%=%) install
+install_inc:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_inc) || exit 1; \
+          done
 
-install_inc: $(installincsubdirs)
-$(installincsubdirs): all
-	$(MAKE) -C $(@:installinc-%=%) install_inc
+install_man:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_man) || exit 1; \
+          done
 
-install_man: $(installmansubdirs)
-$(installmansubdirs): all
-	$(MAKE) -C $(@:installman-%=%) install_man
+depend:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making depend in $${dir} ...; $(MAKE) depend) || exit 1; \
+          done
 
-depend: $(dependsubdirs)
-$(dependsubdirs):
-	$(MAKE) -C $(@:depend-%=%) depend
+clean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) clean) || exit 1; \
+          done
 
-clean: $(cleansubdirs)
-$(cleansubdirs):
-	$(MAKE) -C $(@:clean-%=%) clean
+dclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making dclean in $${dir} ...; $(MAKE) dclean) || exit 1; \
+          done
 
-dclean: $(dcleansubdirs)
-$(dcleansubdirs):
-	$(MAKE) -C $(@:dclean-%=%) dclean
-
-targetclean: $(targetcleansubdirs)
-$(targetcleansubdirs):
-	$(MAKE) -C $(@:targetclean-%=%) targetclean
-
+targetclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) targetclean) || exit 1; \
+          done
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@
