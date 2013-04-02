@@ -28,6 +28,7 @@ struct OPT_PARAMS {
   std::string general_conv;
 
   double scale_connectivity;
+  double interfragment_scale_connectivity; // scaling distance to start connecting fragments
 
   enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
 
