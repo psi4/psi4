@@ -371,10 +371,24 @@ DIISManager::extrapolate(int numQuantities, ...)
     SharedVector S(new Vector("S", dimension));
     double* Sp = S->pointer();
 
+    // Trap an explicit zero
+    bool is_zero = false;
     for (int i = 0; i < dimension - 1; i++) {
-        Sp[i] = pow(Bp[i][i],-1.0/2.0);
+        if (Bp[i][i] <= 0.0) {
+            is_zero = true;
+        }
     }
-    Sp[dimension-1] = 1.0;
+
+    if (is_zero) {
+        for (int i = 0; i < dimension; i++) {
+            Sp[i] = 1.0;
+        }
+    } else {
+        for (int i = 0; i < dimension - 1; i++) {
+            Sp[i] = pow(Bp[i][i],-1.0/2.0);
+        }
+        Sp[dimension-1] = 1.0;
+    }
 
     for (int i = 0; i < dimension; i++) {
         for (int j = 0; j < dimension; j++) {
