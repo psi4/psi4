@@ -12,7 +12,7 @@ namespace psi{
   
 class IntegralTransform;
   
-namespace occwave {
+namespace occwave{
 
 class OCCWave : public Wavefunction
 {
@@ -42,6 +42,7 @@ protected:
     void fock_alpha();
     void fock_beta();
     void idp();
+    void idp2();
     void diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new, Array1d *errvec_new);
     void kappa_msd();
     void kappa_orb_resp();
@@ -62,22 +63,34 @@ protected:
     void tpdm_vovo();
     void tpdm_ovvo();
     void gfock_diag();
+    void gfock_oo();
+    void gfock_vv();
     void coord_grad();
     void dump_pdms();
     void occ_iterations();
     void tei_sort_iabc();
+    void ekt_ip();
+    void ekt_ea();
+    void z_vector();
+    void effective_pdms();
+    void effective_gfock();
 
     // OMP2
+    void omp2_manager();
+    void mp2_manager();
     void omp2_g_int();
     void omp2_response_pdms();
     void omp2_t2_1st_sc(); 
     void omp2_t2_1st_general();
     void omp2_tpdm_oovv();
-    void omp2_manager();
     void omp2_mp2_energy();
+    void omp2_ip_poles();
+    void omp2_ea_poles();
+    void ep2_ip();
 
     // OMP3
     void omp3_manager();
+    void mp3_manager();
     void omp3_response_pdms();
     void omp3_t2_1st_sc(); 
     void omp3_t2_1st_general();
@@ -89,6 +102,11 @@ protected:
     void t2_2nd_sc(); 
     void t2_2nd_general();
     void mp3_energy();
+    void omp3_ip_poles();
+
+    // OMP2.5
+    void omp2_5_manager();
+    void mp2_5_manager();
 
     // OCEPA
     void ocepa_manager();
@@ -103,6 +121,14 @@ protected:
     void w_int();
     void v_int();
     void cepa_energy();
+    
+    // MP2
+    void denominators_rmp2();
+    void denominators_ump2();
+    void trans_ints_rmp2();
+    void trans_ints_ump2();
+    void t1_1st_sc(); 
+    void t1_1st_gen();
     
      class IntegralTransform *ints;
      DIISManager *t2DiisManager;
@@ -164,7 +190,11 @@ protected:
      int cc_mindiis_; 		// MIN Number of vectors used in CC diis
      int incore_iabc_;          // 1 means do incore, 0 means do out of core
      int incore_abcd_;          // 1 means do incore, 0 means do out of core
-     int orbs_already_opt;      // 1 means true, 0 menas false
+     int orbs_already_opt;      // 1 means true, 0 means false
+     int orbs_already_sc;       // 1 means true, 0 means false
+     int ep_conver;             // 1 means true, 0 means false
+     int itr_ep;
+     int ep_maxiter;
 
      ULI memory; 
      ULI memory_mb_; 
@@ -179,6 +209,7 @@ protected:
      double Escf;
      double Eref;
      double Emp2;
+     double Emp2_t1;
      double Emp2BB;
      double Emp2AA;
      double Emp2AB;
@@ -207,6 +238,7 @@ protected:
      double Esospimp2AB; 
      double Esospimp2;
      double Eopdm;
+     double Etpdm;
      double DE;
      double tol_Eod;
      double tol_grad;
@@ -248,6 +280,10 @@ protected:
      double rms_pcg;
      double tol_pcg;
      double lambda_damping;
+     double omega;                     // Green's function pole for alpha spin 
+     double rms_t1;
+     double rms_t1A;
+     double rms_t1B;
 
      // OMP3
      double e3_scale;
@@ -318,6 +354,13 @@ protected:
      string wfn_type_;
      string compute_ccl;
      string orb_resp_solver_;
+     string ip_poles;
+     string ea_poles;
+     string ep_ip_poles;
+     string ep_ea_poles;
+     string ekt_ip_;
+     string ekt_ea_;
+     string orb_opt_;
 
 
      int *mopi; 		/* number of all MOs per irrep */
@@ -407,6 +450,9 @@ protected:
      Array1d *p_pcg_newB; 
      Array1d *dr_pcgA; 
      Array1d *dr_pcgB; 
+     Array1d *zvectorA; 
+     Array1d *zvectorB; 
+     Array1d *zvector;          // where zvector = zvectorA + zvectorB
      
      Array2d *vecsA;
      Array2d *vecsB;
@@ -467,6 +513,12 @@ protected:
      SharedMatrix GooB;
      SharedMatrix GvvA;
      SharedMatrix GvvB;
+     SharedMatrix ZmatA;
+     SharedMatrix ZmatB;
+     SharedMatrix t1A;
+     SharedMatrix t1B;
+     SharedMatrix t1newA;
+     SharedMatrix t1newB;
     
 };
 

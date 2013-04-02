@@ -782,6 +782,26 @@ case $withval in
 esac
 ],CDBG='' CXXDBG='')
 
+# Adjust the profiling flags.
+# The default is to not profile.  --with-profiling will turn on profiling.
+# Note: This must happen *after* AC_ARG_WITH(debug, ...) because the
+# "--with-debug" option will overwrite $CDBG and $CXXDBG.
+AC_ARG_WITH(profiling,[  --with-profiling        will turn on profiling],[
+case $withval in
+  yes)
+        CDBG='-g -pg -DPSIDEBUG'
+        CXXDBG='-g -pg -DPSIDEBUG'
+        LDFLAGS="$LDFLAGS -pg"
+    ;;
+  no)
+    ;;
+  *)
+    CDBG="$withval"
+    CXXDBG="$withval"
+    ;;
+esac
+])
+
 # Adjust the optimize flags.
 # The default is to optimize.  --with-opt=no or --without-opt will turn
 # off optimization.
@@ -1019,6 +1039,7 @@ AC_CONFIG_FILES([
           tests/fd-freq-energy/Makefile
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
+          tests/dft-freq/Makefile
           tests/gibbs/Makefile
           tests/castup1/Makefile
           tests/castup2/Makefile
@@ -1155,6 +1176,24 @@ AC_CONFIG_FILES([
           tests/ocepa1/Makefile
           tests/ocepa2/Makefile
           tests/ocepa3/Makefile
+          tests/omp2_5-1/Makefile
+          tests/omp2_5-2/Makefile
+          tests/omp2-grad1/Makefile
+          tests/omp2-grad2/Makefile
+          tests/omp3-grad1/Makefile
+          tests/omp3-grad2/Makefile
+          tests/omp2_5-grad1/Makefile
+          tests/omp2_5-grad2/Makefile
+          tests/ocepa-grad1/Makefile
+          tests/ocepa-grad2/Makefile
+          tests/mp2-grad1/Makefile
+          tests/mp2-grad2/Makefile
+          tests/mp3-grad1/Makefile
+          tests/mp3-grad2/Makefile
+          tests/mp2_5-grad1/Makefile
+          tests/mp2_5-grad2/Makefile
+          tests/cepa0-grad1/Makefile
+          tests/cepa0-grad2/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
@@ -1197,12 +1236,6 @@ AC_CONFIG_FILES([
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc
-          plugins/efp/Makefile
-          plugins/efp/__init__.py
-          plugins/efp/doc.rst
-          plugins/efp/efp.cc
-          plugins/efp/input.dat
-          plugins/efp/pymodule.py
 
           bin/psi4-config
 ])

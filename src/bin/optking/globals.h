@@ -8,10 +8,6 @@
 const char* getIntcoFileName();
 #define FILENAME_INTCO_DAT    getIntcoFileName()
 
-#define FILENAME_OUTPUT_DAT   "output.dat"     // not used by PSI
-#define FILENAME_CARTESIAN_H  "psi.file15.dat" // used by PSI
-#define FILENAME_GEOM_GRAD_IN "psi.file11.dat" // used by PSI
-
 #include <cstdio>
 
 #include "package.h"

@@ -1,19 +1,17 @@
-#! SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+#! OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
 
 
 memory 250 mb
 
-molecule h2o { 
-0 1
-o
-h 1 0.958
-h 1 0.958 2 104.4776 
+molecule no {
+0 2
+n
+o 1 1.158
 }
 
-set globals {
-    basis cc-pvdz
+set global {
+  basis cc-pcvdz
+  reference rohf
 }
-
-thisenergy = optimize('scs-omp3')
-
+energy('omp3')
 

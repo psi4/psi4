@@ -261,7 +261,7 @@ IntegralTransform::presort_so_tei()
             print_array(moInts, nmo_, outfile);
         }
 
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, aFock);
+        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, moInts);
     }else{
 
         // Compute frozen-core energy

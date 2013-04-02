@@ -1,29 +1,14 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
 #include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
 
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
-#include <libmints/mints.h>
-#include <liboptions/liboptions.h>
-#include <libdiis/diismanager.h>
-#include <libciomr/libciomr.h>
-#include <libqt/qt.h>
 
 #include "occwave.h"
-#include "defines.h"
 
 using namespace psi;
 using namespace boost;
 
-namespace psi { namespace occwave {
+namespace psi { namespace occwave{
 
 OCCWave::OCCWave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
     : Wavefunction(options, _default_psio_lib_)
@@ -54,6 +39,7 @@ void OCCWave::common_init()
 	num_vecs=options_.get_int("MO_DIIS_NUM_VECS");
 	cc_maxdiis_=options_.get_int("CC_DIIS_MAX_VECS");
 	cc_mindiis_=options_.get_int("CC_DIIS_MIN_VECS");
+        ep_maxiter=options_.get_int("EP_MAXITER");
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
@@ -89,9 +75,26 @@ void OCCWave::common_init()
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         compute_ccl=options_.get_str("CCL_ENERGY"); 
         orb_resp_solver_=options_.get_str("ORB_RESP_SOLVER"); 
+        ip_poles=options_.get_str("IP_POLES"); 
+        ea_poles=options_.get_str("EA_POLES"); 
+        ep_ip_poles=options_.get_str("EP_IP_POLES"); 
+        ep_ea_poles=options_.get_str("EP_EA_POLES"); 
+        ekt_ip_=options_.get_str("EKT_IP"); 
+        ekt_ea_=options_.get_str("EKT_EA"); 
+        orb_opt_=options_.get_str("ORB_OPT"); 
 
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
+
+        // Only UHF is allowed for the standard methods, except for MP2
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ != "OMP2") {
+           throw PSIEXCEPTION("The ROHF reference is not available for the standard methods (except for MP2)!");
+        }
+
+        // Only ROHF-MP2 energy is available, not the gradients
+        else if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype != "NONE") {
+           throw PSIEXCEPTION("ROHF-MP2 analytic gradients are not available, UHF-MP2 is recommended.");
+        }
 
         if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
@@ -188,7 +191,7 @@ if (wfn_type_ == "OMP2" && incore_iabc_ == 0) {
                            IntegralTransform::Restricted,
                            IntegralTransform::IWLAndDPD,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
 }
 
@@ -197,7 +200,7 @@ else {
                            IntegralTransform::Restricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
 }
                            
@@ -238,6 +241,12 @@ else if (reference_ == "UNRESTRICTED") {
 	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA));
 	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirrep_, avirtpiB, avirtpiB));
 
+        // ROHF-MP2
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "OMP2") {
+	    t1A = boost::shared_ptr<Matrix>(new Matrix("t_I^A", nirrep_, aoccpiA, avirtpiA)); 
+	    t1B = boost::shared_ptr<Matrix>(new Matrix("t_i^a", nirrep_, aoccpiB, avirtpiB)); 
+        }
+
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
         fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
@@ -259,7 +268,7 @@ else if (reference_ == "UNRESTRICTED") {
                            IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
                            IntegralTransform::QTOrder,
-                           IntegralTransform::None,
+                           IntegralTransform::OccOnly,
                            false);
                            
                           
@@ -280,12 +289,16 @@ void OCCWave::title()
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile,"\n");
-   if (wfn_type_ == "OMP2") fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
-   else if (wfn_type_ == "OMP3") fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
-   else if (wfn_type_ == "OCEPA") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
-   else if (wfn_type_ == "CEPA") fprintf(outfile,"                       CEPA   \n");
+   if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2 (OO-MP2)   \n");
+   else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP3 (OO-MP3)   \n");
+   else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP3   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") fprintf(outfile,"                       OCEPA (OO-CEPA)   \n");
+   else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") fprintf(outfile,"                       CEPA   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
+   else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision March 05, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision April 1, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -299,18 +312,31 @@ double OCCWave::compute_energy()
 {   
         
 	// Warnings 
-	if (nfrzc != 0 || nfrzv != 0) {
-	  fprintf(stderr,  "\tThe OMP2 method has been implemented for only all-electron computations, yet.\n");
-	  fprintf(outfile, "\tThe OMP2 method has been implemented for only all-electron computations, yet.\n");
-	  fflush(outfile);
-          return EXIT_FAILURE;
+	if (nfrzc != 0 && orb_opt_ == "TRUE") {
+          throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzv != 0 && orb_opt_ == "TRUE") {
+          throw FeatureNotImplemented("Orbital-optimized methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzv != 0 && orb_opt_ == "FALSE") {
+          throw FeatureNotImplemented("OCC module standard methods", "Frozen core/virtual", __FILE__, __LINE__);
+	}
+
+	else if (nfrzc != 0 && dertype != "NONE") {
+          throw FeatureNotImplemented("OCC module analytic gradients", "Frozen core/virtual", __FILE__, __LINE__);
 	}
 
         // Call the appropriate manager
-        if (wfn_type_ == "OMP2") omp2_manager();
-        else if (wfn_type_ == "OMP3") omp3_manager();
-        else if (wfn_type_ == "OCEPA") ocepa_manager();
-        else if (wfn_type_ == "CEPA") cepa_manager();
+        if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE") omp2_manager();
+        else if (wfn_type_ == "OMP2" && orb_opt_ == "FALSE") mp2_manager();
+        else if (wfn_type_ == "OMP3" && orb_opt_ == "TRUE") omp3_manager();
+        else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE") mp3_manager();
+        else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE") ocepa_manager();
+        else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE") cepa_manager();
+        else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") omp2_5_manager();
+        else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") mp2_5_manager();
 	
 	// Write MO coefficients to Cmo.psi
 	if (write_mo_coeff == "TRUE"){
@@ -351,7 +377,7 @@ double OCCWave::compute_energy()
         mem_release();
 
         if (wfn_type_ == "OMP2") return Emp2L;
-        else if (wfn_type_ == "OMP3") return Emp3L;
+        else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") return Emp3L;
         else if (wfn_type_ == "OCEPA") return EcepaL;
         else if (wfn_type_ == "CEPA") return Ecepa;
 } // end of compute_energy
@@ -495,6 +521,11 @@ void OCCWave::mem_release()
 	delete [] virt2symblkB;
         delete [] pitzer2qtB;
         delete [] qt2pitzerB;
+
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ != "OMP2") {
+ 	    t1A.reset();
+	    t1B.reset();
+        }
 
 	Ca_.reset();
 	Cb_.reset();
