@@ -63,6 +63,8 @@ appropriate references for the underlying theory):
 
 .. rubric:: DCFT 
 
+.. _`intro:dcftcitations`:
+
 * "Density Cumulant Functional Theory: First Implementation and
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
@@ -179,9 +181,11 @@ available in |PSIfour| are provided below.
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Analytic energy gradients for the orbital-optimized second-order M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and C. D. Sherrill, (ubpublished).
 
 .. rubric:: OMP3
 
@@ -190,13 +194,66 @@ available in |PSIfour| are provided below.
   Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
 
+* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants for Thermochemistry and Kinetics," 
+  E.Soydas and U. Bozkaya,  *J. Chem. Theory Comput.* **9**, 1452 (2013).
+
 .. rubric:: OCEPA
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order Møller-Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Orbital-optimized coupled electron pair theory and its analytic gradients:
+  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
+
+.. rubric:: OMP2.5
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+* U. Bozkaya and C. D. Sherrill, (unpublished).
+
+
+.. rubric:: MP2
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+.. rubric:: MP3
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+.. rubric:: MP2.5
+
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
+  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
+  Symmetry Breaking Problems," U. Bozkaya,
+  *J. Chem. Phys.* **135**, 224103 (2011).
+
+* U. Bozkaya and C. D. Sherrill, (unpublished).
+
+.. rubric:: CEPA0
+
+* "Quadratically convergent algorithm for orbital optimization in the 
+  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
+  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  *J. Chem. Phys.* **135**, 104103 (2011).
+
+* "Orbital-optimized coupled electron pair theory and its analytic gradients:
+  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
+
 
 .. index:: architectures
 .. index:: compilers
@@ -241,21 +298,29 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DCFT                    | Y         | Y         | UHF                  | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | MP2                     | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded [#f3]_             |
+    | MP2                     | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2                  | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | MP3                     | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | MP2.5                   | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | MP4                     | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | MP(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | MP(n)                   | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | ZAPT(n)                 | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | ZAPT(n)                 | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OMP2                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | OMP3                    | Y         | ---       | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    | OMP3                    | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | OMP2.5                  | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | OCEPA                   | Y         | Y         | RHF/ROHF/UHF/RKS/UKS | partially threaded          |
+    +-------------------------+-----------+-----------+----------------------+-----------------------------+
+    | CEPA(0)                 | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CEPA(n), n=0,1,3        | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -283,9 +348,9 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | Mk-MRCCSD(T)            | Y         | ---       | RHF/ROHF/TCSCF       | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | CI(n)                   | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | CI(n)                   | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | RAS-CI                  | Y         | ---       | RHF/ROHF             | threaded (pthreads)         |
+    | RAS-CI                  | Y         | ---       | RHF/ROHF             | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | SAPT                    | Y         | ---       | RHF                  | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+

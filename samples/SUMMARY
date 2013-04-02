@@ -187,6 +187,12 @@ cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state 
 cc9a:         ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical,  with Z-matrix input.
 
 
+cepa0-grad1:  CEPA0 cc-pVDZ gradient for the H2O molecule.
+
+
+cepa0-grad2:  CEPA cc-pVDZ gradient for the NO radical
+
+
 cepa1:        cc-pvdz H2O Test CEPA(1) Energy
 
 
@@ -254,6 +260,9 @@ dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Tab
 
 
 dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+
+dft-freq:     Frequencies for H2O B3LYP/6-31G* at optimized geometry
 
 
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
@@ -376,6 +385,24 @@ mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SC
 mp2-1:        All-electron MP2 6-31G** geometry optimization of water
 
 
+mp2-grad1:    MP2 cc-pVDZ gradient for the H2O molecule.
+
+
+mp2-grad2:    MP2 cc-pVDZ gradient for the NO radical
+
+
+mp2_5-grad1:  MP2.5 cc-pVDZ gradient for the H2O molecule.
+
+
+mp2_5-grad2:  MP2.5 cc-pVDZ gradient for the NO radical
+
+
+mp3-grad1:    MP3 cc-pVDZ gradient for the H2O molecule.
+
+
+mp3-grad2:    MP3 cc-pVDZ gradient for the NO radical
+
+
 mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
 
@@ -391,6 +418,12 @@ mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using M
 mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
+ocepa-grad1:  OCEPA cc-pVDZ gradient for the H2O molecule.
+
+
+ocepa-grad2:  OCEPA cc-pVDZ gradient for the NO radical
+
+
 ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
 
 
@@ -403,31 +436,55 @@ ocepa3:       OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
 omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
 
 
-omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+omp2-2:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
 
 
-omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+omp2-3:       OMP2 cc-pVDZ energy for the NO radical
 
 
-omp2-4:       OMP2 cc-pVDZ energy for the NO radical
+omp2-4:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-omp2-5:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
+omp2-5:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp2-grad1:   OMP2 cc-pVDZ gradient for the H2O molecule.
+
+
+omp2-grad2:   OMP2 cc-pVDZ gradient for the NO radical
+
+
+omp2_5-1:     OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+omp2_5-2:     OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+omp2_5-grad1:  OMP2.5 cc-pVDZ gradient for the H2O molecule.
+
+
+omp2_5-grad2:  OMP2.5 cc-pVDZ gradient for the NO radical
 
 
 omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
 
 
-omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+omp3-2:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
 
 
-omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+omp3-3:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
 
 
-omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
+omp3-4:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-omp3-5:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
+omp3-5:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp3-grad1:   OMP3 cc-pVDZ gradient for the H2O molecule.
+
+
+omp3-grad2:   OMP3 cc-pVDZ gradient for the NO radical
 
 
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
@@ -569,6 +626,9 @@ scf5:         Test of all different algorithms and reference types for SCF, on s
 
 
 scf6:         Tests RHF/ROHF/UHF SCF gradients
+
+
+testtable:    This checks that all energy methods can run with a minimal input and set symmetry.
 
 
 tu1-h2o-energy:  Sample HF/cc-pVDZ H2O computation

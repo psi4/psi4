@@ -1,30 +1,5 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <iomanip>
-#include <vector>
-
-/** Required PSI3 includes */ 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
 #include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "defines.h"
 #include "occwave.h"
@@ -156,6 +131,14 @@ if (reference_ == "RESTRICTED") {
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);
 
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
 
     // Build T2 = T2(1) + T2(2)
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -378,6 +361,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
 /********************************************************************************************/
 /************************** Beta-Beta spin case *********************************************/
@@ -519,6 +511,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);    
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o,o]"), ID("[v,v]"), 0, "T2_2 <oo|vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
 /********************************************************************************************/
 /************************** Alpha-Beta spin case ********************************************/
@@ -671,6 +672,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);    
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "T2_2 <Oo|Vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
  
 /********************************************************************************************/
 /************************** Sum up 1st & 2nd order amplitudes *******************************/

@@ -7,6 +7,8 @@
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
+#include <libmints/writer_file_prefix.h>
+
 using namespace boost::python;
 
 #include <physconst.h>
@@ -29,26 +31,26 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   boost::shared_ptr<MatrixFactory> fact;
   // do all for now at least
-  CdSalcList salc_list(mol, fact, 0xF, true, true);
+  CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
   fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);
 
   int Nirrep = salc_list.nirrep();
   fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
-  
+
   int Nsalc_all = salc_list.ncd();
   fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
   // build vectors that list indices of salcs for each irrep
   std::vector<int> symm_salcs;
-  
+
   for (int i=0; i<Nsalc_all; ++i)
     if (salc_list[i].irrep() == 0)
       symm_salcs.push_back(i);
 
   fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", (int) symm_salcs.size());
-  
+
   int Ndisp;
 
   // diagonal displacements for symmetric coordinates
@@ -62,7 +64,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
     Ndisp += 2 * symm_salcs.size() * (symm_salcs.size() - 1) / 2;
   else if (pts == 5)
     Ndisp += 8 * symm_salcs.size() * (symm_salcs.size() - 1) / 2;
-  
+
   fprintf(outfile,"\tNumber of symmetric displacements (including reference) is %d.\n", Ndisp);
 
   if (options.get_int("PRINT") > 1)
@@ -153,7 +155,7 @@ PsiReturnType fd_hessian_0(Options &options, const boost::python::list& E_list)
       mat_print(H, symm_salcs.size(), symm_salcs.size(), outfile);
     //}
 
-    int dim = symm_salcs.size(); 
+    int dim = symm_salcs.size();
 
     // Build Bu^1/2 matrix for this irrep
     double **B = block_matrix(dim, 3*Natom);
@@ -185,23 +187,25 @@ mat_print(tmat, 3*Natom, dim, outfile);
     fprintf(outfile, "\n\tSymmetric Force Constants in cartesian coordinates.\n");
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
 
-    FILE *of_Hx = fopen("psi.file15.dat","w");
-    fprintf(of_Hx,"%5d", Natom);
-    fprintf(of_Hx,"%5d\n", 6*Natom);
+    // Print a hessian file
+    if ( options.get_bool("HESSIAN_WRITE") ) {
+      std::string hess_fname = get_writer_file_prefix() + ".hess";
+      FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+      fprintf(of_Hx,"%5d", Natom);
+      fprintf(of_Hx,"%5d\n", 6*Natom);
 
-    int cnt = -1;
-    for (int i=0; i<3*Natom; ++i) {
-      for (int j=0; j<3*Natom; ++j) {
-        fprintf(of_Hx, "%20.10lf", Hx[i][j]);
-        if (++cnt == 2) {
-          fprintf(of_Hx,"\n");
-          cnt = -1;
+      int cnt = -1;
+      for (int i=0; i<3*Natom; ++i) {
+        for (int j=0; j<3*Natom; ++j) {
+          fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+          if (++cnt == 2) {
+            fprintf(of_Hx,"\n");
+            cnt = -1;
+          }
         }
       }
+      fclose(of_Hx);
     }
-
-    fclose(of_Hx);
-
     free_block(Hx);
     free_block(tmat);
 
@@ -225,7 +229,7 @@ int iE0(std::vector<int> & symm_salcs, int pts, int ii, int jj, int disp_i, int 
   int rval=-1;
 
   if (pts == 3) {
-    if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep 
+    if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep
         if (disp_i == -1)
           rval = 2*ii;   // f(-1, 0)
         else if (disp_i == +1)
@@ -241,7 +245,7 @@ int iE0(std::vector<int> & symm_salcs, int pts, int ii, int jj, int disp_i, int 
     }
   }
   else if (pts == 5) {
-    if (disp_j == 0) {   // diagonal 
+    if (disp_j == 0) {   // diagonal
         if (disp_i == -2)      rval = 4*ii;     // f(-2, 0)
         else if (disp_i == -1) rval = 4*ii+1;   // f(-1, 0)
         else if (disp_i ==  1) rval = 4*ii+2;   // f(+1, 0)
