@@ -50,9 +50,10 @@ install:
             (cd $${dir}; echo Making in $${dir}; $(MAKE) install) || exit 1; \
           done
 
-install_man: macro.psi
-	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $< $(DESTDIR)$(pkgdatadir)
+# Note: install_man is an obsolete target; we're keeping the commands around for reference.
+#install_man: macro.psi
+#	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
+#	$(INSTALL_DATA) $< $(DESTDIR)$(pkgdatadir)
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
 	cd $(top_srcdir) && autoconf
