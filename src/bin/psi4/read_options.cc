@@ -120,8 +120,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     The default is 1e-4 for energies and 1e-7 for gradients. -*/
     options.add_double("R_CONVERGENCE", 1e-4);
 
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE", 1e-6);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/ 
+    options.add_double("E_CONVERGENCE", 1e-8);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
     options.add_int("MAXITER", 12);
@@ -938,7 +940,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER", 100);
     /*- Fail if we reach maxiter without converging? -*/
     options.add_bool("FAIL_ON_MAXITER",true);
-
     /*- Convergence criterion for SCF energy. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default convergence
     criteria for different calculation types. -*/
@@ -1759,7 +1760,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("R_CONVERGENCE", 1E-6);
     /*- Convergence criterion for norm of the residual vector in the Davidson algorithm for the CIS guess to CC-EOM. -*/
     options.add_double("SS_R_CONVERGENCE", 1E-6);
-    /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for CC-EOM. -*/
+    /*- Convergence criterion for excitation energy (change) in the
+    Davidson algorithm for CC-EOM. See Table :ref:`Post-SCF Convergence
+    <table:conv_corl>` for default convergence criteria for different
+    calculation types. -*/
     options.add_double("E_CONVERGENCE", 1E-8);
     /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for the CIS guess to CC-EOM. -*/
     options.add_double("SS_E_CONVERGENCE", 1E-6);
@@ -2092,8 +2096,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("DF_LMP2", false);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- Convergence criterion for energy (change). -*/
-    options.add_double("E_CONVERGENCE", 1e-7);
+    /*- Convergence criterion for energy (change). See Table
+    :ref:`Post-SCF Convergence <table:conv_corl>` for default convergence
+    criteria for different calculation types. -*/
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for T2 amplitudes (RMS change). -*/
     options.add_double("R_CONVERGENCE", 1e-5);
     /*- Minimum absolute value below which parts of the Fock matrix are skipped. -*/
@@ -2180,8 +2186,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_NUM_THREADS",1);
     /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("FOLLOW_ROOT",1);
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-9);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/ 
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
@@ -2452,9 +2460,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PCG_MAXITER",30);
     /*- Maximum number of electron propagator iterations.  -*/
     options.add_int("EP_MAXITER",30);
-
-    /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE",1e-8);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/ 
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
     /*- Convergence criterion for RMS orbital gradient. -*/
@@ -2562,8 +2571,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           !expert -*/
       options.add_int("MRCC_OMP_NUM_THREADS", 1);
 
-      /*- This becomes ``tol`` (option \#16) in fort.56. -*/
-      options.add_double("E_CONVERGENCE",1e-8);
+      /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+      Convergence <table:conv_corl>` for default convergence criteria for
+      different calculation types. This becomes ``tol`` (option \#16) in
+      fort.56. -*/
+      options.add_double("E_CONVERGENCE", 1e-8);
 
       /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE",1.0E-12);
@@ -2600,33 +2612,47 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           calculation is performed automatically for the excited states.
           This overrides all automatic determination of method
           and will only work with :py:func:`~driver.energy`.
-          This becomes CC/CI (option \#5) in fort.56
-          |  \begin{tabular}{ccc}
-          |         Value  &  Method      &  Description  \\
-          |   \hline
-          |              1 & CC           & \\
-          |              2 & CC(n-1)[n]   & \\
-          |              3 & CC(n-1)(n)   &  (CC(n-1)[n] energy is also calculated) \\
-          |              4 & CC(n-1)(n)_L & (CC(n-1)[n] and CC(n-1)(n) energies are also calculated) \\
-          |              5 & CC(n)-1a     & \\
-          |              6 & CC(n)-1b     & \\
-          |              7 & CCn          & \\
-          |              8 & CC(n)-3      & \\
-          |  \end{tabular}
-            !expert
-          -*/
+          This becomes CC/CI (option \#5) in fort.56 
+
+          .. table:: MRCC methods
+
+             +-------+--------------+-------------------------------------------------------------+
+             + Value + Method       + Description                                                 +
+             +=======+==============+=============================================================+
+             + 1     + CC           +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+             + 2     + CC(n-1)[n]   +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+             + 3     + CC(n-1)(n)   + (CC(n-1)[n] energy is also calculated)                      +
+             +-------+--------------+-------------------------------------------------------------+
+             + 4     + CC(n-1)(n)_L + (CC(n-1)[n] and CC(n-1)(n) energies are also calculated)    +
+             +-------+--------------+-------------------------------------------------------------+
+             + 5     + CC(n)-1a     +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+             + 6     + CC(n)-1b     +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+             + 7     + CCn          +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+             + 8     + CC(n)-3      +                                                             +
+             +-------+--------------+-------------------------------------------------------------+
+
+          !expert -*/
       options.add_int("MRCC_METHOD", 1);
   }
   if (name == "FNOCC"|| options.read_globals()) {
       /*- Do time each cc diagram? -*/
       options.add_bool("CC_TIMINGS",false);
-      /*- Convergence for the CC energy.  Note that convergence is
-          met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
+      /*- Convergence criterion for CC energy. See Table :ref:`Post-SCF
+      Convergence <table:conv_corl>` for default convergence criteria for
+      different calculation types.  Note that convergence is
+	  met only when |fnocc__e_convergence| and |fnocc__r_convergence|
+	  are satisfied. -*/
       options.add_double("E_CONVERGENCE", 1.0e-8);
       /*- Maximum number of iterations for Brueckner orbitals optimization -*/
       options.add_int("BRUECKNER_MAXITER", 20);
       /*- Convergence for the CC amplitudes.  Note that convergence is
-          met only when E_CONVERGENCE and R_CONVERGENCE are satisfied. -*/
+	      met only when |fnocc__e_convergence| and |fnocc__r_convergence|
+	      are satisfied. -*/
       options.add_double("R_CONVERGENCE", 1.0e-7);
       /*- Maximum number of CC iterations -*/
       options.add_int("MAXITER", 100);
