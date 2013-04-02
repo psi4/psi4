@@ -2353,6 +2353,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- When determining connectivity, a bond is assigned if interatomic distance
       is less than (this number) * sum of covalent radii. -*/
       options.add_double("COVALENT_CONNECT", 1.3);
+      /*- When connecting disparate fragments when frag_mode = SIMPLE, a "bond"
+      is assigned if interatomic distance is less than (this number) * sum of covalent radii. The
+      value is then increased until all the fragments are connected (directly or indirectly). -*/
+      options.add_double("INTERFRAGMENT_CONNECT", 1.8);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
       /*- Do only generate the internal coordinates and then stop? -*/
