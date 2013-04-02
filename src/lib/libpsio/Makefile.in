@@ -28,10 +28,6 @@ install_inc:: $(INC)
 	$(MKDIRS) $(DESTDIR)$(incdir)/libpsio
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsio
 
-install_man:: libpsio.html
-	$(MKDIRS) $(DESTDIR)$(htmldir)
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
-
 ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif
