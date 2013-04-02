@@ -86,9 +86,14 @@ void OCCWave::common_init()
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
 
-        // Only UHF is allowed for the standard methods
-        if (reference != "UHF" && reference_ == "UNRESTRICTED" && orb_opt_ == "FALSE") {
-           throw PSIEXCEPTION("Only RHF and UHF references are available for the standard methods!");
+        // Only UHF is allowed for the standard methods, except for MP2
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ != "OMP2") {
+           throw PSIEXCEPTION("The ROHF reference is not available for the standard methods (except for MP2)!");
+        }
+
+        // Only ROHF-MP2 energy is available, not the gradients
+        else if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype != "NONE") {
+           throw PSIEXCEPTION("ROHF-MP2 analytic gradients are not available, UHF-MP2 is recommended.");
         }
 
         if (options_.get_str("DO_DIIS") == "TRUE") do_diis_ = 1;
@@ -236,6 +241,12 @@ else if (reference_ == "UNRESTRICTED") {
 	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirrep_, avirtpiA, avirtpiA));
 	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirrep_, avirtpiB, avirtpiB));
 
+        // ROHF-MP2
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "OMP2") {
+	    t1A = boost::shared_ptr<Matrix>(new Matrix("t_I^A", nirrep_, aoccpiA, avirtpiA)); 
+	    t1B = boost::shared_ptr<Matrix>(new Matrix("t_i^a", nirrep_, aoccpiB, avirtpiB)); 
+        }
+
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
         fprintf(outfile,"\tMO spaces per irreps... \n\n"); fflush(outfile);
@@ -287,7 +298,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision March 30, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision April 1, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -510,6 +521,11 @@ void OCCWave::mem_release()
 	delete [] virt2symblkB;
         delete [] pitzer2qtB;
         delete [] qt2pitzerB;
+
+        if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ != "OMP2") {
+ 	    t1A.reset();
+	    t1B.reset();
+        }
 
 	Ca_.reset();
 	Cb_.reset();

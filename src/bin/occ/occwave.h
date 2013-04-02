@@ -127,6 +127,8 @@ protected:
     void denominators_ump2();
     void trans_ints_rmp2();
     void trans_ints_ump2();
+    void t1_1st_sc(); 
+    void t1_1st_gen();
     
      class IntegralTransform *ints;
      DIISManager *t2DiisManager;
@@ -207,6 +209,7 @@ protected:
      double Escf;
      double Eref;
      double Emp2;
+     double Emp2_t1;
      double Emp2BB;
      double Emp2AA;
      double Emp2AB;
@@ -278,6 +281,9 @@ protected:
      double tol_pcg;
      double lambda_damping;
      double omega;                     // Green's function pole for alpha spin 
+     double rms_t1;
+     double rms_t1A;
+     double rms_t1B;
 
      // OMP3
      double e3_scale;
@@ -509,7 +515,10 @@ protected:
      SharedMatrix GvvB;
      SharedMatrix ZmatA;
      SharedMatrix ZmatB;
-
+     SharedMatrix t1A;
+     SharedMatrix t1B;
+     SharedMatrix t1newA;
+     SharedMatrix t1newB;
     
 };
 

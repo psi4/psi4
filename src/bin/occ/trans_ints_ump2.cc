@@ -143,13 +143,6 @@ void OCCWave::trans_ints_ump2()
 	HmoB->print();
       }
       
-      /*
-      // Trans Fock matrix    
-      timer_on("Build Fock");
-      fock_alpha();      
-      fock_beta();   
-      timer_off("Build Fock");
-      */
          for(int h = 0; h < nirrep_; ++h){
              for(int i = 0; i < occpiA[h]; ++i) FockA->set(h, i, i, epsilon_a_->get(h,i));
              for(int i = 0; i < occpiB[h]; ++i) FockB->set(h, i, i, epsilon_b_->get(h,i));

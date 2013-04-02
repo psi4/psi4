@@ -56,12 +56,6 @@ void OCCWave::trans_ints_rmp2()
 	HmoA->print();
       }
       
-      /*
-      // Trans Fock matrix    
-      timer_on("Build Fock");
-      fock_alpha();      
-      timer_off("Build Fock");
-      */
          for(int h = 0; h < nirrep_; ++h){
              for(int i = 0; i < occpiA[h]; ++i) FockA->set(h, i, i, epsilon_a_->get(h,i));
              for(int a = 0; a < virtpiA[h]; ++a) FockA->set(h, a + occpiA[h], a + occpiA[h], epsilon_a_->get(h, a + occpiA[h]));

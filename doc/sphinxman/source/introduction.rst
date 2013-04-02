@@ -185,9 +185,7 @@ available in |PSIfour| are provided below.
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
 
-* "Analytic energy gradients for the orbital-optimized second-order 
-   M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and C. D. Sherrill,
-  (ubpublished).
+* "Analytic energy gradients for the orbital-optimized second-order M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and C. D. Sherrill, (ubpublished).
 
 .. rubric:: OMP3
 
@@ -208,9 +206,8 @@ available in |PSIfour| are provided below.
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
 
-* "Orbital-optimized coupled electron pair theory and its analytic gradients: Applications to equilibrium
-   geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," 
-   U. Bozkaya and C. D. Sherrill, (ubpublished).
+* "Orbital-optimized coupled electron pair theory and its analytic gradients:
+  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
 
 .. rubric:: OMP2.5
 
@@ -254,9 +251,8 @@ available in |PSIfour| are provided below.
   Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
 
-* "Orbital-optimized coupled electron pair theory and its analytic gradients: Applications to equilibrium
-   geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," 
-   U. Bozkaya and C. D. Sherrill, (unpublished).
+* "Orbital-optimized coupled electron pair theory and its analytic gradients:
+  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
 
 
 .. index:: architectures
@@ -302,7 +298,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DCFT                    | Y         | Y         | UHF                  | partially threaded          |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | MP2                     | Y         | Y         | RHF/UHF              | threaded [#f3]_             |
+    | MP2                     | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | DF-MP2                  | Y         | Y [#f2]_  | RHF/ROHF/UHF         | threaded                    |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
