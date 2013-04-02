@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta3+ Driver
 
-               Git: Rev {master} c28ba74bac7a3dad5c2cbe2bdd4abd7e9698d292
+               Git: Rev {master} b4007945394784467a605f69d9d334aeaafe7941
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,8 +14,8 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   1599
-    PSI4DATADIR: /home/ugur/psi4/lib
+    Process ID:   4020
+    PSI4DATADIR: /home/cds/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
 
@@ -24,7 +24,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! OCEPA cc-pVDZ   
+#! OCEPA cc-pVDZ freqs for C2H2
 
 memory 250 mb
 
@@ -40,6 +40,7 @@ set {
   basis cc-pvdz
   guess sad
   mo_maxiter 200
+  e_convergence 10
   rms_mograd_convergence 8
 }
 # Test against Analytic second derivatives from PSI3. #TEST
@@ -96,15 +97,15 @@ compare_vectors(grad_freqs, fd_freqs, 0,                                        
   //    Loading displacement 1 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:16 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:24 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -204,24 +205,24 @@ compare_vectors(grad_freqs, fd_freqs, 0,                                        
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60383383043484
+  Guess energy:   -49.89984109474632
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63715570967921   -7.76372e+01   1.43678e-01 
-   @RHF iter   1:   -76.79818202126144    8.38974e-01   1.06969e-02 
-   @RHF iter   2:   -76.82156167223161   -2.33797e-02   2.32034e-03 DIIS
-   @RHF iter   3:   -76.82296904058781   -1.40737e-03   5.97491e-04 DIIS
-   @RHF iter   4:   -76.82304931885214   -8.02783e-05   1.19741e-04 DIIS
-   @RHF iter   5:   -76.82305313732732   -3.81848e-06   2.12243e-05 DIIS
-   @RHF iter   6:   -76.82305328748495   -1.50158e-07   3.74514e-06 DIIS
-   @RHF iter   7:   -76.82305329221545   -4.73050e-09   2.67627e-07 DIIS
-   @RHF iter   8:   -76.82305329223165   -1.62004e-11   1.43397e-08 DIIS
-   @RHF iter   9:   -76.82305329223175   -9.94760e-14   1.64740e-09 DIIS
-   @RHF iter  10:   -76.82305329223168    7.10543e-14   2.20212e-10 DIIS
-   @RHF iter  11:   -76.82305329223172   -4.26326e-14   2.74830e-11 DIIS
+   @RHF iter   0:   -76.53841874221919   -7.65384e+01   1.19847e-01 
+   @RHF iter   1:   -76.78186764101191   -2.43449e-01   1.34865e-02 
+   @RHF iter   2:   -76.81939116510490   -3.75235e-02   3.81986e-03 DIIS
+   @RHF iter   3:   -76.82282913010577   -3.43797e-03   9.96973e-04 DIIS
+   @RHF iter   4:   -76.82304787938274   -2.18749e-04   1.32736e-04 DIIS
+   @RHF iter   5:   -76.82305307724444   -5.19786e-06   2.50293e-05 DIIS
+   @RHF iter   6:   -76.82305329051204   -2.13268e-07   2.49341e-06 DIIS
+   @RHF iter   7:   -76.82305329222299   -1.71096e-09   2.08811e-07 DIIS
+   @RHF iter   8:   -76.82305329223165   -8.65441e-12   1.11578e-08 DIIS
+   @RHF iter   9:   -76.82305329223166   -1.42109e-14   1.58309e-09 DIIS
+   @RHF iter  10:   -76.82305329223166    0.00000e+00   1.49615e-10 DIIS
+   @RHF iter  11:   -76.82305329223165    1.42109e-14   1.35393e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -240,10 +241,10 @@ compare_vectors(grad_freqs, fd_freqs, 0,                                        
 	   4Ag     0.221025     4B1u    0.483468     5Ag     0.535591  
 	   2B3u    0.665382     2B2u    0.665382     2B2g    0.813734  
 	   2B3g    0.813734     5B1u    0.855288     6Ag     0.952705  
-	   7Ag     1.093863     3B2u    1.219023     3B3u    1.219023  
+	   7Ag     1.093863     3B3u    1.219023     3B2u    1.219023  
 	   8Ag     1.255595     1B1g    1.255595     6B1u    1.333167  
 	   7B1u    1.431239     3B2g    1.624308     3B3g    1.624308  
-	   1Au     1.671506     8B1u    1.671506     4B3u    2.046970  
+	   8B1u    1.671506     1Au     1.671506     4B3u    2.046970  
 	   4B2u    2.046970     9Ag     2.146674     9B1u    2.497003  
 	   4B2g    2.660357     4B3g    2.660357    10Ag     3.206228  
 	  10B1u    3.583964  
@@ -254,16 +255,16 @@ compare_vectors(grad_freqs, fd_freqs, 0,                                        
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82305329223172
+  @RHF Final Energy:   -76.82305329223165
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3241734338223914
-    One-Electron Energy =                -150.7772025046604654
-    Two-Electron Energy =                  49.6299757786063651
+    One-Electron Energy =                -150.7772025046242277
+    Two-Electron Energy =                  49.6299757785701843
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8230532922317053
+    Total Energy =                        -76.8230532922316485
 
 
 
@@ -287,18 +288,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:17 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:24 2013
 Module time:
-	user time   =       1.20 seconds =       0.02 minutes
+	user time   =       0.41 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
+	user time   =       0.41 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:17 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:24 2013
 
 
 
@@ -330,7 +331,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -406,21 +407,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.32417343382239
-	SCF Energy (a.u.)                  : -76.82305329223172
-	REF Energy (a.u.)                  : -76.82305329223178
-	Alpha-Alpha Contribution (a.u.)    : -0.03202260147279
-	Alpha-Beta Contribution (a.u.)     : -0.20023722221241
-	Beta-Beta Contribution (a.u.)      : -0.03202260147279
-	Scaled_SS Correlation Energy (a.u.): -0.02134840098186
-	Scaled_OS Correlation Energy (a.u.): -0.24028466665490
-	SCS-MP2 Total Energy (a.u.)        : -77.08468635986853
-	SOS-MP2 Total Energy (a.u.)        : -77.08336168110792
-	SCSN-MP2 Total Energy (a.u.)       : -76.93577284941600
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98576649291654
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11137953813646
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338540332916
-	MP2 Correlation Energy (a.u.)      : -0.26428242515799
-	MP2 Total Energy (a.u.)            : -77.08733571738976
+	SCF Energy (a.u.)                  : -76.82305329223165
+	REF Energy (a.u.)                  : -76.82305329223168
+	Alpha-Alpha Contribution (a.u.)    : -0.03202260147270
+	Alpha-Beta Contribution (a.u.)     : -0.20023722221413
+	Beta-Beta Contribution (a.u.)      : -0.03202260147270
+	Scaled_SS Correlation Energy (a.u.): -0.02134840098180
+	Scaled_OS Correlation Energy (a.u.): -0.24028466665696
+	SCS-MP2 Total Energy (a.u.)        : -77.08468635987043
+	SOS-MP2 Total Energy (a.u.)        : -77.08336168111005
+	SCSN-MP2 Total Energy (a.u.)       : -76.93577284941556
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98576649291689
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11137953813846
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338540333146
+	MP2 Correlation Energy (a.u.)      : -0.26428242515952
+	MP2 Total Energy (a.u.)            : -77.08733571739120
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -452,7 +453,7 @@ Total time:
   18     -77.1141812343     -8.17e-06       1.84e-05         3.39e-04        1.07e-08 
   19     -77.1141766474      4.59e-06       2.53e-05         4.44e-04        2.45e-08 
   20     -77.1141837754     -7.13e-06       7.02e-07         1.32e-05        9.48e-09 
-  21     -77.1141877548     -3.98e-06       1.25e-07         2.09e-06        4.27e-09 
+  21     -77.1141877549     -3.98e-06       1.25e-07         2.09e-06        4.27e-09 
   22     -77.1141884532     -6.98e-07       1.41e-07         2.66e-06        2.73e-09 
   23     -77.1141892853     -8.32e-07       6.41e-08         1.01e-06        1.99e-09 
   24     -77.1141898442     -5.59e-07       4.68e-08         1.00e-06        1.42e-09 
@@ -475,7 +476,10 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2911375277    -77.1141908199     -2.24e-07     5.04e-10 
    2     -0.2911380748    -77.1141913670     -5.47e-07     3.58e-10 
-   3     -0.2911380782    -77.1141913704     -3.42e-09     2.18e-12 
+   3     -0.2911380764    -77.1141913687     -1.64e-09     2.18e-12 
+   4     -0.2911380777    -77.1141913699     -1.28e-09     1.21e-12 
+   5     -0.2911380778    -77.1141913701     -1.12e-10     1.30e-13 
+   6     -0.2911380778    -77.1141913700      6.84e-11     3.48e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -485,39 +489,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.32417343382239
-	SCF Energy (a.u.)                  : -76.82305329223172
-	REF Energy (a.u.)                  : -76.82007059030340
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18616499616118
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13335131601855
-	OCEPA(0) Correlation Energy (a.u.) : -0.29113807820443
-	Eocepa - Eref (a.u.)               : -0.29412078013274
-	OCEPA(0) Total Energy (a.u.)       : -77.11419137043615
+	SCF Energy (a.u.)                  : -76.82305329223165
+	REF Energy (a.u.)                  : -76.82007059030276
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18616499557110
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13335131528024
+	OCEPA(0) Correlation Energy (a.u.) : -0.29113807775252
+	Eocepa - Eref (a.u.)               : -0.29412077968141
+	OCEPA(0) Total Energy (a.u.)       : -77.11419136998417
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:19 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:26 2013
 Module time:
-	user time   =       2.53 seconds =       0.04 minutes
-	system time =       0.58 seconds =       0.01 minutes
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.47 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       3.73 seconds =       0.06 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.40 seconds =       0.02 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:19 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:26 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -617,24 +621,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60528680350635
+  Guess energy:   -49.90282520566040
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63318263982870   -7.76332e+01   1.43297e-01 
-   @RHF iter   1:   -76.79793933435150    8.35243e-01   1.06770e-02 
-   @RHF iter   2:   -76.82128638869369   -2.33471e-02   2.31596e-03 DIIS
-   @RHF iter   3:   -76.82269250720131   -1.40612e-03   5.89999e-04 DIIS
-   @RHF iter   4:   -76.82277127480000   -7.87676e-05   1.19177e-04 DIIS
-   @RHF iter   5:   -76.82277503499984   -3.76020e-06   2.11896e-05 DIIS
-   @RHF iter   6:   -76.82277518431383   -1.49314e-07   3.74404e-06 DIIS
-   @RHF iter   7:   -76.82277518903825   -4.72443e-09   2.68110e-07 DIIS
-   @RHF iter   8:   -76.82277518905460   -1.63425e-11   1.43808e-08 DIIS
-   @RHF iter   9:   -76.82277518905460    0.00000e+00   1.64493e-09 DIIS
-   @RHF iter  10:   -76.82277518905460    0.00000e+00   2.16303e-10 DIIS
-   @RHF iter  11:   -76.82277518905457    2.84217e-14   2.70878e-11 DIIS
+   @RHF iter   0:   -76.53685254106625   -7.65369e+01   1.19547e-01 
+   @RHF iter   1:   -76.78155010135498   -2.44698e-01   1.34762e-02 
+   @RHF iter   2:   -76.81910793516272   -3.75578e-02   3.81991e-03 DIIS
+   @RHF iter   3:   -76.82255337831765   -3.44544e-03   9.91511e-04 DIIS
+   @RHF iter   4:   -76.82276981129107   -2.16433e-04   1.32431e-04 DIIS
+   @RHF iter   5:   -76.82277497485015   -5.16356e-06   2.49898e-05 DIIS
+   @RHF iter   6:   -76.82277518733082   -2.12481e-07   2.49554e-06 DIIS
+   @RHF iter   7:   -76.82277518904584   -1.71502e-09   2.08850e-07 DIIS
+   @RHF iter   8:   -76.82277518905448   -8.64020e-12   1.12407e-08 DIIS
+   @RHF iter   9:   -76.82277518905454   -5.68434e-14   1.60162e-09 DIIS
+   @RHF iter  10:   -76.82277518905448    5.68434e-14   1.49553e-10 DIIS
+   @RHF iter  11:   -76.82277518905451   -2.84217e-14   1.34988e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -653,7 +657,7 @@ Total time:
 	   4Ag     0.221048     4B1u    0.482756     5Ag     0.536120  
 	   2B3u    0.665776     2B2u    0.665776     2B2g    0.813289  
 	   2B3g    0.813289     5B1u    0.855531     6Ag     0.952996  
-	   7Ag     1.093827     3B2u    1.218216     3B3u    1.218216  
+	   7Ag     1.093827     3B3u    1.218216     3B2u    1.218216  
 	   8Ag     1.255781     1B1g    1.255781     6B1u    1.330516  
 	   7B1u    1.430459     3B2g    1.623970     3B3g    1.623970  
 	   8B1u    1.670516     1Au     1.670516     4B3u    2.046642  
@@ -667,16 +671,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82277518905457
+  @RHF Final Energy:   -76.82277518905451
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3014825287249536
-    One-Electron Energy =                -150.7298618623088373
-    Two-Electron Energy =                  49.6056041445293090
+    One-Electron Energy =                -150.7298618622553477
+    Two-Electron Energy =                  49.6056041444758691
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8227751890545676
+    Total Energy =                        -76.8227751890545107
 
 
 
@@ -700,18 +704,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:20 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:26 2013
 Module time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.96 seconds =       0.08 minutes
-	system time =       0.60 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.87 seconds =       0.03 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:20 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:26 2013
 
 
 
@@ -743,7 +747,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -819,21 +823,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.30148252872495
-	SCF Energy (a.u.)                  : -76.82277518905457
+	SCF Energy (a.u.)                  : -76.82277518905451
 	REF Energy (a.u.)                  : -76.82277518905451
-	Alpha-Alpha Contribution (a.u.)    : -0.03206630658920
-	Alpha-Beta Contribution (a.u.)     : -0.20044798757178
-	Beta-Beta Contribution (a.u.)      : -0.03206630658920
-	Scaled_SS Correlation Energy (a.u.): -0.02137753772613
-	Scaled_OS Correlation Energy (a.u.): -0.24053758508613
-	SCS-MP2 Total Energy (a.u.)        : -77.08469031186677
-	SOS-MP2 Total Energy (a.u.)        : -77.08335757289782
-	SCSN-MP2 Total Energy (a.u.)       : -76.93564858824848
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98568545508334
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11141491973558
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10340237165499
-	MP2 Correlation Energy (a.u.)      : -0.26458060075017
-	MP2 Total Energy (a.u.)            : -77.08735578980468
+	Alpha-Alpha Contribution (a.u.)    : -0.03206630658912
+	Alpha-Beta Contribution (a.u.)     : -0.20044798757360
+	Beta-Beta Contribution (a.u.)      : -0.03206630658912
+	Scaled_SS Correlation Energy (a.u.): -0.02137753772608
+	Scaled_OS Correlation Energy (a.u.): -0.24053758508832
+	SCS-MP2 Total Energy (a.u.)        : -77.08469031186890
+	SOS-MP2 Total Energy (a.u.)        : -77.08335757290020
+	SCSN-MP2 Total Energy (a.u.)       : -76.93564858824823
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98568545508388
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11141491973784
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10340237165755
+	MP2 Correlation Energy (a.u.)      : -0.26458060075185
+	MP2 Total Energy (a.u.)            : -77.08735578980635
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -889,7 +893,10 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2914142954    -77.1141894845     -1.65e-07     3.73e-10 
    2     -0.2914147115    -77.1141899006     -4.16e-07     2.65e-10 
-   3     -0.2914147077    -77.1141898967      3.85e-09     2.09e-12 
+   3     -0.2914147084    -77.1141898975      3.10e-09     2.09e-12 
+   4     -0.2914147088    -77.1141898978     -3.45e-10     7.12e-13 
+   5     -0.2914147085    -77.1141898976      2.28e-10     1.75e-13 
+   6     -0.2914147086    -77.1141898977     -8.79e-11     6.56e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -899,39 +906,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.30148252872495
-	SCF Energy (a.u.)                  : -76.82277518905457
-	REF Energy (a.u.)                  : -76.81977198418554
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18624469569113
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13344778023597
-	OCEPA(0) Correlation Energy (a.u.) : -0.29141470766345
-	Eocepa - Eref (a.u.)               : -0.29441791253248
-	OCEPA(0) Total Energy (a.u.)       : -77.11418989671802
+	SCF Energy (a.u.)                  : -76.82277518905451
+	REF Energy (a.u.)                  : -76.81977198418545
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18624469698179
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13344778216893
+	OCEPA(0) Correlation Energy (a.u.) : -0.29141470862143
+	Eocepa - Eref (a.u.)               : -0.29441791349049
+	OCEPA(0) Total Energy (a.u.)       : -77.11418989767594
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:22 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:28 2013
 Module time:
-	user time   =       2.61 seconds =       0.04 minutes
-	system time =       0.57 seconds =       0.01 minutes
+	user time   =       0.99 seconds =       0.02 minutes
+	system time =       0.61 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       7.57 seconds =       0.13 minutes
-	system time =       1.17 seconds =       0.02 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       2.86 seconds =       0.05 minutes
+	system time =       1.09 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:22 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:28 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1031,24 +1038,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60264222051706
+  Guess energy:   -49.89909221593563
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63789141624062   -7.76379e+01   1.43636e-01 
-   @RHF iter   1:   -76.79817398576873    8.39717e-01   1.06846e-02 
-   @RHF iter   2:   -76.82150686575548   -2.33329e-02   2.31602e-03 DIIS
-   @RHF iter   3:   -76.82291017805187   -1.40331e-03   5.91447e-04 DIIS
-   @RHF iter   4:   -76.82298917413033   -7.89961e-05   1.19162e-04 DIIS
-   @RHF iter   5:   -76.82299293870659   -3.76458e-06   2.11868e-05 DIIS
-   @RHF iter   6:   -76.82299308812958   -1.49423e-07   3.73865e-06 DIIS
-   @RHF iter   7:   -76.82299309284002   -4.71044e-09   2.67317e-07 DIIS
-   @RHF iter   8:   -76.82299309285636   -1.63425e-11   1.43397e-08 DIIS
-   @RHF iter   9:   -76.82299309285636    0.00000e+00   1.63337e-09 DIIS
-   @RHF iter  10:   -76.82299309285636    0.00000e+00   2.11833e-10 DIIS
-   @RHF iter  11:   -76.82299309285636    0.00000e+00   2.65413e-11 DIIS
+   @RHF iter   0:   -76.53950182947503   -7.65395e+01   1.19847e-01 
+   @RHF iter   1:   -76.78180608813605   -2.42304e-01   1.34855e-02 
+   @RHF iter   2:   -76.81933496587331   -3.75289e-02   3.81968e-03 DIIS
+   @RHF iter   3:   -76.82277063037910   -3.43566e-03   9.93068e-04 DIIS
+   @RHF iter   4:   -76.82298772088041   -2.17091e-04   1.32380e-04 DIIS
+   @RHF iter   5:   -76.82299287983213   -5.15895e-06   2.49294e-05 DIIS
+   @RHF iter   6:   -76.82299309114674   -2.11315e-07   2.48672e-06 DIIS
+   @RHF iter   7:   -76.82299309284758   -1.70084e-09   2.08579e-07 DIIS
+   @RHF iter   8:   -76.82299309285622   -8.64020e-12   1.13016e-08 DIIS
+   @RHF iter   9:   -76.82299309285625   -2.84217e-14   1.61346e-09 DIIS
+   @RHF iter  10:   -76.82299309285622    2.84217e-14   1.49202e-10 DIIS
+   @RHF iter  11:   -76.82299309285625   -2.84217e-14   1.33029e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1067,10 +1074,10 @@ Total time:
 	   4Ag     0.221179     4B1u    0.483456     5Ag     0.536184  
 	   2B3u    0.665563     2B2u    0.665563     2B2g    0.813497  
 	   2B3g    0.813497     5B1u    0.855566     6Ag     0.953534  
-	   7Ag     1.094648     3B2u    1.218679     3B3u    1.218679  
+	   7Ag     1.094648     3B3u    1.218679     3B2u    1.218679  
 	   8Ag     1.255649     1B1g    1.255649     6B1u    1.332879  
 	   7B1u    1.430513     3B2g    1.624960     3B3g    1.624960  
-	   8B1u    1.670960     1Au     1.670960     4B3u    2.048529  
+	   1Au     1.670960     8B1u    1.670960     4B3u    2.048529  
 	   4B2u    2.048529     9Ag     2.148975     9B1u    2.500567  
 	   4B2g    2.662405     4B3g    2.662405    10Ag     3.211964  
 	  10B1u    3.584883  
@@ -1081,16 +1088,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82299309285636
+  @RHF Final Energy:   -76.82299309285625
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3254052588026966
-    One-Electron Energy =                -150.7762552629684194
-    Two-Electron Energy =                  49.6278569113093653
+    One-Electron Energy =                -150.7762552629072275
+    Two-Electron Energy =                  49.6278569112482799
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229930928563505
+    Total Energy =                        -76.8229930928562510
 
 
 
@@ -1114,18 +1121,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:23 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:28 2013
 Module time:
-	user time   =       1.21 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.80 seconds =       0.15 minutes
-	system time =       1.18 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       3.24 seconds =       0.05 minutes
+	system time =       1.10 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:23 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:28 2013
 
 
 
@@ -1157,7 +1164,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -1233,21 +1240,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.32540525880270
-	SCF Energy (a.u.)                  : -76.82299309285636
-	REF Energy (a.u.)                  : -76.82299309285634
-	Alpha-Alpha Contribution (a.u.)    : -0.03204116598017
-	Alpha-Beta Contribution (a.u.)     : -0.20028805757827
-	Beta-Beta Contribution (a.u.)      : -0.03204116598017
-	Scaled_SS Correlation Energy (a.u.): -0.02136077732011
-	Scaled_OS Correlation Energy (a.u.): -0.24034566909392
-	SCS-MP2 Total Energy (a.u.)        : -77.08469953927036
-	SOS-MP2 Total Energy (a.u.)        : -77.08336756770808
-	SCSN-MP2 Total Energy (a.u.)       : -76.93577799710653
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98577452411648
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11140297253668
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339637346591
-	MP2 Correlation Energy (a.u.)      : -0.26437038953860
-	MP2 Total Energy (a.u.)            : -77.08736348239493
+	SCF Energy (a.u.)                  : -76.82299309285625
+	REF Energy (a.u.)                  : -76.82299309285625
+	Alpha-Alpha Contribution (a.u.)    : -0.03204116598010
+	Alpha-Beta Contribution (a.u.)     : -0.20028805758018
+	Beta-Beta Contribution (a.u.)      : -0.03204116598010
+	Scaled_SS Correlation Energy (a.u.): -0.02136077732007
+	Scaled_OS Correlation Energy (a.u.): -0.24034566909622
+	SCS-MP2 Total Energy (a.u.)        : -77.08469953927253
+	SOS-MP2 Total Energy (a.u.)        : -77.08336756771048
+	SCSN-MP2 Total Energy (a.u.)       : -76.93577799710621
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98577452411698
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11140297253898
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339637346850
+	MP2 Correlation Energy (a.u.)      : -0.26437038954039
+	MP2 Total Energy (a.u.)            : -77.08736348239664
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -1277,7 +1284,7 @@ Total time:
   16     -77.1141619607     -1.09e-05       3.51e-06         8.76e-05        2.27e-08 
   17     -77.1141693457     -7.38e-06       2.79e-06         5.44e-05        1.68e-08 
   18     -77.1141768647     -7.52e-06       1.35e-05         2.51e-04        1.04e-08 
-  19     -77.1141741026      2.76e-06       2.11e-05         3.77e-04        2.09e-08 
+  19     -77.1141741027      2.76e-06       2.11e-05         3.77e-04        2.09e-08 
   20     -77.1141805308     -6.43e-06       6.10e-07         8.67e-06        8.32e-09 
   21     -77.1141841456     -3.61e-06       3.48e-07         6.88e-06        4.30e-09 
   22     -77.1141849969     -8.51e-07       4.63e-08         8.65e-07        2.79e-09 
@@ -1304,7 +1311,10 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2911946193    -77.1141877122     -1.23e-07     2.67e-10 
    2     -0.2911949184    -77.1141880112     -2.99e-07     1.90e-10 
-   3     -0.2911949165    -77.1141880094      1.86e-09     2.02e-12 
+   3     -0.2911949170    -77.1141880099      1.34e-09     2.02e-12 
+   4     -0.2911949166    -77.1141880094      4.72e-10     7.29e-13 
+   5     -0.2911949163    -77.1141880092      2.23e-10     1.60e-13 
+   6     -0.2911949164    -77.1141880092     -1.49e-11     4.51e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -1314,39 +1324,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.32540525880270
-	SCF Energy (a.u.)                  : -76.82299309285636
-	REF Energy (a.u.)                  : -76.82000183108127
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18617893165553
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13336422282549
-	OCEPA(0) Correlation Energy (a.u.) : -0.29119491651106
-	Eocepa - Eref (a.u.)               : -0.29418617828615
-	OCEPA(0) Total Energy (a.u.)       : -77.11418800936742
+	SCF Energy (a.u.)                  : -76.82299309285625
+	REF Energy (a.u.)                  : -76.82000183108121
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18617893145196
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13336422257005
+	OCEPA(0) Correlation Energy (a.u.) : -0.29119491635535
+	Eocepa - Eref (a.u.)               : -0.29418617813039
+	OCEPA(0) Total Energy (a.u.)       : -77.11418800921160
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:25 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:29 2013
 Module time:
-	user time   =       2.71 seconds =       0.05 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      11.51 seconds =       0.19 minutes
-	system time =       1.82 seconds =       0.03 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       3.96 seconds =       0.07 minutes
+	system time =       1.49 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:25 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:29 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1446,24 +1456,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60647061439573
+  Guess energy:   -49.90356687010916
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63244525475207   -7.76324e+01   1.43338e-01 
-   @RHF iter   1:   -76.79794259508371    8.34503e-01   1.06892e-02 
-   @RHF iter   2:   -76.82133623086357   -2.33936e-02   2.32025e-03 DIIS
-   @RHF iter   3:   -76.82274640004761   -1.41017e-03   5.96044e-04 DIIS
-   @RHF iter   4:   -76.82282644730866   -8.00473e-05   1.19767e-04 DIIS
-   @RHF iter   5:   -76.82283026208013   -3.81477e-06   2.12271e-05 DIIS
-   @RHF iter   6:   -76.82283041213302   -1.50053e-07   3.75056e-06 DIIS
-   @RHF iter   7:   -76.82283041687749   -4.74448e-09   2.68438e-07 DIIS
-   @RHF iter   8:   -76.82283041689389   -1.63993e-11   1.43855e-08 DIIS
-   @RHF iter   9:   -76.82283041689398   -8.52651e-14   1.66078e-09 DIIS
-   @RHF iter  10:   -76.82283041689399   -1.42109e-14   2.24904e-10 DIIS
-   @RHF iter  11:   -76.82283041689396    2.84217e-14   2.79544e-11 DIIS
+   @RHF iter   0:   -76.53576863865503   -7.65358e+01   1.19547e-01 
+   @RHF iter   1:   -76.78160666639980   -2.45838e-01   1.34772e-02 
+   @RHF iter   2:   -76.81915914984357   -3.75525e-02   3.82008e-03 DIIS
+   @RHF iter   3:   -76.82260690532722   -3.44776e-03   9.95422e-04 DIIS
+   @RHF iter   4:   -76.82282499812989   -2.18093e-04   1.32788e-04 DIIS
+   @RHF iter   5:   -76.82283020072094   -5.20259e-06   2.50896e-05 DIIS
+   @RHF iter   6:   -76.82283041515984   -2.14439e-07   2.50227e-06 DIIS
+   @RHF iter   7:   -76.82283041688513   -1.72528e-09   2.09095e-07 DIIS
+   @RHF iter   8:   -76.82283041689375   -8.62599e-12   1.10976e-08 DIIS
+   @RHF iter   9:   -76.82283041689384   -8.52651e-14   1.57072e-09 DIIS
+   @RHF iter  10:   -76.82283041689385   -1.42109e-14   1.49942e-10 DIIS
+   @RHF iter  11:   -76.82283041689378    7.10543e-14   1.37402e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1482,10 +1492,10 @@ Total time:
 	   4Ag     0.220892     4B1u    0.482770     5Ag     0.535528  
 	   2B3u    0.665595     2B2u    0.665595     2B2g    0.813525  
 	   2B3g    0.813525     5B1u    0.855254     6Ag     0.952165  
-	   7Ag     1.093050     3B2u    1.218562     3B3u    1.218562  
+	   7Ag     1.093050     3B3u    1.218562     3B2u    1.218562  
 	   8Ag     1.255726     1B1g    1.255726     6B1u    1.330778  
 	   7B1u    1.431210     3B2g    1.623321     3B3g    1.623321  
-	   8B1u    1.671062     1Au     1.671062     4B3u    2.045086  
+	   1Au     1.671062     8B1u    1.671062     4B3u    2.045086  
 	   4B2u    2.045086     9Ag     2.144891     9B1u    2.493345  
 	   4B2g    2.658169     4B3g    2.658169    10Ag     3.202770  
 	  10B1u    3.577955  
@@ -1496,16 +1506,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82283041689396
+  @RHF Final Energy:   -76.82283041689378
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3002625705862592
-    One-Electron Energy =                -150.7308193469907565
-    Two-Electron Energy =                  49.6077263595105507
+    One-Electron Energy =                -150.7308193469626758
+    Two-Electron Energy =                  49.6077263594826121
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8228304168939502
+    Total Energy =                        -76.8228304168938081
 
 
 
@@ -1529,18 +1539,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:26 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:30 2013
 Module time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      12.73 seconds =       0.21 minutes
-	system time =       1.83 seconds =       0.03 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       4.23 seconds =       0.07 minutes
+	system time =       1.50 seconds =       0.03 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:26 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:30 2013
 
 
 
@@ -1572,7 +1582,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -1648,21 +1658,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.30026257058626
-	SCF Energy (a.u.)                  : -76.82283041689396
-	REF Energy (a.u.)                  : -76.82283041689396
-	Alpha-Alpha Contribution (a.u.)    : -0.03204771706641
-	Alpha-Beta Contribution (a.u.)     : -0.20039703900661
-	Beta-Beta Contribution (a.u.)      : -0.03204771706641
-	Scaled_SS Correlation Energy (a.u.): -0.02136514471094
-	Scaled_OS Correlation Energy (a.u.): -0.24047644680793
-	SCS-MP2 Total Energy (a.u.)        : -77.08467200841282
-	SOS-MP2 Total Energy (a.u.)        : -77.08334656760256
-	SCSN-MP2 Total Energy (a.u.)       : -76.93563838096773
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98567234252793
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11138634388882
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338627150321
-	MP2 Correlation Energy (a.u.)      : -0.26449247313943
-	MP2 Total Energy (a.u.)            : -77.08732289003339
+	SCF Energy (a.u.)                  : -76.82283041689378
+	REF Energy (a.u.)                  : -76.82283041689377
+	Alpha-Alpha Contribution (a.u.)    : -0.03204771706630
+	Alpha-Beta Contribution (a.u.)     : -0.20039703900824
+	Beta-Beta Contribution (a.u.)      : -0.03204771706630
+	Scaled_SS Correlation Energy (a.u.): -0.02136514471087
+	Scaled_OS Correlation Energy (a.u.): -0.24047644680989
+	SCS-MP2 Total Energy (a.u.)        : -77.08467200841453
+	SOS-MP2 Total Energy (a.u.)        : -77.08334656760448
+	SCSN-MP2 Total Energy (a.u.)       : -76.93563838096716
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98567234252813
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11138634389060
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338627150530
+	MP2 Correlation Energy (a.u.)      : -0.26449247314085
+	MP2 Total Energy (a.u.)            : -77.08732289003461
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -1719,7 +1729,9 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2913575304    -77.1141879473     -1.09e-07     2.57e-10 
    2     -0.2913578164    -77.1141882333     -2.86e-07     1.83e-10 
-   3     -0.2913578135    -77.1141882304      2.93e-09     1.29e-12 
+   3     -0.2913578133    -77.1141882302      3.11e-09     1.29e-12 
+   4     -0.2913578140    -77.1141882309     -6.76e-10     3.81e-13 
+   5     -0.2913578140    -77.1141882309     -7.31e-11     1.82e-13 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -1729,39 +1741,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.30026257058626
-	SCF Energy (a.u.)                  : -76.82283041689396
-	REF Energy (a.u.)                  : -76.81983568584479
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18622572104815
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13342967067281
-	OCEPA(0) Correlation Energy (a.u.) : -0.29135781346304
-	Eocepa - Eref (a.u.)               : -0.29435254451221
-	OCEPA(0) Total Energy (a.u.)       : -77.11418823035700
+	SCF Energy (a.u.)                  : -76.82283041689378
+	REF Energy (a.u.)                  : -76.81983568584459
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18622572178376
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13342967154856
+	OCEPA(0) Correlation Energy (a.u.) : -0.29135781403070
+	Eocepa - Eref (a.u.)               : -0.29435254507989
+	OCEPA(0) Total Energy (a.u.)       : -77.11418823092448
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:28 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:31 2013
 Module time:
-	user time   =       2.67 seconds =       0.04 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      15.41 seconds =       0.26 minutes
-	system time =       2.45 seconds =       0.04 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       4.95 seconds =       0.08 minutes
+	system time =       1.90 seconds =       0.03 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:28 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:31 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1861,24 +1873,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60719756724480
+  Guess energy:   -49.90505892642092
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63046043284518   -7.76305e+01   1.43148e-01 
-   @RHF iter   1:   -76.79782166815748    8.32639e-01   1.06793e-02 
-   @RHF iter   2:   -76.82119899673263   -2.33773e-02   2.31806e-03 DIIS
-   @RHF iter   3:   -76.82260853320416   -1.40954e-03   5.92291e-04 DIIS
-   @RHF iter   4:   -76.82268782266357   -7.92895e-05   1.19484e-04 DIIS
-   @RHF iter   5:   -76.82269160811551   -3.78545e-06   2.12097e-05 DIIS
-   @RHF iter   6:   -76.82269175774557   -1.49630e-07   3.74998e-06 DIIS
-   @RHF iter   7:   -76.82269176248703   -4.74145e-09   2.68673e-07 DIIS
-   @RHF iter   8:   -76.82269176250341   -1.63851e-11   1.44047e-08 DIIS
-   @RHF iter   9:   -76.82269176250344   -2.84217e-14   1.65897e-09 DIIS
-   @RHF iter  10:   -76.82269176250344    0.00000e+00   2.22872e-10 DIIS
-   @RHF iter  11:   -76.82269176250348   -4.26326e-14   2.77788e-11 DIIS
+   @RHF iter   0:   -76.53498639658700   -7.65350e+01   1.19397e-01 
+   @RHF iter   1:   -76.78144825164476   -2.46462e-01   1.34721e-02 
+   @RHF iter   2:   -76.81901792246229   -3.75697e-02   3.82011e-03 DIIS
+   @RHF iter   3:   -76.82246943120251   -3.45151e-03   9.92680e-04 DIIS
+   @RHF iter   4:   -76.82268636136149   -2.16930e-04   1.32635e-04 DIIS
+   @RHF iter   5:   -76.82269154672314   -5.18536e-06   2.50699e-05 DIIS
+   @RHF iter   6:   -76.82269176076753   -2.14044e-07   2.50332e-06 DIIS
+   @RHF iter   7:   -76.82269176249486   -1.72733e-09   2.09111e-07 DIIS
+   @RHF iter   8:   -76.82269176250344   -8.58336e-12   1.11390e-08 DIIS
+   @RHF iter   9:   -76.82269176250355   -1.13687e-13   1.58006e-09 DIIS
+   @RHF iter  10:   -76.82269176250351    4.26326e-14   1.49917e-10 DIIS
+   @RHF iter  11:   -76.82269176250352   -1.42109e-14   1.37181e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1897,8 +1909,8 @@ Total time:
 	   4Ag     0.220904     4B1u    0.482415     5Ag     0.535792  
 	   2B3u    0.665792     2B2u    0.665792     2B2g    0.813303  
 	   2B3g    0.813303     5B1u    0.855376     6Ag     0.952310  
-	   7Ag     1.093031     3B2u    1.218159     3B3u    1.218159  
-	   1B1g    1.255820     8Ag     1.255820     6B1u    1.329463  
+	   7Ag     1.093031     3B3u    1.218159     3B2u    1.218159  
+	   8Ag     1.255820     1B1g    1.255820     6B1u    1.329463  
 	   7B1u    1.430810     3B2g    1.623152     3B3g    1.623152  
 	   8B1u    1.670567     1Au     1.670567     4B3u    2.044923  
 	   4B2u    2.044923     9Ag     2.145147     9B1u    2.493297  
@@ -1911,16 +1923,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82269176250348
+  @RHF Final Energy:   -76.82269176250352
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.2889216221695641
-    One-Electron Energy =                -150.7071613789882178
-    Two-Electron Energy =                  49.5955479943151687
+    One-Electron Energy =                -150.7071613789516391
+    Two-Electron Energy =                  49.5955479942785331
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8226917625034815
+    Total Energy =                        -76.8226917625035384
 
 
 
@@ -1944,18 +1956,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:29 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:31 2013
 Module time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.64 seconds =       0.28 minutes
-	system time =       2.46 seconds =       0.04 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       5.22 seconds =       0.09 minutes
+	system time =       1.90 seconds =       0.03 minutes
+	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:29 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:31 2013
 
 
 
@@ -1987,7 +1999,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -2063,21 +2075,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.28892162216956
-	SCF Energy (a.u.)                  : -76.82269176250348
-	REF Energy (a.u.)                  : -76.82269176250347
-	Alpha-Alpha Contribution (a.u.)    : -0.03206958862071
-	Alpha-Beta Contribution (a.u.)     : -0.20050248382008
-	Beta-Beta Contribution (a.u.)      : -0.03206958862071
-	Scaled_SS Correlation Energy (a.u.): -0.02137972574714
-	Scaled_OS Correlation Energy (a.u.): -0.24060298058409
-	SCS-MP2 Total Energy (a.u.)        : -77.08467446883472
-	SOS-MP2 Total Energy (a.u.)        : -77.08334499146957
-	SCSN-MP2 Total Energy (a.u.)       : -76.93557671444836
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98563229467293
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11140453041388
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339523985158
-	MP2 Correlation Energy (a.u.)      : -0.26464166106149
-	MP2 Total Energy (a.u.)            : -77.08733342356496
+	SCF Energy (a.u.)                  : -76.82269176250352
+	REF Energy (a.u.)                  : -76.82269176250351
+	Alpha-Alpha Contribution (a.u.)    : -0.03206958862061
+	Alpha-Beta Contribution (a.u.)     : -0.20050248382176
+	Beta-Beta Contribution (a.u.)      : -0.03206958862061
+	Scaled_SS Correlation Energy (a.u.): -0.02137972574707
+	Scaled_OS Correlation Energy (a.u.): -0.24060298058612
+	SCS-MP2 Total Energy (a.u.)        : -77.08467446883670
+	SOS-MP2 Total Energy (a.u.)        : -77.08334499147180
+	SCSN-MP2 Total Energy (a.u.)       : -76.93557671444806
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98563229467338
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11140453041597
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339523985398
+	MP2 Correlation Energy (a.u.)      : -0.26464166106298
+	MP2 Total Energy (a.u.)            : -77.08733342356649
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -2133,7 +2145,11 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2914957832    -77.1141875457     -1.61e-07     3.66e-10 
    2     -0.2914961908    -77.1141879533     -4.08e-07     2.60e-10 
-   3     -0.2914961867    -77.1141879492      4.11e-09     2.41e-12 
+   3     -0.2914961875    -77.1141879500      3.29e-09     2.41e-12 
+   4     -0.2914961880    -77.1141879505     -5.43e-10     9.02e-13 
+   5     -0.2914961878    -77.1141879503      2.39e-10     2.60e-13 
+   6     -0.2914961879    -77.1141879504     -1.52e-10     9.10e-14 
+   7     -0.2914961880    -77.1141879505     -1.58e-11     1.55e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -2143,39 +2159,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.28892162216956
-	SCF Energy (a.u.)                  : -76.82269176250348
-	REF Energy (a.u.)                  : -76.81968679723643
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18626604888972
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13347847552515
-	OCEPA(0) Correlation Energy (a.u.) : -0.29149618666546
-	Eocepa - Eref (a.u.)               : -0.29450115193251
-	OCEPA(0) Total Energy (a.u.)       : -77.11418794916894
+	SCF Energy (a.u.)                  : -76.82269176250352
+	REF Energy (a.u.)                  : -76.81968679723659
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18626605062175
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13347847805805
+	OCEPA(0) Correlation Energy (a.u.) : -0.29149618795684
+	Eocepa - Eref (a.u.)               : -0.29450115322378
+	OCEPA(0) Total Energy (a.u.)       : -77.11418795046036
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:30 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:32 2013
 Module time:
-	user time   =       2.60 seconds =       0.04 minutes
-	system time =       0.61 seconds =       0.01 minutes
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.45 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.24 seconds =       0.32 minutes
-	system time =       3.07 seconds =       0.05 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =       6.04 seconds =       0.10 minutes
+	system time =       2.35 seconds =       0.04 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:30 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:32 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2275,24 +2291,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60191622821839
+  Guess energy:   -49.89760018831352
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63987968545811   -7.76399e+01   1.43827e-01 
-   @RHF iter   1:   -76.79829576816098    8.41584e-01   1.06945e-02 
-   @RHF iter   2:   -76.82164493737388   -2.33492e-02   2.31820e-03 DIIS
-   @RHF iter   3:   -76.82304886669814   -1.40393e-03   5.95186e-04 DIIS
-   @RHF iter   4:   -76.82312861567853   -7.97490e-05   1.19442e-04 DIIS
-   @RHF iter   5:   -76.82313240920924   -3.79353e-06   2.12042e-05 DIIS
-   @RHF iter   6:   -76.82313255905295   -1.49844e-07   3.73917e-06 DIIS
-   @RHF iter   7:   -76.82313256376631   -4.71336e-09   2.67070e-07 DIIS
-   @RHF iter   8:   -76.82313256378255   -1.62430e-11   1.43178e-08 DIIS
-   @RHF iter   9:   -76.82313256378259   -4.26326e-14   1.63404e-09 DIIS
-   @RHF iter  10:   -76.82313256378265   -5.68434e-14   2.13705e-10 DIIS
-   @RHF iter  11:   -76.82313256378262    2.84217e-14   2.67598e-11 DIIS
+   @RHF iter   0:   -76.54028580636395   -7.65403e+01   1.19998e-01 
+   @RHF iter   1:   -76.78196523557186   -2.41679e-01   1.34906e-02 
+   @RHF iter   2:   -76.81947699068537   -3.75118e-02   3.81966e-03 DIIS
+   @RHF iter   3:   -76.82290893017453   -3.43194e-03   9.95788e-04 DIIS
+   @RHF iter   4:   -76.82312717434246   -2.18244e-04   1.32532e-04 DIIS
+   @RHF iter   5:   -76.82313235036784   -5.17603e-06   2.49492e-05 DIIS
+   @RHF iter   6:   -76.82313256207497   -2.11707e-07   2.48564e-06 DIIS
+   @RHF iter   7:   -76.82313256377378   -1.69881e-09   2.08556e-07 DIIS
+   @RHF iter   8:   -76.82313256378234   -8.55493e-12   1.12602e-08 DIIS
+   @RHF iter   9:   -76.82313256378241   -7.10543e-14   1.60426e-09 DIIS
+   @RHF iter  10:   -76.82313256378241    0.00000e+00   1.49238e-10 DIIS
+   @RHF iter  11:   -76.82313256378242   -1.42109e-14   1.33221e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -2311,10 +2327,10 @@ Total time:
 	   4Ag     0.221168     4B1u    0.483812     5Ag     0.535919  
 	   2B3u    0.665366     2B2u    0.665366     2B2g    0.813720  
 	   2B3g    0.813720     5B1u    0.855444     6Ag     0.953389  
-	   7Ag     1.094665     3B2u    1.219081     3B3u    1.219081  
-	   1B1g    1.255557     8Ag     1.255557     6B1u    1.334215  
+	   7Ag     1.094665     3B3u    1.219081     3B2u    1.219081  
+	   8Ag     1.255557     1B1g    1.255557     6B1u    1.334215  
 	   7B1u    1.430893     3B2g    1.625130     3B3g    1.625130  
-	   1Au     1.671455     8B1u    1.671455     4B3u    2.048694  
+	   8B1u    1.671455     1Au     1.671455     4B3u    2.048694  
 	   4B2u    2.048694     9Ag     2.148717     9B1u    2.500622  
 	   4B2g    2.662476     4B3g    2.662476    10Ag     3.210833  
 	  10B1u    3.587441  
@@ -2325,16 +2341,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82313256378262
+  @RHF Final Energy:   -76.82313256378242
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3367551812244933
-    One-Electron Energy =                -150.7999379212396889
-    Two-Electron Energy =                  49.6400501762325703
+    One-Electron Energy =                -150.7999379211866255
+    Two-Electron Energy =                  49.6400501761797273
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8231325637826217
+    Total Energy =                        -76.8231325637824085
 
 
 
@@ -2358,18 +2374,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:32 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:33 2013
 Module time:
-	user time   =       1.21 seconds =       0.02 minutes
+	user time   =       0.44 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      20.49 seconds =       0.34 minutes
-	system time =       3.08 seconds =       0.05 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       6.49 seconds =       0.11 minutes
+	system time =       2.37 seconds =       0.04 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:32 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:33 2013
 
 
 
@@ -2401,7 +2417,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -2477,21 +2493,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.33675518122449
-	SCF Energy (a.u.)                  : -76.82313256378262
-	REF Energy (a.u.)                  : -76.82313256378259
-	Alpha-Alpha Contribution (a.u.)    : -0.03201933241466
-	Alpha-Beta Contribution (a.u.)     : -0.20018273705065
-	Beta-Beta Contribution (a.u.)      : -0.03201933241466
-	Scaled_SS Correlation Energy (a.u.): -0.02134622160977
-	Scaled_OS Correlation Energy (a.u.): -0.24021928446077
-	SCS-MP2 Total Energy (a.u.)        : -77.08469806985315
-	SOS-MP2 Total Energy (a.u.)        : -77.08337012194843
-	SCSN-MP2 Total Energy (a.u.)       : -76.93584061388219
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98581553623266
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11138579962207
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338839565350
-	MP2 Correlation Energy (a.u.)      : -0.26422140187996
-	MP2 Total Energy (a.u.)            : -77.08735396566256
+	SCF Energy (a.u.)                  : -76.82313256378242
+	REF Energy (a.u.)                  : -76.82313256378244
+	Alpha-Alpha Contribution (a.u.)    : -0.03201933241458
+	Alpha-Beta Contribution (a.u.)     : -0.20018273705250
+	Beta-Beta Contribution (a.u.)      : -0.03201933241458
+	Scaled_SS Correlation Energy (a.u.): -0.02134622160972
+	Scaled_OS Correlation Energy (a.u.): -0.24021928446300
+	SCS-MP2 Total Energy (a.u.)        : -77.08469806985516
+	SOS-MP2 Total Energy (a.u.)        : -77.08337012195069
+	SCSN-MP2 Total Energy (a.u.)       : -76.93584061388178
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98581553623308
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11138579962423
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10338839565594
+	MP2 Correlation Energy (a.u.)      : -0.26422140188167
+	MP2 Total Energy (a.u.)            : -77.08735396566411
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -2548,7 +2564,10 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2910563809    -77.1141889447     -1.12e-07     2.52e-10 
    2     -0.2910566616    -77.1141892253     -2.81e-07     1.79e-10 
-   3     -0.2910566590    -77.1141892228      2.55e-09     1.29e-12 
+   3     -0.2910566595    -77.1141892233      2.05e-09     1.29e-12 
+   4     -0.2910566596    -77.1141892234     -1.00e-10     4.21e-13 
+   5     -0.2910566594    -77.1141892232      1.61e-10     8.56e-14 
+   6     -0.2910566595    -77.1141892233     -2.47e-11     2.67e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -2558,39 +2577,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.33675518122449
-	SCF Energy (a.u.)                  : -76.82313256378262
-	REF Energy (a.u.)                  : -76.82015153170025
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18613959083373
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13331659354024
-	OCEPA(0) Correlation Energy (a.u.) : -0.29105665901085
-	Eocepa - Eref (a.u.)               : -0.29403769109322
-	OCEPA(0) Total Energy (a.u.)       : -77.11418922279347
+	SCF Energy (a.u.)                  : -76.82313256378242
+	REF Energy (a.u.)                  : -76.82015153170040
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18613959144616
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13331659443408
+	OCEPA(0) Correlation Energy (a.u.) : -0.29105665946786
+	Eocepa - Eref (a.u.)               : -0.29403769154987
+	OCEPA(0) Total Energy (a.u.)       : -77.11418922325028
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:33 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:34 2013
 Module time:
-	user time   =       2.67 seconds =       0.04 minutes
-	system time =       0.64 seconds =       0.01 minutes
+	user time   =       1.02 seconds =       0.02 minutes
+	system time =       0.56 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      23.17 seconds =       0.39 minutes
-	system time =       3.72 seconds =       0.06 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       7.51 seconds =       0.13 minutes
+	system time =       2.93 seconds =       0.05 minutes
+	total time  =         10 seconds =       0.17 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:33 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:34 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2686,24 +2705,25 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60456567473528
+  Guess energy:   -49.90125790538833
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516424431975   -7.76352e+01   1.11312e-01 
-   @RHF iter   1:   -76.79806316714543    8.37101e-01   8.29050e-03 
-   @RHF iter   2:   -76.82142638393233   -2.33632e-02   1.79832e-03 DIIS
-   @RHF iter   3:   -76.82283312722603   -1.40674e-03   4.60602e-04 DIIS
-   @RHF iter   4:   -76.82291264824772   -7.95210e-05   9.26790e-05 DIIS
-   @RHF iter   5:   -76.82291643826625   -3.79002e-06   1.64530e-05 DIIS
-   @RHF iter   6:   -76.82291658804408   -1.49778e-07   2.90532e-06 DIIS
-   @RHF iter   7:   -76.82291659277389   -4.72981e-09   2.08089e-07 DIIS
-   @RHF iter   8:   -76.82291659279029   -1.63993e-11   1.16302e-08 DIIS
-   @RHF iter   9:   -76.82291659279035   -5.68434e-14   1.81230e-09 DIIS
-   @RHF iter  10:   -76.82291659279034    1.42109e-14   4.40420e-10 DIIS
-   @RHF iter  11:   -76.82291659279034    0.00000e+00   7.46341e-11 DIIS
+   @RHF iter   0:   -76.58114089575611   -7.65811e+01   9.55596e-02 
+   @RHF iter   1:   -76.76598966183698   -1.84849e-01   1.15023e-02 
+   @RHF iter   2:   -76.81580593642440   -4.98163e-02   3.66890e-03 DIIS
+   @RHF iter   3:   -76.82221857319499   -6.41264e-03   1.12759e-03 DIIS
+   @RHF iter   4:   -76.82285058488145   -6.32012e-04   3.00771e-04 DIIS
+   @RHF iter   5:   -76.82291420077344   -6.36159e-05   5.61421e-05 DIIS
+   @RHF iter   6:   -76.82291653585862   -2.33509e-06   8.82757e-06 DIIS
+   @RHF iter   7:   -76.82291659118010   -5.53215e-08   1.51414e-06 DIIS
+   @RHF iter   8:   -76.82291659277681   -1.59670e-09   1.44264e-07 DIIS
+   @RHF iter   9:   -76.82291659279004   -1.32303e-11   1.93422e-08 DIIS
+   @RHF iter  10:   -76.82291659279021   -1.70530e-13   3.82590e-09 DIIS
+   @RHF iter  11:   -76.82291659279022   -1.42109e-14   2.62569e-10 DIIS
+   @RHF iter  12:   -76.82291659279026   -4.26326e-14   2.86985e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -2736,16 +2756,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291659279034
+  @RHF Final Energy:   -76.82291659279026
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128034869895053
-    One-Electron Energy =                -150.7534906559918397
-    Two-Electron Energy =                  49.6177705762119601
+    One-Electron Energy =                -150.7534906578714526
+    Two-Electron Energy =                  49.6177705780916867
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229165927903637
+    Total Energy =                        -76.8229165927902500
 
 
 
@@ -2769,18 +2789,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:34 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:35 2013
 Module time:
-	user time   =       1.22 seconds =       0.02 minutes
+	user time   =       0.37 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      24.41 seconds =       0.41 minutes
-	system time =       3.74 seconds =       0.06 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       7.89 seconds =       0.13 minutes
+	system time =       2.94 seconds =       0.05 minutes
+	total time  =         11 seconds =       0.18 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:34 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:35 2013
 
 
 
@@ -2812,7 +2832,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -2884,21 +2904,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280348698951
-	SCF Energy (a.u.)                  : -76.82291659279034
+	SCF Energy (a.u.)                  : -76.82291659279026
 	REF Energy (a.u.)                  : -76.82291659279031
-	Alpha-Alpha Contribution (a.u.)    : -0.03204445185620
-	Alpha-Beta Contribution (a.u.)     : -0.20034264675909
-	Beta-Beta Contribution (a.u.)      : -0.03204445185620
-	Scaled_SS Correlation Energy (a.u.): -0.02136296790413
-	Scaled_OS Correlation Energy (a.u.): -0.24041117611091
-	SCS-MP2 Total Energy (a.u.)        : -77.08469073680536
-	SOS-MP2 Total Energy (a.u.)        : -77.08336203357713
-	SCSN-MP2 Total Energy (a.u.)       : -76.93571306332413
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572833728294
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139963249813
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339629825303
-	MP2 Correlation Energy (a.u.)      : -0.26443155047149
-	MP2 Total Energy (a.u.)            : -77.08734814326179
+	Alpha-Alpha Contribution (a.u.)    : -0.03204445185405
+	Alpha-Beta Contribution (a.u.)     : -0.20034264674573
+	Beta-Beta Contribution (a.u.)      : -0.03204445185405
+	Scaled_SS Correlation Energy (a.u.): -0.02136296790270
+	Scaled_OS Correlation Energy (a.u.): -0.24041117609488
+	SCS-MP2 Total Energy (a.u.)        : -77.08469073678788
+	SOS-MP2 Total Energy (a.u.)        : -77.08336203355975
+	SCSN-MP2 Total Energy (a.u.)       : -76.93571306331657
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572833727205
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139963247891
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339629823433
+	MP2 Correlation Energy (a.u.)      : -0.26443155045383
+	MP2 Total Energy (a.u.)            : -77.08734814324414
 	============================================================================== 
 
 	Number of independent-pairs:  70
@@ -2941,9 +2961,9 @@ Total time:
   29     -77.1141927528     -1.36e-07       1.01e-07         3.00e-06        1.53e-10 
   30     -77.1141928440     -9.12e-08       9.08e-08         2.71e-06        1.12e-10 
   31     -77.1141929192     -7.52e-08       1.29e-07         3.85e-06        7.30e-11 
-  32     -77.1141929238     -4.64e-09       1.34e-08         3.89e-07        9.60e-11 
-  33     -77.1141929653     -4.14e-08       2.03e-08         6.11e-07        4.38e-11 
-  34     -77.1141929975     -3.22e-08       5.46e-09         1.53e-07        3.69e-11 
+  32     -77.1141929236     -4.38e-09       1.44e-08         4.18e-07        9.64e-11 
+  33     -77.1141929653     -4.18e-08       2.03e-08         6.11e-07        4.37e-11 
+  34     -77.1141929976     -3.23e-08       5.44e-09         1.52e-07        3.69e-11 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -2959,9 +2979,12 @@ Total time:
 
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
-   1     -0.2912764245    -77.1141930173     -1.98e-08     2.45e-11 
-   2     -0.2912764803    -77.1141930731     -5.58e-08     1.75e-11 
-   3     -0.2912764773    -77.1141930701      3.01e-09     9.08e-13 
+   1     -0.2912764245    -77.1141930173     -1.97e-08     2.45e-11 
+   2     -0.2912764803    -77.1141930731     -5.58e-08     1.74e-11 
+   3     -0.2912764773    -77.1141930701      3.01e-09     9.04e-13 
+   4     -0.2912764778    -77.1141930706     -5.34e-10     3.58e-13 
+   5     -0.2912764775    -77.1141930703      3.51e-10     1.14e-13 
+   6     -0.2912764775    -77.1141930703     -6.21e-11     3.40e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -2971,39 +2994,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280348698951
-	SCF Energy (a.u.)                  : -76.82291659279034
-	REF Energy (a.u.)                  : -76.81992358450347
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620730890366
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340192325188
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127647727846
-	Eocepa - Eref (a.u.)               : -0.29426948556532
-	OCEPA(0) Total Energy (a.u.)       : -77.11419307006879
+	SCF Energy (a.u.)                  : -76.82291659279026
+	REF Energy (a.u.)                  : -76.81992358433477
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620730930034
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340192394861
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127647752769
+	Eocepa - Eref (a.u.)               : -0.29426948598318
+	OCEPA(0) Total Energy (a.u.)       : -77.11419307031795
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:37 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:37 2013
 Module time:
-	user time   =       4.43 seconds =       0.07 minutes
-	system time =       0.92 seconds =       0.02 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.36 seconds =       0.02 minutes
+	system time =       0.65 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      28.84 seconds =       0.48 minutes
-	system time =       4.66 seconds =       0.08 minutes
-	total time  =         21 seconds =       0.35 minutes
+	user time   =       9.25 seconds =       0.15 minutes
+	system time =       3.59 seconds =       0.06 minutes
+	total time  =         13 seconds =       0.22 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:37 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:37 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3099,24 +3122,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60456624131740
+  Guess energy:   -49.90134044308932
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516540804545   -7.76352e+01   1.11312e-01 
-   @RHF iter   1:   -76.79806324036448    8.37102e-01   8.29050e-03 
-   @RHF iter   2:   -76.82142640472095   -2.33632e-02   1.79831e-03 DIIS
-   @RHF iter   3:   -76.82283312987440   -1.40673e-03   4.60601e-04 DIIS
-   @RHF iter   4:   -76.82291264862255   -7.95187e-05   9.26770e-05 DIIS
-   @RHF iter   5:   -76.82291643829815   -3.78968e-06   1.64520e-05 DIIS
-   @RHF iter   6:   -76.82291658804525   -1.49747e-07   2.90518e-06 DIIS
-   @RHF iter   7:   -76.82291659277385   -4.72861e-09   2.08156e-07 DIIS
-   @RHF iter   8:   -76.82291659279034   -1.64846e-11   1.19051e-08 DIIS
-   @RHF iter   9:   -76.82291659279036   -2.84217e-14   2.11002e-09 DIIS
-   @RHF iter  10:   -76.82291659279034    2.84217e-14   5.44402e-10 DIIS
-   @RHF iter  11:   -76.82291659279041   -7.10543e-14   7.43386e-11 DIIS
+   @RHF iter   0:   -76.53763455879002   -7.65376e+01   9.28564e-02 
+   @RHF iter   1:   -76.78171133197804   -2.44077e-01   1.04583e-02 
+   @RHF iter   2:   -76.81925190674009   -3.75406e-02   2.96332e-03 DIIS
+   @RHF iter   3:   -76.82269360614117   -3.44170e-03   7.71299e-04 DIIS
+   @RHF iter   4:   -76.82291119719282   -2.17591e-04   1.02855e-04 DIIS
+   @RHF iter   5:   -76.82291637815817   -5.18097e-06   1.94026e-05 DIIS
+   @RHF iter   6:   -76.82291659106551   -2.12907e-07   1.93611e-06 DIIS
+   @RHF iter   7:   -76.82291659278118   -1.71568e-09   1.63558e-07 DIIS
+   @RHF iter   8:   -76.82291659279022   -9.03810e-12   1.18980e-08 DIIS
+   @RHF iter   9:   -76.82291659279028   -5.68434e-14   3.41644e-09 DIIS
+   @RHF iter  10:   -76.82291659279024    4.26326e-14   7.13048e-10 DIIS
+   @RHF iter  11:   -76.82291659279029   -5.68434e-14   6.99306e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -3149,16 +3172,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291659279041
+  @RHF Final Energy:   -76.82291659279029
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128034869895053
-    One-Electron Energy =                -150.7534906556460044
-    Two-Electron Energy =                  49.6177705758660750
+    One-Electron Energy =                -150.7534906546925981
+    Two-Electron Energy =                  49.6177705749128179
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229165927904205
+    Total Energy =                        -76.8229165927902784
 
 
 
@@ -3182,18 +3205,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:38 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:37 2013
 Module time:
-	user time   =       1.23 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      30.10 seconds =       0.50 minutes
-	system time =       4.68 seconds =       0.08 minutes
-	total time  =         22 seconds =       0.37 minutes
+	user time   =       9.52 seconds =       0.16 minutes
+	system time =       3.59 seconds =       0.06 minutes
+	total time  =         13 seconds =       0.22 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:38 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:37 2013
 
 
 
@@ -3225,7 +3248,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -3297,21 +3320,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280348698951
-	SCF Energy (a.u.)                  : -76.82291659279041
-	REF Energy (a.u.)                  : -76.82291659279039
-	Alpha-Alpha Contribution (a.u.)    : -0.03204445185641
-	Alpha-Beta Contribution (a.u.)     : -0.20034264676063
-	Beta-Beta Contribution (a.u.)      : -0.03204445185641
-	Scaled_SS Correlation Energy (a.u.): -0.02136296790427
-	Scaled_OS Correlation Energy (a.u.): -0.24041117611275
-	SCS-MP2 Total Energy (a.u.)        : -77.08469073680743
-	SOS-MP2 Total Energy (a.u.)        : -77.08336203357921
-	SCSN-MP2 Total Energy (a.u.)       : -76.93571306332495
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572833728417
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139963250042
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339629825528
-	MP2 Correlation Energy (a.u.)      : -0.26443155047345
-	MP2 Total Energy (a.u.)            : -77.08734814326384
+	SCF Energy (a.u.)                  : -76.82291659279029
+	REF Energy (a.u.)                  : -76.82291659279029
+	Alpha-Alpha Contribution (a.u.)    : -0.03204445185603
+	Alpha-Beta Contribution (a.u.)     : -0.20034264675403
+	Beta-Beta Contribution (a.u.)      : -0.03204445185603
+	Scaled_SS Correlation Energy (a.u.): -0.02136296790402
+	Scaled_OS Correlation Energy (a.u.): -0.24041117610483
+	SCS-MP2 Total Energy (a.u.)        : -77.08469073679915
+	SOS-MP2 Total Energy (a.u.)        : -77.08336203357052
+	SCSN-MP2 Total Energy (a.u.)       : -76.93571306332349
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572833728043
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139963249147
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339629824593
+	MP2 Correlation Energy (a.u.)      : -0.26443155046608
+	MP2 Total Energy (a.u.)            : -77.08734814325636
 	============================================================================== 
 
 	Number of independent-pairs:  70
@@ -3354,9 +3377,9 @@ Total time:
   29     -77.1141927528     -1.36e-07       1.01e-07         3.00e-06        1.53e-10 
   30     -77.1141928440     -9.12e-08       9.08e-08         2.71e-06        1.12e-10 
   31     -77.1141929192     -7.52e-08       1.29e-07         3.85e-06        7.30e-11 
-  32     -77.1141929237     -4.51e-09       1.39e-08         4.04e-07        9.62e-11 
-  33     -77.1141929653     -4.16e-08       2.03e-08         6.11e-07        4.37e-11 
-  34     -77.1141929975     -3.22e-08       5.46e-09         1.53e-07        3.69e-11 
+  32     -77.1141929240     -4.75e-09       1.30e-08         3.77e-07        9.59e-11 
+  33     -77.1141929653     -4.13e-08       2.03e-08         6.11e-07        4.38e-11 
+  34     -77.1141929975     -3.22e-08       5.47e-09         1.53e-07        3.69e-11 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -3373,8 +3396,11 @@ Total time:
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2912764245    -77.1141930173     -1.98e-08     2.45e-11 
-   2     -0.2912764803    -77.1141930731     -5.58e-08     1.74e-11 
-   3     -0.2912764773    -77.1141930701      3.01e-09     9.06e-13 
+   2     -0.2912764803    -77.1141930731     -5.58e-08     1.75e-11 
+   3     -0.2912764773    -77.1141930701      3.00e-09     9.10e-13 
+   4     -0.2912764778    -77.1141930706     -5.43e-10     3.58e-13 
+   5     -0.2912764775    -77.1141930703      3.56e-10     1.14e-13 
+   6     -0.2912764775    -77.1141930703     -6.36e-11     3.40e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -3384,39 +3410,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280348698951
-	SCF Energy (a.u.)                  : -76.82291659279041
-	REF Energy (a.u.)                  : -76.81992358445547
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620730892012
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340192327607
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127647728056
-	Eocepa - Eref (a.u.)               : -0.29426948561550
-	OCEPA(0) Total Energy (a.u.)       : -77.11419307007097
+	SCF Energy (a.u.)                  : -76.82291659279029
+	REF Energy (a.u.)                  : -76.81992358454571
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620730924202
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340192387190
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127647752775
+	Eocepa - Eref (a.u.)               : -0.29426948577233
+	OCEPA(0) Total Energy (a.u.)       : -77.11419307031804
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:41 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:39 2013
 Module time:
-	user time   =       4.33 seconds =       0.07 minutes
-	system time =       0.93 seconds =       0.02 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.09 seconds =       0.02 minutes
+	system time =       0.63 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      34.43 seconds =       0.57 minutes
-	system time =       5.61 seconds =       0.09 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =      10.61 seconds =       0.18 minutes
+	system time =       4.22 seconds =       0.07 minutes
+	total time  =         15 seconds =       0.25 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:41 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:39 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3512,26 +3538,26 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60455574002079
+  Guess energy:   -49.90132884699787
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516835826104   -7.76352e+01   1.01461e-01 
-   @RHF iter   1:   -76.79805738754546    8.37111e-01   7.55685e-03 
-   @RHF iter   2:   -76.82142085722063   -2.33635e-02   1.63947e-03 DIIS
-   @RHF iter   3:   -76.82282755818945   -1.40670e-03   4.21094e-04 DIIS
-   @RHF iter   4:   -76.82290720215323   -7.96440e-05   8.80914e-05 DIIS
-   @RHF iter   5:   -76.82291106197319   -3.85982e-06   2.43743e-05 DIIS
-   @RHF iter   6:   -76.82291126826961   -2.06296e-07   1.26263e-05 DIIS
-   @RHF iter   7:   -76.82291131986072   -5.15911e-08   1.54334e-06 DIIS
-   @RHF iter   8:   -76.82291132118374   -1.32302e-09   1.26084e-07 DIIS
-   @RHF iter   9:   -76.82291132119620   -1.24629e-11   4.23743e-08 DIIS
-   @RHF iter  10:   -76.82291132119974   -3.53850e-12   1.99274e-08 DIIS
-   @RHF iter  11:   -76.82291132120096   -1.22213e-12   1.22242e-09 DIIS
-   @RHF iter  12:   -76.82291132120089    7.10543e-14   1.79056e-10 DIIS
-   @RHF iter  13:   -76.82291132120088    1.42109e-14   3.35692e-11 DIIS
+   @RHF iter   0:   -76.53763522151085   -7.65376e+01   8.46388e-02 
+   @RHF iter   1:   -76.78170551732639   -2.44070e-01   9.53281e-03 
+   @RHF iter   2:   -76.81924633815061   -3.75408e-02   2.70127e-03 DIIS
+   @RHF iter   3:   -76.82268794539662   -3.44161e-03   7.04002e-04 DIIS
+   @RHF iter   4:   -76.82290578474459   -2.17839e-04   9.64750e-05 DIIS
+   @RHF iter   5:   -76.82291094237286   -5.15763e-06   2.96128e-05 DIIS
+   @RHF iter   6:   -76.82291125317312   -3.10800e-07   1.45566e-05 DIIS
+   @RHF iter   7:   -76.82291132075075   -6.75776e-08   9.78117e-07 DIIS
+   @RHF iter   8:   -76.82291132119813   -4.47386e-10   8.11117e-08 DIIS
+   @RHF iter   9:   -76.82291132120071   -2.57216e-12   6.49651e-09 DIIS
+   @RHF iter  10:   -76.82291132120075   -4.26326e-14   3.10184e-09 DIIS
+   @RHF iter  11:   -76.82291132120075    0.00000e+00   1.43699e-09 DIIS
+   @RHF iter  12:   -76.82291132120081   -5.68434e-14   1.88531e-10 DIIS
+   @RHF iter  13:   -76.82291132120073    7.10543e-14   4.03741e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -3550,7 +3576,7 @@ Total time:
 	   7A1     0.221038     8A1     0.483111     9A1     0.535857  
 	   3B2     0.665579     3B1     0.665579     4B2     0.813511  
 	   4B1     0.813511    10A1     0.855408    11A1     0.952854  
-	  12A1     1.093839     5B1     1.218620     5B2     1.218620  
+	  12A1     1.093839     5B2     1.218620     5B1     1.218620  
 	   1A2     1.255688    13A1     1.255688    14A1     1.331850  
 	  15A1     1.430847     6B2     1.624139     6B1     1.624139  
 	   2A2     1.671011    16A1     1.671011     7B2     2.046806  
@@ -3564,16 +3590,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291132120088
+  @RHF Final Energy:   -76.82291132120073
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128353526881362
-    One-Electron Energy =                -150.7535392461846584
-    Two-Electron Energy =                  49.6177925722956701
+    One-Electron Energy =                -150.7535392465961763
+    Two-Electron Energy =                  49.6177925727073017
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229113212008485
+    Total Energy =                        -76.8229113212007348
 
 
 
@@ -3597,18 +3623,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:43 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:39 2013
 Module time:
-	user time   =       1.36 seconds =       0.02 minutes
+	user time   =       0.45 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      35.82 seconds =       0.60 minutes
-	system time =       5.63 seconds =       0.09 minutes
-	total time  =         27 seconds =       0.45 minutes
+	user time   =      11.07 seconds =       0.18 minutes
+	system time =       4.23 seconds =       0.07 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:43 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:39 2013
 
 
 
@@ -3640,7 +3666,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -3712,21 +3738,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31283535268814
-	SCF Energy (a.u.)                  : -76.82291132120088
-	REF Energy (a.u.)                  : -76.82291132120083
-	Alpha-Alpha Contribution (a.u.)    : -0.03204444131445
-	Alpha-Beta Contribution (a.u.)     : -0.20034255681636
-	Beta-Beta Contribution (a.u.)      : -0.03204444131445
-	Scaled_SS Correlation Energy (a.u.): -0.02136296087630
-	Scaled_OS Correlation Energy (a.u.): -0.24041106817964
-	SCS-MP2 Total Energy (a.u.)        : -77.08468535025678
-	SOS-MP2 Total Energy (a.u.)        : -77.08335664506211
-	SCSN-MP2 Total Energy (a.u.)       : -76.93570775462770
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572300251867
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139423524025
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339090074375
-	MP2 Correlation Energy (a.u.)      : -0.26443143944527
-	MP2 Total Energy (a.u.)            : -77.08734276064611
+	SCF Energy (a.u.)                  : -76.82291132120073
+	REF Energy (a.u.)                  : -76.82291132120089
+	Alpha-Alpha Contribution (a.u.)    : -0.03204444131433
+	Alpha-Beta Contribution (a.u.)     : -0.20034255681396
+	Beta-Beta Contribution (a.u.)      : -0.03204444131433
+	Scaled_SS Correlation Energy (a.u.): -0.02136296087622
+	Scaled_OS Correlation Energy (a.u.): -0.24041106817675
+	SCS-MP2 Total Energy (a.u.)        : -77.08468535025385
+	SOS-MP2 Total Energy (a.u.)        : -77.08335664505903
+	SCSN-MP2 Total Energy (a.u.)       : -76.93570775462733
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572300251745
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139423523709
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339090074042
+	MP2 Correlation Energy (a.u.)      : -0.26443143944262
+	MP2 Total Energy (a.u.)            : -77.08734276064351
 	============================================================================== 
 
 	Number of independent-pairs:  89
@@ -3761,11 +3787,11 @@ Total time:
   21     -77.1141826092     -1.96e-06       3.43e-07         1.30e-05        2.29e-09 
   22     -77.1141843442     -1.74e-06       1.08e-06         4.05e-05        1.48e-09 
   23     -77.1141855134     -1.17e-06       1.43e-06         5.32e-05        1.02e-09 
-  24     -77.1141861444     -6.31e-07       1.43e-06         5.40e-05        7.33e-10 
-  25     -77.1141857236      4.21e-07       8.30e-07         3.14e-05        1.46e-09 
+  24     -77.1141861445     -6.31e-07       1.43e-06         5.40e-05        7.33e-10 
+  25     -77.1141857239      4.21e-07       8.29e-07         3.14e-05        1.46e-09 
   26     -77.1141864225     -6.99e-07       2.16e-08         8.43e-07        4.79e-10 
-  27     -77.1141869540     -5.31e-07       1.60e-08         6.06e-07        3.50e-10 
-  28     -77.1141871443     -1.90e-07       5.19e-09         2.03e-07        2.46e-10 
+  27     -77.1141869539     -5.31e-07       1.60e-08         6.06e-07        3.50e-10 
+  28     -77.1141871443     -1.90e-07       5.18e-09         2.03e-07        2.46e-10 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -3781,9 +3807,13 @@ Total time:
 
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
-   1     -0.2912759878    -77.1141873090     -1.65e-07     1.74e-10 
+   1     -0.2912759877    -77.1141873089     -1.65e-07     1.74e-10 
    2     -0.2912763895    -77.1141877107     -4.02e-07     1.24e-10 
-   3     -0.2912763826    -77.1141877038      6.89e-09     3.04e-12 
+   3     -0.2912763862    -77.1141877074      3.35e-09     3.04e-12 
+   4     -0.2912763834    -77.1141877046      2.78e-09     1.72e-12 
+   5     -0.2912763832    -77.1141877044      2.46e-10     1.81e-13 
+   6     -0.2912763833    -77.1141877045     -1.27e-10     5.08e-14 
+   7     -0.2912763833    -77.1141877045     -1.30e-11     1.36e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -3793,39 +3823,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31283535268814
-	SCF Energy (a.u.)                  : -76.82291132120088
-	REF Energy (a.u.)                  : -76.81991830759500
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620191997708
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13339654345032
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127638263441
-	Eocepa - Eref (a.u.)               : -0.29426939624028
-	OCEPA(0) Total Energy (a.u.)       : -77.11418770383528
+	SCF Energy (a.u.)                  : -76.82291132120073
+	REF Energy (a.u.)                  : -76.81991830766192
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620192084360
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13339654466661
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127638329953
+	Eocepa - Eref (a.u.)               : -0.29426939683835
+	OCEPA(0) Total Energy (a.u.)       : -77.11418770450027
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:45 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:41 2013
 Module time:
-	user time   =       3.89 seconds =       0.06 minutes
-	system time =       0.79 seconds =       0.01 minutes
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.65 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      39.71 seconds =       0.66 minutes
-	system time =       6.42 seconds =       0.11 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      12.29 seconds =       0.20 minutes
+	system time =       4.88 seconds =       0.08 minutes
+	total time  =         17 seconds =       0.28 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 10 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:45 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:41 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3921,24 +3951,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60456628135976
+  Guess energy:   -49.90134029173070
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516544969744   -7.76352e+01   1.11312e-01 
-   @RHF iter   1:   -76.79806313572684    8.37102e-01   8.29050e-03 
-   @RHF iter   2:   -76.82142631843627   -2.33632e-02   1.79832e-03 DIIS
-   @RHF iter   3:   -76.82283304488544   -1.40673e-03   4.60602e-04 DIIS
-   @RHF iter   4:   -76.82291256384207   -7.95190e-05   9.26768e-05 DIIS
-   @RHF iter   5:   -76.82291635349208   -3.78965e-06   1.64517e-05 DIIS
-   @RHF iter   6:   -76.82291650323185   -1.49740e-07   2.90493e-06 DIIS
-   @RHF iter   7:   -76.82291650795932   -4.72747e-09   2.07807e-07 DIIS
-   @RHF iter   8:   -76.82291650797558   -1.62572e-11   1.11461e-08 DIIS
-   @RHF iter   9:   -76.82291650797569   -1.13687e-13   1.28154e-09 DIIS
-   @RHF iter  10:   -76.82291650797569    0.00000e+00   1.72549e-10 DIIS
-   @RHF iter  11:   -76.82291650797569    0.00000e+00   2.33539e-11 DIIS
+   @RHF iter   0:   -76.53763442418762   -7.65376e+01   9.28564e-02 
+   @RHF iter   1:   -76.78171122363452   -2.44077e-01   1.04583e-02 
+   @RHF iter   2:   -76.81925182671708   -3.75406e-02   2.96332e-03 DIIS
+   @RHF iter   3:   -76.82269352096054   -3.44169e-03   7.71300e-04 DIIS
+   @RHF iter   4:   -76.82291111257089   -2.17592e-04   1.02854e-04 DIIS
+   @RHF iter   5:   -76.82291629337112   -5.18080e-06   1.94018e-05 DIIS
+   @RHF iter   6:   -76.82291650625385   -2.12883e-07   1.93523e-06 DIIS
+   @RHF iter   7:   -76.82291650796708   -1.71323e-09   1.62070e-07 DIIS
+   @RHF iter   8:   -76.82291650797572   -8.64020e-12   8.78042e-09 DIIS
+   @RHF iter   9:   -76.82291650797583   -1.13687e-13   1.31377e-09 DIIS
+   @RHF iter  10:   -76.82291650797583    0.00000e+00   1.71638e-10 DIIS
+   @RHF iter  11:   -76.82291650797583    0.00000e+00   3.51275e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -3971,16 +4001,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291650797569
+  @RHF Final Energy:   -76.82291650797583
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128038427935493
-    One-Electron Energy =                -150.7534922829561310
-    Two-Electron Energy =                  49.6177719321869120
+    One-Electron Energy =                -150.7534922831850679
+    Two-Electron Energy =                  49.6177719324156925
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229165079756626
+    Total Energy =                        -76.8229165079758189
 
 
 
@@ -4004,18 +4034,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:46 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:42 2013
 Module time:
-	user time   =       1.22 seconds =       0.02 minutes
+	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      40.95 seconds =       0.68 minutes
-	system time =       6.43 seconds =       0.11 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =      12.56 seconds =       0.21 minutes
+	system time =       4.89 seconds =       0.08 minutes
+	total time  =         18 seconds =       0.30 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:46 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:42 2013
 
 
 
@@ -4047,7 +4077,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -4119,21 +4149,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280384279355
-	SCF Energy (a.u.)                  : -76.82291650797569
-	REF Energy (a.u.)                  : -76.82291650797566
-	Alpha-Alpha Contribution (a.u.)    : -0.03204444775111
-	Alpha-Beta Contribution (a.u.)     : -0.20034261871152
-	Beta-Beta Contribution (a.u.)      : -0.03204444775111
-	Scaled_SS Correlation Energy (a.u.): -0.02136296516741
-	Scaled_OS Correlation Energy (a.u.): -0.24041114245382
-	SCS-MP2 Total Energy (a.u.)        : -77.08469061559690
-	SOS-MP2 Total Energy (a.u.)        : -77.08336191230063
-	SCSN-MP2 Total Energy (a.u.)       : -76.93571296405958
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572823065814
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139950767752
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339617417179
-	MP2 Correlation Energy (a.u.)      : -0.26443151421375
-	MP2 Total Energy (a.u.)            : -77.08734802218940
+	SCF Energy (a.u.)                  : -76.82291650797583
+	REF Energy (a.u.)                  : -76.82291650797572
+	Alpha-Alpha Contribution (a.u.)    : -0.03204444775129
+	Alpha-Beta Contribution (a.u.)     : -0.20034261871472
+	Beta-Beta Contribution (a.u.)      : -0.03204444775129
+	Scaled_SS Correlation Energy (a.u.): -0.02136296516753
+	Scaled_OS Correlation Energy (a.u.): -0.24041114245766
+	SCS-MP2 Total Energy (a.u.)        : -77.08469061560091
+	SOS-MP2 Total Energy (a.u.)        : -77.08336191230485
+	SCSN-MP2 Total Energy (a.u.)       : -76.93571296406026
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572823065993
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139950768187
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339617417632
+	MP2 Correlation Energy (a.u.)      : -0.26443151421730
+	MP2 Total Energy (a.u.)            : -77.08734802219301
 	============================================================================== 
 
 	Number of independent-pairs:  68
@@ -4175,10 +4205,10 @@ Total time:
   28     -77.1141924944     -1.70e-07       7.78e-08         2.25e-06        2.24e-10 
   29     -77.1141926305     -1.36e-07       1.02e-07         2.96e-06        1.53e-10 
   30     -77.1141927224     -9.19e-08       9.39e-08         2.72e-06        1.12e-10 
-  31     -77.1141927987     -7.63e-08       1.37e-07         3.96e-06        7.24e-11 
-  32     -77.1141928519     -5.33e-08       1.62e-07         4.69e-06        4.95e-11 
-  33     -77.1141928415      1.04e-08       2.64e-08         7.71e-07        7.71e-11 
-  34     -77.1141928543     -1.28e-08       2.74e-09         7.55e-08        4.59e-11 
+  31     -77.1141927987     -7.63e-08       1.37e-07         3.97e-06        7.24e-11 
+  32     -77.1141928519     -5.32e-08       1.62e-07         4.69e-06        4.95e-11 
+  33     -77.1141928415      1.04e-08       2.64e-08         7.70e-07        7.71e-11 
+  34     -77.1141928542     -1.27e-08       2.90e-09         8.01e-08        4.59e-11 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -4195,8 +4225,12 @@ Total time:
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2912763757    -77.1141928837     -2.95e-08     2.90e-11 
-   2     -0.2912764403    -77.1141929482     -6.45e-08     2.03e-11 
-   3     -0.2912764405    -77.1141929485     -2.79e-10     2.49e-12 
+   2     -0.2912764403    -77.1141929482     -6.46e-08     2.03e-11 
+   3     -0.2912764405    -77.1141929485     -2.73e-10     2.50e-12 
+   4     -0.2912764411    -77.1141929491     -5.45e-10     6.15e-13 
+   5     -0.2912764404    -77.1141929484      7.07e-10     1.99e-13 
+   6     -0.2912764405    -77.1141929485     -1.50e-10     5.06e-14 
+   7     -0.2912764405    -77.1141929485      3.33e-11     1.51e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -4206,39 +4240,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280384279355
-	SCF Energy (a.u.)                  : -76.82291650797569
-	REF Energy (a.u.)                  : -76.81992347636339
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620718368844
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340179722215
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127644054722
-	Eocepa - Eref (a.u.)               : -0.29426947215953
-	OCEPA(0) Total Energy (a.u.)       : -77.11419294852291
+	SCF Energy (a.u.)                  : -76.82291650797583
+	REF Energy (a.u.)                  : -76.81992347567908
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620718384763
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340179772085
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127644049649
+	Eocepa - Eref (a.u.)               : -0.29426947279325
+	OCEPA(0) Total Energy (a.u.)       : -77.11419294847232
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:49 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:44 2013
 Module time:
-	user time   =       4.26 seconds =       0.07 minutes
-	system time =       0.92 seconds =       0.02 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       0.82 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      45.21 seconds =       0.75 minutes
-	system time =       7.35 seconds =       0.12 minutes
-	total time  =         33 seconds =       0.55 minutes
+	user time   =      14.27 seconds =       0.24 minutes
+	system time =       5.71 seconds =       0.10 minutes
+	total time  =         20 seconds =       0.33 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 11 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:49 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:44 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4334,24 +4368,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60456583611673
+  Guess energy:   -49.90134023674471
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516440820132   -7.76352e+01   1.11312e-01 
-   @RHF iter   1:   -76.79806311513281    8.37101e-01   8.29050e-03 
-   @RHF iter   2:   -76.82142631061117   -2.33632e-02   1.79832e-03 DIIS
-   @RHF iter   3:   -76.82283304426710   -1.40673e-03   4.60602e-04 DIIS
-   @RHF iter   4:   -76.82291256376777   -7.95195e-05   9.26772e-05 DIIS
-   @RHF iter   5:   -76.82291635348460   -3.78972e-06   1.64520e-05 DIIS
-   @RHF iter   6:   -76.82291650323151   -1.49747e-07   2.90501e-06 DIIS
-   @RHF iter   7:   -76.82291650795941   -4.72789e-09   2.07854e-07 DIIS
-   @RHF iter   8:   -76.82291650797572   -1.63141e-11   1.12038e-08 DIIS
-   @RHF iter   9:   -76.82291650797578   -5.68434e-14   1.33772e-09 DIIS
-   @RHF iter  10:   -76.82291650797578    0.00000e+00   2.06683e-10 DIIS
-   @RHF iter  11:   -76.82291650797575    2.84217e-14   4.47924e-11 DIIS
+   @RHF iter   0:   -76.53763429555875   -7.65376e+01   9.28564e-02 
+   @RHF iter   1:   -76.78171122630582   -2.44077e-01   1.04583e-02 
+   @RHF iter   2:   -76.81925182660544   -3.75406e-02   2.96332e-03 DIIS
+   @RHF iter   3:   -76.82269352107599   -3.44169e-03   7.71300e-04 DIIS
+   @RHF iter   4:   -76.82291111257931   -2.17592e-04   1.02854e-04 DIIS
+   @RHF iter   5:   -76.82291629337226   -5.18079e-06   1.94018e-05 DIIS
+   @RHF iter   6:   -76.82291650625390   -2.12882e-07   1.93521e-06 DIIS
+   @RHF iter   7:   -76.82291650796711   -1.71320e-09   1.62059e-07 DIIS
+   @RHF iter   8:   -76.82291650797575   -8.64020e-12   8.76414e-09 DIIS
+   @RHF iter   9:   -76.82291650797578   -2.84217e-14   1.30031e-09 DIIS
+   @RHF iter  10:   -76.82291650797578    0.00000e+00   1.63214e-10 DIIS
+   @RHF iter  11:   -76.82291650797580   -2.84217e-14   3.25343e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -4384,16 +4418,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291650797575
+  @RHF Final Energy:   -76.82291650797580
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128038427935493
-    One-Electron Energy =                -150.7534922834577173
-    Two-Electron Energy =                  49.6177719326884201
+    One-Electron Energy =                -150.7534922831560493
+    Two-Electron Energy =                  49.6177719323866810
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229165079757479
+    Total Energy =                        -76.8229165079758047
 
 
 
@@ -4417,18 +4451,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:50 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:44 2013
 Module time:
-	user time   =       1.22 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      46.45 seconds =       0.77 minutes
-	system time =       7.36 seconds =       0.12 minutes
-	total time  =         34 seconds =       0.57 minutes
+	user time   =      14.67 seconds =       0.24 minutes
+	system time =       5.72 seconds =       0.10 minutes
+	total time  =         20 seconds =       0.33 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:50 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:44 2013
 
 
 
@@ -4460,7 +4494,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -4532,21 +4566,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280384279355
-	SCF Energy (a.u.)                  : -76.82291650797575
+	SCF Energy (a.u.)                  : -76.82291650797580
 	REF Energy (a.u.)                  : -76.82291650797575
-	Alpha-Alpha Contribution (a.u.)    : -0.03204444775129
-	Alpha-Beta Contribution (a.u.)     : -0.20034261871160
-	Beta-Beta Contribution (a.u.)      : -0.03204444775129
-	Scaled_SS Correlation Energy (a.u.): -0.02136296516753
-	Scaled_OS Correlation Energy (a.u.): -0.24041114245392
-	SCS-MP2 Total Energy (a.u.)        : -77.08469061559720
-	SOS-MP2 Total Energy (a.u.)        : -77.08336191230083
-	SCSN-MP2 Total Energy (a.u.)       : -76.93571296406029
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572823065871
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139950767790
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339617417199
-	MP2 Correlation Energy (a.u.)      : -0.26443151421418
-	MP2 Total Energy (a.u.)            : -77.08734802218993
+	Alpha-Alpha Contribution (a.u.)    : -0.03204444775123
+	Alpha-Beta Contribution (a.u.)     : -0.20034261871446
+	Beta-Beta Contribution (a.u.)      : -0.03204444775123
+	Scaled_SS Correlation Energy (a.u.): -0.02136296516749
+	Scaled_OS Correlation Energy (a.u.): -0.24041114245735
+	SCS-MP2 Total Energy (a.u.)        : -77.08469061560059
+	SOS-MP2 Total Energy (a.u.)        : -77.08336191230454
+	SCSN-MP2 Total Energy (a.u.)       : -76.93571296406006
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572823065970
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139950768147
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339617417598
+	MP2 Correlation Energy (a.u.)      : -0.26443151421691
+	MP2 Total Energy (a.u.)            : -77.08734802219266
 	============================================================================== 
 
 	Number of independent-pairs:  68
@@ -4589,9 +4623,9 @@ Total time:
   29     -77.1141926305     -1.36e-07       1.02e-07         2.96e-06        1.53e-10 
   30     -77.1141927224     -9.19e-08       9.39e-08         2.72e-06        1.12e-10 
   31     -77.1141927987     -7.63e-08       1.37e-07         3.96e-06        7.24e-11 
-  32     -77.1141928519     -5.32e-08       1.62e-07         4.68e-06        4.95e-11 
-  33     -77.1141928415      1.04e-08       2.64e-08         7.70e-07        7.71e-11 
-  34     -77.1141928542     -1.27e-08       2.89e-09         7.98e-08        4.59e-11 
+  32     -77.1141928521     -5.34e-08       1.63e-07         4.70e-06        4.95e-11 
+  33     -77.1141928415      1.06e-08       2.65e-08         7.73e-07        7.72e-11 
+  34     -77.1141928544     -1.29e-08       1.98e-09         5.38e-08        4.57e-11 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -4607,9 +4641,13 @@ Total time:
 
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
-   1     -0.2912763757    -77.1141928837     -2.94e-08     2.90e-11 
-   2     -0.2912764403    -77.1141929482     -6.46e-08     2.03e-11 
-   3     -0.2912764405    -77.1141929485     -2.69e-10     2.50e-12 
+   1     -0.2912763759    -77.1141928839     -2.95e-08     2.89e-11 
+   2     -0.2912764403    -77.1141929482     -6.44e-08     2.02e-11 
+   3     -0.2912764406    -77.1141929486     -3.20e-10     2.48e-12 
+   4     -0.2912764411    -77.1141929490     -4.86e-10     6.07e-13 
+   5     -0.2912764404    -77.1141929484      6.79e-10     1.93e-13 
+   6     -0.2912764405    -77.1141929485     -1.44e-10     4.95e-14 
+   7     -0.2912764405    -77.1141929485      3.31e-11     1.47e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -4619,39 +4657,39 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31280384279355
-	SCF Energy (a.u.)                  : -76.82291650797575
-	REF Energy (a.u.)                  : -76.81992347572273
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620718384815
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340179736151
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127644054047
-	Eocepa - Eref (a.u.)               : -0.29426947279349
-	OCEPA(0) Total Energy (a.u.)       : -77.11419294851622
+	SCF Energy (a.u.)                  : -76.82291650797580
+	REF Energy (a.u.)                  : -76.81992347958001
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620718282099
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340179679575
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127644049670
+	Eocepa - Eref (a.u.)               : -0.29426946889249
+	OCEPA(0) Total Energy (a.u.)       : -77.11419294847251
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:53 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:46 2013
 Module time:
-	user time   =       4.20 seconds =       0.07 minutes
-	system time =       0.95 seconds =       0.02 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.28 seconds =       0.02 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      50.65 seconds =       0.84 minutes
-	system time =       8.31 seconds =       0.14 minutes
-	total time  =         37 seconds =       0.62 minutes
+	user time   =      15.95 seconds =       0.27 minutes
+	system time =       6.39 seconds =       0.11 minutes
+	total time  =         22 seconds =       0.37 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 12 of 12   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:53 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:46 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        4 Threads,    250 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4751,24 +4789,24 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Guess energy:   -50.60456448462794
+  Guess energy:   -49.90133783153090
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:   -77.63516787505480   -7.76352e+01   1.43487e-01 
-   @RHF iter   1:   -76.79806356373618    8.37104e-01   1.06869e-02 
-   @RHF iter   2:   -76.82142672846480   -2.33632e-02   2.31812e-03 DIIS
-   @RHF iter   3:   -76.82283345086881   -1.40672e-03   5.93736e-04 DIIS
-   @RHF iter   4:   -76.82291296909059   -7.95182e-05   1.19465e-04 DIIS
-   @RHF iter   5:   -76.82291675869601   -3.78961e-06   2.12070e-05 DIIS
-   @RHF iter   6:   -76.82291690843481   -1.49739e-07   3.74459e-06 DIIS
-   @RHF iter   7:   -76.82291691316226   -4.72745e-09   2.67867e-07 DIIS
-   @RHF iter   8:   -76.82291691317863   -1.63709e-11   1.43600e-08 DIIS
-   @RHF iter   9:   -76.82291691317867   -4.26326e-14   1.64606e-09 DIIS
-   @RHF iter  10:   -76.82291691317863    4.26326e-14   2.18240e-10 DIIS
-   @RHF iter  11:   -76.82291691317867   -4.26326e-14   2.72890e-11 DIIS
+   @RHF iter   0:   -76.53763519416445   -7.65376e+01   1.19697e-01 
+   @RHF iter   1:   -76.78171164229664   -2.44076e-01   1.34813e-02 
+   @RHF iter   2:   -76.81925223696710   -3.75406e-02   3.81987e-03 DIIS
+   @RHF iter   3:   -76.82269392769958   -3.44169e-03   9.94243e-04 DIIS
+   @RHF iter   4:   -76.82291151785522   -2.17590e-04   1.32584e-04 DIIS
+   @RHF iter   5:   -76.82291669858216   -5.18073e-06   2.50096e-05 DIIS
+   @RHF iter   6:   -76.82291691145701   -2.12875e-07   2.49447e-06 DIIS
+   @RHF iter   7:   -76.82291691317005   -1.71303e-09   2.08830e-07 DIIS
+   @RHF iter   8:   -76.82291691317864   -8.59757e-12   1.11992e-08 DIIS
+   @RHF iter   9:   -76.82291691317872   -7.10543e-14   1.59239e-09 DIIS
+   @RHF iter  10:   -76.82291691317867    4.26326e-14   1.49586e-10 DIIS
+   @RHF iter  11:   -76.82291691317870   -2.84217e-14   1.35184e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -4787,7 +4825,7 @@ Total time:
 	   4Ag     0.221037     4B1u    0.483113     5Ag     0.535855  
 	   2B3u    0.665579     2B2u    0.665579     2B2g    0.813511  
 	   2B3g    0.813511     5B1u    0.855410     6Ag     0.952851  
-	   7Ag     1.093845     3B2u    1.218619     3B3u    1.218619  
+	   7Ag     1.093845     3B3u    1.218619     3B2u    1.218619  
 	   8Ag     1.255688     1B1g    1.255688     6B1u    1.331843  
 	   7B1u    1.430846     3B2g    1.624139     3B3g    1.624139  
 	   8B1u    1.671011     1Au     1.671011     4B3u    2.046806  
@@ -4801,16 +4839,16 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82291691317867
+  @RHF Final Energy:   -76.82291691317870
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             24.3128143460549531
-    One-Electron Energy =                -150.7535111826626348
-    Two-Electron Energy =                  49.6177799234290262
+    One-Electron Energy =                -150.7535111826178706
+    Two-Electron Energy =                  49.6177799233842052
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                        -76.8229169131786591
+    Total Energy =                        -76.8229169131787160
 
 
 
@@ -4834,18 +4872,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:54 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:47 2013
 Module time:
-	user time   =       1.23 seconds =       0.02 minutes
+	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      51.91 seconds =       0.87 minutes
-	system time =       8.32 seconds =       0.14 minutes
-	total time  =         38 seconds =       0.63 minutes
+	user time   =      16.22 seconds =       0.27 minutes
+	system time =       6.40 seconds =       0.11 minutes
+	total time  =         23 seconds =       0.38 minutes
 
-*** tstart() called on bozkaya
-*** at Tue Apr  2 11:43:54 2013
+*** tstart() called on ds18
+*** at Tue Apr  2 12:47:47 2013
 
 
 
@@ -4877,7 +4915,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-10           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -4953,21 +4991,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31281434605495
-	SCF Energy (a.u.)                  : -76.82291691317867
-	REF Energy (a.u.)                  : -76.82291691317862
-	Alpha-Alpha Contribution (a.u.)    : -0.03204443639771
-	Alpha-Beta Contribution (a.u.)     : -0.20034252071483
-	Beta-Beta Contribution (a.u.)      : -0.03204443639771
-	Scaled_SS Correlation Energy (a.u.): -0.02136295759847
-	Scaled_OS Correlation Energy (a.u.): -0.24041102485780
-	SCS-MP2 Total Energy (a.u.)        : -77.08469089563489
-	SOS-MP2 Total Energy (a.u.)        : -77.08336219010789
-	SCSN-MP2 Total Energy (a.u.)       : -76.93571332929857
-	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572856737066
-	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139977609130
-	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339644217937
-	MP2 Correlation Energy (a.u.)      : -0.26443139351025
-	MP2 Total Energy (a.u.)            : -77.08734830668887
+	SCF Energy (a.u.)                  : -76.82291691317870
+	REF Energy (a.u.)                  : -76.82291691317870
+	Alpha-Alpha Contribution (a.u.)    : -0.03204443639763
+	Alpha-Beta Contribution (a.u.)     : -0.20034252071660
+	Beta-Beta Contribution (a.u.)      : -0.03204443639763
+	Scaled_SS Correlation Energy (a.u.): -0.02136295759842
+	Scaled_OS Correlation Energy (a.u.): -0.24041102485992
+	SCS-MP2 Total Energy (a.u.)        : -77.08469089563705
+	SOS-MP2 Total Energy (a.u.)        : -77.08336219011028
+	SCSN-MP2 Total Energy (a.u.)       : -76.93571332929834
+	SCS-MI-MP2 Total Energy (a.u.)     : -76.98572856737123
+	SCS-MP2-VDW Total Energy (a.u.)    : -77.11139977609358
+	SOS-PI-MP2 Total Energy (a.u.)     : -77.10339644218195
+	MP2 Correlation Energy (a.u.)      : -0.26443139351186
+	MP2 Total Energy (a.u.)            : -77.08734830669056
 	============================================================================== 
 
 	Number of independent-pairs:  43
@@ -5025,7 +5063,9 @@ Total time:
   ----   -------------    ---------------    ----------   ----------    
    1     -0.2912760763    -77.1141929895     -8.41e-08     1.86e-10 
    2     -0.2912762830    -77.1141931962     -2.07e-07     1.32e-10 
-   3     -0.2912762821    -77.1141931952      9.87e-10     6.72e-13 
+   3     -0.2912762823    -77.1141931955      7.00e-10     6.72e-13 
+   4     -0.2912762822    -77.1141931954      1.64e-10     2.60e-13 
+   5     -0.2912762821    -77.1141931953      8.99e-11     5.06e-14 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -5035,25 +5075,25 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 24.31281434605495
-	SCF Energy (a.u.)                  : -76.82291691317867
-	REF Energy (a.u.)                  : -76.81992393665882
-	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620737126599
-	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340196618375
-	OCEPA(0) Correlation Energy (a.u.) : -0.29127628206139
-	Eocepa - Eref (a.u.)               : -0.29426925858124
-	OCEPA(0) Total Energy (a.u.)       : -77.11419319524006
+	SCF Energy (a.u.)                  : -76.82291691317870
+	REF Energy (a.u.)                  : -76.81992393665890
+	SCS-OCEPA(0) Total Energy (a.u.)   : -77.18620737130570
+	SOS-OCEPA(0) Total Energy (a.u.)   : -77.13340196620751
+	OCEPA(0) Correlation Energy (a.u.) : -0.29127628209424
+	Eocepa - Eref (a.u.)               : -0.29426925861405
+	OCEPA(0) Total Energy (a.u.)       : -77.11419319527295
 	============================================================================== 
 
 
-*** tstop() called on bozkaya at Tue Apr  2 11:43:56 2013
+*** tstop() called on ds18 at Tue Apr  2 12:47:48 2013
 Module time:
-	user time   =       2.81 seconds =       0.05 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      54.72 seconds =       0.91 minutes
-	system time =       8.96 seconds =       0.15 minutes
-	total time  =         40 seconds =       0.67 minutes
+	user time   =      16.84 seconds =       0.28 minutes
+	system time =       6.75 seconds =       0.11 minutes
+	total time  =         24 seconds =       0.40 minutes
 
 -------------------------------------------------------------
 
@@ -5061,39 +5101,39 @@ Total time:
   symmetry-adapted, cartesian coordinates (fd_freq_0).
 	12 energies passed in, including the reference energy.
 	Using 3-point formula.
-	Energy without displacement:  -77.1141931952
+	Energy without displacement:  -77.1141931953
 	Check energies below for precision!
-	    1 :       -77.1141913704
-	    2 :       -77.1141898967
-	    3 :       -77.1141880094
-	    4 :       -77.1141882304
-	    5 :       -77.1141879492
-	    6 :       -77.1141892228
-	    7 :       -77.1141930701
-	    8 :       -77.1141930701
-	    9 :       -77.1141877038
+	    1 :       -77.1141913700
+	    2 :       -77.1141898977
+	    3 :       -77.1141880092
+	    4 :       -77.1141882309
+	    5 :       -77.1141879505
+	    6 :       -77.1141892233
+	    7 :       -77.1141930703
+	    8 :       -77.1141930703
+	    9 :       -77.1141877045
 	   10 :       -77.1141929485
 	   11 :       -77.1141929485
-	   12 :       -77.1141931952
+	   12 :       -77.1141931953
 
 
 	  Irrep      Harmonic Frequency   
 	                  (cm-1)          
 	-----------------------------------------------
-	    B3g          514.3963  
-	    B2g          514.4008  
-	    B2u          722.1858  
-	    B3u          722.1956  
-	     Ag         1978.0623  
-	    B1u         3407.1480  
-	     Ag         3497.3897  
+	    B3g          513.9560  
+	    B2g          513.9562  
+	    B3u          722.3077  
+	    B2u          722.3080  
+	     Ag         1977.8571  
+	    B1u         3406.9519  
+	     Ag         3497.3870  
 	-----------------------------------------------
 
 	Normal Modes (mass-weighted).
 	Molecular mass is   26.01565 amu.
 	Frequencies in cm^-1; force constants in au.
 
-   Frequency:        514.40
+   Frequency:        513.96
    Force constant:   0.0100
 	     X       Y       Z           mass	
   C 	   0.000   0.127   0.000      12.000000
@@ -5101,7 +5141,7 @@ Total time:
   H 	   0.000  -0.550   0.000       1.007825
   H 	   0.000   0.550   0.000       1.007825
 
-   Frequency:        514.40
+   Frequency:        513.96
    Force constant:   0.0100
 	     X       Y       Z           mass	
   C 	   0.127   0.000   0.000      12.000000
@@ -5109,15 +5149,7 @@ Total time:
   H 	  -0.550   0.000   0.000       1.007825
   H 	   0.550   0.000   0.000       1.007825
 
-   Frequency:        722.19
-   Force constant:   0.0197
-	     X       Y       Z           mass	
-  C 	   0.000   0.057   0.000      12.000000
-  C 	   0.000   0.057   0.000      12.000000
-  H 	   0.000  -0.677   0.000       1.007825
-  H 	   0.000  -0.677   0.000       1.007825
-
-   Frequency:        722.20
+   Frequency:        722.31
    Force constant:   0.0197
 	     X       Y       Z           mass	
   C 	   0.057   0.000   0.000      12.000000
@@ -5125,15 +5157,23 @@ Total time:
   H 	  -0.677   0.000   0.000       1.007825
   H 	  -0.677   0.000   0.000       1.007825
 
-   Frequency:       1978.06
-   Force constant:   0.1481
+   Frequency:        722.31
+   Force constant:   0.0197
+	     X       Y       Z           mass	
+  C 	   0.000   0.057   0.000      12.000000
+  C 	   0.000   0.057   0.000      12.000000
+  H 	   0.000  -0.677   0.000       1.007825
+  H 	   0.000  -0.677   0.000       1.007825
+
+   Frequency:       1977.86
+   Force constant:   0.1480
 	     X       Y       Z           mass	
   C 	   0.000   0.000  -0.185      12.000000
   C 	   0.000   0.000   0.185      12.000000
   H 	   0.000   0.000  -0.299       1.007825
   H 	   0.000   0.000   0.299       1.007825
 
-   Frequency:       3407.15
+   Frequency:       3406.95
    Force constant:   0.4393
 	     X       Y       Z           mass	
   C 	   0.000   0.000   0.057      12.000000
@@ -5174,29 +5214,29 @@ Total time:
          12.000000 12.000000  1.007825  1.007825
 
     No.    Vib. Freq. (cm^-1)      Vib. Temp. (K)
-      1               514.396             740.101
-      2               514.401             740.107
-      3               722.186            1039.063
-      4               722.196            1039.077
-      5              1978.062            2845.987
-      6              3407.148            4902.120
-      7              3497.390            5031.957
+      1               513.956             739.467
+      2               513.956             739.467
+      3               722.308            1039.238
+      4               722.308            1039.239
+      5              1977.857            2845.692
+      6              3406.952            4901.838
+      7              3497.387            5031.953
     Warning: used thermodynamic relations are not appropriate for low frequency modes.    Warning: used thermodynamic relations are not appropriate for low frequency modes.
     Component        Thermal Energy             Cv              S
                            kcal/mol    cal/(mol K)    cal/(mol K) 
     Electronic                0.000          0.000          0.000
     Translational             0.889          2.981         35.704
     Rotational                0.592          1.987         10.953
-    Vibrational              16.633          4.024          1.809
-    Total                    18.114          8.992         48.467
+    Vibrational              16.632          4.025          1.811
+    Total                    18.113          8.993         48.469
 
                                cm^(-1)              au        kcal/mol
-    Zero-point energy        5677.8892      0.02587037         16.2339
+    Zero-point energy        5677.3619      0.02586796         16.2324
 
     Energies in Hartree/particle:   Correction            Total
-    Energy (0 K)                    0.02587037     -77.08832283
-    Internal energy                 0.02886692     -77.08532627
-    Enthalpy                        0.02981111     -77.08438209
-    Gibbs Free Energy               0.00678292     -77.10741028
+    Energy (0 K)                    0.02586796     -77.08832523
+    Internal energy                 0.02886506     -77.08532813
+    Enthalpy                        0.02980925     -77.08438395
+    Gibbs Free Energy               0.00678018     -77.10741302
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -14,17 +14,18 @@ set {
   basis cc-pvdz
   guess sad
   mo_maxiter 200
+  e_convergence 10
   rms_mograd_convergence 8
 }
 # Test against Analytic second derivatives from PSI3. #TEST
 grad_freqs = PsiMod.Vector(7)  #TEST
-grad_freqs.set(0, 0, 513.9751) #TEST
-grad_freqs.set(0, 1, 513.9751) #TEST
-grad_freqs.set(0, 2, 722.3250) #TEST
-grad_freqs.set(0, 3, 722.3250) #TEST
-grad_freqs.set(0, 4, 1977.8356) #TEST
-grad_freqs.set(0, 5, 3406.9704) #TEST
-grad_freqs.set(0, 6, 3497.4333) #TEST
+grad_freqs.set(0, 0, 513.956) #TEST
+grad_freqs.set(0, 1, 513.956) #TEST
+grad_freqs.set(0, 2, 722.308) #TEST
+grad_freqs.set(0, 3, 722.308) #TEST
+grad_freqs.set(0, 4, 1977.857) #TEST
+grad_freqs.set(0, 5, 3406.952) #TEST
+grad_freqs.set(0, 6, 3497.387) #TEST
 
 
 frequencies('ocepa',dertype=0)
