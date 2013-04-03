@@ -19,6 +19,11 @@ The syntax is:
 
    >>> psi4 input-name output-name
 
+If you give an input name but no output name, then the output name will
+be the same as the input name (subtracting any ".in" or ".dat" suffix),
+plus a ".out" suffix.
+
+
 Running a Basic Hartree--Fock Calculation
 =========================================
 
@@ -100,7 +105,7 @@ vibrational frequency computations.  These can be specified by replacing
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
-:srcsample:`tu3-h2o-opt`.
+:srcsample:`tu3-h2o-opt`).
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu3-h2o-opt/input.dat
 
@@ -130,7 +135,7 @@ and the bond angle is about 104.575 degrees.  It's good to give this many
 digits (or more) to make sure there's not significant roundoff error in the
 geometry when running a frequency computation.  So, our frequency
 computation input (which can be found as test case
-:srcsample:`tu4-h2o-freq` is:
+:srcsample:`tu4-h2o-freq`) is:
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu4-h2o-freq/input.dat
 
@@ -255,7 +260,7 @@ usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
 without diffuse :math:`d` functions on heavy atoms) [Papajak:2011:10]_. So,
 we'll use that as our standard basis set.  The SAPT code is designed to
 use density fitting techniques, because they introduce minimal errors
-whil providing much faster computations [Hohenstein:2010:184111]_ 
+while providing much faster computations [Hohenstein:2010:184111]_ 
 [Hohenstein:2010:014101]_. Since we're using density fitting for the SAPT,
 we might as well also use it for the Hartree--Fock computations that are
 performed as part of the SAPT.  We can specify that with 

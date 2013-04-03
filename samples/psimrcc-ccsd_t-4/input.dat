@@ -15,9 +15,9 @@ molecule ch2 {
 
 set {
   basis DZ
-  e_convergence 15
-  d_convergence 13
-  r_convergence 10
+  e_convergence 10
+  d_convergence  8
+  r_convergence  8
 }
 
 set mcscf {

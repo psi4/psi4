@@ -13,6 +13,7 @@ set global {
   basis cc-pcvdz
   reference uks
   dft_functional b3lyp 
+  e_convergence 8
 }
 energy('ocepa')
 
