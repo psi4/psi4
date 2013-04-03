@@ -118,9 +118,6 @@ protected:
     /// The soon to be ubiquitous JK object
     boost::shared_ptr<JK> jk_;
 
-    /// The SO integral generator.  Only ever constructed if needed
-    boost::shared_ptr<TwoBodySOInt> eri_;
-
     /// Are we to do MOM?
     bool MOM_enabled_;
     /// Are we to do excited-state MOM?
@@ -306,9 +303,6 @@ protected:
 
     /** Saves information to the checkpoint file */
     virtual void save_information() {}
-
-    /** Handles forming the PK matrix */
-    virtual void form_PK() {}
 
     /** Compute the orbital gradient */
     virtual void compute_orbital_gradient(bool save_diis) {}
