@@ -436,8 +436,8 @@ MassPoint const *LebedevGridMgr::mk14ptGrid()
 MassPoint const *LebedevGridMgr::mk18ptGrid_nonstandard()
 {
     // This non-Lebedev grid is used in SG-0.
-    // Chien and Gill, J. Comput. Chem. 27 (2006) 730-739)
-    // Q-Chem cites Abramowitz and Stegun, p. 894 for the formula.
+    // SG-0 is defined in Chien and Gill, J. Comput. Chem. 27 (2006) 730-739.
+    // The 18-point grid can be found on page 894 of Abramowitz and Stegun.
     static MassPoint grid[18];
     MassPoint *it = &grid[0];
     it += addPoints1(it, 1/30.);
