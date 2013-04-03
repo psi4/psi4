@@ -418,6 +418,9 @@ mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using M
 mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
+ocepa-freq1:  OCEPA cc-pVDZ freqs for C2H2
+
+
 ocepa-grad1:  OCEPA cc-pVDZ gradient for the H2O molecule.
 
 
