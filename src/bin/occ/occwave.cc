@@ -321,7 +321,7 @@ double OCCWave::compute_energy()
 	}
 
 	else if (nfrzv != 0 && orb_opt_ == "FALSE") {
-          throw FeatureNotImplemented("OCC module standard methods", "Frozen core/virtual", __FILE__, __LINE__);
+          throw FeatureNotImplemented("OCC module standard methods", "Frozen virtual", __FILE__, __LINE__);
 	}
 
 	else if (nfrzc != 0 && dertype != "NONE") {
