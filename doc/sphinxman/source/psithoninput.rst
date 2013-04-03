@@ -53,8 +53,8 @@ The ``psi_`` prefix is to prevent clashes with user-defined variables in
 .. index:: molecule; specification
 .. _`sec:moleculeSpecification`:
 
-Molecule Specification
-======================
+Molecule and Geometry Specification
+===================================
 
 |PSIfour| has a very flexible input parser that allows the user to provide
 geometries as Cartesian coordinates, Z-matrix variables, or a combination of
