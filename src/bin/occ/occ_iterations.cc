@@ -279,6 +279,10 @@ fflush(outfile);
 
     if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
 
+    if (rms_wog >= DIVERGE) {
+        throw PSIEXCEPTION("OCC iterations are diverging");
+    }
+
 }
 while(rms_wog >= tol_grad || biggest_mograd >= mograd_max); 
 //while(fabs(DE) >= tol_Eod || rms_wog >= tol_grad || rms_kappa >= tol_grad || biggest_mograd >= mograd_max || 
