@@ -186,7 +186,27 @@ int psi_start(int argc, char *argv[])
 
     /* if some arguments still not defined - assign default values */
     if (ifname.empty()) ifname = "input.dat";
-    if (ofname.empty()) ofname = "output.dat";
+
+    // if infile name is input.dat, make outfile name output.dat.  Otherwise,
+    // strip off any .in or .dat at the end of the input file, and use the
+    // base_name for the output file, appending .out. ---CDS 4/13
+    if (ofname.empty()) {
+        if (ifname == "input.dat") ofname = "output.dat";
+        else {
+          std::string base_name;
+          if (ifname.size() > 4 && (ifname.rfind(".dat")==ifname.size()-4)){
+              base_name = ifname.substr(0, ifname.rfind(".dat"));
+          }
+          else if (ifname.size()>3 && (ifname.rfind(".in")==ifname.size()-3)){ 
+              base_name = ifname.substr(0, ifname.rfind(".in"));
+          }
+          else {
+              base_name = ifname;
+          }
+         ofname = base_name + ".out";
+        }
+    }
+
     /* default prefix is not assigned here yet because need to check input file first */
 
     /* open input and output files */
