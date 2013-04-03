@@ -37,7 +37,7 @@ mp2_subdirs = mp2-1 omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 scf-guess-read sad1 castup1 mom props1 props2 props3 dft1 dft3 dfscf-bz2 pubchem1 dft1-alt dft-b2plyp dft-pbe0-2 dft-dldf castup2 castup3 dft-grad dft-psivar
 
-python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3 psithon1
+python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3 psithon1 pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-checkrun-rhf pywrap-checkrun-convcrit
 
 dftd3_subdirs = dftd3-energy dftd3-grad
 
