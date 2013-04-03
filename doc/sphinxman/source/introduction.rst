@@ -34,7 +34,6 @@ such as geometry optimization and vibrational frequency analysis.
 The :ref:`Appendices <sec:appendices>` include a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
 a listing of the sample input files available under :source:`samples`.
-
 The user is urged to examine this directory of sample inputs, as
 most common types of computations are represented there.
 For the latest |PSIfour| documentation, check 
