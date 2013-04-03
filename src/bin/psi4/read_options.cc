@@ -1098,7 +1098,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- DFT basis cutoff. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
     /*- The DFT grid specification, such as SG1.!expert -*/
-    options.add_str("DFT_GRID_NAME","","SG1");
+    options.add_str("DFT_GRID_NAME","","SG0 SG1");
     /*- Pruning Scheme. !expert -*/
     options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
     /*- Spread alpha for logarithmic pruning. !expert -*/

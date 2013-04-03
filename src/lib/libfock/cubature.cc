@@ -2381,7 +2381,7 @@ void RadialGridMgr::makeRadialGrid(int n, int whichScheme, double r[], double w[
         w[i] *= Rparam3;
     }
 }
-#if 0
+
 // StandardGridMgr is used to build the SG-0 and SG-1 grids.
 class StandardGridMgr
 {
@@ -2397,18 +2397,88 @@ private:
         double rparam; // Oftentimes the Bragg-Slater radius of the atom
     };
 
-    void makeCubatureGridFromPruneSpec(PruneSpec const& spec, const char *radscheme, MassPoint *grid_out);
-    void Initialize_SG0();
-    void Initialize_SG1();
+    static void makeCubatureGridFromPruneSpec(PruneSpec const& spec, int radscheme, MassPoint *grid_out);
+    static void Initialize_SG0();
+    static void Initialize_SG1();
 
-    const MassPoint *SG0_grids_[18];
-    int              SG0_sizes_[18];
+    static const MassPoint *SG0_grids_[18];
+    static int              SG0_sizes_[18];
 
-    const MassPoint *SG1_grids_[18];
-    int              SG1_sizes_[18];
+    static const MassPoint *SG1_grids_[18];
+    static int              SG1_sizes_[18];
+public:
+    static void Initialize();
+    static void ReleaseMemory();
+    static int WhichGrid(const char *name);
+    static int GetSG0size(int Z);
+    static int GetSG1size(int Z);
+    static const MassPoint *GetSG0grid(int Z);
+    static const MassPoint *GetSG1grid(int Z);
 };
 
-void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const& spec, const char *radscheme, MassPoint *grid_out)
+// The MagicInitializer calls various initialization routines at program startup
+static class MagicInitializer2 {
+public:
+    MagicInitializer2()
+    {
+        StandardGridMgr::Initialize();
+    }
+    ~MagicInitializer2()
+    {
+        StandardGridMgr::ReleaseMemory();
+    }
+} s_magic2;
+
+const MassPoint *StandardGridMgr::SG0_grids_[18];
+int              StandardGridMgr::SG0_sizes_[18];
+const MassPoint *StandardGridMgr::SG1_grids_[18];
+int              StandardGridMgr::SG1_sizes_[18];
+
+int StandardGridMgr::WhichGrid(const char *name)
+{
+    if (strcmp(name, "") == 0) return -1;
+    if (strcmp(name, "SG0") == 0) return 0;
+    if (strcmp(name, "SG1") == 0) return 1;
+    fprintf(outfile, "Unrecognized named grid %s!\n", name);
+    throw PSIEXCEPTION("Unrecognized named grid!");
+}
+
+int StandardGridMgr::GetSG0size(int Z)
+{
+    if (Z >= sizeof(SG0_sizes_)/sizeof(SG0_sizes_[0]) || SG0_sizes_[Z] == 0) {
+        fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
+        throw PSIEXCEPTION("There is no SG-0 grid defined for the requested atomic number!");
+    }
+    return SG0_sizes_[Z];
+}
+
+int StandardGridMgr::GetSG1size(int Z)
+{
+    if (Z >= sizeof(SG1_sizes_)/sizeof(SG1_sizes_[0]) || SG1_sizes_[Z] == 0) {
+        fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
+        throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
+    }
+    return SG1_sizes_[Z];
+}
+
+const MassPoint *StandardGridMgr::GetSG0grid(int Z)
+{
+    if (Z >= sizeof(SG0_grids_)/sizeof(SG0_grids_[0]) || SG0_grids_[Z] == 0) {
+        fprintf(outfile, "There is no SG-0 grid defined for atomic number %d!\n", Z);
+        throw PSIEXCEPTION("There is no SG-0 grid defined for the requested atomic number!");
+    }
+    return SG0_grids_[Z];
+}
+const MassPoint *StandardGridMgr::GetSG1grid(int Z)
+{
+    if (Z >= sizeof(SG1_grids_)/sizeof(SG1_grids_[0]) || SG1_grids_[Z] == 0) {
+        fprintf(outfile, "There is no SG-1 grid defined for atomic number %d!\n", Z);
+        throw PSIEXCEPTION("There is no SG-1 grid defined for the requested atomic number!");
+    }
+    return SG1_grids_[Z];
+}
+
+void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const& spec, int radscheme, MassPoint *grid_out)
 {
     double r[spec.nrad], wr[spec.nrad];
     RadialGridMgr::makeRadialGrid(spec.nrad, radscheme, r, wr, spec.rparam);
@@ -2435,6 +2505,18 @@ void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const& spec, const
     assert(spec.npts == k_grid);
 }
 
+void StandardGridMgr::Initialize()
+{
+    Initialize_SG0();
+    Initialize_SG1();
+}
+void StandardGridMgr::ReleaseMemory()
+{
+    for (int i = 0; i < sizeof(SG0_grids_)/sizeof(SG0_grids_[0]); i++)
+        free((void*)SG0_grids_[i]);
+    for (int i = 0; i < sizeof(SG1_grids_)/sizeof(SG1_grids_[0]); i++)
+        free((void*)SG1_grids_[i]);
+}
 
 void StandardGridMgr::Initialize_SG0()
 {
@@ -2459,10 +2541,7 @@ void StandardGridMgr::Initialize_SG0()
     static const PruneGroup S__grp[] = {{6, 4}, {18, 1}, {26, 8}, {38, 2}, {50, 1},  {74, 2},  {110, 1}, {170, 3}, {146, 1}, {110, 1}, {50, 1}, {6, 1}, {0,0}};
     static const PruneGroup Cl_grp[] = {{6, 4}, {18, 7}, {26, 2}, {38, 2}, {50, 1},  {74, 1},  {110, 2}, {170, 3}, {146, 1}, {110, 1}, {86, 1}, {6, 1}, {0,0}};
 
-    static const struct {
-        PruneSpec ps;
-        double    rad;
-    } SG0specs[18] = {
+    PruneSpec SG0specs[18] = {
         {NULL,    0,    0,    0},
         {H__grp, 23, 1406, 1.30},
         {NULL,    0,    0,    0},
@@ -2483,17 +2562,16 @@ void StandardGridMgr::Initialize_SG0()
         {Cl_grp, 26, 1480, 1.45}
     };
 
-    // There are going to be a lot of nested loops here.
-    // Iterators (numbers that are defined inside the `for' expression)
-    // shall be called i_name, where we replace `name' with what's being
-    // iterated over, and other numbers that have to be remembered across
-    // loops are called k_name.
     for (int Z = 0; Z < 18; Z++) {
-        if (SG0specs[Z].rad == 0)
-            continue;
-        SG0_grids_[Z].Z_ = Z;
-        SG0_grids_[Z].rad_ = SG0specs[Z].rad;
-        SG0_grids_[Z].grid_ = makeCubatureGrid(SG0specs[Z].ps, "MULTIEXP");
+        if (SG0specs[Z].rparam == 0) {
+            SG0_grids_[Z] = NULL;
+            SG0_sizes_[Z] = 0;
+        } else {
+            MassPoint *grid = (MassPoint*)malloc(SG0specs[Z].npts * sizeof(MassPoint));
+            makeCubatureGridFromPruneSpec(SG0specs[Z], RadialGridMgr::WhichScheme("MULTIEXP"), grid);
+            SG0_grids_[Z] = grid;
+            SG0_sizes_[Z] = SG0specs[Z].npts;
+        }
     }
 }
 
@@ -2512,42 +2590,47 @@ void StandardGridMgr::Initialize_SG1()
     // We aim for compatibility with QChem.
     //
     // The paper also doesn't provide any guidance on how to handle the elements after Argon.
+
+    // These radii are taken from Table 1 of Gill, Johnson, and Pople.
     static const double SG1radii[] = {
         0,
         1.0000,                                                     0.5882,
         3.0769, 2.0513,     1.5385, 1.2308, 1.0256, 0.8791, 0.7692, 0.6838,
         4.0909, 3.1579,     2.5714, 2.1687, 1.8750, 1.6514, 1.4754, 1.3333
     };
+
+    // These anglular point counts were selected for compatibility with Q-Chem.
     static const PruneGroup row1spec[] = {{6, 16}, {38, 5}, {86, 4}, {194, 9}, {86, 16}, {0,0}}; // H and He
     static const PruneGroup row2spec[] = {{6, 14}, {38, 7}, {86, 3}, {194, 9}, {86, 17}, {0,0}}; // Li to Ne
     static const PruneGroup row3spec[] = {{6, 12}, {38, 7}, {86, 5}, {194, 7}, {86, 19}, {0,0}}; // Na to Ar
     static const PruneGroup row4spec[] = {{38, 12}, {194, 38}, {0,0}}; // Everything after Argon
 
+    // rows[Z] tells you on which row of the periodic table you can find element Z.
     static const short rows[] = {
         0,
         1,                      1,
         2, 2,    2, 2, 2, 2, 2, 2,
         3, 3,    3, 3, 3, 3, 3, 3,
     };
+
     static const PruneSpec SG1specs[] = {
-        {row1spec,  50, 3752},
-        {row2spec,  50, 3816},
-        {row3spec,  50, 3760},
-        {row4spec,  50, 7828}
+        {row1spec,  50, 3752, 0},
+        {row2spec,  50, 3816, 0},
+        {row3spec,  50, 3760, 0},
+        {row4spec,  50, 7828, 0}
     };
 
-    // Let's make the grid once. This reuses a pointer...
-    CubatureGrid grids[4];
-    for (int i = 0; i < 4; i++)
-        grids[i] = makeCubatureGrid(SG1specs[i], "EM");
-
     for (int Z = 1; Z <= 18; Z++) {
-        SG1_grids_[Z].Z_ = Z;
-        SG1_grids_[Z].rad_ = SG1radii[Z];
-        SG1_grids_[Z].grid_ = grids[rows[Z]-1];
+        int whichRow = rows[Z]; // Which row of the periodic table are we looking at?
+        PruneSpec spec = SG1specs[whichRow - 1];
+        spec.rparam = SG1radii[Z];
+        // Make the grid
+        MassPoint *grid = (MassPoint*)malloc(spec.npts * sizeof(MassPoint));
+        makeCubatureGridFromPruneSpec(spec, RadialGridMgr::WhichScheme("EM"), grid);
+        SG1_grids_[Z] = grid;
+        SG1_sizes_[Z] = spec.npts;
     }
 }
-#endif
 
 class NuclearWeightMgr 
 {
@@ -3433,23 +3516,35 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const& opt)
     // Iterate over atoms
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->true_atomic_number(A);
-
-        double r[opt.nradpts];
-        double wr[opt.nradpts];
-        double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
-        RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r, wr, alpha);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
 
-        for (int i = 0; i < opt.nradpts; i++) {
-            int numAngPts = prune.GetPrunedNumAngPts(r[i]/alpha);
-            const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
-            for (int j = 0; j < numAngPts; j++) {
-                MassPoint mp = { r[i] * anggrid[j].x, r[i]*anggrid[j].y, r[i]*anggrid[j].z, wr[i]*anggrid[j].w };
-                mp = std_orientation.MoveIntoPosition(mp, A);
+        if (opt.namedGrid == -1) { // Not using a named grid
+            double r[opt.nradpts];
+            double wr[opt.nradpts];
+            double alpha = GetBSRadius(Z) * opt.bs_radius_alpha;
+            RadialGridMgr::makeRadialGrid(opt.nradpts, RadialGridMgr::MuraKnowlesHack(opt.radscheme, Z), r, wr, alpha);
+            for (int i = 0; i < opt.nradpts; i++) {
+                int numAngPts = prune.GetPrunedNumAngPts(r[i]/alpha);
+                const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
+                for (int j = 0; j < numAngPts; j++) {
+                    MassPoint mp = { r[i] * anggrid[j].x, r[i]*anggrid[j].y, r[i]*anggrid[j].z, wr[i]*anggrid[j].w };
+                    mp = std_orientation.MoveIntoPosition(mp, A);
+                    mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
+                    if (mp.w != 0) // Skip points with weight zero
+                        grid.push_back(mp);
+                    assert(!isnan(mp.w));
+                }
+            }
+        } else {
+            assert(opt.namedGrid == 0 || opt.namedGrid == 1);
+            int npts            = (opt.namedGrid == 0) ? StandardGridMgr::GetSG0size(Z) : StandardGridMgr::GetSG1size(Z);
+            const MassPoint *sg = (opt.namedGrid == 0) ? StandardGridMgr::GetSG0grid(Z) : StandardGridMgr::GetSG1grid(Z);
+
+            for (int i = 0; i < npts; i++) {
+                MassPoint mp = std_orientation.MoveIntoPosition(sg[i], A);
                 mp.w *= nuc.computeNuclearWeight(mp, A, stratmannCutoff);
                 if (mp.w != 0) // Skip points with weight zero
                     grid.push_back(mp);
-
                 assert(!isnan(mp.w));
             }
         }
@@ -3750,13 +3845,9 @@ void DFTGrid::buildGridFromOptions()
     opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("DFT_RADIAL_SCHEME").c_str());
     opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("DFT_PRUNING_SCHEME").c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("DFT_NUCLEAR_SCHEME").c_str());
+    opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("DFT_GRID_NAME").c_str());
     opt.nradpts = options_.get_int("DFT_RADIAL_POINTS");
     opt.nangpts = options_.get_int("DFT_SPHERICAL_POINTS");
-
-    if (options_.get_str("DFT_GRID_NAME") != "") {
-        throw FeatureNotImplemented("DFTGrid","Named Grids, e.g., SG1",__FILE__,__LINE__);
-        // TODO: Named grids
-    }
 
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) < -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.
@@ -3980,12 +4071,10 @@ void PseudospectralGrid::buildGridFromOptions()
     opt.radscheme = RadialGridMgr::WhichScheme(options_.get_str("PS_RADIAL_SCHEME").c_str());
     opt.prunescheme = RadialPruneMgr::WhichPruneScheme(options_.get_str("PS_PRUNING_SCHEME").c_str());
     opt.nucscheme = NuclearWeightMgr::WhichScheme(options_.get_str("PS_NUCLEAR_SCHEME").c_str());
+    opt.namedGrid = StandardGridMgr::WhichGrid(options_.get_str("PS_GRID_NAME").c_str());
     opt.nradpts = options_.get_int("PS_RADIAL_POINTS");
     opt.nangpts = options_.get_int("PS_SPHERICAL_POINTS");
-    if (options_.get_str("PS_GRID_NAME") != "") {
-        throw FeatureNotImplemented("PseudospectralGrid","Named Grids, e.g., SG1",__FILE__,__LINE__);
-        // TODO: Named grids
-    }
+
     if (LebedevGridMgr::findOrderByNPoints(opt.nangpts) < -1) {
         LebedevGridMgr::PrintHelp(); // Tell what the admissible values are.
         throw PSIEXCEPTION("Invalid number of spherical points (not a Lebedev number)");
