@@ -121,6 +121,13 @@ void get_params(Options &options)
   params.num_amps = options.get_int("NUM_AMPS_PRINT");
   params.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
 
+  // Tying orbital convergence to the desired e_conv,
+  //   particularly important for sane numerical frequencies by energy
+  if (options["BRUECKNER_ORBS_R_CONVERGENCE"].has_changed())
+      params.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
+  else
+      params.bconv = 100.0 * params.e_convergence;
+
   params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
   params.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
   params.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
