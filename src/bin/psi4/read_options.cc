@@ -2466,8 +2466,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. Default adjusts
+    depending on |occ__e_convergence|. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-6);
     /*- Convergence criterion for maximum orbital gradient -*/
     options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/

@@ -522,13 +522,13 @@ Convergence and Algorithm Defaults
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 8                    | 8                    |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 8                    | 8                    |                 |
+    |                    | frequency [#f7]_   | 8                    | 8                    |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
     | SCF of post-HF     | energy             | 8                    | 8                    | PK [#f3]_       |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 10                   | 10                   |                 |
+    |                    | frequency [#f7]_   | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | CC property [#f2]_ | 10                   | 10                   |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
@@ -544,7 +544,7 @@ Convergence and Algorithm Defaults
     +                    +--------------------+----------------------+-------------------------+
     |                    | optimization       | 8                    |                         |
     +                    +--------------------+----------------------+-------------------------+
-    |                    | frequency          | 8                    |                         |
+    |                    | frequency [#f7]_   | 8                    |                         |
     +                    +--------------------+----------------------+-------------------------+
     |                    | CC property [#f2]_ | 8                    |                         |
     +--------------------+--------------------+----------------------+-------------------------+
@@ -572,6 +572,12 @@ Convergence and Algorithm Defaults
    modules (see list beginning at |ccenergy__r_convergence|). It is defined
    according to the quantum chemical method and so its default value is set
    by each module individually.
+
+.. [#f7] For frequency computations by finite difference of energies,
+   convergence criteria are tightened further still to 10 for
+   |scf__e_convergence| and |scf__d_convergence| for SCF of HF or DFT, 11
+   for |scf__e_convergence| and |scf__d_convergence| for SCF of post-HF,
+   and 10 for E_CONVERGENCE for post-HF of post-HF.
 
 Recommendations
 ~~~~~~~~~~~~~~~
