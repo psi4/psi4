@@ -118,9 +118,6 @@ protected:
     /// The soon to be ubiquitous JK object
     boost::shared_ptr<JK> jk_;
 
-    /// The SO integral generator.  Only ever constructed if needed
-    boost::shared_ptr<TwoBodySOInt> eri_;
-
     /// Are we to do MOM?
     bool MOM_enabled_;
     /// Are we to do excited-state MOM?
@@ -307,9 +304,6 @@ protected:
     /** Saves information to the checkpoint file */
     virtual void save_information() {}
 
-    /** Handles forming the PK matrix */
-    virtual void form_PK() {}
-
     /** Compute the orbital gradient */
     virtual void compute_orbital_gradient(bool save_diis) {}
 
@@ -334,44 +328,6 @@ protected:
     /** Saves all wavefunction information to the checkpoint file*/
     void dump_to_checkpoint();
 
-    /** Computes the J and/or K matrices according to the scf_type keyword and the functor passed in*/
-    template <class JKFunctor> void process_tei(JKFunctor & functor);
-
-    inline int integral_type(int i, int j, int k, int l)
-    {
-        int type;
-
-        if (i == j && i == k && i == l)     // (ij|kl)  (11|11)
-            type = 1;
-        else if (i == j && k == l && i > k) // (ij|kl)  (22|11)
-            type = 2;
-        else if (i == j && i == k && i > l) // (ij|kl)  (22|21)
-            type = 3;
-        else if (j == k && j == l && i > j) // (ij|kl)  (21|11)
-            type = 4;
-        else if (i == k && j == l)          // (ij|kl)  (21|21)
-            type = 5;
-        else if (i == j)                    // (ij|kl)  (33|21)
-            type = 6;
-        else if (j >  k && k == l)          // (ij|kl)  (32|11)
-            type = 7;
-        else if (k == l)                    // (ij|kl)  (31|22)
-            type = 8;
-        else if (i == k)                    // (ij|kl)  (32|31)
-            type = 9;
-        else if (j == k)                    // (ij|kl)  (32|21)
-            type = 10;
-        else if (j == l)                    // (ij|kl)  (31|21)
-            type = 11;
-        else if (j >  k)                    // (ij|kl)  (43|21)
-            type = 12;
-        else if (j >  l)                    // (ij|kl)  (42|31)
-            type = 13;
-        else                                // (ij|kl)  (41|32)
-            type = 14;
-
-        return type;
-    }
 public:
     HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     HF(Options& options, boost::shared_ptr<PSIO> psio);

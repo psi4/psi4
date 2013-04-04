@@ -1,4 +1,5 @@
 #include <fstream>
+#include <math.h>
 
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
@@ -24,12 +25,35 @@ OCCWave::~OCCWave()
 
 void OCCWave::common_init()
 {
+
+	wfn_type_=options_.get_str("WFN_TYPE");
  
 	tol_Eod=options_.get_double("E_CONVERGENCE");
 	tol_t2=options_.get_double("R_CONVERGENCE");
-        tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
 	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
-        cc_maxiter=options_.get_int("CC_MAXITER");
+    // Tying orbital convergence to the desired e_conv,
+    //   particularly important for sane numerical frequencies by energy
+    //   These have been determined by linear fits to a step fn 
+    //   based on e_conv on limited numerical tests.
+    // The printed value from options_.print() will not be accurate
+    //   since newly set orbital conv is not written back to options
+    if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
+        tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
+    } 
+    else {
+        double temp;
+        if (wfn_type_ == "OMP2") {
+            temp = 3.0 - 0.5 * log10(tol_Eod);
+        } 
+        else {
+            temp = 1.74 - 0.71 * log10(tol_Eod);
+        }
+        if (temp < 6.0)
+            temp = 6.0;
+        tol_grad = pow(10.0, -temp);
+    }
+
+    cc_maxiter=options_.get_int("CC_MAXITER");
 	mo_maxiter=options_.get_int("MO_MAXITER");
 	print_=options_.get_int("PRINT"); 
 	cachelev=options_.get_int("CACHELEVEL"); 
@@ -70,7 +94,6 @@ void OCCWave::common_init()
 	dertype=options_.get_str("DERTYPE");
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         twopdm_abcd_type=options_.get_str("TPDM_ABCD_TYPE");
-	wfn_type_=options_.get_str("WFN_TYPE");
 	dertype=options_.get_str("DERTYPE");
 	pcg_beta_type_=options_.get_str("PCG_BETA_TYPE");
         compute_ccl=options_.get_str("CCL_ENERGY"); 
@@ -298,7 +321,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision April 1, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision April 2, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
@@ -321,7 +344,7 @@ double OCCWave::compute_energy()
 	}
 
 	else if (nfrzv != 0 && orb_opt_ == "FALSE") {
-          throw FeatureNotImplemented("OCC module standard methods", "Frozen core/virtual", __FILE__, __LINE__);
+          throw FeatureNotImplemented("OCC module standard methods", "Frozen virtual", __FILE__, __LINE__);
 	}
 
 	else if (nfrzc != 0 && dertype != "NONE") {

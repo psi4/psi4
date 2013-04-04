@@ -17,6 +17,8 @@
 
 namespace psi { namespace ccenergy {
 
+void diis_invert_B(double**, double*, int, double);
+
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
 ** accelerate convergence of the CCSD amplitude equations.
@@ -276,13 +278,7 @@ void diis_UHF(int iter)
   C[nvector] = -1;
 
   /* Solve the linear equations */
-  ipiv = init_int_array(nvector+1);
-
-  errcod = C_DGESV(nvector+1, 1, &(B[0][0]), nvector+1, &(ipiv[0]), &(C[0]), nvector+1);
-  if(errcod) {
-    fprintf(outfile, "\nError in DGESV return in diis.\n");
-    throw PsiException("Error in DGESV return in diis.", __FILE__, __LINE__);
-  }
+  diis_invert_B(B,C,nvector+1,1.0E-12);
 
   /* Build the new amplitude vector from the old ones */
   vector = dpd_block_matrix(1, vector_length);
@@ -358,7 +354,6 @@ void diis_UHF(int iter)
   /* Release memory and return */
   free_block(B);
   free(C);
-  free(ipiv);
   dpd_free_block(error, 1, vector_length);
 
   return;

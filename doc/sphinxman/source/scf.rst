@@ -522,28 +522,62 @@ Convergence and Algorithm Defaults
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 8                    | 8                    |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 8                    | 8                    |                 |
+    |                    | frequency [#f7]_   | 8                    | 8                    |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
     | SCF of post-HF     | energy             | 8                    | 8                    | PK [#f3]_       |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 10                   | 10                   |                 |
+    |                    | frequency [#f7]_   | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | CC property [#f2]_ | 10                   | 10                   |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
 
-.. rubric:: Footnotes
+.. _`table:conv_corl`:
 
+.. table:: Post-SCF convergence criteria defaults by calculation type [#f4]_
+
+    +--------------------+--------------------+----------------------+-------------------------+
+    | *Ab Initio* Method | Calculation Type   | E_CONVERGENCE [#f5]_ | R_CONVERGENCE [#f6]_    |
+    +====================+====================+======================+=========================+
+    | post-HF of post-HF | energy             | 6                    |                         |
+    +                    +--------------------+----------------------+-------------------------+
+    |                    | optimization       | 8                    |                         |
+    +                    +--------------------+----------------------+-------------------------+
+    |                    | frequency [#f7]_   | 8                    |                         |
+    +                    +--------------------+----------------------+-------------------------+
+    |                    | CC property [#f2]_ | 8                    |                         |
+    +--------------------+--------------------+----------------------+-------------------------+
+
+.. rubric:: Footnotes
+ 
 .. [#f1] Note that this table applies only the SCF module,
    not to the final convergence criteria for post-HF methods or to methods
-   that use an alternate starting point, like MCSCF.
+   that use an alternate starting point, like MCSCF. SAPT computations, too,
+   set tighter values.
 
 .. [#f2] This applies to properties computed through the :py:func:`~driver.property` function.
 
 .. [#f3] Post-HF methods that do not rely upon the usual 4-index AO integrals use a density-
    fitted SCF reference. That is, for DF-MP2 and SAPT, the default |scf__scf_type| is DF.
 
+.. [#f4] Note that this table applies to the final convergence criteria for 
+   all the post-SCF modules that define a |cceom__e_convergence| keyword.
+
+.. [#f5] The E_CONVERGENCE keyword is implemented for most post-SCF modules. 
+   See a list beginning at |cceom__e_convergence|.
+
+.. [#f6] The R_CONVERGENCE keyword places a convergence check on an internal
+   residual error measure and is implemented for several post-SCF
+   modules (see list beginning at |ccenergy__r_convergence|). It is defined
+   according to the quantum chemical method and so its default value is set
+   by each module individually.
+
+.. [#f7] For frequency computations by finite difference of energies,
+   convergence criteria are tightened further still to 10 for
+   |scf__e_convergence| and |scf__d_convergence| for SCF of HF or DFT, 11
+   for |scf__e_convergence| and |scf__d_convergence| for SCF of post-HF,
+   and 10 for E_CONVERGENCE for post-HF of post-HF.
 
 Recommendations
 ~~~~~~~~~~~~~~~

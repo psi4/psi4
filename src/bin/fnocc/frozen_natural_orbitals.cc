@@ -56,6 +56,12 @@ void FrozenNO::common_init() {
     }
     ndoccact = ndocc - nfzc;
     nvirt    = nmo - ndocc;
+
+    // quit if number of virtuals is less than number of doubly occupied
+    if (nvirt<ndoccact){
+       throw PsiException("ndocc must be less than nvirt",__FILE__,__LINE__);
+    }
+
 }
 // use this function to return the mp2 energy in the full basis.
 double FrozenNO::compute_energy(){

@@ -14,7 +14,7 @@
 
 namespace psi { namespace ccenergy {
 
-int converged(void)
+int converged(double ediff)
 {
   int row,col,h,nirreps;
   double rms=0.0;
@@ -238,7 +238,7 @@ int converged(void)
   rms = sqrt(rms);
   moinfo.conv = rms;
 
-  if(rms < params.convergence) return 1;
+  if((rms < params.convergence) && (fabs(ediff) < params.e_convergence)) return 1;
   else return 0;
 }
 }} // namespace psi::ccenergy
