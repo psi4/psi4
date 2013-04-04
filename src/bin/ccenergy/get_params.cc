@@ -68,6 +68,7 @@ void get_params(Options &options)
   params.print = options.get_int("PRINT");
   params.maxiter = options.get_int("MAXITER");
   params.convergence = options.get_double("R_CONVERGENCE");
+  params.e_convergence = options.get_double("E_CONVERGENCE");
   params.restart = options.get_bool("RESTART");
   /* If the MO orbital phases are screwed up, don't restart */
   if(!moinfo.phase) params.restart = 0;
@@ -160,7 +161,8 @@ void get_params(Options &options)
     fprintf(outfile, "\tBrueckner conv. =     %3.1e\n", params.bconv);
   fprintf(outfile, "\tMemory (Mbytes) =     %5.1f\n",params.memory/1e6);
   fprintf(outfile, "\tMaxiter         =   %4d\n", params.maxiter);
-  fprintf(outfile, "\tConvergence     =     %3.1e\n", params.convergence);
+  fprintf(outfile, "\tR_Convergence   =     %3.1e\n", params.convergence);
+  fprintf(outfile, "\tE_Convergence   =     %3.1e\n", params.e_convergence);
   fprintf(outfile, "\tRestart         =     %s\n", 
 	  params.restart ? "Yes" : "No");
   fprintf(outfile, "\tDIIS            =     %s\n", params.diis ? "Yes" : "No");

@@ -1936,6 +1936,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
