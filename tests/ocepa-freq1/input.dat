@@ -14,9 +14,6 @@ set {
   basis cc-pvdz
   guess sad
   mo_maxiter 200
-  e_convergence 10
-  d_convergence 8
-  rms_mograd_convergence 8
 }
 # Test against Analytic second derivatives from PSI3. #TEST
 grad_freqs = PsiMod.Vector(7)  #TEST
