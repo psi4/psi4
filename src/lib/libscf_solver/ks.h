@@ -54,8 +54,6 @@ protected:
     virtual void form_V() = 0;
     /// Build functional, grid, etc
     void common_init();
-    /// Analog to HF::process_tei for omega K
-    template <class OmegaKFunctor> void process_omega_tei(OmegaKFunctor & functor);
 
 public:
     KS(Options & options, boost::shared_ptr<PSIO> psio);

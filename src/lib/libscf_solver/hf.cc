@@ -32,7 +32,6 @@
 #include <liboptions/python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 
 #include "hf.h"
 
