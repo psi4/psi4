@@ -1257,6 +1257,9 @@ def run_adc(name, **kwargs):
     .. caution:: Get rid of active molecule lines- should be handled in energy.
 
     """
+    if (PsiMod.get_option('ADC', 'REFERENCE') != 'RHF'):
+        raise ValidationError('ADC requires reference RHF')
+
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -1375,6 +1378,10 @@ def run_detci(name, **kwargs):
         ['DETCI', 'FCI'],
         ['DETCI', 'EX_LEVEL'])
 
+    user_ref = PsiMod.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') or (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
     if (name.lower() == 'zapt'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         PsiMod.set_local_option('DETCI', 'WFN', 'ZAPTN')
@@ -1448,9 +1455,6 @@ def run_dfmp2(name, **kwargs):
     # Alter default algorithm
     if not PsiMod.has_option_changed('SCF', 'SCF_TYPE'):
         PsiMod.set_local_option('SCF', 'SCF_TYPE', 'DF')
-
-    #if not (PsiMod.get_option('SCF', 'REFERENCE') == 'RHF' or PsiMod.get_option('SCF', 'REFERENCE') == 'RKS'):
-    #    raise ValidationError('Open-shell references not (yet) available for DF-MP2.')
 
     if 'restart_file' in kwargs:
         restartfile = kwargs.pop('restart_file')
@@ -1626,6 +1630,9 @@ def run_sapt(name, **kwargs):
     if user_pg != 'c1':
         PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
+
     nfrag = molecule.nfragments()
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
@@ -1756,6 +1763,9 @@ def run_dftsapt(name, **kwargs):
     if user_pg != 'c1':
         PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
+
     nfrag = molecule.nfragments()
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
@@ -1863,6 +1873,9 @@ def run_infsapt(name, **kwargs):
     if user_pg != 'c1':
         PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
+
     nfrag = molecule.nfragments()
     if nfrag != 2:
         raise ValidationError('SAPT requires active molecule to have 2 fragments, not %s.' % (nfrag))
@@ -1969,6 +1982,9 @@ def run_sapt_ct(name, **kwargs):
     molecule.update_geometry()
     if user_pg != 'c1':
         PsiMod.print_out('  SAPT does not make use of molecular symmetry, further calculations in C1 point group.\n')
+
+    if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
+        raise ValidationError('SAPT requires requires \"reference rhf\".')
 
     nfrag = molecule.nfragments()
     if nfrag != 2:

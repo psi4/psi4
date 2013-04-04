@@ -34,7 +34,6 @@ such as geometry optimization and vibrational frequency analysis.
 The :ref:`Appendices <sec:appendices>` include a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
 a listing of the sample input files available under :source:`samples`.
-
 The user is urged to examine this directory of sample inputs, as
 most common types of computations are represented there.
 For the latest |PSIfour| documentation, check 
@@ -43,25 +42,29 @@ For the latest |PSIfour| documentation, check
 Citing |PSIfour|
 ================
 
+Overall PSI4 Package
+^^^^^^^^^^^^^^^^^^^^
+
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
 
-.. rubric:: `PSI4 <http://dx.doi.org/10.1002/wcms.93>`_
-
-* "Psi4: an open-source *ab initio* electronic structure program,"
+* "Psi4: An open-source *ab initio* electronic structure program,"
   J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein, F.
   Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
   Abrams, N. J.  Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl, W. D.
   Allen, H. F.  Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill, and T.
   D. Crawford, *WIREs Comput. Mol. Sci.* **2**, 556 (2012).
+  (doi: `10.1002/wcms.93 <http://dx.doi.org/10.1002/wcms.93>`_).
 
 
 Depending on the particular modules used, the user may also wish to
 cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to |PSIfour| (in addition to
-appropriate references for the underlying theory):
+appropriate references for the underlying theory, which are not necessarily
+included in the list below).
 
-.. rubric:: DCFT 
+Density Cumulant Functional Theory (DCFT)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. _`intro:dcftcitations`:
 
@@ -69,190 +72,228 @@ appropriate references for the underlying theory):
   Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
   **133**, 174122 (2010).
+  (doi: `10.1063/1.3503657 <http://dx.doi.org/10.1063/1.3503657>`_).
 
-* "Analytic gradients for density cumulant functional theory: The DCFT-06 model,"
-  A.Yu. Sokolov, J.J. Wilke, A.C. Simmonett, H.F. Schaefer, *J. Chem. Phys.*
-  **137**, 054105 (2012).
+* "Analytic gradients for density cumulant functional theory: The 
+  DCFT-06 model," A. Yu. Sokolov, J. J. Wilke, A. C. Simmonett, 
+  and H. F. Schaefer, *J. Chem. Phys.* **137**, 054105 (2012).
+  (doi: `10.1063/1.4739423 <http://dx.doi.org/10.1063/1.4739423>`_).
 
-* "Density cumulant functional theory: The DC-12 method, an improved description 
-  of the one-particle density matrix," A.Yu. Sokolov, A.C. Simmonett, 
-  H.F. Schaefer, *J. Chem. Phys.*  **138**, 024107 (2013).
+* "Density cumulant functional theory: The DC-12 method, an improved 
+  description of the one-particle density matrix," A. Yu. Sokolov, 
+  A. C. Simmonett, and H. F. Schaefer, *J. Chem. Phys.*  **138**, 024107 
+  (2013).
+  (doi: `10.1063/1.4773580 <http://dx.doi.org/10.1063/1.4773580>`_).
 
-.. rubric:: ADC(2)
+Configuration Interaction (CI)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* "Intermediate state representation approach to physical properties of electronically excited molecules,"
-  J. Schirmer, and A. B. Trofimov, *J. Chem. Phys.* **120**,
-  11449-11464 (2004).
-
-.. rubric:: PR-CIS(D) and PR-ADC(2)
-
-* "Excited State Calculation for Free-Base and Metalloporphyrins with
-  the Partially Renormalized Polarization Propagator Approach,"
-  M. Saitow and Y. Mochizuki, *Chem. Phys. Lett.*, in press.
-
-.. rubric:: CI
+PSI has a highly optimized code for full configuration interaction
+and highly correlated configuration interaction, as described in
 
 * "The Configuration Interaction Method: Advances in Highly 
   Correlated Approaches," C. D. Sherrill and H. F. Schaefer, in
   *Adv. Quantum Chem.*, vol. 34, P.-O. L\ |o_dots|\ wdin, Ed.
   (Academic Press, New York, 1999), pp. 143-269.
+  (doi: `10.1016/S0065-3276(08)60532-8
+  <http://dx.doi.org/10.1016/S0065-3276(08)60532-8>`_).
 
-.. rubric:: CC
+Coupled Cluster (CC)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A general discussion of coupled cluster theory is given in
 
 * "An Introduction to Coupled Cluster Theory for Computational
   Chemists," T. D. Crawford and H. F. Schaefer, *Rev. Comp. Chem.* 
   **14**, 33-136 (2000).
+  (doi: `10.1002/9780470125915.ch2
+  <http://dx.doi.org/10.1002/9780470125915.ch2>`_).
 
-.. rubric:: Mk-MRCCSD
+Implementation of frozen natural orbital (FNO) coupled cluster theory
+in PSI and its performance for non-covalent interactions is discussed
+in
+
+* "Accurate Noncovalent Interaction Energies Using Truncated Basis Sets 
+  Based on Frozen Natural Orbitals," A. E. DePrince and C. D. Sherrill,
+  *J. Chem. Theory Comput.* **9**, 293-299 (2013).
+  (doi: `10.1021/ct300780u <http://dx.doi.org/10.1021/ct300780u>`_).
+
+Implementation of density-fitted (DF) and Cholesky decomposition (CD)
+coupled cluster in PSI, and its performance for non-covalent interactions
+and reaction energies, is discussed in
+
+* "Accuracy and Efficiency of Coupled-Cluster Theory Using
+  Density Fitting / Cholesky Decomposition, Frozen Natural Orbitals,
+  and a T1-Transformed Hamiltonian," A. E. DePrince and C. D. Sherrill,
+  submitted.
+ 
+Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+|PSIfour| features production-level Mukherjee-style state-specific 
+coupled-cluster theory, including perturbative triples and also associated
+multi-reference perturbation theories.  The theory and |PSIfour| 
+implementation of these methods is discussed in the following papers.
+
+General Mk-MRCC
 
 * "Coupling Term Derivation and General Implementation of
   State-Specific Multireference Coupled-Cluster Theories,"
   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, 
   *J. Chem. Phys.* **127**, 024102 (2007).
+  (doi: `10.1063/1.2743014 <http://dx.doi.org/10.1063/1.2743014>`_).
 
-.. rubric:: Mk-MRCCSD(T)
+Mk-MRCCSD(T)
 
 * "Perturbative Triples Corrections in State-Specific Multireference
   Coupled Cluster Theory,"
   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
   *J. Chem. Phys.* **132**, 074107 (2010).
+  (doi: `10.1063/1.3305335 <http://dx.doi.org/10.1063/1.3305335>`_).
 
-.. rubric:: Mk-MRCCSDT(-n)
+Mk-MRCCSDT(-n)
 
 * "Triple Excitations in State-Specific Multireference Coupled
   Cluster Theory: Application of Mk-MRCCSDT and Mk-MRCCSDT-n Methods to
   Model Systems," F. A. Evangelista, A. C. Simmonett, W. D. Allen,
   H. F. Schaefer, and J. Gauss, *J. Chem. Phys.* **128**, 124104
   (2008).
+  (doi: `10.1063/1.2834927 <http://dx.doi.org/10.1063/1.2834927>`_).
 
-.. rubric:: Mk-MRPT2
+Mk-MRPT2
 
 * "A Companion Perturbation Theory for State-specific
   Multireference Coupled Cluster Methods,"
   F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, D. Mukherjee, and
   W. D. Allen,
   *Phys. Chem. Chem. Phys.* **11**, 4728-4741 (2009).
+  (doi: `10.1039/b822910d <http://dx.doi.org/10.1039/b822910d>`_).
 
-.. rubric:: SAPT (General)
+Symmetry-Adapted Perturbation Theory (SAPT)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-All capabilities of the SAPT module are based on Symmetry Adapted
-Perturbation Theory.  A good review article for this method is as
-follows:
+|PSIfour| features an extremely efficient code to perform wavefunction-based
+Symmetry Adapted Perturbation Theory (SAPT).  A good review article for this 
+method is as follows:
 
 * "Perturbation Theory Approach to Intermolecular Potential Energy
   Surfaces of van der Waals Complexes," B. Jeziorski, R. Moszynski,
   and K. Szalewicz, *Chem. Rev.* **94**, 1887-1930 (1994).   
+  (doi: `10.1021/cr00031a008 <http://dx.doi.org/10.1021/cr00031a008>`_).
 
-The particular implementation and algorithms for various orders of SAPT
-available in |PSIfour| are provided below.
+|PSIfour| benefits enormously from the introduction of density fitting (DF)
+into SAPT.  The theory and implementation of DF-SAPT is discussed 
+in the following papers for various levels of SAPT.
 
-.. rubric:: SAPT0 
+DF-SAPT0
 
 * "Large-scale Symmetry-adapted Perturbation Theory Computations via
   Density Fitting and Laplace Transformation Techniques: Investigating the
   Fundamental Forces of DNA-Intercalator Interactions," E. G. Hohenstein,
   R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, *J.
   Chem. Phys.* **135**, 174017 (2011).
+  (doi: `10.1063/1.3656681 <http://dx.doi.org/10.1063/1.3656681>`_).
 
 * "Density Fitting and Cholesky Decomposition Approximations
   in Symmetry-Adapted Perturbation Theory: Implementation and Application
   to Probe the Nature of :math:`\pi - \pi` Interactions in Linear Acenes,"
   E. G. Hohenstein and C. D. Sherrill, *J. Chem. Phys.* **132**,
   184111 (2010).
+  (doi: `10.1063/1.3426316 <http://dx.doi.org/10.1063/1.3426316>`_).
 
-.. rubric:: SAPT2, SAPT2+, SAPT2+(3), SAPT2+3
+DF-SAPT2, DF-SAPT2+, DF-SAPT2+(3), DF-SAPT2+3
 
 * "Density Fitting of Intramonomer Correlation Effects in
   Symmetry-Adapted Perturbation Theory,"
   E. G. Hohenstein and C. D. Sherrill, *J. Chem. Phys.* **133**,
   014101 (2010).
+  (doi: `10.1063/1.3451077 <http://dx.doi.org/10.1063/1.3451077>`_).
 
 * "Wavefunction Methods for Noncovalent Interactions," E. G.
   Hohenstein and C. D. Sherrill, *WIREs: Comput. Mol. Sci.* **2**,
   304-326 (2012).
+  (doi: `10.1002/wcms.84 <http://dx.doi.org/10.1002/wcms.84>`_).
 
-.. rubric:: Using Natural Orbitals in SAPT
+Using Natural Orbitals in SAPT
 
 * "Efficient Evaluation of Triple Excitations in Symmetry-Adapted
   Perturbation Theory via MP2 Natural Orbitals," E. G. Hohenstein
   and C. D. Sherrill, *J. Chem. Phys.* **133**, 104107 (2010).
+  (doi: `10.1063/1.3479400 <http://dx.doi.org/10.1063/1.3479400>`_).
 
-.. rubric:: OMP2
+Orbital-Optimized Post-Hartree-Fock Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
-  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  second-order M\ |o_slash|\ ller--Plesset perturbation theory," 
+  U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+  (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
 
-* "Analytic energy gradients for the orbital-optimized second-order M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and C. D. Sherrill, (ubpublished).
+* "Analytic energy gradients for the orbital-optimized second-order 
+  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
+  C. D. Sherrill, (unpublished).
 
-.. rubric:: OMP3
+Orbital-optimized third-order perturbation theory (OMP3)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
-  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
-  Symmetry Breaking Problems," U. Bozkaya,
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
+  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
+  to Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
+  (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
-* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
-  Its Spin-Component and Spin-Opposite Scaled Variants for Thermochemistry and Kinetics," 
-  E.Soydas and U. Bozkaya,  *J. Chem. Theory Comput.* **9**, 1452 (2013).
+* "Assessment of Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset 
+  Perturbation Theory and Its Spin-Component and Spin-Opposite Scaled Variants 
+  for Thermochemistry and Kinetics," E. Soydas and U. Bozkaya,  
+  *J. Chem. Theory Comput.* **9**, 1452 (2013).
+  (doi: `10.1021/ct301078q <http://dx.doi.org/10.1021/ct301078q>`_).
 
-.. rubric:: OCEPA
+Orbital-optimized coupled electron pair approximation (OCEPA)
 
 * "Quadratically convergent algorithm for orbital optimization in the 
   orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
-  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
+  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," 
+  U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
   *J. Chem. Phys.* **135**, 104103 (2011).
+  (doi: `10.1063/1.3631129 <http://dx.doi.org/10.1063/1.3631129>`_).
 
 * "Orbital-optimized coupled electron pair theory and its analytic gradients:
-  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
+  Applications to equilibrium geometries, harmonic vibrational frequencies, 
+  and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, 
+  (unpublished).
 
-.. rubric:: OMP2.5
+Orbital-optimized MP2.5 (OMP2.5)
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
-  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
-  Symmetry Breaking Problems," U. Bozkaya,
+* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation 
+  Theory and Its Spin-Component and Spin-Opposite Scaled Variants: Application 
+  to Symmetry Breaking Problems," U. Bozkaya,
   *J. Chem. Phys.* **135**, 224103 (2011).
+  (doi: `10.1063/1.3665134 <http://dx.doi.org/10.1063/1.3665134>`_).
 
 * U. Bozkaya and C. D. Sherrill, (unpublished).
 
 
-.. rubric:: MP2
+Second-Order Algebraic-Diagrammatic Construction [ADC(2)]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* "Quadratically convergent algorithm for orbital optimization in the 
-  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
-  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
-  *J. Chem. Phys.* **135**, 104103 (2011).
+General ADC(2) theory
 
-.. rubric:: MP3
+* "Intermediate state representation approach to physical properties of 
+  electronically excited molecules,"
+  J. Schirmer, and A. B. Trofimov, *J. Chem. Phys.* **120**,
+  11449-11464 (2004).
+  (doi: `10.1063/1.1752875 <http://dx.doi.org/10.1063/1.1752875>`_).
 
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
-  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
-  Symmetry Breaking Problems," U. Bozkaya,
-  *J. Chem. Phys.* **135**, 224103 (2011).
+Theory of "Partially-renormalized" CIS(D) and ADC(2) [PR-CIS(D) and PR-ADC(2)]
+and their implementation in |PSIfour|
 
-.. rubric:: MP2.5
-
-* "Orbital-Optimized Third-Order M\ |o_slash|\ ller--Plesset Perturbation Theory and 
-  Its Spin-Component and Spin-Opposite Scaled Variants: Application to 
-  Symmetry Breaking Problems," U. Bozkaya,
-  *J. Chem. Phys.* **135**, 224103 (2011).
-
-* U. Bozkaya and C. D. Sherrill, (unpublished).
-
-.. rubric:: CEPA0
-
-* "Quadratically convergent algorithm for orbital optimization in the 
-  orbital-optimized coupled-cluster doubles method and in orbital-optimized 
-  second-order  M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya, J. M. Turney,
-  Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill,
-  *J. Chem. Phys.* **135**, 104103 (2011).
-
-* "Orbital-optimized coupled electron pair theory and its analytic gradients:
-  Applications to equilibrium geometries, harmonic vibrational frequencies, and hydrogen transfer reactions," U. Bozkaya and C. D. Sherrill, (ubpublished).
+* "Excited State Calculation for Free-Base and Metalloporphyrins with
+  the Partially Renormalized Polarization Propagator Approach,"
+  M. Saitow and Y. Mochizuki, *Chem. Phys. Lett.* **525**, 144-149
+  (2012).  
+  (doi: `10.1016/j.cplett.2011.12.063 
+  <http://dx.doi.org/10.1016/j.cplett.2011.12.063>`_).
 
 
 .. index:: architectures
@@ -356,7 +397,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | CIS/RPA/TDHF            | Y         | ---       |                      |                             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
-    | ADC(2)                  | Y         | ---       | RHF/ROHF             | threaded [#f3]_             |
+    | ADC(2)                  | Y         | ---       | RHF                  | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
     | EOM-CCSD                | Y         | Y         | RHF/ROHF/UHF         | threaded [#f3]_             |
     +-------------------------+-----------+-----------+----------------------+-----------------------------+
@@ -392,7 +433,8 @@ distributed for free and without any guarantee of reliability,
 accuracy, or suitability for any particular purpose.  No obligation
 to provide technical support is expressed or implied.  As time
 allows, the developers will attempt to answer inquiries directed to
-`crawdad@vt.edu <mailto:crawdad@vt.edu>`_.
+`crawdad@vt.edu <mailto:crawdad@vt.edu>`_
+or `sherrill@gatech.edu <mailto:sherrill@gatech.edu>`_.
 For bug reports, specific and detailed information, with example
 inputs, would be appreciated.  Questions or comments regarding
 this user's manual may be sent to 

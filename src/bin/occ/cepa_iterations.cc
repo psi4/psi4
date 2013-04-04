@@ -91,6 +91,9 @@ fflush(outfile);
       break;  
     }
 
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CEPA iterations are diverging");
+    }
 
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 

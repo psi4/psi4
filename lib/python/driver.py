@@ -491,7 +491,8 @@ def energy(name, **kwargs):
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'])
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
     if 'molecule' in kwargs:
@@ -517,6 +518,12 @@ def energy(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
+
+        # Set post-scf convergence criteria (global will cover all correlated modules)
+        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+                PsiMod.set_global_option('E_CONVERGENCE', 6)
+
         procedures['energy'][lowername](lowername, **kwargs)
 
     except KeyError:
@@ -537,7 +544,8 @@ def gradient(name, **kwargs):
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'])
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
 
     # Order of precedence:
     #    1. Default for wavefunction
@@ -623,6 +631,11 @@ def gradient(name, **kwargs):
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+
+    # Set post-scf convergence criteria (global will cover all correlated modules)
+    if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+            PsiMod.set_global_option('E_CONVERGENCE', 8)
 
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
@@ -845,7 +858,8 @@ def property(name, **kwargs):
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'])
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
 
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
@@ -874,6 +888,11 @@ def property(name, **kwargs):
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 6)
             else:
                 PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+
+        # Set post-scf convergence criteria (global will cover all correlated modules)
+        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+                PsiMod.set_global_option('E_CONVERGENCE', 8)
 
         returnvalue = procedures['property'][lowername](lowername, **kwargs)
 
@@ -1240,7 +1259,8 @@ def frequency(name, **kwargs):
 
     optstash = OptionsState(
         ['SCF', 'E_CONVERGENCE'],
-        ['SCF', 'D_CONVERGENCE'])
+        ['SCF', 'D_CONVERGENCE'],
+        ['E_CONVERGENCE'])
 
     # Order of precedence:
     #    1. Default for wavefunction
@@ -1319,6 +1339,11 @@ def frequency(name, **kwargs):
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 8)
         else:
             PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+
+    # Set post-scf convergence criteria (global will cover all correlated modules)
+    if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+        if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+            PsiMod.set_global_option('E_CONVERGENCE', 8)
 
     # Select certain irreps
     if 'irrep' in kwargs:
@@ -1399,12 +1424,31 @@ def frequency(name, **kwargs):
         # call thermo module
         PsiMod.thermo()
 
+        optstash.restore()
         # TODO: add return statement
 
     else:  # Assume energy points
         # If not, perform finite difference of energies
         info = 'Performing finite difference calculations by energies'
         print(info)
+
+        # Set method-dependent scf convergence criteria (test on procedures['energy'] since that's guaranteed)
+        optstash.restore()
+        if not PsiMod.has_option_changed('SCF', 'E_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 10)
+            else:
+                PsiMod.set_local_option('SCF', 'E_CONVERGENCE', 11)
+        if not PsiMod.has_option_changed('SCF', 'D_CONVERGENCE'):
+            if procedures['energy'][lowername] == run_scf or procedures['energy'][lowername] == run_dft:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 10)
+            else:
+                PsiMod.set_local_option('SCF', 'D_CONVERGENCE', 11)
+
+        # Set post-scf convergence criteria (global will cover all correlated modules)
+        if not PsiMod.has_global_option_changed('E_CONVERGENCE'):
+            if not procedures['energy'][lowername] == run_scf and not procedures['energy'][lowername] == run_dft:
+                PsiMod.set_global_option('E_CONVERGENCE', 10)
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
@@ -1463,6 +1507,7 @@ def frequency(name, **kwargs):
         # call thermo module
         PsiMod.thermo()
 
+        optstash.restore()
         return energies[-1]
 
 ##  Aliases  ##

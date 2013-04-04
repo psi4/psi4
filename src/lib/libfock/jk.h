@@ -552,6 +552,12 @@ protected:
     /// Delete integrals, files, etc
     virtual void postiterations();
 
+    /// Build the J and K matrices for this integral class
+    void build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
+        std::vector<boost::shared_ptr<Matrix> >& D,
+        std::vector<boost::shared_ptr<Matrix> >& J,
+        std::vector<boost::shared_ptr<Matrix> >& K);
+
     /// Common initialization
     void common_init();
 

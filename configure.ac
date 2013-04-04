@@ -1061,6 +1061,10 @@ AC_CONFIG_FILES([
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
+          tests/pywrap-checkrun-rhf/Makefile
+          tests/pywrap-checkrun-uhf/Makefile
+          tests/pywrap-checkrun-rohf/Makefile
+          tests/pywrap-checkrun-convcrit/Makefile
           tests/psithon1/Makefile
           tests/dftd3-energy/Makefile
           tests/dftd3-grad/Makefile
@@ -1194,6 +1198,7 @@ AC_CONFIG_FILES([
           tests/mp2_5-grad2/Makefile
           tests/cepa0-grad1/Makefile
           tests/cepa0-grad2/Makefile
+          tests/ocepa-freq1/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile

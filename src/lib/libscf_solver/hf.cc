@@ -32,7 +32,6 @@
 #include <liboptions/python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 
 #include "hf.h"
 
@@ -94,20 +93,6 @@ void HF::common_init()
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
         nmo_ += nmopi_[h]; //For now
-    }
-
-    // Form the SO lookup information
-    so2symblk_ = new int[nso_];
-    so2index_  = new int[nso_];
-    size_t so_count = 0;
-    size_t offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            so2symblk_[so_count] = h;
-            so2index_[so_count] = so_count-offset;
-            ++so_count;
-        }
-        offset += nsopi_[h];
     }
 
     Eold_    = 0.0;
@@ -356,7 +341,7 @@ void HF::integrals()
         mints->one_electron_integrals();
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
-        if(1 && current_ints_type_ == Standard){// We might also need to check that this is a serial run!
+        if(current_ints_type_ == Standard){// We might also need to check that this is a serial run!
             mints->one_electron_integrals();
             current_ints_type_ = DFtoDirect;
             if (print_ && WorldComm->me() == 0)
@@ -370,55 +355,40 @@ void HF::integrals()
         }else{
             // Truly a direct calc
             if (current_ints_type_ == Standard)
-                mints->one_electron_integrals();
-            if (print_ && WorldComm->me() == 0)
-                fprintf(outfile, "  Building Direct Integral Objects...\n\n");
-    //        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-            std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
-            for (int i=0; i<WorldComm->nthread(); ++i)
-                 aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
-            eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
+              mints->one_electron_integrals();
         }
     }
 
-    // TODO: Relax the if statement. 
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
-        // Build the JK from options, symmetric type
-        jk_ = JK::build_JK();
-        // Tell the JK to print
-        jk_->set_print(print_);
-        // Give the JK 75% of the memory
-        jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+    // Build the JK from options, symmetric type
+    jk_ = JK::build_JK();
+    // Tell the JK to print
+    jk_->set_print(print_);
+    // Give the JK 75% of the memory
+    jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
 
-        // DFT sometimes needs custom stuff
-        if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
+    // DFT sometimes needs custom stuff
+    if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
 
-            // Need a temporary functional
-            boost::shared_ptr<SuperFunctional> functional = 
-                SuperFunctional::current(options_);
-            
-            // K matrices
-            jk_->set_do_K(functional->is_x_hybrid());
-            // wK matrices 
-            jk_->set_do_wK(functional->is_x_lrc());
-            // w Value
-            jk_->set_omega(functional->x_omega());
-        }
-
-        // Initialize
-        jk_->initialize(); 
-        // Print the header
-        jk_->print_header();
+        // Need a temporary functional
+        boost::shared_ptr<SuperFunctional> functional = 
+            SuperFunctional::current(options_);
+        
+        // K matrices
+        jk_->set_do_K(functional->is_x_hybrid());
+        // wK matrices 
+        jk_->set_do_wK(functional->is_x_lrc());
+        // w Value
+        jk_->set_omega(functional->x_omega());
     }
+
+    // Initialize
+    jk_->initialize(); 
+    // Print the header
+    jk_->print_header();
 }
 
 void HF::finalize()
 {
-    delete[] so2symblk_;
-    delete[] so2index_;
-
-    eri_.reset();
-
     // This will be the only one
     if (!options_.get_bool("SAVE_JK")) {
         jk_.reset();
@@ -1596,7 +1566,7 @@ double HF::compute_energy()
             energy_threshold_ /= df_to_direct_switch_;
             density_threshold_ /= df_to_direct_switch_;
             if (print_ && WorldComm->me() == 0)
-                fprintf(outfile, "  DF guess converged!\n");
+                fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
             // Get all the integrals back to normal
             current_ints_type_ = SwitchedToDirect;
             scf_type_ = "DIRECT";

@@ -22,8 +22,6 @@
 #include <libdisp/dispersion.h>
 #include <lib3index/3index.h>
 #include "ks.h"
-#include "integralfunctors.h"
-#include "omegafunctors.h"
 
 using namespace std;
 using namespace psi;
@@ -82,11 +80,6 @@ void RKS::integrals()
     if (!functional_->is_x_lrc()) return;
            
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
-        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
-        for (int i=0; i<WorldComm->nthread(); ++i)
-            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
     } else if (KS::options_.get_str("SCF_TYPE") == "PK") {
@@ -114,41 +107,29 @@ void RKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    
+    // Run the JK object
+    jk_->compute();
 
-        // Push the C matrix on
-        std::vector<SharedMatrix> & C = jk_->C_left();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        
-        // Run the JK object
-        jk_->compute();
-
-        // Pull the J and K matrices off
-        const std::vector<SharedMatrix> & J = jk_->J();
-        const std::vector<SharedMatrix> & K = jk_->K();
-        const std::vector<SharedMatrix> & wK = jk_->wK();
-        J_ = J[0];
-        J_->scale(2.0);
-        if (functional_->is_x_hybrid()) {
-            K_ = K[0];
-        }
-        if (functional_->is_x_lrc()) {
-            wK_ = wK[0];
-        }
-        
-        G_->copy(J_);
-        
-    } else { 
-        if (functional_->is_x_lrc()) {
-            Omega_K_Functor k_builder(functional_->x_omega(), wK_, D_, Ca_, nalphapi_);
-            process_omega_tei(k_builder);
-        }
-        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-        process_tei<J_K_Functor>(jk_builder);
-        J_->copy(G_);
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    const std::vector<SharedMatrix> & wK = jk_->wK();
+    J_ = J[0];
+    J_->scale(2.0);
+    if (functional_->is_x_hybrid()) {
+        K_ = K[0];
     }
-
+    if (functional_->is_x_lrc()) {
+        wK_ = wK[0];
+    }
+    
+    G_->copy(J_);
+        
     G_->add(V_);
 
     double alpha = functional_->x_alpha();
@@ -261,11 +242,6 @@ void UKS::integrals()
     if (!functional_->is_x_lrc()) return;
            
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
-        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
-        for (int i=0; i<WorldComm->nthread(); ++i)
-            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else if (KS::options_.get_str("SCF_TYPE") == "OUT_OF_CORE") {
     } else if (KS::options_.get_str("SCF_TYPE") == "PK") {
@@ -295,47 +271,32 @@ void UKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the JK object
+    jk_->compute();
 
-        // Push the C matrix on
-        std::vector<SharedMatrix> & C = jk_->C_left();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        
-        // Run the JK object
-        jk_->compute();
-
-        // Pull the J and K matrices off
-        const std::vector<SharedMatrix> & J = jk_->J();
-        const std::vector<SharedMatrix> & K = jk_->K();
-        const std::vector<SharedMatrix> & wK = jk_->wK();
-        J_->copy(J[0]);
-        J_->add(J[1]);
-        if (functional_->is_x_hybrid()) {
-            Ka_ = K[0];
-            Kb_ = K[1];
-        }
-        if (functional_->is_x_lrc()) {
-            wKa_ = wK[0];
-            wKb_ = wK[1];
-        }
-        Ga_->copy(J_);
-        Gb_->copy(J_);
-        
-    } else { 
-        if (functional_->is_x_lrc()) {
-            Omega_Ka_Kb_Functor k_builder(functional_->x_omega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
-            process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
-        }
-            
-        // This will build J (stored in G) and K
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-        J_->copy(Ga_);
-        Gb_->copy(Ga_);
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    const std::vector<SharedMatrix> & wK = jk_->wK();
+    J_->copy(J[0]);
+    J_->add(J[1]);
+    if (functional_->is_x_hybrid()) {
+        Ka_ = K[0];
+        Kb_ = K[1];
     }
-
+    if (functional_->is_x_lrc()) {
+        wKa_ = wK[0];
+        wKb_ = wK[1];
+    }
+    Ga_->copy(J_);
+    Gb_->copy(J_);
+        
     Ga_->add(Va_);
     Gb_->add(Vb_);
 

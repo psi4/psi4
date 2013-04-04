@@ -291,6 +291,7 @@ Advanced Keywords
 .. include:: /autodir_options_c/occ__occ_orbs_print.rst
 .. include:: /autodir_options_c/occ__tpdm_abcd_type.rst
 .. include:: /autodir_options_c/occ__do_diis.rst
+.. include:: /autodir_options_c/occ__do_level_shift.rst
 
 
 .. _`sec:convocc`:
