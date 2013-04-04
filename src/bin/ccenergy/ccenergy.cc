@@ -54,7 +54,7 @@ void X_build(void);
 void Wmbej_build(void);
 void t2_build(void);
 void tsave(void);
-int converged(void);
+int converged(double);
 double diagnostic(void);
 double d1diag(void);
 double new_d1diag(void);
@@ -259,6 +259,7 @@ PsiReturnType ccenergy(Options &options)
   fprintf(outfile, "  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
   moinfo.ecc = energy();
   pair_energies(&emp2_aa, &emp2_ab);
+  double last_energy;
 
   moinfo.t1diag = diagnostic();
   moinfo.d1diag = d1diag();
@@ -359,11 +360,12 @@ PsiReturnType ccenergy(Options &options)
     if (!params.just_residuals)
       denom(); /* apply denominators to T1 and T2 */
 
-    if(converged()) {
+    if(converged(last_energy - moinfo.ecc)) {
       done = 1;
 
       tsave();
       tau_build(); taut_build();
+      last_energy = moinfo.ecc;
       moinfo.ecc = energy();
       moinfo.t1diag = diagnostic();
       moinfo.d1diag = d1diag();
@@ -381,6 +383,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.diis) diis(moinfo.iter);
     tsave();
     tau_build(); taut_build();
+    last_energy = moinfo.ecc;
     moinfo.ecc = energy();
     moinfo.t1diag = diagnostic();
     moinfo.d1diag = d1diag();
@@ -388,7 +391,7 @@ PsiReturnType ccenergy(Options &options)
     moinfo.d2diag = d2diag();
     update();
     checkpoint();
-  }
+  }  // end loop over iterations
   fprintf(outfile, "\n");
   if(!done) {
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
