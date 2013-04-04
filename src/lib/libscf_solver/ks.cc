@@ -22,8 +22,6 @@
 #include <libdisp/dispersion.h>
 #include <lib3index/3index.h>
 #include "ks.h"
-#include "integralfunctors.h"
-#include "omegafunctors.h"
 
 using namespace std;
 using namespace psi;

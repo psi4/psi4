@@ -13,7 +13,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
