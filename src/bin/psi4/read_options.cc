@@ -2532,7 +2532,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- Do apply level shifting? -*/
-    options.add_bool("DO_LEVEL_SHIFT",false);
+    options.add_bool("DO_LEVEL_SHIFT",true);
     /*- Do print OCC orbital energies? -*/
     options.add_bool("OCC_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
