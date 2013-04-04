@@ -1257,6 +1257,9 @@ def run_adc(name, **kwargs):
     .. caution:: Get rid of active molecule lines- should be handled in energy.
 
     """
+    if (PsiMod.get_option('ADC', 'REFERENCE') != 'RHF'):
+        raise ValidationError('ADC requires reference RHF')
+
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -1374,6 +1377,10 @@ def run_detci(name, **kwargs):
         ['DETCI', 'MPN'],
         ['DETCI', 'FCI'],
         ['DETCI', 'EX_LEVEL'])
+
+    user_ref = PsiMod.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') or (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'zapt'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')

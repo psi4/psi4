@@ -1629,7 +1629,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF");
+    options.add_str("REFERENCE", "RHF", "RHF");
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
