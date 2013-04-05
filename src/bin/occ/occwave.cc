@@ -25,10 +25,12 @@ OCCWave::~OCCWave()
 
 void OCCWave::common_init()
 {
+        // print title and options
+	if (print_ > 0) options_.print();
+        title();
 
 	tol_Eod=options_.get_double("E_CONVERGENCE");
 	tol_t2=options_.get_double("R_CONVERGENCE");
-	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
 
         cc_maxiter=options_.get_int("CC_MAXITER");
 	mo_maxiter=options_.get_int("MO_MAXITER");
@@ -84,11 +86,11 @@ void OCCWave::common_init()
         ekt_ea_=options_.get_str("EKT_EA"); 
         orb_opt_=options_.get_str("ORB_OPT"); 
 
-    // Tying orbital convergence to the desired e_conv,
+    //   Tying orbital convergence to the desired e_conv,
     //   particularly important for sane numerical frequencies by energy
     //   These have been determined by linear fits to a step fn 
     //   based on e_conv on limited numerical tests.
-    // The printed value from options_.print() will not be accurate
+    //   The printed value from options_.print() will not be accurate
     //   since newly set orbital conv is not written back to options
     if (options_["RMS_MOGRAD_CONVERGENCE"].has_changed()) {
         tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
@@ -102,8 +104,24 @@ void OCCWave::common_init()
             temp = 5.0;
         }
         tol_grad = pow(10.0, -temp);
+	fprintf(outfile,"\tRMS orbital gradient is changed to : %12.2e\n", tol_grad);
+	fflush(outfile);
+
     }
 
+    // Determine the MAXIMUM MOGRAD CONVERGENCE
+    if (options_["MAX_MOGRAD_CONVERGENCE"].has_changed()) {
+	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
+    } 
+    else {
+        double temp2;
+        temp2 = -log10(tol_grad) - 1.5;
+        mograd_max = pow(10.0, -temp2);
+	fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
+	fflush(outfile);
+    }
+
+        // Figure out REF
         if (reference == "RHF" || reference == "RKS") reference_ = "RESTRICTED";
         else if (reference == "UHF" || reference == "UKS" || reference == "ROHF") reference_ = "UNRESTRICTED";
 
@@ -121,8 +139,6 @@ void OCCWave::common_init()
         else if (options_.get_str("DO_DIIS") == "FALSE") do_diis_ = 0;
 
 	cutoff = pow(10.0,-exp_cutoff);
-	if (print_ > 0) options_.print();
-        title();
         if (reference == "ROHF") reference_wavefunction_->semicanonicalize();
 	get_moinfo();
 
@@ -319,7 +335,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision April 4, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision April 5, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
