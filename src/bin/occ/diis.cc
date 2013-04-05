@@ -44,10 +44,6 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 	}
 	
         Bmat->set(nvar - 1, nvar - 1, 0.0);
-	
-	// scale Bmat
-	//double scale_factor = 1 / Bmat->get(0, 0);
-        //Bmat->scale(scale_factor);
          
 	// level shift
 	if (level_shift == "TRUE") {
@@ -86,7 +82,6 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
           vec_new->set(i, sum1);
           errvec_new->set(i, sum2);
 	}
- 
 
 	delete Bmat;
 	delete Cvec;
