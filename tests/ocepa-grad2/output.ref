@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta3+ Driver
 
-               Git: Rev {master} da03939ae76153e64151ec5b85250d20165c795d
+               Git: Rev {master} ae646e4342aedfa6ec06bb2190a62ca091f44c23
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   2750
+    Process ID:  12814
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -27,8 +27,8 @@
 #! OCEPA cc-pVDZ gradient for the NO radical
 
 ref_vals = [                                                       #TEST
-             [ 0.000000000000,  0.000000000000,  0.007406953679],  #TEST
-             [ 0.000000000000,  0.000000000000, -0.007406953679]   #TEST
+             [ 0.000000000000,  0.000000000000,  0.007482806046],  #TEST
+             [ 0.000000000000,  0.000000000000, -0.007482806046]   #TEST
            ]                                                       #TEST
 ref = PsiMod.Matrix(2, 3)                                          #TEST
 ref.set(ref_vals)
@@ -56,7 +56,7 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
   Memory set to 250.000 MiB by Python script.
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:48:56 2013
+*** at Thu Apr  4 16:21:23 2013
 
 
          ---------------------------------------------------------
@@ -165,20 +165,20 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
 
    @ROHF iter   1:  -128.32791740958135   -1.28328e+02   3.19243e-01 
    @ROHF iter   2:  -128.64055693489362   -3.12640e-01   1.37574e-01 DIIS
-   @ROHF iter   3:  -128.94419707881414   -3.03640e-01   1.12323e-01 DIIS
-   @ROHF iter   4:  -129.24662776825940   -3.02431e-01   1.28496e-02 DIIS
-   @ROHF iter   5:  -129.25168603375488   -5.05827e-03   1.58174e-03 DIIS
-   @ROHF iter   6:  -129.25209988611880   -4.13852e-04   6.56422e-04 DIIS
-   @ROHF iter   7:  -129.25233170845607   -2.31822e-04   4.06282e-04 DIIS
-   @ROHF iter   8:  -129.25244363254370   -1.11924e-04   1.31908e-04 DIIS
-   @ROHF iter   9:  -129.25245572177903   -1.20892e-05   5.82516e-05 DIIS
+   @ROHF iter   3:  -128.94419707881406   -3.03640e-01   1.12323e-01 DIIS
+   @ROHF iter   4:  -129.24662776825932   -3.02431e-01   1.28496e-02 DIIS
+   @ROHF iter   5:  -129.25168603375491   -5.05827e-03   1.58174e-03 DIIS
+   @ROHF iter   6:  -129.25209988611883   -4.13852e-04   6.56422e-04 DIIS
+   @ROHF iter   7:  -129.25233170845601   -2.31822e-04   4.06282e-04 DIIS
+   @ROHF iter   8:  -129.25244363254365   -1.11924e-04   1.31908e-04 DIIS
+   @ROHF iter   9:  -129.25245572177900   -1.20892e-05   5.82516e-05 DIIS
    @ROHF iter  10:  -129.25245633777962   -6.16001e-07   1.62948e-05 DIIS
-   @ROHF iter  11:  -129.25245637443433   -3.66547e-08   1.86089e-06 DIIS
-   @ROHF iter  12:  -129.25245637507737   -6.43041e-10   3.24696e-07 DIIS
-   @ROHF iter  13:  -129.25245637508345   -6.08225e-12   2.73119e-08 DIIS
-   @ROHF iter  14:  -129.25245637508351   -5.68434e-14   4.65363e-09 DIIS
-   @ROHF iter  15:  -129.25245637508360   -8.52651e-14   3.01115e-10 DIIS
-   @ROHF iter  16:  -129.25245637508357    2.84217e-14   6.32658e-11 DIIS
+   @ROHF iter  11:  -129.25245637443436   -3.66547e-08   1.86089e-06 DIIS
+   @ROHF iter  12:  -129.25245637507740   -6.43041e-10   3.24696e-07 DIIS
+   @ROHF iter  13:  -129.25245637508340   -5.99698e-12   2.73119e-08 DIIS
+   @ROHF iter  14:  -129.25245637508348   -8.52651e-14   4.65363e-09 DIIS
+   @ROHF iter  15:  -129.25245637508365   -1.70530e-13   3.01115e-10 DIIS
+   @ROHF iter  16:  -129.25245637508354    1.13687e-13   6.32662e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -212,16 +212,16 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
 
   Energy converged.
 
-  @ROHF Final Energy:  -129.25245637508357
+  @ROHF Final Energy:  -129.25245637508354
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.4083458231556847
-    Two-Electron Energy =                  72.5652817787802320
+    One-Electron Energy =                -227.4083458231556278
+    Two-Electron Energy =                  72.5652817787802178
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.2524563750835682
+    Total Energy =                       -129.2524563750835398
 
 
 
@@ -245,18 +245,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Fri Mar 29 11:48:56 2013
+*** tstop() called on bozkaya at Thu Apr  4 16:21:23 2013
 Module time:
 	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:48:56 2013
+*** at Thu Apr  4 16:21:23 2013
 
 
 
@@ -278,7 +278,7 @@ Total time:
   DIE_IF_NOT_CONVERGED   => TRUE             
   DOCC                   => [  ]             
   DO_DIIS                => TRUE             
-  DO_LEVEL_SHIFT         => FALSE            
+  DO_LEVEL_SHIFT         => TRUE             
   DO_SCS                 => FALSE            
   DO_SOS                 => FALSE            
   E3_SCALE               => 0.25             
@@ -288,7 +288,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-08           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -307,6 +307,7 @@ Total time:
   MP2_SOS_SCALE          => 1.3              
   MP2_SOS_SCALE2         => 1.2              
   MP2_SS_SCALE           => 0.333333         
+  MP2_TYPE               => DF               
   NAT_ORBS               => FALSE            
   NUM_FROZEN_DOCC        => 0                
   NUM_FROZEN_UOCC        => 0                
@@ -322,7 +323,7 @@ Total time:
   PROPERTIES             => [  ]             
   PROPERTIES_ORIGIN      => [  ]             
   PUREAM                 => TRUE             
-  RMS_MOGRAD_CONVERGENCE => 1e-05            
+  RMS_MOGRAD_CONVERGENCE => 1e-06            
   R_CONVERGENCE          => 1e-05            
   SCS_TYPE               => SCS              
   SOCC                   => [  ]             
@@ -340,7 +341,7 @@ Total time:
 
                        OCEPA (OO-CEPA)   
               Program Written by Ugur Bozkaya,
-              Latest Revision March 26, 2013.
+              Latest Revision April 4, 2013.
 
  ============================================================================== 
  ============================================================================== 
@@ -358,22 +359,22 @@ Total time:
 
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.25245637508357
-	REF Energy (a.u.)                  : -129.25245637508340
-	Alpha-Alpha Contribution (a.u.)    : -0.04371430345583
-	Alpha-Beta Contribution (a.u.)     : -0.23974925386972
-	Beta-Beta Contribution (a.u.)      : -0.04756821349837
-	Scaled_SS Correlation Energy (a.u.): -0.03042750565140
-	Scaled_OS Correlation Energy (a.u.): -0.28769910464367
-	SCS-MP2 Total Energy (a.u.)        : -129.57058298537848
-	SOS-MP2 Total Energy (a.u.)        : -129.56413040511404
-	SCSN-MP2 Total Energy (a.u.)       : -129.41311360492278
-	SCS-MI-MP2 Total Energy (a.u.)     : -129.46611052350221
-	SCS-MP2-VDW Total Energy (a.u.)    : -129.60497667851374
-	SOS-PI-MP2 Total Energy (a.u.)     : -129.58810533050101
-	MP2 Correlation Energy (a.u.)      : -0.33103177082392
-	MP2 Total Energy (a.u.)            : -129.58348814590732
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25245637508354
+	REF Energy (a.u.)                  :  -129.25245637508360
+	Alpha-Alpha Contribution (a.u.)    :    -0.04371430345583
+	Alpha-Beta Contribution (a.u.)     :    -0.23974925386972
+	Beta-Beta Contribution (a.u.)      :    -0.04756821349837
+	Scaled_SS Correlation Energy (a.u.):    -0.03042750565140
+	Scaled_OS Correlation Energy (a.u.):    -0.28769910464367
+	SCS-MP2 Total Energy (a.u.)        :  -129.57058298537868
+	SOS-MP2 Total Energy (a.u.)        :  -129.56413040511424
+	SCSN-MP2 Total Energy (a.u.)       :  -129.41311360492298
+	SCS-MI-MP2 Total Energy (a.u.)     :  -129.46611052350241
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.60497667851394
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.58810533050121
+	MP2 Correlation Energy (a.u.)      :    -0.33103177082392
+	MP2 Total Energy (a.u.)            :  -129.58348814590752
 	============================================================================== 
 
 	Number of alpha independent-pairs: 58
@@ -391,17 +392,42 @@ Total time:
    3     -129.5969960084     -1.39e-03       7.16e-04         1.62e-02        9.95e-07 
    4     -129.5980780190     -1.08e-03       6.56e-04         1.77e-02        6.99e-07 
    5     -129.5985921379     -5.14e-04       6.53e-04         1.57e-02        3.95e-07 
-   6     -129.5990326863     -4.41e-04       1.61e-05         7.16e-04        3.65e-07 
-   7     -129.5992137814     -1.81e-04       1.02e-05         4.67e-04        2.14e-07 
-   8     -129.5993054715     -9.17e-05       1.04e-05         3.36e-04        1.46e-07 
-   9     -129.5993638885     -5.84e-05       4.29e-05         1.10e-03        1.13e-07 
-  10     -129.5994048309     -4.09e-05       3.76e-05         9.44e-04        6.46e-08 
-  11     -129.5994308300     -2.60e-05       2.93e-05         9.01e-04        4.54e-08 
-  12     -129.5994502969     -1.95e-05       6.59e-05         1.65e-03        2.43e-08 
-  13     -129.5994643318     -1.40e-05       2.06e-05         5.68e-04        3.23e-08 
-  14     -129.5994727857     -8.45e-06       1.14e-05         4.84e-04        1.65e-08 
-  15     -129.5994818681     -9.08e-06       3.61e-05         1.06e-03        1.11e-08 
-  16     -129.5994857963     -3.93e-06       9.14e-06         3.21e-04        1.20e-08 
+   6     -129.5990307243     -4.39e-04       3.86e-05         8.79e-04        3.66e-07 
+   7     -129.5992171212     -1.86e-04       1.26e-05         5.24e-04        2.03e-07 
+   8     -129.5993012482     -8.41e-05       7.78e-06         3.28e-04        1.51e-07 
+   9     -129.5993632507     -6.20e-05       6.69e-05         2.26e-03        1.26e-07 
+  10     -129.5994056342     -4.24e-05       5.84e-05         1.79e-03        6.25e-08 
+  11     -129.5994302799     -2.46e-05       5.85e-05         1.81e-03        4.14e-08 
+  12     -129.5994489154     -1.86e-05       6.55e-05         2.05e-03        2.92e-08 
+  13     -129.5994622603     -1.33e-05       7.00e-05         2.17e-03        1.72e-08 
+  14     -129.5994724823     -1.02e-05       5.93e-05         1.90e-03        1.22e-08 
+  15     -129.5994807291     -8.25e-06       7.90e-05         2.22e-03        2.82e-08 
+  16     -129.5994828468     -2.12e-06       1.51e-05         5.39e-04        2.26e-08 
+  17     -129.5994894811     -6.63e-06       6.58e-06         2.79e-04        1.35e-08 
+  18     -129.5994925068     -3.03e-06       3.75e-06         1.13e-04        1.08e-08 
+  19     -129.5994955857     -3.08e-06       1.01e-05         2.88e-04        1.45e-08 
+  20     -129.5995003413     -4.76e-06       6.63e-06         1.74e-04        6.86e-09 
+  21     -129.5995025395     -2.20e-06       8.47e-06         2.19e-04        6.11e-09 
+  22     -129.5995051460     -2.61e-06       1.08e-05         2.68e-04        6.33e-09 
+  23     -129.5995070875     -1.94e-06       8.78e-06         2.13e-04        4.96e-09 
+  24     -129.5995088248     -1.74e-06       7.50e-06         1.79e-04        4.66e-09 
+  25     -129.5995097285     -9.04e-07       6.36e-06         1.87e-04        6.81e-09 
+  26     -129.5995107848     -1.06e-06       5.27e-06         1.73e-04        6.96e-09 
+  27     -129.5995116036     -8.19e-07       3.37e-06         1.43e-04        4.95e-09 
+  28     -129.5995127864     -1.18e-06       3.30e-06         1.40e-04        3.56e-09 
+  29     -129.5995133658     -5.79e-07       3.25e-06         1.39e-04        3.03e-09 
+  30     -129.5995139869     -6.21e-07       3.66e-06         1.54e-04        2.82e-09 
+  31     -129.5995144752     -4.88e-07       4.06e-06         1.69e-04        2.56e-09 
+  32     -129.5995143890      8.62e-08       3.58e-06         1.23e-04        3.71e-09 
+  33     -129.5995139342      4.55e-07       2.47e-06         1.15e-04        8.08e-09 
+  34     -129.5995147381     -8.04e-07       1.21e-06         3.59e-05        4.40e-09 
+  35     -129.5995152765     -5.38e-07       7.25e-07         2.56e-05        2.34e-09 
+  36     -129.5995155219     -2.45e-07       8.13e-07         2.98e-05        2.20e-09 
+  37     -129.5995157327     -2.11e-07       8.12e-07         3.33e-05        2.01e-09 
+  38     -129.5995159319     -1.99e-07       7.63e-07         3.25e-05        1.84e-09 
+  39     -129.5995161007     -1.69e-07       8.82e-07         3.89e-05        2.59e-09 
+  40     -129.5995165116     -4.11e-07       6.95e-07         2.69e-05        2.89e-09 
+  41     -129.5995166202     -1.09e-07       9.58e-08         4.54e-06        2.13e-09 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -417,14 +443,7 @@ Total time:
 
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
-   1     -0.3470356810    -129.5994920561     -6.26e-06     8.52e-09 
-   2     -0.3470621669    -129.5995185420     -2.65e-05     7.55e-09 
-   3     -0.3470633609    -129.5995197360     -1.19e-06     6.66e-09 
-   4     -0.3470605123    -129.5995168874      2.85e-06     4.03e-09 
-   5     -0.3470605660    -129.5995169411     -5.37e-08     2.68e-09 
-   6     -0.3470604020    -129.5995167771      1.64e-07     1.31e-09 
-   7     -0.3470604667    -129.5995168417     -6.47e-08     9.60e-10 
-   8     -0.3470604702    -129.5995168453     -3.57e-09     7.96e-10 
+   1     -0.3470602481    -129.5995166232     -3.08e-09     1.18e-09 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -433,31 +452,31 @@ Total time:
 	============================================================================== 
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.25245637508357
-	REF Energy (a.u.)                  : -129.25375374059058
-	SCS-OCEPA(0) Total Energy (a.u.)   : -129.68219081196119
-	SOS-OCEPA(0) Total Energy (a.u.)   : -129.60405511170643
-	OCEPA(0) Correlation Energy (a.u.) : -0.34706047022149
-	Eocepa - Eref (a.u.)               : -0.34576310471448
-	OCEPA(0) Total Energy (a.u.)       : -129.59951684530506
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25245637508354
+	REF Energy (a.u.)                  :  -129.25374216126124
+	SCS-OCEPA(0) Total Energy (a.u.)   :  -129.68219405287155
+	SOS-OCEPA(0) Total Energy (a.u.)   :  -129.60406197882182
+	OCEPA(0) Correlation Energy (a.u.) :    -0.34706024814835
+	Eocepa - Eref (a.u.)               :    -0.34577446197065
+	OCEPA(0) Total Energy (a.u.)       :  -129.59951662323189
 	============================================================================== 
 
 	Analytic gradient computation is starting...
 	Necessary information has been sent to DERIV, which will take care of the rest.
 
-*** tstop() called on bozkaya at Fri Mar 29 11:48:59 2013
+*** tstop() called on bozkaya at Thu Apr  4 16:21:29 2013
 Module time:
-	user time   =       3.66 seconds =       0.06 minutes
-	system time =       0.80 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       7.78 seconds =       0.13 minutes
+	system time =       1.76 seconds =       0.03 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =       4.06 seconds =       0.07 minutes
-	system time =       0.82 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       8.18 seconds =       0.14 minutes
+	system time =       1.77 seconds =       0.03 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:48:59 2013
+*** at Thu Apr  4 16:21:29 2013
 
  DERIV: Derivative code.
    by Justin Turney
@@ -514,39 +533,39 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000   -26.256075055748
-       2        0.000000000000     0.000000000000    26.256075055748
+       1        0.000000000000     0.000000000000   -26.255129503472
+       2        0.000000000000     0.000000000000    26.255129503472
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.783479921610
-       2        0.000000000000     0.000000000000    -0.783479921610
+       1        0.000000000000     0.000000000000     0.783472453420
+       2        0.000000000000     0.000000000000    -0.783472453420
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    13.785730643466
-       2        0.000000000000     0.000000000000   -13.785730643466
+       1        0.000000000000     0.000000000000    13.784868411748
+       2        0.000000000000     0.000000000000   -13.784868411748
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.007406953679
-       2        0.000000000000     0.000000000000    -0.007406953679
+       1        0.000000000000     0.000000000000     0.007482806046
+       2        0.000000000000     0.000000000000    -0.007482806047
 
 
-*** tstop() called on bozkaya at Fri Mar 29 11:48:59 2013
+*** tstop() called on bozkaya at Thu Apr  4 16:21:29 2013
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
+	user time   =       0.50 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.57 seconds =       0.08 minutes
-	system time =       0.84 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       8.68 seconds =       0.14 minutes
+	system time =       1.79 seconds =       0.03 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta3+ Driver
 
-               Git: Rev {master} 4a83440e5d9835586a0955ebeee589b8fd300489
+               Git: Rev {master} ae646e4342aedfa6ec06bb2190a62ca091f44c23
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   5108
+    Process ID:  11284
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -52,8 +52,8 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
 
   Memory set to 250.000 MiB by Python script.
 
-*** tstart() called on ub
-*** at Fri Dec 14 21:34:08 2012
+*** tstart() called on bozkaya
+*** at Thu Apr  4 17:13:57 2013
 
 
          ---------------------------------------------------------
@@ -93,12 +93,12 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
   Fractional occupation disabled.
   Guess Type is GWH.
   Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-06
+  Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
 
-  Basis Set: cc-pcvdz
+  Basis Set: CC-PCVDZ
     Number of shells: 16
     Number of basis function: 36
     Number of Cartesian functions: 38
@@ -154,25 +154,27 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
   Using Symmetric Orthogonalization.
   SCF Guess: Generalized Wolfsberg-Helmholtz.
 
-  Initial ROHF energy:   -82.17678471775399
+  Guess energy:   -82.17678471775415
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter   1:  -119.21648665423437   -3.70397e+01   0.00000e+00 
-   @ROHF iter   2:  -128.35518646196843   -9.13870e+00   1.45664e-01 DIIS
-   @ROHF iter   3:  -128.34065293212336    1.45335e-02   1.06568e-01 DIIS
-   @ROHF iter   4:  -129.21688040559962   -8.76227e-01   4.79628e-02 DIIS
-   @ROHF iter   5:  -129.25147978270127   -3.45994e-02   1.12375e-02 DIIS
-   @ROHF iter   6:  -129.25253953243879   -1.05975e-03   2.31882e-03 DIIS
-   @ROHF iter   7:  -129.25272474704991   -1.85215e-04   8.35613e-04 DIIS
-   @ROHF iter   8:  -129.25286320946807   -1.38462e-04   8.40394e-04 DIIS
-   @ROHF iter   9:  -129.25292154113782   -5.83317e-05   7.20439e-04 DIIS
-   @ROHF iter  10:  -129.25292735513702   -5.81400e-06   2.59301e-04 DIIS
-   @ROHF iter  11:  -129.25292773701219   -3.81875e-07   7.38472e-05 DIIS
-   @ROHF iter  12:  -129.25292774588459   -8.87241e-09   1.18001e-05 DIIS
-   @ROHF iter  13:  -129.25292774600072   -1.16131e-10   1.29021e-06 DIIS
+   @ROHF iter   1:  -119.21648665423432   -1.19216e+02   1.59272e+00 
+   @ROHF iter   2:  -128.35518646196837   -9.13870e+00   1.33850e-01 DIIS
+   @ROHF iter   3:  -128.34065293212322    1.45335e-02   1.68174e-01 DIIS
+   @ROHF iter   4:  -129.21688040559954   -8.76227e-01   3.02368e-02 DIIS
+   @ROHF iter   5:  -129.25147978270110   -3.45994e-02   3.64715e-03 DIIS
+   @ROHF iter   6:  -129.25253953243873   -1.05975e-03   6.60374e-04 DIIS
+   @ROHF iter   7:  -129.25272474704980   -1.85215e-04   4.12135e-04 DIIS
+   @ROHF iter   8:  -129.25286320946802   -1.38462e-04   2.33265e-04 DIIS
+   @ROHF iter   9:  -129.25292154113745   -5.83317e-05   7.19977e-05 DIIS
+   @ROHF iter  10:  -129.25292735513699   -5.81400e-06   3.80012e-05 DIIS
+   @ROHF iter  11:  -129.25292773701216   -3.81875e-07   4.73026e-06 DIIS
+   @ROHF iter  12:  -129.25292774588445   -8.87229e-09   6.01405e-07 DIIS
+   @ROHF iter  13:  -129.25292774600069   -1.16245e-10   1.60869e-07 DIIS
+   @ROHF iter  14:  -129.25292774600265   -1.96110e-12   1.49052e-08 DIIS
+   @ROHF iter  15:  -129.25292774600263    2.84217e-14   1.25886e-09 DIIS
 
   ==> Post-Iterations <==
 
@@ -209,24 +211,24 @@ compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy
 
   Energy converged.
 
-  @ROHF Final Energy:  -129.25292774600072
+  @ROHF Final Energy:  -129.25292774600263
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.4114173163713986
-    Two-Electron Energy =                  72.5678819010788203
+    One-Electron Energy =                -227.4114180897484232
+    Two-Electron Energy =                  72.5678826744539265
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.2529277460006938
+    Total Energy =                       -129.2529277460026265
 
-
-Properties computed using the SCF density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
+
+Properties computed using the SCF density density matrix
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0044
 
@@ -242,18 +244,18 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ub at Fri Dec 14 21:34:08 2012
+*** tstop() called on bozkaya at Thu Apr  4 17:13:58 2013
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ub
-*** at Fri Dec 14 21:34:08 2012
+*** tstart() called on bozkaya
+*** at Thu Apr  4 17:13:58 2013
 
 
 
@@ -275,14 +277,21 @@ Total time:
   DIE_IF_NOT_CONVERGED   => TRUE             
   DOCC                   => [  ]             
   DO_DIIS                => TRUE             
-  DO_LEVEL_SHIFT         => FALSE            
+  DO_LEVEL_SHIFT         => TRUE             
   DO_SCS                 => FALSE            
   DO_SOS                 => FALSE            
   E3_SCALE               => 0.25             
-  E_CONVERGENCE          => 1e-08            
+  EA_POLES               => FALSE            
+  EKT_EA                 => FALSE            
+  EKT_IP                 => FALSE            
+  EP_EA_POLES            => FALSE            
+  EP_IP_POLES            => FALSE            
+  EP_MAXITER             => 30               
+  E_CONVERGENCE          => 1e-06           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
+  IP_POLES               => FALSE            
   LEVEL_SHIFT            => 0.02             
   LINEQ_SOLVER           => CDGESV           
   MAT_NUM_COLUMN_PRINT   => 5                
@@ -297,11 +306,13 @@ Total time:
   MP2_SOS_SCALE          => 1.3              
   MP2_SOS_SCALE2         => 1.2              
   MP2_SS_SCALE           => 0.333333         
+  MP2_TYPE               => DF               
   NAT_ORBS               => FALSE            
   NUM_FROZEN_DOCC        => 0                
   NUM_FROZEN_UOCC        => 0                
   OCC_ORBS_PRINT         => FALSE            
   OPT_METHOD             => ORB_RESP         
+  ORB_OPT                => TRUE             
   ORB_RESP_SOLVER        => PCG              
   ORTH_TYPE              => MGS              
   PCG_BETA_TYPE          => FLETCHER_REEVES  
@@ -311,7 +322,7 @@ Total time:
   PROPERTIES             => [  ]             
   PROPERTIES_ORIGIN      => [  ]             
   PUREAM                 => TRUE             
-  RMS_MOGRAD_CONVERGENCE => 1e-05            
+  RMS_MOGRAD_CONVERGENCE => 1e-06            
   R_CONVERGENCE          => 1e-05            
   SCS_TYPE               => SCS              
   SOCC                   => [  ]             
@@ -320,6 +331,7 @@ Total time:
   UNITS                  => ANGSTROMS        
   WFN                    => SCF              
   WFN_TYPE               => OMP2             
+  WRITER_FILE_LABEL      => (empty)          
 
 
  ============================================================================== 
@@ -328,7 +340,7 @@ Total time:
 
                        OMP2 (OO-MP2)   
               Program Written by Ugur Bozkaya,
-              Latest Revision December 14, 2012.
+              Latest Revision April 4, 2013.
 
  ============================================================================== 
  ============================================================================== 
@@ -346,22 +358,22 @@ Total time:
 
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.25292774600072
-	REF Energy (a.u.)                  : -129.25292774600277
-	Alpha-Alpha Contribution (a.u.)    : -0.04689643172650
-	Alpha-Beta Contribution (a.u.)     : -0.30742330772047
-	Beta-Beta Contribution (a.u.)      : -0.05020849444099
-	Scaled_SS Correlation Energy (a.u.): -0.03236830872250
-	Scaled_OS Correlation Energy (a.u.): -0.36890796926456
-	SCS-MP2 Total Energy (a.u.)        : -129.65420402398985
-	SOS-MP2 Total Energy (a.u.)        : -129.65257804603937
-	SCSN-MP2 Total Energy (a.u.)       : -129.42383241605756
-	SCS-MI-MP2 Total Energy (a.u.)     : -129.50116242384703
-	SCS-MP2-VDW Total Energy (a.u.)    : -129.69498204296872
-	SOS-PI-MP2 Total Energy (a.u.)     : -129.68332037681142
-	MP2 Correlation Energy (a.u.)      : -0.40452823388796
-	MP2 Total Energy (a.u.)            : -129.65745597989073
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600263
+	REF Energy (a.u.)                  :  -129.25292774600274
+	Alpha-Alpha Contribution (a.u.)    :    -0.04689643209981
+	Alpha-Beta Contribution (a.u.)     :    -0.30742330612224
+	Beta-Beta Contribution (a.u.)      :    -0.05020849184138
+	Scaled_SS Correlation Energy (a.u.):    -0.03236830798039
+	Scaled_OS Correlation Energy (a.u.):    -0.36890796734669
+	SCS-MP2 Total Energy (a.u.)        :  -129.65420402132983
+	SOS-MP2 Total Energy (a.u.)        :  -129.65257804396165
+	SCSN-MP2 Total Energy (a.u.)       :  -129.42383241213921
+	SCS-MI-MP2 Total Energy (a.u.)     :  -129.50116242033576
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.69498203980979
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.68332037457387
+	MP2 Correlation Energy (a.u.)      :    -0.40452823006342
+	MP2 Total Energy (a.u.)            :  -129.65745597606616
 	============================================================================== 
 
 	Number of alpha independent-pairs: 84
@@ -374,67 +386,65 @@ Total time:
 	            --------------------------- 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -129.6662737838     -8.82e-03       9.31e-04         2.63e-02        9.78e-07 
-   2     -129.6673757094     -1.10e-03       6.21e-04         3.06e-02        2.46e-07 
-   3     -129.6675731676     -1.97e-04       6.07e-04         1.95e-02        2.92e-07 
-   4     -129.6676063079     -3.31e-05       6.08e-04         2.26e-02        1.17e-07 
-   5     -129.6675935119      1.28e-05       6.01e-04         2.11e-02        1.93e-07 
-   6     -129.6680024743     -4.09e-04       1.51e-05         5.98e-04        6.71e-08 
-   7     -129.6680027836     -3.09e-07       8.67e-06         3.07e-04        5.56e-09 
+   1     -129.6662737846     -8.82e-03       9.31e-04         2.63e-02        9.78e-07 
+   2     -129.6673757111     -1.10e-03       6.21e-04         3.06e-02        2.46e-07 
+   3     -129.6675731696     -1.97e-04       6.07e-04         1.95e-02        2.92e-07 
+   4     -129.6676063101     -3.31e-05       6.08e-04         2.26e-02        1.17e-07 
+   5     -129.6675935144      1.28e-05       6.01e-04         2.11e-02        1.93e-07 
+   6     -129.6679978804     -4.04e-04       3.83e-05         1.29e-03        7.23e-08 
+   7     -129.6680015459     -3.67e-06       1.81e-05         6.22e-04        2.80e-08 
+   8     -129.6680023374     -7.91e-07       9.61e-06         3.67e-04        1.08e-08 
 
  ============================================================================== 
  ======================== OMP2 ITERATIONS ARE CONVERGED ======================= 
  ============================================================================== 
 
-	Orbitals are optimized now.
-	Switching to the standard MP2 computation after semicanonicalization of the MOs... 
-
 	Computing MP2 energy using optimized MOs... 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.25292774600072
-	REF Energy (a.u.)                  : -129.24980509732012
-	Alpha-Alpha Contribution (a.u.)    : -0.04832385661430
-	Alpha-Beta Contribution (a.u.)     : -0.31658793481863
-	Beta-Beta Contribution (a.u.)      : -0.05328589480200
-	Scaled_SS Correlation Energy (a.u.): -0.03386991713877
-	Scaled_OS Correlation Energy (a.u.): -0.37990552178236
-	SCS-MP2 Total Energy (a.u.)        : -129.66358053624126
-	SOS-MP2 Total Energy (a.u.)        : -129.62971061910247
-	SCSN-MP2 Total Energy (a.u.)       : -129.42863825981280
-	SCS-MI-MP2 Total Energy (a.u.)     : -129.50751685057458
-	SCS-MP2-VDW Total Energy (a.u.)    : -129.70584252959611
-	SOS-PI-MP2 Total Energy (a.u.)     : -129.69302820606620
-	MP2 Correlation Energy (a.u.)      : -0.41819768623493
-	MP2 Total Energy (a.u.)            : -129.66800278355504
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600263
+	REF Energy (a.u.)                  :  -129.24981130475675
+	Alpha-Alpha Contribution (a.u.)    :    -0.04832969965552
+	Alpha-Beta Contribution (a.u.)     :    -0.31658619677496
+	Beta-Beta Contribution (a.u.)      :    -0.05327494867002
+	Scaled_SS Correlation Energy (a.u.):    -0.03386821610852
+	Scaled_OS Correlation Energy (a.u.):    -0.37990343612996
+	SCS-MP2 Total Energy (a.u.)        :  -129.66358295699521
+	SOS-MP2 Total Energy (a.u.)        :  -129.62971474088670
+	SCSN-MP2 Total Energy (a.u.)       :  -129.42863548580971
+	SCS-MI-MP2 Total Energy (a.u.)     :  -129.50751577980668
+	SCS-MP2-VDW Total Energy (a.u.)    :  -129.70584396079150
+	SOS-PI-MP2 Total Energy (a.u.)     :  -129.69303198024170
+	MP2 Correlation Energy (a.u.)      :    -0.41819084510051
+	MP2 Total Energy (a.u.)            :  -129.66800214985727
 	============================================================================== 
 
 	============================================================================== 
 	================ OMP2 FINAL RESULTS ========================================== 
 	============================================================================== 
-	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.25292774600072
-	REF Energy (a.u.)                  : -129.24980509732012
-	SCS-OMP2 Total Energy (a.u.)       : -129.66358053624126
-	SOS-OMP2 Total Energy (a.u.)       : -129.62971061910247
-	SCSN-OMP2 Total Energy (a.u.)      : -129.42863825981280
-	SCS-MI-OMP2 Total Energy (a.u.)    : -129.50751685057458
-	SCS-OMP2-VDW Total Energy (a.u.)   : -129.70584252959611
-	SOS-PI-OMP2 Total Energy (a.u.)    : -129.69302820606620
-	OMP2 Correlation Energy (a.u.)     : -0.41507503755432
-	Eomp2 - Eref (a.u.)                : -0.41819768623492
-	OMP2 Total Energy (a.u.)           : -129.66800278355504
+	Nuclear Repulsion Energy (a.u.)    :    25.59060766929188
+	SCF Energy (a.u.)                  :  -129.25292774600263
+	REF Energy (a.u.)                  :  -129.24981130475675
+	SCS-OMP2 Total Energy (a.u.)       :  -129.66358295699521
+	SOS-OMP2 Total Energy (a.u.)       :  -129.62971474088670
+	SCSN-OMP2 Total Energy (a.u.)      :  -129.42863548580971
+	SCS-MI-OMP2 Total Energy (a.u.)    :  -129.50751577980668
+	SCS-OMP2-VDW Total Energy (a.u.)   :  -129.70584396079150
+	SOS-PI-OMP2 Total Energy (a.u.)    :  -129.69303198024170
+	OMP2 Correlation Energy (a.u.)     :    -0.41507459139771
+	Eomp2 - Eref (a.u.)                :    -0.41819103264359
+	OMP2 Total Energy (a.u.)           :  -129.66800233740034
 	============================================================================== 
 
 
-*** tstop() called on ub at Fri Dec 14 21:34:11 2012
+*** tstop() called on bozkaya at Thu Apr  4 17:13:59 2013
 Module time:
-	user time   =       2.38 seconds =       0.04 minutes
-	system time =       0.42 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.35 seconds =       0.02 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.92 seconds =       0.05 minutes
-	system time =       0.44 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

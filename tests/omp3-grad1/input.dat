@@ -1,9 +1,9 @@
 #! OMP3 cc-pVDZ gradient for the H2O molecule.
 
 ref_vals = [                                                       #TEST
-             [ 0.000000000000,  0.000000000000,  0.009522959439],  #TEST
-             [ 0.000000000000,  0.000705458433, -0.004761479720],  #TEST
-             [ 0.000000000000, -0.000705458433, -0.004761479720]   #TEST
+             [ 0.000000000000,  0.000000000000,  0.009542917802],  #TEST
+             [ 0.000000000000,  0.000708837471, -0.004771458901],  #TEST
+             [ 0.000000000000, -0.000708837471, -0.004771458901]   #TEST
            ]                                                       #TEST
 ref = PsiMod.Matrix(3, 3)                                          #TEST
 ref.set(ref_vals)
@@ -23,5 +23,5 @@ set {
 gradient('omp3')
 
 grad = PsiMod.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
