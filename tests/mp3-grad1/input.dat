@@ -23,5 +23,5 @@ set {
 gradient('mp3')
 
 grad = PsiMod.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 

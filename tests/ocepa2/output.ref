@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta3+ Driver
 
-               Git: Rev {master} 2dc103b19e887e46f474db9fc5f0155e6331f408
+               Git: Rev {master} ae646e4342aedfa6ec06bb2190a62ca091f44c23
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  30419
+    Process ID:  11149
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -42,6 +42,7 @@ set global {
   basis cc-pcvdz
   reference uks
   dft_functional b3lyp 
+  e_convergence 8
 }
 energy('ocepa')
 
@@ -52,15 +53,15 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
 
   Memory set to 250.000 MiB by Python script.
 
-*** tstart() called on ub
-*** at Wed Dec  5 12:57:03 2012
+*** tstart() called on bozkaya
+*** at Thu Apr  4 15:33:43 2013
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UKS Reference
-                        2 Threads,    250 MiB Core
+                        4 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -93,12 +94,12 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
   Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-06
+  Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
   ==> Primary Basis <==
 
-  Basis Set: cc-pcvdz
+  Basis Set: CC-PCVDZ
     Number of shells: 16
     Number of basis function: 36
     Number of Cartesian functions: 38
@@ -142,15 +143,17 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
 
    => Molecular Quadrature <=
 
-    Spherical Scheme = Lebedev-Laikov
-    Radial Scheme    =       Treutler
-    Atomic Scheme    =       Treutler
+    Radial Scheme    =       TREUTLER
+    Pruning Scheme   =           FLAT
+    Nuclear Scheme   =       TREUTLER
 
-    Spherical Points =            302
+    BS radius alpha  =              1
+    Pruning alpha    =              1
     Radial Points    =             75
-    Total Points     =          41604
+    Spherical Points =            302
+    Total Points     =          41638
     Total Blocks     =             68
-    Max Points       =            992
+    Max Points       =            997
     Max Functions    =             36
 
   ==> Pre-Iterations <==
@@ -202,41 +205,43 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UKS energy:   -96.14603124366946
+  Guess energy:   -96.14603124366978
 
   ==> Iterations <==
 
-                        Total Energy        Delta E     Density RMS
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @UKS iter   1:  -117.93882927426638   -2.17928e+01   0.00000e+00 
-   @UKS iter   2:  -113.45265229138010    4.48618e+00   3.61346e-01 DIIS
+   @UKS iter   1:  -117.93882927426667   -1.17939e+02   3.59747e-01 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     5,    0,    1,    1 ]
 	SOCC [     0,    0,    0,    1 ]
 
-   @UKS iter   3:  -117.57098246416439   -4.11833e+00   3.63098e-01 DIIS
+   @UKS iter   2:  -113.45265229137991    4.48618e+00   1.80138e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     5,    0,    1,    1 ]
 	SOCC [     0,    0,    1,    0 ]
 
-   @UKS iter   4:  -129.39454052581300   -1.18236e+01   1.98305e-01 DIIS
-   @UKS iter   5:  -129.86409588813910   -4.69555e-01   2.67282e-02 DIIS
-   @UKS iter   6:  -129.90053820546669   -3.64423e-02   9.17144e-03 DIIS
-   @UKS iter   7:  -129.90358288726003   -3.04468e-03   2.07705e-03 DIIS
-   @UKS iter   8:  -129.90363762501786   -5.47378e-05   2.89065e-04 DIIS
-   @UKS iter   9:  -129.90365131782877   -1.36928e-05   1.32384e-04 DIIS
-   @UKS iter  10:  -129.90365296180437   -1.64398e-06   3.70786e-05 DIIS
-   @UKS iter  11:  -129.90365324771133   -2.85907e-07   1.08688e-05 DIIS
-   @UKS iter  12:  -129.90365332719216   -7.94808e-08   1.60327e-06 DIIS
-   @UKS iter  13:  -129.90365333160776   -4.41560e-09   1.28749e-06 DIIS
+   @UKS iter   3:  -117.57098246416413   -4.11833e+00   1.79767e-01 DIIS
+   @UKS iter   4:  -129.39454052581277   -1.18236e+01   5.32411e-02 DIIS
+   @UKS iter   5:  -129.86409588813916   -4.69555e-01   1.36753e-02 DIIS
+   @UKS iter   6:  -129.90053820546680   -3.64423e-02   4.18486e-03 DIIS
+   @UKS iter   7:  -129.90358288726003   -3.04468e-03   4.80846e-04 DIIS
+   @UKS iter   8:  -129.90363762501789   -5.47378e-05   1.78004e-04 DIIS
+   @UKS iter   9:  -129.90365131782880   -1.36928e-05   5.54543e-05 DIIS
+   @UKS iter  10:  -129.90365296180443   -1.64398e-06   1.49206e-05 DIIS
+   @UKS iter  11:  -129.90365324771139   -2.85907e-07   7.68264e-06 DIIS
+   @UKS iter  12:  -129.90365332719230   -7.94809e-08   2.96282e-06 DIIS
+   @UKS iter  13:  -129.90365333160784   -4.41554e-09   6.40739e-07 DIIS
+   @UKS iter  14:  -129.90365333167674   -6.88942e-11   2.56902e-08 DIIS
+   @UKS iter  15:  -129.90365333167699   -2.55795e-13   1.74520e-09 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   2.447300078E-03
+   @Spin Contamination Metric:   2.447266587E-03
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                7.524473001E-01
+   @S^2 Observed:                7.524472666E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -265,7 +270,7 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
 	Beta Occupied:                                                        
 
 	   1A1   -19.258332     2A1   -14.441195     3A1    -1.217714  
-	   4A1    -0.646706     1B2    -0.491300     1B1    -0.454448  
+	   4A1    -0.646706     1B2    -0.491300     1B1    -0.454449  
 	   5A1    -0.452578  
 
 	Beta Virtual:                                                         
@@ -276,7 +281,7 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
 	   4B1     0.942406    10A1     1.581710     5B2     1.674776  
 	  11A1     1.685801     1A2     1.685906     5B1     1.708365  
 	  12A1     2.471962    13A1     2.573566     2A2     2.573584  
-	   6B2     3.108761     6B1     3.139949    14A1     3.443759  
+	   6B2     3.108760     6B1     3.139949    14A1     3.443759  
 	  15A1    24.961296     7B2    29.181569     7B1    29.204531  
 	  16A1    29.786098    17A1    32.974914     8B2    37.729039  
 	   8B1    37.746859    18A1    38.336704  
@@ -288,24 +293,24 @@ compare_values(refocepa, get_variable("OCEPA(0) TOTAL ENERGY"), 6, "OCEPA(0) Tot
 
   Energy converged.
 
-  @UKS Final Energy:  -129.90365333160776
+  @UKS Final Energy:  -129.90365333167699
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.7240765763372110
-    Two-Electron Energy =                  84.6634183645214193
-    DFT Exchange-Correlation Energy =     -12.4336027890838441
+    One-Electron Energy =                -227.7240956126432252
+    Two-Electron Energy =                  84.6634393877342433
+    DFT Exchange-Correlation Energy =     -12.4336047760598785
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.9036533316077566
+    Total Energy =                       -129.9036533316769919
 
-
-Properties computed using the DFT density matrix
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
   ==> Properties <==
 
+
+Properties computed using the SCF density density matrix
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0044
 
@@ -321,18 +326,18 @@ Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ub at Wed Dec  5 12:57:11 2012
+*** tstop() called on bozkaya at Thu Apr  4 15:33:52 2013
 Module time:
-	user time   =      12.78 seconds =       0.21 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      25.49 seconds =       0.42 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 Total time:
-	user time   =      12.78 seconds =       0.21 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      25.49 seconds =       0.42 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on ub
-*** at Wed Dec  5 12:57:11 2012
+*** tstart() called on bozkaya
+*** at Thu Apr  4 15:33:52 2013
 
 
 
@@ -354,18 +359,26 @@ Total time:
   DIE_IF_NOT_CONVERGED   => TRUE             
   DOCC                   => [  ]             
   DO_DIIS                => TRUE             
-  DO_LEVEL_SHIFT         => FALSE            
+  DO_LEVEL_SHIFT         => TRUE             
   DO_SCS                 => FALSE            
   DO_SOS                 => FALSE            
   E3_SCALE               => 0.25             
-  E_CONVERGENCE          => 1e-08            
+  EA_POLES               => FALSE            
+  EKT_EA                 => FALSE            
+  EKT_IP                 => FALSE            
+  EP_EA_POLES            => FALSE            
+  EP_IP_POLES            => FALSE            
+  EP_MAXITER             => 30               
+  E_CONVERGENCE          => 1e-08           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
+  IP_POLES               => FALSE            
   LEVEL_SHIFT            => 0.02             
   LINEQ_SOLVER           => CDGESV           
   MAT_NUM_COLUMN_PRINT   => 5                
   MAX_MOGRAD_CONVERGENCE => 0.001            
+  MOGRAD_DAMPING         => 1                
   MO_DIIS_NUM_VECS       => 6                
   MO_MAXITER             => 50               
   MO_READ                => FALSE            
@@ -375,11 +388,13 @@ Total time:
   MP2_SOS_SCALE          => 1.3              
   MP2_SOS_SCALE2         => 1.2              
   MP2_SS_SCALE           => 0.333333         
+  MP2_TYPE               => DF               
   NAT_ORBS               => FALSE            
   NUM_FROZEN_DOCC        => 0                
   NUM_FROZEN_UOCC        => 0                
   OCC_ORBS_PRINT         => FALSE            
   OPT_METHOD             => ORB_RESP         
+  ORB_OPT                => TRUE             
   ORB_RESP_SOLVER        => PCG              
   ORTH_TYPE              => MGS              
   PCG_BETA_TYPE          => FLETCHER_REEVES  
@@ -389,7 +404,7 @@ Total time:
   PROPERTIES             => [  ]             
   PROPERTIES_ORIGIN      => [  ]             
   PUREAM                 => TRUE             
-  RMS_MOGRAD_CONVERGENCE => 1e-05            
+  RMS_MOGRAD_CONVERGENCE => 1e-06            
   R_CONVERGENCE          => 1e-05            
   SCS_TYPE               => SCS              
   SOCC                   => [  ]             
@@ -398,6 +413,7 @@ Total time:
   UNITS                  => ANGSTROMS        
   WFN                    => SCF              
   WFN_TYPE               => OCEPA           !
+  WRITER_FILE_LABEL      => (empty)          
 
 
  ============================================================================== 
@@ -406,7 +422,7 @@ Total time:
 
                        OCEPA (OO-CEPA)   
               Program Written by Ugur Bozkaya,
-              Latest Revision December 05, 2012.
+              Latest Revision April 2, 2013.
 
  ============================================================================== 
  ============================================================================== 
@@ -425,21 +441,21 @@ Total time:
 	Computing MP2 energy using SCF MOs (Canonical MP2)... 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.90365333160776
-	REF Energy (a.u.)                  : -129.24652516389821
-	Alpha-Alpha Contribution (a.u.)    : -0.04906568798640
-	Alpha-Beta Contribution (a.u.)     : -0.32275140671208
-	Beta-Beta Contribution (a.u.)      : -0.05520616097252
-	Scaled_SS Correlation Energy (a.u.): -0.03475728298630
-	Scaled_OS Correlation Energy (a.u.): -0.38730168805450
-	SCS-MP2 Total Energy (a.u.)        : -129.66858413493901
-	SOS-MP2 Total Energy (a.u.)        : -129.66610199262391
-	SCSN-MP2 Total Energy (a.u.)       : -129.43004361806589
-	SCS-MI-MP2 Total Energy (a.u.)     : -129.51013641174004
-	SCS-MP2-VDW Total Energy (a.u.)    : -129.71178288896911
-	SOS-PI-MP2 Total Energy (a.u.)     : -129.69837713329514
-	MP2 Correlation Energy (a.u.)      : -0.42702325567100
-	MP2 Total Energy (a.u.)            : -129.67354841956922
+	SCF Energy (a.u.)                  : -129.90365333167699
+	REF Energy (a.u.)                  : -129.24652515940846
+	Alpha-Alpha Contribution (a.u.)    : -0.04906568507661
+	Alpha-Beta Contribution (a.u.)     : -0.32275141358886
+	Beta-Beta Contribution (a.u.)      : -0.05520616814938
+	Scaled_SS Correlation Energy (a.u.): -0.03475728440866
+	Scaled_OS Correlation Energy (a.u.): -0.38730169630664
+	SCS-MP2 Total Energy (a.u.)        : -129.66858414012376
+	SOS-MP2 Total Energy (a.u.)        : -129.66610199707398
+	SCSN-MP2 Total Energy (a.u.)       : -129.43004362108621
+	SCS-MI-MP2 Total Energy (a.u.)     : -129.51013641550554
+	SCS-MP2-VDW Total Energy (a.u.)    : -129.71178289541518
+	SOS-PI-MP2 Total Energy (a.u.)     : -129.69837713843287
+	MP2 Correlation Energy (a.u.)      : -0.42702326681486
+	MP2 Total Energy (a.u.)            : -129.67354842622331
 	============================================================================== 
 
 	Number of alpha independent-pairs: 84
@@ -452,14 +468,52 @@ Total time:
 	            --------------------------- 
  Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    
  ----    ---------------    ----------     -----------      -----------     ---------- 
-   1     -129.6573887173      1.62e-02       4.65e-04         1.00e-02        6.88e-06 
-   2     -129.6743599043     -1.70e-02       1.08e-04         6.82e-03        8.16e-07 
-   3     -129.6737747666      5.85e-04       1.15e-04         5.63e-03        7.32e-07 
-   4     -129.6752176890     -1.44e-03       1.07e-04         5.91e-03        2.70e-07 
-   5     -129.6755101499     -2.92e-04       1.20e-04         5.07e-03        2.23e-07 
-   6     -129.6757619283     -2.52e-04       3.63e-05         1.84e-03        1.81e-07 
-   7     -129.6758956532     -1.34e-04       2.96e-05         1.66e-03        1.15e-07 
-   8     -129.6759904088     -9.48e-05       7.81e-06         4.65e-04        7.66e-08 
+   1     -129.6573887149      1.62e-02       4.65e-04         1.00e-02        6.88e-06 
+   2     -129.6743599029     -1.70e-02       1.08e-04         6.82e-03        8.16e-07 
+   3     -129.6737747657      5.85e-04       1.15e-04         5.63e-03        7.32e-07 
+   4     -129.6752176860     -1.44e-03       1.07e-04         5.91e-03        2.70e-07 
+   5     -129.6755101486     -2.92e-04       1.20e-04         5.07e-03        2.23e-07 
+   6     -129.6757646938     -2.55e-04       3.32e-05         2.00e-03        1.66e-07 
+   7     -129.6758983072     -1.34e-04       2.41e-05         1.26e-03        1.19e-07 
+   8     -129.6759858090     -8.75e-05       1.45e-05         7.64e-04        7.73e-08 
+   9     -129.6760378461     -5.20e-05       1.43e-05         6.47e-04        5.74e-08 
+  10     -129.6760773682     -3.95e-05       7.97e-06         3.70e-04        3.51e-08 
+  11     -129.6761021228     -2.48e-05       9.45e-06         4.28e-04        2.46e-08 
+  12     -129.6761215380     -1.94e-05       1.24e-05         6.10e-04        1.46e-08 
+  13     -129.6761350715     -1.35e-05       1.27e-05         6.46e-04        9.51e-09 
+  14     -129.6761453523     -1.03e-05       1.31e-05         6.81e-04        5.98e-09 
+  15     -129.6761532267     -7.87e-06       1.39e-05         7.41e-04        3.75e-09 
+  16     -129.6761594788     -6.25e-06       1.54e-05         8.47e-04        3.15e-09 
+  17     -129.6761629803     -3.50e-06       7.62e-06         2.96e-04        7.35e-09 
+  18     -129.6761678498     -4.87e-06       7.19e-06         2.57e-04        3.09e-09 
+  19     -129.6761697838     -1.93e-06       7.06e-06         2.23e-04        3.59e-09 
+  20     -129.6761721688     -2.38e-06       7.25e-06         2.12e-04        2.92e-09 
+  21     -129.6761736404     -1.47e-06       1.26e-05         4.49e-04        4.59e-09 
+  22     -129.6761769894     -3.35e-06       1.38e-05         4.94e-04        2.17e-09 
+  23     -129.6761783743     -1.38e-06       4.28e-06         1.23e-04        4.10e-09 
+  24     -129.6761796362     -1.26e-06       2.50e-06         8.47e-05        1.97e-09 
+  25     -129.6761813809     -1.74e-06       2.63e-06         6.15e-05        1.83e-09 
+  26     -129.6761826578     -1.28e-06       4.50e-06         1.86e-04        1.53e-09 
+  27     -129.6761830133     -3.56e-07       1.14e-06         6.31e-05        1.33e-09 
+  28     -129.6761838940     -8.81e-07       3.90e-07         2.48e-05        1.34e-09 
+  29     -129.6761844802     -5.86e-07       3.51e-07         1.06e-05        1.23e-09 
+  30     -129.6761851549     -6.75e-07       1.80e-07         8.57e-06        1.06e-09 
+  31     -129.6761856648     -5.10e-07       5.23e-08         3.03e-06        9.70e-10 
+  32     -129.6761860415     -3.77e-07       2.60e-07         1.32e-05        9.53e-10 
+  33     -129.6761864443     -4.03e-07       2.07e-07         9.98e-06        8.52e-10 
+  34     -129.6761868077     -3.63e-07       1.62e-07         7.96e-06        7.67e-10 
+  35     -129.6761871033     -2.96e-07       1.77e-07         9.51e-06        6.97e-10 
+  36     -129.6761873531     -2.50e-07       1.78e-07         9.38e-06        6.41e-10 
+  37     -129.6761875209     -1.68e-07       1.96e-07         1.02e-05        6.04e-10 
+  38     -129.6761877582     -2.37e-07       2.10e-07         1.19e-05        5.67e-10 
+  39     -129.6761878600     -1.02e-07       2.54e-07         1.42e-05        5.47e-10 
+  40     -129.6761879669     -1.07e-07       2.54e-07         1.51e-05        4.90e-10 
+  41     -129.6761880633     -9.65e-08       2.78e-07         1.65e-05        4.70e-10 
+  42     -129.6761881500     -8.67e-08       2.73e-07         1.57e-05        5.17e-10 
+  43     -129.6761882548     -1.05e-07       2.00e-07         1.07e-05        5.59e-10 
+  44     -129.6761882995     -4.47e-08       1.87e-07         1.04e-05        5.21e-10 
+  45     -129.6761883647     -6.52e-08       3.83e-08         2.14e-06        7.20e-10 
+  46     -129.6761884450     -8.02e-08       1.22e-08         4.46e-07        4.57e-10 
 
  ============================================================================== 
  ======================== OCEPA ITERATIONS ARE CONVERGED ====================== 
@@ -475,16 +529,11 @@ Total time:
 
   Iter    E_corr           E_total            DE           T2 RMS        
   ----   -------------    ---------------    ----------   ----------    
-   1     0.2276126664    -129.6760406653     -5.03e-05     4.95e-08 
-   2     0.2274573439    -129.6761959877     -1.55e-04     3.12e-08 
-   3     0.2274804215    -129.6761729101      2.31e-05     1.40e-08 
-   4     0.2274669095    -129.6761864221     -1.35e-05     8.97e-09 
-   5     0.2274677845    -129.6761855471      8.75e-07     2.44e-09 
-   6     0.2274659909    -129.6761873407     -1.79e-06     1.36e-09 
-   7     0.2274660218    -129.6761873098      3.09e-08     6.70e-10 
-   8     0.2274661490    -129.6761871826      1.27e-07     6.45e-10 
-   9     0.2274662251    -129.6761871065      7.60e-08     3.97e-10 
-  10     0.2274662322    -129.6761870994      7.16e-09     2.23e-10 
+   1     0.2274648508    -129.6761884809     -3.59e-08     3.08e-10 
+   2     0.2274646122    -129.6761887195     -2.39e-07     2.74e-10 
+   3     0.2274645935    -129.6761887382     -1.87e-08     2.17e-10 
+   4     0.2274645826    -129.6761887490     -1.08e-08     1.47e-10 
+   5     0.2274645823    -129.6761887494     -3.39e-10     9.14e-11 
 
  ============================================================================== 
  ======================== CEPA ITERATIONS ARE CONVERGED ======================= 
@@ -494,24 +543,22 @@ Total time:
 	================ OCEPA FINAL RESULTS ========================================= 
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
-	SCF Energy (a.u.)                  : -129.90365333160776
-	REF Energy (a.u.)                  : -129.25412866314485
-	SCS-OCEPA(0) Total Energy (a.u.)   : -129.77869923393143
-	SOS-OCEPA(0) Total Energy (a.u.)   : -129.69654222897313
-	OCEPA(0) Correlation Energy (a.u.) : 0.22746623224330
-	Eocepa - Eref (a.u.)               : -0.42205843621960
-	OCEPA(0) Total Energy (a.u.)       : -129.67618709936445
+	SCF Energy (a.u.)                  : -129.90365333167699
+	REF Energy (a.u.)                  : -129.25412289297796
+	SCS-OCEPA(0) Total Energy (a.u.)   : -129.77870622853129
+	SOS-OCEPA(0) Total Energy (a.u.)   : -129.69657712980472
+	OCEPA(0) Correlation Energy (a.u.) : 0.22746458229088
+	Eocepa - Eref (a.u.)               : -0.42206585640815
+	OCEPA(0) Total Energy (a.u.)       : -129.67618874938611
 	============================================================================== 
 
 
-*** tstop() called on ub at Wed Dec  5 12:57:15 2012
+*** tstop() called on bozkaya at Thu Apr  4 15:34:03 2013
 Module time:
-	user time   =       4.05 seconds =       0.07 minutes
-	system time =       0.70 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =      14.54 seconds =       0.24 minutes
+	system time =       3.13 seconds =       0.05 minutes
+	total time  =         11 seconds =       0.18 minutes
 Total time:
-	user time   =      16.83 seconds =       0.28 minutes
-	system time =       0.83 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
-
-*** PSI4 exiting successfully. Buy a developer a beer!
+	user time   =      40.03 seconds =       0.67 minutes
+	system time =       3.33 seconds =       0.06 minutes
+	total time  =         20 seconds =       0.33 minutes
