@@ -1,8 +1,8 @@
 #! OCEPA cc-pVDZ gradient for the NO radical
 
 ref_vals = [                                                       #TEST
-             [ 0.000000000000,  0.000000000000,  0.007406953679],  #TEST
-             [ 0.000000000000,  0.000000000000, -0.007406953679]   #TEST
+             [ 0.000000000000,  0.000000000000,  0.007482806046],  #TEST
+             [ 0.000000000000,  0.000000000000, -0.007482806046]   #TEST
            ]                                                       #TEST
 ref = PsiMod.Matrix(2, 3)                                          #TEST
 ref.set(ref_vals)
@@ -23,5 +23,5 @@ set {
 gradient('ocepa')
 
 grad = PsiMod.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 

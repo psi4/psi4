@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta3+ Driver
 
-               Git: Rev {master} da03939ae76153e64151ec5b85250d20165c795d
+               Git: Rev {master} ae646e4342aedfa6ec06bb2190a62ca091f44c23
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -14,7 +14,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:   2498
+    Process ID:  10724
     PSI4DATADIR: /home/ugur/psi4/lib
 
     Using LocalCommunicator (Number of processes = 1)
@@ -56,7 +56,7 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
   Memory set to 250.000 MiB by Python script.
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:41:45 2013
+*** at Thu Apr  4 15:21:57 2013
 
 
          ---------------------------------------------------------
@@ -166,31 +166,31 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
    @UHF iter   1:  -128.32791740958137   -1.28328e+02   1.49520e-01 
    @UHF iter   2:  -128.82485579451017   -4.96938e-01   6.66388e-02 DIIS
    @UHF iter   3:  -129.16102237052385   -3.36167e-01   3.14831e-02 DIIS
-   @UHF iter   4:  -129.25852230067434   -9.74999e-02   1.24509e-03 DIIS
-   @UHF iter   5:  -129.25884141262796   -3.19112e-04   4.49610e-04 DIIS
-   @UHF iter   6:  -129.25890547098652   -6.40584e-05   2.32732e-04 DIIS
-   @UHF iter   7:  -129.25894147789245   -3.60069e-05   1.80126e-04 DIIS
-   @UHF iter   8:  -129.25897090061295   -2.94227e-05   1.74253e-04 DIIS
-   @UHF iter   9:  -129.25903169567866   -6.07951e-05   1.62784e-04 DIIS
-   @UHF iter  10:  -129.25917324892697   -1.41553e-04   1.37986e-04 DIIS
-   @UHF iter  11:  -129.25933664025115   -1.63391e-04   1.01832e-04 DIIS
-   @UHF iter  12:  -129.25940573607608   -6.90958e-05   4.80316e-05 DIIS
-   @UHF iter  13:  -129.25940522542794    5.10648e-07   2.81985e-05 DIIS
-   @UHF iter  14:  -129.25940686388461   -1.63846e-06   1.06308e-05 DIIS
+   @UHF iter   4:  -129.25852230067431   -9.74999e-02   1.24509e-03 DIIS
+   @UHF iter   5:  -129.25884141262793   -3.19112e-04   4.49610e-04 DIIS
+   @UHF iter   6:  -129.25890547098649   -6.40584e-05   2.32732e-04 DIIS
+   @UHF iter   7:  -129.25894147789248   -3.60069e-05   1.80126e-04 DIIS
+   @UHF iter   8:  -129.25897090061289   -2.94227e-05   1.74253e-04 DIIS
+   @UHF iter   9:  -129.25903169567863   -6.07951e-05   1.62784e-04 DIIS
+   @UHF iter  10:  -129.25917324892700   -1.41553e-04   1.37986e-04 DIIS
+   @UHF iter  11:  -129.25933664025109   -1.63391e-04   1.01832e-04 DIIS
+   @UHF iter  12:  -129.25940573607602   -6.90958e-05   4.80316e-05 DIIS
+   @UHF iter  13:  -129.25940522542800    5.10648e-07   2.81985e-05 DIIS
+   @UHF iter  14:  -129.25940686388466   -1.63846e-06   1.06308e-05 DIIS
    @UHF iter  15:  -129.25940696426383   -1.00379e-07   2.12644e-06 DIIS
-   @UHF iter  16:  -129.25940696815249   -3.88866e-09   9.97830e-08 DIIS
-   @UHF iter  17:  -129.25940696814953    2.95586e-12   9.43536e-08 DIIS
-   @UHF iter  18:  -129.25940696815923   -9.69180e-12   1.52077e-08 DIIS
-   @UHF iter  19:  -129.25940696815954   -3.12639e-13   8.03237e-09 DIIS
-   @UHF iter  20:  -129.25940696815957   -2.84217e-14   9.31273e-10 DIIS
-   @UHF iter  21:  -129.25940696815962   -5.68434e-14   4.97249e-10 DIIS
-   @UHF iter  22:  -129.25940696815965   -2.84217e-14   2.32573e-11 DIIS
+   @UHF iter  16:  -129.25940696815252   -3.88869e-09   9.97830e-08 DIIS
+   @UHF iter  17:  -129.25940696814945    3.06954e-12   9.43536e-08 DIIS
+   @UHF iter  18:  -129.25940696815925   -9.80549e-12   1.52077e-08 DIIS
+   @UHF iter  19:  -129.25940696815962   -3.69482e-13   8.03237e-09 DIIS
+   @UHF iter  20:  -129.25940696815951    1.13687e-13   9.31273e-10 DIIS
+   @UHF iter  21:  -129.25940696815960   -8.52651e-14   4.97250e-10 DIIS
+   @UHF iter  22:  -129.25940696815965   -5.68434e-14   2.32577e-11 DIIS
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   6.678281465E-02
+   @Spin Contamination Metric:   6.678281452E-02
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                8.167828146E-01
+   @S^2 Observed:                8.167828145E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -241,11 +241,11 @@ compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
    => Energetics <=
 
     Nuclear Repulsion Energy =             25.5906076692918809
-    One-Electron Energy =                -227.4137399910333670
-    Two-Electron Energy =                  72.5637253535818729
+    One-Electron Energy =                -227.4137399910334238
+    Two-Electron Energy =                  72.5637253535819013
     DFT Exchange-Correlation Energy =       0.0000000000000000
     Empirical Dispersion Energy =           0.0000000000000000
-    Total Energy =                       -129.2594069681596238
+    Total Energy =                       -129.2594069681596523
 
 
 
@@ -269,18 +269,18 @@ Properties computed using the SCF density density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on bozkaya at Fri Mar 29 11:41:45 2013
+*** tstop() called on bozkaya at Thu Apr  4 15:21:58 2013
 Module time:
 	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:41:45 2013
+*** at Thu Apr  4 15:21:58 2013
 
 
 
@@ -302,7 +302,7 @@ Total time:
   DIE_IF_NOT_CONVERGED   => TRUE             
   DOCC                   => [  ]             
   DO_DIIS                => TRUE             
-  DO_LEVEL_SHIFT         => FALSE            
+  DO_LEVEL_SHIFT         => TRUE             
   DO_SCS                 => FALSE            
   DO_SOS                 => FALSE            
   E3_SCALE               => 0.25             
@@ -312,7 +312,7 @@ Total time:
   EP_EA_POLES            => FALSE            
   EP_IP_POLES            => FALSE            
   EP_MAXITER             => 30               
-  E_CONVERGENCE          => 1e-08            
+  E_CONVERGENCE          => 1e-08           !
   FREEZE_CORE            => FALSE            
   FROZEN_DOCC            => [  ]             
   FROZEN_UOCC            => [  ]             
@@ -331,6 +331,7 @@ Total time:
   MP2_SOS_SCALE          => 1.3              
   MP2_SOS_SCALE2         => 1.2              
   MP2_SS_SCALE           => 0.333333         
+  MP2_TYPE               => DF               
   NAT_ORBS               => FALSE            
   NUM_FROZEN_DOCC        => 0                
   NUM_FROZEN_UOCC        => 0                
@@ -346,7 +347,7 @@ Total time:
   PROPERTIES             => [  ]             
   PROPERTIES_ORIGIN      => [  ]             
   PUREAM                 => TRUE             
-  RMS_MOGRAD_CONVERGENCE => 1e-05            
+  RMS_MOGRAD_CONVERGENCE => 1e-06            
   R_CONVERGENCE          => 1e-05            
   SCS_TYPE               => SCS              
   SOCC                   => [  ]             
@@ -364,7 +365,7 @@ Total time:
 
                        MP3   
               Program Written by Ugur Bozkaya,
-              Latest Revision March 26, 2013.
+              Latest Revision April 2, 2013.
 
  ============================================================================== 
  ============================================================================== 
@@ -384,20 +385,20 @@ Total time:
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
 	SCF Energy (a.u.)                  : -129.25940696815965
-	REF Energy (a.u.)                  : -129.25940696815962
-	Alpha-Alpha Contribution (a.u.)    : -0.04426888409859
-	Alpha-Beta Contribution (a.u.)     : -0.23151427842672
-	Beta-Beta Contribution (a.u.)      : -0.04333081020231
-	Scaled_SS Correlation Energy (a.u.): -0.02919989810030
-	Scaled_OS Correlation Energy (a.u.): -0.27781713411206
-	SCS-MP2 Total Energy (a.u.)        : -129.56642400037200
-	SOS-MP2 Total Energy (a.u.)        : -129.56037553011436
-	SCSN-MP2 Total Energy (a.u.)       : -129.41358243012922
-	SCS-MI-MP2 Total Energy (a.u.)     : -129.46501628517848
-	SCS-MP2-VDW Total Energy (a.u.)    : -129.59954509169626
-	SOS-PI-MP2 Total Energy (a.u.)     : -129.58352695795702
-	MP2 Correlation Energy (a.u.)      : -0.31911397272762
-	MP2 Total Energy (a.u.)            : -129.57852094088724
+	REF Energy (a.u.)                  : -129.25940696815965
+	Alpha-Alpha Contribution (a.u.)    : -0.04426888409903
+	Alpha-Beta Contribution (a.u.)     : -0.23151427843939
+	Beta-Beta Contribution (a.u.)      : -0.04333081020624
+	Scaled_SS Correlation Energy (a.u.): -0.02919989810176
+	Scaled_OS Correlation Energy (a.u.): -0.27781713412727
+	SCS-MP2 Total Energy (a.u.)        : -129.56642400038868
+	SOS-MP2 Total Energy (a.u.)        : -129.56037553013087
+	SCSN-MP2 Total Energy (a.u.)       : -129.41358243013693
+	SCS-MI-MP2 Total Energy (a.u.)     : -129.46501628518922
+	SCS-MP2-VDW Total Energy (a.u.)    : -129.59954509171470
+	SOS-PI-MP2 Total Energy (a.u.)     : -129.58352695797481
+	MP2 Correlation Energy (a.u.)      : -0.31911397274466
+	MP2 Total Energy (a.u.)            : -129.57852094090433
 	============================================================================== 
 
 
@@ -405,21 +406,21 @@ Total time:
 	============================================================================== 
 	Nuclear Repulsion Energy (a.u.)    : 25.59060766929188
 	SCF Energy (a.u.)                  : -129.25940696815965
-	REF Energy (a.u.)                  : -129.25940696815962
-	Alpha-Alpha Contribution (a.u.)    : -0.03963671296256
-	Alpha-Beta Contribution (a.u.)     : -0.24151475692055
-	Beta-Beta Contribution (a.u.)      : -0.03706233016771
-	MP2.5 Correlation Energy (a.u.)    : -0.31866388638919
-	MP2.5 Total Energy (a.u.)          : -129.57807085454886
-	SCS-MP3 Total Energy (a.u.)        : -129.56619895720280
-	SOS-MP3 Total Energy (a.u.)        : -129.56015048694516
-	SCSN-MP3 Total Energy (a.u.)       : -129.41335738696003
-	SCS-MI-MP3 Total Energy (a.u.)     : -129.46479124200928
-	SCS-MP3-VDW Total Energy (a.u.)    : -129.59932004852706
-	SOS-PI-MP3 Total Energy (a.u.)     : -129.58330191478782
-	3rd Order Energy (a.u.)            : 0.00090017267681
-	MP3 Correlation Energy (a.u.)      : -0.31821380005082
-	MP3 Total Energy (a.u.)            : -129.57762076821044
+	REF Energy (a.u.)                  : -129.25940696815965
+	Alpha-Alpha Contribution (a.u.)    : -0.03963671296185
+	Alpha-Beta Contribution (a.u.)     : -0.24151475692968
+	Beta-Beta Contribution (a.u.)      : -0.03706233017020
+	MP2.5 Correlation Energy (a.u.)    : -0.31866388640320
+	MP2.5 Total Energy (a.u.)          : -129.57807085456284
+	SCS-MP3 Total Energy (a.u.)        : -129.56619895721795
+	SOS-MP3 Total Energy (a.u.)        : -129.56015048696014
+	SCSN-MP3 Total Energy (a.u.)       : -129.41335738696620
+	SCS-MI-MP3 Total Energy (a.u.)     : -129.46479124201849
+	SCS-MP3-VDW Total Energy (a.u.)    : -129.59932004854397
+	SOS-PI-MP3 Total Energy (a.u.)     : -129.58330191480408
+	3rd Order Energy (a.u.)            : 0.00090017268295
+	MP3 Correlation Energy (a.u.)      : -0.31821380006173
+	MP3 Total Energy (a.u.)            : -129.57762076822138
 	============================================================================== 
 
 	Analytic gradient computation is starting...
@@ -427,18 +428,18 @@ Total time:
 	Number of beta independent-pairs : 55
 	Necessary information has been sent to DERIV, which will take care of the rest.
 
-*** tstop() called on bozkaya at Fri Mar 29 11:41:45 2013
+*** tstop() called on bozkaya at Thu Apr  4 15:21:58 2013
 Module time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.68 seconds =       0.01 minutes
+	user time   =       0.25 seconds =       0.00 minutes
 	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on bozkaya
-*** at Fri Mar 29 11:41:45 2013
+*** at Thu Apr  4 15:21:58 2013
 
  DERIV: Derivative code.
    by Justin Turney
@@ -495,39 +496,39 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000   -27.969982263965
-       2        0.000000000000     0.000000000000    27.969982263965
+       1        0.000000000000     0.000000000000   -27.969982262988
+       2        0.000000000000     0.000000000000    27.969982262988
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.894292780842
-       2        0.000000000000     0.000000000000    -0.894292780842
+       1        0.000000000000     0.000000000000     0.894292780779
+       2        0.000000000000     0.000000000000    -0.894292780779
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    15.233987905542
-       2        0.000000000000     0.000000000000   -15.233987905542
+       1        0.000000000000     0.000000000000    15.233987904710
+       2        0.000000000000     0.000000000000   -15.233987904710
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.147430133230
-       2        0.000000000000     0.000000000000     0.147430133229
+       1        0.000000000000     0.000000000000    -0.147430133149
+       2        0.000000000000     0.000000000000     0.147430133149
 
 
-*** tstop() called on bozkaya at Fri Mar 29 11:41:46 2013
+*** tstop() called on bozkaya at Thu Apr  4 15:21:58 2013
 Module time:
-	user time   =       0.52 seconds =       0.01 minutes
+	user time   =       0.55 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       1.26 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

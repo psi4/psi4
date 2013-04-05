@@ -1,9 +1,9 @@
 #! OCEPA cc-pVDZ gradient for the H2O molecule.
 
 ref_vals = [                                                       #TEST
-             [ 0.000000000000,  0.000000000000,  0.013951362724],  #TEST
-             [ 0.000000000000,  0.003301560792, -0.006975681362],  #TEST
-             [ 0.000000000000, -0.003301560792, -0.006975681362]   #TEST
+             [ 0.000000000000,  0.000000000000,  0.013925312786],  #TEST
+             [ 0.000000000000,  0.003258957095, -0.006962656393],  #TEST
+             [ 0.000000000000, -0.003258957095, -0.006962656393]   #TEST
            ]                                                       #TEST
 ref = PsiMod.Matrix(3, 3)                                          #TEST
 ref.set(ref_vals)
@@ -23,5 +23,5 @@ set {
 gradient('ocepa')
 
 grad = PsiMod.wavefunction().gradient()                           #TEST
-compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
