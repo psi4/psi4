@@ -107,10 +107,10 @@ void CoupledCluster::common_init() {
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CCSD
-  emp2_os_fac = options_.get_double("MP2_SCALE_OS");
-  emp2_ss_fac = options_.get_double("MP2_SCALE_SS");
-  eccsd_os_fac = options_.get_double("CC_SCALE_OS");
-  eccsd_ss_fac = options_.get_double("CC_SCALE_SS");
+  emp2_os_fac = options_.get_double("MP2_OS_SCALE");
+  emp2_ss_fac = options_.get_double("MP2_SS_SCALE");
+  eccsd_os_fac = options_.get_double("CC_OS_SCALE");
+  eccsd_ss_fac = options_.get_double("CC_SS_SCALE");
 
   // quit if number of virtuals is less than number of doubly occupied
   if (nvirt<ndoccact){

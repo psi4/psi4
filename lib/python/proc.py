@@ -163,8 +163,8 @@ def run_scs_omp2(name, **kwargs):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp2'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    elif (lowername == 'scs-mi-omp2'):
-        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+    #elif (lowername == 'scs-mi-omp2'):
+    #    PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp2-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
@@ -290,8 +290,8 @@ def run_scs_omp3(name, **kwargs):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp3'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    elif (lowername == 'scs-mi-omp3'):
-        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+    #elif (lowername == 'scs-mi-omp3'):
+    #    PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp3-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
@@ -823,7 +823,7 @@ def run_dfmp2_gradient(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
@@ -1171,7 +1171,7 @@ def run_dfmp2_property(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
@@ -1381,7 +1381,7 @@ def run_detci(name, **kwargs):
         ['DETCI', 'EX_LEVEL'])
 
     user_ref = PsiMod.get_option('DETCI', 'REFERENCE')
-    if (user_ref != 'RHF') or (user_ref != 'ROHF'):
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
         raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
 
     if (name.lower() == 'zapt'):
@@ -1491,7 +1491,7 @@ def run_dfmp2(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
