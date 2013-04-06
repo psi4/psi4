@@ -75,9 +75,6 @@ void HF::common_init()
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
-    current_ints_type_ = Standard;
-    df_to_direct_switch_ = 100;
-
     integral_threshold_ = options_.get_double("INTS_TOLERANCE");
 
     scf_type_ = options_.get_str("SCF_TYPE");
@@ -332,32 +329,6 @@ void HF::integrals()
 {
     if (print_ && WorldComm->me() == 0)
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
-
-    // We need some integrals on disk for these cases
-    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        // Don't do anything; the JK object will handle everything!
-    }else if (scf_type_ == "DF"){
-        mints->one_electron_integrals();
-        density_fitted_ = true;
-    }else if (scf_type_ == "DIRECT"){
-        if(current_ints_type_ == Standard){// We might also need to check that this is a serial run!
-            mints->one_electron_integrals();
-            current_ints_type_ = DFtoDirect;
-            if (print_ && WorldComm->me() == 0)
-                fprintf(outfile, "  Starting with a DF guess...\n\n");
-            energy_threshold_ *= df_to_direct_switch_;
-            density_threshold_ *= df_to_direct_switch_;
-            if(!options_["DF_BASIS_SCF"].has_changed())
-                molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
-            scf_type_ = "DF";
-            options_.set_str("SCF", "SCF_TYPE","DF");
-        }else{
-            // Truly a direct calc
-            if (current_ints_type_ == Standard)
-              mints->one_electron_integrals();
-        }
-    }
 
     // Build the JK from options, symmetric type
     jk_ = JK::build_JK();
@@ -1415,7 +1386,22 @@ double HF::compute_energy()
     if (print_)
         print_preiterations();
 
+    // Andy trick 2.0
+    std::string old_scf_type = options_.get_str("SCF_TYPE");
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+         fprintf(outfile, "  Starting with a DF guess...\n\n");
+         if(!options_["DF_BASIS_SCF"].has_changed()) {
+             // TODO: Match Dunning basis sets 
+             molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+         }
+         scf_type_ = "DF";
+         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+    }
+
     if(attempt_number_ == 1){
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        mints->one_electron_integrals();
+
         integrals();
 
         timer_on("Form H");
@@ -1559,28 +1545,23 @@ double HF::compute_energy()
             fflush(outfile);
         }
 
-        // Check to see if we need to switch over to direct integrals
-        if(converged && (current_ints_type_ == DFtoDirect)){
-            // Reset convergence info, to the original settings
-            converged = false;
-            energy_threshold_ /= df_to_direct_switch_;
-            density_threshold_ /= df_to_direct_switch_;
-            if (print_ && WorldComm->me() == 0)
-                fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
-            // Get all the integrals back to normal
-            current_ints_type_ = SwitchedToDirect;
-            scf_type_ = "DIRECT";
-            options_.set_str("SCF", "SCF_TYPE","DIRECT");
-            if(initialized_diis_manager_)
-                diis_manager_->reset_subspace();
-            integrals();
-        }
-
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
 
         // If a fractional occupation is requested but not started, don't stop yet
         if (frac_enabled_ && !frac_performed_) converged = false;
+
+        // If a DF Guess environment, reset the JK object, and keep running
+        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+            fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
+            converged = false;
+            if(initialized_diis_manager_)
+                diis_manager_->reset_subspace();
+            scf_type_ = old_scf_type;
+            options_.set_str("SCF","SCF_TYPE",old_scf_type);
+            old_scf_type = "DF";
+            integrals();
+        }
 
         // Call any postiteration callbacks
         call_postiteration_callbacks();

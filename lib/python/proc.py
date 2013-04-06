@@ -598,7 +598,9 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
-        ['SCF', 'DF_INTS_IO'])
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'SCF_TYPE'] # Hack: scope gets changed internally with the Andy trick
+    )
 
     # if the df_basis_scf basis is not set, pick a sensible one.
     if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
