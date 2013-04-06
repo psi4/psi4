@@ -35,9 +35,6 @@ namespace scf {
 class HF : public Wavefunction {
 protected:
 
-    /// The current integral technology being used, to help with switching
-    enum IntsStatus {Standard, DFtoDirect, SwitchedToDirect};
-
     /// The kinetic energy matrix
     SharedMatrix T_;
     /// The 1e potential energy matrix
@@ -88,11 +85,6 @@ protected:
 
     /// SOCC vector from input (if found)
     bool input_socc_;
-
-    /// How to handle cases where we start with DF integrals, then switch to Direct
-    IntsStatus current_ints_type_;
-    /// Controls how close the DF guess has to get, before switching to direct ints
-    double df_to_direct_switch_;
 
     //Initial SAD doubly occupied may be more than ndocc
     int sad_nocc_[8];
