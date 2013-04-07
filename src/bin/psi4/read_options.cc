@@ -907,7 +907,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF");
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
