@@ -1053,6 +1053,7 @@ AC_CONFIG_FILES([
           tests/dfmp2-1/Makefile
           tests/dfmp2-2/Makefile
           tests/dfmp2-3/Makefile
+          tests/dfmp2-4/Makefile
           tests/pywrap-db1/Makefile
           tests/pywrap-db2/Makefile
           tests/pywrap-cbs1/Makefile
