@@ -11,8 +11,7 @@ o 1 1.158
 set global {
   basis cc-pvdz
   guess gwh
-  reference uhf
-  e_convergence 8
+  reference rohf
 }
 energy('omp2.5')
 

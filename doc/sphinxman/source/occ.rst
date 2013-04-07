@@ -200,13 +200,13 @@ The conventional and orbital-optimized MP2 methods currently supported in |Psifo
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scsn-omp2               | A special version of SCS-OMP2 for nucleobase interactions    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
-    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scs-omp2-vdw            | A special version of SCS-OMP2 (from ethene dimers)           |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | sos-pi-omp2             | A special version of SOS-OMP2 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
+.. comment    | scs-mi-omp2             | A special version of SCS-OMP2 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+.. comment    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 The conventional and orbital-optimized MP3 methods currently supported in |Psifour| are outlined in Table :ref:`OMP3 Methods <table:omp3_calls>`.
 
     .. _`table:omp3_calls`:
@@ -224,12 +224,13 @@ The conventional and orbital-optimized MP3 methods currently supported in |Psifo
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scsn-omp3               | A special version of SCS-OMP3 for nucleobase interactions    |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
-    | scs-mi-omp3             | A special version of SCS-OMP3 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
-    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | scs-omp3-vdw            | A special version of SCS-OMP3 (from ethene dimers)           |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
     | sos-pi-omp3             | A special version of SOS-OMP3 for :math:`\pi`-systems        |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
     +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
+
+.. comment    | scs-mi-omp3             | A special version of SCS-OMP3 (from S22 database)            |    Y    |     N    | RHF/ROHF/UHF/RKS/UKS   |
+.. comment    +-------------------------+--------------------------------------------------------------+---------+----------+------------------------+
 
 The conventional and orbital-optimized MP2.5 methods currently supported in |Psifour| are outlined in Table :ref:`OMP2.5 Methods <table:omp2_5_calls>`.
 
