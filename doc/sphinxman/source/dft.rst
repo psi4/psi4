@@ -553,6 +553,11 @@ errors incurred by the density fitting approximation (in a proper -JKFIT
 auxiliary basis) are orders of magnitude smaller than the accuracy of any known
 functional.
 
+Note: gradients with LRC functionals and DF integrals technology are not
+currently enabled. We hope to have a patch for this deficit soon. Please let us
+know if you have a strong need for this capability, and we will move the
+priority up.
+
 IP Fitting
 ~~~~~~~~~~
 
