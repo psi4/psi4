@@ -905,6 +905,10 @@ def run_cc_gradient(name, **kwargs):
         PsiMod.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
         PsiMod.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
 
+        user_ref = PsiMod.get_option('CCENERGY', 'REFERENCE')
+        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+            raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccdensity()
@@ -1197,6 +1201,11 @@ def run_eom_cc(name, **kwargs):
         PsiMod.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
         run_ccenergy('ccsd', **kwargs)
     elif (name.lower() == 'eom-cc2'):
+
+        user_ref = PsiMod.get_option('CCENERGY', 'REFERENCE')
+        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+            raise ValidationError('Reference %s for EOM-CC2 is not available.' % user_ref)
+
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
         PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
