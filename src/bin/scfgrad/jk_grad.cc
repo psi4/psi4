@@ -150,6 +150,7 @@ void DFJKGrad::compute_gradient()
         gradients_["Exchange"] = SharedMatrix(new Matrix("Exchange Gradient",natom,3));
     }
     if (do_wK_) {
+        throw PSIEXCEPTION("Exchange,LR gradients are not currently available with DF.");
         gradients_["Exchange,LR"] = SharedMatrix(new Matrix("Exchange,LR Gradient",natom,3));
     }
 
