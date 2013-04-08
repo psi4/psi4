@@ -485,7 +485,8 @@ void TwoBodySOInt::common_init()
                 deriv_[n][i] = &(buffer_[n][i*size_]);
         }
     }
-//    dprintf("ncd = %d size_ = %ld\n", ncd, size_);
+
+    cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
 }
 
 TwoBodySOInt::~TwoBodySOInt()

@@ -27,6 +27,9 @@ private:
     boost::shared_ptr<SOBasisSet> sobasis_;
     int print_;
 
+    /// Value which any two-electron integral is below is discarded
+    double cutoff_;
+
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv);
     // In-core O(N^5) transqt
