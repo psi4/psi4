@@ -86,6 +86,8 @@ DCFTSolver::run_qc_dcft()
         }
     }
 
+    fprintf(outfile, "\t*=================================================================================*\n");
+
     if(!orbitalsDone || !cumulantDone || !densityConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_,
                                lambda_convergence_, __FILE__, __LINE__);

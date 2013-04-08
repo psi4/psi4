@@ -205,8 +205,7 @@ Analytic Gradients
 
 Analytic gradients are available for the DC-06 method. Gradients are only
 available if the |dcft__algorithm| option is set to TWOSTEP or SIMULTANEOUS for
-the energy computation. In addition, |dcft__ao_basis| option must be set to NONE
-(default). Evaluation of the analytic gradients requires the solution of the
+the energy computation. Evaluation of the analytic gradients requires the solution of the
 coupled response equations. Two algorithms are available for their iterative
 solution: two-step (default) and simultaneous. These algorithms are similar to those
 described for the orbital and cumulant updates in the :ref:`Iterative Algorithms <sec:dcftalgorithms>`
@@ -263,9 +262,7 @@ Here is the list of the recommendations for the DCFT module:
   is preferred and can be significantly faster than two-step, as the result of
   smaller number of the expensive :math:`{\cal O}(N^6)` steps. In addition,
   significant savings can be achieved if one sets |dcft__ao_basis| option to
-  DISK together with simultaneous algorithm. It should be noted, however, that
-  the analytic gradients of the DC-06 method are currently not implemented for
-  ``AOBASIS DISK`` option. 
+  DISK together with simultaneous algorithm. 
 
 * In the case when insufficient memory is available, set |dcft__ao_basis| option
   to DISK. This will significantly reduce the memory requirements. However, when

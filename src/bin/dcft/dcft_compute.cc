@@ -34,7 +34,6 @@ DCFTSolver::compute_energy()
     // Things that are not implemented yet...
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("AO_BASIS") == "DISK") throw FeatureNotImplemented("DC-06 with AO_BASIS = DISK", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
@@ -47,10 +46,7 @@ DCFTSolver::compute_energy()
 
     // If not converged -> Break
     if(!scfDone_ || !lambdaDone_ || !densityConverged_)
-        throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_,
-                               lambda_convergence_, __FILE__, __LINE__);
-
-    fprintf(outfile, "\t*=================================================================================*\n");
+        throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_, lambda_convergence_, __FILE__, __LINE__);
 
     fprintf(outfile, "\n\t*DCFT SCF Energy                                 = %20.15f\n", scf_energy_);
     fprintf(outfile, "\t*DCFT Lambda Energy                              = %20.15f\n", lambda_energy_);
@@ -326,6 +322,8 @@ DCFTSolver::run_twostep_dcft()
         transform_integrals();
     }
 
+    fprintf(outfile, "\t*=================================================================================*\n");
+
 }
 
 void
@@ -471,6 +469,8 @@ DCFTSolver::run_simult_dcft()
                 new_total_energy_, diisString.c_str());
         fflush(outfile);
     }
+
+    fprintf(outfile, "\t*=================================================================================*\n");
 }
 
 }} // Namespaces
