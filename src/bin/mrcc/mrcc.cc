@@ -828,6 +828,9 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         ndoub = 1;
     }
 
+    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")
+        closed_shell = 0;
+
     int nsocc = active_socc.sum();
     int ntrip = 0;
     if (nsocc == 0) {
