@@ -22,7 +22,6 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <psifiles.h>
-#include "integralfunctors.h"
 
 #include <libmints/mints.h>
 

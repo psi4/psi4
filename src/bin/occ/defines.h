@@ -14,6 +14,7 @@
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
 
 #define DIIS_MIN_DET 1.0E-16
+#define DIVERGE 1.0E+3
 
 #endif /* DEFINES_ */
 

@@ -74,6 +74,13 @@ void set_params(void)
 //  Opt_params.scale_connectivity = 1.3;
     Opt_params.scale_connectivity = options.get_double("COVALENT_CONNECT");
 
+// When determining connectivity BETWEEN FRAGMENTS when fragment mode is set to
+// SIMPLE, distance coordinates are created if atoms on different fragments
+// are at a distance less than (this number) * sum of covalent radii {double}
+// The criterion is gradually increased until all fragments are connected.
+//  Opt_params.interfragment_scale_connectivity = 1.8;
+    Opt_params.interfragment_scale_connectivity = options.get_double("INTERFRAGMENT_CONNECT");
+
 // Whether to treat multiple molecule fragments as a single bonded molecule;
 // or via interfragment coordinates ; a primary difference is that in MULTI mode,
 // the interfragment coordinates are not redundant. {SINGLE, MULTI}
@@ -356,6 +363,10 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_SCALE_CONNECTIVITY);
   Opt_params.scale_connectivity = i / 10.0;
 
+// scale = i / 10   (default 18) // not yet implemented in QChem
+  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_SCALE_CONNECTIVITY);
+  Opt_params.interfragment_scale_connectivity = i/ 10;
+
 // multi-mode (0=single ; 1= multi) (default 0)
   i = rem_read(REM_GEOM_OPT2_FRAGMENT_MODE);
   if (i == 0)      Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
@@ -572,6 +583,8 @@ void print_params(void) {
   fprintf(outfile, "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
 
   fprintf(outfile, "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
+  fprintf(outfile, "interfragment_scale_connectivity = %18.2e\n",
+    Opt_params.interfragment_scale_connectivity);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
   fprintf(outfile, "fragment_mode          = %18s\n", "single");

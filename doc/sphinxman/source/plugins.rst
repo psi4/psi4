@@ -52,7 +52,8 @@ If the name you provide is not valid, |PSIfour| will complain.
 |PSIfour| will create a new directory with the name you specify for the
 plugin. In this example, a directory named myplugin will be created.
 
-All you need to do is cd into the directory and type make.
+All you need to do is cd into the directory and type make. Then execute
+psi4 in the directory on the default input file.
 
 |PSIfour| comes with a few templates that provide an excellent starting
 point. These include code that demonstrates AO, MO, and SO integrals. Use
@@ -62,6 +63,7 @@ one of the following commands that meets your needs::
    >>> psi4 --new-plugin myplugin +mointegrals
    >>> psi4 --new-plugin myplugin +sointegrals
    >>> psi4 --new-plugin myplugin +wavefunction
+   >>> psi4 --new-plugin myplugin +scf
 
 Several stable sample plugin directories are available to consult in the
 :source:`plugins` directory. Other plugin directories can be used as models
@@ -71,18 +73,18 @@ but are in active development. For documentation on plugin modules, see
 * :source:`plugins/aointegrals/aointegrals.cc.in` 
   An example that uses the LibMints library to generate and print AO basis (no symmetry) integrals.
 
-.. comment * :source:`tests/plugin_backtrans/backtrans.cc.in` 
-.. comment   A test of the one- and two-particle density matrix backtransformation code.
-.. comment * :source:`tests/plugin_ccsort/plugin_ccsort.cc.in`
+* :source:`tests/plugin_backtrans/backtrans.cc.in` 
+  A test of the one- and two-particle density matrix backtransformation code.
 
 * :source:`plugins/mointegrals/mointegrals.cc.in` 
   An example that uses the LibTrans library to generate and print MO basis integrals.
 
-* :source:`plugins/plugin_mp2/plugin_mp2.cc.in` 
+* :source:`plugins/mp2/mp2.cc.in` 
   A plugin that uses LibTrans to generate open- and closed-shell MP2 energies.
 
 * :source:`plugins/sointegrals/sointegrals.cc.in` 
   An example that uses the LibMints library to generate and print SO basis (with symmetry) integrals.
+
 
 Files in a Plugin Directory
 ---------------------------
@@ -96,12 +98,15 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   |PSIfour| code is not necessary. (|PSIfour| must have originally been
   compiled with configure directive ``--with-plugins``.)
 
-* **input.dat** |w---w| Sample input file for the plugin (old style).
-  Modifications to a standard input file needed to run the plugin are (1)
-  the line ``plugin_load("./myplugin.so")`` before any keyword setting to
-  load the plugin's options into |PSIfours| options data structure and (2)
-  the final line ``plugin("./myplugin.so")`` to call the plugin code after
-  any necessary preparatory modules (here, scf) have been run.
+* **input.dat** |w---w| Sample input file for the plugin.
+  Since the ``__init__.py`` file makes the plugin directory look like a
+  Python module, the plugin can be treated as such in an input file. The
+  location of the plugin directory must be included in :envvar:`PYTHONPATH`,
+  either externally in the calling shell or defined in the input file. Then,
+  the plugin can be loaded as ``import myplugin`` and executed as
+  ``energy('myplugin')``. Any other Python functions are also available from
+  the input file, *e.g.* ``myplugin.testfunction()``, note the namespace
+  protection.
 
 * **pymodule.py** |w---w| Python component of the plugin. The procedure
   for calling plugin code shown in ``input.dat`` sounds very simple, but it
@@ -123,16 +128,6 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
 
   .. literalinclude:: @SFNX_INCLUDE@lib/plugin/__init__.py.template
 
-* **inputalt.dat** |w---w| Sample input file for the plugin (new style).
-  Since the ``__init__.py`` file makes the plugin directory look like a
-  Python module, the plugin can be treated as such in an input file. The
-  location of the plugin directory must be included in :envvar:`PYTHONPATH`,
-  either externally in the calling shell or defined in the input file. Then,
-  the plugin can be loaded as ``import myplugin`` and executed as
-  ``energy('myplugin')``. Any other Python functions are also available from
-  the input file, *e.g.* ``myplugin.testfunction()``, note the namespace
-  protection.
-
 * **doc.rst** |w---w| Documentation file. Place in this file any notes,
   equations, warnings to users, todo lists, *etc.*. Plain text is fine,
   though reStructuredText is the ultimate goal. Remove the ``.. comment``
@@ -144,9 +139,9 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   for this file's final destination.
 
 To create a purely Python plugin, create a new plugin directory, then
-remove the ``Makefile``, ``myplugin.cc``, and ``input.dat`` files and
+remove the ``Makefile`` and ``myplugin.cc`` files and
 erase the shared object loading portion of ``__init__.py``. Create as many .py
 files as necessary (registering each one in ``__init__.py``), use
-``inputalt.dat`` as a model for loading the plugin, no recompile ever
+``input.dat`` as a model for loading the plugin, no recompile ever
 necessary.
 

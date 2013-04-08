@@ -29,7 +29,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
   // make all salcs for now, just in the case the symmetric ones don't come out identically
   // we'll try to restrict later
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact, 0xF, true, true);
+  CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
   fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);

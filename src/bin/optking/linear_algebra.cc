@@ -86,11 +86,18 @@ bool opt_symm_matrix_eig(double **A, int dim, double *evals) {
   char cv = 'V';  // compute evals and evects
 //  char cl = 'L';  // lower triangle (upper in C) is necessary
   char cl = 'U';  // upper triangle (lower triangle in C) is necessary
-  int lwork = 3 * dim;
   int rval, i, j;
   double tval;
-  double * work = opt_init_array(lwork);
 
+// Call to discover optimal memory
+  double *work = opt_init_array(1);
+  int lwork = -1;
+  F_DSYEV(&cv, &cl, &dim, A[0], &dim, evals, work, &lwork, &rval);
+  lwork = (int) work[0];
+  opt_free_array(work);
+
+// Now allocate memory and go
+  work = opt_init_array(lwork);
   F_DSYEV(&cv, &cl, &dim, A[0], &dim, evals, work, &lwork, &rval);
 
   opt_free_array(work);

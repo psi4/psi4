@@ -1,5 +1,4 @@
 #include <libqt/qt.h>
-
 #include "occwave.h"
 
 using namespace boost;

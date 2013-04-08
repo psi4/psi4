@@ -44,7 +44,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
 
   // Get SALCS from libmints: all modes with rotations and translations projected out
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact, 0xF, true, true);
+  CdSalcList salc_list(mol, fact, 0xFF, true, true);
 
   int Natom = mol->natom();
   fprintf(outfile,"\tNumber of atoms is %d.\n", Natom);

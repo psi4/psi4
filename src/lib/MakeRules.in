@@ -4,7 +4,7 @@
 # of the special target .PHONY
 #
 
-.PHONY:	all default install install_inc install_target install_man
+.PHONY:	all default install install_inc install_target
 .PHONY:	 clean oclean dclean target_clean
 
 #

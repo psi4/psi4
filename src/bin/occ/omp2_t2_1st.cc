@@ -1,5 +1,4 @@
 #include <libtrans/integraltransform.h>
-
 #include "defines.h"
 #include "occwave.h"
 

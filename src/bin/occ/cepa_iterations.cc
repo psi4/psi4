@@ -91,6 +91,9 @@ fflush(outfile);
       break;  
     }
 
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CEPA iterations are diverging");
+    }
 
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
@@ -110,6 +113,7 @@ fflush(outfile);
 else if (conver == 0) {
   fprintf(outfile,"\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
   fflush(outfile);
+  throw PSIEXCEPTION("CEPA iterations did not converge");
 }
 
 }// end main
