@@ -21,7 +21,7 @@ public:
     
     double compute_energy() { throw PSIEXCEPTION("SCFGrad needs a rehash, call Rob."); }
    
-    SharedMatrix compute_gradient(); 
+    SharedMatrix compute_gradient_(); 
 
     SharedMatrix compute_hessian();
 

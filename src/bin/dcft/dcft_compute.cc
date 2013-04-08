@@ -78,7 +78,7 @@ DCFTSolver::compute_energy()
         // Start the timers
         tstart();
         // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
-        compute_gradient();
+        compute_gradient_();
     }
 
     // Free up memory and close files
