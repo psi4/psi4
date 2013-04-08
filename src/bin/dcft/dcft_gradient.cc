@@ -8,7 +8,7 @@
 
 namespace psi{ namespace dcft{
 
-SharedMatrix DCFTSolver::compute_gradient()
+SharedMatrix DCFTSolver::compute_gradient_()
 {
     bool responseDone = false;
 
