@@ -253,7 +253,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: -o <filename>, --output <filename>
 
    Output file name. Use ``stdout`` as <filename> to redirect 
-   to the screen. Default: output.dat
+   to the screen. Default: when the input filename is "input.dat",
+   then the output filename defaults to "output.dat".  Otherwise, the
+   output filename defaults to the the input filename (subtracting
+   any ".in" or ".dat" suffix) plus ".out"
 
 .. option:: -m, --messy
 

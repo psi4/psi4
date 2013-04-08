@@ -39,7 +39,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact, 0xF, true, true);
+  CdSalcList salc_list(mol, fact, 0xFF, true, true);
   int Nirrep = salc_list.nirrep();
 
   // build vectors that list indices of salcs for each irrep
@@ -204,7 +204,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     }
 
     // diagonalize force constant matrix
-    int dim = salcs_pi[h].size(); 
+    int dim = salcs_pi[h].size();
     double *evals= init_array(dim);
     double **evects = block_matrix(dim, dim);
 
@@ -214,7 +214,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
     double **B_irr = B_irr_shared->pointer();
 
-    for (int i=0; i<dim; ++i) 
+    for (int i=0; i<dim; ++i)
       for (int a=0; a<Natom; ++a)
         for (int xyz=0; xyz<3; ++xyz)
           B_irr[i][3*a+xyz] /= sqrt(mol->mass(a));
@@ -273,7 +273,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   double **B = B_shared->pointer();
 
   // un mass-weighted below
-  //for (int i=0; i<dim; ++i) 
+  //for (int i=0; i<dim; ++i)
     //for (int a=0; a<Natom; ++a)
       //for (int xyz=0; xyz<3; ++xyz)
         //B[i][3*a+xyz] *= sqrt(mol->mass(a));
@@ -332,7 +332,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   // ***if we need it, this shows how to get the gradient in ordinary cartesians
   //SharedMatrix B_sym_shared = salc_list.matrix_irrep(0);
   //double **B_sym = B_sym_shared->pointer();
-  //for (int i=0; salcs_pi[0].size(); ++i) 
+  //for (int i=0; salcs_pi[0].size(); ++i)
     //for (int a=0; a<Natom; ++a)
       //for (int xyz=0; xyz<3; ++xyz)
         //B_sym[i][3*a+xyz] *= sqrt(mol->mass(a));
@@ -342,7 +342,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     //B_sym[0], 3*Natom, 0, g_cart, 3*Natom);
   //free(g_cart);
 
-  // The linear, gradient term is H_kj += dE/dq . d2q/(dx_k dx_j); 
+  // The linear, gradient term is H_kj += dE/dq . d2q/(dx_k dx_j);
   // displacements done by displace_cart are also in mass-weighted coordinates
   double **ref_geom = mol->geometry().to_block_matrix();
 
@@ -385,7 +385,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 
           for (int i=0; i<salcs_pi[0].size(); ++i) {
               dq2dx2 = (B_m2->get(i,3*atom_b+xyz_b) - 8.0*B_m->get(i,3*atom_b+xyz_b)
-                    +8.0*B_p->get(i,3*atom_b+xyz_b) -    B_p2->get(i,3*atom_b+xyz_b)) / 
+                    +8.0*B_p->get(i,3*atom_b+xyz_b) -    B_p2->get(i,3*atom_b+xyz_b)) /
                    (12.0*DX); // * sqrt(mol->mass(atom_b));
 
               Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] += g_q[i] * dq2dx2;
@@ -412,23 +412,25 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     mat_print(Hx, 3*Natom, 3*Natom, outfile);
   }
 
-  std::string hess_fname = get_writer_file_prefix() + ".hess";
-  FILE *of_Hx = fopen(hess_fname.c_str(),"w");
-  fprintf(of_Hx,"%5d", Natom);
-  fprintf(of_Hx,"%5d\n", 6*Natom);
+  // Print a hessian file
+  if ( options.get_bool("HESSIAN_WRITE") ) {
+    std::string hess_fname = get_writer_file_prefix() + ".hess";
+    FILE *of_Hx = fopen(hess_fname.c_str(),"w");
+    fprintf(of_Hx,"%5d", Natom);
+    fprintf(of_Hx,"%5d\n", 6*Natom);
 
-  int cnt = -1;
-  for (int i=0; i<3*Natom; ++i) {
-    for (int j=0; j<3*Natom; ++j) {
-      fprintf(of_Hx, "%20.10lf", Hx[i][j]);
-      if (++cnt == 2) {
-        fprintf(of_Hx,"\n");
-        cnt = -1;
+    int cnt = -1;
+    for (int i=0; i<3*Natom; ++i) {
+      for (int j=0; j<3*Natom; ++j) {
+        fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+        if (++cnt == 2) {
+          fprintf(of_Hx,"\n");
+          cnt = -1;
+        }
       }
     }
+    fclose(of_Hx);
   }
-
-  fclose(of_Hx);
   free_block(Hx);
 
   fprintf(outfile,"\n-------------------------------------------------------------\n");
@@ -457,7 +459,7 @@ int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi,
     start_irr += Ndisp_pi[h];
 
   if (pts == 3) {
-    if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep 
+    if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep
       if (irrep == 0) {
         if (disp_i == -1)
           rval = 2*ii;   // f(-1, 0)
@@ -480,7 +482,7 @@ int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi,
     }
   }
   else if (pts == 5) {
-    if (disp_j == 0) {   // diagonal 
+    if (disp_j == 0) {   // diagonal
       if (irrep == 0) {
         if (disp_i == -2)      rval = start_irr + 4*ii;     // f(-2, 0)
         else if (disp_i == -1) rval = start_irr + 4*ii+1;   // f(-1, 0)

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <libqt/qt.h>
 #include "arrays.h"
 

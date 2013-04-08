@@ -13,6 +13,7 @@
 #include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
+#include "cov_radii.h"
 
 #define EXTERN
 #include "globals.h"
@@ -115,8 +116,20 @@ void MOLECULE::fragmentize(void) {
       GeomType geom = fragments[0]->g_geom_const_pointer();
       double tval, min;
 
+      // this matrix will keep track of which fragments are connected
+      bool **frag_connectivity = init_bool_matrix(nfrag,nfrag);
+      for (int f1=0; f1<nfrag; ++f1)
+        frag_connectivity[f1][f1] = true;
+
+      bool all_connected = false;
+      double scale_dist = Opt_params.interfragment_scale_connectivity;
+
+      double *Zs = fragments[0]->g_Z_pointer();
+
+     while (!all_connected) {
       for (int f2=0; f2<nfrag; ++f2) {
         for (int f1=0; f1<f2; ++f1) {
+          if (frag_connectivity[f1][f2]) continue; // already connected
           min = 1.0e12;
 
           for (int f1_atom=0; f1_atom<frag_natom[f1]; ++f1_atom) {
@@ -129,6 +142,13 @@ void MOLECULE::fragmentize(void) {
               }
             }
           }
+
+          double Rij = v3d_dist(geom[i],geom[j]);
+          double R_i = cov_radii[ (int) Zs[i] ]/_bohr2angstroms;
+          double R_j = cov_radii[ (int) Zs[j] ]/_bohr2angstroms;
+          if (Rij > scale_dist * (R_i + R_j))
+            continue;
+
           fragments[0]->connect(i,j); // connect closest atoms
           // Now check for possibly symmetry related atoms which are just as close
           // we need them all to avoid symmetry breaking.
@@ -139,11 +159,52 @@ void MOLECULE::fragmentize(void) {
                 i = frag_offset[f1]+f1_atom;
                 j = frag_offset[f2]+f2_atom;
                 fragments[0]->connect(i,j);
+                frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
               }
             }
           }
+          // keep track of which fragments have now been connected
+          fprintf(outfile,"\tConnecting fragments %d and %d\n", f1+1, f2+1);
+          frag_connectivity[f1][f2] = frag_connectivity[f2][f1] = true;
         }
       }
+
+      // Test to see if all fragments are connected using the current distance threshold
+      int *set_label = init_int_array(nfrag);
+      for (int i=0; i<nfrag; ++i)
+        set_label[i] = i;
+
+      for (int i=0; i<nfrag; ++i)
+        for (int j=0; j<nfrag; ++j) {
+          if (frag_connectivity[i][j]) {
+            int ii = set_label[i];
+            int jj = set_label[j];
+            if (ii > jj)
+              set_label[i] = jj;
+            else if (jj > ii)
+              set_label[j] = ii;
+          }
+          if (Opt_params.print_lvl >= 2) {
+            fprintf(outfile,"set_label: ");
+            for (int k=0; k<nfrag; ++k)
+              fprintf(outfile," %d", set_label[k]);
+            fprintf(outfile,"\n");
+          }
+        }
+    
+      all_connected = true;
+      for (int i=1; i<nfrag; ++i)
+        if (set_label[i] != set_label[0])
+          all_connected = false;
+
+      free_int_array(set_label);
+
+      if (!all_connected) {
+        scale_dist += 0.4;
+        fprintf(outfile,"\tIncreasing scaling to %6.3f to connect fragments.\n", scale_dist);
+      }
+     } // end while(!all_connected)
+     free_bool_matrix(frag_connectivity);
     }
     // create fragment objects for distinct atom groups
     else if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {

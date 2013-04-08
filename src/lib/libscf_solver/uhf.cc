@@ -14,7 +14,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
@@ -100,32 +99,24 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the JK object
+    jk_->compute();
 
-        // Push the C matrix on
-        std::vector<SharedMatrix> & C = jk_->C_left();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        
-        // Run the JK object
-        jk_->compute();
-
-        // Pull the J and K matrices off
-        const std::vector<SharedMatrix> & J = jk_->J();
-        const std::vector<SharedMatrix> & K = jk_->K();
-        J_->copy(J[0]);
-        J_->add(J[1]);
-        Ka_ = K[0];
-        Kb_ = K[1];
-        
-        Ga_->copy(J_);
-
-    } else {
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-    }
-
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    J_->copy(J[0]);
+    J_->add(J[1]);
+    Ka_ = K[0];
+    Kb_ = K[1];
+    
+    Ga_->copy(J_);
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
     Gb_->subtract(Kb_);

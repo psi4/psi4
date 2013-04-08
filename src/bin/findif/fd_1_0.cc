@@ -110,10 +110,13 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
 
   free(g_cart);
 
-  GradientWriter grad(mol, gradient_matrix);
-  std::string gradfile = get_writer_file_prefix() + ".grad";
-  grad.write(gradfile);
-  fprintf(outfile,"\tGradient written.\n");
+  // Print a gradient file
+  if ( options.get_bool("GRADIENT_WRITE") ) {
+    GradientWriter grad(mol, gradient_matrix);
+    std::string gradfile = get_writer_file_prefix() + ".grad";
+    grad.write(gradfile);
+    fprintf(outfile,"\tGradient written.\n");
+  }
 
   SharedMatrix sgradient(gradient_matrix.clone());
   if (Process::environment.wavefunction()) {

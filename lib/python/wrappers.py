@@ -1742,6 +1742,8 @@ def complete_basis_set(name, **kwargs):
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
+    VARH['oldmp2'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'oldmp2corl': 'MP2 CORRELATION ENERGY'}
     VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY'}
     VARH['mp2.5'] = {       'scftot': 'SCF TOTAL ENERGY',

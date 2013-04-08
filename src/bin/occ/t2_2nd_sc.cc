@@ -132,6 +132,14 @@ if (reference_ == "RESTRICTED") {
     dpd_buf4_close(&T);
 
 
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
+
     // Build T2 = T2(1) + T2(2)
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
@@ -353,6 +361,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "T2_2 <OO|VV>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
 /********************************************************************************************/
 /************************** Beta-Beta spin case *********************************************/
@@ -494,6 +511,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);    
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o,o]"), ID("[v,v]"), 0, "T2_2 <oo|vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
     
 /********************************************************************************************/
 /************************** Alpha-Beta spin case ********************************************/
@@ -646,6 +672,15 @@ else if (reference_ == "UNRESTRICTED") {
     dpd_buf4_close(&D);
     if (print_ > 2) dpd_buf4_print(&T, outfile, 1);
     dpd_buf4_close(&T);    
+
+
+    // Make arrangements for MP2.5
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "T2_2 <Oo|Vv>");
+        dpd_buf4_scm(&T, 0.5);
+        dpd_buf4_close(&T);
+    }
  
 /********************************************************************************************/
 /************************** Sum up 1st & 2nd order amplitudes *******************************/

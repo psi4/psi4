@@ -1,5 +1,4 @@
 /* This code includes reference and correlation opdm contributions. */
-
 #include <libtrans/integraltransform.h>
 
 #include "occwave.h"
