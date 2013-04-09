@@ -147,7 +147,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
           for (int i=0; i<o; i++){
               for (int j=0; j<o; j++){
                   int ijba = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
-                  amps2[ijab] = 2.0*amps1[ijab++] - amps1[ijba];
+                  amps2[ijab] = 2.0*amps1[ijab] - amps1[ijba];
+                  ijab++;
               }
           }
       }
@@ -536,7 +537,8 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
           for (long int i=0; i<o; i++){
               for (long int j=0; j<o; j++){
                   long int ijba = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
-                  amps2[ijab] = 2.0*amps1[ijab++] - amps1[ijba];
+                  amps2[ijab] = 2.0*amps1[ijab] - amps1[ijba];
+                  ijab++;
               }
           }
       }
