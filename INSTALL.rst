@@ -583,6 +583,11 @@ BLAS and LAPACK recommendations when building PSI4:
     the Goto libraries yielded faulty DGEMM calls.  On Mac OS X
     systems, the vecLib package that comes with Xcode works well.
 
+    If you prefer to use the ACML
+    (http://developer.amd.com/tools/cpu-development/amd-core-math-library-acml/)
+    we highly recommend using the latest version. Older versions
+    of ACML have been known to cause problems.
+
 .. _`sec:install_IV_3`:
 
 (3) PSI4 does not require a Fortran compiler, unless the resident BLAS
