@@ -1014,6 +1014,7 @@ AC_CONFIG_FILES([
           tests/opt4/Makefile
           tests/opt5/Makefile
           tests/opt6/Makefile
+          tests/opt7/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile

@@ -142,16 +142,19 @@ std::string STRE::get_definition_string(int off) const {
 void STRE::print_intco_dat(FILE *fp, int off) const {
   if (hbond) {
     if (s_frozen)
-      fprintf(fp, "H*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "H*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "H %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "H %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
   else {
     if (s_frozen)
-      fprintf(fp, "R*%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R*%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
     else
-      fprintf(fp, "R %6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off);
+      fprintf(fp, "R %6d%6d", s_atom[0]+1+off, s_atom[1]+1+off);
   }
+  if (s_has_fixed_eq_val)
+    fprintf(fp, "%10.5lf", s_fixed_eq_val);
+  fprintf(fp, "\n");
   fflush(fp);
 }
 

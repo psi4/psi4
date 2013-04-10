@@ -317,7 +317,8 @@ printf("adding %d auxiliary bonds\n", n);
   double **Lindh_guess(void) const;
 
   void forces(void);
-  void apply_constraint_forces(bool update_hessian_too = false);
+  void apply_constraint_forces(void);
+  bool has_fixed_eq_vals(void);
   void project_f_and_H(void);
   void irc_step(void);
   void nr_step(void);
