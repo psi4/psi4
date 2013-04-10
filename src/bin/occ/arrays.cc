@@ -97,7 +97,7 @@ void Array1d::print(FILE *out)
 void Array1d::release()
 {    
    if (!A1d_) return;
-   free(A1d_);  
+   delete [] A1d_;
    A1d_ = NULL;
 }//
 
@@ -889,13 +889,6 @@ Array3d::Array3d(string name, int d1,int d2, int d3)
 Array3d::Array3d()
 {
   A3d_ = NULL;
-  
-  /*
-  dim1_ = NULL; 
-  dim2_ = NULL; 
-  dim3_ = NULL; 
-  */
-  
   dim1_ = 0; 
   dim2_ = 0; 
   dim3_ = 0; 
@@ -1066,7 +1059,7 @@ void Array1i::print()
 void Array1i::release()
 {    
    if (!A1i_) return;
-   free(A1i_);  
+   delete [] A1i_;
    A1i_ = NULL;
 }//
 
