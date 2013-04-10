@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
@@ -299,7 +300,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,cvec_coeff[k-1],
            (&cvec_norm[k-1]),&max_overlap)) did_vec = 1;
        else {
-           std::string str = static_cast<std::ostringstream*>( &(std::ostringstream() << 13) )->str();
+           std::string str = boost::lexical_cast<std::string>( 13);
            str += " vector norm = "; 
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
@@ -325,7 +326,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
          if (Cvec.schmidt_add2(Cvec2,0,k-2,k-1,k-1,tmp_coeff,
             &tmp_norm,&max_overlap)) did_vec = 1;
          else {
-           std::string str = static_cast<std::ostringstream*>( &(std::ostringstream() << 13) )->str();
+           std::string str = boost::lexical_cast<std::string>(13);
            str += " vector norm = "; 
            char*str2 = new char[25];
            sprintf(str2,"%20.15lf",cvec_norm[k-1]);
