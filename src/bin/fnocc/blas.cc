@@ -86,7 +86,7 @@ void SVD(integer M,integer N,doublereal*A,doublereal*U,doublereal*VT,doublereal*
 
   integer min = ( M < N ) ? M : N;
   integer max = ( M < N ) ? N : M;
-  integer LWORK = 1000*( 3 * min + max > 5 * min ) ? 3 * min + max : 5 * min;
+  integer LWORK = ( 3 * min + max > 5 * min ) ? (3 * min + max) : (5 * min);
   doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal));
 
   integer INFO=0;
