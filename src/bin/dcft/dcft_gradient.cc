@@ -24,7 +24,7 @@ SharedMatrix DCFTSolver::compute_gradient_()
     response_guess();
 
     orbital_response_rms_ = 0.0;
-    cumulant_response_rms_ = lambda_convergence_;
+    cumulant_response_rms_ = cumulant_convergence_;
     response_coupling_rms_ = 0.0;
     iter_ = 0;
 
@@ -59,7 +59,7 @@ SharedMatrix DCFTSolver::compute_gradient_()
             response_coupling_rms_ = compute_response_coupling();
 
             // Check convergence
-            if (response_coupling_rms_ < lambda_threshold_) responseDone = true;
+            if (response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
             fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
@@ -180,8 +180,8 @@ SharedMatrix DCFTSolver::compute_gradient_()
                     orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_, diisString.c_str());
 
             // Check convergence
-            if (orbital_response_rms_ < scf_threshold_ && cumulant_response_rms_ < lambda_threshold_
-                    && response_coupling_rms_ < lambda_threshold_) responseDone = true;
+            if (orbital_response_rms_ < orbitals_threshold_ && cumulant_response_rms_ < cumulant_threshold_
+                    && response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
         }
 
@@ -1951,7 +1951,7 @@ DCFTSolver::iterate_orbital_response()
         }
 
         // Check convergence
-        converged = (fabs(orbital_response_rms_) < fabs(scf_threshold_));
+        converged = (fabs(orbital_response_rms_) < fabs(orbitals_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
@@ -2793,7 +2793,7 @@ DCFTSolver::iterate_cumulant_response()
         }
 
         // Check the convergence
-        converged = (fabs(cumulant_response_rms_) < fabs(lambda_threshold_));
+        converged = (fabs(cumulant_response_rms_) < fabs(cumulant_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
