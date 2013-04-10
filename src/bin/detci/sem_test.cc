@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -358,9 +359,9 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
 
       if (L > maxnvect) {
          std::string str = "(test_sem): L(";
-         str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+         str += boost::lexical_cast<std::string>( L) ;
          str += ") > maxnvect(";
-         str += static_cast<std::ostringstream*>( &(std::ostringstream() << maxnvect) )->str();
+         str += boost::lexical_cast<std::string>( maxnvect) ;
          str += ")! Aborting!";
          throw PsiException(str,__FILE__,__LINE__);
          }

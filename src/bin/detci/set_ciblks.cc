@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "structs.h"
@@ -301,9 +302,9 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
 
    if (nblocks > CI_BLK_MAX) {
       std::string str = "nblocks = ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << nblocks) )->str();
+      str += boost::lexical_cast<std::string>( nblocks) ;
       str += " > CI_BLK_MAX = ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << CI_BLK_MAX) )->str();
+      str += boost::lexical_cast<std::string>( CI_BLK_MAX) ;
       throw PsiException(str,__FILE__,__LINE__);
       }
 
