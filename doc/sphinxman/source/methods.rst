@@ -18,16 +18,15 @@ A complete list of standard keywords is provided in Appendix
    notes_c
    scf
    dft
+   dcft
    dfmp2
    occ
-   adc
-   sapt
-   cepa
    cc
    fnocc
    psimrcc
-   mrcc
    detci
+   sapt
+   adc
    optking
    oeprop
 

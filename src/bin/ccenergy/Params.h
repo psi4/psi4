@@ -14,6 +14,7 @@ namespace psi { namespace ccenergy {
 struct Params {
   int maxiter;
   double convergence;
+  double e_convergence;
   int restart;
   long int memory;
   std::string aobasis;

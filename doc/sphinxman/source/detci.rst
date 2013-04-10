@@ -1,11 +1,12 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:ci`:
 .. index:: CI
 
 .. index::
    pair: CI; theory
+
+.. _`sec:ci`:
 
 CI: Configuration Interaction
 =============================
@@ -132,6 +133,8 @@ described in the DETCI section of the Appendix :ref:`apdx:detci`.
 
 .. index:: 
    pair: CI; arbitrary-order perturbation theory
+
+.. _`sec:arbpt`:
 
 Arbitrary Order Perturbation Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

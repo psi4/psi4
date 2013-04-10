@@ -14,8 +14,7 @@ source code is available as a gzipped tar archive (named, for example,
 ``psi4.X.tar.gz``, and binaries may be available for certain architectures.
 For detailed installation and testing instructions, please refer to
 :ref:`Compiling and Installing <sec:installFilePage>` (same information as 
-the file :source:`INSTALL` distributed with the package). Additional compilation
-hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
+the file :source:`INSTALL` distributed with the package).
 
 .. comment To avoid dependency problems, a script is provided at
 .. comment :source:`lib/scripts/psi4depend-v2.sh` that will download, configure, and
@@ -75,8 +74,9 @@ input and output (I/O) of quantities to and from the hard disk.  Most
 quantities, such as molecular integrals, are intermediates that are not of
 interest to the user and can be deleted after the computation finishes, but
 pertinent details of computations are also written to a checkpoint file and
-might be useful in subsequent computations.  All files are sequentially
-numbered and are written to ``/tmp``, then deleted at the end of the computation,
+might be useful in subsequent computations.  All files are written to the
+designated scratch numbered by :ref:`content <apdx:psiFiles>` and labeled
+with the process id, then are deleted at the end of the computation,
 unless otherwise instructed by the user.
 
 A Python callable handle to the |PSIfour| I/O management routines is available,
@@ -90,6 +90,7 @@ For batch jobs running through a queue, it might be more convenient to use an
 environmental variable (in this case ``$MYSCRATCH``) to set the scratch directory;
 the following code will do that::
 
+    import os
     scratch_dir = os.environ.get('MYSCRATCH')
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
@@ -101,6 +102,11 @@ accomplished by the commands below::
 
     psi4_io.set_specific_path(32, './')
     psi4_io.set_specific_retention(32, True)
+
+which is equivalent to ::
+
+    psi4_io.set_specific_path(PSIF_CHKPT, './')
+    psi4_io.set_specific_retention(PSIF_CHKPT, True)
 
 A guide to the contents of individual scratch files may be found at :ref:`apdx:psiFiles`.
 To circumvent difficulties with running multiple jobs in the same scratch, the
@@ -247,7 +253,10 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 .. option:: -o <filename>, --output <filename>
 
    Output file name. Use ``stdout`` as <filename> to redirect 
-   to the screen. Default: output.dat
+   to the screen. Default: when the input filename is "input.dat",
+   then the output filename defaults to "output.dat".  Otherwise, the
+   output filename defaults to the the input filename (subtracting
+   any ".in" or ".dat" suffix) plus ".out"
 
 .. option:: -m, --messy
 
@@ -270,7 +279,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
 .. option:: -v, --verbose
 
-   Print a lot of information
+   Print a lot of information, including the Psithon translation of the input file
 
 .. option:: -d, --debug
 
@@ -310,7 +319,9 @@ These environment variables will influence |PSIfours| behavior.
 .. envvar:: PATH
 
    Path for executables. To run K\ |a_acute|\ llay's MRCC program 
-   (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`
+   (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`.
+   Likewise to run Grimme's dftd3 program (see :ref:`dftd3 <sec:dftd3>`), the 
+   ``dftd3`` executable must be in :envvar:`PATH`.
 
 .. envvar:: PSI_SCRATCH
 

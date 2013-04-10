@@ -42,6 +42,7 @@ void get_parameters(Options& options)
   Params.print_lvl = options.get_int("PRINT");
   Params.print_mos = options.get_bool("PRINT_MOS");
 
+  // TODO: tie orbitals convergence into e_convergence (LAB)
   if(options["CONVERGENCE"].has_changed())
     Params.rms_grad_convergence = options.get_int("CONVERGENCE");
   else {

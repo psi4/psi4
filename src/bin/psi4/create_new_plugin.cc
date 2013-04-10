@@ -193,7 +193,6 @@ void create_new_plugin(std::string name, const std::string& template_name)
     file_manager.add_file("/input.dat.template", "input.dat");
     file_manager.add_file("pymodule.py.template", "pymodule.py");
     file_manager.add_file("__init__.py.template", "__init__.py");
-    file_manager.add_file("inputalt.dat.template", "inputalt.dat");
     file_manager.add_file("doc.rst.template", "doc.rst");
     file_manager.add_file(template_name_lower + ".cc.template", name + ".cc");
     if(template_name_lower == "scf"){
@@ -201,8 +200,8 @@ void create_new_plugin(std::string name, const std::string& template_name)
         file_manager.add_file("scf.scf.h.template", "scf.h");
         file_manager.add_file("scf.scf.cc.template", "scf.cc");
         file_manager.add_file("scf.cc.template", name + ".cc");
-        // Overwrite the existing input file with a more appropriate one
-        file_manager.add_file("scf.input.dat.template", "input.dat");
+        // Overwrite the existing pymodule file with a more appropriate one
+        file_manager.add_file("scf.pymodule.py.template", "pymodule.py");
     }
     file_manager.process();
 

@@ -13,8 +13,6 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
-#define CUSTOM_PK_CODE 0
-
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -51,24 +49,10 @@ protected:
     // That point
     void save_sapt_info();
 
-
-// PK specific stuff
-#if CUSTOM_PK_CODE
-    // Form G routines
-    double **G_vector_;                                // Used in form_G_from_PK to handle threading.
-    double *pk_;
-    size_t pk_size_;
-    size_t pk_pairs_;
-    int *pk_symoffset_;
-    void allocate_PK();
-    void form_PK();
-    void form_G_from_PK();
-#endif
-
     virtual void form_F();
     virtual void form_G();
+    virtual void compute_orbital_gradient(bool save_fock);
 
-    void save_fock();
     bool diis();
 
     bool test_convergency();

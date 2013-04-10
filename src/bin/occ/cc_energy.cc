@@ -1,30 +1,4 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <iomanip>
-#include <vector>
-
-/** Required PSI3 includes */ 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
-#include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "defines.h"
 #include "occwave.h"
@@ -86,6 +60,7 @@ void OCCWave::omp2_mp2_energy()
      psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
 
      Ecorr = 0.0;
+     Emp2_t1 = 0.0;
 
      Escsmp2AA = 0.0;
      Escsmp2AB = 0.0;
@@ -197,10 +172,32 @@ void OCCWave::omp2_mp2_energy()
      Escsnmp2BB = 1.76 * Emp2BB; 
      Escsmimp2BB = 1.29 * Emp2BB; 
      Escsmp2vdwBB = 0.50 * Emp2BB; 
+
+ if (reference == "ROHF" && orb_opt_ == "FALSE" && wfn_type_ == "OMP2") {
+    // Singles-contribution
+    // Alpha
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < aoccpiA[h]; ++i){
+            for(int a = 0 ; a < avirtpiA[h]; ++a){
+                Emp2_t1 += t1A->get(h, i, a) * FockA->get(h, a + occpiA[h], i + frzcpi_[h]);
+            }
+        }
+    }
+
+    // beta
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < aoccpiB[h]; ++i){
+            for(int a = 0 ; a < avirtpiB[h]; ++a){
+                Emp2_t1 += t1B->get(h, i, a) * FockB->get(h, a + occpiB[h], i + frzcpi_[h]);
+            }
+        }
+    }
+ }// end if (reference == "ROHF") 
+ 
      
  }// end uhf
 
-     Ecorr = Emp2AA + Emp2AB + Emp2BB;
+     Ecorr = Emp2AA + Emp2AB + Emp2BB + Emp2_t1;
      Emp2 = Eref + Ecorr;
      Escsmp2 = Eref + Escsmp2AA + Escsmp2AB + Escsmp2BB;
      Esosmp2 = Eref + Esosmp2AB;     

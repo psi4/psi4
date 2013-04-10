@@ -90,12 +90,14 @@ protected:
     void block_status(std::vector<int> inds, const char* file, int line); 
     void block_status(std::vector<unsigned long int> inds, const char* file, int line); 
 
+    void compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ);
+
 public:
     DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~DFMP2();
 
     double compute_energy();
-    SharedMatrix compute_gradient();
+    virtual SharedMatrix compute_gradient_();
 
 }; 
 

@@ -56,6 +56,12 @@ void FrozenNO::common_init() {
     }
     ndoccact = ndocc - nfzc;
     nvirt    = nmo - ndocc;
+
+    // quit if number of virtuals is less than number of doubly occupied
+    if (nvirt<ndoccact){
+       throw PsiException("ndocc must be less than nvirt",__FILE__,__LINE__);
+    }
+
 }
 // use this function to return the mp2 energy in the full basis.
 double FrozenNO::compute_energy(){
@@ -141,7 +147,8 @@ void FrozenNO::ComputeNaturalOrbitals(){
           for (int i=0; i<o; i++){
               for (int j=0; j<o; j++){
                   int ijba = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
-                  amps2[ijab] = 2.0*amps1[ijab++] - amps1[ijba];
+                  amps2[ijab] = 2.0*amps1[ijab] - amps1[ijba];
+                  ijab++;
               }
           }
       }
@@ -530,7 +537,8 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
           for (long int i=0; i<o; i++){
               for (long int j=0; j<o; j++){
                   long int ijba = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
-                  amps2[ijab] = 2.0*amps1[ijab++] - amps1[ijba];
+                  amps2[ijab] = 2.0*amps1[ijab] - amps1[ijba];
+                  ijab++;
               }
           }
       }
@@ -654,12 +662,7 @@ void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
 
     // Transform Qso to MO basis:
     double * tmp = (double*)malloc(nso*nso*nQ*sizeof(double));
-    #pragma omp parallel for schedule (static)
-    for (long int q = 0; q < nQ; q++) {
-        for (long int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nso,Qso+q*nso*nso+mu*nso,1,tmp+q*nso*nso+mu,nso);
-        }
-    }
+    F_DCOPY(nso*nso*nQ,Qso,1,tmp,1);
     F_DGEMM('n','n',nmo,nso*nQ,nso,1.0,&Cap[0][0],nmo,tmp,nso,0.0,Qso,nmo);
     #pragma omp parallel for schedule (static)
     for (long int q = 0; q < nQ; q++) {

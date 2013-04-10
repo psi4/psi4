@@ -1,0 +1,27 @@
+#! OMP2 cc-pVDZ gradient for the NO radical
+
+ref_vals = [                                                       #TEST
+             [ 0.000000000000,  0.000000000000,  0.047447741338],  #TEST
+             [ 0.000000000000,  0.000000000000, -0.047447741339]   #TEST
+           ]                                                       #TEST
+ref = PsiMod.Matrix(2, 3)                                          #TEST
+ref.set(ref_vals)
+
+memory 250 mb
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference uhf
+  guess gwh
+}
+gradient('omp2')
+
+grad = PsiMod.wavefunction().gradient()                           #TEST
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+
