@@ -107,10 +107,10 @@ void CoupledCluster::common_init() {
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CCSD
-  emp2_os_fac = options_.get_double("MP2_SCALE_OS");
-  emp2_ss_fac = options_.get_double("MP2_SCALE_SS");
-  eccsd_os_fac = options_.get_double("CC_SCALE_OS");
-  eccsd_ss_fac = options_.get_double("CC_SCALE_SS");
+  emp2_os_fac = options_.get_double("MP2_OS_SCALE");
+  emp2_ss_fac = options_.get_double("MP2_SS_SCALE");
+  eccsd_os_fac = options_.get_double("CC_OS_SCALE");
+  eccsd_ss_fac = options_.get_double("CC_SS_SCALE");
 
   // quit if number of virtuals is less than number of doubly occupied
   if (nvirt<ndoccact){
@@ -199,18 +199,22 @@ double CoupledCluster::compute_energy() {
   Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
   Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + escf;
 
-  // mp3 energy
-  Process::environment.globals["MP3 CORRELATION ENERGY"] = emp2 + emp3;
-  Process::environment.globals["MP3 TOTAL ENERGY"] = emp2 + emp3 + escf;
+  if ( !options_.get_bool("RUN_MP2") ) {
+      // mp3 energy
+      Process::environment.globals["MP3 CORRELATION ENERGY"] = emp2 + emp3;
+      Process::environment.globals["MP3 TOTAL ENERGY"] = emp2 + emp3 + escf;
 
-  // mp2.5 energy
-  Process::environment.globals["MP2.5 CORRELATION ENERGY"] = emp2 + 0.5*emp3 ;
-  Process::environment.globals["MP2.5 TOTAL ENERGY"] = emp2 + 0.5*emp3 + escf;
+      // mp2.5 energy
+      Process::environment.globals["MP2.5 CORRELATION ENERGY"] = emp2 + 0.5*emp3 ;
+      Process::environment.globals["MP2.5 TOTAL ENERGY"] = emp2 + 0.5*emp3 + escf;
 
-  // mp4 energy
-  Process::environment.globals["MP4(SDQ) TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
-  Process::environment.globals["MP4(SDQ) CORRELATION ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q;
-  Process::environment.globals["MP4 TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
+      // mp4 energy
+      if ( !options_.get_bool("RUN_MP3") ) {
+          Process::environment.globals["MP4(SDQ) TOTAL ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q + escf;
+          Process::environment.globals["MP4(SDQ) CORRELATION ENERGY"] = emp2 + emp3 + emp4_sd + emp4_q;
+      }
+
+  }
 
   // free some memory before triples 
   free(integrals);
@@ -281,7 +285,7 @@ double CoupledCluster::compute_energy() {
 
      // ccsd(t) energy
      if (do_cc) {
-        Process::environment.globals["(T) CORRELATION ENERGY"] = et;
+        Process::environment.globals["(T) CORRECTION ENERGY"] = et;
         Process::environment.globals["CURRENT CORRELATION ENERGY"] = eccsd + et;
         Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
         if (isccsd) {
@@ -295,7 +299,7 @@ double CoupledCluster::compute_energy() {
 
      if (do_mp) {
         // mp4 triples:
-        Process::environment.globals["MP4(T) CORRELATION ENERGY"] = emp4_t;
+        Process::environment.globals["MP4(T) CORRECTION ENERGY"] = emp4_t;
         Process::environment.globals["MP4(SDTQ) CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
         Process::environment.globals["MP4(SDTQ) TOTAL ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t+escf;
         Process::environment.globals["MP4 CORRELATION ENERGY"] = emp2+emp3+emp4_sd+emp4_q+emp4_t;
@@ -621,7 +625,6 @@ void CoupledCluster::DefineTilingCPU(){
 
   // tiling for vabcd diagram
   long int fulltile = v*(v+1L)/2L;
-  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
   ntiles=1L;
   tilesize=fulltile/1L;
   if ( ntiles*tilesize < fulltile ) tilesize++;
@@ -738,7 +741,6 @@ void CoupledCluster::AllocateMemory() {
 
   long int dim = 0;
   int fulltile = v*(v+1)/2;
-  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
   if (tilesize*fulltile > dim) dim = tilesize*fulltile;
   if (ovtilesize*v*v > dim)    dim = ovtilesize*v*v;
   if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
@@ -1333,51 +1335,7 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   psio->close(PSIF_DCC_R2,1);
   psio.reset();
 }
-/**
- *  Use Vabcd ... this one doesn't use SJS packing:
- */
-void CoupledCluster::Vabcd(CCTaskParams params){
-  long int id,i,j,a,b,o,v;
-  o = ndoccact;
-  v = nvirt;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio_address addr;
-  if (t2_on_disk){
-     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_DCC_T2,1);
-  }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  }
-  if (isccsd) {
-     for (a=0,id=0; a<v; a++){
-         for (b=0; b<v; b++){
-             for (i=0; i<o; i++){
-                 for (j=0; j<o; j++){
-                     tempt[id++] += t1[a*o+i]*t1[b*o+j];
-                 }
-             }
-         }
-     }
-  }
-  psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->open(PSIF_DCC_ABCD1,PSIO_OPEN_OLD);
-  addr = PSIO_ZERO;
-  for (j=0; j<ntiles-1; j++){
-      psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*v*sizeof(double),addr,&addr);
-      F_DGEMM('n','n',o*o,tilesize,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
-  }
-  j=ntiles-1;
-  psio->read(PSIF_DCC_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*v*sizeof(double),addr,&addr);
-  F_DGEMM('n','n',o*o,lasttile,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
-  psio->close(PSIF_DCC_ABCD1,1);
 
-  //psio->write_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_R2,1);
-  psio.reset();
-
-}
 /**
  *  Use Vabcd1
  */
@@ -1823,30 +1781,31 @@ void CoupledCluster::UpdateT2(long int iter){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib,ijab=0;
-  //double energy = 0.0;
+
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_IAJB,1);
+
   // we still have the residual in memory in tempv
   //psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   //psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=o; a<rs; a++){
-      da = eps[a];
-      for (b=o; b<rs; b++){
-          dab = da + eps[b];
-          for (i=0; i<o; i++){
-              dabi = dab - eps[i];
-              for (j=0; j<o; j++){
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      double da = eps[a];
+      for (long int b=o; b<rs; b++){
+          double dab = da + eps[b];
+          for (long int i=0; i<o; i++){
+              double dabi = dab - eps[i];
+              for (long int j=0; j<o; j++){
 
-                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  dijab = dabi-eps[j];
-                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
-                  tempt[ijab] = tnew;
-                  ijab++;
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
+
+                  double dijab = dabi-eps[j];
+                  double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
+                  tempt[ijab]  = tnew;
+
               }
           }
       }
@@ -1871,16 +1830,16 @@ void CoupledCluster::UpdateT2(long int iter){
   psio.reset();
 }
 void CoupledCluster::UpdateT1(long int iter){
+
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  long int id=0;
-  double tnew,dia;
-  for (a=o; a<rs; a++){
-      for (i=0; i<o; i++){
-          dia = -eps[i]+eps[a];
-          tnew = - (w1[(a-o)*o+i])/dia;
+
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      for (long int i=0; i<o; i++){
+          double dia    = -eps[i]+eps[a];
+          double tnew   = - (w1[(a-o)*o+i])/dia;
           w1[(a-o)*o+i] = tnew;
       }
   }
@@ -2201,22 +2160,15 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
   sprintf(CCTasklist[ncctasks++].name,"I'(i,j), I(i,j), I(i,a)");
 
-  if (options_.get_bool("VABCD_PACKED")){
-     // mo basis, sjs packing
-     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd1;
-     CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
-     sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)+        ");
-     // this is the last diagram that contributes to doubles residual,
-     // so we can keep it in memory rather than writing and rereading
-     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd2;
-     CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
-     sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)-        ");
-  }else{
-     // mo basis, no sjs packing
-     CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd;
-     CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
-     sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)         ");
-  }
+  // mo basis, sjs packing
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd1;
+  CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
+  sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)+        ");
+  // this is the last diagram that contributes to doubles residual,
+  // so we can keep it in memory rather than writing and rereading
+  CCTasklist[ncctasks].func  = &psi::fnocc::CoupledCluster::Vabcd2;
+  CCTasklist[ncctasks].name  = (char*)malloc(100*sizeof(char));
+  sprintf(CCTasklist[ncctasks++].name,"t2 <-- (ac|bd)-        ");
 }
  
 void CoupledCluster::MP4_SDQ(){
@@ -2265,17 +2217,26 @@ void CoupledCluster::MP4_SDQ(){
       fprintf(outfile,"done.\n");
 
       // V|2> for S and D parts of mp4
-      psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
-      psio->write_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
+      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
       psio->write_entry(PSIF_DCC_T2,"second",(char*)&tempt[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
-      F_DCOPY(o*o*v*v,tempt,1,tb,1);
+      if (t2_on_disk) {
+          psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+          psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+          psio->close(PSIF_DCC_T2,1);
+      }else {
+          F_DCOPY(o*o*v*v,tempt,1,tb,1);
+      }
+
       fprintf(outfile,"        MP4(SD)....................................");
       memset((void*)w1,'\0',o*v*sizeof(double));
       for (int i=0; i<nltasks; i++) {
           (*this.*LTasklist[i].func)(LParams[i]);
       }
-      F_DCOPY(o*o*v*v,tb,1,tempt,1);
+      //F_DCOPY(o*o*v*v,tb,1,tempt,1);
+      if (t2_on_disk) {
+          tb = tempt;
+      }
       psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
       psio->read_entry(PSIF_DCC_T2,"first",(char*)&tb[0],o*o*v*v*sizeof(double));
       psio->close(PSIF_DCC_T2,1);
@@ -2396,8 +2357,8 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  free(Fia);
-  free(Fai);
+  //free(Fia);
+  //free(Fai);
   free(Qmo);
   free(Abij);
   free(Sbij);
@@ -2533,7 +2494,7 @@ double DFCoupledCluster::compute_energy() {
       tstop();
 
       // ccsd(t) energy
-      Process::environment.globals["(T) CORRELATION ENERGY"] = et;
+      Process::environment.globals["(T) CORRECTION ENERGY"] = et;
       Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = eccsd + et;
       Process::environment.globals["CCSD(T) TOTAL ENERGY"] = eccsd + et + escf;
       Process::environment.globals["CURRENT ENERGY"] = eccsd + et + escf;
@@ -2544,6 +2505,8 @@ double DFCoupledCluster::compute_energy() {
   }
 
   // free remaining memory
+  free(Fia);
+  free(Fai);
   free(t1);
   free(tb);
 
@@ -2813,12 +2776,12 @@ void DFCoupledCluster::T1Integrals(){
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
     psio->read_entry(PSIF_DCC_QSO,"qso",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
     psio->close(PSIF_DCC_QSO,1);
-    #pragma omp parallel for schedule (static)
-    for (int q = 0; q < nQ; q++) {
-        for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
-        }
-    }
+    //#pragma omp parallel for schedule (static)
+    //for (int q = 0; q < nQ; q++) {
+    //    for (int mu = 0; mu < nso; mu++) {
+    //        F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
+    //    }
+    //}
     F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,temp,nso,0.0,Qmo,full);
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
@@ -3210,13 +3173,12 @@ void DFCoupledCluster::UpdateT1(){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  long int id=0;
-  double tnew,dia;
-  for (a=o; a<rs; a++){
-      for (i=0; i<o; i++){
-          dia = -eps[i]+eps[a];
-          tnew =  -w1[(a-o)*o+i]/dia;
+
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      for (long int i=0; i<o; i++){
+          double dia = -eps[i]+eps[a];
+          double tnew =  -w1[(a-o)*o+i]/dia;
           w1[(a-o)*o+i] = tnew + t1[(a-o)*o+i];
       }
   }
@@ -3230,9 +3192,7 @@ void DFCoupledCluster::UpdateT2(){
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
-  long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib,ijab=0;
+
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   // df (ai|bj)
@@ -3245,22 +3205,23 @@ void DFCoupledCluster::UpdateT2(){
   psio->open(PSIF_DCC_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_DCC_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_DCC_R2,1);
+ 
+  #pragma omp parallel for schedule (static)
+  for (long int a=o; a<rs; a++){
+      double da = eps[a];
+      for (long int b=o; b<rs; b++){
+          double dab = da + eps[b];
+          for (long int i=0; i<o; i++){
+              double dabi = dab - eps[i];
+              for (long int j=0; j<o; j++){
 
-  for (a=o; a<rs; a++){
-      da = eps[a];
-      for (b=o; b<rs; b++){
-          dab = da + eps[b];
-          for (i=0; i<o; i++){
-              dabi = dab - eps[i];
-              for (j=0; j<o; j++){
-                  iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
-                  jaib = iajb + (i-j)*v*(1-v*o);
+                  long int iajb = (a-o)*v*o*o+i*v*o+(b-o)*o+j;
+                  long int jaib = iajb + (i-j)*v*(1-v*o);
+                  long int ijab = (a-o)*v*o*o+(b-o)*o*o+i*o+j;
 
-                  dijab = dabi-eps[j];
-
-                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
-                  tempt[ijab] = tnew + tb[ijab];
-                  ijab++;
+                  double dijab = dabi-eps[j];
+                  double tnew  = - (integrals[iajb] + tempv[ijab])/dijab;
+                  tempt[ijab]  = tnew + tb[ijab];
               }
           }
       }
@@ -3311,6 +3272,7 @@ void DFCoupledCluster::Vabcd1(){
   double * Vm   = integrals+v*v*v;
 
   // qvv transpose
+  #pragma omp parallel for schedule (static)
   for (int q = 0; q < nQ; q++) {
       F_DCOPY(v*v,Qvv+q*v*v,1,integrals+q,nQ);
   }
@@ -3324,13 +3286,14 @@ void DFCoupledCluster::Vabcd1(){
       int nb = 0;
       // fill Iqdb for b > a
       double start1 = omp_get_wtime();
-      #pragma omp parallel for schedule (static)
-      for (long int b = a; b < v; b++) {
-          F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
-      }
+      //#pragma omp parallel for schedule (static)
+      //for (long int b = a; b < v; b++) {
+      //    F_DCOPY(nQ*v,Qvv+b*nQ*v,1,Iqdb+(b-a)*nQ*v,1);
+      //}
       nb = v-a;
 
-      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      //F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Iqdb,nQ,0.0,Vcdb,v);
+      F_DGEMM('t','n',v,v*nb,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+a*v*nQ,nQ,0.0,Vcdb,v);
 
       #pragma omp parallel for schedule (static)
       for (long int b = a; b < v; b++){
@@ -3381,6 +3344,7 @@ void DFCoupledCluster::Vabcd1(){
   psio->close(PSIF_DCC_R2,1);
 
   // qvv un-transpose
+  #pragma omp parallel for schedule (static)
   for (int q = 0; q < nQ; q++) {
       F_DCOPY(v*v,Qvv+q,nQ,integrals+q*v*v,1);
   }
@@ -3963,8 +3927,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
   time_t time_start = time(NULL);
   double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+// TODO e_conv
 
-  while(iter<maxiter && nrm > r_conv){
+  while(iter < maxiter){
       time_t iter_start = time(NULL);
 
       // evaluate cepa diagrams
@@ -3978,7 +3943,9 @@ PsiReturnType CoupledPair::CEPAIterations(){
       // update the amplitudes and check the energy
       Eold = eccsd;
       PairEnergy();
-      UpdateT1();
+      if (!options_.get_bool("CEPA_NO_SINGLES")){
+          UpdateT1();
+      }
       UpdateT2();
 
       // add vector to list for diis
@@ -4022,6 +3989,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
       iter++;
       if (iter==1) emp2 = eccsd;
       if (iter==1) SCS_MP2();
+
+      if (fabs(eccsd - Eold) < e_conv && nrm < r_conv) break;
   }
   times(&total_tmstime);
   time_t time_stop = time(NULL);

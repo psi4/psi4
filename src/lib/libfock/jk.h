@@ -224,7 +224,7 @@ protected:
     // => Helper Routines <= //
 
     /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
-    unsigned long int memory_overhead();
+    unsigned long int memory_overhead() const;
 
 public:
     // => Constructors <= //
@@ -552,6 +552,12 @@ protected:
     /// Delete integrals, files, etc
     virtual void postiterations();
 
+    /// Build the J and K matrices for this integral class
+    void build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints,
+        std::vector<boost::shared_ptr<Matrix> >& D,
+        std::vector<boost::shared_ptr<Matrix> >& J,
+        std::vector<boost::shared_ptr<Matrix> >& K);
+
     /// Common initialization
     void common_init();
 
@@ -651,9 +657,9 @@ protected:
     void common_init();
 
     bool is_core() const;
-    unsigned long int memory_temp();
-    int max_rows();
-    int max_nocc();
+    unsigned long int memory_temp() const;
+    int max_rows() const;
+    int max_nocc() const;
     void initialize_temps();
     void free_temps();
     void initialize_w_temps();
@@ -699,6 +705,129 @@ public:
      * Throws by default
      */
     virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
+
+    // => Knobs <= //
+
+    /**
+     * Minimum relative eigenvalue to retain in fitting inverse
+     * All eigenvectors with \epsilon_i < condition * \epsilon_max
+     * will be discarded
+     * @param condition, minimum relative eigenvalue allowed,
+     *        defaults to 1.0E-12
+     */
+    void set_condition(double condition) { condition_ = condition; }
+    /**
+     * Which file number should the (Q|mn) integrals go in
+     * @param unit Unit number
+     */
+    void set_unit(unsigned int unit) { unit_ = unit; }
+    /**
+     * What action to take for caching three-index integrals
+     * @param val One of NONE, LOAD, or SAVE
+     */
+    void set_df_ints_io(const std::string& val) { df_ints_io_ = val; }
+    /**
+     * What number of threads to compute integrals on
+     * @param val a positive integer
+     */
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+};
+
+/**
+ * Class FastDFJK
+ *
+ * JK implementation using sieved, threaded
+ * density-fitted technology
+ */
+class FastDFJK : public JK {
+
+protected:
+
+    // => DF-Specific stuff <= //
+
+    /// Auxiliary basis set
+    boost::shared_ptr<BasisSet> auxiliary_;
+    /// PSIO object
+    boost::shared_ptr<PSIO> psio_;
+    /// Cache action for three-index integrals
+    std::string df_ints_io_;
+    /// Number of threads for DF integrals
+    int df_ints_num_threads_;
+    /// Condition cutoff in fitting metric, defaults to 1.0E-12
+    double condition_;
+    /// File number for (Q|mn) tensor
+    unsigned int unit_;
+    /// Core or disk?
+    bool is_core_;
+    /// Sieve, must be static throughout the life of the object
+    boost::shared_ptr<ERISieve> sieve_;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return true; }
+    /// Setup integrals, files, etc
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+    // => Local three-center integrals <= //
+
+    /// Significant atom pairs (reduced triangular indexing A >= B)
+    std::vector<std::pair<int, int> > atom_pairs_;
+    /// Significant shell pairs (reduced triangular indexing P >= Q)
+    std::vector<std::vector<std::pair<int, int> > > shell_pairs_;
+    /// Auxiliary basis centers for each atom pair
+    std::vector<std::vector<int> > auxiliary_atoms_;
+    /// Three-index tensors (pq|A)(A|B)^-1 for each atom pair
+    std::vector<boost::shared_ptr<Matrix> > Bpq_;
+
+    /// The DF Z operator
+    boost::shared_ptr<Matrix> Z_;
+    /// The DF long-range Z operator
+    boost::shared_ptr<Matrix> Z_LR_;
+
+    boost::shared_ptr<Matrix> build_Z(double omega);
+    void build_atom_pairs();
+    void build_shell_pairs();
+    void build_auxiliary_partition();
+    void build_Bpq();
+    void build_J(boost::shared_ptr<Matrix> Z,
+                 const std::vector<boost::shared_ptr<Matrix> >& D,
+                 const std::vector<boost::shared_ptr<Matrix> >& J);
+    void build_K(boost::shared_ptr<Matrix> Z,
+                 const std::vector<boost::shared_ptr<Matrix> >& D,
+                 const std::vector<boost::shared_ptr<Matrix> >& K);
+    
+public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     * @param auxiliary auxiliary basis set for this system.
+     */
+    FastDFJK( boost::shared_ptr<BasisSet> primary,
+       boost::shared_ptr<BasisSet> auxiliary);
+
+    /// Destructor
+    virtual ~FastDFJK();
 
     // => Knobs <= //
 

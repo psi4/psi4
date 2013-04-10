@@ -8,16 +8,15 @@
 
 namespace psi{ namespace dcft{
 
-void
-DCFTSolver::compute_gradient()
+SharedMatrix DCFTSolver::compute_gradient_()
 {
     bool responseDone = false;
 
     // Print out the header
-    fprintf(outfile,"\n\n\t  **********************************************\n");
-    fprintf(outfile,    "\t  *       DC-06 Analytic Gradients Code      *\n");
-    fprintf(outfile,    "\t  *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
-    fprintf(outfile,    "\t  **********************************************\n\n");
+    fprintf(outfile,"\n\n\t***************************************************\n");
+    fprintf(outfile,    "\t*         DC-06 Analytic Gradients Code           *\n");
+    fprintf(outfile,    "\t*       by A.Yu. Sokolov and A.C. Simmonett       *\n");
+    fprintf(outfile,    "\t***************************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -32,8 +31,8 @@ DCFTSolver::compute_gradient()
     // Start two-step algorithm for solution of the response equations
     if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
         fprintf(outfile, "\t*=================================================*\n"
-                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
-                "\t*-------------------------------------------------*");
+                         "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
+                         "\t*-------------------------------------------------*");
 
         // Start macro-iterations
         while(!responseDone && iter_++ < maxiter_){
@@ -201,6 +200,8 @@ DCFTSolver::compute_gradient()
     // Compute the energy-weighted density matrix
     compute_ewdm();
 
+    return SharedMatrix(new Matrix("NULL", 0, 0));
+
 }
 
 void
@@ -229,6 +230,9 @@ DCFTSolver::gradient_init()
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+
+    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
+    if (options_.get_str("AO_BASIS") == "DISK") _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -366,17 +370,34 @@ DCFTSolver::gradient_init()
     dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[o,v]"), "MO Ints <vv|ov>");
     dpd_buf4_close(&I);
 
-    // JWM
-//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
-//                  ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
-//    dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V,V]"), "MO Ints (ov|VV)");
-//    dpd_buf4_close(&I);
-
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[o,v]"),
                   ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
     dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V>=V]+"), "MO Ints (ov|VV)");
     dpd_buf4_close(&I);
 
+    // (VV|VV)
+
+    if(options_.get_str("AO_BASIS") == "DISK"){
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
+                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,v]"), ID("[V,v]"), "MO Ints <Vv|Vv>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
+                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[V,V]"), "MO Ints (vv|VV)");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                      ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv|vv>");
+        dpd_buf4_close(&I);
+    }
 
     // (OV|OV)
 
@@ -3061,7 +3082,6 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_buf4_close(&I);
     dpd_buf4_close(&Z);
     dpd_buf4_close(&G);
-
 
     // G_IjAb += Sum_Cd g_CdAb Z_IjCd
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),

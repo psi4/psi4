@@ -60,6 +60,29 @@ boost::shared_ptr<JK> JK::build_JK()
 
         return boost::shared_ptr<JK>(jk);
 
+    } else if (options.get_str("SCF_TYPE") == "FAST_DF") {
+
+        boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
+
+        FastDFJK* jk = new FastDFJK(primary,auxiliary);
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_IO"].has_changed())
+            jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["DF_FITTING_CONDITION"].has_changed())
+            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+
+        return boost::shared_ptr<JK>(jk);
+
     } else if (options.get_str("SCF_TYPE") == "PK") {
 
         PKJK* jk = new PKJK(primary);;
@@ -166,7 +189,7 @@ void JK::common_init()
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = SharedMatrix(pet->aotoso());
 }
-unsigned long int JK::memory_overhead()
+unsigned long int JK::memory_overhead() const
 {
     unsigned long int mem = 0L;
 
@@ -491,7 +514,7 @@ void JK::compute()
         timer_off("JK: AO2USO");
     }
 
-    if (debug_ > 3) {
+    if (debug_ > 6) {
         fprintf(outfile, "   > JK <\n\n");
         for (int N = 0; N < C_left_.size(); N++) {
             if (C1() && AO2USO_->nirrep() != 1) {
@@ -1722,12 +1745,37 @@ void DirectJK::compute_JK()
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
         }
+        // TODO: Fast K algorithm
+        if (do_J_) { 
+            build_JK(ints,D_ao_,J_ao_,wK_ao_);
+        } else {
+            std::vector<boost::shared_ptr<Matrix> > temp;
+            for (int i = 0; i < D_ao_.size(); i++) {
+                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+            }
+            build_JK(ints,D_ao_,temp,wK_ao_);
+        }
     }
 
-    if (do_J_ && do_K_) {
+    if (do_J_ || do_K_) {
         std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
-            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        }
+        if (do_J_ && do_K_) { 
+            build_JK(ints,D_ao_,J_ao_,K_ao_);
+        } else if (do_J_) {
+            std::vector<boost::shared_ptr<Matrix> > temp;
+            for (int i = 0; i < D_ao_.size(); i++) {
+                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+            }
+            build_JK(ints,D_ao_,J_ao_,temp);
+        } else {
+            std::vector<boost::shared_ptr<Matrix> > temp;
+            for (int i = 0; i < D_ao_.size(); i++) {
+                temp.push_back(boost::shared_ptr<Matrix>(new Matrix("temp", primary_->nbf(), primary_->nbf())));
+            }
+            build_JK(ints,D_ao_,temp,K_ao_);
         }
     }
 
@@ -1735,6 +1783,449 @@ void DirectJK::compute_JK()
 void DirectJK::postiterations()
 {
     sieve_.reset();
+}
+void DirectJK::build_JK(std::vector<boost::shared_ptr<TwoBodyAOInt> >& ints, 
+                        std::vector<boost::shared_ptr<Matrix> >& D,
+                        std::vector<boost::shared_ptr<Matrix> >& J,
+                        std::vector<boost::shared_ptr<Matrix> >& K)
+{
+    // => Zeroing <= //
+
+    for (int ind = 0; ind < J.size(); ind++) {
+        J[ind]->zero();
+    }
+    for (int ind = 0; ind < K.size(); ind++) {
+        K[ind]->zero();
+    }
+
+    // => Sizing <= // 
+
+    int nso     = primary_->nbf();
+    int nshell  = primary_->nshell();
+    int nthread = df_ints_num_threads_;
+
+    // => Task Blocking <= //
+
+    std::vector<int> task_shells;
+    std::vector<int> task_starts;
+
+    // > Atomic Blocking < //
+
+    int atomic_ind = -1;
+    for (int P = 0; P < nshell; P++) {
+        if (primary_->shell(P).ncenter() > atomic_ind) {
+            task_starts.push_back(P);
+            atomic_ind++;
+        } 
+        task_shells.push_back(P);
+    }
+    task_starts.push_back(nshell);
+
+    // < End Atomic Blocking > //
+    
+    size_t ntask = task_starts.size() - 1;
+    size_t ntask2 = ntask * ntask;
+    size_t ntask4 = ntask * ntask * ntask * ntask; 
+
+    std::vector<int> task_offsets;
+    task_offsets.push_back(0);
+    for (int P2 = 0; P2 < primary_->nshell(); P2++) {
+        task_offsets.push_back(task_offsets[P2] + primary_->shell(task_shells[P2]).nfunction());
+    } 
+
+    size_t max_task = 0L;
+    for (int task = 0; task < ntask; task++) {
+        size_t size = 0L;
+        for (int P2 = task_starts[task]; P2 < task_starts[task+1]; P2++) {
+            size += primary_->shell(task_shells[P2]).nfunction();
+        }
+        max_task = (max_task >= size ? max_task : size);
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  ==> DirectJK: Task Blocking <==\n\n");
+        for (int task = 0; task < ntask; task++) {
+            fprintf(outfile, "  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task], task_starts[task+1]);
+            for (int P2 = task_starts[task]; P2 < task_starts[task+1]; P2++) {
+                int P = task_shells[P2];
+                int size = primary_->shell(P).nfunction();
+                int off  = primary_->shell(P).function_index();
+                int off2 = task_offsets[P2]; 
+                fprintf(outfile, "    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off, off2);
+            }
+        }
+        fprintf(outfile, "\n");
+    }
+
+    // => Significant Task Pairs (PQ|-style <= //
+
+    std::vector<std::pair<int, int> > task_pairs;
+    for (int Ptask = 0; Ptask < ntask; Ptask++) {
+        for (int Qtask = 0; Qtask < ntask; Qtask++) {   
+            if (Qtask > Ptask) continue;
+            bool found = false;
+            for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask+1]; P2++) {
+                for (int Q2 = task_starts[Qtask]; Q2 < task_starts[Qtask+1]; Q2++) {
+                    int P = task_shells[P2];
+                    int Q = task_shells[Q2];
+                    if (sieve_->shell_pair_significant(P,Q)) {
+                        found = true;
+                        task_pairs.push_back(std::pair<int,int>(Ptask,Qtask)); 
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+        }
+    }
+    size_t ntask_pair = task_pairs.size();
+    size_t ntask_pair2 = ntask_pair * ntask_pair;
+
+    // => Intermediate Buffers <= //
+
+    std::vector<std::vector<boost::shared_ptr<Matrix> > > JKT;
+    for (int thread = 0; thread < nthread; thread++) {
+        std::vector<boost::shared_ptr<Matrix> > JK2;
+        for (int ind = 0; ind < D.size(); ind++) {
+            JK2.push_back(boost::shared_ptr<Matrix>(new Matrix("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task)));
+        }
+        JKT.push_back(JK2);
+    }
+
+    // => Benchmarks <= //
+
+    size_t computed_shells = 0L;
+
+    // ==> Master Task Loop <== //
+
+    #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+: computed_shells)
+    for (size_t task = 0L; task < ntask_pair2; task++) {
+         
+        size_t task1 = task / ntask_pair;    
+        size_t task2 = task % ntask_pair;    
+        
+        int Ptask = task_pairs[task1].first;
+        int Qtask = task_pairs[task1].second;
+        int Rtask = task_pairs[task2].first;
+        int Stask = task_pairs[task2].second;
+
+        // GOTCHA! Thought this should be RStask > PQtask, but
+        // H2/3-21G: Task (10|11) gives valid quartets (30|22) and (31|22)
+        // This is an artifact that multiple shells on each task allow
+        // for for the Ptask's index to possibly trump any RStask pair,
+        // regardless of Qtask's index
+        if (Rtask > Ptask) continue; 
+
+        //printf("Task: %2d %2d %2d %2d\n", Ptask, Qtask, Rtask, Stask);
+
+        int nPtask = task_starts[Ptask + 1] - task_starts[Ptask];
+        int nQtask = task_starts[Qtask + 1] - task_starts[Qtask];
+        int nRtask = task_starts[Rtask + 1] - task_starts[Rtask];
+        int nStask = task_starts[Stask + 1] - task_starts[Stask];
+
+        int P2start = task_starts[Ptask];
+        int Q2start = task_starts[Qtask];
+        int R2start = task_starts[Rtask];
+        int S2start = task_starts[Stask];
+
+        int dPsize = task_offsets[P2start + nPtask] - task_offsets[P2start];
+        int dQsize = task_offsets[Q2start + nQtask] - task_offsets[Q2start];
+        int dRsize = task_offsets[R2start + nRtask] - task_offsets[R2start];
+        int dSsize = task_offsets[S2start + nStask] - task_offsets[S2start];
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        // => Master shell quartet loops <= //
+
+        bool touched = false; 
+        for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
+        for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
+            if (Q2 > P2) continue;
+            int P = task_shells[P2];
+            int Q = task_shells[Q2];
+            if (!sieve_->shell_pair_significant(P,Q)) continue;
+        for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
+        for (int S2 = S2start; S2 < S2start + nStask; S2++) {
+            if (S2 > R2) continue;
+            int R = task_shells[R2];
+            int S = task_shells[S2];
+            if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
+            if (!sieve_->shell_pair_significant(R,S)) continue;
+            if (!sieve_->shell_significant(P,Q,R,S)) continue;
+
+            //printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
+
+            //if (thread == 0) timer_on("JK: Ints");
+            ints[thread]->compute_shell(P,Q,R,S);
+            computed_shells++;
+            //if (thread == 0) timer_off("JK: Ints");
+
+            const double* buffer = ints[thread]->buffer();
+
+            int Psize = primary_->shell(P).nfunction();
+            int Qsize = primary_->shell(Q).nfunction();
+            int Rsize = primary_->shell(R).nfunction();
+            int Ssize = primary_->shell(S).nfunction();
+
+            int Poff = primary_->shell(P).function_index();
+            int Qoff = primary_->shell(Q).function_index();
+            int Roff = primary_->shell(R).function_index();
+            int Soff = primary_->shell(S).function_index();
+
+            int Poff2 = task_offsets[P2] - task_offsets[P2start];
+            int Qoff2 = task_offsets[Q2] - task_offsets[Q2start];
+            int Roff2 = task_offsets[R2] - task_offsets[R2start];
+            int Soff2 = task_offsets[S2] - task_offsets[S2start];
+
+            //if (thread == 0) timer_on("JK: GEMV");
+            for (int ind = 0; ind < D.size(); ind++) {
+                double** Dp = D[ind]->pointer();
+                double** JKTp = JKT[thread][ind]->pointer();     
+                const double* buffer2 = buffer;
+
+                if (!touched) {
+                    ::memset((void*) JKTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));    
+                    ::memset((void*) JKTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));    
+                    ::memset((void*) JKTp[2L * max_task], '\0', dPsize * dRsize * sizeof(double));    
+                    ::memset((void*) JKTp[3L * max_task], '\0', dPsize * dSsize * sizeof(double));    
+                    ::memset((void*) JKTp[4L * max_task], '\0', dQsize * dRsize * sizeof(double));    
+                    ::memset((void*) JKTp[5L * max_task], '\0', dQsize * dSsize * sizeof(double));    
+                    if (!lr_symmetric_) {
+                        ::memset((void*) JKTp[6L * max_task], '\0', dRsize * dPsize * sizeof(double));    
+                        ::memset((void*) JKTp[7L * max_task], '\0', dSsize * dPsize * sizeof(double));    
+                        ::memset((void*) JKTp[8L * max_task], '\0', dRsize * dQsize * sizeof(double));    
+                        ::memset((void*) JKTp[9L * max_task], '\0', dSsize * dQsize * sizeof(double));    
+                    }
+                }
+                
+                double* J1p = JKTp[0L * max_task];
+                double* J2p = JKTp[1L * max_task];
+                double* K1p = JKTp[2L * max_task];
+                double* K2p = JKTp[3L * max_task];
+                double* K3p = JKTp[4L * max_task];
+                double* K4p = JKTp[5L * max_task];
+                double* K5p;
+                double* K6p;
+                double* K7p;
+                double* K8p;
+                if (!lr_symmetric_) {
+                    K5p = JKTp[6L * max_task];
+                    K6p = JKTp[7L * max_task];
+                    K7p = JKTp[8L * max_task];
+                    K8p = JKTp[9L * max_task];
+                }
+
+                double prefactor = 1.0;
+                if (P == Q)           prefactor *= 0.5;
+                if (R == S)           prefactor *= 0.5;
+                if (P == R && Q == S) prefactor *= 0.5;
+
+                for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                for (int r = 0; r < Rsize; r++) {
+                for (int s = 0; s < Ssize; s++) {
+                    J1p[(p + Poff2) * dQsize + q + Qoff2] += prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) * (*buffer2);
+                    J2p[(r + Roff2) * dSsize + s + Soff2] += prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) * (*buffer2);
+                    K1p[(p + Poff2) * dRsize + r + Roff2] += prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
+                    K2p[(p + Poff2) * dSsize + s + Soff2] += prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
+                    K3p[(q + Qoff2) * dRsize + r + Roff2] += prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
+                    K4p[(q + Qoff2) * dSsize + s + Soff2] += prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
+                    if (!lr_symmetric_) {
+                        K5p[(r + Roff2) * dPsize + p + Poff2] += prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
+                        K6p[(s + Soff2) * dPsize + p + Poff2] += prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
+                        K7p[(r + Roff2) * dQsize + q + Qoff2] += prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
+                        K8p[(s + Soff2) * dQsize + q + Qoff2] += prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
+                    }
+                    buffer2++;
+                }}}}
+ 
+            } 
+            touched = true;
+            //if (thread == 0) timer_off("JK: GEMV");
+
+        }}}} // End Shell Quartets
+
+        if (!touched) continue;
+
+        // => Stripe out <= //
+
+        //if (thread == 0) timer_on("JK: Atomic");
+        for (int ind = 0; ind < D.size(); ind++) {
+            double** JKTp = JKT[thread][ind]->pointer();
+            double** Jp = J[ind]->pointer();
+            double** Kp = K[ind]->pointer();
+
+            double* J1p = JKTp[0L * max_task];
+            double* J2p = JKTp[1L * max_task];
+            double* K1p = JKTp[2L * max_task];
+            double* K2p = JKTp[3L * max_task];
+            double* K3p = JKTp[4L * max_task];
+            double* K4p = JKTp[5L * max_task];
+            double* K5p;
+            double* K6p;
+            double* K7p;
+            double* K8p;
+            if (!lr_symmetric_) {
+                K5p = JKTp[6L * max_task];
+                K6p = JKTp[7L * max_task];
+                K7p = JKTp[8L * max_task];
+                K8p = JKTp[9L * max_task];
+            }
+
+            // > J_PQ < //
+
+            for (int P2 = 0; P2 < nPtask; P2++) {
+            for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                int P = task_shells[P2start + P2];
+                int Q = task_shells[Q2start + Q2];
+                int Psize = primary_->shell(P).nfunction();
+                int Qsize = primary_->shell(Q).nfunction();
+                int Poff =  primary_->shell(P).function_index();
+                int Qoff =  primary_->shell(Q).function_index();
+                int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    #pragma omp atomic
+                    Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
+                }}
+            }}    
+            
+            // > J_RS < //
+
+            for (int R2 = 0; R2 < nRtask; R2++) {
+            for (int S2 = 0; S2 < nStask; S2++) {
+                int R = task_shells[R2start + R2];
+                int S = task_shells[S2start + S2];
+                int Rsize = primary_->shell(R).nfunction();
+                int Ssize = primary_->shell(S).nfunction();
+                int Roff =  primary_->shell(R).function_index();
+                int Soff =  primary_->shell(S).function_index();
+                int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (int r = 0; r < Rsize; r++) {
+                for (int s = 0; s < Ssize; s++) {
+                    #pragma omp atomic
+                    Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
+                }}
+            }}    
+            
+            // > K_PR < //
+            
+            for (int P2 = 0; P2 < nPtask; P2++) {
+            for (int R2 = 0; R2 < nRtask; R2++) {
+                int P = task_shells[P2start + P2];
+                int R = task_shells[R2start + R2];
+                int Psize = primary_->shell(P).nfunction();
+                int Rsize = primary_->shell(R).nfunction();
+                int Poff =  primary_->shell(P).function_index();
+                int Roff =  primary_->shell(R).function_index();
+                int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                for (int p = 0; p < Psize; p++) {
+                for (int r = 0; r < Rsize; r++) {
+                    #pragma omp atomic
+                    Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * dRsize + r + Roff2];
+                    if (!lr_symmetric_) {
+                        #pragma omp atomic
+                        Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
+                    }
+                }}
+            }}    
+            
+            // > K_PS < //
+
+            for (int P2 = 0; P2 < nPtask; P2++) {
+            for (int S2 = 0; S2 < nStask; S2++) {
+                int P = task_shells[P2start + P2];
+                int S = task_shells[S2start + S2];
+                int Psize = primary_->shell(P).nfunction();
+                int Ssize = primary_->shell(S).nfunction();
+                int Poff =  primary_->shell(P).function_index();
+                int Soff =  primary_->shell(S).function_index();
+                int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (int p = 0; p < Psize; p++) {
+                for (int s = 0; s < Ssize; s++) {
+                    #pragma omp atomic
+                    Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
+                    if (!lr_symmetric_) {
+                        #pragma omp atomic 
+                        Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
+                    }
+                }}
+            }}    
+            
+            // > K_QR < //
+            
+            for (int Q2 = 0; Q2 < nQtask; Q2++) {
+            for (int R2 = 0; R2 < nRtask; R2++) {
+                int Q = task_shells[Q2start + Q2];
+                int R = task_shells[R2start + R2];
+                int Qsize = primary_->shell(Q).nfunction();
+                int Rsize = primary_->shell(R).nfunction();
+                int Qoff =  primary_->shell(Q).function_index();
+                int Roff =  primary_->shell(R).function_index();
+                int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                for (int q = 0; q < Qsize; q++) {
+                for (int r = 0; r < Rsize; r++) {
+                    #pragma omp atomic
+                    Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * dRsize + r + Roff2];
+                    if (!lr_symmetric_) {
+                        #pragma omp atomic
+                        Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
+                    }
+                }}
+            }}    
+            
+            // > K_QS < //
+
+            for (int Q2 = 0; Q2 < nQtask; Q2++) {
+            for (int S2 = 0; S2 < nStask; S2++) {
+                int Q = task_shells[Q2start + Q2];
+                int S = task_shells[S2start + S2];
+                int Qsize = primary_->shell(Q).nfunction();
+                int Ssize = primary_->shell(S).nfunction();
+                int Qoff =  primary_->shell(Q).function_index();
+                int Soff =  primary_->shell(S).function_index();
+                int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                for (int q = 0; q < Qsize; q++) {
+                for (int s = 0; s < Ssize; s++) {
+                    #pragma omp atomic
+                    Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * dSsize + s + Soff2];
+                    if (!lr_symmetric_) {
+                        #pragma omp atomic
+                        Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
+                    }
+                }}
+            }}    
+            
+        } // End stripe out 
+        //if (thread == 0) timer_off("JK: Atomic");
+     
+    } // End master task list
+
+    for (int ind = 0; ind < D.size(); ind++) {
+        J[ind]->scale(2.0);
+        J[ind]->hermitivitize();
+        if (lr_symmetric_) {
+            K[ind]->scale(2.0);
+            K[ind]->hermitivitize();
+        }
+    }
+
+    if (bench_) {
+        FILE* fh = fopen("bench.dat", "a");
+        size_t ntri = nshell * (nshell + 1L) / 2L;
+        size_t possible_shells = ntri * (ntri + 1L) / 2L;
+        fprintf(fh, "Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells, possible_shells, computed_shells / (double) possible_shells);
+        fclose(fh);
+    }
 }
 
 DFJK::DFJK(boost::shared_ptr<BasisSet> primary,
@@ -1961,9 +2452,13 @@ void DFJK::print_header() const
 }
 bool DFJK::is_core() const
 {
-    int ntri = sieve_->function_pairs().size();
+    size_t ntri = sieve_->function_pairs().size();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
+
+    size_t mem = memory_;
+    mem -= memory_overhead();
+    mem -= memory_temp();
 
     // Two is for buffer space in fitting
     if (do_wK_)
@@ -1971,7 +2466,7 @@ bool DFJK::is_core() const
     else
         return (three_memory + 2L*two_memory < memory_);
 }
-unsigned long int DFJK::memory_temp()
+unsigned long int DFJK::memory_temp() const
 {
     unsigned long int mem = 0L;
 
@@ -1982,7 +2477,7 @@ unsigned long int DFJK::memory_temp()
 
     return mem;
 }
-int DFJK::max_rows()
+int DFJK::max_rows() const
 {
     // Start with all memory
     unsigned long int mem = memory_;
@@ -2007,7 +2502,7 @@ int DFJK::max_rows()
 
     return (int) max_rows;
 }
-int DFJK::max_nocc()
+int DFJK::max_nocc() const
 {
     int max_nocc = 0;
     for (int N = 0; N < C_left_ao_.size(); N++) {
@@ -3630,6 +4125,540 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
         C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,wKp[0],nbf);
         timer_off("JK: wK2");
     }
+}
+
+FastDFJK::FastDFJK(boost::shared_ptr<BasisSet> primary,
+   boost::shared_ptr<BasisSet> auxiliary) :
+   JK(primary), auxiliary_(auxiliary)
+{
+    common_init();
+}
+FastDFJK::~FastDFJK()
+{
+}
+void FastDFJK::common_init()
+{
+    df_ints_num_threads_ = 1;
+    #ifdef _OPENMP
+        df_ints_num_threads_ = omp_get_max_threads();
+    #endif
+    df_ints_io_ = "NONE";
+    condition_ = 1.0E-12;
+    unit_ = PSIF_DFSCF_BJ;
+    is_core_ = true;
+    psio_ = PSIO::shared_object();
+}
+void FastDFJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> FastDFJK: Density-Fitted J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_)
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
+        fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
+    }
+}
+void FastDFJK::preiterations()
+{
+    // DF requires constant sieve, must be static throughout object life
+    if (!sieve_) {
+        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    }
+
+    Z_ = build_Z(0.0);
+    if (do_wK_) 
+        Z_LR_ = build_Z(omega_);    
+
+    build_atom_pairs();
+    build_shell_pairs();
+    build_auxiliary_partition();
+    build_Bpq();
+
+    if (debug_) {
+        fprintf(outfile,"  ==> Atom Pair Tasks <==\n\n");
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second); 
+            const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
+            fprintf(outfile,"   Auxiliary Atoms:\n");
+            for (int A = 0; A < auxiliary_atoms.size(); A++) {
+                fprintf(outfile,"    %4d\n", auxiliary_atoms[A]);
+            }
+            if (debug_ > 1) {
+                fprintf(outfile,"   Primary Shell Pairs:\n");
+                const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
+                for (int A = 0; A < shell_pairs.size(); A++) {
+                    fprintf(outfile,"    (%4d,%4d)\n", shell_pairs[A].first, shell_pairs[A].second);
+                }
+            }
+        }
+        fprintf(outfile, "\n");
+    }
+
+    if (debug_ > 3) {
+        fprintf(outfile,"  ==> Atom Pair Tensors <==\n\n");
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+            fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second); 
+            Bpq_[pair]->print(); 
+        }
+        fprintf(outfile, "\n");
+        Z_->print();
+        if (do_wK_) Z_LR_->print();
+    }
+}
+void FastDFJK::compute_JK()
+{
+    if (do_J_) { 
+        build_J(Z_,D_ao_,J_ao_);
+    }
+    if (do_K_) {
+        build_K(Z_,D_ao_,K_ao_);
+    }
+    if (do_wK_) {
+        build_K(Z_LR_,D_ao_,wK_ao_);
+    } 
+}
+void FastDFJK::postiterations()
+{
+    Z_.reset();
+    Z_LR_.reset();
+    atom_pairs_.clear();
+    shell_pairs_.clear();
+    auxiliary_atoms_.clear();
+    Bpq_.clear();
+}
+boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
+{
+    int naux = auxiliary_->nbf();
+    int nshell = auxiliary_->nshell();
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = df_ints_num_threads_;
+    #endif
+    
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    for (int thread = 0; thread < nthread; thread++) {
+        if (omega != 0.0) {
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(omega)));
+        } else { 
+            ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
+        }
+    } 
+
+    boost::shared_ptr<Matrix> Z(new Matrix((omega != 0.0 ? "Z_LR" : "Z"), naux, naux));
+    double** Zp = Z->pointer();
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (int P = 0; P < nshell; P++) {
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+        const double* buffer = ints[thread]->buffer();
+        for (int Q = 0; Q <= P; Q++) {
+            ints[thread]->compute_shell(P,0,Q,0);
+            int nP = auxiliary_->shell(P).nfunction(); 
+            int nQ = auxiliary_->shell(Q).nfunction(); 
+            int oP = auxiliary_->shell(P).function_index(); 
+            int oQ = auxiliary_->shell(Q).function_index(); 
+            for (int p = 0, index = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++, index++) {
+                    Zp[p + oP][q + oQ] = Zp[q + oQ][p + oP] = buffer[index];
+                }
+            }
+        }
+    }
+    return Z;
+}
+void FastDFJK::build_atom_pairs()
+{
+    atom_pairs_.clear(); 
+
+    int natom = auxiliary_->molecule()->natom();
+    for (int A = 0; A < natom; A++) {
+        int nA = primary_->nshell_on_center(A);
+        int oA = primary_->shell_on_center(A,0);
+        for (int B = 0; B <= A; B++) {
+            int nB = primary_->nshell_on_center(B);
+            int oB = primary_->shell_on_center(B,0);
+            for (int P = 0; P < nA; P++) {
+                bool found = false;
+                for (int Q = 0; Q < nB; Q++) {
+                    if (sieve_->shell_pair_significant(P + oA, Q + oB)) {
+                        found = true;
+                        atom_pairs_.push_back(std::pair<int,int>(A,B));
+                        break;
+                    }
+                }
+                if (found) break;
+            } 
+        }
+    }
+}
+void FastDFJK::build_shell_pairs()
+{
+    shell_pairs_.clear();
+
+    for (size_t AB = 0L; AB < atom_pairs_.size(); AB++) {
+        int A = atom_pairs_[AB].first;
+        int B = atom_pairs_[AB].second;
+        std::vector<std::pair<int,int> > pairs;
+        int nA = primary_->nshell_on_center(A);
+        int oA = primary_->shell_on_center(A,0);
+        int nB = primary_->nshell_on_center(B);
+        int oB = primary_->shell_on_center(B,0);
+        for (int P = 0; P < nA; P++) {
+            for (int Q = 0; Q < nB; Q++) {
+                if (Q + oB > P + oA) continue;
+                if (sieve_->shell_pair_significant(P + oA, Q + oB)) {
+                    pairs.push_back(std::pair<int,int>(P + oA, Q + oB));            
+                }
+            }
+        } 
+        shell_pairs_.push_back(pairs);
+    }
+}
+void FastDFJK::build_auxiliary_partition()
+{
+    auxiliary_atoms_.clear();
+
+    // Diatomic partition for now
+    for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+        int A = atom_pairs_[pair].first;
+        int B = atom_pairs_[pair].second;
+        std::vector<int> task;
+        if (A == B) {
+            task.push_back(A);
+        } else {
+            task.push_back(A);
+            task.push_back(B);
+        }
+        auxiliary_atoms_.push_back(task);
+    }
+}
+void FastDFJK::build_Bpq()
+{
+    Bpq_.clear();
+    Bpq_.resize(atom_pairs_.size());
+    double** Zp = Z_->pointer();
+
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = df_ints_num_threads_;
+    #endif
+    
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    for (int thread = 0; thread < nthread; thread++) {
+        ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
+    } 
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+    
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+        const double* buffer = ints[thread]->buffer();
+
+        const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
+        const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
+        
+        // => Sizing <= //
+    
+        int npq = 0;
+        for (int PQ = 0; PQ < shell_pairs.size(); PQ++) {
+            int P = shell_pairs[PQ].first;
+            int Q = shell_pairs[PQ].second;
+            npq += primary_->shell(P).nfunction() * primary_->shell(Q).nfunction();;
+        }
+
+        int nA = 0;
+        for (int C = 0; C < auxiliary_atoms.size(); C++) {
+            int C2 = auxiliary_atoms[C];
+            int nC = auxiliary_->nshell_on_center(C2);
+            int oC = auxiliary_->shell_on_center(C2,0);
+            for (int A = 0; A < nC; A++) {
+                nA += auxiliary_->shell(A + oC).nfunction();
+            }
+        }
+
+        // => Tensor Allocation <= //
+
+        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", nA, npq));
+        double** Ap = Apq->pointer();
+        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", nA, npq));
+        double** Bp = Bpq->pointer();
+        boost::shared_ptr<Matrix> J(new Matrix("J", nA, nA));
+        double** Jp = J->pointer();
+
+        // => Generate Integrals <= //
+
+        for (int C = 0,dA=0; C < auxiliary_atoms.size(); C++) {
+            int C2 = auxiliary_atoms[C];
+            int nC = auxiliary_->nshell_on_center(C2);
+            int oC = auxiliary_->shell_on_center(C2,0);
+            for (int A = oC; A < oC + nC; A++) {
+                int nA = auxiliary_->shell(A).nfunction();
+                int oA = auxiliary_->shell(A).function_index();
+                for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
+                    int P = shell_pairs[PQ].first;
+                    int Q = shell_pairs[PQ].second;
+                    ints[thread]->compute_shell(A,0,P,Q);
+                    int nP = primary_->shell(P).nfunction();
+                    int oP = primary_->shell(P).function_index();
+                    int nQ = primary_->shell(Q).nfunction();
+                    int oQ = primary_->shell(Q).function_index();
+                    for (int a = 0, index = 0; a < nA; a++) {
+                        for (int p = 0; p < nP; p++) {
+                            for (int q = 0; q < nQ; q++,index++) {
+                                Ap[a + dA][p * nQ + q + dPQ] = buffer[index];
+                            }
+                        }
+                    }
+                    dPQ += nP * nQ;
+                }
+                dA += nA;
+            }
+        }
+
+        // => Generate Metric <= //
+
+        for (int C = 0,dA=0; C < auxiliary_atoms.size(); C++) {
+            int C2 = auxiliary_atoms[C];
+            int nC = auxiliary_->nshell_on_center(C2);
+            int oC = auxiliary_->shell_on_center(C2,0);
+            for (int A = oC; A < oC + nC; A++) {
+                int nA = auxiliary_->shell(A).nfunction();
+                int oA = auxiliary_->shell(A).function_index();
+                for (int a = 0; a < nA; a++,dA++) {
+                    for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
+                    int D2 = auxiliary_atoms[D];
+                    int nD = auxiliary_->nshell_on_center(D2);
+                    int oD = auxiliary_->shell_on_center(D2,0);
+                    for (int B = oD; B < oD + nD; B++) {
+                        int nB = auxiliary_->shell(B).nfunction();
+                        int oB = auxiliary_->shell(B).function_index();
+                            for (int b = 0; b < nB; b++,dB++) {
+                                Jp[dA][dB] = Zp[a + oA][b + oB];
+                            }
+                        } 
+                    }
+                }
+            }
+        }
+
+        // => Invert Metric <= //
+
+        J->power(-1.0,condition_);
+
+        // => Apply Metric <= //
+
+        C_DGEMM('N','N',nA,npq,nA,1.0,Jp[0],nA,Ap[0],npq,0.0,Bp[0],npq);
+
+        Bpq_[pair] = Bpq;
+    }
+}
+void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
+                       const std::vector<boost::shared_ptr<Matrix> >& D,
+                       const std::vector<boost::shared_ptr<Matrix> >& J)
+{
+    // => Sizing <= //
+
+    int natom = auxiliary_->molecule()->natom();
+    int nso  = primary_->nbf();
+    int naux = auxiliary_->nbf();
+
+    int max_naux_per_atom = 0;
+    int max_nso_per_atom = 0;
+    for (int A = 0; A < natom; A++) {
+        int P1 = primary_->shell_on_center(A,0);
+        int P2 = (A == natom - 1 ? primary_->nshell() : primary_->shell_on_center(A+1,0));
+        int nP = (A == natom - 1 ? nso - primary_->shell(P1).function_index() : primary_->shell(P2).function_index() - primary_->shell(P1).function_index());
+        max_nso_per_atom = (max_nso_per_atom >= nP ? max_nso_per_atom : nP);
+        int A1 = auxiliary_->shell_on_center(A,0);
+        int A2 = (A == natom - 1 ? auxiliary_->nshell() : auxiliary_->shell_on_center(A+1,0));
+        int nA = (A == natom - 1 ? naux - auxiliary_->shell(A1).function_index() : auxiliary_->shell(A2).function_index() - auxiliary_->shell(A1).function_index());
+        max_naux_per_atom = (max_naux_per_atom >= nA ? max_naux_per_atom : nA);
+    }
+    int max_atom = 0;
+    for (size_t pair = 0L; pair < auxiliary_atoms_.size(); pair++) {
+        max_atom = (max_atom >= auxiliary_atoms_[pair].size() ? max_atom : auxiliary_atoms_[pair].size()); 
+    }
+    int max_nso2 = max_nso_per_atom * max_nso_per_atom;
+    int max_naux = max_atom * max_naux_per_atom;
+
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+    #endif
+
+    // => Temporaries <= //
+
+    std::vector<boost::shared_ptr<Vector> > vs;
+    std::vector<boost::shared_ptr<Vector> > cs;
+    std::vector<boost::shared_ptr<Vector> > c;
+    for (int thread = 0; thread < nthread; thread++) {
+        vs.push_back(boost::shared_ptr<Vector>(new Vector("vs", max_nso2)));
+        cs.push_back(boost::shared_ptr<Vector>(new Vector("cs", max_naux)));
+        c.push_back( boost::shared_ptr<Vector>(new Vector("c", naux))); 
+    }
+    boost::shared_ptr<Vector> d(new Vector("d",naux));
+
+    // ==> Master Loop over J Tasks <= //
+
+    for (int ind = 0; ind < D.size(); ind++) {
+
+        double** Zp = Z->pointer();
+        double** Dp = D[ind]->pointer(); 
+        double** Jp = J[ind]->pointer();
+
+        // => B_rs^A D_rs -> c_A <= //
+
+        for (int thread = 0; thread < nthread; thread++) {
+            c[thread]->zero();
+        }
+
+        #pragma omp parallel for num_threads(nthread) schedule(dynamic)
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
+            const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
+            boost::shared_ptr<Matrix> B = Bpq_[pair];        
+
+            int nauxs = B->rowspi()[0];
+            int nso2s = B->colspi()[0];
+
+            double** Bp = B->pointer();
+            double* vsp = vs[thread]->pointer();
+            double* csp = cs[thread]->pointer();
+            double* cp  = c[thread]->pointer();
+
+            for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
+                int P = shell_pairs[PQ].first;
+                int Q = shell_pairs[PQ].second;
+                int nP = primary_->shell(P).nfunction(); 
+                int nQ = primary_->shell(Q).nfunction(); 
+                int oP = primary_->shell(P).function_index(); 
+                int oQ = primary_->shell(Q).function_index(); 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        vsp[p * nQ + q + dPQ] = Dp[p + oP][q + oQ];
+                        if (P != Q) {
+                            vsp[p * nQ + q + dPQ] += Dp[q + oQ][p + oP];
+                        }
+                    }
+                }
+                dPQ += nP * nQ;
+            }
+
+            C_DGEMV('N',nauxs,nso2s,1.0,Bp[0],nso2s,vsp,1,0.0,csp,1);
+
+            for (int C2 = 0, dA = 0; C2 < auxiliary_atoms.size(); C2++) {
+                int C = auxiliary_atoms[C2];
+                int nC = auxiliary_->nshell_on_center(C);
+                int oC = auxiliary_->shell_on_center(C,0);
+                for (int A = 0; A < nC; A++) {
+                    int nA = auxiliary_->shell(A + oC).nfunction();
+                    int oA = auxiliary_->shell(A + oC).function_index();
+                    for (int a = 0; a < nA; a++) {
+                        cp[a + oA] += csp[a + dA];
+                    } 
+                    dA += nA;
+                } 
+            }
+        }
+
+        for (int thread = 1; thread < nthread; thread++) {
+            c[0]->add(c[thread]);    
+        }
+
+        // => Z^BA c_A -> d_B <= //
+
+        double* c2p = c[0]->pointer();
+        double* dp = d->pointer();
+        C_DGEMV('N',naux,naux,1.0,Zp[0],naux,c2p,1,0.0,dp,1); 
+
+        // => B_pq^B d_B -> J_pq <= //
+
+        #pragma omp parallel for num_threads(nthread) schedule(dynamic)
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
+            const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
+            boost::shared_ptr<Matrix> B = Bpq_[pair];        
+
+            int nauxs = B->rowspi()[0];
+            int nso2s = B->colspi()[0];
+
+            double** Bp = B->pointer();
+            double* vsp = vs[thread]->pointer();
+            double* csp = cs[thread]->pointer();
+
+            for (int C2 = 0, dA = 0; C2 < auxiliary_atoms.size(); C2++) {
+                int C = auxiliary_atoms[C2];
+                int nC = auxiliary_->nshell_on_center(C);
+                int oC = auxiliary_->shell_on_center(C,0);
+                for (int A = 0; A < nC; A++) {
+                    int nA = auxiliary_->shell(A + oC).nfunction();
+                    int oA = auxiliary_->shell(A + oC).function_index();
+                    for (int a = 0; a < nA; a++) {
+                        csp[a + dA] = dp[a + oA];
+                    } 
+                    dA += nA;
+                } 
+            }
+
+            C_DGEMV('T',nauxs,nso2s,1.0,Bp[0],nso2s,csp,1,0.0,vsp,1);
+
+            for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
+                int P = shell_pairs[PQ].first;
+                int Q = shell_pairs[PQ].second;
+                int nP = primary_->shell(P).nfunction(); 
+                int nQ = primary_->shell(Q).nfunction(); 
+                int oP = primary_->shell(P).function_index(); 
+                int oQ = primary_->shell(Q).function_index(); 
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        Jp[p + oP][q + oQ] = vsp[p * nQ + q + dPQ];
+                        if (P != Q) {
+                            Jp[q + oQ][p + oP] = vsp[p * nQ + q + dPQ];
+                        }
+                    }
+                }
+                dPQ += nP * nQ;
+            }
+        }
+    } 
+}
+void FastDFJK::build_K(boost::shared_ptr<Matrix> Z,
+                       const std::vector<boost::shared_ptr<Matrix> >& D,
+                       const std::vector<boost::shared_ptr<Matrix> >& K)
+{
+    throw PSIEXCEPTION("K: Not implemented yet");
 }
 
 #if 0

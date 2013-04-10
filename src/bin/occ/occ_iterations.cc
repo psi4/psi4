@@ -1,37 +1,7 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
-
-
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
 #include <libqt/qt.h>
-#include <libtrans/mospace.h>
-#include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "occwave.h"
 #include "defines.h"
-#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -47,10 +17,12 @@ fprintf(outfile," ==============================================================
 if (wfn_type_ == "OMP2") fprintf(outfile," ================ Performing OMP2 iterations... =============================== \n");  
 else if (wfn_type_ == "OMP3") fprintf(outfile," ================ Performing OMP3 iterations... =============================== \n");  
 else if (wfn_type_ == "OCEPA") fprintf(outfile," ================ Performing OCEPA iterations... ============================== \n");  
+else if (wfn_type_ == "OMP2.5") fprintf(outfile," ================ Performing OMP2.5 iterations... ============================= \n");  
 fprintf(outfile," ============================================================================== \n");
 if (wfn_type_ == "OMP2") fprintf(outfile, "\t            Minimizing MP2-L Functional \n");
 else if (wfn_type_ == "OMP3") fprintf(outfile, "\t            Minimizing MP3-L Functional \n");
 else if (wfn_type_ == "OCEPA") fprintf(outfile, "\t            Minimizing CEPA-L Functional \n");
+else if (wfn_type_ == "OMP2.5") fprintf(outfile, "\t            Minimizing MP2.5-L Functional \n");
 fprintf(outfile, "\t            --------------------------- \n");
 fprintf(outfile, " Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
 fprintf(outfile, " ----    ---------------    ----------     -----------      -----------     ---------- \n");
@@ -179,7 +151,7 @@ do
         timer_off("T2(1)");
      }
 
-     else if (wfn_type_ == "OMP3") {
+     else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
         timer_on("T2(1)");
         omp3_t2_1st_general();  
         timer_off("T2(1)");
@@ -200,7 +172,7 @@ do
 /********************************************************************************************/
         timer_on("Response PDMs");
 	if (wfn_type_ == "OMP2") omp2_response_pdms();
-	else if (wfn_type_ == "OMP3") omp3_response_pdms();
+	else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") omp3_response_pdms();
 	else if (wfn_type_ == "OCEPA") ocepa_response_pdms();
         timer_off("Response PDMs");
 
@@ -220,7 +192,7 @@ do
         timer_off("MP2L Energy");
      }
 
-     else if (wfn_type_ == "OMP3") { 
+     else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
         if (compute_ccl == "TRUE") {
            timer_on("MP3L Energy");
 	   ccl_energy();
@@ -293,6 +265,7 @@ do
 if(wfn_type_ == "OMP2") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "OMP3") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 else if(wfn_type_ == "OCEPA") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,EcepaL,DE,rms_wog,biggest_mograd,rms_t2);
+else if(wfn_type_ == "OMP2.5") fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n",itr_occ,Emp3L,DE,rms_wog,biggest_mograd,rms_t2);
 //fprintf(outfile," %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e  %12.2e  %12.2e \n",
 //	           itr_occ,Emp2L,DE,rms_wog,biggest_mograd,rms_kappa,biggest_kappa,rms_t2);
 fflush(outfile);
@@ -306,6 +279,10 @@ fflush(outfile);
 
     if (rms_wog < tol_grad && biggest_mograd < mograd_max) break;
 
+    if (rms_wog >= DIVERGE) {
+        throw PSIEXCEPTION("OCC iterations are diverging");
+    }
+
 }
 while(rms_wog >= tol_grad || biggest_mograd >= mograd_max); 
 //while(fabs(DE) >= tol_Eod || rms_wog >= tol_grad || rms_kappa >= tol_grad || biggest_mograd >= mograd_max || 
@@ -318,6 +295,7 @@ fprintf(outfile," ==============================================================
 if (wfn_type_ == "OMP2") fprintf(outfile," ======================== OMP2 ITERATIONS ARE CONVERGED ======================= \n");
 else if (wfn_type_ == "OMP3") fprintf(outfile," ======================== OMP3 ITERATIONS ARE CONVERGED ======================= \n");
 else if (wfn_type_ == "OCEPA") fprintf(outfile," ======================== OCEPA ITERATIONS ARE CONVERGED ====================== \n");
+else if (wfn_type_ == "OMP2.5") fprintf(outfile," ======================== OMP2.5 ITERATIONS ARE CONVERGED ===================== \n");
 fprintf(outfile," ============================================================================== \n");
 fflush(outfile);
 }
@@ -326,7 +304,9 @@ else if (conver == 0) {
   if (wfn_type_ == "OMP2") fprintf(outfile,"\n ======================== OMP2 IS NOT CONVERGED IN %2d ITERATIONS ============= \n", mo_maxiter);
   else if (wfn_type_ == "OMP3") fprintf(outfile,"\n ======================== OMP3 IS NOT CONVERGED IN %2d ITERATIONS ============= \n", mo_maxiter);
   else if (wfn_type_ == "OCEPA") fprintf(outfile,"\n ======================== OCEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", mo_maxiter);
+  else if (wfn_type_ == "OMP2.5") fprintf(outfile,"\n ======================== OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS =========== \n", mo_maxiter);
   fflush(outfile);
+  throw PSIEXCEPTION("OCC iterations did not converge");
 }
         // Clean up!
 	delete [] idprowA;
@@ -342,7 +322,7 @@ else if (conver == 0) {
 	delete [] idprowB;
 	delete [] idpcolB;
 	delete [] idpirrB;
-	delete wogB;
+        delete wogB;
         delete wog_intB;
 	delete kappaB;
 	delete kappa_newB;

@@ -146,6 +146,16 @@ public:
         return function_pair_values_[m * (unsigned long int) nbf_ + n] * 
                function_pair_values_[r * (unsigned long int) nbf_ + s] >= sieve2_; } 
 
+    /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
+    inline bool shell_pair_significant(int M, int N) {
+        return shell_pair_values_[M * (unsigned long int) nshell_ + N] *
+               max_ >= sieve2_; }
+
+    /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
+    inline bool function_pair_significant(int m, int n) {
+        return function_pair_values_[m * (unsigned long int) nbf_ + n] *
+               max_ >= sieve2_; }
+
     // => Indexing [these change after a call to sieve()] <= //
 
     /// Significant unique bra- function pairs, in reduced triangular indexing

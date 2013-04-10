@@ -47,7 +47,7 @@ On Linux:
 * LaTeX and dvipng are needed to render math. If the latter is missing,
   the following may work. ::
 
-   >>> sudo yum install dvipng-1.14-1.fc15.x86_64
+   >>> sudo yum install dvipng
 
 Documentation Structure
 ^^^^^^^^^^^^^^^^^^^^^^^

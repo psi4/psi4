@@ -1,37 +1,8 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
-
-
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
 #include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "occwave.h"
 #include "defines.h"
-#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -120,6 +91,9 @@ fflush(outfile);
       break;  
     }
 
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CEPA iterations are diverging");
+    }
 
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
@@ -139,6 +113,7 @@ fflush(outfile);
 else if (conver == 0) {
   fprintf(outfile,"\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
   fflush(outfile);
+  throw PSIEXCEPTION("CEPA iterations did not converge");
 }
 
 }// end main

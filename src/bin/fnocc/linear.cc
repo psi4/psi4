@@ -209,7 +209,7 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
   if (iter == 1){
      if (t2_on_disk){
         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-        psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+        psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
         psio->close(PSIF_DCC_T2,1);
         tb = tempt;
      }
@@ -273,6 +273,7 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
   psio->close(PSIF_DCC_IAJB,1);
 
   if (iter == 0) {
+
       for (i=0; i<o; i++){
           di = - eps[i];
           for (j=0; j<o; j++){
@@ -284,7 +285,7 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
                       iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                       ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
                       tnew = - integrals[iajb]/dijab;
-                      tb[ijab] = tnew;
+                      tempt[ijab] = tnew;
 
                   }
               }
@@ -299,14 +300,22 @@ void CoupledCluster::UpdateT2_mp4(long int iter){
                       iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                       ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
                       tnew = - integrals[iajb]/dijab;
-                      emp2_os += tb[ijab] * integrals[iajb];
-                      emp2_ss += (tb[ijab] - tb[(a-o)*o*o*v+(b-o)*o*o+j*o+i]) * integrals[iajb];
+                      emp2_os += tempt[ijab] * integrals[iajb];
+                      emp2_ss += (tempt[ijab] - tempt[(a-o)*o*o*v+(b-o)*o*o+j*o+i]) * integrals[iajb];
 
                   }
               }
           }
       }
-     emp2 = emp2_os + emp2_ss;
+      emp2 = emp2_os + emp2_ss;
+
+      psio->open(PSIF_DCC_T2,PSIO_OPEN_NEW);
+      psio->write_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+      psio->write_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
+      psio->close(PSIF_DCC_T2,1);
+
+      if (!t2_on_disk) F_DCOPY(o*o*v*v,tempt,1,tb,1);
+
   }
   else if (iter == 1) {
       for (i=0; i<o; i++){

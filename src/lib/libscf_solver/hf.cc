@@ -32,7 +32,6 @@
 #include <liboptions/python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 
 #include "hf.h"
 
@@ -91,20 +90,6 @@ void HF::common_init()
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
         nmo_ += nmopi_[h]; //For now
-    }
-
-    // Form the SO lookup information
-    so2symblk_ = new int[nso_];
-    so2index_  = new int[nso_];
-    size_t so_count = 0;
-    size_t offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            so2symblk_[so_count] = h;
-            so2index_[so_count] = so_count-offset;
-            ++so_count;
-        }
-        offset += nsopi_[h];
     }
 
     Eold_    = 0.0;
@@ -345,62 +330,36 @@ void HF::integrals()
     if (print_ && WorldComm->me() == 0)
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
-    // We need some integrals on disk for these cases
-    boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
-    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        // Don't do anything; the JK object will handle everything!
-    }else if (scf_type_ == "DF"){
-        mints->one_electron_integrals();
-        density_fitted_ = true;
-    }else if (scf_type_ == "DIRECT"){
-        mints->one_electron_integrals();
-        if (print_ && WorldComm->me() == 0)
-            fprintf(outfile, "  Building Direct Integral Objects...\n\n");
-//        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
-        for (int i=0; i<WorldComm->nthread(); ++i)
-             aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
-        eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral_));
+    // Build the JK from options, symmetric type
+    jk_ = JK::build_JK();
+    // Tell the JK to print
+    jk_->set_print(print_);
+    // Give the JK 75% of the memory
+    jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
+
+    // DFT sometimes needs custom stuff
+    if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
+
+        // Need a temporary functional
+        boost::shared_ptr<SuperFunctional> functional = 
+            SuperFunctional::current(options_);
+        
+        // K matrices
+        jk_->set_do_K(functional->is_x_hybrid());
+        // wK matrices 
+        jk_->set_do_wK(functional->is_x_lrc());
+        // w Value
+        jk_->set_omega(functional->x_omega());
     }
 
-    // TODO: Relax the if statement. 
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
-        // Build the JK from options, symmetric type
-        jk_ = JK::build_JK();
-        // Tell the JK to print
-        jk_->set_print(print_);
-        // Give the JK 75% of the memory
-        jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
-
-        // DFT sometimes needs custom stuff
-        if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
-
-            // Need a temporary functional
-            boost::shared_ptr<SuperFunctional> functional = 
-                SuperFunctional::current(options_);
-            
-            // K matrices
-            jk_->set_do_K(functional->is_x_hybrid());
-            // wK matrices 
-            jk_->set_do_wK(functional->is_x_lrc());
-            // w Value
-            jk_->set_omega(functional->x_omega());
-        }
-
-        // Initialize
-        jk_->initialize(); 
-        // Print the header
-        jk_->print_header();
-    }
+    // Initialize
+    jk_->initialize(); 
+    // Print the header
+    jk_->print_header();
 }
 
 void HF::finalize()
 {
-    delete[] so2symblk_;
-    delete[] so2index_;
-
-    eri_.reset();
-
     // This will be the only one
     if (!options_.get_bool("SAVE_JK")) {
         jk_.reset();
@@ -1092,6 +1051,12 @@ void HF::print_orbitals()
 
 void HF::guess()
 {
+    // don't save guess energy as "the" energy because we need to avoid
+    // a false positive test for convergence on the first iteration (that
+    // was happening before in tests/scf-guess-read before I removed
+    // the statements putting this into E_).  -CDS 3/25/13
+    double guess_E; 
+
     //What does the user want?
     //Options will be:
     // "READ"-try to read MOs from guess file, projecting if needed
@@ -1110,7 +1075,7 @@ void HF::guess()
         if (print_ && (WorldComm->me() == 0))
             fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
-        load_orbitals();
+        load_orbitals(); // won't save the energy from here
         form_D();
 
     } else if (guess_type == "SAD") {
@@ -1120,7 +1085,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -1144,7 +1109,7 @@ void HF::guess()
         form_initial_C();
         find_occupation();
         form_D();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
 
     } else if (guess_type == "CORE") {
 
@@ -1157,7 +1122,7 @@ void HF::guess()
         form_initial_C();
         find_occupation();
         form_D();
-        E_ = compute_initial_E();
+        guess_E = compute_initial_E();
     }
     if (print_ > 3) {
         Ca_->print();
@@ -1169,7 +1134,9 @@ void HF::guess()
     }
 
     if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
+        fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
+
+    E_ = 0.0; // don't use this guess in our convergence checks
 }
 
 void HF::save_orbitals()
@@ -1419,7 +1386,22 @@ double HF::compute_energy()
     if (print_)
         print_preiterations();
 
+    // Andy trick 2.0
+    std::string old_scf_type = options_.get_str("SCF_TYPE");
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+         fprintf(outfile, "  Starting with a DF guess...\n\n");
+         if(!options_["DF_BASIS_SCF"].has_changed()) {
+             // TODO: Match Dunning basis sets 
+             molecule_->set_basis_all_atoms("CC-PVDZ-JKFIT", "DF_BASIS_SCF");
+         }
+         scf_type_ = "DF";
+         options_.set_str("SCF","SCF_TYPE","DF"); // Scope is reset in proc.py. This is not pretty, but it works
+    }
+
     if(attempt_number_ == 1){
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        mints->one_electron_integrals();
+
         integrals();
 
         timer_on("Form H");
@@ -1444,7 +1426,7 @@ double HF::compute_energy()
 
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
-        fprintf(outfile, "                        Total Energy        Delta E     Density RMS\n\n");
+        fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
     }
     fflush(outfile);
 
@@ -1494,8 +1476,11 @@ double HF::compute_energy()
 	//}
 
         timer_on("DIIS");
+        bool add_to_diis_subspace = false;
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-            save_fock();
+            add_to_diis_subspace = true;
+
+        compute_orbital_gradient(add_to_diis_subspace);
 
         if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
             diis_performed_ = diis();
@@ -1531,13 +1516,7 @@ double HF::compute_energy()
             status += "FRAC";
         }
 
-        if (WorldComm->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
-                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
-            fflush(outfile);
-        }
 
-        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         timer_on("Form C");
         form_C();
@@ -1545,6 +1524,8 @@ double HF::compute_energy()
         timer_on("Form D");
         form_D();
         timer_off("Form D");
+
+        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         // After we've built the new D, damp the update if
         if(damping_performed_) damp_update();
@@ -1557,11 +1538,30 @@ double HF::compute_energy()
         }
 
         converged = test_convergency();
+
+        if (WorldComm->me() == 0) {
+            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
+                              reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
+            fflush(outfile);
+        }
+
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
 
         // If a fractional occupation is requested but not started, don't stop yet
         if (frac_enabled_ && !frac_performed_) converged = false;
+
+        // If a DF Guess environment, reset the JK object, and keep running
+        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+            fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
+            converged = false;
+            if(initialized_diis_manager_)
+                diis_manager_->reset_subspace();
+            scf_type_ = old_scf_type;
+            options_.set_str("SCF","SCF_TYPE",old_scf_type);
+            old_scf_type = "DF";
+            integrals();
+        }
 
         // Call any postiteration callbacks
         call_postiteration_callbacks();

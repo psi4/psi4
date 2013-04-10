@@ -56,10 +56,6 @@ install_inc:: dpd.h
 	$(MKDIRS) $(DESTDIR)$(incdir)/libdpd
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libdpd
 
-install_man:: libdpd.html
-	$(MKDIRS) $(DESTDIR)$(htmldir)
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
-
 ifneq "$(MAKECMDGOALS)" "clean"
 include $(LIBOBJ:%.o=%.d)
 endif

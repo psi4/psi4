@@ -1,34 +1,5 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip> 
-#include <vector>
-
-
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
-#include <libqt/qt.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-
 #include "occwave.h"
 #include "defines.h"
-#include "arrays.h"
 
 
 using namespace boost;
@@ -73,10 +44,6 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
 	}
 	
         Bmat->set(nvar - 1, nvar - 1, 0.0);
-	
-	// scale Bmat
-	//double scale_factor = 1 / Bmat->get(0, 0);
-        //Bmat->scale(scale_factor);
          
 	// level shift
 	if (level_shift == "TRUE") {
@@ -115,7 +82,6 @@ void OCCWave::diis(int dimvec, Array2d *vecs, Array2d *errvecs, Array1d *vec_new
           vec_new->set(i, sum1);
           errvec_new->set(i, sum2);
 	}
- 
 
 	delete Bmat;
 	delete Cvec;

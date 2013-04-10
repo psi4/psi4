@@ -28,30 +28,31 @@ set globals {
     PRINT 1
     E_CONVERGENCE 9
     D_CONVERGENCE 8
-    R_CONVERGENCE 11
+    R_CONVERGENCE 8
     JOBTYPE SP
     GUESS CORE
 }
 
 
 banner('Test [1] optimize(cbs(energy()))')
-optimize('conv-mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
-compare_values(ref_OPT_CBS_E_0, get_variable('CBS TOTAL ENERGY'), 7, "[1] Wrapper optimize(cbs(), dertype=0)")  #TEST
+optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
+compare_values(ref_OPT_CBS_E_0, get_variable('CBS TOTAL ENERGY'), 5, "[1] Wrapper optimize(cbs(), dertype=0)")  #TEST
 
 banner('Test [2] database(energy())')
 set basis_guess sto-3g
 set mp2_type conv
+set df_scf_guess false
 db('mp2','RGC10',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])
 compare_values(ref_DB_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[2] Wrapper database() incl. castup")  #TEST
 revoke_global_option_changed('BASIS_GUESS')
 
 banner('Test [3] database(cbs(energy()))')
-db('conv-mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy','current energy'],corl_basis='cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='3-21g')
+db('mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy','current energy'],corl_basis='cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='3-21g')
 compare_values(ref_DB_CBS_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[3] Wrapper database(cbs())")  #TEST
 
 banner('Test [4] cbs(energy())')
 # for h2 geom after optimization in [1]
-cbs('conv-mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
+cbs('mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
 compare_values(ref_CBS_E_postopt, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper cbs()")  #TEST
 
 banner('Test [5] opt(energy())')
