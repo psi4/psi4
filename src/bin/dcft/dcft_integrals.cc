@@ -34,7 +34,9 @@ DCFTSolver::transform_integrals()
     if((options_.get_str("AO_BASIS") == "NONE")){
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     }
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")) {
+    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING"))
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
         // Compute the integrals needed for the MO Hessian
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
@@ -213,7 +215,9 @@ DCFTSolver::transform_integrals()
     }
 
     // VVVO and OOOV integrals are needed for the QC algorithm
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")) {
+    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING"))
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
         // <VO|OO> type
 
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
@@ -313,6 +317,12 @@ DCFTSolver::transform_integrals()
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqsp, ID("[o,V]"), ID("[v,V]"), "MO Ints <oV|vV>");
         dpd_buf4_close(&I);
 
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[v,V]"),
+                      ID("[o,V]"), ID("[v,V]"), 0, "MO Ints <oV|vV>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
+        dpd_buf4_close(&I);
+
+
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[o,v]"),
                       ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V>=V]+"), "MO Ints (ov|VV)");
@@ -347,6 +357,89 @@ DCFTSolver::transform_integrals()
 
     }
 
+    if    (options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+        || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
+
+        // Transform one-electron integrals to the MO basis and store them in the DPD file
+        dpdfile2 H;
+        Matrix aH(so_h_);
+        Matrix bH(so_h_);
+        aH.transform(Ca_);
+        bH.transform(Cb_);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0 ; i < naoccpi_[h]; ++i){
+                for(int j = 0 ; j < naoccpi_[h]; ++j){
+                    H.matrix[h][i][j] = aH.get(h, i, j);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int a = 0 ; a < navirpi_[h]; ++a){
+                for(int b = 0 ; b < navirpi_[h]; ++b){
+                    H.matrix[h][a][b] = aH.get(h, naoccpi_[h] + a, naoccpi_[h] + b);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0 ; i < nboccpi_[h]; ++i){
+                for(int j = 0 ; j < nboccpi_[h]; ++j){
+                    H.matrix[h][i][j] = bH.get(h, i, j);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int a = 0 ; a < nbvirpi_[h]; ++a){
+                for(int b = 0 ; b < nbvirpi_[h]; ++b){
+                    H.matrix[h][a][b] = bH.get(h, nboccpi_[h] + a, nboccpi_[h] + b);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0 ; i < naoccpi_[h]; ++i){
+                for(int j = 0 ; j < navirpi_[h]; ++j){
+                    H.matrix[h][i][j] = aH.get(h, i, naoccpi_[h] + j);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
+        dpd_file2_mat_init(&H);
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0 ; i < nboccpi_[h]; ++i){
+                for(int j = 0 ; j < nbvirpi_[h]; ++j){
+                    H.matrix[h][i][j] = bH.get(h, i, nboccpi_[h] + j);
+                }
+            }
+        }
+        dpd_file2_mat_wrt(&H);
+        dpd_file2_close(&H);
+
+    }
 
     // The integral transformation object also provided us with the Fock matrix
     // in the current basis, from which we can get the new denominator matrices.
@@ -397,22 +490,34 @@ DCFTSolver::build_denominators()
     //Alpha spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i);
             }
-            else {
+            else if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"
+                     || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i) / (1.0 + 2.0 * T_OO.matrix[h][i][i]);
+            }
+            else {
+                throw PSIEXCEPTION("Unknown DCFT functional in build_denominators");
             }
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
         for(int a = 0; a < navirpi_[h]; ++a){
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
                 aVirEvals[aVirCount++] = moFa_->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
             }
-            else {
+            else if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"
+                     || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
                 aVirEvals[aVirCount++] = moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][a][a]);
+            }
+            else {
+                throw PSIEXCEPTION("Unknown DCFT functional in build_denominators");
             }
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
@@ -422,7 +527,9 @@ DCFTSolver::build_denominators()
     //Elements of the Fock matrix
     //Alpha occupied
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
         dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         dpd_file2_mat_init(&F);
         int offset = 0;
@@ -459,21 +566,33 @@ DCFTSolver::build_denominators()
     //Beta spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
                 bOccEvals[bOccCount++] = moFb_->get(h, i, i);
             }
-            else {
+            else if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"
+                     || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
                 bOccEvals[bOccCount++] = moFb_->get(h, i, i) / (1.0 + 2.0 * T_oo.matrix[h][i][i]);
+            }
+            else {
+                throw PSIEXCEPTION("Unknown DCFT functional in build_denominators");
             }
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
         }
         for(int a = 0; a < nbvirpi_[h]; ++a){
-            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+            if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+                    || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
                 bVirEvals[bVirCount++] = moFb_->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
             }
-            else {
+            else if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12"
+                     || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
                 bVirEvals[bVirCount++] = moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) / (1.0 - 2.0 * T_vv.matrix[h][a][a]);
+            }
+            else {
+                throw PSIEXCEPTION("Unknown DCFT functional in build_denominators");
             }
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bvir_c_->set(h, mu, a, Cb_->get(h, mu, nboccpi_[h] + a));
@@ -483,7 +602,9 @@ DCFTSolver::build_denominators()
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "ODC-06"
+            || options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") {
         dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
         dpd_file2_mat_init(&F);
         int offset = 0;

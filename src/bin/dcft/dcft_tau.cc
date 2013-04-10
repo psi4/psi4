@@ -484,7 +484,7 @@ DCFTSolver::refine_tau() {
         rms += bocc_tau_old->rms();
         rms += bvir_tau_old->rms();
 
-        converged = (rms < lambda_threshold_);
+        converged = (rms < cumulant_threshold_);
         failed    = (++cycle == maxiter_);
 
         if (print_ > 2) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
