@@ -54,7 +54,11 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
   tokens.clear();
 
   while (read_next && !fin.eof()) {
-    line_present = getline(fin, sline);
+    getline(fin, sline);
+    if(sline.size() == 0)
+      line_present = false;
+    else
+      line_present = true;
     //printf("getline read: %s\n", sline.c_str());
     read_next = false;
 

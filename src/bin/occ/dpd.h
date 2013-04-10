@@ -62,11 +62,11 @@ class SymBlockMatrix
   int *rowspi();
   int *colspi();
   bool load(PSIO* psio, int itap, const char *label, int dim);
-  bool load(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  bool load(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   void write(PSIO* psio, int itap, bool saveSubBlocks);
-  void write(shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
-  void read(shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
-  void read(shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
+  void write(boost::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
+  void read(boost::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
+  void read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
   void mgs();// Modified Gram-Schmidt
   void gs();// Gram-Schmidt
   void diagonalize(SymBlockMatrix* eigvectors, SymBlockVector* eigvalues);
@@ -75,8 +75,8 @@ class SymBlockMatrix
   void cdgesv(SymBlockVector* Xvec); // solve lineq via acml
   void lineq_flin(SymBlockVector* Xvec, double *det); // solve lineq via flin
   void lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff); // solve lineq via pople    
-  void read_oooo(shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
-  void read_oovv(shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi, 
+  void read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
+  void read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                  int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
  
   
