@@ -35,7 +35,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
-  optimized in MCSCF. This trumps |globals__num_frozen_docc| and 
+  optimized in MCSCF. This trumps |globals__num_frozen_docc| and
   |globals__freeze_core|. -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
@@ -48,13 +48,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
-  ``TRUE`` will default to freezing the standard default number of core 
+  ``TRUE`` will default to freezing the standard default number of core
   orbitals.  For PSI, the standard number of core orbitals is the
   number of orbitals in the nearest previous noble gas atom.
-  More precise control over the number of frozen orbitals can be attained 
-  by using the keywords |globals__num_frozen_docc| (gives the total number 
-  of orbitals to freeze, program picks the lowest-energy orbitals) 
-  or |globals__frozen_docc| (gives the number of orbitals to freeze per 
+  More precise control over the number of frozen orbitals can be attained
+  by using the keywords |globals__num_frozen_docc| (gives the total number
+  of orbitals to freeze, program picks the lowest-energy orbitals)
+  or |globals__frozen_docc| (gives the number of orbitals to freeze per
   irreducible representation) -*/
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
@@ -122,7 +122,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
@@ -907,7 +907,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF");
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
@@ -925,8 +925,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- Do write a MOLDEN output file?  If so, the filename will end in 
-    .molden, and the prefix is determined by |globals__writer_file_label| 
+    /*- Do write a MOLDEN output file?  If so, the filename will end in
+    .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
@@ -2195,7 +2195,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-9);
@@ -2431,13 +2431,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
-      /*- Do write a gradient output file?  If so, the filename will end in 
-      .grad, and the prefix is determined by |globals__writer_file_label| 
+      /*- Do write a gradient output file?  If so, the filename will end in
+      .grad, and the prefix is determined by |globals__writer_file_label|
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("GRADIENT_WRITE", false);
-      /*- Do write a hessian output file?  If so, the filename will end in 
-      .hess, and the prefix is determined by |globals__writer_file_label| 
+      /*- Do write a hessian output file?  If so, the filename will end in
+      .hess, and the prefix is determined by |globals__writer_file_label|
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("HESSIAN_WRITE", false);
@@ -2473,7 +2473,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("EP_MAXITER",30);
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
@@ -2491,7 +2491,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- MP2 Spin-opposite scaling (SOS) value -*/
-    options.add_double("MP2_SOS_SCALE",1.3);  
+    options.add_double("MP2_SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("MP2_SOS_SCALE2",1.2);
     /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
@@ -2511,13 +2511,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
-     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation    
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step
+     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation
      parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both methods a DIIS extrapolation
      will be performed with the DO_DIIS = TRUE option. -*/
     options.add_str("OPT_METHOD","ORB_RESP","MSD ORB_RESP");
-    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the 
-      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian 
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
       explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
     options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2528,8 +2528,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
     options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA OMP2.5");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
-    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
@@ -2610,6 +2610,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           in fort.56. -*/
       options.add_int("MRCC_NUM_TRIPLET_ROOTS", 0);
 
+      /*- Number of root in case of open shell system. This becomes ``ndoub`` (option \#13)
+         int fort.56. -*/
+      options.add_int("MRCC_NUM_DOUBLET_ROOTS", 0);
+
       /*- The program restarts from the previously
           calculated parameters if it is 1. In case it is 2, the program
           executes automatically the lower-level calculations of the same
@@ -2624,7 +2628,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           calculation is performed automatically for the excited states.
           This overrides all automatic determination of method
           and will only work with :py:func:`~driver.energy`.
-          This becomes CC/CI (option \#5) in fort.56 
+          This becomes CC/CI (option \#5) in fort.56
 
           .. table:: MRCC methods
 
@@ -2670,8 +2674,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 100);
       /*- Desired number of DIIS vectors -*/
       options.add_int("DIIS_MAX_VECS", 8);
-      /*- Do use low memory option for triples contribution? Note that this 
-          option is enabled automatically if the memory requirements of the 
+      /*- Do use low memory option for triples contribution? Note that this
+          option is enabled automatically if the memory requirements of the
           conventional algorithm would exceed the available resources -*/
       options.add_bool("TRIPLES_LOW_MEMORY",false);
       /*- Do compute triples contribution? !expert -*/
@@ -2708,7 +2712,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_CCSD",false);
 
       /*- Do use density fitting in CC? This keyword is used internally
-          by the driver. Changing its value will have no effect on the 
+          by the driver. Changing its value will have no effect on the
           computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
@@ -2725,10 +2729,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       won't have any effect on the procedure. !expert -*/
       options.add_str("CEPA_LEVEL","CEPA(0)");
       /*- Compute the dipole moment? Note that dipole moments
-      are only available in the FNOCC module for the ACPF, 
+      are only available in the FNOCC module for the ACPF,
       AQCC, CISD, and CEPA(0) methods. -*/
       options.add_bool("DIPMOM",false);
-      /*- Flag to exclude singly excited configurations from a 
+      /*- Flag to exclude singly excited configurations from a
       coupled-pair computation.  -*/
       options.add_bool("CEPA_NO_SINGLES",false);
   }
