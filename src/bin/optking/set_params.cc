@@ -47,7 +47,7 @@ void set_params(void)
       else if (s == "SD") Opt_params.step_type = OPT_PARAMS::SD;
       else if (s == "LINESEARCH_STATIC") Opt_params.step_type = OPT_PARAMS::LINESEARCH_STATIC;
    }
-   else { // set defaults for step type
+   else { // Set defaults for step type.
      if (Opt_params.opt_type == OPT_PARAMS::MIN)
        Opt_params.step_type = OPT_PARAMS::RFO;
      else if (Opt_params.opt_type == OPT_PARAMS::TS)
@@ -295,7 +295,7 @@ void set_params(void)
     Opt_params.keep_intcos = true;
 
   // for intcos with user-specified equilibrium values - this is the force constant
-  Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
+  //Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
 
   // Currently, a static line search merely displaces along the gradient in internal
   // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
@@ -455,6 +455,10 @@ void set_params(void)
     Opt_params.efp_fragments_only = false;
   }
 
+  // for intcos with user-specified equilibrium values - this is the force constant
+  //i = rem_read(REM_INTCO_FIXED_EQ_FORCE_CONSTANT);
+  //Opt_params.fixed_eq_val_force_constant = i / 10; // default (20 -> 2 au)
+
   Opt_params.consecutive_backsteps_allowed = rem_read(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS);
 
   // if steepest-descent, then make much larger default
@@ -465,11 +469,16 @@ void set_params(void)
 
 #endif
 
-// Strings that carry user-specified constraints (from input, probably)
+// Strings that carry user-specified constraints
+// "frozen" means unchanging, while "fixed" means eq. value is specified
 #if defined(OPTKING_PACKAGE_PSI)
   Opt_params.frozen_distance_str = options.get_str("FROZEN_DISTANCE");
   Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
   Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
+
+  Opt_params.fixed_distance_str = options.get_str("FIXED_DISTANCE");
+  Opt_params.fixed_bend_str     = options.get_str("FIXED_BEND");
+  Opt_params.fixed_dihedral_str = options.get_str("FIXED_DIHEDRAL");
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // Read QChem input and write all the frozen distances into a string
   if (rem_read(REM_GEOM_OPT2_FROZEN_DISTANCES) > 0) {
@@ -679,8 +688,19 @@ void print_params(void) {
   else
   fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
 
-  fprintf(outfile, "frozen_distances: \n");
+  fprintf(outfile, "frozen_distance: \n");
   fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+  fprintf(outfile, "frozen_bend: \n");
+  fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+  fprintf(outfile, "frozen_dihedral: \n");
+  fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+
+  fprintf(outfile, "fixed_distance: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+  fprintf(outfile, "fixed_bend: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+  fprintf(outfile, "fixed_dihedral: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
 }
 
 }

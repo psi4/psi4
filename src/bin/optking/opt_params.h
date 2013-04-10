@@ -89,10 +89,15 @@ struct OPT_PARAMS {
 
   int consecutive_backsteps_allowed;
 
-  // list of atoms for frozen bonds, angles, dihedrals provided by user in input
+  // string of atoms for frozen [unchanging] bonds, angles, dihedrals provided by user in input
   std::string frozen_distance_str;
   std::string frozen_bend_str;  
   std::string frozen_dihedral_str;
+
+  // string of atoms for fixed [user-specified equilibrium] bonds, angles, dihedrals provided by user in input
+  std::string fixed_distance_str;
+  std::string fixed_bend_str;  
+  std::string fixed_dihedral_str;
 
 // ** Unlikely to need modified **
 
@@ -143,7 +148,7 @@ struct OPT_PARAMS {
   bool keep_intcos; // don't delete intco.dat
 
   // for intcos with user-specified equilibrium values - this is the force constant
-  double fixed_eq_val_force_constant;
+  //double fixed_eq_val_force_constant;
 
   // If a static line search is being done (which currently just outputs N geometries)
   // these control the min and the max of the largest internal coordinate displacement.
