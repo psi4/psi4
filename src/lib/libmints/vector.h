@@ -257,17 +257,23 @@ public:
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator begin_irrep(int h)
-        { return iterator(vector_[h]); }
-    const_iterator begin_irrep(int h) const
-        { return const_iterator(vector_[h]); }
+        {  iterator it = v_.begin();
+           for (int g = 0; g < h; ++g) it += dimpi_[h];
+           return it; }
+    // The following won't compile with clang++ and c++11
+    //const_iterator begin_irrep(int h) const
+      //  { return const_iterator(vector_[h]); }
     /// @}
-
+ 
     /// @{
     /** Returns the starting iterator for irrep h. */
     iterator end_irrep(int h)
-        { return iterator(vector_[h]) + dimpi_[h]; }
-    const_iterator end_irrep(int h) const
-        { return const_iterator(vector_[h]) + dimpi_[h]; }
+        {  iterator it = v_.begin();
+           for (int g = 0; g <= h; ++g) it += dimpi_[h];
+           return it; }
+    // The following won't compile with clang++ and c++11
+    //const_iterator end_irrep(int h) const
+    //    { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
 
     friend class Matrix;
