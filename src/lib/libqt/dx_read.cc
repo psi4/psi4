@@ -15,18 +15,8 @@
 #include <vector>
 #include <utility>
 
-#include <libmints/mints.h>
 #include <libmints/basisset.h>
-#include <libfunctional/superfunctional.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
-#include <libparallel/parallel.h>
-#include <libiwl/iwl.hpp>
 #include "qt.h"
-#include <liboptions/python.h>
-#include <psifiles.h>
-#include <libfock/jk.h>
 #include <physconst.h>
 #include <psi4-dec.h>
 
@@ -112,9 +102,9 @@ namespace psi {
               }
 
              if(tokens[0] == "delta") {
-               if(delta_count == 0) 
+               if(delta_count == 0)
                  xstep = atof(tokens[1].c_str());
-               else if(delta_count == 1) 
+               else if(delta_count == 1)
                  ystep = atof(tokens[2].c_str());
                else if(delta_count == 2) {
                  zstep = atof(tokens[3].c_str());
@@ -129,7 +119,7 @@ namespace psi {
                  ysteps = atoi(tokens[6].c_str());
                  zsteps = atoi(tokens[7].c_str());
                  fprintf(outfile, "%d %d %d\n", xsteps, ysteps, zsteps);
-               }              
+               }
                else if(tokens[1] == "3") {
                  total = atoi(tokens[9].c_str());
                  fprintf(outfile, "%d\n", total);
@@ -141,6 +131,6 @@ namespace psi {
           }
           input.close();
         } // dx file
-            
+
 }
 

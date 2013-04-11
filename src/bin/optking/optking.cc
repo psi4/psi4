@@ -247,9 +247,8 @@ OptReturnType optking(void) {
   else
     p_Opt_data->increment_steps_since_last_H();
 
-  // Add extra harmonic potential to intcos if user-specified
-  bool add_to_hessian = (p_Opt_data->g_iteration() == 1) ? true : false;
-  mol1->apply_constraint_forces(add_to_hessian);
+  // apply user-defined constraints
+  mol1->apply_constraint_forces();
   // project out constraints for fixed intcos and unphysical displacements
   mol1->project_f_and_H();
 
