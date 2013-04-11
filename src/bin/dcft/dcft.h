@@ -343,6 +343,14 @@ protected:
     SharedVector Q_;
     /// The subspace vector in the Davidson diagonalization procedure
     SharedMatrix b_;
+    /// Generator of the orbital rotations (Alpha) with respect to the orbitals from the previous update
+    SharedMatrix X_a_;
+    /// Generator of the orbital rotations (Beta) with respect to the orbitals from the previous update
+    SharedMatrix X_b_;
+    /// Generator of the orbital rotations (Alpha) with respect to the reference orbitals
+    SharedMatrix Xtotal_a_;
+    /// Generator of the orbital rotations (Beta) with respect to the reference orbitals
+    SharedMatrix Xtotal_b_;
 
 
     /// Used to align things in the output
