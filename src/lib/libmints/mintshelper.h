@@ -38,10 +38,12 @@ private:
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
 
+    void common_init();
+
 public:
 
     void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
-    void init_helper_2(boost::shared_ptr<BasisSet> basis);
+    void init_helper(boost::shared_ptr<BasisSet> basis);
 
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);
