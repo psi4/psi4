@@ -75,8 +75,6 @@ DCFTSolver::init()
     b_tau_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
     a_tautau_ = SharedMatrix(new Matrix("Alpha Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
     b_tautau_ = SharedMatrix(new Matrix("Beta Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
-    Fa_copy = SharedMatrix(new Matrix("Alpha Fock Copy", nirrep_, nsopi_, nsopi_));
-    Fb_copy = SharedMatrix(new Matrix("Beta Fock Copy", nirrep_, nsopi_, nsopi_));
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];
