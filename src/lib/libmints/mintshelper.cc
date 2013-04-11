@@ -226,7 +226,7 @@ void MintsHelper::integrals()
     fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset_->nao());
     fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset_->nbf());
     fprintf(outfile, "      Number of irreps:               %4d\n", sobasis_->nirrep());
-    fprintf(outfile, "      Integral cutoff                 %4.2e", cutoff_);
+    fprintf(outfile, "      Integral cutoff                 %4.2e\n", cutoff_);
     fprintf(outfile, "      Number of functions per irrep: [");
     for (int i=0; i<sobasis_->nirrep(); ++i) {
         fprintf(outfile, "%4d ", sobasis_->nfunction_in_irrep(i));
