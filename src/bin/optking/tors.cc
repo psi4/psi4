@@ -293,11 +293,15 @@ void TORS::print_disp(FILE *fp, const double q_old, const double f_q,
 
 void TORS::print_intco_dat(FILE *fp, int off) const {
   if (s_frozen)
-    fprintf(fp, "D*%6d%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off,
+    fprintf(fp, "D*%6d%6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off,
       s_atom[2]+1+off, s_atom[3]+1+off);
   else
-    fprintf(fp, "D %6d%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off,
+    fprintf(fp, "D %6d%6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off,
       s_atom[2]+1+off, s_atom[3]+1+off);
+
+  if (s_has_fixed_eq_val)
+    fprintf(fp, "%10.5lf", s_fixed_eq_val);
+  fprintf(fp, "\n");
   fflush(fp);
 }
 

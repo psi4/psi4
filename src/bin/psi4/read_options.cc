@@ -874,7 +874,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 CEPA0");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
       //      /* Specify orbital basis to be used in the DCFT iterations !expert */
       //      options.add_str("DCFT_BASIS", "MO", "MO NSO");
 
@@ -2302,12 +2302,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-      /*- Specify distances between atoms to be frozen -*/
+      /*- Specify distances between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DISTANCE", "");
-      /*- Specify angles between atoms to be frozen -*/
+      /*- Specify angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_BEND", "");
-      /*- Specify dihedral angles between atoms to be frozen -*/
+      /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DIHEDRAL", "");
+      /*- Specify distances between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DISTANCE", "");
+      /*- Specify angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_BEND", "");
+      /*- Specify dihedral angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DIHEDRAL", "");
 
       /*- SUBSECTION Convergence Control -*/
 
@@ -2406,13 +2412,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*- In constrained optimizations, for internal coordinates with user-specified
+      /*In constrained optimizations, for internal coordinates with user-specified
       equilibrium values, this is the force constant (in au) used to apply an additional
       force to each coordinate.  If the user is only concerned to satify the desired constraint,
       then the user need only ensure that this value is sufficiently large.  Alternatively,
       the user may specify this value to apply a force of a particular magnitude, in which case the
-      given equilibrium value may or may not be reached by the optimization. -*/
-      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0);
+      given equilibrium value may or may not be reached by the optimization.
+      Currently, we specify the value of eq. not the force applied, so this keyword may go away.
+      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0); */
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest

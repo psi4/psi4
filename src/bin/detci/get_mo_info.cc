@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
@@ -221,7 +222,7 @@ void get_mo_info(Options &options)
       }
    else {
       std::string str = "(get_mo_info): Can't handle opentype = ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.opentype) )->str();
+      str += boost::lexical_cast<std::string>( Parameters.opentype) ;
       throw PsiException(str,__FILE__,__LINE__);
       }
 

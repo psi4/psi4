@@ -2853,7 +2853,7 @@ class OrientationMgr
     };
 
     ///// These are the only member variables in the whole class! /////
-    shared_ptr<Molecule> molecule_;
+    boost::shared_ptr<Molecule> molecule_;
     LMatrix rotation_;
     ///// Everything else is to set these up /////
 
