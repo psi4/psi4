@@ -40,7 +40,7 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
-once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
+boost::once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
 
 std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
