@@ -105,6 +105,16 @@ DCFTSolver::qc_dcft_init(){
 
     orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
     orbital_gradient_b_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_));
+    X_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
+    X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
+    Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
+    Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
+    aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
+    bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
+    avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
+    bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
+    akappa_ = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
+    bkappa_ = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
 
     // The number of IDPs is set to zero in the beginning
     nidp_ = 0;
@@ -122,21 +132,9 @@ DCFTSolver::qc_dcft_init(){
 void
 DCFTSolver::compute_orbital_gradient(){
 
-    // Initialize the idempotent contribution to the OPDM (Kappa)
-    SharedMatrix full_kappa_a(new Matrix("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix full_kappa_b(new Matrix("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_));
-    // Compute Kappa in the MO basis
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-                full_kappa_a->set(h, i, i, 1.0);
-        }
-        for(int i = 0; i < nboccpi_[h]; ++i){
-                full_kappa_b->set(h, i, i, 1.0);
-        }
-    }
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
     build_tau();
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
         refine_tau();
     }
     transform_tau();
@@ -212,15 +210,36 @@ DCFTSolver::compute_orbital_gradient(){
 
     psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // Form F * kappa (Alpha spin)
-    orbital_gradient_a_->gemm(false, false, 2.0, moFa_, full_kappa_a, 0.0);
-    // Form -kappa * F (Alpha spin) to obtain [F,kappa]
-    orbital_gradient_a_->gemm(false, false, -2.0, full_kappa_a, moFa_, 1.0);
+    // Initialize the idempotent contribution to the OPDM (Kappa)
+    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+        SharedMatrix full_kappa_a(new Matrix("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
+        SharedMatrix full_kappa_b(new Matrix("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_));
+        // Compute Kappa in the MO basis
+        for(int h = 0; h < nirrep_; ++h){
+            for(int i = 0; i < naoccpi_[h]; ++i){
+                full_kappa_a->set(h, i, i, 1.0);
+            }
+            for(int i = 0; i < nboccpi_[h]; ++i){
+                full_kappa_b->set(h, i, i, 1.0);
+            }
+        }
 
-    // Form F * kappa (Beta spin)
-    orbital_gradient_b_->gemm(false, false, 2.0, moFb_, full_kappa_b, 0.0);
-    // Form -kappa * F (Alpha spin) to obtain [F,kappa]
-    orbital_gradient_b_->gemm(false, false, -2.0, full_kappa_b, moFb_, 1.0);
+        // Form F * kappa (Alpha spin)
+        orbital_gradient_a_->gemm(false, false, 2.0, moFa_, full_kappa_a, 0.0);
+        // Form -kappa * F (Alpha spin) to obtain [F,kappa]
+        orbital_gradient_a_->gemm(false, false, -2.0, full_kappa_a, moFa_, 1.0);
+
+        // Form F * kappa (Beta spin)
+        orbital_gradient_b_->gemm(false, false, 2.0, moFb_, full_kappa_b, 0.0);
+        // Form -kappa * F (Alpha spin) to obtain [F,kappa]
+        orbital_gradient_b_->gemm(false, false, -2.0, full_kappa_b, moFb_, 1.0);
+    }
+    else if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
+        compute_orbital_residual();
+    }
+    else {
+        throw PSIEXCEPTION("Unknown DCFT functional in compute_orbital_gradient");
+    }
 
 }
 

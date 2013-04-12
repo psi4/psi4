@@ -42,8 +42,8 @@ DCFTSolver::compute_energy()
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-06") throw FeatureNotImplemented("ODC-06", "ALGORITHM = TWOSTEP", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") throw FeatureNotImplemented("ODC-12", "ALGORITHM = TWOSTEP", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-06") throw FeatureNotImplemented("ODC-06", "ALGORITHM = QC", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") throw FeatureNotImplemented("ODC-12", "ALGORITHM = QC", __FILE__, __LINE__);
+//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-06") throw FeatureNotImplemented("ODC-06", "ALGORITHM = QC", __FILE__, __LINE__);
+//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") throw FeatureNotImplemented("ODC-12", "ALGORITHM = QC", __FILE__, __LINE__);
 
 
     // Choose a paricular algorithm and solve the equations
