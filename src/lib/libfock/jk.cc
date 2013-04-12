@@ -80,6 +80,16 @@ boost::shared_ptr<JK> JK::build_JK()
             jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
         if (options["DF_INTS_NUM_THREADS"].has_changed())
             jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["DF_METRIC"].has_changed())
+            jk->set_df_metric(options.get_str("DF_METRIC"));
+        if (options["DF_THETA"].has_changed())
+            jk->set_df_theta(options.get_double("DF_THETA"));
+        if (options["DF_DOMAINS"].has_changed())
+            jk->set_df_domains(options.get_str("DF_DOMAINS"));
+        if (options["DF_BUMP_R0"].has_changed())
+            jk->set_df_bump_R0(options.get_double("DF_BUMP_R0"));
+        if (options["DF_BUMP_R1"].has_changed())
+            jk->set_df_bump_R1(options.get_double("DF_BUMP_R1"));
 
         return boost::shared_ptr<JK>(jk);
 
@@ -4147,6 +4157,12 @@ void FastDFJK::common_init()
     unit_ = PSIF_DFSCF_BJ;
     is_core_ = true;
     psio_ = PSIO::shared_object();
+    metric_ = "COULOMB";
+    theta_ = 1.0;
+    domains_ = "DIATOMIC";
+    bump_R0_ = 0.0;
+    bump_R1_ = 0.0;
+    
 }
 void FastDFJK::print_header() const
 {
@@ -4164,7 +4180,17 @@ void FastDFJK::print_header() const
         fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk"));
         fprintf(outfile, "    Integral Cache:    %11s\n",  df_ints_io_.c_str());
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
-        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n", condition_);
+        fprintf(outfile, "    Fitting Metric:    %11s\n", metric_.c_str());
+        if (metric_ == "EWALD") 
+            fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        fprintf(outfile, "    Fitting Domains:   %11s\n", domains_.c_str());
+        if (domains_ != "DIATOMIC") {
+            fprintf(outfile, "    Bump R0:           %11.3E\n", bump_R0_);
+            fprintf(outfile, "    Bump R1:           %11.3E\n", bump_R1_);
+        }
+        
+        fprintf(outfile, "\n"); 
 
         fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
         auxiliary_->print_by_level(outfile, print_);
@@ -4177,23 +4203,24 @@ void FastDFJK::preiterations()
         sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
     }
 
-    Z_ = build_Z(0.0);
-    if (do_wK_) 
-        Z_LR_ = build_Z(omega_);    
-
     build_atom_pairs();
     build_shell_pairs();
     build_auxiliary_partition();
     build_Bpq();
 
-    if (debug_) {
+    Z_ = build_Z(0.0);
+    if (do_wK_) 
+        Z_LR_ = build_Z(omega_);    
+
+    if (print_ > 1) {
         fprintf(outfile,"  ==> Atom Pair Tasks <==\n\n");
         for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
             fprintf(outfile,"  Task %8zu: Atom Pair (%4d,%4d)\n", pair, atom_pairs_[pair].first, atom_pairs_[pair].second); 
             const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-            fprintf(outfile,"   Auxiliary Atoms:\n");
+            const std::vector<double>& bump_atoms = bump_atoms_[pair];
+            fprintf(outfile,"   Auxiliary Atoms/Bump Functions:\n");
             for (int A = 0; A < auxiliary_atoms.size(); A++) {
-                fprintf(outfile,"    %4d\n", auxiliary_atoms[A]);
+                fprintf(outfile,"    %4d: %11.3E\n", auxiliary_atoms[A],bump_atoms[A]);
             }
             if (debug_ > 1) {
                 fprintf(outfile,"   Primary Shell Pairs:\n");
@@ -4236,6 +4263,7 @@ void FastDFJK::postiterations()
     atom_pairs_.clear();
     shell_pairs_.clear();
     auxiliary_atoms_.clear();
+    bump_atoms_.clear();
     Bpq_.clear();
 }
 boost::shared_ptr<Matrix> FastDFJK::build_Z(double omega)
@@ -4333,36 +4361,159 @@ void FastDFJK::build_shell_pairs()
 void FastDFJK::build_auxiliary_partition()
 {
     auxiliary_atoms_.clear();
+    bump_atoms_.clear();
 
-    // Diatomic partition for now
-    for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
-        int A = atom_pairs_[pair].first;
-        int B = atom_pairs_[pair].second;
-        std::vector<int> task;
-        if (A == B) {
-            task.push_back(A);
-        } else {
-            task.push_back(A);
-            task.push_back(B);
+    // Atomic distance matrix
+    boost::shared_ptr<Molecule> mol = auxiliary_->molecule();
+    int natom = mol->natom();
+    boost::shared_ptr<Matrix> RAB(new Matrix("RAB",natom,natom));
+    double** RABp = RAB->pointer();
+    for (int A = 0; A < natom; A++) {
+        for (int B = A; B < natom; B++) {
+            RABp[A][B] = RABp[B][A] =   
+                mol->xyz(A).distance(mol->xyz(B));
         }
-        auxiliary_atoms_.push_back(task);
+    }
+    double R0 = bump_R0_;
+    double R1 = bump_R1_;
+
+    if (domains_ == "DIATOMIC") {
+
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+            int A = atom_pairs_[pair].first;
+            int B = atom_pairs_[pair].second;
+            std::vector<int> task;
+            std::vector<double> bump;
+            if (A == B) {
+                task.push_back(A);
+                bump.push_back(1.0);
+            } else {
+                task.push_back(A);
+                task.push_back(B);
+                bump.push_back(1.0);
+                bump.push_back(1.0);
+            }
+            auxiliary_atoms_.push_back(task);
+            bump_atoms_.push_back(bump);
+        }
+
+    } else if (domains_ == "SPHERES") {
+
+        // Significant atom pairs list
+        std::vector<std::vector<int> > sig;
+        for (int A = 0; A < natom; A++) {
+            std::vector<int> task;
+            for (int B = 0; B < natom; B++) {
+                if (RABp[A][B] < R1) {
+                    task.push_back(B);
+                }
+            }
+            sig.push_back(task);
+        }
+
+        for (size_t pair = 0L; pair < atom_pairs_.size(); pair++) {
+
+            int A = atom_pairs_[pair].first;
+            int B = atom_pairs_[pair].second;
+            std::vector<int> task;
+            std::vector<double> bump;
+
+            // Diatomic frame
+            if (A == B) {
+                task.push_back(A);
+                bump.push_back(1.0);
+            } else {
+                task.push_back(A);
+                task.push_back(B);
+                bump.push_back(1.0);
+                bump.push_back(1.0);
+            }
+
+            // Unique augmentation atoms
+            std::set<int> aug;
+            const std::vector<int>& sigA = sig[A];
+            const std::vector<int>& sigB = sig[B];
+            for (int C2 = 0; C2 < sigA.size(); C2++) {
+                int C = sigA[C2];
+                if (! (C == A || C == B)) {
+                    aug.insert(C);
+                } 
+            }
+            for (int C2 = 0; C2 < sigB.size(); C2++) {
+                int C = sigB[C2];
+                if (! (C == A || C == B)) {
+                    aug.insert(C);
+                } 
+            }
+
+            // Augmentation and bump computation
+            for (std::set<int>::const_iterator it = aug.begin();
+                it != aug.end(); ++it) {
+                int C = (*it);
+                double bAC = 0.0;
+                if (RABp[A][C] <= R0) {
+                    bAC = 1.0;
+                } else {
+                    double R = RABp[A][C];
+                    bAC = 1.0 / (1.0 + exp((R1 - R0) / (R1 - R) - (R1 - R0) / (R - R0))); 
+                }
+                double bBC = 0.0;
+                if (RABp[B][C] <= R0) {
+                    bBC = 1.0;
+                } else {
+                    double R = RABp[B][C];
+                    bBC = 1.0 / (1.0 + exp((R1 - R0) / (R1 - R) - (R1 - R0) / (R - R0))); 
+                }
+                double b = sqrt(bAC * bBC); // Looks more like MHG in an atom-pair frame
+                task.push_back(C);
+                bump.push_back(b);
+            }
+
+            auxiliary_atoms_.push_back(task);
+            bump_atoms_.push_back(bump);
+        }
+
+    } else {
+        throw PSIEXCEPTION("Unrecognized fitting domain algorithm");
     }
 }
 void FastDFJK::build_Bpq()
 {
     Bpq_.clear();
     Bpq_.resize(atom_pairs_.size());
-    double** Zp = Z_->pointer();
 
     int nthread = 1;
     #ifdef _OPENMP
         nthread = df_ints_num_threads_;
     #endif
     
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
-    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints;
+    boost::shared_ptr<IntegralFactory>  fact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),primary_,primary_));
+    boost::shared_ptr<IntegralFactory> Jfact1(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> >  ints1;
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jints1;
+
+    boost::shared_ptr<IntegralFactory>  fact2(new IntegralFactory(auxiliary_,primary_,primary_,primary_));
+    boost::shared_ptr<IntegralFactory> Jfact2(new IntegralFactory(auxiliary_));
+    std::vector<boost::shared_ptr<ThreeCenterOverlapInt> >  ints2;
+    std::vector<boost::shared_ptr<OneBodyAOInt> >          Jints2;
+
+    bool algorithm;
     for (int thread = 0; thread < nthread; thread++) {
-        ints.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->eri()));
+        if (metric_ == "COULOMB") {
+            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->eri()));
+            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->eri()));
+            algorithm = false;
+        } else if (metric_ == "EWALD") {
+            ints1.push_back(boost::shared_ptr<TwoBodyAOInt>(fact1->erf_complement_eri(theta_)));
+            Jints1.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfact1->erf_complement_eri(theta_)));
+            algorithm = false;
+        } else if (metric_ == "OVERLAP") {
+            ints2.push_back(boost::shared_ptr<ThreeCenterOverlapInt>(fact2->overlap_3c()));
+            Jints2.push_back(boost::shared_ptr<OneBodyAOInt>(Jfact2->ao_overlap()));
+            algorithm = true;
+        } else {
+            throw PSIEXCEPTION("Unknown fitting metric");
+        }
     } 
 
     #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -4372,11 +4523,13 @@ void FastDFJK::build_Bpq()
         #ifdef _OPENMP
             thread = omp_get_thread_num();
         #endif
-        const double* buffer = ints[thread]->buffer();
+        const double* buffer  = (algorithm ?  ints2[thread]->buffer() :  ints1[thread]->buffer());
+        const double* Jbuffer = (algorithm ? Jints2[thread]->buffer() : Jints1[thread]->buffer());
 
         const std::vector<std::pair<int,int> >& shell_pairs = shell_pairs_[pair];
         const std::vector<int>& auxiliary_atoms = auxiliary_atoms_[pair];
-        
+        const std::vector<double>& bump_atoms = bump_atoms_[pair];        
+
         // => Sizing <= //
     
         int npq = 0;
@@ -4386,23 +4539,23 @@ void FastDFJK::build_Bpq()
             npq += primary_->shell(P).nfunction() * primary_->shell(Q).nfunction();;
         }
 
-        int nA = 0;
+        int naux = 0;
         for (int C = 0; C < auxiliary_atoms.size(); C++) {
             int C2 = auxiliary_atoms[C];
             int nC = auxiliary_->nshell_on_center(C2);
             int oC = auxiliary_->shell_on_center(C2,0);
             for (int A = 0; A < nC; A++) {
-                nA += auxiliary_->shell(A + oC).nfunction();
+                naux += auxiliary_->shell(A + oC).nfunction();
             }
         }
 
         // => Tensor Allocation <= //
 
-        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", nA, npq));
+        boost::shared_ptr<Matrix> Apq(new Matrix("Apq", naux, npq));
         double** Ap = Apq->pointer();
-        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", nA, npq));
+        boost::shared_ptr<Matrix> Bpq(new Matrix("Bpq", naux, npq));
         double** Bp = Bpq->pointer();
-        boost::shared_ptr<Matrix> J(new Matrix("J", nA, nA));
+        boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
         double** Jp = J->pointer();
 
         // => Generate Integrals <= //
@@ -4417,7 +4570,11 @@ void FastDFJK::build_Bpq()
                 for (int PQ = 0, dPQ = 0; PQ < shell_pairs.size(); PQ++) {
                     int P = shell_pairs[PQ].first;
                     int Q = shell_pairs[PQ].second;
-                    ints[thread]->compute_shell(A,0,P,Q);
+                    if (algorithm) {
+                        ints2[thread]->compute_shell(A,P,Q);
+                    } else {
+                        ints1[thread]->compute_shell(A,0,P,Q);
+                    }
                     int nP = primary_->shell(P).nfunction();
                     int oP = primary_->shell(P).function_index();
                     int nQ = primary_->shell(Q).nfunction();
@@ -4437,41 +4594,90 @@ void FastDFJK::build_Bpq()
 
         // => Generate Metric <= //
 
-        for (int C = 0,dA=0; C < auxiliary_atoms.size(); C++) {
+        for (int C = 0, dA = 0; C < auxiliary_atoms.size(); C++) {
             int C2 = auxiliary_atoms[C];
             int nC = auxiliary_->nshell_on_center(C2);
             int oC = auxiliary_->shell_on_center(C2,0);
             for (int A = oC; A < oC + nC; A++) {
                 int nA = auxiliary_->shell(A).nfunction();
                 int oA = auxiliary_->shell(A).function_index();
-                for (int a = 0; a < nA; a++,dA++) {
-                    for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
+                for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
                     int D2 = auxiliary_atoms[D];
                     int nD = auxiliary_->nshell_on_center(D2);
                     int oD = auxiliary_->shell_on_center(D2,0);
                     for (int B = oD; B < oD + nD; B++) {
                         int nB = auxiliary_->shell(B).nfunction();
                         int oB = auxiliary_->shell(B).function_index();
-                            for (int b = 0; b < nB; b++,dB++) {
-                                Jp[dA][dB] = Zp[a + oA][b + oB];
+                        if (B > A) { dB += nB; continue; }
+                        if (algorithm) {
+                            Jints2[thread]->compute_shell(A,B);
+                        } else {
+                            Jints1[thread]->compute_shell(A,0,B,0);
+                        }
+                        for (int a = 0, index = 0; a < nA; a++) {
+                            for (int b = 0; b < nB; b++) {
+                                Jp[a + dA][b + dB] = Jp[b + dB][a + dA] = Jbuffer[index++];
                             }
                         } 
+                        dB += nB;
                     }
                 }
+                dA += nA;
             }
         }
+
+        // => "Bump" the metric <= //
+
+        bump(J,bump_atoms,auxiliary_atoms, false);  
 
         // => Invert Metric <= //
 
         J->power(-1.0,condition_);
 
+        // => "Bump" the inverse metric <= //
+
+        bump(J,bump_atoms,auxiliary_atoms, true);  
+        
         // => Apply Metric <= //
 
-        C_DGEMM('N','N',nA,npq,nA,1.0,Jp[0],nA,Ap[0],npq,0.0,Bp[0],npq);
+        C_DGEMM('N','N',naux,npq,naux,1.0,Jp[0],naux,Ap[0],npq,0.0,Bp[0],npq);
 
         Bpq_[pair] = Bpq;
     }
 }
+void FastDFJK::bump(boost::shared_ptr<Matrix> J, const std::vector<double>& bump_atoms, const std::vector<int>& auxiliary_atoms, bool bump_diagonal)
+{
+    double** Jp = J->pointer();
+    for (int C = 0, dA = 0; C < auxiliary_atoms.size(); C++) {
+        int C2 = auxiliary_atoms[C];
+        int nC = auxiliary_->nshell_on_center(C2);
+        int oC = auxiliary_->shell_on_center(C2,0);
+        for (int A = oC; A < oC + nC; A++) {
+            int nA = auxiliary_->shell(A).nfunction();
+            int oA = auxiliary_->shell(A).function_index();
+            for (int D = 0, dB = 0; D < auxiliary_atoms.size(); D++) {
+
+                double scale = ((!bump_diagonal && C == D) ? 1.0 : bump_atoms[C] * bump_atoms[D]);
+
+                int D2 = auxiliary_atoms[D];
+                int nD = auxiliary_->nshell_on_center(D2);
+                int oD = auxiliary_->shell_on_center(D2,0);
+                for (int B = oD; B < oD + nD; B++) {
+                    int nB = auxiliary_->shell(B).nfunction();
+                    int oB = auxiliary_->shell(B).function_index();
+                    for (int a = 0, index = 0; a < nA; a++) {
+                        for (int b = 0; b < nB; b++) {
+                            Jp[a + dA][b + dB] *= scale; 
+                        }
+                    } 
+                    dB += nB;
+                }
+            }
+            dA += nA;
+        }
+    }
+}
+
 void FastDFJK::build_J(boost::shared_ptr<Matrix> Z,
                        const std::vector<boost::shared_ptr<Matrix> >& D,
                        const std::vector<boost::shared_ptr<Matrix> >& J)

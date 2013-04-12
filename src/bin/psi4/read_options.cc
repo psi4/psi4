@@ -1058,6 +1058,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
     /*- Fitting Condition !expert -*/
     options.add_double("DF_FITTING_CONDITION", 1.0E-12);
+    /*- FastDF Fitting Metric -*/
+    options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
+    /*- FastDF SR Ewald metric range separation parameter -*/
+    options.add_double("DF_THETA", 1.0);
+    /*- FastDF geometric fitting domain selection algorithm -*/
+    options.add_str("DF_DOMAINS", "DIATOMIC", "DIATOMIC SPHERES");
+    /*- Bump function min radius -*/
+    options.add_double("DF_BUMP_R0", 0.0);
+    /*- Bump function max radius -*/
+    options.add_double("DF_BUMP_R1", 0.0);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 

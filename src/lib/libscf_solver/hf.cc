@@ -1133,8 +1133,9 @@ void HF::guess()
         Fb_->print();
     }
 
-    if (print_ && (WorldComm->me() == 0))
-        fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
+    // This is confusing the user and valgrind.
+    //if (print_ && (WorldComm->me() == 0))
+    //    fprintf(outfile, "  Guess energy: %20.14f\n\n", guess_E);
 
     E_ = 0.0; // don't use this guess in our convergence checks
 }
