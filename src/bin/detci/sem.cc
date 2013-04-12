@@ -16,6 +16,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <boost/lexical_cast.hpp>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
@@ -249,9 +250,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       }
       if (L < nroots) {
         str = "Restart failed...  ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+        str += boost::lexical_cast<std::string>( L) ;
         str += " vectors for ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+        str += boost::lexical_cast<std::string>( nroots) ;
         str += " roots";
         throw PsiException(str,__FILE__,__LINE__);
       }
@@ -389,9 +390,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      Dvec.buf_lock(buffer2);
      if ((i = Dvec.read_num_vecs()) < nroots) {
        str = "Only ";
-       str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+       str += boost::lexical_cast<std::string>( i) ;
        str += " vectors available in D file for ";
-       str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+       str += boost::lexical_cast<std::string>( nroots) ;
        str += " roots!";
        throw PsiException(str,__FILE__,__LINE__);
      }
@@ -561,9 +562,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    if (k < nroots) {
       str = "(sem_iter): Failure to get required number of guess vects.\n";
       str += "  Got ";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << k) )->str();
+      str += boost::lexical_cast<std::string>( k) ;
       str += ", need nroots=";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << nroots) )->str();
+      str += boost::lexical_cast<std::string>( nroots) ;
       str += " to proceed.  Aborting";
       throw PsiException(str,__FILE__,__LINE__);
    }
@@ -1194,9 +1195,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          Cvec.buf_unlock();
          if (L > maxnvect) {
             str = "(sem_iter): L(";
-            str += static_cast<std::ostringstream*>( &(std::ostringstream() << L) )->str();
+            str += boost::lexical_cast<std::string>( L) ;
             str += ") > maxnvect(";
-            str += static_cast<std::ostringstream*>( &(std::ostringstream() << maxnvect) )->str();
+            str += boost::lexical_cast<std::string>( maxnvect) ;
             str += "!  Aborting!";
             throw PsiException(str,__FILE__,__LINE__);
             }

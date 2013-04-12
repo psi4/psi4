@@ -80,6 +80,8 @@ protected:
     int nproc_;
     int me_;
 
+    double cutoff_;
+
     const CdSalcList* cdsalcs_;
 
     template<typename TwoBodySOIntFunctor>
@@ -115,6 +117,8 @@ public:
     boost::shared_ptr<SOBasisSet> basis4() const;
 
     const double *buffer(int thread=0) const { return buffer_[thread]; }
+
+    void set_cutoff(double ints_tolerance) { cutoff_ = ints_tolerance; }
 
     // Normal integrals
     template<typename TwoBodySOIntFunctor>
@@ -488,7 +492,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                     int kkrel = krel;
                     int llrel = lrel;
 
-                    if (fabs(buffer_[thread][lsooff]) > 1.0e-14) {
+                    if (fabs(buffer_[thread][lsooff]) > cutoff_) {
                         if (ish == jsh) {
                             if (iabs < jabs)
                                 continue;
@@ -816,7 +820,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c1.x(nx);
                                         double temp = element.coef * A[0];
                                         dprintf("Ax SALC#%d pfac %lf, A[0] %lf, contr %lf\n", element.salc, element.coef, A[0], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -826,7 +830,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c1.y(ny);
                                         double temp = element.coef * A[1];
                                         dprintf("Ay SALC#%d pfac %lf, A[1] %lf, contr %lf\n", element.salc, element.coef, A[1], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -836,7 +840,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c1.z(nz);
                                         double temp = element.coef * A[2];
                                         dprintf("Az SALC#%d pfac %lf, A[2] %lf, contr %lf\n", element.salc, element.coef, A[2], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -846,7 +850,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c2.x(nx);
                                         double temp = element.coef * B[0];
                                         dprintf("Bx SALC#%d pfac %lf, B[0] %lf, contr %lf\n", element.salc, element.coef, B[0], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -856,7 +860,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c2.y(ny);
                                         double temp = element.coef * B[1];
                                         dprintf("By SALC#%d pfac %lf, B[1] %lf, contr %lf\n", element.salc, element.coef, B[1], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -866,7 +870,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c2.z(nz);
                                         double temp = element.coef * B[2];
                                         dprintf("Bz SALC#%d pfac %lf, B[2] %lf, contr %lf\n", element.salc, element.coef, B[2], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -876,7 +880,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c3.x(nx);
                                         double temp = element.coef * C[0];
                                         dprintf("Cx SALC#%d pfac %lf, C[0] %lf, contr %lf\n", element.salc, element.coef, C[0], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -886,7 +890,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c3.y(ny);
                                         double temp = element.coef * C[1];
                                         dprintf("Cy SALC#%d pfac %lf, C[1] %lf, contr %lf\n", element.salc, element.coef, C[1], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -896,7 +900,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c3.z(nz);
                                         double temp = element.coef * C[2];
                                         dprintf("Cz SALC#%d pfac %lf, C[2] %lf, contr %lf\n", element.salc, element.coef, C[2], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -906,7 +910,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c4.x(nx);
                                         double temp = element.coef * D[0];
                                         dprintf("Dx SALC#%d pfac %lf, D[0] %lf, contr %lf\n", element.salc, element.coef, D[0], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -916,7 +920,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c4.y(ny);
                                         double temp = element.coef * D[1];
                                         dprintf("Dy SALC#%d pfac %lf, D[1] %lf, contr %lf\n", element.salc, element.coef, D[1], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -926,7 +930,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                         const CdSalcWRTAtom::Component element = c4.z(nz);
                                         double temp = element.coef * D[2];
                                         dprintf("Dz SALC#%d pfac %lf, D[2] %lf, contr %lf\n", element.salc, element.coef, D[2], temp);
-                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                        if (total_symmetry == element.irrep && fabs(temp) > cutoff_)
                                             deriv_[thread][element.salc][lsooff] += temp;
                                         dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                                     }
@@ -1086,7 +1090,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
 
                     mints_timer_on("TwoBodySOInt::provide_IJKL functor");
                     for (int i=0; i<cdsalcs_->ncd(); ++i) {
-                        if (fabs(deriv_[thread][i][lsooff]) > 1.0e-14)
+                        if (fabs(deriv_[thread][i][lsooff]) > cutoff_)
                             body(i, iiabs, jjabs, kkabs, llabs,
                                  iiirrep, iirel,
                                  jjirrep, jjrel,

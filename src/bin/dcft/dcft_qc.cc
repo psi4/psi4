@@ -32,7 +32,7 @@ DCFTSolver::run_qc_dcft()
     // Allocate the memory
     qc_dcft_init();
 
-    scf_convergence_ = compute_scf_error_vector();
+    orbitals_convergence_ = compute_scf_error_vector();
 
     while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_){
 
@@ -41,7 +41,7 @@ DCFTSolver::run_qc_dcft()
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_intermediates();
         // Compute the residuals for density cumulant equations
-        lambda_convergence_ = compute_lambda_residual();
+        cumulant_convergence_ = compute_lambda_residual();
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Compute new SCF energy
@@ -53,10 +53,10 @@ DCFTSolver::run_qc_dcft()
         // Add lambda energy to the DCFT total energy
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
-        energyConverged = fabs(old_total_energy_ - new_total_energy_) < lambda_threshold_;
+        energyConverged = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
         // Print the iterative trace
         fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d *\n",
-                cycle, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
+                cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                 new_total_energy_, cycle_NR);
         fflush(outfile);
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
@@ -71,13 +71,13 @@ DCFTSolver::run_qc_dcft()
         cycle_NR = iterate_conjugate_gradients();
         // Check the convergence by computing the change in the orbitals and the cumulant
         check_qc_convergence();
-        orbitalsDone = scf_convergence_ < scf_threshold_;
-        cumulantDone = lambda_convergence_ < lambda_threshold_;
+        orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
+        cumulantDone = cumulant_convergence_ < cumulant_threshold_;
         // Update cumulant and orbitals with the solution of the Newton-Raphson equations
         update_cumulant_and_orbitals();
         if (orbital_idp_ != 0) {
             // Update the density
-            densityConverged = update_scf_density() < scf_threshold_;
+            densityConverged = update_scf_density() < orbitals_threshold_;
             // Write orbitals to the checkpoint file
             write_orbitals_to_checkpoint();
             // Transform two-electron integrals to the MO basis using new orbitals, build denominators
@@ -86,14 +86,16 @@ DCFTSolver::run_qc_dcft()
         }
     }
 
+    fprintf(outfile, "\t*=================================================================================*\n");
+
     if(!orbitalsDone || !cumulantDone || !densityConverged)
-        throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_,
-                               lambda_convergence_, __FILE__, __LINE__);
+        throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
+                               cumulant_convergence_, __FILE__, __LINE__);
 
     // Make sure that the orbital phase is retained and the Fock matrix is diagonal for the gradients
 
-    scfDone_ = true;
-    lambdaDone_ = true;
+    orbitalsDone_ = true;
+    cumulantDone_ = true;
     densityConverged_ = true;
 
 }
@@ -225,7 +227,7 @@ DCFTSolver::compute_orbital_gradient(){
 void DCFTSolver::form_idps(){
 
     // Ignore orbital gradient elements that are less than this value
-    double cutoff = ((1.0e-10 < (lambda_threshold_  * 0.01)) ? 1.0e-10 : (lambda_threshold_  * 0.01));
+    double cutoff = ((1.0e-10 < (cumulant_threshold_  * 0.01)) ? 1.0e-10 : (cumulant_threshold_  * 0.01));
 
     // Zero out the counters
     int old_nidp = nidp_;
@@ -1698,7 +1700,7 @@ DCFTSolver::iterate_conjugate_gradients() {
         // Compute RMS of the residual
         residual_rms = sqrt(residual_rms/nidp_);
         // Check convergence
-        converged = (residual_rms < lambda_threshold_);
+        converged = (residual_rms < cumulant_threshold_);
 
         cycle++;
         if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
@@ -1721,17 +1723,17 @@ DCFTSolver::iterate_conjugate_gradients() {
 void
 DCFTSolver::check_qc_convergence() {
 
-    scf_convergence_ = 0.0;
-    lambda_convergence_ = 0.0;
+    orbitals_convergence_ = 0.0;
+    cumulant_convergence_ = 0.0;
 
     if (orbital_idp_ != 0) {
-        for (int p = 0; p < orbital_idp_; ++p) scf_convergence_ += X_->get(p) * X_->get(p);
-        scf_convergence_ = sqrt(scf_convergence_/orbital_idp_);
+        for (int p = 0; p < orbital_idp_; ++p) orbitals_convergence_ += X_->get(p) * X_->get(p);
+        orbitals_convergence_ = sqrt(orbitals_convergence_/orbital_idp_);
     }
 
     if (lambda_idp_ != 0) {
-        for (int p = orbital_idp_; p < nidp_; ++p) lambda_convergence_ += X_->get(p) * X_->get(p);
-        lambda_convergence_ = sqrt(lambda_convergence_/lambda_idp_);
+        for (int p = orbital_idp_; p < nidp_; ++p) cumulant_convergence_ += X_->get(p) * X_->get(p);
+        cumulant_convergence_ = sqrt(cumulant_convergence_/lambda_idp_);
     }
 
 }
@@ -1804,7 +1806,7 @@ DCFTSolver::update_cumulant_and_orbitals() {
         U_a->set(U_a_block);
         free_block(U_a_block);
 
-        int rowB = U_a->nrow();
+        int rowB = U_b->nrow();
         int colB = U_b->ncol();
 
         double **U_b_block = block_matrix(rowB, colB);

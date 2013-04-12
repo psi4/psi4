@@ -8,7 +8,7 @@
 
 namespace psi{ namespace dcft{
 
-SharedMatrix DCFTSolver::compute_gradient()
+SharedMatrix DCFTSolver::compute_gradient_()
 {
     bool responseDone = false;
 
@@ -24,7 +24,7 @@ SharedMatrix DCFTSolver::compute_gradient()
     response_guess();
 
     orbital_response_rms_ = 0.0;
-    cumulant_response_rms_ = lambda_convergence_;
+    cumulant_response_rms_ = cumulant_convergence_;
     response_coupling_rms_ = 0.0;
     iter_ = 0;
 
@@ -59,7 +59,7 @@ SharedMatrix DCFTSolver::compute_gradient()
             response_coupling_rms_ = compute_response_coupling();
 
             // Check convergence
-            if (response_coupling_rms_ < lambda_threshold_) responseDone = true;
+            if (response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
             fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
@@ -180,8 +180,8 @@ SharedMatrix DCFTSolver::compute_gradient()
                     orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_, diisString.c_str());
 
             // Check convergence
-            if (orbital_response_rms_ < scf_threshold_ && cumulant_response_rms_ < lambda_threshold_
-                    && response_coupling_rms_ < lambda_threshold_) responseDone = true;
+            if (orbital_response_rms_ < orbitals_threshold_ && cumulant_response_rms_ < cumulant_threshold_
+                    && response_coupling_rms_ < cumulant_threshold_) responseDone = true;
 
         }
 
@@ -230,6 +230,9 @@ DCFTSolver::gradient_init()
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
+
+    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the gradients
+    if (options_.get_str("AO_BASIS") == "DISK") _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -367,17 +370,34 @@ DCFTSolver::gradient_init()
     dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[o,v]"), "MO Ints <vv|ov>");
     dpd_buf4_close(&I);
 
-    // JWM
-//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
-//                  ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
-//    dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V,V]"), "MO Ints (ov|VV)");
-//    dpd_buf4_close(&I);
-
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[o,v]"),
                   ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
     dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V>=V]+"), "MO Ints (ov|VV)");
     dpd_buf4_close(&I);
 
+    // (VV|VV)
+
+    if(options_.get_str("AO_BASIS") == "DISK"){
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
+                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,v]"), ID("[V,v]"), "MO Ints <Vv|Vv>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
+                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[V,V]"), "MO Ints (vv|VV)");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
+                      ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv|vv>");
+        dpd_buf4_close(&I);
+    }
 
     // (OV|OV)
 
@@ -1931,7 +1951,7 @@ DCFTSolver::iterate_orbital_response()
         }
 
         // Check convergence
-        converged = (fabs(orbital_response_rms_) < fabs(scf_threshold_));
+        converged = (fabs(orbital_response_rms_) < fabs(orbitals_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
@@ -2773,7 +2793,7 @@ DCFTSolver::iterate_cumulant_response()
         }
 
         // Check the convergence
-        converged = (fabs(cumulant_response_rms_) < fabs(lambda_threshold_));
+        converged = (fabs(cumulant_response_rms_) < fabs(cumulant_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
@@ -3062,7 +3082,6 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_buf4_close(&I);
     dpd_buf4_close(&Z);
     dpd_buf4_close(&G);
-
 
     // G_IjAb += Sum_Cd g_CdAb Z_IjCd
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),

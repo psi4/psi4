@@ -86,8 +86,9 @@ protected:
     double update_scf_density(bool damp = false);
     void run_twostep_dcft();
     void run_simult_dcft();
+    void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
-    virtual SharedMatrix compute_gradient();
+    virtual SharedMatrix compute_gradient_();
     void response_guess();
     void gradient_init();
     void compute_density();
@@ -123,6 +124,14 @@ protected:
     void refine_tau();
     void compute_F_intermediate();
     void form_density_weighted_fock();
+    // Orbital-optimized DCFT
+    void oo_init();
+    double compute_orbital_residual();
+    void update_orbitals_jacobi();
+    void compute_unrelaxed_density();
+    void compute_orbital_gradient_OV();
+    void compute_orbital_gradient_VO();
+
     // FNO-DCFT
     void form_nso_basis();
 
@@ -130,9 +139,9 @@ protected:
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// Controls convergence of the orbital updates
-    bool scfDone_;
+    bool orbitalsDone_;
     /// Controls convergence of the decnsity cumulant updates
-    bool lambdaDone_;
+    bool cumulantDone_;
     /// Controls convergence of the idempotent one-particle density
     bool densityConverged_;
     /// Controls convergence of the DCFT energy
@@ -207,9 +216,9 @@ protected:
     /// The cutoff below which and integral is assumed to be zero
     double int_tolerance_;
     /// The RMS value of the error vector after the SCF iterations
-    double scf_convergence_;
+    double orbitals_convergence_;
     /// The RMS value of the change in lambda after the lambda iterations
-    double lambda_convergence_;
+    double cumulant_convergence_;
     /// The RMS value of the change in the orbital response
     double orbital_response_rms_;
     /// The RMS value of the change in the cumulant response
@@ -217,9 +226,9 @@ protected:
     /// The RMS value of the change in the coupling of orbital and cumulant response
     double response_coupling_rms_;
     /// The convergence criterion for the lambda iterations
-    double lambda_threshold_;
+    double cumulant_threshold_;
     /// The convergence criterion for the scf iterations
-    double scf_threshold_;
+    double orbitals_threshold_;
     /// The convergence that must be achieved before DIIS extrapolation starts
     double diis_start_thresh_;
     /// The SCF component of the energy
@@ -285,10 +294,6 @@ protected:
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
     SharedMatrix Fb_;
-    /// The copy of the alpha Fock matrix in the SO basis before the Lowdin orthogonalization
-    SharedMatrix Fa_copy;
-    /// The copy of the alpha Fock matrix in the SO basis before the Lowdin orthogonalization
-    SharedMatrix Fb_copy;
     /// The alpha Fock matrix in the MO basis
     SharedMatrix moFa_;
     /// The beta Fock matrix in the MO basis
@@ -316,9 +321,9 @@ protected:
     /// The beta SCF error vector
     SharedMatrix scf_error_b_;
     // Quadratically-convergent DCFT
-    /// The orbital gradient ([f,kappa]) in the MO basis (Alpha spin)
+    /// The orbital gradient in the MO basis (Alpha spin)
     SharedMatrix orbital_gradient_a_;
-    /// The orbital gradient ([f,kappa]) in the MO basis (Beta spin)
+    /// The orbital gradient in the MO basis (Beta spin)
     SharedMatrix orbital_gradient_b_;
     /// Orbital and cumulant gradient in the basis of IDP
     SharedVector gradient_;
@@ -338,6 +343,16 @@ protected:
     SharedVector Q_;
     /// The subspace vector in the Davidson diagonalization procedure
     SharedMatrix b_;
+    /// Generator of the orbital rotations (Alpha) with respect to the orbitals from the previous update
+    SharedMatrix X_a_;
+    /// Generator of the orbital rotations (Beta) with respect to the orbitals from the previous update
+    SharedMatrix X_b_;
+    /// Generator of the orbital rotations (Alpha) with respect to the reference orbitals
+    SharedMatrix Xtotal_a_;
+    /// Generator of the orbital rotations (Beta) with respect to the reference orbitals
+    SharedMatrix Xtotal_b_;
+
+
     /// Used to align things in the output
     std::string indent;
 };

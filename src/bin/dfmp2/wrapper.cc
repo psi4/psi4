@@ -64,7 +64,7 @@ PsiReturnType dfmp2grad(Options & options)
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");
     }
     Process::environment.set_wavefunction(dfmp2);
-    SharedMatrix G = dfmp2->compute_gradient();
+    SharedMatrix G = dfmp2->compute_gradient_();
 
     Process::environment.set_gradient(G); 
     Process::environment.wavefunction()->set_gradient(G);

@@ -130,11 +130,22 @@ void MOLECULE::forces(void) {
   return ;
 }
 
+// Tell whether there are any fixed equilibrium values
+bool MOLECULE::has_fixed_eq_vals(void) {
+  for (int f=0; f<fragments.size(); ++f)
+    for (int i=0; i<fragments[f]->g_nintco(); ++i)
+      if (fragments[f]->intco_has_fixed_eq_val(i))
+        return true;
+
+  return false;
+}
+
 // Apply extra forces for internal coordinates with user-defined
 // equilibrium values.
-void MOLECULE::apply_constraint_forces(bool update_hessian_too) {
+void MOLECULE::apply_constraint_forces(void) {
   double * f_q = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
+  int N = g_nintco();
 
   int cnt = -1;
   for (int f=0; f<fragments.size(); ++f) {
@@ -143,13 +154,17 @@ void MOLECULE::apply_constraint_forces(bool update_hessian_too) {
       if (fragments[f]->intco_has_fixed_eq_val(i)) {
         double eq_val = fragments[f]->intco_fixed_eq_val(i);
         double val = fragments[f]->intco_value(i);
-        double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
+        //double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
+        double force = (eq_val - val) * H[cnt][cnt];
         fprintf(outfile,"\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
-        fprintf(outfile,"\tValue is %8.4e; Eq. value is %8.4e; Force added is %8.4e.\n", val, eq_val, force);
-        f_q[cnt] += force;
+        fprintf(outfile,"\tValue is %8.4e; Eq. value is %8.4e; Force is set to %8.4e.\n", val, eq_val, force);
+        fprintf(outfile,"\tRemoving off-diagonal coupling of this coordinate with others.\n");
+        f_q[cnt] = force;
 
-        if (update_hessian_too)
-          H[cnt][cnt] += 0.5 * Opt_params.fixed_eq_val_force_constant;
+        // If user eq. value is specified delete coupling between this coordinate and others.
+        for (int j=0; j<N; ++j)
+          if (j != cnt)
+            H[j][cnt] = H[cnt][j] = 0;
       }
     }
   }
@@ -638,17 +653,28 @@ void MOLECULE::print_intco_dat(FILE *fp_intco) {
   }
 }
 
-// Read string of atoms for frozen coordinates and pass to fragment object
+// Apply strings of atoms for frozen and fixed coordinates; 
 bool MOLECULE::apply_input_constraints(void) {
+  bool frozen_present = false;
+  bool fixed_present = false;
+
   if (   !Opt_params.frozen_distance_str.empty()
       || !Opt_params.frozen_bend_str.empty() 
       || !Opt_params.frozen_dihedral_str.empty() ) {
-    fprintf(outfile,"\tAssuming, in current code, that constraints apply to first fragment.\n");
-    return fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
+    fprintf(outfile,"\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
+    frozen_present = fragments[0]->apply_frozen_constraints(Opt_params.frozen_distance_str,
       Opt_params.frozen_bend_str, Opt_params.frozen_dihedral_str);
   }
-  else
-    return false;
+
+  if (   !Opt_params.fixed_distance_str.empty()
+      || !Opt_params.fixed_bend_str.empty() 
+      || !Opt_params.fixed_dihedral_str.empty() ) {
+    fprintf(outfile,"\tAssuming in current code that numbering for constraints corresponds to unified fragment.\n");
+    fixed_present = fragments[0]->apply_fixed_constraints(Opt_params.fixed_distance_str,
+      Opt_params.fixed_bend_str, Opt_params.fixed_dihedral_str);
+  }
+
+  return (fixed_present || frozen_present);
 }
 
 // Compute constraint matrix.
