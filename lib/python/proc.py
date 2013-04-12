@@ -536,7 +536,7 @@ def run_scf_gradient(name, **kwargs):
 
     run_scf(name, **kwargs)
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF'):
 
         # if the df_basis_scf basis is not set, pick a sensible one.
         if PsiMod.get_global_option('DF_BASIS_SCF') == '':
@@ -547,11 +547,7 @@ def run_scf_gradient(name, **kwargs):
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-        PsiMod.scfgrad()
-
-    else:
-        PsiMod.deriv()
-
+    PsiMod.scfgrad()
     optstash.restore()
 
 
