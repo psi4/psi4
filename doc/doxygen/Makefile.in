@@ -24,7 +24,7 @@ install:: html install_html
 
 .PHONY: install_html
 install_html::
-	$(MKDIRS) $(DESTDIR)$(htmldir)/doxygen
+	$(MKDIRS) $(DESTDIR)$(DOXYDIR)
 	$(INSTALL_DATA) html/* $(DESTDIR)$(DOXYDIR)
 
 #include ../MakeRules
