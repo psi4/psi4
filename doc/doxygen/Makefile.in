@@ -7,6 +7,7 @@ DOXYDIR = $(htmldir)/doxygen
 DOXYCFG = doxygen.cfg
 
 all:: html
+default:: html
 
 .PHONY: html
 html: $(DOXYCFG)
@@ -18,8 +19,6 @@ realclean::
 
 clean::
 	/bin/rm -rf *~
-
-default:: install
 
 install:: html install_html
 
