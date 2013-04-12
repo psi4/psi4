@@ -19,6 +19,10 @@ DCFTSolver::oo_init() {
     bkappa_ = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
     orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
     orbital_gradient_b_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_));
+    X_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
+    X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
+    Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
+    Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
 
 }
 
@@ -69,6 +73,7 @@ DCFTSolver::compute_orbital_residual() {
 
     // Beta spin
     for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -81,6 +86,33 @@ DCFTSolver::compute_orbital_residual() {
 
     dpd_file2_close(&Xai);
     dpd_file2_close(&Xia);
+
+    // Determine the orbital rotation step
+    // Alpha spin
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
+                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)));
+                X_a_->set(h, i, a, value);
+                X_a_->set(h, a, i, (-1.0) * value);
+            }
+        }
+    }
+
+    // Beta spin
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
+                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)));
+                X_b_->set(h, i, a, value);
+                X_b_->set(h, a, i, (-1.0) * value);
+            }
+        }
+    }
+
+    // Determine the rotation generator with respect to the reference orbitals
+    Xtotal_a_->add(X_a_);
+    Xtotal_b_->add(X_b_);
 
     return maxGradient;
 }
@@ -1179,43 +1211,20 @@ DCFTSolver::update_orbitals_jacobi()
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
     SharedMatrix U_b(new Matrix("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix X_a(new Matrix("Generator of the orbital rotations (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix X_b(new Matrix("Generator of the orbital rotations (Beta)", nirrep_, nmopi_, nmopi_));
 
-    // Fill up the X matrix
-    // Alpha spin
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)));
-                X_a->set(h, i, a, value);
-                X_a->set(h, a, i, (-1.0) * value);
-            }
-        }
-    }
-
-    // Beta spin
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < nboccpi_[h]; ++i){
-            for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)));
-                X_b->set(h, i, a, value);
-                X_b->set(h, a, i, (-1.0) * value);
-            }
-        }
-    }
+    // Compute the orbital rotation matrix and rotate the orbitals
 
     // U = I
     U_a->identity();
     U_b->identity();
 
     // U += X
-    U_a->add(X_a);
-    U_b->add(X_b);
+    U_a->add(Xtotal_a_);
+    U_b->add(Xtotal_b_);
 
     // U += 0.5 * X * X
-    U_a->gemm(false, false, 0.5, X_a, X_a, 1.0);
-    U_b->gemm(false, false, 0.5, X_b, X_b, 1.0);
+    U_a->gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
+    U_b->gemm(false, false, 0.5, Xtotal_b_, Xtotal_b_, 1.0);
 
     // Orthogonalize the U vectors
     int rowA = U_a->nrow();
@@ -1239,9 +1248,6 @@ DCFTSolver::update_orbitals_jacobi()
     free_block(U_b_block);
 
     // Rotate the orbitals
-    old_ca_->copy(Ca_);
-    old_cb_->copy(Cb_);
-
     Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
     Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
 

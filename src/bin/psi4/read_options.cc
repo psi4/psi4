@@ -811,7 +811,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
-      options.add_double("DIIS_START_CONVERGENCE", 1e-3);
+      options.add_double("DIIS_START_CONVERGENCE", 1e-2);
       /*- Maximum number of error vectors stored for DIIS extrapolation !expert-*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation !expert-*/

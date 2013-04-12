@@ -504,28 +504,32 @@ DCFTSolver::run_simult_dcft_oo()
                          "\t* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
+    // Copy the reference orbitals and to use them as the reference for the orbital rotation
+    old_ca_->copy(Ca_);
+    old_cb_->copy(Cb_);
+
     // Set up the DIIS manager
-//    DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
-//    dpdbuf4 Laa, Lab, Lbb;
-//    dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-//                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-//    dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-//    dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-//                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-//    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(),
-//                                         DIISEntry::Matrix, scf_error_b_.get(),
-//                                         DIISEntry::DPDBuf4, &Laa,
-//                                         DIISEntry::DPDBuf4, &Lab,
-//                                         DIISEntry::DPDBuf4, &Lbb);
-//    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(),
-//                                   DIISEntry::Matrix, Fb_.get(),
-//                                   DIISEntry::DPDBuf4, &Laa,
-//                                   DIISEntry::DPDBuf4, &Lab,
-//                                   DIISEntry::DPDBuf4, &Lbb);
-//    dpd_buf4_close(&Laa);
-//    dpd_buf4_close(&Lab);
-//    dpd_buf4_close(&Lbb);
+    DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
+    dpdbuf4 Laa, Lab, Lbb;
+    dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(),
+                                         DIISEntry::Matrix, orbital_gradient_b_.get(),
+                                         DIISEntry::DPDBuf4, &Laa,
+                                         DIISEntry::DPDBuf4, &Lab,
+                                         DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::Matrix, Xtotal_a_.get(),
+                                   DIISEntry::Matrix, Xtotal_b_.get(),
+                                   DIISEntry::DPDBuf4, &Laa,
+                                   DIISEntry::DPDBuf4, &Lab,
+                                   DIISEntry::DPDBuf4, &Lbb);
+    dpd_buf4_close(&Laa);
+    dpd_buf4_close(&Lab);
+    dpd_buf4_close(&Lbb);
     while((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
             && cycle++ < maxiter_){
         std::string diisString;
@@ -573,37 +577,36 @@ DCFTSolver::run_simult_dcft_oo()
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Check convergence of the total DCFT energy
         energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
-//        if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
-//            //Store the DIIS vectors
-//            dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
-//            dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-//                          ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
-//            dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                          ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-//            dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-//                          ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-//            dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-//                          ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-//            dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                          ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-//            dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-//                          ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-//            if(diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb,
-//                                       Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb)){
-//                diisString += "S";
-//            }
-//            if(diisManager.subspace_size() > mindiisvecs_){
-//                diisString += "/E";
-//                diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
-//            }
-//            dpd_buf4_close(&Raa);
-//            dpd_buf4_close(&Rab);
-//            dpd_buf4_close(&Rbb);
-//            dpd_buf4_close(&Laa);
-//            dpd_buf4_close(&Lab);
-//            dpd_buf4_close(&Lbb);
-//        }
-
+        if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
+            //Store the DIIS vectors
+            dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
+            dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                          ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
+            dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                          ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+            dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                          ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
+            dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                          ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+            dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                          ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+            dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                          ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+            if(diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+                                     Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)){
+                diisString += "S";
+            }
+            if(diisManager.subspace_size() > mindiisvecs_){
+                diisString += "/E";
+                diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+            }
+            dpd_buf4_close(&Raa);
+            dpd_buf4_close(&Rab);
+            dpd_buf4_close(&Rbb);
+            dpd_buf4_close(&Laa);
+            dpd_buf4_close(&Lab);
+            dpd_buf4_close(&Lbb);
+        }
         // Obtain new orbitals
         update_orbitals_jacobi();
         // Make sure that the orbital phase is retained
