@@ -27,6 +27,9 @@ private:
     boost::shared_ptr<SOBasisSet> sobasis_;
     int print_;
 
+    /// Value which any two-electron integral is below is discarded
+    double cutoff_;
+
     // In-core O(N^5) transqt
     SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv);
     // In-core O(N^5) transqt
@@ -35,10 +38,12 @@ private:
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
 
+    void common_init();
+
 public:
 
     void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
-    void init_helper_2(boost::shared_ptr<BasisSet> basis);
+    void init_helper(boost::shared_ptr<BasisSet> basis);
 
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);

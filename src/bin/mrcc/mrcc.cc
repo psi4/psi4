@@ -827,8 +827,35 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         spatial_orbitals = 0;
         ndoub = 1;
     }
+
+    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")
+        closed_shell = 0;
+
+    int nsocc = active_socc.sum();
+    int ntrip = 0;
+    if (nsocc == 0) {
+        nsing = 1;
+        ntrip = 0;
+        ndoub = 0;
+    }
+    else if (nsocc == 1) {
+        nsing = 0;
+        ntrip = 0;
+        ndoub = 1;
+    }
+    else if (nsocc == 2) {
+        nsing = 0;
+        ntrip = 1;
+        ndoub = 0;
+    }
+
+    // Let the user override this setting
     if (options["MRCC_NUM_SINGLET_ROOTS"].has_changed())
         nsing = options.get_int("MRCC_NUM_SINGLET_ROOTS");
+    if (options["MRCC_NUM_TRIPLET_ROOTS"].has_changed())
+        ntrip = options.get_int("MRCC_NUM_TRIPLET_ROOTS");
+    if (options["MRCC_NUM_DOUBLET_ROOTS"].has_changed())
+        ndoub = options.get_int("MRCC_NUM_DOUBLET_ROOTS");
 
     int symm = 0;
     for (int h=0; h<nirrep; ++h)
@@ -840,7 +867,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     fprintf(fort56, "%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d     1%6d      0      0%6d     0     0    0.00    0%6lu\n",
             exlevel,                                         // # 1
             nsing,                                           // # 2
-            options.get_int("MRCC_NUM_TRIPLET_ROOTS"),       // # 3
+            ntrip,                                           // # 3
             options.get_int("MRCC_RESTART"),                 // # 4
             method,                                          // # 5
             symm,                                            // # 8
