@@ -2404,8 +2404,8 @@ private:
     static const MassPoint *SG0_grids_[18];
     static int              SG0_sizes_[18];
 
-    static const MassPoint *SG1_grids_[18];
-    static int              SG1_sizes_[18];
+    static const MassPoint *SG1_grids_[19];
+    static int              SG1_sizes_[19];
 public:
     static void Initialize();
     static void ReleaseMemory();
@@ -2431,8 +2431,8 @@ public:
 
 const MassPoint *StandardGridMgr::SG0_grids_[18];
 int              StandardGridMgr::SG0_sizes_[18];
-const MassPoint *StandardGridMgr::SG1_grids_[18];
-int              StandardGridMgr::SG1_sizes_[18];
+const MassPoint *StandardGridMgr::SG1_grids_[19];
+int              StandardGridMgr::SG1_sizes_[19];
 
 int StandardGridMgr::WhichGrid(const char *name)
 {
@@ -2901,25 +2901,6 @@ class OrientationMgr
         C.zy = A.zx*B.xy + A.zy*B.yy + A.zz*B.zy;
         C.zz = A.zx*B.xz + A.zy*B.yz + A.zz*B.zz;
         return C;
-    }
-
-    static inline LMatrix transpose(LMatrix A)
-    {
-        LMatrix B;
-        B.xx = A.xx; B.yy = A.yy; B.zz = A.zz;
-        B.xy = A.yx; B.yx = A.xy;
-        B.xz = A.zx; B.zx = A.xz;
-        B.yz = A.zy; B.zy = A.yz;
-        return B;
-    }
-
-    static inline LMatrix fromArray(double in[3][3])
-    { 
-        LMatrix out;
-        out.xx = in[0][0]; out.xy = in[0][1]; out.xz = in[0][2];
-        out.yx = in[1][0]; out.yy = in[1][1]; out.yz = in[1][2];
-        out.zx = in[2][0]; out.zy = in[2][1]; out.zz = in[2][2];
-        return out;
     }
 
     static inline LMatrix cycleXtoZ(LMatrix in)
