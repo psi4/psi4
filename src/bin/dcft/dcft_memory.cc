@@ -59,8 +59,8 @@ DCFTSolver::init()
     moFb_        = SharedMatrix(new Matrix("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_));
     old_ca_      = SharedMatrix(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     old_cb_      = SharedMatrix(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    kappa_a_     = SharedMatrix(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    kappa_b_     = SharedMatrix(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    kappa_so_a_  = SharedMatrix(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    kappa_so_b_  = SharedMatrix(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
     g_tau_a_     = SharedMatrix(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
     g_tau_b_     = SharedMatrix(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
     moG_tau_a_   = SharedMatrix(new Matrix("GTau in the MO basis (Alpha)", nirrep_, nmopi_, nmopi_));
@@ -70,9 +70,14 @@ DCFTSolver::init()
     s_half_inv_  = SharedMatrix(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
     epsilon_a_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     epsilon_b_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
-
-    a_tau_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
-    b_tau_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
+    kappa_mo_a_  = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
+    kappa_mo_b_  = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
+    tau_so_a_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
+    tau_so_b_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
+    aocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
+    bocc_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
+    avir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
+    bvir_tau_    = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
 
     // Quadratically-convergent algorithm or orbital-optimized methods
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
@@ -82,12 +87,6 @@ DCFTSolver::init()
         X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
         Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
         Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-        aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
-        bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
-        avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
-        bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
-        akappa_ = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
-        bkappa_ = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
     }
 
     if (options_.get_str("ALGORITHM") == "QC") {
@@ -101,6 +100,20 @@ DCFTSolver::init()
 
         lookup_ = new int[dim_];
         ::memset(lookup_, '\0', sizeof(int)*dim_);
+    }
+
+    // Fill up Kappa array
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int j = 0; j < naoccpi_[h]; ++j){
+                kappa_mo_a_->set(h, i, j, (i == j ? 1.0 : 0.0));
+            }
+        }
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int j = 0; j < nboccpi_[h]; ++j){
+                kappa_mo_b_->set(h, i, j, (i == j ? 1.0 : 0.0));
+            }
+        }
     }
 
     // Store the AO overlap matrix
@@ -148,8 +161,8 @@ DCFTSolver::finalize()
     Fb_.reset();
     old_ca_.reset();
     old_cb_.reset();
-    kappa_a_.reset();
-    kappa_b_.reset();
+    kappa_so_a_.reset();
+    kappa_so_b_.reset();
     g_tau_a_.reset();
     g_tau_b_.reset();
     ao_s_.reset();

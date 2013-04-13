@@ -333,15 +333,15 @@ namespace psi{ namespace dcft{
       // Escf = eNuc + 0.5 * (H + F) * (kappa + tau)
 
       scf_energy_ = enuc_;
-      scf_energy_ += 0.5 * kappa_a_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * kappa_b_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * kappa_a_->vector_dot(Fa_);
-      scf_energy_ += 0.5 * kappa_b_->vector_dot(Fb_);
+      scf_energy_ += 0.5 * kappa_so_a_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * kappa_so_b_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * kappa_so_a_->vector_dot(Fa_);
+      scf_energy_ += 0.5 * kappa_so_b_->vector_dot(Fb_);
 
-      scf_energy_ += 0.5 * a_tau_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * b_tau_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * a_tau_->vector_dot(Fa_);
-      scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
+      scf_energy_ += 0.5 * tau_so_a_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * tau_so_a_->vector_dot(Fa_);
+      scf_energy_ += 0.5 * tau_so_b_->vector_dot(Fb_);
 
       dcft_timer_off("DCFTSolver::compute_scf_energy");
   }
@@ -361,20 +361,20 @@ namespace psi{ namespace dcft{
       SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
       SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
       // form FDS
-      tmp1->gemm(false, false, 1.0, kappa_a_, ao_s_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
       scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
       // form SDF
-      tmp1->gemm(false, false, 1.0, kappa_a_, Fa_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
       tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
       scf_error_a_->subtract(tmp2);
       // Orthogonalize
       scf_error_a_->transform(s_half_inv_);
 
       // form FDS
-      tmp1->gemm(false, false, 1.0, kappa_b_, ao_s_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
       scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
       // form SDF
-      tmp1->gemm(false, false, 1.0, kappa_b_, Fb_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
       tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
       scf_error_b_->subtract(tmp2);
       // Orthogonalize
@@ -408,27 +408,27 @@ namespace psi{ namespace dcft{
       double newFraction = damp ? 1.0 : 1.0 - dampingFactor/100.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
-      Matrix old(kappa_a_);
+      Matrix old(kappa_so_a_);
       for (int h = 0; h < nirrep_; ++h) {
           for (int mu = 0; mu < nsopi_[h]; ++mu) {
               for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < naoccpi_[h]; ++i)
                       val += Ca_->get(h, mu, i) * Ca_->get(h, nu, i);
-                  kappa_a_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_a_->get(h, mu, nu));
+                  kappa_so_a_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_so_a_->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
           }
       }
-      old.copy(kappa_b_);
+      old.copy(kappa_so_b_);
       for (int h = 0; h < nirrep_; ++h) {
           for (int mu = 0; mu < nsopi_[h]; ++mu) {
               for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < nboccpi_[h]; ++i)
                       val += Cb_->get(h, mu, i) * Cb_->get(h, nu, i);
-                  kappa_b_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_b_->get(h, mu, nu));
+                  kappa_so_b_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_so_b_->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
@@ -471,10 +471,10 @@ namespace psi{ namespace dcft{
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = kappa_a_->get(h, mu, nu);
-                  Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_->get(h,mu,nu);
-                  Tb[muNu] = b_tau_->get(h,mu,nu);
+                  Da[muNu] = kappa_so_a_->get(h, mu, nu);
+                  Db[muNu] = kappa_so_b_->get(h, mu, nu);
+                  Ta[muNu] = tau_so_a_->get(h,mu,nu);
+                  Tb[muNu] = tau_so_b_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];
@@ -1245,8 +1245,8 @@ namespace psi{ namespace dcft{
       for(int h = 0; h < nirrep_; ++h){
           for(int i = 0 ; i < nsopi_[h]; ++i){
               for(int j = 0 ; j < nsopi_[h]; ++j){
-                  s_aa_1.matrix[h][i][j] = a_tau_->get(h, i, j);
-                  s_bb_1.matrix[h][i][j] = b_tau_->get(h, i, j);
+                  s_aa_1.matrix[h][i][j] = tau_so_a_->get(h, i, j);
+                  s_bb_1.matrix[h][i][j] = tau_so_b_->get(h, i, j);
               }
           }
       }
@@ -1454,10 +1454,10 @@ namespace psi{ namespace dcft{
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = kappa_a_->get(h, mu, nu);
-                  Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_->get(h,mu,nu);
-                  Tb[muNu] = b_tau_->get(h,mu,nu);
+                  Da[muNu] = kappa_so_a_->get(h, mu, nu);
+                  Db[muNu] = kappa_so_b_->get(h, mu, nu);
+                  Ta[muNu] = tau_so_a_->get(h,mu,nu);
+                  Tb[muNu] = tau_so_b_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];

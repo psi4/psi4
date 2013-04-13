@@ -92,6 +92,50 @@ DCFTSolver::build_tau()
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
 
+    // Read MO-basis Tau from disk into the memory
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int j = 0; j < naoccpi_[h]; ++j){
+                aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
+            }
+        }
+        for(int a = 0; a < navirpi_[h]; ++a){
+            for(int b = 0; b < navirpi_[h]; ++b){
+                avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
+            }
+        }
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int j = 0; j < nboccpi_[h]; ++j){
+                bocc_tau_->set(h, i, j, T_oo.matrix[h][i][j]);
+            }
+        }
+        for(int a = 0; a < nbvirpi_[h]; ++a){
+            for(int b = 0; b < nbvirpi_[h]; ++b){
+                bvir_tau_->set(h, a, b, T_vv.matrix[h][a][b]);
+            }
+        }
+    }
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
     dcft_timer_off("DCFTSolver::build_tau()");
 }
 
@@ -117,8 +161,8 @@ DCFTSolver::transform_tau()
     dpd_file2_mat_rd(&T_vv);
 
     // Zero SO tau arrays before computing it in the MO basis
-    a_tau_->zero();
-    b_tau_->zero();
+    tau_so_a_->zero();
+    tau_so_b_->zero();
 
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
@@ -132,8 +176,8 @@ DCFTSolver::transform_tau()
         double **pbOccC = bocc_c_->pointer(h);
         double **paVirC = avir_c_->pointer(h);
         double **pbVirC = bvir_c_->pointer(h);
-        double **pa_tau_ = a_tau_->pointer(h);
-        double **pb_tau_ = b_tau_->pointer(h);
+        double **pa_tau_ = tau_so_a_->pointer(h);
+        double **pb_tau_ = tau_so_b_->pointer(h);
 
         // Alpha occupied
         if(naoccpi_[h] && nsopi_[h]){
@@ -262,56 +306,8 @@ DCFTSolver::print_opdm()
 void
 DCFTSolver::refine_tau() {
 
-    aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
-    bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
-    avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
-    bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
-
     // Read MO-basis Tau from disk into the memory
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
-
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-
-    dpd_file2_mat_init(&T_OO);
-    dpd_file2_mat_init(&T_oo);
-    dpd_file2_mat_init(&T_VV);
-    dpd_file2_mat_init(&T_vv);
-
-    dpd_file2_mat_rd(&T_OO);
-    dpd_file2_mat_rd(&T_oo);
-    dpd_file2_mat_rd(&T_VV);
-    dpd_file2_mat_rd(&T_vv);
-
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int j = 0; j < naoccpi_[h]; ++j){
-                aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
-            }
-        }
-        for(int a = 0; a < navirpi_[h]; ++a){
-            for(int b = 0; b < navirpi_[h]; ++b){
-                avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
-            }
-        }
-        for(int i = 0; i < nboccpi_[h]; ++i){
-            for(int j = 0; j < nboccpi_[h]; ++j){
-                bocc_tau_->set(h, i, j, T_oo.matrix[h][i][j]);
-            }
-        }
-        for(int a = 0; a < nbvirpi_[h]; ++a){
-            for(int b = 0; b < nbvirpi_[h]; ++b){
-                bvir_tau_->set(h, a, b, T_vv.matrix[h][a][b]);
-            }
-        }
-    }
-
-    dpd_file2_close(&T_OO);
-    dpd_file2_close(&T_oo);
-    dpd_file2_close(&T_VV);
-    dpd_file2_close(&T_vv);
 
     // Iteratively compute the exact Tau
 
