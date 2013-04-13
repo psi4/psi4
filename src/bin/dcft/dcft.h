@@ -86,7 +86,6 @@ protected:
     virtual SharedMatrix compute_gradient_();
     void response_guess();
     void gradient_init();
-    void compute_density();
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
@@ -103,7 +102,10 @@ protected:
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
     void compute_ewdm();
-    void compute_density_VVVV();
+    void compute_relaxed_density_OOOO();
+    void compute_relaxed_density_OOVV();
+    void compute_relaxed_density_OVOV();
+    void compute_relaxed_density_VVVV();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
     void compute_orbital_gradient();
@@ -120,7 +122,9 @@ protected:
     void form_density_weighted_fock();
     // Orbital-optimized DCFT
     double compute_orbital_residual();
-    void compute_unrelaxed_density();
+    void compute_unrelaxed_density_OOOO();
+    void compute_unrelaxed_density_OOVV();
+    void compute_unrelaxed_density_OVOV();
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
@@ -242,9 +246,9 @@ protected:
     /// The beta virtual eigenvectors, per irrep
     SharedMatrix bvir_c_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
-    SharedMatrix a_tau_;
+    SharedMatrix tau_so_a_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
-    SharedMatrix b_tau_;
+    SharedMatrix tau_so_b_;
     /// The Tau matrix in the MO basis (alpha occupied)
     SharedMatrix aocc_tau_;
     /// The Tau matrix in the MO basis (beta occupied)
@@ -262,9 +266,9 @@ protected:
     /// The perturbed Tau matrix in the MO basis (beta virtual)
     SharedMatrix bvir_ptau_;
     /// The Kappa in the MO basis (alpha occupied)
-    SharedMatrix akappa_;
+    SharedMatrix kappa_mo_a_;
     /// The Kappa in the MO basis (beta occupied)
-    SharedMatrix bkappa_;
+    SharedMatrix kappa_mo_b_;
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
@@ -288,9 +292,9 @@ protected:
     /// The old full beta MO coefficients
     SharedMatrix old_cb_;
     /// The alpha kappa matrix in the SO basis
-    SharedMatrix kappa_a_;
+    SharedMatrix kappa_so_a_;
     /// The beta kappa matrix in the SO basis
-    SharedMatrix kappa_b_;
+    SharedMatrix kappa_so_b_;
     /// The alpha external potential in the SO basis
     SharedMatrix g_tau_a_;
     /// The beta external potential in the SO basis
