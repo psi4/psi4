@@ -14,8 +14,8 @@ DCFTSolver::run_qc_dcft()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
 
-    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
-        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
+//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
+//        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
 
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                          "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy       NR *\n"
@@ -39,7 +39,7 @@ DCFTSolver::run_qc_dcft()
         // Compute the generalized Fock matrix and orbital gradient ([F,Kappa]) in the MO basis
         compute_orbital_gradient();
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
-        build_intermediates();
+        build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_lambda_residual();
         // Save the old energy
@@ -134,7 +134,7 @@ DCFTSolver::compute_orbital_gradient(){
 
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
     build_tau();
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
+    if (exact_tau_) {
         refine_tau();
     }
     transform_tau();
@@ -211,7 +211,7 @@ DCFTSolver::compute_orbital_gradient(){
     psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Initialize the idempotent contribution to the OPDM (Kappa)
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+    if (!orbital_optimized_) {
         SharedMatrix full_kappa_a(new Matrix("MO basis Full Kappa (Alpha)", nirrep_, nmopi_, nmopi_));
         SharedMatrix full_kappa_b(new Matrix("MO basis Full Kappa (Beta)", nirrep_, nmopi_, nmopi_));
         // Compute Kappa in the MO basis
@@ -234,11 +234,8 @@ DCFTSolver::compute_orbital_gradient(){
         // Form -kappa * F (Alpha spin) to obtain [F,kappa]
         orbital_gradient_b_->gemm(false, false, -2.0, full_kappa_b, moFb_, 1.0);
     }
-    else if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
-        compute_orbital_residual();
-    }
     else {
-        throw PSIEXCEPTION("Unknown DCFT functional in compute_orbital_gradient");
+        compute_orbital_residual();
     }
 
 }

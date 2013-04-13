@@ -317,8 +317,6 @@ namespace psi{ namespace dcft{
       moFa_->transform(Ca_);
       moFb_->copy(reference_wavefunction_->Fb());
       moFb_->transform(Cb_);
-      // Find occupation. It shouldn't be called, at least in the current implementation
-      if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
       update_scf_density();
       dcft_timer_off("DCFTSolver::scf_guess");
   }
@@ -346,31 +344,6 @@ namespace psi{ namespace dcft{
       scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
 
       dcft_timer_off("DCFTSolver::compute_scf_energy");
-  }
-
-  void
-  DCFTSolver::compute_energy_tau_squared()
-  {
-      dcft_timer_on("DCFTSolver::compute_energy_tau_squared");
-
-      SharedMatrix moHa(new Matrix("Core Hamiltonian in the MO basis (Alpha spin)", nirrep_, nmopi_, nmopi_));
-      SharedMatrix moHb(new Matrix("Core Hamiltonian in the MO basis (Beta spin)", nirrep_, nmopi_, nmopi_));
-
-      // Transform H and F to the MO basis
-
-      moHa->copy(so_h_);
-      moHb->copy(so_h_);
-      moHa->transform(Ca_);
-      moHb->transform(Cb_);
-
-      // Compute the correction: 0.5 * (H + F) * T_T
-
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moHa);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moHb);
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moFa_);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moFb_);
-
-      dcft_timer_off("DCFTSolver::compute_energy_tau_squared");
   }
 
   /**
@@ -1136,7 +1109,7 @@ namespace psi{ namespace dcft{
   * Builds the AO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G and X intermediates
   */
   void
-  DCFTSolver::build_tensors()
+  DCFTSolver::build_AO_tensors()
   {
       dcft_timer_on("DCFTSolver::build_tensors");
 
@@ -1807,67 +1780,6 @@ namespace psi{ namespace dcft{
       delete [] Gb;
 
       dcft_timer_off("DCFTSolver::build_G");
-  }
-
-  /**
-   *  * Uses the orbital energies to determine the occupation according to
-   *  * the aufbau principle
-   *  */
-  void
-  DCFTSolver::find_occupation(SharedVector & evals_a, SharedVector & evals_b, bool forcePrint)
-  {
-      std::vector<std::pair<double, int> > pairs_a;
-      std::vector<std::pair<double, int> > pairs_b;
-
-      // Sort alpha eigenvectors
-      for (int h=0; h<evals_a->nirrep(); ++h) {
-          for (int i=0; i<evals_a->dimpi()[h]; ++i)
-              pairs_a.push_back(make_pair(evals_a->get(h, i), h));
-      }
-      sort(pairs_a.begin(),pairs_a.end());
-
-      // Sort beta eigenvectors
-      for (int h=0; h<evals_b->nirrep(); ++h) {
-          for (int i=0; i<evals_b->dimpi()[h]; ++i)
-              pairs_b.push_back(make_pair(evals_b->get(h, i), h));
-      }
-      sort(pairs_b.begin(),pairs_b.end());
-
-      // Check if user specified occupation. If not - determine it.
-      if(options_["SOCC"].has_changed() && options_["DOCC"].has_changed()){
-          for(int h = 0; h < nirrep_; ++h) {
-              nboccpi_[h] = options_["DOCC"][h].to_integer();
-              naoccpi_[h] = nboccpi_[h] + options_["SOCC"][h].to_integer();
-              navirpi_[h] = nmopi_[h] - naoccpi_[h];
-              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
-          }
-      } else if (!options_["SOCC"].has_changed() && !options_["DOCC"].has_changed()) {
-          memset(naoccpi_, 0, sizeof(int) * nirrep_);
-          memset(nboccpi_, 0, sizeof(int) * nirrep_);
-          for (int i=0; i < nalpha_; ++i)
-              naoccpi_[pairs_a[i].second]++;
-          for (int i=0; i < nbeta_; ++i)
-              nboccpi_[pairs_b[i].second]++;
-          for(int h = 0; h < nirrep_; ++h) {
-              navirpi_[h] = nmopi_[h] - naoccpi_[h];
-              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
-          }
-      } else {
-          throw PsiException("User must specify both DOCC and SOCC, or none of them", __FILE__, __LINE__);
-      }
-
-      if(print_ > 1 || forcePrint){
-          fprintf(outfile, "\t\t\t\tDOCC: [");
-          for (int h = 0; h < evals_a->nirrep(); ++h){
-              fprintf(outfile, "%3d ", nboccpi_[h]);
-          }
-          fprintf(outfile, "]\n");
-          fprintf(outfile, "\t\t\t\tSOCC: [");
-          for (int h = 0; h < evals_a->nirrep(); ++h){
-              fprintf(outfile, "%3d ", naoccpi_[h] - nboccpi_[h]);
-          }
-          fprintf(outfile, "]\n");
-      }
   }
 
 }} // Namespaces
