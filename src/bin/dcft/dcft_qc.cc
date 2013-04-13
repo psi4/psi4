@@ -29,9 +29,6 @@ DCFTSolver::run_qc_dcft()
     int cycle = 0;
     int cycle_NR = 0;
 
-    // Allocate the memory
-    qc_dcft_init();
-
     orbitals_convergence_ = compute_scf_error_vector();
 
     while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_){
@@ -41,7 +38,7 @@ DCFTSolver::run_qc_dcft()
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
-        cumulant_convergence_ = compute_lambda_residual();
+        cumulant_convergence_ = compute_cumulant_residual();
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Compute new SCF energy
@@ -74,7 +71,7 @@ DCFTSolver::run_qc_dcft()
         orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
         cumulantDone = cumulant_convergence_ < cumulant_threshold_;
         // Update cumulant and orbitals with the solution of the Newton-Raphson equations
-        update_cumulant_and_orbitals();
+        update_cumulant_and_orbitals_nr();
         if (orbital_idp_ != 0) {
             // Update the density
             densityConverged = update_scf_density() < orbitals_threshold_;
@@ -97,35 +94,6 @@ DCFTSolver::run_qc_dcft()
     orbitalsDone_ = true;
     cumulantDone_ = true;
     densityConverged_ = true;
-
-}
-
-void
-DCFTSolver::qc_dcft_init(){
-
-    orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
-    orbital_gradient_b_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_));
-    X_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-    X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-    Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-    Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-    aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
-    bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
-    avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
-    bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
-    akappa_ = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
-    bkappa_ = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
-
-    // The number of IDPs is set to zero in the beginning
-    nidp_ = 0;
-
-    dim_ = nalpha_ * navir_ + nbeta_ * nbvir_;
-    dim_ += (nalpha_ * (nalpha_ - 1) / 2) * (navir_ * (navir_ - 1) / 2);
-    dim_ += (nalpha_ * nbeta_) * (navir_ * nbvir_);
-    dim_ += (nbeta_ * (nbeta_ - 1) / 2) * (nbvir_ * (nbvir_ - 1) / 2);
-
-    lookup_ = new int[dim_];
-    ::memset(lookup_, '\0', sizeof(int)*dim_);
 
 }
 
@@ -1755,7 +1723,7 @@ DCFTSolver::check_qc_convergence() {
 }
 
 void
-DCFTSolver::update_cumulant_and_orbitals() {
+DCFTSolver::update_cumulant_and_orbitals_nr() {
 
     dpdbuf4 L;
 

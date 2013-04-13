@@ -1958,7 +1958,7 @@ DCFTSolver::iterate_orbital_response()
                 orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
-        if (converged || cycle >= options_.get_int("SCF_MAXITER")) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
@@ -2799,7 +2799,7 @@ DCFTSolver::iterate_cumulant_response()
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
-        if (converged || cycle >= options_.get_int("LAMBDA_MAXITER")) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 

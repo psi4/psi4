@@ -8,24 +8,6 @@
 
 namespace psi{ namespace dcft{
 
-void
-DCFTSolver::oo_init() {
-
-    aocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_));
-    bocc_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_));
-    avir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_));
-    bvir_tau_ = SharedMatrix(new Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
-    akappa_ = SharedMatrix(new Matrix("MO basis Kappa (Alpha)", nirrep_, naoccpi_, naoccpi_));
-    bkappa_ = SharedMatrix(new Matrix("MO basis Kappa (Beta)", nirrep_, nboccpi_, nboccpi_));
-    orbital_gradient_a_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_));
-    orbital_gradient_b_ = SharedMatrix(new Matrix("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_));
-    X_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-    X_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-    Xtotal_a_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)", nirrep_, nmopi_, nmopi_));
-    Xtotal_b_ = SharedMatrix(new Matrix("Generator of the orbital rotations w.r.t. reference orbitals (Beta)", nirrep_, nmopi_, nmopi_));
-
-}
-
 double
 DCFTSolver::compute_orbital_residual() {
 
@@ -86,33 +68,6 @@ DCFTSolver::compute_orbital_residual() {
 
     dpd_file2_close(&Xai);
     dpd_file2_close(&Xia);
-
-    // Determine the orbital rotation step
-    // Alpha spin
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)));
-                X_a_->set(h, i, a, value);
-                X_a_->set(h, a, i, (-1.0) * value);
-            }
-        }
-    }
-
-    // Beta spin
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < nboccpi_[h]; ++i){
-            for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
-                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)));
-                X_b_->set(h, i, a, value);
-                X_b_->set(h, a, i, (-1.0) * value);
-            }
-        }
-    }
-
-    // Determine the rotation generator with respect to the reference orbitals
-    Xtotal_a_->add(X_a_);
-    Xtotal_b_->add(X_b_);
 
     return maxGradient;
 }
@@ -1205,7 +1160,39 @@ DCFTSolver::compute_orbital_gradient_VO() {
 }
 
 void
-DCFTSolver::update_orbitals_jacobi()
+DCFTSolver::compute_orbital_rotation_jacobi() {
+
+    // Determine the orbital rotation step
+    // Alpha spin
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int a = naoccpi_[h]; a < nmopi_[h]; ++a){
+                double value = orbital_gradient_a_->get(h, i, a) / (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)));
+                X_a_->set(h, i, a, value);
+                X_a_->set(h, a, i, (-1.0) * value);
+            }
+        }
+    }
+
+    // Beta spin
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int a = nboccpi_[h]; a < nmopi_[h]; ++a){
+                double value = orbital_gradient_b_->get(h, i, a) / (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)));
+                X_b_->set(h, i, a, value);
+                X_b_->set(h, a, i, (-1.0) * value);
+            }
+        }
+    }
+
+    // Determine the rotation generator with respect to the reference orbitals
+    Xtotal_a_->add(X_a_);
+    Xtotal_b_->add(X_b_);
+
+}
+
+void
+DCFTSolver::rotate_orbitals()
 {
 
     // Initialize the orbital rotation matrix

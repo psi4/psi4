@@ -32,19 +32,14 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
 
     // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12") throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("DERTYPE") == "FIRST" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && !(options_.get_str("DCFT_FUNCTIONAL") == "DC-06")) throw FeatureNotImplemented("requested DCFT functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = QC", __FILE__, __LINE__);
     if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DC-06", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("ALGORITHM") == "SIMULTANEOUS" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "ALGORITHM = SIMULTANEOUS", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
-    if (options_.get_str("ALGORITHM") == "TWOSTEP" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-06") throw FeatureNotImplemented("ODC-06", "ALGORITHM = TWOSTEP", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "TWOSTEP" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") throw FeatureNotImplemented("ODC-12", "ALGORITHM = TWOSTEP", __FILE__, __LINE__);
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-06") throw FeatureNotImplemented("ODC-06", "ALGORITHM = QC", __FILE__, __LINE__);
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") throw FeatureNotImplemented("ODC-12", "ALGORITHM = QC", __FILE__, __LINE__);
-
+    if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_) throw FeatureNotImplemented("Orbital optimized DCFT", "ALGORITHM = TWOSTEP", __FILE__, __LINE__);
 
     // Choose a paricular algorithm and solve the equations
     if(options_.get_str("ALGORITHM") == "TWOSTEP") {
@@ -85,7 +80,6 @@ DCFTSolver::compute_energy()
     print_opdm();
 
     if(options_.get_bool("TPDM")) dump_density();
-//    mulliken_charges();
 //    check_n_representability();
 
     // Compute the analytic gradients, if requested
@@ -162,7 +156,7 @@ DCFTSolver::run_twostep_dcft()
             int nLambdaIterations = 0;
             lambdaDiisManager.reset_subspace();
             // Start density cumulant (lambda) iterations
-            while((!cumulantDone_ || !energyConverged_) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
+            while((!cumulantDone_ || !energyConverged_) && nLambdaIterations++ < maxiter_){
                 std::string diisString;
                 // Build new Tau from current Lambda
                 if (options_.get_str("DCFT_FUNCTIONAL") != "CEPA0") {
@@ -196,9 +190,9 @@ DCFTSolver::run_twostep_dcft()
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_cumulant_intermediates();
                 // Compute the residuals for density cumulant equations
-                cumulant_convergence_ = compute_lambda_residual();
+                cumulant_convergence_ = compute_cumulant_residual();
                 // Update density cumulant tensor
-                update_cumulant_from_residual();
+                update_cumulant_jacobi();
                 if(cumulant_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
                     //Store the DIIS vectors
                     dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
@@ -270,7 +264,7 @@ DCFTSolver::run_twostep_dcft()
         energyConverged_ = false;
         scfDiisManager.reset_subspace();
         fprintf(outfile, "\tOrbital Updates\n");
-        while((!densityConverged_ || !orbitalsDone_ || !energyConverged_) && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
+        while((!densityConverged_ || !orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)){
             std::string diisString;
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
@@ -409,12 +403,12 @@ DCFTSolver::run_simult_dcft()
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
-        cumulant_convergence_ = compute_lambda_residual();
+        cumulant_convergence_ = compute_cumulant_residual();
         if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
-        update_cumulant_from_residual();
+        update_cumulant_jacobi();
         // Compute new DCFT energy (lambda contribution)
         compute_dcft_energy();
         // Add lambda energy to the DCFT total energy
@@ -490,9 +484,6 @@ DCFTSolver::run_simult_dcft_oo()
     // This is the simultaneous orbital/lambda update algorithm for the orbital-optimized methods
     int cycle = 0;
 
-    // Allocate memory for the orbital-optimized procedure
-    oo_init();
-
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                          "\t* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
@@ -531,12 +522,12 @@ DCFTSolver::run_simult_dcft_oo()
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
-        cumulant_convergence_ = compute_lambda_residual();
+        cumulant_convergence_ = compute_cumulant_residual();
         if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
-        update_cumulant_from_residual();
+        update_cumulant_jacobi();
         // Compute new DCFT energy (lambda contribution)
         compute_dcft_energy();
         // Add lambda energy to the DCFT total energy
@@ -565,11 +556,13 @@ DCFTSolver::run_simult_dcft_oo()
         compute_scf_energy();
         // Add SCF energy contribution to the total DCFT energy
         new_total_energy_ += scf_energy_;
-        // Check SCF convergence and compute orbital gradient
+        // Compute orbital gradient and check convergence
         orbitals_convergence_ = compute_orbital_residual();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Check convergence of the total DCFT energy
         energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
+        // Compute the orbital rotation step using Jacobi method
+        compute_orbital_rotation_jacobi();
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
             //Store the DIIS vectors
             dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
@@ -601,7 +594,7 @@ DCFTSolver::run_simult_dcft_oo()
             dpd_buf4_close(&Lbb);
         }
         // Obtain new orbitals
-        update_orbitals_jacobi();
+        rotate_orbitals();
         // Make sure that the orbital phase is retained
         if(!correct_mo_phases(false)){
             fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"

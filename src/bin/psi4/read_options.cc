@@ -795,19 +795,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Maximum number of density cumulant update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of density cumulant response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of the orbital update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of orbital response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of the macro-iterations for both the energy and the solution of the response equations -*/
+      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
