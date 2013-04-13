@@ -701,15 +701,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS",false);
+    /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
+    natural orbitals are discarded for evaluating the triples contribution
+    to dispersion. -*/
+    options.add_double("OCC_TOLERANCE",1.0E-6);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
     This approximation is promising for accuracy and computational savings,
     but it has not been rigorously tested. -*/
     options.add_bool("NAT_ORBS_T2",false);
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
-    natural orbitals are discarded for evaluating the triples contribution
-    to dispersion. -*/
-    options.add_double("OCC_TOLERANCE",1.0E-6);
+    natural orbitals are discarded for evaluating the (vv|vv) terms in monomer CCD
+    equations. -*/
+    options.add_double("OCC_TOLERANCE_T2",1.0E-6);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
     default is conservative, but there isn't much to be gained from
@@ -1037,6 +1041,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
     /*- Fitting Condition !expert -*/
     options.add_double("DF_FITTING_CONDITION", 1.0E-12);
+    /*- FastDF Fitting Metric -*/
+    options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
+    /*- FastDF SR Ewald metric range separation parameter -*/
+    options.add_double("DF_THETA", 1.0);
+    /*- FastDF geometric fitting domain selection algorithm -*/
+    options.add_str("DF_DOMAINS", "DIATOMIC", "DIATOMIC SPHERES");
+    /*- Bump function min radius -*/
+    options.add_double("DF_BUMP_R0", 0.0);
+    /*- Bump function max radius -*/
+    options.add_double("DF_BUMP_R1", 0.0);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 
