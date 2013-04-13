@@ -714,6 +714,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     natural orbitals are discarded for evaluating the (vv|vv) terms in monomer CCD
     equations. -*/
     options.add_double("OCC_TOLERANCE_T2",1.0E-6);
+    /*- Nuke the (vv|vv) ladder term? -*/
+    options.add_bool("NUKE_EM_RICO", false);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
     default is conservative, but there isn't much to be gained from

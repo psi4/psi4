@@ -1454,6 +1454,8 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
     ret = t2AARR;
   }
 
+  if (options_.get_bool("NUKE_EM_RICO")) ::memset((void*) ret[0], '\0', sizeof(double) * occA * virA * occA * virA);
+
   timer_off("v^4 Term           ");
   return(ret);
 }
