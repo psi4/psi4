@@ -45,11 +45,10 @@ protected:
 
     void finalize();
     void transform_integrals();
-    void build_lambda();
     void init();
     void compute_dcft_energy();
     void compute_cepa0_energy();
-    void update_lambda_from_residual();
+    void update_cumulant_from_residual();
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
@@ -59,11 +58,10 @@ protected:
     void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
-    void find_occupation(SharedVector &evals_a, SharedVector &evals_b, bool forcePrint = false);
-    void build_intermediates();
+    void build_cumulant_intermediates();
     void process_so_ints();
     void build_G();
-    void build_tensors();
+    void build_AO_tensors();
     void build_denominators();
     void update_fock();
     void dump_density();
@@ -76,8 +74,6 @@ protected:
     void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
-    void compute_tau_squared();
-    void compute_energy_tau_squared();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
@@ -132,12 +128,7 @@ protected:
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
 
-    // FNO-DCFT
-    void form_nso_basis();
-
     bool augment_b(double *vec, double tol);
-    /// Whether to force the code to keep the same occupation from SCF
-    bool lock_occupation_;
     /// Controls convergence of the orbital updates
     bool orbitalsDone_;
     /// Controls convergence of the decnsity cumulant updates
@@ -146,6 +137,10 @@ protected:
     bool densityConverged_;
     /// Controls convergence of the DCFT energy
     bool energyConverged_;
+    /// Whether the user requested the DCFT functional that is variationally orbitally-optimized
+    bool orbital_optimized_;
+    /// Whether the user requested the DCFT functional that computes the non-idempotent part of the OPDM exactly from the density cumulant
+    bool exact_tau_;
     /// The maximum number of lambda iterations per update
     int lambdamaxiter_;
     /// The maximum number of SCF iterations per update
@@ -235,8 +230,6 @@ protected:
     double scf_energy_;
     /// The Lambda component of the energy
     double lambda_energy_;
-    /// The Tau^2 correction to the SCF component of the energy
-    double energy_tau_squared_;
     /// The previous total energy
     double old_total_energy_;
     /// The updated total energy
@@ -278,10 +271,6 @@ protected:
     SharedMatrix akappa_;
     /// The Kappa in the MO basis (beta occupied)
     SharedMatrix bkappa_;
-    /// The Tau^2 correction to the alpha Tau matrix in the AO basis
-    SharedMatrix a_tautau_;
-    /// The Tau^2 correction to the beta Tau matrix in the AO basis
-    SharedMatrix b_tautau_;
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis

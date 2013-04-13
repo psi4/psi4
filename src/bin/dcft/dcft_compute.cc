@@ -51,14 +51,11 @@ DCFTSolver::compute_energy()
         run_twostep_dcft();
     }
     else if (options_.get_str("ALGORITHM") == "SIMULTANEOUS") {
-        if (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" || options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+        if (!orbital_optimized_) {
             run_simult_dcft();
         }
-        else if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
-            run_simult_dcft_oo();
-        }
         else {
-            throw PSIEXCEPTION("Simultaneous algorithm is requested for the unknown DCFT functional");
+            run_simult_dcft_oo();
         }
     }
     else if (options_.get_str("ALGORITHM") == "QC") {
@@ -173,14 +170,14 @@ DCFTSolver::run_twostep_dcft()
                     if (options_.get_bool("RELAX_TAU")) {
                         build_tau();
                         // Compute tau exactly if requested
-                        if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+                        if (exact_tau_) {
                             refine_tau();
                         }
                         if (options_.get_str("AO_BASIS") == "DISK") {
                             // Transform new Tau to the SO basis
                             transform_tau();
                             // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                            build_tensors();
+                            build_AO_tensors();
                         }
                         else {
                             // Compute GTau contribution for the Fock operator
@@ -192,16 +189,16 @@ DCFTSolver::run_twostep_dcft()
                     else {
                         if (options_.get_str("AO_BASIS") == "DISK") {
                             // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                            build_tensors();
+                            build_AO_tensors();
                         }
                     }
                 }
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
-                build_intermediates();
+                build_cumulant_intermediates();
                 // Compute the residuals for density cumulant equations
                 cumulant_convergence_ = compute_lambda_residual();
                 // Update density cumulant tensor
-                update_lambda_from_residual();
+                update_cumulant_from_residual();
                 if(cumulant_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
                     //Store the DIIS vectors
                     dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
@@ -262,7 +259,7 @@ DCFTSolver::run_twostep_dcft()
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
         build_tau();
         // Compute tau exactly if requested
-        if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+        if (exact_tau_) {
             refine_tau();
         }
         transform_tau();
@@ -318,8 +315,6 @@ DCFTSolver::run_twostep_dcft()
             Cb_->gemm(false, false, 1.0, s_half_inv_, tmp, 0.0);
             // Make sure that the orbital phase is retained
             correct_mo_phases(false);
-            // Find occupation. It shouldn't be called, at least in the current implementation
-            if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
             // Update SCF density (Kappa) and check its RMS
             densityConverged_ = update_scf_density() < orbitals_threshold_;
             // Compute the DCFT energy
@@ -386,7 +381,7 @@ DCFTSolver::run_simult_dcft()
         old_total_energy_ = new_total_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
         build_tau();
-        if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+        if (exact_tau_) {
             refine_tau();
         }
         transform_tau();
@@ -412,14 +407,14 @@ DCFTSolver::run_simult_dcft()
         orbitals_convergence_ = compute_scf_error_vector();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
-        build_intermediates();
+        build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_lambda_residual();
         if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
-        update_lambda_from_residual();
+        update_cumulant_from_residual();
         // Compute new DCFT energy (lambda contribution)
         compute_dcft_energy();
         // Add lambda energy to the DCFT total energy
@@ -476,8 +471,6 @@ DCFTSolver::run_simult_dcft()
         write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
-        // Find occupation. It shouldn't be called, at least in the current implementation
-        if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
         // Update SCF density (Kappa) and check its RMS
         densityConverged_ = update_scf_density() < orbitals_threshold_;
         // If we've performed enough lambda updates since the last orbitals
@@ -536,21 +529,21 @@ DCFTSolver::run_simult_dcft_oo()
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
-        build_intermediates();
+        build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
         cumulant_convergence_ = compute_lambda_residual();
         if (fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
         // Check convergence for density cumulant iterations
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         // Update density cumulant tensor
-        update_lambda_from_residual();
+        update_cumulant_from_residual();
         // Compute new DCFT energy (lambda contribution)
         compute_dcft_energy();
         // Add lambda energy to the DCFT total energy
         new_total_energy_ = lambda_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
         build_tau();
-        if (options_.get_str("DCFT_FUNCTIONAL") == "ODC-12") {
+        if (exact_tau_) {
             refine_tau();
         }
         transform_tau();
@@ -618,8 +611,6 @@ DCFTSolver::run_simult_dcft_oo()
         write_orbitals_to_checkpoint();
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
-        // Find occupation. It shouldn't be called, at least in the current implementation
-        if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
         // Update SCF density (Kappa) and check its RMS
         densityConverged_ = update_scf_density() < orbitals_threshold_;
         // If we've performed enough lambda updates since the last orbitals
