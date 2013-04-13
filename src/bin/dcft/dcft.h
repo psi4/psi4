@@ -48,7 +48,7 @@ protected:
     void init();
     void compute_dcft_energy();
     void compute_cepa0_energy();
-    void update_cumulant_from_residual();
+    void update_cumulant_jacobi();
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
@@ -65,7 +65,6 @@ protected:
     void build_denominators();
     void update_fock();
     void dump_density();
-    void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix& C1, SharedMatrix& C2,
@@ -77,7 +76,7 @@ protected:
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
-    double compute_lambda_residual();
+    double compute_cumulant_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     void run_twostep_dcft();
@@ -107,13 +106,12 @@ protected:
     void compute_density_VVVV();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
-    void qc_dcft_init();
     void compute_orbital_gradient();
     void form_idps();
     void compute_sigma_vector();
     int iterate_conjugate_gradients();
     void check_qc_convergence();
-    void update_cumulant_and_orbitals();
+    void update_cumulant_and_orbitals_nr();
     void run_davidson();
     void davidson_guess();
     // Exact Tau
@@ -121,12 +119,12 @@ protected:
     void compute_F_intermediate();
     void form_density_weighted_fock();
     // Orbital-optimized DCFT
-    void oo_init();
     double compute_orbital_residual();
-    void update_orbitals_jacobi();
     void compute_unrelaxed_density();
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
+    void compute_orbital_rotation_jacobi();
+    void rotate_orbitals();
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates
@@ -141,10 +139,6 @@ protected:
     bool orbital_optimized_;
     /// Whether the user requested the DCFT functional that computes the non-idempotent part of the OPDM exactly from the density cumulant
     bool exact_tau_;
-    /// The maximum number of lambda iterations per update
-    int lambdamaxiter_;
-    /// The maximum number of SCF iterations per update
-    int scfmaxiter_;
     /// The amount of information to print
     int print_;
     /// The number of unique pairs of symmetrized atomic orbitals

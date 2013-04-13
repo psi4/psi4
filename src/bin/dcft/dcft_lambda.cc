@@ -15,7 +15,7 @@ namespace psi{ namespace dcft{
  * @return RMS residual
  */
 double
-DCFTSolver::compute_lambda_residual()
+DCFTSolver::compute_cumulant_residual()
 {
     dcft_timer_on("DCFTSolver::compute_lambda_residual()");
 
@@ -100,7 +100,7 @@ DCFTSolver::compute_lambda_residual()
  * Builds the new lambda tensor from the intermediates
  */
 void
-DCFTSolver::update_cumulant_from_residual()
+DCFTSolver::update_cumulant_jacobi()
 {
     dcft_timer_on("DCFTSolver::update_lambda_from_residual()");
 
