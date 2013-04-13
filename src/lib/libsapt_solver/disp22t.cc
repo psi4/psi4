@@ -143,6 +143,108 @@ void SAPT2p::disp22tccd()
   }
 }
 
+void SAPT2p::natural_orbitalify_ccd()
+{
+  int occA = noccA_ - foccA_;
+  int occB = noccB_ - foccB_;
+
+  double **tARAR = block_matrix(occA*nvirA_,occA*nvirA_);
+
+  psio_->read_entry(PSIF_SAPT_CCD,"T ARAR Amplitudes",(char *) tARAR[0],
+    occA*nvirA_*occA*nvirA_*(ULI) sizeof(double));
+
+  double **tARAr = block_matrix(occA*nvirA_,occA*no_nvirA_);
+
+  C_DGEMM('N','N',occA*nvirA_*occA,no_nvirA_,nvirA_,
+    1.0,tARAR[0],nvirA_,no_CA_[0],
+    no_nvirA_,0.0,tARAr[0],no_nvirA_);
+
+  free_block(tARAR);
+  double **tArAr = block_matrix(occA*no_nvirA_,occA*no_nvirA_);
+
+  for (int a=0; a<occA; a++) {
+    C_DGEMM('T','N',no_nvirA_,occA*no_nvirA_,nvirA_,
+      1.0,no_CA_[0],no_nvirA_,
+      tARAr[a*nvirA_],occA*no_nvirA_,0.0,
+      tArAr[a*no_nvirA_],occA*no_nvirA_);
+  }
+
+  free_block(tARAr);
+
+  psio_->write_entry(PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes",(char *)
+    tArAr[0],occA*no_nvirA_*occA*no_nvirA_*(ULI) sizeof(double));
+
+  free_block(tArAr);
+
+  double **tBSBS = block_matrix(occB*nvirB_,occB*nvirB_);
+
+  psio_->read_entry(PSIF_SAPT_CCD,"T BSBS Amplitudes",(char *) tBSBS[0],
+    occB*nvirB_*occB*nvirB_*(ULI) sizeof(double));
+
+  double **tBSBs = block_matrix(occB*nvirB_,occB*no_nvirB_);
+
+  C_DGEMM('N','N',occB*nvirB_*occB,no_nvirB_,nvirB_,
+    1.0,tBSBS[0],nvirB_,no_CB_[0],
+    no_nvirB_,0.0,tBSBs[0],no_nvirB_);
+
+  free_block(tBSBS);
+  double **tBsBs = block_matrix(occB*no_nvirB_,occB*no_nvirB_);
+
+  for (int b=0; b<occB; b++) {
+    C_DGEMM('T','N',no_nvirB_,occB*no_nvirB_,nvirB_,
+      1.0,no_CB_[0],no_nvirB_,
+      tBSBs[b*nvirB_],occB*no_nvirB_,0.0,
+      tBsBs[b*no_nvirB_],occB*no_nvirB_);
+  }
+
+  free_block(tBSBs);
+
+  psio_->write_entry(PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes",(char *)
+    tBsBs[0],occB*no_nvirB_*occB*no_nvirB_*(ULI) sizeof(double));
+
+  free_block(tBsBs);
+
+  double **tARBS = block_matrix(occA*nvirA_,occB*nvirB_);
+
+  psio_->read_entry(PSIF_SAPT_CCD,"T ARBS Amplitudes",(char *) tARBS[0],
+    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
+
+  double **tARBs = block_matrix(occA*nvirA_,occB*no_nvirB_);
+
+  C_DGEMM('N','N',occA*nvirA_*occB,no_nvirB_,nvirB_,
+    1.0,tARBS[0],nvirB_,no_CB_[0],
+    no_nvirB_,0.0,tARBs[0],no_nvirB_);
+
+  free_block(tARBS);
+  double **tArBs = block_matrix(occA*no_nvirA_,occB*no_nvirB_);
+
+  for (int a=0; a<occA; a++) {
+    C_DGEMM('T','N',no_nvirA_,occB*no_nvirB_,nvirA_,
+      1.0,no_CA_[0],no_nvirA_,
+      tARBs[a*nvirA_],occB*no_nvirB_,0.0,
+      tArBs[a*no_nvirA_],occB*no_nvirB_);
+  }
+
+  free_block(tARBs);
+
+  double **tBsAr = block_matrix(occB*no_nvirB_,occA*no_nvirA_);
+
+  for(int a1=0,a1r1=0; a1<occA; a1++) {
+  for(int r1=0; r1<no_nvirA_; r1++,a1r1++) {
+    for(int b1=0,b1s1=0; b1<occB; b1++) {
+    for(int s1=0; s1<no_nvirB_; s1++,b1s1++) {
+      tBsAr[b1s1][a1r1] = tArBs[a1r1][b1s1];
+  }}}}
+
+  psio_->write_entry(PSIF_SAPT_CCD,"T ARBS Natorb Amplitudes",(char *)
+    tArBs[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
+  psio_->write_entry(PSIF_SAPT_CCD,"T BSAR Natorb Amplitudes",(char *)
+    tBsAr[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
+
+  free_block(tArBs);
+  free_block(tBsAr);
+}
+
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   const char *RRlabel, int BBfile, const char *BSlabel, int ampfile, 
   const char *tlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, 

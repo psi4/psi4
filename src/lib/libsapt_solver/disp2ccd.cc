@@ -8,7 +8,25 @@ void SAPT2p::disp2ccd()
   int occB = noccB_ - foccB_;
 
   if (print_) {
-    fprintf(outfile,"\nBeginning Monomer A CCD\n\n");
+    fprintf(outfile,"\n==> CCD Dispersion <==\n\n");
+  }
+
+  boost::shared_ptr<Matrix> mo2noA;
+  boost::shared_ptr<Matrix> mo2noB;
+  if (options_.get_bool("NAT_ORBS_T2")) {
+    double cutoff = options_.get_double("OCC_TOLERANCE_T2");
+    mo2noA = mo2no(PSIF_SAPT_AMPS,"pRR Density Matrix", nvirA_,cutoff);
+    mo2noB = mo2no(PSIF_SAPT_AMPS,"pSS Density Matrix", nvirB_,cutoff);
+    if (print_) {
+      fprintf(outfile,"Natural Orbital (vv|vv): Cutoff %11.3E\n", cutoff);
+      fprintf(outfile,"Monomer A: %4d of %4d nvir used.\n", mo2noA->colspi()[0], mo2noA->rowspi()[0]);
+      fprintf(outfile,"Monomer B: %4d of %4d nvir used.\n", mo2noB->colspi()[0], mo2noB->rowspi()[0]);
+      fprintf(outfile,"\n");
+    }
+  }
+
+  if (print_) {
+    fprintf(outfile,"Beginning Monomer A CCD\n\n");
     fflush(outfile);
   }
 
@@ -18,14 +36,13 @@ timer_on("CCD Prep           ");
     "G ARRA Integrals","AAAA Integrals","ARAR Integrals","AARR Integrals",
     "RRRR+ Integrals","RRRR- Integrals",PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
     "AR RI Integrals","RR RI Integrals",evalsA_,noccA_,
-    nvirA_,foccA_,no_nvirA_,no_CA_,
+    nvirA_,foccA_,mo2noA,
     "T2 ARAR Amplitudes");
 timer_off("CCD Prep           ");
   ccd_iterate("T ARAR Amplitudes","T ARAR Error","Theta ARAR Amplitudes",
     "G ARAR Integrals","G ARRA Integrals","AAAA Integrals","ARAR Integrals",
     "AARR Integrals","RRRR+ Integrals","RRRR- Integrals",evalsA_,
-    noccA_,nvirA_,foccA_,no_CA_,
-    no_nvirA_);
+    noccA_,nvirA_,foccA_,mo2noA);
 
   if (print_) {
     fprintf(outfile,"Beginning Monomer B CCD\n\n");
@@ -37,14 +54,13 @@ timer_on("CCD Prep           ");
     "G BSSB Integrals","BBBB Integrals","BSBS Integrals","BBSS Integrals",
     "SSSS+ Integrals","SSSS- Integrals",PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
     "BS RI Integrals","SS RI Integrals",evalsB_,noccB_,
-    nvirB_,foccB_,no_nvirB_,no_CB_,
+    nvirB_,foccB_,mo2noB,
     "T2 BSBS Amplitudes");
 timer_off("CCD Prep           ");
   ccd_iterate("T BSBS Amplitudes","T BSBS Error","Theta BSBS Amplitudes",
     "G BSBS Integrals","G BSSB Integrals","BBBB Integrals","BSBS Integrals",
     "BBSS Integrals","SSSS+ Integrals","SSSS- Integrals",evalsB_,
-    noccB_,nvirB_,foccB_,no_CB_,
-    no_nvirB_);
+    noccB_,nvirB_,foccB_,mo2noB);
 
   if (print_) {
     fprintf(outfile,"Beginning CCD Dispersion Amplitude Formation\n\n");
@@ -116,7 +132,7 @@ timer_off("CCD Intra Prep     ");
     "AAAA Integrals","ARAR Integrals","AARR Integrals","RRRR+ Integrals",
     "RRRR- Integrals","Theta x G ARAR","T x G ARAR","T x G AA","T x G RR",
     evalsA_,noccA_,nvirA_,foccA_,
-    no_CA_,no_nvirA_);
+    mo2noA);
 
   if (print_) {
     fprintf(outfile,"Beginning Intramonomer B CCD Dispersion\n\n");
@@ -134,7 +150,7 @@ timer_off("CCD Intra Prep     ");
     "BBBB Integrals","BSBS Integrals","BBSS Integrals","SSSS+ Integrals",
     "SSSS- Integrals","Theta x G BSBS","T x G BSBS","T x G BB","T x G SS",
     evalsB_,noccB_,nvirB_,foccB_,
-    no_CB_,no_nvirB_);
+    mo2noB);
 
   e_disp2d_ccd_ = disp2_ccd;
   fprintf(outfile,"    Disp2 (CCD)         = %18.12lf H\n",e_disp2d_ccd_);
@@ -696,7 +712,7 @@ void SAPT2p::s_ccd_prep(char *SARAR, char *CA_RAR, char *TARAR, char *ThetaARAR,
 double SAPT2p::s_ccd_iterate(char *SARAR, char *SARARerr, char *CA_RAR, char *TARAR, 
   char *GARAR, char *GARRA, char *AAAA, char *ARAR, char *AARR, char *RRRRp, 
   char *RRRRm, char *XARAR, char *YARAR, char *XAA, char *XRR, double *evalsA_,
-  int noccA_, int virA, int foccA_, double **mo2no,int novirA)
+  int noccA_, int virA, int foccA_, boost::shared_ptr<Matrix> mo2no)
 { 
   int occA = noccA_ - foccA_;
 
@@ -728,8 +744,7 @@ double SAPT2p::s_ccd_iterate(char *SARAR, char *SARARerr, char *CA_RAR, char *TA
     
 timer_on("CCD Intra Amps     ");
     RMS = s_ccd_amplitudes(SARAR,SARARerr,CA_RAR,TARAR,GARAR,GARRA,AAAA,ARAR,
-      AARR,RRRRp,RRRRm,XARAR,YARAR,XAA,XRR,evalsA_,noccA_,virA,foccA_,mo2no,
-      novirA);
+      AARR,RRRRp,RRRRm,XARAR,YARAR,XAA,XRR,evalsA_,noccA_,virA,foccA_,mo2no);
 timer_off("CCD Intra Amps     ");
 
     diis.store_vectors();
@@ -753,7 +768,7 @@ timer_off("CCD Intra Amps     ");
 double SAPT2p::s_ccd_amplitudes(char *SARAR, char *SARARerr, char *CA_RAR, 
   char *TARAR, char *GARAR, char *GARRA, char *AAAA, char *ARAR, char *AARR, 
   char *RRRRp, char *RRRRm, char *XARAR, char *YARAR, char *XAA, char *XRR, 
-  double *evalsA_, int noccA_, int virA, int foccA_, double **mo2no, int novirA)
+  double *evalsA_, int noccA_, int virA, int foccA_, boost::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA_ - foccA_;
 
@@ -778,7 +793,7 @@ double SAPT2p::s_ccd_amplitudes(char *SARAR, char *SARARerr, char *CA_RAR,
 
   free_block(gARRA);
 
-  double **s2AARR = vvvv_ccd(SARAR,RRRRp,RRRRm,occA,virA,mo2no,novirA,foccA_);
+  double **s2AARR = vvvv_ccd(SARAR,RRRRp,RRRRm,occA,virA,mo2no);
   double **sAARR = block_matrix(occA*occA,virA*virA);
   
   for(int a1=0,a1r1=0; a1<occA; a1++) {
@@ -1173,37 +1188,125 @@ void SAPT2p::disp_s_prep(char *TAR, char *TpAR, char *ThetaARAR,
   free_block(B_p_BS);
 }
 
+void SAPT2p::vvvv_prep(char *RRRRp, char *RRRRm, 
+  double** B_p_RR, int virA, int ndf, 
+  boost::shared_ptr<Matrix> mo2no)
+{
+  timer_on("v^4 Prep           ");
+
+  boost::shared_ptr<Matrix> B2;
+  boost::shared_ptr<Matrix> B3;
+  double** B_p_RR2;
+  int virA2;
+  if (mo2no) {
+    virA2 = mo2no->colspi()[0];
+    B3 = boost::shared_ptr<Matrix>(new Matrix("B3",virA2 * virA,  ndf));
+    B2 = boost::shared_ptr<Matrix>(new Matrix("B2",virA2 * virA2, ndf));
+    double** B_p_RR3 = B3->pointer();
+    B_p_RR2 = B2->pointer();
+    double** Vp = mo2no->pointer();
+    C_DGEMM('T','N',virA2,virA*ndf,virA,1.0,Vp[0],virA2,B_p_RR[0],virA*ndf,0.0,B_p_RR3[0],virA*ndf);
+    for (int a = 0; a < virA2; a++) {
+        C_DGEMM('T','N',virA2,ndf,virA,1.0,Vp[0],virA2,B_p_RR3[a*virA],ndf,0.0,B_p_RR2[a*virA2],ndf);
+    }
+    B3.reset();
+  } else {
+    B_p_RR2 = B_p_RR;
+    virA2 = virA;
+  }
+
+  int virtri = virA2*(virA2+1)/2;
+  int svirtri = virA2*(virA2-1)/2;
+  double **RR = block_matrix(virA2,virA2);
+  double *xRR = init_array(virtri);
+  double *yRR = init_array(svirtri);
+
+  zero_disk(PSIF_SAPT_CCD,RRRRp,virtri,virtri);
+  zero_disk(PSIF_SAPT_CCD,RRRRm,svirtri,svirtri);
+  
+  psio_address next_RRRRp = PSIO_ZERO;
+  psio_address next_RRRRm = PSIO_ZERO;
+  
+  for (int r1=0; r1 < virA2; r1++) {
+  for (int r2=0; r2 <= r1; r2++) {
+  
+    C_DGEMM('N','T',virA2,virA2,ndf,1.0,&(B_p_RR2[r1*virA2][0]),
+      ndf,&(B_p_RR2[r2*virA2][0]),ndf,0.0,
+      &(RR[0][0]),virA2);
+  
+    for (int r3=0; r3 < virA2; r3++) {
+    for (int r4=0; r4 <= r3; r4++) {
+      int r3r4 = INDEX(r3,r4);
+      xRR[r3r4] = RR[r3][r4] + RR[r4][r3];
+    }}
+    psio_->write(PSIF_SAPT_CCD,RRRRp,(char *) &(xRR[0]),
+      virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
+  
+    if (r1 != r2) {
+      for (int r3=0; r3 < virA2; r3++) {
+      for (int r4=0; r4 < r3; r4++) {
+        int r3r4 = INDEX(r3-1,r4);
+        yRR[r3r4] = RR[r3][r4] - RR[r4][r3];
+      }}
+      psio_->write(PSIF_SAPT_CCD,RRRRm,(char *) &(yRR[0]),
+        svirtri*(ULI) sizeof(double),next_RRRRm,&next_RRRRm);
+    }
+  
+  }}
+
+  free(xRR);
+  free(yRR);
+  free_block(RR);
+
+  timer_off("v^4 Prep           ");
+}
 double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm, 
-  int occA, int virA, double **mo2no, int novirA, int foccA_)
+  int occA, int virA, boost::shared_ptr<Matrix> mo2no)
 {
   timer_on("v^4 Term           ");
 
   double **tARAR;
-  int movirA = virA;
-  foccA_ += occA;
-
-  tARAR = block_matrix(occA*virA,occA*virA);
-  psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
-    occA*virA*occA*virA*(ULI) sizeof(double));
+  int virA2;
+  if (mo2no) {
+    double** Vp = mo2no->pointer();
+    virA2 = mo2no->colspi()[0];
+    double** T1 = block_matrix(occA*virA,occA*virA);
+    psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(T1[0][0]),
+      occA*virA*occA*virA*(ULI) sizeof(double));
+    double** T2 = block_matrix(occA*virA,occA*virA2);
+    C_DGEMM('N','N',occA*(size_t)virA*occA,virA2,virA,1.0,T1[0],virA,Vp[0],virA2,0.0,T2[0],virA2);
+    free_block(T1);
+    tARAR = block_matrix(occA*virA2,occA*virA2);
+    #pragma omp parallel for
+    for (int i = 0; i < occA; i++) {
+        C_DGEMM('T','N',virA2,occA*virA2,virA,1.0,Vp[0],virA2,T2[i*virA],occA*virA2,0.0,tARAR[i*virA2],occA*virA2);
+    }
+    free_block(T2);
+  } else {
+    virA2 = virA;
+    tARAR = block_matrix(occA*virA,occA*virA);
+    psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
+      occA*virA*occA*virA*(ULI) sizeof(double));
+  }
 
   int occtri = occA*(occA+1)/2;
-  int virtri = virA*(virA+1)/2;
-  int svirtri = virA*(virA-1)/2;
+  int virtri = virA2*(virA2+1)/2;
+  int svirtri = virA2*(virA2-1)/2;
 
   double **tpAARR = block_matrix(occtri,virtri);
   double **tmAARR = block_matrix(occtri,svirtri);
 
   for(int a1=0; a1<occA; a1++) {
   for(int a2=0; a2<=a1; a2++) {
-    for(int r1=0; r1<virA; r1++) {
+    for(int r1=0; r1<virA2; r1++) {
     for(int r2=0; r2<=r1; r2++) {
       int a1a2 = INDEX(a1,a2);
       int r1r2 = INDEX(r1-1,r2);
       int s1s2 = INDEX(r1,r2);
-      int a1r1 = a1*virA + r1;
-      int a2r2 = a2*virA + r2;
-      int a2r1 = a2*virA + r1;
-      int a1r2 = a1*virA + r2;
+      int a1r1 = a1*virA2 + r1;
+      int a2r2 = a2*virA2 + r2;
+      int a2r1 = a2*virA2 + r1;
+      int a1r2 = a1*virA2 + r2;
       if (r1 != r2) { 
         tpAARR[a1a2][s1s2] = 0.5*tARAR[a1r1][a2r2];
         tpAARR[a1a2][s1s2] += 0.5*tARAR[a2r1][a1r2];
@@ -1221,12 +1324,12 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   int blocksize;
   int loopsize;
 
-  if (virA % 2 == 0) {
-    blocksize = virA+1;
+  if (virA2 % 2 == 0) {
+    blocksize = virA2+1;
     loopsize = virtri/blocksize;
   }
   else {
-    blocksize = virA;
+    blocksize = virA2;
     loopsize = virtri/blocksize;
   }
 
@@ -1258,12 +1361,12 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   free_block(vRRRRp[1]);
   free_block(tpAARR);
 
-  if (virA % 2 == 0) {
-    blocksize = virA-1;
+  if (virA2 % 2 == 0) {
+    blocksize = virA2-1;
     loopsize = svirtri/blocksize;
   }
   else {
-    blocksize = virA;
+    blocksize = virA2;
     loopsize = svirtri/blocksize;
   }
 
@@ -1293,13 +1396,13 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   free_block(vRRRRm[1]);
   free_block(tmAARR);
 
-  double **t2AARR = block_matrix(occA*occA,virA*virA);
+  double **t2AARR = block_matrix(occA*occA,virA2*virA2);
 
   for(int a1=0,a1a2=0; a1<occA; a1++) {
   for(int a2=0; a2<occA; a2++,a1a2++) {
     int b1b2 = INDEX(a1,a2);
-    for(int r3=0,r3r4=0; r3<virA; r3++) {
-    for(int r4=0; r4<virA; r4++,r3r4++) {
+    for(int r3=0,r3r4=0; r3<virA2; r3++) {
+    for(int r4=0; r4<virA2; r4++,r3r4++) {
       int s3s4 = INDEX(r3,r4);
       t2AARR[a1a2][r3r4] = sAARR[b1b2][s3s4];
   }}}}
@@ -1309,10 +1412,10 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
     int a1a2 = a1*occA + a2;
     int a2a1 = a2*occA + a1;
     int b1b2 = INDEX(a1,a2);
-    for(int r3=0; r3<virA; r3++) {
+    for(int r3=0; r3<virA2; r3++) {
     for(int r4=0; r4<r3; r4++) {
-      int r3r4 = r3*virA + r4;
-      int r4r3 = r4*virA + r3;
+      int r3r4 = r3*virA2 + r4;
+      int r4r3 = r4*virA2 + r3;
       int s3s4 = INDEX(r3-1,r4);
       t2AARR[a1a2][r3r4] += aAARR[b1b2][s3s4];
       t2AARR[a2a1][r4r3] += aAARR[b1b2][s3s4];
@@ -1323,10 +1426,10 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   for(int a1=0; a1<occA; a1++) {
     int a1a1 = a1*occA + a1;
     int b1b1 = INDEX(a1,a1);
-    for(int r3=0; r3<virA; r3++) {
+    for(int r3=0; r3<virA2; r3++) {
     for(int r4=0; r4<r3; r4++) {
-      int r3r4 = r3*virA + r4;
-      int r4r3 = r4*virA + r3;
+      int r3r4 = r3*virA2 + r4;
+      int r4r3 = r4*virA2 + r3;
       int s3s4 = INDEX(r3-1,r4);
       t2AARR[a1a1][r3r4] += aAARR[b1b1][s3s4];
       t2AARR[a1a1][r4r3] -= aAARR[b1b1][s3s4];
@@ -1335,115 +1438,30 @@ double **SAPT2p::vvvv_ccd(char *TARAR, char *RRRRp, char *RRRRm,
   free_block(sAARR);
   free_block(aAARR);
 
+  double** ret;
+  if (mo2no) {
+    double** Vp = mo2no->pointer();
+    double** T1 = block_matrix(occA*occA,virA*virA2);
+    #pragma omp parallel for
+    for (size_t ij = 0L; ij < occA*occA; ij++) {
+        C_DGEMM('N','N',virA,virA2,virA2,1.0,Vp[0],virA2,t2AARR[ij],virA2,0.0,T1[ij],virA2);
+    }
+    free_block(t2AARR);
+    ret = block_matrix(occA*occA,virA*virA);
+    C_DGEMM('N','T',occA*(size_t)occA*virA,virA,virA2,1.0,T1[0],virA2,Vp[0],virA2,0.0,ret[0],virA);
+    free_block(T1);
+  } else {
+    ret = t2AARR;
+  }
+
   timer_off("v^4 Term           ");
-  return(t2AARR);
-}
-void SAPT2p::natural_orbitalify_ccd()
-{
-  int occA = noccA_ - foccA_;
-  int occB = noccB_ - foccB_;
-
-  double **tARAR = block_matrix(occA*nvirA_,occA*nvirA_);
-
-  psio_->read_entry(PSIF_SAPT_CCD,"T ARAR Amplitudes",(char *) tARAR[0],
-    occA*nvirA_*occA*nvirA_*(ULI) sizeof(double));
-
-  double **tARAr = block_matrix(occA*nvirA_,occA*no_nvirA_);
-
-  C_DGEMM('N','N',occA*nvirA_*occA,no_nvirA_,nvirA_,
-    1.0,tARAR[0],nvirA_,no_CA_[0],
-    no_nvirA_,0.0,tARAr[0],no_nvirA_);
-
-  free_block(tARAR);
-  double **tArAr = block_matrix(occA*no_nvirA_,occA*no_nvirA_);
-
-  for (int a=0; a<occA; a++) {
-    C_DGEMM('T','N',no_nvirA_,occA*no_nvirA_,nvirA_,
-      1.0,no_CA_[0],no_nvirA_,
-      tARAr[a*nvirA_],occA*no_nvirA_,0.0,
-      tArAr[a*no_nvirA_],occA*no_nvirA_);
-  }
-
-  free_block(tARAr);
-
-  psio_->write_entry(PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes",(char *)
-    tArAr[0],occA*no_nvirA_*occA*no_nvirA_*(ULI) sizeof(double));
-
-  free_block(tArAr);
-
-  double **tBSBS = block_matrix(occB*nvirB_,occB*nvirB_);
-
-  psio_->read_entry(PSIF_SAPT_CCD,"T BSBS Amplitudes",(char *) tBSBS[0],
-    occB*nvirB_*occB*nvirB_*(ULI) sizeof(double));
-
-  double **tBSBs = block_matrix(occB*nvirB_,occB*no_nvirB_);
-
-  C_DGEMM('N','N',occB*nvirB_*occB,no_nvirB_,nvirB_,
-    1.0,tBSBS[0],nvirB_,no_CB_[0],
-    no_nvirB_,0.0,tBSBs[0],no_nvirB_);
-
-  free_block(tBSBS);
-  double **tBsBs = block_matrix(occB*no_nvirB_,occB*no_nvirB_);
-
-  for (int b=0; b<occB; b++) {
-    C_DGEMM('T','N',no_nvirB_,occB*no_nvirB_,nvirB_,
-      1.0,no_CB_[0],no_nvirB_,
-      tBSBs[b*nvirB_],occB*no_nvirB_,0.0,
-      tBsBs[b*no_nvirB_],occB*no_nvirB_);
-  }
-
-  free_block(tBSBs);
-
-  psio_->write_entry(PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes",(char *)
-    tBsBs[0],occB*no_nvirB_*occB*no_nvirB_*(ULI) sizeof(double));
-
-  free_block(tBsBs);
-
-  double **tARBS = block_matrix(occA*nvirA_,occB*nvirB_);
-
-  psio_->read_entry(PSIF_SAPT_CCD,"T ARBS Amplitudes",(char *) tARBS[0],
-    occA*nvirA_*occB*nvirB_*(ULI) sizeof(double));
-
-  double **tARBs = block_matrix(occA*nvirA_,occB*no_nvirB_);
-
-  C_DGEMM('N','N',occA*nvirA_*occB,no_nvirB_,nvirB_,
-    1.0,tARBS[0],nvirB_,no_CB_[0],
-    no_nvirB_,0.0,tARBs[0],no_nvirB_);
-
-  free_block(tARBS);
-  double **tArBs = block_matrix(occA*no_nvirA_,occB*no_nvirB_);
-
-  for (int a=0; a<occA; a++) {
-    C_DGEMM('T','N',no_nvirA_,occB*no_nvirB_,nvirA_,
-      1.0,no_CA_[0],no_nvirA_,
-      tARBs[a*nvirA_],occB*no_nvirB_,0.0,
-      tArBs[a*no_nvirA_],occB*no_nvirB_);
-  }
-
-  free_block(tARBs);
-
-  double **tBsAr = block_matrix(occB*no_nvirB_,occA*no_nvirA_);
-
-  for(int a1=0,a1r1=0; a1<occA; a1++) {
-  for(int r1=0; r1<no_nvirA_; r1++,a1r1++) {
-    for(int b1=0,b1s1=0; b1<occB; b1++) {
-    for(int s1=0; s1<no_nvirB_; s1++,b1s1++) {
-      tBsAr[b1s1][a1r1] = tArBs[a1r1][b1s1];
-  }}}}
-
-  psio_->write_entry(PSIF_SAPT_CCD,"T ARBS Natorb Amplitudes",(char *)
-    tArBs[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
-  psio_->write_entry(PSIF_SAPT_CCD,"T BSAR Natorb Amplitudes",(char *)
-    tBsAr[0],occA*no_nvirA_*occB*no_nvirB_*(ULI) sizeof(double));
-
-  free_block(tArBs);
-  free_block(tBsAr);
+  return(ret);
 }
 
 void SAPT2p::ccd_prep(char *TARAR, char *ThetaARAR, char *GARAR, char *GARRA, 
   char *AAAA, char *ARAR, char *AARR, char *RRRRp, char *RRRRm, 
   int DFfile, char *AAints, char *ARints, char *RRints, double *evals, 
-  int noccA, int virA, int foccA, int novirA, double **mo2no, char *T2ARAR)
+  int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no, char *T2ARAR)
 {
   int occA = noccA - foccA;
 
@@ -1462,51 +1480,9 @@ void SAPT2p::ccd_prep(char *TARAR, char *ThetaARAR, char *GARAR, char *GARRA,
   free_block(vAAAA);
 
 
-  double **B_p_RR;
+  double **B_p_RR = get_DF_ints_nongimp(DFfile,RRints,0,virA,0,virA);
 
-  int virtri = virA*(virA+1)/2;
-  int svirtri = virA*(virA-1)/2;
-  double **RR = block_matrix(virA,virA);
-  double *xRR = init_array(virtri);
-  double *yRR = init_array(svirtri);
-  B_p_RR = get_DF_ints_nongimp(DFfile,RRints,0,virA,0,virA);
-
-  zero_disk(PSIF_SAPT_CCD,RRRRp,virtri,virtri);
-  zero_disk(PSIF_SAPT_CCD,RRRRm,svirtri,svirtri);
-  
-  psio_address next_RRRRp = PSIO_ZERO;
-  psio_address next_RRRRm = PSIO_ZERO;
-  
-  for (int r1=0; r1 < virA; r1++) {
-  for (int r2=0; r2 <= r1; r2++) {
-  
-    C_DGEMM('N','T',virA,virA,ndf_,1.0,&(B_p_RR[r1*virA][0]),
-      ndf_,&(B_p_RR[r2*virA][0]),ndf_,0.0,
-      &(RR[0][0]),virA);
-  
-    for (int r3=0; r3 < virA; r3++) {
-    for (int r4=0; r4 <= r3; r4++) {
-      int r3r4 = INDEX(r3,r4);
-      xRR[r3r4] = RR[r3][r4] + RR[r4][r3];
-    }}
-    psio_->write(PSIF_SAPT_CCD,RRRRp,(char *) &(xRR[0]),
-      virtri*(ULI) sizeof(double),next_RRRRp,&next_RRRRp);
-  
-    if (r1 != r2) {
-      for (int r3=0; r3 < virA; r3++) {
-      for (int r4=0; r4 < r3; r4++) {
-        int r3r4 = INDEX(r3-1,r4);
-        yRR[r3r4] = RR[r3][r4] - RR[r4][r3];
-      }}
-      psio_->write(PSIF_SAPT_CCD,RRRRm,(char *) &(yRR[0]),
-        svirtri*(ULI) sizeof(double),next_RRRRm,&next_RRRRm);
-    }
-  
-  }}
-
-  free(xRR);
-  free(yRR);
-  free_block(RR);
+  vvvv_prep(RRRRp,RRRRm,B_p_RR,virA,ndf_,mo2no);
 
   double **vAARR = block_matrix(occA*virA,occA*virA);
 
@@ -1588,7 +1564,7 @@ void SAPT2p::ccd_prep(char *TARAR, char *ThetaARAR, char *GARAR, char *GARRA,
   free_block(vARAR);
   free_block(gARAR);
 
-  double **t2AARR = vvvv_ccd(TARAR,RRRRp,RRRRm,occA,virA,mo2no,novirA,foccA);
+  double **t2AARR = vvvv_ccd(TARAR,RRRRp,RRRRm,occA,virA,mo2no);
   double **tARAR = block_matrix(occA*virA,occA*virA);
 
   psio_->read_entry(PSIF_SAPT_CCD,TARAR,(char *) &(tARAR[0][0]),
@@ -1705,8 +1681,7 @@ void SAPT2p::ccd_prep(char *TARAR, char *ThetaARAR, char *GARAR, char *GARRA,
 
 void SAPT2p::ccd_iterate(char *TARAR, char *TARARerr, char *ThetaARAR, 
   char *GARAR, char *GARRA, char *AAAA, char *ARAR, char *AARR, char *RRRRp,  
-  char *RRRRm, double *evals, int noccA, int virA, int foccA, double **mo2no,
-  int novirA)
+  char *RRRRm, double *evals, int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA - foccA;
 
@@ -1738,7 +1713,7 @@ void SAPT2p::ccd_iterate(char *TARAR, char *TARARerr, char *ThetaARAR,
 
 timer_on("CCD Amps           "); 
     RMS = ccd_amplitudes(TARAR,TARARerr,ThetaARAR,GARAR,GARRA,AAAA,ARAR,AARR,
-      RRRRp,RRRRm,evals,noccA,virA,foccA,mo2no,novirA);
+      RRRRp,RRRRm,evals,noccA,virA,foccA,mo2no);
 timer_off("CCD Amps           "); 
 
     diis.store_vectors();
@@ -1778,8 +1753,7 @@ double SAPT2p::ccd_energy(char *TARAR, char *GARAR, int occA, int virA)
 
 double SAPT2p::ccd_amplitudes(char *TARAR, char *TARARerr, char *ThetaARAR, 
   char *GARAR, char *GARRA, char *AAAA, char *ARAR, char *AARR, char *RRRRp,  
-  char *RRRRm, double *evals, int noccA, int virA, int foccA,double **mo2no,
-  int novirA)
+  char *RRRRm, double *evals, int noccA, int virA, int foccA, boost::shared_ptr<Matrix> mo2no)
 {
   int occA = noccA - foccA;
 
@@ -1806,7 +1780,7 @@ double SAPT2p::ccd_amplitudes(char *TARAR, char *TARARerr, char *ThetaARAR,
 
   free_block(gARRA);
 
-  double **t2AARR = vvvv_ccd(TARAR,RRRRp,RRRRm,occA,virA,mo2no,novirA,foccA);
+  double **t2AARR = vvvv_ccd(TARAR,RRRRp,RRRRm,occA,virA,mo2no);
   double **tAARR = block_matrix(occA*occA,virA*virA);
 
   for(int a1=0,a1r1=0; a1<occA; a1++) {
@@ -2234,5 +2208,39 @@ char *SAPTDIIS::get_vec_label(int num)
     return(label);
 }
 
+boost::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, char* VV_opdm, int nvir, double cutoff)
+{
+    boost::shared_ptr<Matrix> D(new Matrix("D", nvir, nvir));
+    double** Dp = D->pointer();
+    psio_->read_entry(ampfile,VV_opdm,(char *) Dp[0],
+      sizeof(double)*nvir*nvir);
+    D->scale(2.0);
+   
+    boost::shared_ptr<Matrix> V(new Matrix("V", nvir, nvir));
+    boost::shared_ptr<Vector> d(new Vector("d", nvir)); 
+    D->diagonalize(V,d);
+    D.reset();
+
+    int nno = 0; 
+    double* dp = d->pointer();
+    for (int a=0; a<nvir; a++) {
+        if (dp[a] > cutoff) {
+            nno++;
+        }
+    } 
+    
+    boost::shared_ptr<Matrix> U(new Matrix("U",nvir,nno));
+    double** Up = U->pointer();
+    double** Vp = V->pointer();
+    int offset = 0;
+    for (int a=0; a<nvir; a++) {
+        if (dp[a] > cutoff) {
+            C_DCOPY(nvir,&Vp[0][a],nvir,&Up[0][offset],nno);
+            offset++;
+        }
+    } 
+
+    return U;
+}
 
 }}
