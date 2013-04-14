@@ -685,6 +685,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
     /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
     options.add_bool("DO_CCD_DISP",false);
+    /*- Do MBPT dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3, if also doing CCD? !expert -*/
+    options.add_bool("DO_MBPT_DISP",true);
     /*- E converge value for CCD -*/
     options.add_double("CCD_E_CONVERGENCE",1E-8);
     /*- Convergence tolerance for CCD amplitudes -*/
