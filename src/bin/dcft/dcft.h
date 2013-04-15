@@ -45,11 +45,10 @@ protected:
 
     void finalize();
     void transform_integrals();
-    void build_lambda();
     void init();
     void compute_dcft_energy();
     void compute_cepa0_energy();
-    void update_lambda_from_residual();
+    void update_cumulant_jacobi();
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
@@ -59,15 +58,13 @@ protected:
     void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
-    void find_occupation(SharedVector &evals_a, SharedVector &evals_b, bool forcePrint = false);
-    void build_intermediates();
+    void build_cumulant_intermediates();
     void process_so_ints();
     void build_G();
-    void build_tensors();
+    void build_AO_tensors();
     void build_denominators();
     void update_fock();
     void dump_density();
-    void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix& C1, SharedMatrix& C2,
@@ -76,12 +73,10 @@ protected:
     void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
-    void compute_tau_squared();
-    void compute_energy_tau_squared();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
-    double compute_lambda_residual();
+    double compute_cumulant_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     void run_twostep_dcft();
@@ -91,7 +86,6 @@ protected:
     virtual SharedMatrix compute_gradient_();
     void response_guess();
     void gradient_init();
-    void compute_density();
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
@@ -108,16 +102,18 @@ protected:
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
     void compute_ewdm();
-    void compute_density_VVVV();
+    void compute_relaxed_density_OOOO();
+    void compute_relaxed_density_OOVV();
+    void compute_relaxed_density_OVOV();
+    void compute_relaxed_density_VVVV();
     // Quadratically-convergent DCFT
     void run_qc_dcft();
-    void qc_dcft_init();
     void compute_orbital_gradient();
     void form_idps();
     void compute_sigma_vector();
     int iterate_conjugate_gradients();
     void check_qc_convergence();
-    void update_cumulant_and_orbitals();
+    void update_cumulant_and_orbitals_nr();
     void run_davidson();
     void davidson_guess();
     // Exact Tau
@@ -125,19 +121,16 @@ protected:
     void compute_F_intermediate();
     void form_density_weighted_fock();
     // Orbital-optimized DCFT
-    void oo_init();
     double compute_orbital_residual();
-    void update_orbitals_jacobi();
-    void compute_unrelaxed_density();
+    void compute_unrelaxed_density_OOOO();
+    void compute_unrelaxed_density_OOVV();
+    void compute_unrelaxed_density_OVOV();
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
-
-    // FNO-DCFT
-    void form_nso_basis();
+    void compute_orbital_rotation_jacobi();
+    void rotate_orbitals();
 
     bool augment_b(double *vec, double tol);
-    /// Whether to force the code to keep the same occupation from SCF
-    bool lock_occupation_;
     /// Controls convergence of the orbital updates
     bool orbitalsDone_;
     /// Controls convergence of the decnsity cumulant updates
@@ -146,10 +139,10 @@ protected:
     bool densityConverged_;
     /// Controls convergence of the DCFT energy
     bool energyConverged_;
-    /// The maximum number of lambda iterations per update
-    int lambdamaxiter_;
-    /// The maximum number of SCF iterations per update
-    int scfmaxiter_;
+    /// Whether the user requested the DCFT functional that is variationally orbitally-optimized
+    bool orbital_optimized_;
+    /// Whether the user requested the DCFT functional that computes the non-idempotent part of the OPDM exactly from the density cumulant
+    bool exact_tau_;
     /// The amount of information to print
     int print_;
     /// The number of unique pairs of symmetrized atomic orbitals
@@ -235,8 +228,6 @@ protected:
     double scf_energy_;
     /// The Lambda component of the energy
     double lambda_energy_;
-    /// The Tau^2 correction to the SCF component of the energy
-    double energy_tau_squared_;
     /// The previous total energy
     double old_total_energy_;
     /// The updated total energy
@@ -255,9 +246,9 @@ protected:
     /// The beta virtual eigenvectors, per irrep
     SharedMatrix bvir_c_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
-    SharedMatrix a_tau_;
+    SharedMatrix tau_so_a_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
-    SharedMatrix b_tau_;
+    SharedMatrix tau_so_b_;
     /// The Tau matrix in the MO basis (alpha occupied)
     SharedMatrix aocc_tau_;
     /// The Tau matrix in the MO basis (beta occupied)
@@ -275,13 +266,9 @@ protected:
     /// The perturbed Tau matrix in the MO basis (beta virtual)
     SharedMatrix bvir_ptau_;
     /// The Kappa in the MO basis (alpha occupied)
-    SharedMatrix akappa_;
+    SharedMatrix kappa_mo_a_;
     /// The Kappa in the MO basis (beta occupied)
-    SharedMatrix bkappa_;
-    /// The Tau^2 correction to the alpha Tau matrix in the AO basis
-    SharedMatrix a_tautau_;
-    /// The Tau^2 correction to the beta Tau matrix in the AO basis
-    SharedMatrix b_tautau_;
+    SharedMatrix kappa_mo_b_;
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
@@ -305,9 +292,9 @@ protected:
     /// The old full beta MO coefficients
     SharedMatrix old_cb_;
     /// The alpha kappa matrix in the SO basis
-    SharedMatrix kappa_a_;
+    SharedMatrix kappa_so_a_;
     /// The beta kappa matrix in the SO basis
-    SharedMatrix kappa_b_;
+    SharedMatrix kappa_so_b_;
     /// The alpha external potential in the SO basis
     SharedMatrix g_tau_a_;
     /// The beta external potential in the SO basis

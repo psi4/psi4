@@ -803,23 +803,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Maximum number of density cumulant update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of density cumulant response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of the orbital update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of orbital response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of the macro-iterations for both the energy and the solution of the response equations -*/
+      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
-      options.add_double("DIIS_START_CONVERGENCE", 1e-2);
+      options.add_double("DIIS_START_CONVERGENCE", 1e-3);
       /*- Maximum number of error vectors stored for DIIS extrapolation !expert-*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation !expert-*/
@@ -838,10 +826,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations !expert-*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
-//      /* Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert*/
-//      options.add_bool("TAU_SQUARED", false);
-      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation !expert-*/
-      options.add_bool("TPDM", false);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
       For practical applications only the default must be used !expert-*/
       options.add_bool("MO_RELAX", true);
@@ -852,9 +836,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CACHELEVEL", 2);
       /*- Minimum absolute value below which integrals are neglected !expert-*/
       options.add_double("INTS_TOLERANCE", 1e-14);
-      /*- Controls whether to force the occupation to be that of the SCF guess.
-          For practical applications only the default must be used !expert-*/
-      options.add_bool("LOCK_OCC", true);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
       options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
@@ -883,8 +864,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
       options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
-      //      /* Specify orbital basis to be used in the DCFT iterations !expert */
-      //      options.add_str("DCFT_BASIS", "MO", "MO NSO");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
