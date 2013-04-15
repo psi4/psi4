@@ -13,8 +13,8 @@ void SAPT2p::disp2ccd()
 
   boost::shared_ptr<Matrix> mo2noA;
   boost::shared_ptr<Matrix> mo2noB;
-  if (options_.get_bool("NAT_ORBS_T2")) {
-    double cutoff = options_.get_double("OCC_TOLERANCE_T2");
+  if (nat_orbs_v4_) {
+    double cutoff = options_.get_double("OCC_TOLERANCE");
     mo2noA = mo2no(PSIF_SAPT_AMPS,"pRR Density Matrix", nvirA_,cutoff);
     mo2noB = mo2no(PSIF_SAPT_AMPS,"pSS Density Matrix", nvirB_,cutoff);
     if (print_) {
@@ -2220,6 +2220,7 @@ boost::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, char* VV_opdm, int nvir, do
    
     boost::shared_ptr<Matrix> V(new Matrix("V", nvir, nvir));
     boost::shared_ptr<Vector> d(new Vector("d", nvir)); 
+    //D->diagonalize(V,d,descending);
     D->diagonalize(V,d);
     D.reset();
 
@@ -2230,6 +2231,12 @@ boost::shared_ptr<Matrix> SAPT2p::mo2no(int ampfile, char* VV_opdm, int nvir, do
             nno++;
         }
     } 
+
+    if (options_.get_bool("BENCH")) {
+        FILE* fh = fopen(VV_opdm, "w");
+        fwrite((void*) dp, sizeof(double), nvir, fh);
+        fclose(fh); 
+    }
     
     boost::shared_ptr<Matrix> U(new Matrix("U",nvir,nno));
     double** Up = U->pointer();

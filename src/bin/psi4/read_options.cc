@@ -702,20 +702,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do natural orbitals to speed up evaluation of the triples
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS",false);
-    /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
-    natural orbitals are discarded for evaluating the triples contribution
-    to dispersion. -*/
-    options.add_double("OCC_TOLERANCE",1.0E-6);
+    options.add_bool("NAT_ORBS_T3",false);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
-    This approximation is promising for accuracy and computational savings,
-    but it has not been rigorously tested. -*/
+    This approximation does not provide significant savings, 
+    and is recommended FALSE for all SAPT computations -*/
     options.add_bool("NAT_ORBS_T2",false);
+    /*- Do use MP2 natural orbital approximations for the $v^4$ block of
+    two-electron integrals in the evaluation of second-order T2 amplitudes?
+    Recommended true for all SAPT computations. -*/
+    options.add_bool("NAT_ORBS_V4",false);
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
-    natural orbitals are discarded for evaluating the (vv|vv) terms in monomer CCD
-    equations. -*/
-    options.add_double("OCC_TOLERANCE_T2",1.0E-6);
+    natural orbitals are discarded for in each of the above three truncations
+    -*/
+    options.add_double("OCC_TOLERANCE",1.0E-6);
     /*- Nuke the (vv|vv) ladder term? !expert -*/
     options.add_bool("NUKE_EM_RICO", false);
     /*- Minimum absolute value below which all three-index DF integrals

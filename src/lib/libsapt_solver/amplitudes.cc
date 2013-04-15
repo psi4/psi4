@@ -22,7 +22,7 @@ void SAPT2::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,
@@ -636,7 +636,7 @@ void SAPT2p::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,
@@ -785,7 +785,7 @@ void SAPT2p3::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,

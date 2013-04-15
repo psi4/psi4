@@ -30,8 +30,9 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
   e_conv_ = options_.get_double("E_CONVERGENCE");
   d_conv_ = options_.get_double("D_CONVERGENCE");
 
-  nat_orbs_ = options.get_bool("NAT_ORBS");
+  nat_orbs_t3_ = options.get_bool("NAT_ORBS_T3");
   nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");
+  nat_orbs_v4_ = options.get_bool("NAT_ORBS_V4");
   occ_cutoff_ = options.get_double("OCC_TOLERANCE");
 
   ioff_ = (int *) malloc (sizeof(int) * (nso_*(nso_+1)/2));
@@ -72,7 +73,7 @@ SAPT2::~SAPT2()
   if (wABB_ != NULL) free_block(wABB_);
   if (wASS_ != NULL) free_block(wASS_);
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     if (no_evalsA_ != NULL) free(no_evalsA_);
     if (no_evalsB_ != NULL) free(no_evalsB_);
     if (no_CA_ != NULL) free_block(no_CA_);
