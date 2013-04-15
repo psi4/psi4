@@ -34,8 +34,9 @@ protected:
   double e_conv_;
   double d_conv_;
 
-  bool nat_orbs_;
+  bool nat_orbs_t3_;
   bool nat_orbs_t2_;
+  bool nat_orbs_v4_;
   double occ_cutoff_;
 
   double e_elst10_;

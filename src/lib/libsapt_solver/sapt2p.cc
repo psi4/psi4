@@ -168,7 +168,7 @@ void SAPT2p::print_results()
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
   e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_ 
     + e_exch_ind22_;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_;
   else
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_disp22t_;
@@ -179,7 +179,7 @@ void SAPT2p::print_results()
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF + e_ind22_ + e_exch_ind22_;
   double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_;
   double tot_disp = 0.0;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
       + e_est_disp22t_;
   else
@@ -188,7 +188,7 @@ void SAPT2p::print_results()
 
   if (ccd_disp_) {
     tot_disp = 0.0;
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_est_disp22t_ccd_;
     else
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_disp22t_ccd_;
@@ -237,7 +237,7 @@ void SAPT2p::print_results()
       e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
     fprintf(outfile,"      Disp22 (T)       %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
   }
@@ -248,7 +248,7 @@ void SAPT2p::print_results()
       e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
     fprintf(outfile,"      Disp22 (T) (CCD) %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
   }
