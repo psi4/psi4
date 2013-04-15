@@ -160,6 +160,12 @@ void SAPT2p::print_header()
     if (mem < vvnri + ovov*3L) 
       throw PsiException("Not enough memory", __FILE__,__LINE__);
 
+  fprintf(outfile,"    Natural Orbital Cutoff: %11.3E\n", occ_cutoff_);
+  fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
+  fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
+  fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
+  fprintf(outfile,"\n");
+
   fflush(outfile);
 }
 
