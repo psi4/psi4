@@ -14,11 +14,8 @@ DCFTSolver::run_qc_dcft()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
 
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DCFT_FUNCTIONAL") == "DC-12")
-//        fprintf(outfile, "\n\n\tUsing QC algorithm for DC-12 with approximate DC-06 Hessian");
-
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy       NR *\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy    NIter *\n"
                          "\t*---------------------------------------------------------------------------------*\n");
 
     bool orbitalsDone     = false;
@@ -31,9 +28,9 @@ DCFTSolver::run_qc_dcft()
 
     orbitals_convergence_ = compute_scf_error_vector();
 
-    while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_){
+    while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_ ){
 
-        // Compute the generalized Fock matrix and orbital gradient ([F,Kappa]) in the MO basis
+        // Compute the generalized Fock matrix and orbital gradient in the MO basis
         compute_orbital_gradient();
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
         build_cumulant_intermediates();
@@ -58,34 +55,41 @@ DCFTSolver::run_qc_dcft()
         fflush(outfile);
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
         form_idps();
-        if (nidp_ == 0) {
-            orbitalsDone = true; cumulantDone = true; energyConverged = true; densityConverged = true;
-            break;
+        if (nidp_ != 0) {
+            fprintf(outfile, "\t %-3d   %10d %10d %10d\n", cycle, nidp_, orbital_idp_, cumulant_idp_);
+            // Compute sigma vector in the basis of IDPs
+            compute_sigma_vector();
+            // Solve the NR equations using conjugate gradients
+            cycle_NR = iterate_conjugate_gradients();
+            // Check the convergence by computing the change in the orbitals and the cumulant
+            check_qc_convergence();
+            orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
+            cumulantDone = cumulant_convergence_ < cumulant_threshold_;
+            // Update cumulant and orbitals with the solution of the Newton-Raphson equations
+            update_orbitals_nr();
+            if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+                update_cumulant_nr();
+            }
+            else {
+                update_cumulant_jacobi();
+            }
+            if (orbital_idp_ != 0) {
+                // Update the density
+                densityConverged = update_scf_density() < orbitals_threshold_;
+                // Write orbitals to the checkpoint file
+                write_orbitals_to_checkpoint();
+                // Transform two-electron integrals to the MO basis using new orbitals, build denominators
+                // TODO: Transform_integrals shouldn't call build denominators for the QC alogorithm
+                transform_integrals();
+            }
         }
-        // Compute sigma vector in the basis of IDPs
-        compute_sigma_vector();
-        // Solve the NR equations using conjugate gradients
-        cycle_NR = iterate_conjugate_gradients();
-        // Check the convergence by computing the change in the orbitals and the cumulant
-        check_qc_convergence();
-        orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
-        cumulantDone = cumulant_convergence_ < cumulant_threshold_;
-        // Update cumulant and orbitals with the solution of the Newton-Raphson equations
-        update_cumulant_and_orbitals_nr();
-        if (orbital_idp_ != 0) {
-            // Update the density
-            densityConverged = update_scf_density() < orbitals_threshold_;
-            // Write orbitals to the checkpoint file
-            write_orbitals_to_checkpoint();
-            // Transform two-electron integrals to the MO basis using new orbitals, build denominators
-            // TODO: Transform_integrals shouldn't call build denominators for the QC alogorithm
-            transform_integrals();
-        }
+        else break;
+
     }
 
     fprintf(outfile, "\t*=================================================================================*\n");
 
-    if(!orbitalsDone || !cumulantDone || !densityConverged)
+    if(!orbitalsDone || !cumulantDone || !densityConverged || !energyConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
                                cumulant_convergence_, __FILE__, __LINE__);
 
@@ -210,7 +214,7 @@ DCFTSolver::compute_orbital_gradient(){
 
 void DCFTSolver::form_idps(){
 
-    // Ignore orbital gradient elements that are less than this value
+    // Ignore orbital and cumulant gradient elements that are less than this value
     double cutoff = ((1.0e-10 < (cumulant_threshold_  * 0.01)) ? 1.0e-10 : (cumulant_threshold_  * 0.01));
 
     // Zero out the counters
@@ -219,13 +223,13 @@ void DCFTSolver::form_idps(){
     orbital_idp_a_ = 0;
     orbital_idp_b_ = 0;
     orbital_idp_ = 0;
-    lambda_idp_aa_ = 0;
-    lambda_idp_ab_ = 0;
-    lambda_idp_bb_ = 0;
-    lambda_idp_ = 0;
+    cumulant_idp_aa_ = 0;
+    cumulant_idp_ab_ = 0;
+    cumulant_idp_bb_ = 0;
+    cumulant_idp_ = 0;
 
     // Zero the lookup array
-    ::memset(lookup_, '\0', sizeof(int)*dim_);
+    ::memset(lookup_orbitals_, '\0', sizeof(int)*dim_orbitals_);
 
     // Temporary vectors containing gradient value and diagonal part of the Hessian for each IDP
     double *grad = new double[dim_];
@@ -233,17 +237,17 @@ void DCFTSolver::form_idps(){
 
     // Count the number of IDPs for orbital rotations (Alpha spin)
     // The minus sign in the gradient takes into account the sign of the g vector in the N-R equations: dX H = -g
-    int address = 0;
+    int orbital_address = 0;
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = 0; a < navirpi_[h]; ++a){
                 if (fabs(orbital_gradient_a_->get(h, i, a + naoccpi_[h])) > cutoff) {
-                    lookup_[address] = 1;
+                    lookup_orbitals_[orbital_address] = 1;
                     grad[orbital_idp_a_] = (-1.0) * orbital_gradient_a_->get(h, i, a + naoccpi_[h]);
                     Hd[orbital_idp_a_] = 2.0 * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
                     orbital_idp_a_++;
                 }
-                address++;
+                orbital_address++;
             }
         }
     }
@@ -253,141 +257,147 @@ void DCFTSolver::form_idps(){
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
                 if (fabs(orbital_gradient_b_->get(h, i, a + nboccpi_[h])) > cutoff) {
-                    lookup_[address] = 1;
+                    lookup_orbitals_[orbital_address] = 1;
                     int index = orbital_idp_a_ + orbital_idp_b_;
                     grad[index] = (-1.0) * orbital_gradient_b_->get(h, i, a + nboccpi_[h]);
                     Hd[index] = 2.0 * (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
                     orbital_idp_b_++;
                 }
-                address++;
+                orbital_address++;
             }
         }
     }
 
     orbital_idp_ = orbital_idp_a_ + orbital_idp_b_;
 
-    // Count the number of IDPs for cumulant updates
+    if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        // Count the number of IDPs for cumulant updates
+        dpdbuf4 R;
 
-    dpdbuf4 R, I;
+        ::memset(lookup_cumulant_, '\0', sizeof(int)*dim_cumulant_);
 
-    // Alpha-Alpha spin
-    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-              ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&R, h);
-        dpd_buf4_mat_irrep_rd(&R, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
-            size_t i = R.params->roworb[h][ij][0];
-            int isym = R.params->psym[i];
-            i -= R.params->poff[isym];
-            size_t j = R.params->roworb[h][ij][1];
-            int jsym = R.params->qsym[j];
-            j -= R.params->qoff[jsym];
-            for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
-                size_t a = R.params->colorb[h][ab][0];
-                int asym = R.params->rsym[a];
-                a -= R.params->roff[asym];
-                size_t b = R.params->colorb[h][ab][1];
-                int bsym = R.params->ssym[b];
-                b -= R.params->soff[bsym];
-                if (fabs(R.matrix[h][ij][ab]) > cutoff) {
-                    lookup_[address] = 1;
-                    int index = orbital_idp_ + lambda_idp_aa_;
-                    grad[index] = -0.25 * R.matrix[h][ij][ab];
-                    double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym])
-                            + moFa_->get(bsym, b + naoccpi_[bsym], b + naoccpi_[bsym])
-                            - moFa_->get(isym, i, i) - moFa_->get(jsym, j, j);
-                    Hd[index] = (1.0/16.0) * value;
-                    lambda_idp_aa_++ ;
+        int cumulant_address = 0;
+
+        // Alpha-Alpha spin
+        dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&R, h);
+            dpd_buf4_mat_irrep_rd(&R, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
+                size_t i = R.params->roworb[h][ij][0];
+                int isym = R.params->psym[i];
+                i -= R.params->poff[isym];
+                size_t j = R.params->roworb[h][ij][1];
+                int jsym = R.params->qsym[j];
+                j -= R.params->qoff[jsym];
+                for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
+                    size_t a = R.params->colorb[h][ab][0];
+                    int asym = R.params->rsym[a];
+                    a -= R.params->roff[asym];
+                    size_t b = R.params->colorb[h][ab][1];
+                    int bsym = R.params->ssym[b];
+                    b -= R.params->soff[bsym];
+                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                        lookup_cumulant_[cumulant_address] = 1;
+                        int index = orbital_idp_ + cumulant_idp_aa_;
+                        grad[index] = -0.25 * R.matrix[h][ij][ab];
+                        double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym])
+                                + moFa_->get(bsym, b + naoccpi_[bsym], b + naoccpi_[bsym])
+                                - moFa_->get(isym, i, i) - moFa_->get(jsym, j, j);
+                        Hd[index] = (1.0/16.0) * value;
+                        cumulant_idp_aa_++ ;
+                    }
+                    cumulant_address++;
                 }
-                address++;
             }
+            dpd_buf4_mat_irrep_close(&R, h);
         }
-        dpd_buf4_mat_irrep_close(&R, h);
-    }
-    dpd_buf4_close(&R);
+        dpd_buf4_close(&R);
 
-    // Alpha-Beta spin
-    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-              ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&R, h);
-        dpd_buf4_mat_irrep_rd(&R, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
-            size_t i = R.params->roworb[h][ij][0];
-            int isym = R.params->psym[i];
-            i -= R.params->poff[isym];
-            size_t j = R.params->roworb[h][ij][1];
-            int jsym = R.params->qsym[j];
-            j -= R.params->qoff[jsym];
-            for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
-                size_t a = R.params->colorb[h][ab][0];
-                int asym = R.params->rsym[a];
-                a -= R.params->roff[asym];
-                size_t b = R.params->colorb[h][ab][1];
-                int bsym = R.params->ssym[b];
-                b -= R.params->soff[bsym];
-                if (fabs(R.matrix[h][ij][ab]) > cutoff) {
-                    lookup_[address] = 1;
-                    int index = orbital_idp_ + lambda_idp_aa_ + lambda_idp_ab_;
-                    grad[index] = -0.25 * R.matrix[h][ij][ab];
-                    double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym])
-                            + moFb_->get(bsym, b + nboccpi_[bsym], b + nboccpi_[bsym])
-                            - moFa_->get(isym, i, i) - moFb_->get(jsym, j, j);
-                    Hd[index] = (1.0/16.0) * value;
-                    lambda_idp_ab_++ ;
+        // Alpha-Beta spin
+        dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&R, h);
+            dpd_buf4_mat_irrep_rd(&R, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
+                size_t i = R.params->roworb[h][ij][0];
+                int isym = R.params->psym[i];
+                i -= R.params->poff[isym];
+                size_t j = R.params->roworb[h][ij][1];
+                int jsym = R.params->qsym[j];
+                j -= R.params->qoff[jsym];
+                for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
+                    size_t a = R.params->colorb[h][ab][0];
+                    int asym = R.params->rsym[a];
+                    a -= R.params->roff[asym];
+                    size_t b = R.params->colorb[h][ab][1];
+                    int bsym = R.params->ssym[b];
+                    b -= R.params->soff[bsym];
+                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                        lookup_cumulant_[cumulant_address] = 1;
+                        int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_;
+                        grad[index] = -0.25 * R.matrix[h][ij][ab];
+                        double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym])
+                                + moFb_->get(bsym, b + nboccpi_[bsym], b + nboccpi_[bsym])
+                                - moFa_->get(isym, i, i) - moFb_->get(jsym, j, j);
+                        Hd[index] = (1.0/16.0) * value;
+                        cumulant_idp_ab_++ ;
+                    }
+                    cumulant_address++;
                 }
-                address++;
             }
+            dpd_buf4_mat_irrep_close(&R, h);
         }
-        dpd_buf4_mat_irrep_close(&R, h);
-    }
-    dpd_buf4_close(&R);
+        dpd_buf4_close(&R);
 
-    // Beta-Beta spin
-    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-              ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&R, h);
-        dpd_buf4_mat_irrep_rd(&R, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
-            size_t i = R.params->roworb[h][ij][0];
-            int isym = R.params->psym[i];
-            i -= R.params->poff[isym];
-            size_t j = R.params->roworb[h][ij][1];
-            int jsym = R.params->qsym[j];
-            j -= R.params->qoff[jsym];
-            for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
-                size_t a = R.params->colorb[h][ab][0];
-                int asym = R.params->rsym[a];
-                a -= R.params->roff[asym];
-                size_t b = R.params->colorb[h][ab][1];
-                int bsym = R.params->ssym[b];
-                b -= R.params->soff[bsym];
-                if (fabs(R.matrix[h][ij][ab]) > cutoff) {
-                    lookup_[address] = 1;
-                    int index = orbital_idp_ + lambda_idp_aa_ + lambda_idp_ab_ + lambda_idp_bb_;
-                    grad[index] = -0.25 * R.matrix[h][ij][ab];
-                    double value = moFb_->get(asym, a + nboccpi_[asym], a + nboccpi_[asym])
-                            + moFb_->get(bsym, b + nboccpi_[bsym], b + nboccpi_[bsym])
-                            - moFb_->get(isym, i, i) - moFb_->get(jsym, j, j);
-                    Hd[index] = (1.0/16.0) * value;
-                    lambda_idp_bb_++ ;
+        // Beta-Beta spin
+        dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&R, h);
+            dpd_buf4_mat_irrep_rd(&R, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < R.params->rowtot[h]; ++ij){
+                size_t i = R.params->roworb[h][ij][0];
+                int isym = R.params->psym[i];
+                i -= R.params->poff[isym];
+                size_t j = R.params->roworb[h][ij][1];
+                int jsym = R.params->qsym[j];
+                j -= R.params->qoff[jsym];
+                for(size_t ab = 0; ab < R.params->coltot[h]; ++ab){
+                    size_t a = R.params->colorb[h][ab][0];
+                    int asym = R.params->rsym[a];
+                    a -= R.params->roff[asym];
+                    size_t b = R.params->colorb[h][ab][1];
+                    int bsym = R.params->ssym[b];
+                    b -= R.params->soff[bsym];
+                    if (fabs(R.matrix[h][ij][ab]) > cutoff) {
+                        lookup_cumulant_[cumulant_address] = 1;
+                        int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_ + cumulant_idp_bb_;
+                        grad[index] = -0.25 * R.matrix[h][ij][ab];
+                        double value = moFb_->get(asym, a + nboccpi_[asym], a + nboccpi_[asym])
+                                + moFb_->get(bsym, b + nboccpi_[bsym], b + nboccpi_[bsym])
+                                - moFb_->get(isym, i, i) - moFb_->get(jsym, j, j);
+                        Hd[index] = (1.0/16.0) * value;
+                        cumulant_idp_bb_++ ;
+                    }
+                    cumulant_address++;
                 }
-                address++;
             }
+            dpd_buf4_mat_irrep_close(&R, h);
         }
-        dpd_buf4_mat_irrep_close(&R, h);
+        dpd_buf4_close(&R);
+
+        cumulant_idp_ = cumulant_idp_aa_ + cumulant_idp_ab_ + cumulant_idp_bb_;
     }
-    dpd_buf4_close(&R);
 
-    lambda_idp_ = lambda_idp_aa_ + lambda_idp_ab_ + lambda_idp_bb_;
-    nidp_ = orbital_idp_ + lambda_idp_;
+    nidp_ = orbital_idp_ + cumulant_idp_;
 
-    // Reallocate the memory for the arrays of the dimensions changed
+    // Reallocate the memory for the arrays if the dimensions changed
     if (old_nidp != nidp_) {
         gradient_ = SharedVector(new Vector("Orbital and Cumulant Gradient in the IDP basis", nidp_));
         Hd_ = SharedVector(new Vector("Diagonal part of the Hessian in the IDP basis", nidp_));
@@ -411,7 +421,6 @@ void DCFTSolver::form_idps(){
         X_->set(p, grad[p]/Hd[p]);
     }
 
-
     // Perform stability analysis if requested by the user
     if (options_.get_bool("STABILITY_CHECK")) run_davidson();
 
@@ -423,20 +432,21 @@ void DCFTSolver::form_idps(){
         D_->set(p, X_->get(p));
     }
 
+    delete[] Hd;
+    delete[] grad;
+
 }
 
 void
 DCFTSolver::compute_sigma_vector() {
 
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-    dpdfile2 D2, S2, LD_OO, LD_oo, LD_VV, LD_vv, DI, DIsym;
-    dpdbuf4 I, L, D4, S4, T, Taa, Tab, Tbb, D4aa, D4ab, D4bb;
+    dpdfile2 D2, S2;
+    dpdbuf4 D4, S4;
 
     // Copy the IDP arrays from memory to DPD file2 and buf4
-
-    int address = 0;
+    int orbital_address = 0;
     int idpcount = 0;
+
     // Conjugate direction for orbital rotations (Alpha spin)
     dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
     dpd_file2_mat_init(&D2);
@@ -445,11 +455,11 @@ DCFTSolver::compute_sigma_vector() {
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = 0; a < navirpi_[h]; ++a){
                 D2.matrix[h][i][a] = 0.0;
-                if (lookup_[address]) {
+                if (lookup_orbitals_[orbital_address]) {
                     D2.matrix[h][i][a] = D_->get(idpcount);
                     idpcount++;
                 }
-                address++;
+                orbital_address++;
             }
         }
     }
@@ -464,80 +474,216 @@ DCFTSolver::compute_sigma_vector() {
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
                 D2.matrix[h][i][a] = 0.0;
-                if (lookup_[address]) {
+                if (lookup_orbitals_[orbital_address]) {
                     D2.matrix[h][i][a] = D_->get(idpcount);
                     idpcount++;
                 }
-                address++;
+                orbital_address++;
             }
         }
     }
     dpd_file2_mat_wrt(&D2);
     dpd_file2_close(&D2);
 
-    // Conjugate directions for cumulant updates
-    // Alpha-Alpha spin
-    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-              ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D4, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
-                D4.matrix[h][ij][ab] = 0.0;
-                if (lookup_[address]) {
-                    D4.matrix[h][ij][ab] = D_->get(idpcount);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-        dpd_buf4_mat_irrep_wrt(&D4, h);
-        dpd_buf4_mat_irrep_close(&D4, h);
-    }
-    dpd_buf4_close(&D4);
+    if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
 
-    // Alpha-Beta spin
-    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-              ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D4, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
-                D4.matrix[h][ij][ab] = 0.0;
-                if (lookup_[address]) {
-                    D4.matrix[h][ij][ab] = D_->get(idpcount);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-        dpd_buf4_mat_irrep_wrt(&D4, h);
-        dpd_buf4_mat_irrep_close(&D4, h);
-    }
-    dpd_buf4_close(&D4);
+        int cumulant_address = 0;
 
-    // Beta-Beta spin
-    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-              ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
+        // Conjugate directions for cumulant updates
+        // Alpha-Alpha spin
+        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&D4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
+                    D4.matrix[h][ij][ab] = 0.0;
+                    if (lookup_cumulant_[cumulant_address]) {
+                        D4.matrix[h][ij][ab] = D_->get(idpcount);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_wrt(&D4, h);
+            dpd_buf4_mat_irrep_close(&D4, h);
+        }
+        dpd_buf4_close(&D4);
+
+        // Alpha-Beta spin
+        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&D4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
+                    D4.matrix[h][ij][ab] = 0.0;
+                    if (lookup_cumulant_[cumulant_address]) {
+                        D4.matrix[h][ij][ab] = D_->get(idpcount);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_wrt(&D4, h);
+            dpd_buf4_mat_irrep_close(&D4, h);
+        }
+        dpd_buf4_close(&D4);
+
+        // Beta-Beta spin
+        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&D4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
+                    D4.matrix[h][ij][ab] = 0.0;
+                    if (lookup_cumulant_[cumulant_address]) {
+                        D4.matrix[h][ij][ab] = D_->get(idpcount);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_wrt(&D4, h);
+            dpd_buf4_mat_irrep_close(&D4, h);
+        }
+        dpd_buf4_close(&D4);
+    }
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    // Orbital-Orbital part of the Hessian
+    compute_sigma_vector_orb_orb();
+    // Orbital-Cumulant part of the Hessian
+    if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        if (options_.get_bool("QC_COUPLING")) {
+            compute_sigma_vector_orb_cum();
+        }
+        // Cumulant-Cumulant part of the Hessian
+        compute_sigma_vector_cum_cum();
+        // Cumulant-Orbital part of the Hessian
+        if (options_.get_bool("QC_COUPLING")) {
+            compute_sigma_vector_cum_orb();
+        }
+    }
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+    // Now copy the sigma vector back to memory
+    orbital_address = 0;
+    idpcount = 0;
+    // Alpha spin
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_mat_init(&S2);
+    dpd_file2_mat_rd(&S2);
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&D4, h);
         #pragma omp parallel for
-        for(size_t ij = 0; ij < D4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < D4.params->coltot[h]; ++ab){
-                D4.matrix[h][ij][ab] = 0.0;
-                if (lookup_[address]) {
-                    D4.matrix[h][ij][ab] = D_->get(idpcount);
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int a = 0; a < navirpi_[h]; ++a){
+                if (lookup_orbitals_[orbital_address]) {
+                    sigma_->set(idpcount, S2.matrix[h][i][a]);
                     idpcount++;
                 }
-                address++;
+                orbital_address++;
             }
         }
-        dpd_buf4_mat_irrep_wrt(&D4, h);
-        dpd_buf4_mat_irrep_close(&D4, h);
     }
-    dpd_buf4_close(&D4);
+    dpd_file2_close(&S2);
+
+    // Beta spin
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_mat_init(&S2);
+    dpd_file2_mat_rd(&S2);
+    for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int a = 0; a < nbvirpi_[h]; ++a){
+                if (lookup_orbitals_[orbital_address]) {
+                    sigma_->set(idpcount, S2.matrix[h][i][a]);
+                    idpcount++;
+                }
+                orbital_address++;
+            }
+        }
+    }
+    dpd_file2_close(&S2);
+
+    if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+
+        int cumulant_address = 0;
+
+        // Alpha-Alpha spin
+        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&S4, h);
+            dpd_buf4_mat_irrep_rd(&S4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
+                    if (lookup_cumulant_[cumulant_address]) {
+                        sigma_->set(idpcount, S4.matrix[h][ij][ab]);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_close(&S4, h);
+        }
+        dpd_buf4_close(&S4);
+
+        // Alpha-Beta spin
+        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&S4, h);
+            dpd_buf4_mat_irrep_rd(&S4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
+                    if (lookup_cumulant_[cumulant_address]) {
+                        sigma_->set(idpcount, S4.matrix[h][ij][ab]);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_close(&S4, h);
+        }
+        dpd_buf4_close(&S4);
+
+        // Beta-Beta spin
+        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
+        for(int h = 0; h < nirrep_; ++h){
+            dpd_buf4_mat_irrep_init(&S4, h);
+            dpd_buf4_mat_irrep_rd(&S4, h);
+            #pragma omp parallel for
+            for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
+                for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
+                    if (lookup_cumulant_[cumulant_address]) {
+                        sigma_->set(idpcount, S4.matrix[h][ij][ab]);
+                        idpcount++;
+                    }
+                    cumulant_address++;
+                }
+            }
+            dpd_buf4_mat_irrep_close(&S4, h);
+        }
+        dpd_buf4_close(&S4);
+    }
+
+}
+
+void
+DCFTSolver::compute_sigma_vector_orb_orb() {
+
+    dpdfile2 D2, S2;
+    dpdbuf4 I;
 
     // Orbital-Orbital block of the Hessian
 
@@ -623,237 +769,250 @@ DCFTSolver::compute_sigma_vector() {
     dpd_file2_close(&D2);
     dpd_file2_close(&S2);
 
-    if (options_.get_bool("QC_COUPLING")) {
-        // Orbital-Lambda block of the Hessian
+}
 
-        // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * Lambda_MLCD * D_KLCD
-        // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
+void
+DCFTSolver::compute_sigma_vector_orb_cum() {
 
-        // Compute Lambda * D intermediates for both terms
+    dpdfile2 S2, LD_OO, LD_oo, LD_VV, LD_vv;
+    dpdbuf4 I, L, D4;
 
-        dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
-        dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
-        dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+    // Orbital-Lambda block of the Hessian
 
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
+    // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * Lambda_MLCD * D_KLCD
+    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
 
-        // LD_IJ = Lambda_MLCD * D_KLCD
-        dpd_contract442(&L, &D4, &LD_OO, 0, 0, 1.0, 0.0);
+    // Compute Lambda * D intermediates for both terms
 
-        // LD_AB = Lambda_KLED * D_KLCD
-        dpd_contract442(&L, &D4, &LD_VV, 2, 2, 1.0, 0.0);
+    dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
 
-        dpd_buf4_close(&D4);
-        dpd_buf4_close(&L);
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "D4 <OO|VV>");
 
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
+    // LD_IJ = Lambda_MLCD * D_KLCD
+    dpd_contract442(&L, &D4, &LD_OO, 0, 0, 1.0, 0.0);
 
-        // LD_ij = Lambda_mlcd * D_klcd
-        dpd_contract442(&L, &D4, &LD_oo, 0, 0, 1.0, 0.0);
+    // LD_AB = Lambda_KLED * D_KLCD
+    dpd_contract442(&L, &D4, &LD_VV, 2, 2, 1.0, 0.0);
 
-        // LD_ab = Lambda_kled * D_klcd
-        dpd_contract442(&L, &D4, &LD_vv, 2, 2, 1.0, 0.0);
+    dpd_buf4_close(&D4);
+    dpd_buf4_close(&L);
 
-        dpd_buf4_close(&D4);
-        dpd_buf4_close(&L);
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "D4 <oo|vv>");
 
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
+    // LD_ij = Lambda_mlcd * D_klcd
+    dpd_contract442(&L, &D4, &LD_oo, 0, 0, 1.0, 0.0);
 
-        // LD_IJ += Lambda_IkAb D4_JkAb + Lambda_IkaB D4_JkaB
-        dpd_contract442(&L, &D4, &LD_OO, 0, 0, 2.0, 1.0);
-        // LD_ij += Lambda_KiAb D4_KjAb + Lambda_KiaB D4_KjaB
-        dpd_contract442(&L, &D4, &LD_oo, 1, 1, 2.0, 1.0);
-        // LD_AB += Lambda_IjAc D4_IjBc + Lambda_iJAc D4_iJBc
-        dpd_contract442(&L, &D4, &LD_VV, 2, 2, 2.0, 1.0);
-        // LD_ab += Lambda_IjCa D4_IjCb + Lambda_iJCa D4_iJCb
-        dpd_contract442(&L, &D4, &LD_vv, 3, 3, 2.0, 1.0);
+    // LD_ab = Lambda_kled * D_klcd
+    dpd_contract442(&L, &D4, &LD_vv, 2, 2, 1.0, 0.0);
 
-        dpd_buf4_close(&D4);
-        dpd_buf4_close(&L);
+    dpd_buf4_close(&D4);
+    dpd_buf4_close(&L);
 
-        dpd_file2_close(&LD_OO);
-        dpd_file2_close(&LD_oo);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&LD_vv);
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    dpd_buf4_init(&D4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
 
-        // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * LD_MK
-        // Sigma_IA += 0.25 * (2(MK|AI) - <MK|IA> - <MK|AI>) LD_MK
-        // Sigma_IA += 0.5 * (AI|MK) * LD_MK
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                      ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-        dpd_contract422(&I, &LD_OO, &S2, 0, 1, 0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_OO);
-        dpd_file2_close(&S2);
+    // LD_IJ += Lambda_IkAb D4_JkAb + Lambda_IkaB D4_JkaB
+    dpd_contract442(&L, &D4, &LD_OO, 0, 0, 2.0, 1.0);
+    // LD_ij += Lambda_KiAb D4_KjAb + Lambda_KiaB D4_KjaB
+    dpd_contract442(&L, &D4, &LD_oo, 1, 1, 2.0, 1.0);
+    // LD_AB += Lambda_IjAc D4_IjBc + Lambda_iJAc D4_iJBc
+    dpd_contract442(&L, &D4, &LD_VV, 2, 2, 2.0, 1.0);
+    // LD_ab += Lambda_IjCa D4_IjCb + Lambda_iJCa D4_iJCb
+    dpd_contract442(&L, &D4, &LD_vv, 3, 3, 2.0, 1.0);
 
-        // Sigma_IA += 0.5 * (AI|mk) * LD_mk
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,o]"),
-                      ID("[V,O]"), ID("[o>=o]+"), 0, "MO Ints (VO|oo)");
-        dpd_contract422(&I, &LD_oo, &S2, 0, 1, 0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_oo);
-        dpd_file2_close(&S2);
+    dpd_buf4_close(&D4);
+    dpd_buf4_close(&L);
 
-        // Sigma_IA -= 0.25 * <IA|MK>  * LD_MK
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
-                      ID("[O,V]"), ID("[O,O]"), 0, "MO Ints <OV|OO>");
-        dpd_contract422(&I, &LD_OO, &S2, 0, 0, -0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_OO);
-        dpd_file2_close(&S2);
+    dpd_file2_close(&LD_OO);
+    dpd_file2_close(&LD_oo);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&LD_vv);
 
-        // Sigma_IA -= 0.25 * <AI|MK>  * LD_MK
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                      ID("[V,O]"), ID("[O,O]"), 0, "MO Ints <VO|OO>");
-        dpd_contract422(&I, &LD_OO, &S2, 0, 1, -0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_OO);
-        dpd_file2_close(&S2);
+    // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * LD_MK
+    // Sigma_IA += 0.25 * (2(MK|AI) - <MK|IA> - <MK|AI>) LD_MK
+    // Sigma_IA += 0.5 * (AI|MK) * LD_MK
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
+                  ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
+    dpd_contract422(&I, &LD_OO, &S2, 0, 1, 0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_OO);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia += 0.25 * (<am||ik> + <ak||im>) * LD_mk
-        // Sigma_ia += 0.25 * (2(mk|ai) - <mk|ia> - <mk|ai>) LD_mk
-        // Sigma_ia += 0.5 * (ai|mk) * LD_mk
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
-                      ID("[v,o]"), ID("[o>=o]+"), 0, "MO Ints (vo|oo)");
-        dpd_contract422(&I, &LD_oo, &S2, 0, 1, 0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_oo);
-        dpd_file2_close(&S2);
+    // Sigma_IA += 0.5 * (AI|mk) * LD_mk
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,o]"),
+                  ID("[V,O]"), ID("[o>=o]+"), 0, "MO Ints (VO|oo)");
+    dpd_contract422(&I, &LD_oo, &S2, 0, 1, 0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_oo);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia += 0.5 * (ai|MK) * LD_MK
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[O,O]"),
-                      ID("[v,o]"), ID("[O>=O]+"), 0, "MO Ints (vo|OO)");
-        dpd_contract422(&I, &LD_OO, &S2, 0, 1, 0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_OO);
-        dpd_file2_close(&S2);
+    // Sigma_IA -= 0.25 * <IA|MK>  * LD_MK
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
+                  ID("[O,V]"), ID("[O,O]"), 0, "MO Ints <OV|OO>");
+    dpd_contract422(&I, &LD_OO, &S2, 0, 0, -0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_OO);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia -= 0.25 * <ia|mk>  * LD_mk
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,o]"),
-                      ID("[o,v]"), ID("[o,o]"), 0, "MO Ints <ov|oo>");
-        dpd_contract422(&I, &LD_oo, &S2, 0, 0, -0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_oo);
-        dpd_file2_close(&S2);
+    // Sigma_IA -= 0.25 * <AI|MK>  * LD_MK
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
+                  ID("[V,O]"), ID("[O,O]"), 0, "MO Ints <VO|OO>");
+    dpd_contract422(&I, &LD_OO, &S2, 0, 1, -0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_OO);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia -= 0.25 * <ai|mk>  * LD_mk
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
-                      ID("[v,o]"), ID("[o,o]"), 0, "MO Ints <vo|oo>");
-        dpd_contract422(&I, &LD_oo, &S2, 0, 1, -0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_oo);
-        dpd_file2_close(&S2);
+    // Sigma_ia += 0.25 * (<am||ik> + <ak||im>) * LD_mk
+    // Sigma_ia += 0.25 * (2(mk|ai) - <mk|ia> - <mk|ai>) LD_mk
+    // Sigma_ia += 0.5 * (ai|mk) * LD_mk
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
+                  ID("[v,o]"), ID("[o>=o]+"), 0, "MO Ints (vo|oo)");
+    dpd_contract422(&I, &LD_oo, &S2, 0, 1, 0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_oo);
+    dpd_file2_close(&S2);
 
-        // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
-        // Sigma_IA -= 0.25 * (2(EC|AI) - <IA|EC> - <AI|EC>) LD_EC
-        // Sigma_IA -= 0.5 * (AI|CE) LD_CE
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                      ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-        dpd_contract422(&I, &LD_VV, &S2, 0, 0, -0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
+    // Sigma_ia += 0.5 * (ai|MK) * LD_MK
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[O,O]"),
+                  ID("[v,o]"), ID("[O>=O]+"), 0, "MO Ints (vo|OO)");
+    dpd_contract422(&I, &LD_OO, &S2, 0, 1, 0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_OO);
+    dpd_file2_close(&S2);
 
-        // Sigma_IA -= 0.5 * (IA|ce) * LD_ce
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[v,v]"),
-                      ID("[O,V]"), ID("[v>=v]+"), 0, "MO Ints (OV|vv)");
-        dpd_contract422(&I, &LD_vv, &S2, 0, 0, -0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_vv);
-        dpd_file2_close(&S2);
+    // Sigma_ia -= 0.25 * <ia|mk>  * LD_mk
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,o]"),
+                  ID("[o,v]"), ID("[o,o]"), 0, "MO Ints <ov|oo>");
+    dpd_contract422(&I, &LD_oo, &S2, 0, 0, -0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_oo);
+    dpd_file2_close(&S2);
 
-        // Sigma_IA += 0.25 * <IA|CE> * LD_CE
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                      ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        dpd_contract422(&I, &LD_VV, &S2, 1, 0, 0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
+    // Sigma_ia -= 0.25 * <ai|mk>  * LD_mk
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
+                  ID("[v,o]"), ID("[o,o]"), 0, "MO Ints <vo|oo>");
+    dpd_contract422(&I, &LD_oo, &S2, 0, 1, -0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_oo);
+    dpd_file2_close(&S2);
 
-        // Sigma_IA += 0.25 * <IA|EC> * LD_EC
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                      ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        dpd_contract422(&I, &LD_VV, &S2, 0, 0, 0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
+    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
+    // Sigma_IA -= 0.25 * (2(EC|AI) - <IA|EC> - <AI|EC>) LD_EC
+    // Sigma_IA -= 0.5 * (AI|CE) LD_CE
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
+    dpd_contract422(&I, &LD_VV, &S2, 0, 0, -0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia -= 0.25 * (<ic||ae> + <ie||ac>) * Lambda_kled * D_klcd
-        // Sigma_ia -= 0.25 * (2(ec|ai) - <ia|ec> - <ai|ec>) LD_ec
-        // Sigma_ia -= 0.5 * (ia|ce) LD_ce
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                      ID("[o,v]"), ID("[v>=v]+"), 0, "MO Ints (ov|vv)");
-        dpd_contract422(&I, &LD_VV, &S2, 0, 0, -0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
+    // Sigma_IA -= 0.5 * (IA|ce) * LD_ce
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[v,v]"),
+                  ID("[O,V]"), ID("[v>=v]+"), 0, "MO Ints (OV|vv)");
+    dpd_contract422(&I, &LD_vv, &S2, 0, 0, -0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_vv);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia -= 0.5 * (ia|CE) * LD_CE
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[V,V]"),
-                      ID("[o,v]"), ID("[V>=V]+"), 0, "MO Ints (ov|VV)");
-        dpd_contract422(&I, &LD_vv, &S2, 0, 0, -0.5, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_vv);
-        dpd_file2_close(&S2);
+    // Sigma_IA += 0.25 * <IA|CE> * LD_CE
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    dpd_contract422(&I, &LD_VV, &S2, 1, 0, 0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia += 0.25 * <ia|ce> * LD_ce
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                      ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
-        dpd_contract422(&I, &LD_VV, &S2, 1, 0, 0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
+    // Sigma_IA += 0.25 * <IA|EC> * LD_EC
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+                  ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    dpd_contract422(&I, &LD_VV, &S2, 0, 0, 0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
 
-        // Sigma_ia += 0.25 * <ia|ec> * LD_ec
-        dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-        dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                      ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
-        dpd_contract422(&I, &LD_VV, &S2, 0, 0, 0.25, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&LD_VV);
-        dpd_file2_close(&S2);
-    }
+    // Sigma_ia -= 0.25 * (<ic||ae> + <ie||ac>) * Lambda_kled * D_klcd
+    // Sigma_ia -= 0.25 * (2(ec|ai) - <ia|ec> - <ai|ec>) LD_ec
+    // Sigma_ia -= 0.5 * (ia|ce) LD_ce
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+                  ID("[o,v]"), ID("[v>=v]+"), 0, "MO Ints (ov|vv)");
+    dpd_contract422(&I, &LD_VV, &S2, 0, 0, -0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
+
+    // Sigma_ia -= 0.5 * (ia|CE) * LD_CE
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_vv, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[V,V]"),
+                  ID("[o,v]"), ID("[V>=V]+"), 0, "MO Ints (ov|VV)");
+    dpd_contract422(&I, &LD_vv, &S2, 0, 0, -0.5, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_vv);
+    dpd_file2_close(&S2);
+
+    // Sigma_ia += 0.25 * <ia|ce> * LD_ce
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
+    dpd_contract422(&I, &LD_VV, &S2, 1, 0, 0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
+
+    // Sigma_ia += 0.25 * <ia|ec> * LD_ec
+    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
+    dpd_file2_init(&LD_VV, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+                  ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
+    dpd_contract422(&I, &LD_VV, &S2, 0, 0, 0.25, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&LD_VV);
+    dpd_file2_close(&S2);
+
+}
+
+void
+DCFTSolver::compute_sigma_vector_cum_cum() {
+
+    dpdbuf4 I, D4, S4, T, Taa, Tab, Tbb, D4aa, D4ab, D4bb;
 
     // Lambda-Lambda block of the Hessian
 
@@ -1164,457 +1323,359 @@ DCFTSolver::compute_sigma_vector() {
 
     dpd_buf4_close(&Tbb);
 
-    if (options_.get_bool("QC_COUPLING")) {
-        // Lambda-Orbital block of the Hessian
+}
 
-        // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
-        // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
+void
+DCFTSolver::compute_sigma_vector_cum_orb() {
 
-        // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
-        // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
+    dpdfile2 D2, DI, DIsym;
+    dpdbuf4 I, L, S4, T;
 
-        // Compute D * I intermediates for both terms
+    // Lambda-Orbital block of the Hessian
 
-        // Compute D_kb * <ki||bj> intermediate (DI_ij)
+    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
+    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
 
-        // Alpha spin
+    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
+    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
 
-        // DI_IJ = (IJ|KC) D_KC
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
-                      ID("[O,O]"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
+    // Compute D * I intermediates for both terms
 
-        // DI_IJ -= <JI|KC> D_KC
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
-                      ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
-        dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
+    // Compute D_kb * <ki||bj> intermediate (DI_ij)
 
-        // DI_IJ += (IJ|ck) D_ck
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,o]"),
-                      ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
-        dpd_contract422(&I, &D2, &DI, 1, 0, 1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // Beta spin
-
-        // DI_ij = (ij|kc) D_kc
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                      ID("[o,o]"), ID("[o,v]"), 0, "MO Ints (oo|ov)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_ij -= <ji|kc> D_kc
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
-                      ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
-        dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_ij += (ij|CK) D_CK
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[V,O]"),
-                      ID("[o,o]"), ID("[V,O]"), 0, "MO Ints (oo|VO)");
-        dpd_contract422(&I, &D2, &DI, 1, 0, 1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // Compute D_kc * <ka||cb> intermediate (DI_ab)
-
-        // Alpha spin
-
-        // DI_AB = (AB|KC) D_KC
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,V]"),
-                      ID("[V>=V]+"), ID("[O,V]"), 0, "MO Ints (VV|OV)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_AB -= <BA|KC> D_KC
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,V]"),
-                      ID("[V,V]"), ID("[O,V]"), 0, "MO Ints <VV|OV>");
-        dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_AB += (AB|kc) D_kc
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
-                      ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // Beta spin
-
-        // DI_ab = (ab|kc) D_kc
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,v]"),
-                      ID("[v>=v]+"), ID("[o,v]"), 0, "MO Ints (vv|ov)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_ab -= <ba|kc> D_kc
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,v]"),
-                      ID("[v,v]"), ID("[o,v]"), 0, "MO Ints <vv|ov>");
-        dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // DI_ab += (ab|KC) D_KC
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
-        dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[O,V]"),
-                      ID("[v,v]"), ID("[O,V]"), 0, "MO Ints (vv|OV)");
-        dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 1.0);
-        dpd_buf4_close(&I);
-        dpd_file2_close(&D2);
-        dpd_file2_close(&DI);
-
-        // Symmetrize DI_ij and DI_ab
-
-        // DI <O|O>
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
-        dpd_file2_mat_init(&DI);
-        dpd_file2_mat_init(&DIsym);
-        dpd_file2_mat_rd(&DI);
-        for(int h = 0; h < nirrep_; ++h){
-#pragma omp parallel for
-            for(int i = 0 ; i < naoccpi_[h]; ++i){
-                for(int j = 0 ; j <= i; ++j){
-                    DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&DIsym);
-        dpd_file2_close(&DI);
-        dpd_file2_close(&DIsym);
-
-        // DI <o|o>
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
-        dpd_file2_mat_init(&DI);
-        dpd_file2_mat_init(&DIsym);
-        dpd_file2_mat_rd(&DI);
-        for(int h = 0; h < nirrep_; ++h){
-#pragma omp parallel for
-            for(int i = 0 ; i < nboccpi_[h]; ++i){
-                for(int j = 0 ; j <= i; ++j){
-                    DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&DIsym);
-        dpd_file2_close(&DI);
-        dpd_file2_close(&DIsym);
-
-        // DI <V|V>
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
-        dpd_file2_mat_init(&DI);
-        dpd_file2_mat_init(&DIsym);
-        dpd_file2_mat_rd(&DI);
-        for(int h = 0; h < nirrep_; ++h){
-#pragma omp parallel for
-            for(int i = 0 ; i < navirpi_[h]; ++i){
-                for(int j = 0 ; j <= i; ++j){
-                    DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&DIsym);
-        dpd_file2_close(&DI);
-        dpd_file2_close(&DIsym);
-
-        // DI <v|v>
-        dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
-        dpd_file2_mat_init(&DI);
-        dpd_file2_mat_init(&DIsym);
-        dpd_file2_mat_rd(&DI);
-        for(int h = 0; h < nirrep_; ++h){
-#pragma omp parallel for
-            for(int i = 0 ; i < nbvirpi_[h]; ++i){
-                for(int j = 0 ; j <= i; ++j){
-                    DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&DIsym);
-        dpd_file2_close(&DI);
-        dpd_file2_close(&DIsym);
-
-        // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
-        // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
-
-        // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
-        // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
-
-        //
-        // Sigma <OO|VV>
-        //
-
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
-        // The first pair index of the result of dpd_contract244 contains the file2 index.
-        // The second pair index of the result of dpd_contract424 contains the file2 index.
-        // This is how dpd_contract244 works: AD * IJDB -> ABIJ ?-(t)-> IJAB. If BD * IJDA -> BAIJ -(t)-> IJBA
-        // This is how dpd_contract424 works: IJAD * BD -> IJAB ?-(t)-> ABIJ. If IJBD * AD -> IJBA ?-(t)-> BAIJ
-        // Temp_IJAB = DIsym_AC lambda_IJCB
-        dpd_contract244(&DIsym, &L, &T, 1, 2, 1, 1.0, 0.0);
-        // Sigma_IJAB -= 0.5 * Temp_IJAB
-        dpd_buf4_add(&S4, &T, -0.5);
-        dpd_file2_close(&DIsym);
-        dpd_buf4_close(&L);
-        // Temp_IJAB -> Temp_IJBA
-        dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
-        dpd_buf4_close(&T);
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
-        // Sigma_IJAB += 0.5 * Temp_IJBA
-        dpd_buf4_add(&S4, &T, 0.5);
-        dpd_buf4_close(&T);
-
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
-        // Temp_IJAB = DIsym_IK lambda_KJAB
-        dpd_contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
-        dpd_file2_close(&DIsym);
-        dpd_buf4_close(&L);
-        // Sigma_IJAB += 0.5 * Temp_IJAB
-        dpd_buf4_add(&S4, &T, 0.5);
-        // Temp_IJAB -> Temp_JIAB
-        dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
-        dpd_buf4_close(&T);
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                      ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
-        // Sigma_IJAB -= 0.5 * Temp_JIAB
-        dpd_buf4_add(&S4, &T, -0.5);
-        dpd_buf4_close(&T);
-        dpd_buf4_close(&S4);
-
-        //
-        // Sigma <Oo|Vv>
-        //
-
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                      ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
-        // Sigma_IjAb -= 0.5 * DIsym_AC * lambda_IjCb
-        dpd_contract244(&DIsym, &L, &S4, 1, 2, 1, -0.5, 1.0);
-        dpd_file2_close(&DIsym);
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
-        // Sigma_IjAb -= 0.5 * lambda_IjAc DIsym_bc
-        dpd_contract424(&L, &DIsym, &S4, 3, 1, 0, -0.5, 1.0);
-        dpd_file2_close(&DIsym);
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
-        // Sigma_IjAb += 0.5 * DIsym_IK * lambda_KjAb
-        dpd_contract244(&DIsym, &L, &S4, 1, 0, 0, 0.5, 1.0);
-        dpd_file2_close(&DIsym);
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
-        // Sigma_IjAb += 0.5 * lambda_IkAb * DIsym_jk
-        dpd_contract424(&L, &DIsym, &S4, 1, 1, 1, 0.5, 1.0);
-        dpd_file2_close(&DIsym);
-        dpd_buf4_close(&S4);
-        dpd_buf4_close(&L);
-
-        //
-        // Sigma <oo|vv>
-        //
-
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-        dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
-        // Temp_ijab = DIsym_ac lambda_ijcb
-        dpd_contract244(&DIsym, &L, &T, 1, 2, 1, 1.0, 0.0);
-        // Sigma_ijab -= 0.5 * Temp_ijab
-        dpd_buf4_add(&S4, &T, -0.5);
-        dpd_file2_close(&DIsym);
-        dpd_buf4_close(&L);
-        // Temp_ijab -> Temp_ijba
-        dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
-        dpd_buf4_close(&T);
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
-        // Sigma_ijba += 0.5 * Temp_ijba
-        dpd_buf4_add(&S4, &T, 0.5);
-        dpd_buf4_close(&T);
-
-        dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
-        dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
-        // Temp_ijab = DIsym_ik lambda_kjab
-        dpd_contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
-        dpd_file2_close(&DIsym);
-        dpd_buf4_close(&L);
-        // Sigma_ijab += 0.5 * Temp_ijab
-        dpd_buf4_add(&S4, &T, 0.5);
-        // Temp_ijab -> Temp_jiab
-        dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
-        dpd_buf4_close(&T);
-        dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                      ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
-        // Sigma_ijab -= 0.5 * Temp_jiab
-        dpd_buf4_add(&S4, &T, -0.5);
-        dpd_buf4_close(&T);
-        dpd_buf4_close(&S4);
-    }
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-    //
-    // Now copy the sigma vector back to memory
-    //
-
-    address = 0;
-    idpcount = 0;
     // Alpha spin
-    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
-    dpd_file2_mat_init(&S2);
-    dpd_file2_mat_rd(&S2);
-    for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
-        for(int i = 0; i < naoccpi_[h]; ++i){
-            for(int a = 0; a < navirpi_[h]; ++a){
-                if (lookup_[address]) {
-                    sigma_->set(idpcount, S2.matrix[h][i][a]);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-    }
-    dpd_file2_close(&S2);
+
+    // DI_IJ = (IJ|KC) D_KC
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_IJ -= <JI|KC> D_KC
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO|OV>");
+    dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_IJ += (IJ|ck) D_ck
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,o]"),
+                  ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
+    dpd_contract422(&I, &D2, &DI, 1, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
 
     // Beta spin
-    dpd_file2_init(&S2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
-    dpd_file2_mat_init(&S2);
-    dpd_file2_mat_rd(&S2);
-    for(int h = 0; h < nirrep_; ++h){
-        #pragma omp parallel for
-        for(int i = 0; i < nboccpi_[h]; ++i){
-            for(int a = 0; a < nbvirpi_[h]; ++a){
-                if (lookup_[address]) {
-                    sigma_->set(idpcount, S2.matrix[h][i][a]);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-    }
-    dpd_file2_close(&S2);
 
-    // Alpha-Alpha spin
-    dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-              ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
+    // DI_ij = (ij|kc) D_kc
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints (oo|ov)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_ij -= <ji|kc> D_kc
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "MO Ints <oo|ov>");
+    dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_ij += (ij|CK) D_CK
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[V,O]"),
+                  ID("[o,o]"), ID("[V,O]"), 0, "MO Ints (oo|VO)");
+    dpd_contract422(&I, &D2, &DI, 1, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // Compute D_kc * <ka||cb> intermediate (DI_ab)
+
+    // Alpha spin
+
+    // DI_AB = (AB|KC) D_KC
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,V]"),
+                  ID("[V>=V]+"), ID("[O,V]"), 0, "MO Ints (VV|OV)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_AB -= <BA|KC> D_KC
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,V]"),
+                  ID("[V,V]"), ID("[O,V]"), 0, "MO Ints <VV|OV>");
+    dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_AB += (AB|kc) D_kc
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
+                  ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // Beta spin
+
+    // DI_ab = (ab|kc) D_kc
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,v]"),
+                  ID("[v>=v]+"), ID("[o,v]"), 0, "MO Ints (vv|ov)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 0.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_ab -= <ba|kc> D_kc
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "D2 <o|v>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,v]"),
+                  ID("[v,v]"), ID("[o,v]"), 0, "MO Ints <vv|ov>");
+    dpd_contract422(&I, &D2, &DI, 0, 1, -1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // DI_ab += (ab|KC) D_KC
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
+    dpd_file2_init(&D2, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "D2 <O|V>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[O,V]"),
+                  ID("[v,v]"), ID("[O,V]"), 0, "MO Ints (vv|OV)");
+    dpd_contract422(&I, &D2, &DI, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&D2);
+    dpd_file2_close(&DI);
+
+    // Symmetrize DI_ij and DI_ab
+
+    // DI <O|O>
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O>");
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
+    dpd_file2_mat_init(&DI);
+    dpd_file2_mat_init(&DIsym);
+    dpd_file2_mat_rd(&DI);
     for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&S4, h);
-        dpd_buf4_mat_irrep_rd(&S4, h);
         #pragma omp parallel for
-        for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
-                    sigma_->set(idpcount, S4.matrix[h][ij][ab]);
-                    idpcount++;
-                }
-                address++;
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
             }
         }
-        dpd_buf4_mat_irrep_close(&S4, h);
     }
+    dpd_file2_mat_wrt(&DIsym);
+    dpd_file2_close(&DI);
+    dpd_file2_close(&DIsym);
+
+    // DI <o|o>
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o>");
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
+    dpd_file2_mat_init(&DI);
+    dpd_file2_mat_init(&DIsym);
+    dpd_file2_mat_rd(&DI);
+    for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&DIsym);
+    dpd_file2_close(&DI);
+    dpd_file2_close(&DIsym);
+
+    // DI <V|V>
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V>");
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
+    dpd_file2_mat_init(&DI);
+    dpd_file2_mat_init(&DIsym);
+    dpd_file2_mat_rd(&DI);
+    for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
+        for(int i = 0 ; i < navirpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&DIsym);
+    dpd_file2_close(&DI);
+    dpd_file2_close(&DIsym);
+
+    // DI <v|v>
+    dpd_file2_init(&DI, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v>");
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
+    dpd_file2_mat_init(&DI);
+    dpd_file2_mat_init(&DIsym);
+    dpd_file2_mat_rd(&DI);
+    for(int h = 0; h < nirrep_; ++h){
+        #pragma omp parallel for
+        for(int i = 0 ; i < nbvirpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                DIsym.matrix[h][i][j] = DIsym.matrix[h][j][i] = DI.matrix[h][i][j] + DI.matrix[h][j][i];
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&DIsym);
+    dpd_file2_close(&DI);
+    dpd_file2_close(&DIsym);
+
+    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
+    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
+
+    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
+    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
+
+    //
+    // Sigma <OO|VV>
+    //
+
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Sigma <OO|VV>");
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    // The first pair index of the result of dpd_contract244 contains the file2 index.
+    // The second pair index of the result of dpd_contract424 contains the file2 index.
+    // This is how dpd_contract244 works: AD * IJDB -> ABIJ ?-(t)-> IJAB. If BD * IJDA -> BAIJ -(t)-> IJBA
+    // This is how dpd_contract424 works: IJAD * BD -> IJAB ?-(t)-> ABIJ. If IJBD * AD -> IJBA ?-(t)-> BAIJ
+    // Temp_IJAB = DIsym_AC lambda_IJCB
+    dpd_contract244(&DIsym, &L, &T, 1, 2, 1, 1.0, 0.0);
+    // Sigma_IJAB -= 0.5 * Temp_IJAB
+    dpd_buf4_add(&S4, &T, -0.5);
+    dpd_file2_close(&DIsym);
+    dpd_buf4_close(&L);
+    // Temp_IJAB -> Temp_IJBA
+    dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
+    // Sigma_IJAB += 0.5 * Temp_IJBA
+    dpd_buf4_add(&S4, &T, 0.5);
+    dpd_buf4_close(&T);
+
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
+    // Temp_IJAB = DIsym_IK lambda_KJAB
+    dpd_contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
+    dpd_file2_close(&DIsym);
+    dpd_buf4_close(&L);
+    // Sigma_IJAB += 0.5 * Temp_IJAB
+    dpd_buf4_add(&S4, &T, 0.5);
+    // Temp_IJAB -> Temp_JIAB
+    dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
+    // Sigma_IJAB -= 0.5 * Temp_JIAB
+    dpd_buf4_add(&S4, &T, -0.5);
+    dpd_buf4_close(&T);
     dpd_buf4_close(&S4);
 
-    // Alpha-Beta spin
+    //
+    // Sigma <Oo|Vv>
+    //
+
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-              ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&S4, h);
-        dpd_buf4_mat_irrep_rd(&S4, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
-                    sigma_->set(idpcount, S4.matrix[h][ij][ab]);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-        dpd_buf4_mat_irrep_close(&S4, h);
-    }
+                  ID("[O,o]"), ID("[V,v]"), 0, "Sigma <Oo|Vv>");
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
+    // Sigma_IjAb -= 0.5 * DIsym_AC * lambda_IjCb
+    dpd_contract244(&DIsym, &L, &S4, 1, 2, 1, -0.5, 1.0);
+    dpd_file2_close(&DIsym);
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
+    // Sigma_IjAb -= 0.5 * lambda_IjAc DIsym_bc
+    dpd_contract424(&L, &DIsym, &S4, 3, 1, 0, -0.5, 1.0);
+    dpd_file2_close(&DIsym);
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
+    // Sigma_IjAb += 0.5 * DIsym_IK * lambda_KjAb
+    dpd_contract244(&DIsym, &L, &S4, 1, 0, 0, 0.5, 1.0);
+    dpd_file2_close(&DIsym);
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
+    // Sigma_IjAb += 0.5 * lambda_IkAb * DIsym_jk
+    dpd_contract424(&L, &DIsym, &S4, 1, 1, 1, 0.5, 1.0);
+    dpd_file2_close(&DIsym);
     dpd_buf4_close(&S4);
+    dpd_buf4_close(&L);
 
-    // Beta-Beta spin
-    dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-              ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&S4, h);
-        dpd_buf4_mat_irrep_rd(&S4, h);
-        #pragma omp parallel for
-        for(size_t ij = 0; ij < S4.params->rowtot[h]; ++ij){
-            for(size_t ab = 0; ab < S4.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
-                    sigma_->set(idpcount, S4.matrix[h][ij][ab]);
-                    idpcount++;
-                }
-                address++;
-            }
-        }
-        dpd_buf4_mat_irrep_close(&S4, h);
-    }
+    //
+    // Sigma <oo|vv>
+    //
+
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    dpd_buf4_init(&S4, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Sigma <oo|vv>");
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    // Temp_ijab = DIsym_ac lambda_ijcb
+    dpd_contract244(&DIsym, &L, &T, 1, 2, 1, 1.0, 0.0);
+    // Sigma_ijab -= 0.5 * Temp_ijab
+    dpd_buf4_add(&S4, &T, -0.5);
+    dpd_file2_close(&DIsym);
+    dpd_buf4_close(&L);
+    // Temp_ijab -> Temp_ijba
+    dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
+    // Sigma_ijba += 0.5 * Temp_ijba
+    dpd_buf4_add(&S4, &T, 0.5);
+    dpd_buf4_close(&T);
+
+    dpd_file2_init(&DIsym, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
+    // Temp_ijab = DIsym_ik lambda_kjab
+    dpd_contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
+    dpd_file2_close(&DIsym);
+    dpd_buf4_close(&L);
+    // Sigma_ijab += 0.5 * Temp_ijab
+    dpd_buf4_add(&S4, &T, 0.5);
+    // Temp_ijab -> Temp_jiab
+    dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
+    dpd_buf4_close(&T);
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
+    // Sigma_ijab -= 0.5 * Temp_jiab
+    dpd_buf4_add(&S4, &T, -0.5);
+    dpd_buf4_close(&T);
     dpd_buf4_close(&S4);
 
 }
@@ -1708,24 +1769,25 @@ void
 DCFTSolver::check_qc_convergence() {
 
     orbitals_convergence_ = 0.0;
-    cumulant_convergence_ = 0.0;
 
     if (orbital_idp_ != 0) {
         for (int p = 0; p < orbital_idp_; ++p) orbitals_convergence_ += X_->get(p) * X_->get(p);
         orbitals_convergence_ = sqrt(orbitals_convergence_/orbital_idp_);
     }
 
-    if (lambda_idp_ != 0) {
-        for (int p = orbital_idp_; p < nidp_; ++p) cumulant_convergence_ += X_->get(p) * X_->get(p);
-        cumulant_convergence_ = sqrt(cumulant_convergence_/lambda_idp_);
+    if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        cumulant_convergence_ = 0.0;
+
+        if (cumulant_idp_ != 0) {
+            for (int p = orbital_idp_; p < nidp_; ++p) cumulant_convergence_ += X_->get(p) * X_->get(p);
+            cumulant_convergence_ = sqrt(cumulant_convergence_/cumulant_idp_);
+        }
     }
 
 }
 
 void
-DCFTSolver::update_cumulant_and_orbitals_nr() {
-
-    dpdbuf4 L;
+DCFTSolver::update_orbitals_nr() {
 
     // Initialize the orbital rotation matrix
     SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
@@ -1734,19 +1796,19 @@ DCFTSolver::update_cumulant_and_orbitals_nr() {
     SharedMatrix X_b(new Matrix("Generator of the orbital rotations (Beta)", nirrep_, nmopi_, nmopi_));
 
     // Fill up the X matrix
-    int address = 0;
+    int orbitals_address = 0;
     int idpcount = 0;
     // Alpha spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
             for(int a = 0; a < navirpi_[h]; ++a){
-                if (lookup_[address]) {
+                if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
                     X_a->set(h, i, a + naoccpi_[h], value);
                     X_a->set(h, a + naoccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
-                address++;
+                orbitals_address++;
             }
         }
     }
@@ -1755,13 +1817,13 @@ DCFTSolver::update_cumulant_and_orbitals_nr() {
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
             for(int a = 0; a < nbvirpi_[h]; ++a){
-                if (lookup_[address]) {
+                if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
                     X_b->set(h, i, a + nboccpi_[h], value);
                     X_b->set(h, a + nboccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
-                address++;
+                orbitals_address++;
             }
         }
     }
@@ -1808,21 +1870,31 @@ DCFTSolver::update_cumulant_and_orbitals_nr() {
         Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
     }
 
+}
+
+void
+DCFTSolver::update_cumulant_nr() {
+
+    dpdbuf4 L;
+
+    int cumulant_address = 0;
+    int idpcount = orbital_idp_;
+
     // Update the density cumulant
     // Alpha-Alpha spin
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-              ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_rd(&L, h);
         #pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
+                if (lookup_cumulant_[cumulant_address]) {
                     L.matrix[h][ij][ab] += 0.25 * X_->get(idpcount);
                     idpcount++;
                 }
-                address++;
+                cumulant_address++;
             }
         }
         dpd_buf4_mat_irrep_wrt(&L, h);
@@ -1832,18 +1904,18 @@ DCFTSolver::update_cumulant_and_orbitals_nr() {
 
     // Alpha-Beta spin
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-              ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_rd(&L, h);
         #pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
+                if (lookup_cumulant_[cumulant_address]) {
                     L.matrix[h][ij][ab] += 0.25 * X_->get(idpcount);
                     idpcount++;
                 }
-                address++;
+                cumulant_address++;
             }
         }
         dpd_buf4_mat_irrep_wrt(&L, h);
@@ -1853,18 +1925,18 @@ DCFTSolver::update_cumulant_and_orbitals_nr() {
 
     // Beta-Beta spin
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-              ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_rd(&L, h);
         #pragma omp parallel for
         for(size_t ij = 0; ij < L.params->rowtot[h]; ++ij){
             for(size_t ab = 0; ab < L.params->coltot[h]; ++ab){
-                if (lookup_[address]) {
+                if (lookup_cumulant_[cumulant_address]) {
                     L.matrix[h][ij][ab] += 0.25 * X_->get(idpcount);
                     idpcount++;
                 }
-                address++;
+                cumulant_address++;
             }
         }
         dpd_buf4_mat_irrep_wrt(&L, h);

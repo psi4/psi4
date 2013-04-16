@@ -793,8 +793,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       In the cases where the convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
       options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
-      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.-*/
+      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
+      If set to TWOSTEP the Newton-Raphson equations are only solved for the orbital updates,
+      the cumulant is updated using the standard Jacobi algorithm. If set to SIMULTANEOUS both cumulant
+      and orbitals are updated in a single Newton-Raphson step. -*/
+      options.add_str("QC_TYPE", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates, as well as
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
@@ -838,7 +843,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
-      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) -*/
+      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
+      with QC_TYPE = SIMULTANEOUS only) -*/
       options.add_bool("QC_COUPLING", true);
       /*- Performs stability analysis of the DCFT energy !expert-*/
       options.add_bool("STABILITY_CHECK", false);
