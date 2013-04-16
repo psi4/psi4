@@ -43,7 +43,9 @@ computed by QChem.
 
 #include "package.h"
 
-#if defined(OPTKING_PACKAGE_QCHEM)
+//****AVC****//
+//#if defined(OPTKING_PACKAGE_QCHEM)
+//****AVC****//
 
 #include "frag.h"
 #include "mem.h"
@@ -56,12 +58,18 @@ class EFP_FRAG : public FRAG {
   // they will be of dimension 6
   double *values;
   double *forces;
+//****AVC****//
+  double **xyz_geom;
+//****AVC****//
 
   public:
   // we will build a dummy fragment with no atoms
   EFP_FRAG() : FRAG(0) {
     values = init_array(6);
     forces = init_array(6);
+//****AVC****//
+    xyz_geom = init_matrix(3,3);
+//****AVC****//
   }
 
   ~EFP_FRAG() {
@@ -70,9 +78,15 @@ class EFP_FRAG : public FRAG {
    }
 
   void set_values(double * values_in);
+//****AVC****//
+  void set_xyz(double ** xyz_in);
+//****AVC****//
   void set_forces(double * forces_in);
 
   double * get_values_pointer(void) const { return values; }
+//****AVC****//
+  double ** get_xyz_pointer(void) const { return xyz_geom; }
+//****AVC****//
   double * get_forces_pointer(void) const { return forces; }
 
   // we don't have a valid B matrix for these
@@ -97,7 +111,9 @@ class EFP_FRAG : public FRAG {
 
 }
 
-#endif
+//****AVC****//
+//#endif
+//****AVC****//
 
 #endif
 

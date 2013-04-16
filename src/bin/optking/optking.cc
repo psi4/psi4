@@ -107,7 +107,28 @@ OptReturnType optking(void) {
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
 
-  if (if_intco.is_open()) { // old internal coordinates are present
+//****AVC****//
+  Opt_params.efp_fragments_only = true;
+  if(Opt_params.efp_fragments_only)
+  {
+    fprintf(outfile,"\n\tOnly EFP fragments are present.\n"); fflush(outfile);
+
+    p_efp = psi::Process::environment.get_efp(); //declared in globals.h
+    fprintf(outfile,"\n\tEFP object initialized, optking.cc, 98.\n"); fflush(outfile);
+
+    mol1 = new MOLECULE(0);       // construct an empty molecule
+    fprintf(outfile,"\n\tMolecule initialized, optking.cc, 101.\n"); fflush(outfile);
+    mol1->read_geom_grad();
+    fprintf(outfile,"\n\tRead geom grad completed, optking.cc, 103.\n"); fflush(outfile);
+  // determine the number of EFP fragments
+  // read geometry and gradient (into fragment?)
+  // set masses? probably not
+
+  }
+  else
+//****AVC****//
+
+    if (if_intco.is_open()) { // old internal coordinates are present
 
     fprintf(outfile,"\n\tPrevious internal coordinate definitions found.\n"); fflush(outfile);
     newly_generated_coordinates = false;

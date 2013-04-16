@@ -60,6 +60,18 @@ MOLECULE::MOLECULE(int num_atoms) {
     fragments.push_back(one_frag);
   }
 
+//****AVC****//
+  if(Opt_params.efp_fragments_only)
+  {
+    for(int f=0; f < p_efp->get_frag_count(); f++)
+    {
+      EFP_FRAG *efp_frag = new EFP_FRAG();
+      efp_fragments.push_back(efp_frag);
+fprintf(outfile, "\nefp_fragments.size() : %d\n", efp_fragments.size());
+    }
+  }
+//****AVC****//
+
   return;
 }
 

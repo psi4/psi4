@@ -42,10 +42,12 @@ class MOLECULE {
 
   vector<FRAG *> fragments;           // fragments with intrafragment coordinates
   vector<INTERFRAG *> interfragments; // interfragment coordinates
-#if defined(OPTKING_PACKAGE_QCHEM)
+//****AVC****//
+//#if defined(OPTKING_PACKAGE_QCHEM)
   vector<EFP_FRAG *> efp_fragments;   // EFP fixed-body fragment - does not actually
                                       // store atoms (for now at least)
-#endif
+//#endif
+//****AVC****//
   double energy;
 
  public:
@@ -59,11 +61,13 @@ class MOLECULE {
     for (int i=0; i<interfragments.size(); ++i)
       delete interfragments[i];
     interfragments.clear();
-#if defined(OPTKING_PACKAGE_QCHEM)
+//****AVC****//
+//#if defined(OPTKING_PACKAGE_QCHEM)
     for (int i=0; i<efp_fragments.size(); ++i)
       delete efp_fragments[i];
     efp_fragments.clear();
-#endif
+//#endif
+//****AVC****//
   }
 
   // if you have one fragment - make sure all atoms are bonded
