@@ -10,7 +10,7 @@
 #include "libtrans/integraltransform.h"
 #include "libiwl/iwl.hpp"
 #include "libplugin/plugin.h"
-#include "ccfiles.h"
+#include "psifiles.h"
 
 #define ID(x) ints.DPD_ID(x)
 INIT_PLUGIN
