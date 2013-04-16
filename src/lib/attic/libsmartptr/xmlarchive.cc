@@ -443,7 +443,7 @@ XMLArchive::getAttribute(long& val, const std::string& attrname)
 }
 
 void 
-XMLArchive::getAttribute(unsigned long& val, const std::string& attrname)
+XMLArchive::getAttribute(size_t& val, const std::string& attrname)
 {
     _getAttribute(val, attrname);
 }
@@ -454,11 +454,11 @@ XMLArchive::getAttribute(double& val, const std::string& attrname)
     _getAttribute(val, attrname);
 }
 
-void 
+/*void 
 XMLArchive::getAttribute(unsigned int& val, const std::string& attrname)
 {
     _getAttribute(val, attrname);
-}
+}*/
 
 void 
 XMLArchive::getAttribute(bool& val, const std::string& attrname)
@@ -485,7 +485,7 @@ XMLArchive::setAttribute(long val, const std::string& attrname)
 }
 
 void 
-XMLArchive::setAttribute(unsigned long val, const std::string& attrname)
+XMLArchive::setAttribute(size_t val, const std::string& attrname)
 {
     _setAttribute(val, attrname);
 }
@@ -496,11 +496,11 @@ XMLArchive::setAttribute(double val, const std::string& attrname)
     _setAttribute(val, attrname);
 }
 
-void 
+/*void 
 XMLArchive::setAttribute(unsigned int val, const std::string& attrname)
 {
     _setAttribute(val, attrname);
-}
+}*/
 
 void 
 XMLArchive::setAttribute(bool val, const std::string& attrname)

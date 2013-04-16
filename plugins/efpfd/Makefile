@@ -5,9 +5,9 @@
 #
 
 # Location of your PSI4 source
-top_srcdir = /home/rking/psi4
+top_srcdir = /home/avcopan/psi4
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/rking/psi4/objdir
+top_objdir = /home/avcopan/psi4/obj
 # Toggle for MADNESS
 MAKE_MADNESS = 0
 
@@ -18,9 +18,9 @@ include $(top_objdir)/src/bin/MakeVars
 
 # Reset these values, MakeVars changes them to values only valid in Psi4's objdir
 # Location of your PSI4 source
-top_srcdir = /home/rking/psi4
+top_srcdir = /home/avcopan/psi4
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/rking/psi4/objdir
+top_objdir = /home/avcopan/psi4/obj
 
 PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(top_objdir)/boost/boost_1_48_0 -I$(top_srcdir)/include -I$(top_objdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib  -I$(top_objdir)/libefp/install/include -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)

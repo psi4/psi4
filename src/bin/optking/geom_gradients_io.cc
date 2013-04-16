@@ -41,6 +41,9 @@
  #include <libmints/wavefunction.h>
  #include <libparallel/parallel.h>
  #include <libmints/writer_file_prefix.h>
+//****AVC****//
+#include <libefp_solver/efp_solver.h>
+//****AVC****//
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"
@@ -89,13 +92,27 @@ int read_natoms(void) {
 void MOLECULE::read_geom_grad(void) {
   int nfrag = fragments.size();
   int nallatom = g_natom();
+  int nEFPfrag = efp_fragments.size();
+fprintf(outfile, "\nnEFPfrag: %d\n", nEFPfrag);
+
 
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
 
   SharedMatrix pgradient;
-  if (psi::Process::environment.wavefunction()) {
+
+//****AVC****//
+  if(Opt_params.efp_fragments_only)
+  {
+//    p_efp->SetGeometry();
+    p_efp->Compute();
+    pgradient = psi::Process::environment.gradient();
+    pgradient->set_name("Gradient, EFP-Fragment-Only");
+  }
+  else
+//****AVC****//
+    if (psi::Process::environment.wavefunction()) {
     pgradient = psi::Process::environment.wavefunction()->gradient();
   } else {
     pgradient = psi::Process::environment.gradient();
@@ -105,8 +122,19 @@ void MOLECULE::read_geom_grad(void) {
 
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
+gradient.print();
+geometry.print();
 
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
+
+//****AVC****//
+  fprintf(outfile, "\ncurrent energy: %f\n", energy);
+  fprintf(outfile, "\nnfrag: %d\n", nfrag);
+  fprintf(outfile, "\np_efp->get_frag_count(): %d\n", p_efp->get_frag_count());
+  fprintf(outfile, "\nnEFPfrag: %d\n", nEFPfrag);
+  fprintf(outfile, "\nnallatom: %d\n", nallatom);
+  p_efp->print_out();
+//****AVC****//
 
   int atom =0;
   for (int f=0; f<nfrag; ++f) {

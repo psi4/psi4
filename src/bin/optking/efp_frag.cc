@@ -30,8 +30,12 @@
 #include "globals.h"
 
 #if defined (OPTKING_PACKAGE_QCHEM)
-
 #include "EFP.h" // QChem's header for calling displace function
+//****AVC****//
+#endif
+//****AVC****//
+
+
 namespace opt {
 
 void EFP_FRAG::set_values(double * values_in) {
@@ -77,12 +81,20 @@ double **EFP_FRAG::H_guess(void) {
   return H;
 }
 
+//****AVC****//
+#if defined (OPTKING_PACKAGE_QCHEM)
+//****AVC****//
   // Tell QChem to update rotation matrix and com for EFP fragment
 void EFP_FRAG::displace (int efp_frag_index, double *dq) {
   ::EFP::GetInstance()->displace(efp_frag_index, dq);
 }
+//****AVC****//
+#endif
+//****AVC****//
 
 }
 
-#endif
+//****AVC****//
+//#endif
+//****AVC****//
 

@@ -33,7 +33,12 @@ class EFP {
     public:
         EFP(Options& options);
         ~EFP();
-  
+
+//****AVC****//
+        /// Set geometry
+        void SetGeometry();
+//****AVC****//
+
         /// Compute energy and/or gradient
         void Compute();
 
