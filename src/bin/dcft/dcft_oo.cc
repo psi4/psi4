@@ -44,6 +44,7 @@ DCFTSolver::run_simult_dcft_oo()
     dpd_buf4_close(&Laa);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lbb);
+
     while((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
             && cycle++ < maxiter_){
         std::string diisString;
