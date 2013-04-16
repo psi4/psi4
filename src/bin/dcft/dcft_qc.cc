@@ -14,9 +14,9 @@ DCFTSolver::run_qc_dcft()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
 
-    fprintf(outfile, "\n\n\t*=================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy    NIter *\n"
-                         "\t*---------------------------------------------------------------------------------*\n");
+    fprintf(outfile, "\n\n\t*=======================================================================================*\n"
+                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy    NIter  DIIS *\n"
+                         "\t*---------------------------------------------------------------------------------------*\n");
 
     bool orbitalsDone     = false;
     bool cumulantDone     = false;
@@ -26,10 +26,38 @@ DCFTSolver::run_qc_dcft()
     int cycle = 0;
     int cycle_NR = 0;
 
+    // Copy the reference orbitals and to use them as the reference for the orbital rotation
+    old_ca_->copy(Ca_);
+    old_cb_->copy(Cb_);
+
     orbitals_convergence_ = compute_scf_error_vector();
 
-    while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_ ){
+    // Set up the DIIS manager
+    DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
+    dpdbuf4 Laa, Lab, Lbb;
+    dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(),
+                                         DIISEntry::Matrix, orbital_gradient_b_.get(),
+                                         DIISEntry::DPDBuf4, &Laa,
+                                         DIISEntry::DPDBuf4, &Lab,
+                                         DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::Matrix, Xtotal_a_.get(),
+                                   DIISEntry::Matrix, Xtotal_b_.get(),
+                                   DIISEntry::DPDBuf4, &Laa,
+                                   DIISEntry::DPDBuf4, &Lab,
+                                   DIISEntry::DPDBuf4, &Lbb);
+    dpd_buf4_close(&Laa);
+    dpd_buf4_close(&Lab);
+    dpd_buf4_close(&Lbb);
 
+    while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_ ) {
+
+        std::string diisString;
         // Compute the generalized Fock matrix and orbital gradient in the MO basis
         compute_orbital_gradient();
         // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
@@ -48,15 +76,9 @@ DCFTSolver::run_qc_dcft()
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
         energyConverged = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
-        // Print the iterative trace
-        fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d *\n",
-                cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
-                new_total_energy_, cycle_NR);
-        fflush(outfile);
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
         form_idps();
         if (nidp_ != 0) {
-            fprintf(outfile, "\t %-3d   %10d %10d %10d\n", cycle, nidp_, orbital_idp_, cumulant_idp_);
             // Compute sigma vector in the basis of IDPs
             compute_sigma_vector();
             // Solve the NR equations using conjugate gradients
@@ -65,14 +87,51 @@ DCFTSolver::run_qc_dcft()
             check_qc_convergence();
             orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
             cumulantDone = cumulant_convergence_ < cumulant_threshold_;
-            // Update cumulant and orbitals with the solution of the Newton-Raphson equations
-            update_orbitals_nr();
-            if(options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+            // Update cumulant first
+            if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
                 update_cumulant_nr();
             }
             else {
                 update_cumulant_jacobi();
             }
+            // Now update orbitals
+            compute_orbital_rotation_nr();
+            // DIIS
+            if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
+                dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
+                dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                              ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
+                dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                              ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+                dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                              ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
+                dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+                              ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
+                dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                              ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+                dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+                              ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+                if(diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+                                         Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)){
+                    diisString += "S";
+                }
+                if(diisManager.subspace_size() > mindiisvecs_){
+                    diisString += "/E";
+                    diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+                }
+                dpd_buf4_close(&Raa);
+                dpd_buf4_close(&Rab);
+                dpd_buf4_close(&Rbb);
+                dpd_buf4_close(&Laa);
+                dpd_buf4_close(&Lab);
+                dpd_buf4_close(&Lbb);
+            }
+            rotate_orbitals();
+            // Print the iterative trace
+            fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d   %-3s *\n",
+                    cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
+                    new_total_energy_, cycle_NR, diisString.c_str());
+            fflush(outfile);
             if (orbital_idp_ != 0) {
                 // Update the density
                 densityConverged = update_scf_density() < orbitals_threshold_;
@@ -87,7 +146,7 @@ DCFTSolver::run_qc_dcft()
 
     }
 
-    fprintf(outfile, "\t*=================================================================================*\n");
+    fprintf(outfile, "\t*=======================================================================================*\n");
 
     if(!orbitalsDone || !cumulantDone || !densityConverged || !energyConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
@@ -1787,13 +1846,7 @@ DCFTSolver::check_qc_convergence() {
 }
 
 void
-DCFTSolver::update_orbitals_nr() {
-
-    // Initialize the orbital rotation matrix
-    SharedMatrix U_a(new Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix U_b(new Matrix("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix X_a(new Matrix("Generator of the orbital rotations (Alpha)", nirrep_, nmopi_, nmopi_));
-    SharedMatrix X_b(new Matrix("Generator of the orbital rotations (Beta)", nirrep_, nmopi_, nmopi_));
+DCFTSolver::compute_orbital_rotation_nr() {
 
     // Fill up the X matrix
     int orbitals_address = 0;
@@ -1804,8 +1857,8 @@ DCFTSolver::update_orbitals_nr() {
             for(int a = 0; a < navirpi_[h]; ++a){
                 if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
-                    X_a->set(h, i, a + naoccpi_[h], value);
-                    X_a->set(h, a + naoccpi_[h], i, (-1.0) * value);
+                    X_a_->set(h, i, a + naoccpi_[h], value);
+                    X_a_->set(h, a + naoccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
                 orbitals_address++;
@@ -1819,8 +1872,8 @@ DCFTSolver::update_orbitals_nr() {
             for(int a = 0; a < nbvirpi_[h]; ++a){
                 if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
-                    X_b->set(h, i, a + nboccpi_[h], value);
-                    X_b->set(h, a + nboccpi_[h], i, (-1.0) * value);
+                    X_b_->set(h, i, a + nboccpi_[h], value);
+                    X_b_->set(h, a + nboccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
                 orbitals_address++;
@@ -1828,47 +1881,8 @@ DCFTSolver::update_orbitals_nr() {
         }
     }
 
-    if (orbital_idp_ != 0) {
-        // U = I
-        U_a->identity();
-        U_b->identity();
-
-        // U += X
-        U_a->add(X_a);
-        U_b->add(X_b);
-
-        // U += 0.5 * X * X
-        U_a->gemm(false, false, 0.5, X_a, X_a, 1.0);
-        U_b->gemm(false, false, 0.5, X_b, X_b, 1.0);
-
-        // Orthogonalize the U vectors
-        int rowA = U_a->nrow();
-        int colA = U_a->ncol();
-
-        double **U_a_block = block_matrix(rowA, colA);
-        memset(U_a_block[0], 0, sizeof(double)*rowA*colA);
-        U_a_block = U_a->to_block_matrix();
-        schmidt(U_a_block, rowA, colA, outfile);
-        U_a->set(U_a_block);
-        free_block(U_a_block);
-
-        int rowB = U_b->nrow();
-        int colB = U_b->ncol();
-
-        double **U_b_block = block_matrix(rowB, colB);
-        memset(U_b_block[0], 0, sizeof(double)*rowB*colB);
-        U_b_block = U_b->to_block_matrix();
-        schmidt(U_b_block, rowB, colB, outfile);
-        U_b->set(U_b_block);
-        free_block(U_b_block);
-
-        // Rotate the orbitals
-        old_ca_->copy(Ca_);
-        old_cb_->copy(Cb_);
-
-        Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
-        Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
-    }
+    Xtotal_a_->add(X_a_);
+    Xtotal_b_->add(X_b_);
 
 }
 
