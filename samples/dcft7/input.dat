@@ -1,0 +1,34 @@
+#! DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
+#! Only simultaneous algorithm is tested.
+
+memory 250 mb
+
+
+# ODC-06
+
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   simultaneous
+    basis       cc-pcvtz
+}
+
+set dcft_functional odc-06
+energy('dcft')
+
+
+set dcft_functional odc-12
+energy('dcft')
+
+
