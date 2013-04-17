@@ -267,6 +267,32 @@ void FrozenNO::ComputeNaturalOrbitals(){
     boost::shared_ptr<Vector> eigval (new Vector("Dab eigenvalues",nirrep_,aVirOrbsPI));
     D->diagonalize(eigvec,eigval,descending);
 
+    // overwrite ao/mo C matrix with ao/no transformation
+    boost::shared_ptr<Matrix> temp (new Matrix("temp",nirrep_,nsopi_,aVirOrbsPI,symmetry));
+    for (int h = 0; h < nirrep_; h++) {
+
+        int v = aVirOrbsPI[h];
+
+        double ** c_newv = eigvec->pointer(h);
+        double ** c_oldv = Ca_->pointer(h);
+        double ** tp     = temp->pointer(h);
+
+        for (int mu = 0; mu < nsopi_[h]; mu++) {
+            for (int a = 0; a < v; a++) {
+                double dum = 0.0;
+                for (int b = 0; b < v; b++) {
+                    dum += c_oldv[mu][doccpi_[h] + b] * c_newv[b][a];
+                }
+                tp[mu][a] = dum;
+            }
+        }
+        for (int mu = 0; mu < nsopi_[h]; mu++) {
+            for (int a = 0; a < v; a++) {
+                c_oldv[mu][doccpi_[h]+a] = tp[mu][a];
+            }
+        }
+    }
+
     // determine how many orbitals will be retained
     double cutoff = options_.get_double("OCC_TOLERANCE");
     int * newVirOrbsPI = new int[nirrep_];
@@ -323,62 +349,27 @@ void FrozenNO::ComputeNaturalOrbitals(){
     boost::shared_ptr<Vector> eigvalF (new Vector("Fab eigenvalues",nirrep_,newVirOrbsPI));
     Fab->diagonalize(eigvecF,eigvalF);
 
-    // build full MO->NO transformation matrix:
-    boost::shared_ptr<Matrix> Cmono (new Matrix("MO/NO transformation",nirrep_,aVirOrbsPI,newVirOrbsPI,symmetry));
-    for (int h = 0; h < nirrep_; h++) {
-        int o    = doccpi_[h];
-        int vnew = newVirOrbsPI[h];
-        int vold = aVirOrbsPI[h];
-
-        double ** cmonop  = eigvec->pointer(h);
-        double ** cnono2p = eigvecF->pointer(h);
-        double ** cmono2p = Cmono->pointer(h);
-
-        for (int a = 0; a < vold; a++) {
-            for (int b = 0; b < vnew; b++) {
-                double dum = 0.0;
-                for (int c = 0; c < vnew; c++) {
-                    dum += cmonop[a][c] * cnono2p[c][b];
-                }
-                cmono2p[a][b] = dum;
-            }
-        }
-    }
-
-    // build full AO->NO transformation matrix
-    boost::shared_ptr<Matrix> Caono (new Matrix("AO/virtual NO transformation",nirrep_,nsopi_,newVirOrbsPI,symmetry));
+    // overwrite ao/no C matrix with ao/semicanonical no transformation:
     for (int h = 0; h < nirrep_; h++) {
 
-        int vnew = newVirOrbsPI[h];
-        int vold = aVirOrbsPI[h];
+        int v = newVirOrbsPI[h];
 
-        double ** caonop = Caono->pointer(h);
-        double ** caomop = Ca_->pointer(h);
-        double ** cmonop = Cmono->pointer(h);
-
-        for (int mu = 0; mu < nsopi_[h]; mu++) {
-            for (int a = 0; a < vnew; a++) {
-                double dum = 0.0;
-                for (int b = 0; b < vold; b++) {
-                    dum += caomop[mu][b+doccpi_[h]] * cmonop[b][a];
-                }
-                caonop[mu][a] = dum;
-            }
-        }
-    }
-
-    // overwrite current C matrix:
-    for (int h = 0; h < nirrep_; h++) {
-
-        int vnew = newVirOrbsPI[h];
-        int vold = aVirOrbsPI[h];
-
-        double ** c_newv = Caono->pointer(h);
+        double ** c_newv = eigvecF->pointer(h);
         double ** c_oldv = Ca_->pointer(h);
+        double ** tp     = temp->pointer(h);
 
         for (int mu = 0; mu < nsopi_[h]; mu++) {
-            for (int a = 0; a < vnew; a++) {
-                c_oldv[mu][a+doccpi_[h]] = c_newv[mu][a];
+            for (int a = 0; a < v; a++) {
+                double dum = 0.0;
+                for (int b = 0; b < v; b++) {
+                    dum += c_oldv[mu][doccpi_[h] + b] * c_newv[b][a];
+                }
+                tp[mu][a] = dum;
+            }
+        }
+        for (int mu = 0; mu < nsopi_[h]; mu++) {
+            for (int a = 0; a < v; a++) {
+                c_oldv[mu][doccpi_[h]+a] = tp[mu][a];
             }
         }
     }
