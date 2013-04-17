@@ -1,7 +1,7 @@
 /**
   * Frozen natural orbitals
   * Eugene DePrince
-  * June 2012
+  * April 2013
   *
   */
 
@@ -21,13 +21,12 @@
 #include<lib3index/dftensor.h>
 #include<lib3index/cholesky.h>
 
+#include<libdpd/dpd.h>
+#define ID(x) ints->DPD_ID(x)
+
 
 using namespace psi;
 using namespace boost;
-
-namespace psi{namespace fnocc{
-void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
-}}
 
 namespace psi{namespace fnocc{
 
@@ -43,9 +42,6 @@ FrozenNO::~FrozenNO()
 }
 
 void FrozenNO::common_init() {
-    if (nirrep_>1){
-       throw PsiException("FrozenNO requires symmetry c1 (for now!)",__FILE__,__LINE__);
-    }
     nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
     for (int h=0; h<nirrep_; h++){
         nfzc   += frzcpi_[h];
@@ -69,245 +65,352 @@ double FrozenNO::compute_energy(){
 }
 
 /*
- * build natural orbitals and transform TEIs
+ * build natural orbitals
  */
 void FrozenNO::ComputeNaturalOrbitals(){
+    tstart();
 
-  long int o = ndoccact;
-  long int v = nvirt;
+    fflush(outfile);
+    fprintf(outfile,"\n\n");
+    fprintf(outfile, "        *******************************************************\n");
+    fprintf(outfile, "        *                                                     *\n");
+    fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
+    fprintf(outfile, "        *                                                     *\n");
+    fprintf(outfile, "        *******************************************************\n");
+    fprintf(outfile,"\n\n");
+    fflush(outfile);
 
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
+    fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
+    fprintf(outfile,"\n");
 
-  // transform (ia|jb) integrals
-  tstart();
-  TransformOVOV();
-  tstop();
+    std::vector<shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::occ);
+    spaces.push_back(MOSpace::vir);
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
+    boost::shared_ptr<IntegralTransform> ints(new IntegralTransform(wfn, spaces, IntegralTransform::Restricted,
+               IntegralTransform::DPDOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false));
+    ints->set_dpd_id(0);
+    ints->set_keep_iwl_so_ints(true);
+    ints->set_keep_dpd_so_ints(true);
+    ints->initialize();
+    ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
-  // orbital energies
-  tstart();
-  fprintf(outfile,"        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
-  fprintf(outfile,"\n");
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
-  boost::shared_ptr<Vector> eps_test = ref->epsilon_a();
-  double*tempeps = eps_test->pointer();
-  double *F  = tempeps + nfzc;
+    fprintf(outfile,"\n");
+    fprintf(outfile,"        ==> Build MP2 amplitudes, OPDM, and NOs <==\n");
+    fprintf(outfile,"\n");
 
-  long int memory = Process::environment.get_memory();
-  if ( memory < 16L*o*o*v*v ) {
-      throw PsiException("not enough memory (fno)",__FILE__,__LINE__);
-  }
+    dpdbuf4 amps1,amps2;
+    boost::shared_ptr<PSIO> psio = _default_psio_lib_;
+    psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-  // allocate memory for a couple of buffers 
-  double*amps1 = (double*)malloc(o*o*v*v*sizeof(double));
-  double*amps2 = (double*)malloc(o*o*v*v*sizeof(double));
+    // Use the IntegralTransform object's DPD instance, for convenience
+    dpd_set_default(ints->get_dpd_id());
 
-  // build mp2 amplitudes for mp2 density
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_DCC_IAJB,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_IAJB,"E2iajb",(char*)&amps2[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_DCC_IAJB,1);
-  long int ijab = 0;
-  emp2 = 0.0;
-  double emp2_os = 0.0;
-  double emp2_ss = 0.0;
-  for (int a=o; a<o+v; a++){
-      double da = F[a];
-      for (int b=o; b<o+v; b++){
-          double dab = da + F[b];
-          for (int i=0; i<o; i++){
-              double dabi = dab - F[i];
-              for (int j=0; j<o; j++){
-                  int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  double dijab = dabi-F[j];
-                  amps1[ijab++] = - amps2[iajb]/dijab;
-                  emp2_os -= amps2[iajb] * (amps2[iajb])/dijab;
-                  emp2_ss -= amps2[iajb] * (amps2[iajb] - amps2[j*o*v*v+(a-o)*o*v+i*v+(b-o)])/dijab;
-              }
-          }
-      }
-  }
-  emp2 = emp2_os + emp2_ss;
+    // orbital energies:
+    int numAOcc = 0, numBOcc = 0, numAVir = 0, numBVir = 0;
+    int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
+    int * aOccOrbsPI = new int[nirrep_];
+    int * bOccOrbsPI = new int[nirrep_];
+    int * aVirOrbsPI = new int[nirrep_];
+    int * bVirOrbsPI = new int[nirrep_];
+    for(int h = 0; h < nirrep_; ++h){
+        aOccOrbsPI[h] = doccpi_[h] + soccpi_[h] - frzcpi_[h];
+        bOccOrbsPI[h] = doccpi_[h] - frzcpi_[h];
+        aVirOrbsPI[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
+        bVirOrbsPI[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
+        numAOcc += aOccOrbsPI[h];
+        numBOcc += bOccOrbsPI[h];
+        numAVir += aVirOrbsPI[h];
+        numBVir += bVirOrbsPI[h];
+    }
+    double * aOccEvals = new double[numAOcc];
+    double * bOccEvals = new double[numBOcc];
+    double * aVirEvals = new double[numAVir];
+    double * bVirEvals = new double[numBVir];
 
-  Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
-  Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
-  Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2;
-  Process::environment.globals["MP2 TOTAL ENERGY"] = emp2 + Process::environment.globals["SCF TOTAL ENERGY"];
+    boost::shared_ptr<Vector> epsA = reference_wavefunction_->epsilon_a();
+    boost::shared_ptr<Vector> epsB = reference_wavefunction_->epsilon_b();
+    for(int h = 0; h < nirrep_; ++h){
+        for(int a = frzcpi_[h]; a < doccpi_[h] + soccpi_[h]; ++a) aOccEvals[aOccCount++] = epsA->get(h, a);
+        for(int b = frzcpi_[h]; b < doccpi_[h]; ++b)              bOccEvals[bOccCount++] = epsB->get(h, b);
+        for(int a = doccpi_[h] + soccpi_[h]; a < nmopi_[h]; ++a)  aVirEvals[aVirCount++] = epsA->get(h, a);
+        for(int b = doccpi_[h]; b < nmopi_[h]; ++b)               bVirEvals[bVirCount++] = epsB->get(h, b);
+    }
 
-  ijab = 0;
-  for (int a=o; a<o+v; a++){
-      for (int b=o; b<o+v; b++){
-          for (int i=0; i<o; i++){
-              for (int j=0; j<o; j++){
-                  int ijba = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
-                  amps2[ijab] = 2.0*amps1[ijab] - amps1[ijba];
-                  ijab++;
-              }
-          }
-      }
-  }
+    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
 
-  // build ab block of the density:
-  double*Dab = (double*)malloc(v*v*sizeof(double));
-  F_DGEMM('t','n',v,v,v*o*o,2.0,amps1,v*o*o,amps2,v*o*o,0.0,Dab,v);
+    // T(ijab) -> T(jiab)
+    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "Tijab <OO|VV>");
+    dpd_buf4_sort(&amps1, PSIF_LIBTRANS_DPD, rpqs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+    dpd_buf4_close(&amps1);
 
-  // diagonalize Dab
-  double*eigvalDab=(double*)malloc(v*sizeof(double));
-  Diagonalize(v,Dab,eigvalDab);
-  // reorder transformation matrix:
-  double*temp    = (double*)malloc(nso*v*sizeof(double));
-  for (int i=0; i<v; i++){
-      F_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
-  }
+    // only worry about alpha-beta
+    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
 
-  // establish cutoff for frozen virtuals
-  double cutoff = options_.get_double("OCC_TOLERANCE");
+    double emp2_os = 0.0;
+    double emp2_ss = 0.0;
+    for(int h = 0; h < nirrep_; ++h){
 
-  nvirt_no = 0;
-  for (int i=0; i<v; i++) if (eigvalDab[i]>cutoff) nvirt_no++;
+        dpd_buf4_mat_irrep_init(&amps1, h);
+        dpd_buf4_mat_irrep_rd(&amps1, h);
 
-  fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
-  fprintf(outfile,"        Number of virtual orbitals in truncated space: %5li\n",nvirt_no);
-  fprintf(outfile,"\n");
+        dpd_buf4_mat_irrep_init(&amps2, h);
+        dpd_buf4_mat_irrep_rd(&amps2, h);
 
-  // transform Fock matrix to MP2 NO basis
-  double*newFock = (double*)malloc(v*v*sizeof(double));
-  memset((void*)newFock,'\0',v*v*sizeof(double));
-  F_DCOPY(v,F+ndoccact,1,newFock,v+1);
-  F_DGEMM('n','n',v,nvirt_no,v,1.0,newFock,v,temp,v,0.0,Dab,v);
-  F_DGEMM('t','n',nvirt_no,nvirt_no,v,1.0,temp,v,Dab,v,0.0,newFock,nvirt_no);
+        for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
+            int i = amps1.params->roworb[h][ij][0];
+            int j = amps1.params->roworb[h][ij][1];
 
-  // diagonalize new Fock matrix for semi-canonical orbitals
-  double*neweps = (double*)malloc(nvirt_no*sizeof(double));
-  Diagonalize(nvirt_no,newFock,neweps);
-  // construct full mo -> no transformation matrix
-  F_DGEMM('n','n',v,nvirt_no,nvirt_no,1.0,temp,v,newFock,nvirt_no,0.0,Dab,v);
+            for(int ab = 0; ab < amps1.params->coltot[h]; ++ab){
+                int a = amps1.params->colorb[h][ab][0];
+                int b = amps1.params->colorb[h][ab][1];
+                double val1 = amps1.matrix[h][ij][ab];
+                double val2 = amps2.matrix[h][ij][ab];
+                double denom = aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b];
 
-  // put orbital energies back in F
-  F_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
+                emp2_os += val1 * val1 / denom;
+                emp2_ss += val1 * ( val1 - val2 ) / denom;
+            }
+        }
+        dpd_buf4_mat_irrep_close(&amps1, h);
+        dpd_buf4_mat_irrep_close(&amps2, h);
+    }
+    dpd_buf4_close(&amps1);
 
-  // free memory before using libtrans
-  free(temp);
-  free(neweps);
-  free(amps1);
-  free(amps2);
-  free(eigvalDab);
-  free(newFock);
-  tstop();
+    double escf = Process::environment.globals["SCF TOTAL ENERGY"];
+    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
+    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = emp2_ss;
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = emp2_os + emp2_ss;
+    Process::environment.globals["MP2 TOTAL ENERGY"] = emp2_os + emp2_ss + escf;
 
-  // so->no integral transformation
-  tstart();
-  TransformIntegrals(Dab);
-  tstop();
+    // build amps1(ij,ab) = 2*T(ij,ab) - T(ji,ab)
+    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_scm(&amps1, 2.0);
+    dpd_buf4_axpy(&amps2, &amps1, -1.0);
 
-  // change number of frozen virtual orbitals
-  frzvpi_[0] = nfzv+(nvirt-nvirt_no);
+    dpd_buf4_close(&amps1);
+    dpd_buf4_close(&amps2);
 
-  free(Dab);
-}
-void FrozenNO::TransformIntegrals(double*Dab){
+    fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
+    fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
+    fprintf(outfile,"        MP2 correlation energy:          %20.12lf\n",emp2_os+emp2_ss);
+    fprintf(outfile,"      * MP2 total energy:                %20.12lf\n",emp2_os+emp2_ss+escf);
+    fprintf(outfile,"\n");
 
-  long int v = nvirt;
+    // scale amps by denominator
+    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    for(int h = 0; h < nirrep_; ++h){
 
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.wavefunction();
+        dpd_buf4_mat_irrep_init(&amps1, h);
+        dpd_buf4_mat_irrep_rd(&amps1, h);
 
-  // build our own C matrices so librans can transform so->no where sizeof(no) != sizeof(mo)
-  fprintf(outfile,"        ==> Transform all two-electron integrals <==\n");
-  fprintf(outfile,"\n");
-  SharedMatrix Cc (new Matrix("FROZEN_OCC",nso,nfzc));
-  SharedMatrix Ci (new Matrix("ACTIVE_OCC",nso,ndoccact));
-  SharedMatrix Ca (new Matrix("ACTIVE_VIR",nso,nvirt_no));
-  SharedMatrix Cv (new Matrix("FROZEN_VIR",nso,0));
+        dpd_buf4_mat_irrep_init(&amps2, h);
+        dpd_buf4_mat_irrep_rd(&amps2, h);
 
-  boost::shared_ptr<Matrix> Caomo = ref->Ca();
-  double**Capointer = Caomo->pointer();
+        for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
+            int i = amps1.params->roworb[h][ij][0];
+            int j = amps1.params->roworb[h][ij][1];
+            for(int ab = 0; ab < amps1.params->coltot[h]; ++ab){
+                int a = amps1.params->colorb[h][ab][0];
+                int b = amps1.params->colorb[h][ab][1];
+                double denom = aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b];
+                amps1.matrix[h][ij][ab] /= ( aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
+                amps2.matrix[h][ij][ab] /= ( aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
+            }
+        }
 
-  double**pointer;
-  pointer = Cc->pointer();
-  for (int i=0; i<nso; i++){
-      for (int j=0; j<nfzc; j++){
-          pointer[i][j] = Capointer[i][j];
-      }
-  }
-  pointer = Ci->pointer();
-  for (int i=0; i<nso; i++){
-      for (int j=0; j<ndoccact; j++){
-          pointer[i][j] = Capointer[i][j+nfzc];
-      }
-  }
+        dpd_buf4_mat_irrep_wrt(&amps1, h);
+        dpd_buf4_mat_irrep_close(&amps1, h);
+        dpd_buf4_mat_irrep_wrt(&amps2, h);
+        dpd_buf4_mat_irrep_close(&amps2, h);
+    }
+    dpd_buf4_close(&amps1);
+    dpd_buf4_close(&amps2);
 
-// so->no
-  double*temp = (double*)malloc(nso*nvirt_no*sizeof(double));
-  for (long int i=0; i<nso; i++){
-      for (long int j=0; j<nvirt_no; j++){
-          double dum = 0.0;
-          for (long int k=0; k<v; k++){
-              dum += Capointer[i][ndocc+k] * Dab[j*v+k];
-          }
-          temp[i*nvirt_no+j] = dum;
-      }
-  }
-  pointer = Ca->pointer();
-  for (int i=0; i<nso; i++){
-      for (int j=0; j<nvirt_no; j++){
-          pointer[i][j] = temp[i*nvirt_no+j];
-      }
-  }
-  free(temp);
-  //pointer = Cv->pointer();
-  //for (int i=0; i<nso; i++){
-  //    for (int j=0; j<nfzv+(nvirt-nvirt_no); j++){
-  //        pointer[i][j] = Ca[i][j+ndocc+nvirt];
-  //    }
-  //}
+    // build virtual-virtual block of opdm: sum(ijc) 2.0 * [ 2 t(ij,ac) - t(ji,ac) ] * t(ij,bc)
+    dpdfile2 Dab;
+    dpd_file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    dpd_buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    dpd_buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    dpd_contract442(&amps1, &amps2, &Dab, 3, 3, 2.0, 0.0);
+    dpd_buf4_close(&amps1);
+    dpd_buf4_close(&amps2);
+    dpd_file2_close(&Dab);
 
-  // so->no integral transformation
-  std::vector<boost::shared_ptr<MOSpace> > spaces;
-  spaces.push_back(MOSpace::all);
-  IntegralTransform ints2(Cc, Ci, Ca, Cv, spaces, IntegralTransform::Restricted,
-           IntegralTransform::IWLOnly, IntegralTransform::PitzerOrder, IntegralTransform::OccAndVir, true);
-  ints2.set_keep_dpd_so_ints(1);
-  ints2.set_keep_iwl_so_ints(1);
-  ints2.initialize();
-  ints2.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
-  fprintf(outfile,"\n");
-}
+    // diagonalize virtual-virtual block of opdm
+    int symmetry = Ca_->symmetry();
+    boost::shared_ptr<Matrix> D (new Matrix("Dab",nirrep_,aVirOrbsPI,aVirOrbsPI,symmetry));
 
-void FrozenNO::TransformOVOV(){
-  fprintf(outfile,"        ==> Transform (OV|OV) integrals <==\n");
-  fprintf(outfile,"\n");
-  boost::shared_ptr<psi::Wavefunction> wfn = Process::environment.wavefunction();
-  std::vector<boost::shared_ptr<MOSpace> > spaces;
-  spaces.push_back(MOSpace::occ);
-  spaces.push_back(MOSpace::vir);
-  boost::shared_ptr<IntegralTransform>
-      ints(new IntegralTransform(wfn,
-                                 spaces,
-                                 IntegralTransform::Restricted,
-                                 IntegralTransform::IWLOnly,
-                                 IntegralTransform::QTOrder,
-                                 IntegralTransform::None,
-                                 false));
-  ints->set_keep_dpd_so_ints(1);
-  ints->set_keep_iwl_so_ints(1);
-  ints->initialize();
-  ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
-  fprintf(outfile,"\n");
+    dpd_file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    dpd_file2_mat_init(&Dab);
+    dpd_file2_mat_rd(&Dab);
+    for (int h = 0; h < nirrep_; h++) {
+        int v = Dab.params->rowtot[h];
 
-  // sort integrals
-  struct iwlbuf Buf;
-  iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
-  SortOVOV(&Buf,nfzc,nfzv,nmo,ndoccact,nvirt);
-  iwl_buf_close(&Buf,1);
+        double ** mat = D->pointer(h);
+        for (int a = 0; a < v; a++) {
+            for (int b = 0; b < v; b++) {
+                mat[a][b] = Dab.matrix[h][a][b];
+            }
+        }
+    }
+    dpd_file2_close(&Dab);
+
+    // done with dpd and ints ... reset
+    psio->close(PSIF_LIBTRANS_DPD, 1);
+    ints.reset();
+
+    boost::shared_ptr<Matrix> eigvec (new Matrix("Dab eigenvectors",nirrep_,aVirOrbsPI,aVirOrbsPI,symmetry));
+    boost::shared_ptr<Vector> eigval (new Vector("Dab eigenvalues",nirrep_,aVirOrbsPI));
+    D->diagonalize(eigvec,eigval,descending);
+
+    // determine how many orbitals will be retained
+    double cutoff = options_.get_double("OCC_TOLERANCE");
+    int * newVirOrbsPI = new int[nirrep_];
+    for (int h = 0; h < nirrep_; h++) {
+        newVirOrbsPI[h] = 0;
+        double * vec = eigval->pointer(h);
+        for (int a = 0; a < aVirOrbsPI[h]; a++) {
+            if ( vec[a] > cutoff ) newVirOrbsPI[h]++;
+        }
+    }
+
+    fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
+    fprintf(outfile,"\n");
+    fprintf(outfile,"        No. virtuals per irrep (original):  [");
+    for (int h = 0; h < nirrep_; h++) fprintf(outfile,"%4i",aVirOrbsPI[h]);
+    fprintf(outfile," ]\n");
+    fprintf(outfile,"        No. virtuals per irrep (truncated): [");
+    for (int h = 0; h < nirrep_; h++) fprintf(outfile,"%4i",newVirOrbsPI[h]);
+    fprintf(outfile," ]\n");
+    fprintf(outfile,"\n");
+
+    int nvirt_no = 0;
+    int nvirt    = 0;
+    for (int h = 0; h < nirrep_; h++) {
+        nvirt    += aVirOrbsPI[h];
+        nvirt_no += newVirOrbsPI[h];
+    }
+    fprintf(outfile,"        Retaining %i of %i virtual orbitals.\n",nvirt_no,nvirt);
+    fprintf(outfile,"\n");
+
+    // transform Fock matrix to truncated NO basis
+
+    boost::shared_ptr<Matrix> Fab (new Matrix("Fab(NO)",nirrep_,newVirOrbsPI,newVirOrbsPI,symmetry));
+    for (int h = 0; h < nirrep_; h++) {
+        int o    = doccpi_[h];
+        int vnew = newVirOrbsPI[h];
+        int vold = aVirOrbsPI[h];
+        double ** Fnew = Fab->pointer(h);
+        double ** cp   = eigvec->pointer(h);
+        double * Fold  = epsA->pointer(h);
+        for (int a = 0; a < vnew; a++) {
+            for (int b = 0; b < vnew; b++) {
+                double dum = 0.0;
+                for (int c = 0; c < vold; c++) {
+                    dum += Fold[o+c] * cp[c][a] * cp[c][b];
+                }
+                Fnew[a][b] = dum;
+            }
+        }
+    }
+
+    // semicanonicalize orbitals:
+    boost::shared_ptr<Matrix> eigvecF (new Matrix("Fab eigenvectors",nirrep_,newVirOrbsPI,newVirOrbsPI,symmetry));
+    boost::shared_ptr<Vector> eigvalF (new Vector("Fab eigenvalues",nirrep_,newVirOrbsPI));
+    Fab->diagonalize(eigvecF,eigvalF);
+
+    // build full MO->NO transformation matrix:
+    boost::shared_ptr<Matrix> Cmono (new Matrix("MO/NO transformation",nirrep_,aVirOrbsPI,newVirOrbsPI,symmetry));
+    for (int h = 0; h < nirrep_; h++) {
+        int o    = doccpi_[h];
+        int vnew = newVirOrbsPI[h];
+        int vold = aVirOrbsPI[h];
+
+        double ** cmonop  = eigvec->pointer(h);
+        double ** cnono2p = eigvecF->pointer(h);
+        double ** cmono2p = Cmono->pointer(h);
+
+        for (int a = 0; a < vold; a++) {
+            for (int b = 0; b < vnew; b++) {
+                double dum = 0.0;
+                for (int c = 0; c < vnew; c++) {
+                    dum += cmonop[a][c] * cnono2p[c][b];
+                }
+                cmono2p[a][b] = dum;
+            }
+        }
+    }
+
+    // build full AO->NO transformation matrix
+    boost::shared_ptr<Matrix> Caono (new Matrix("AO/virtual NO transformation",nirrep_,nsopi_,newVirOrbsPI,symmetry));
+    for (int h = 0; h < nirrep_; h++) {
+
+        int vnew = newVirOrbsPI[h];
+        int vold = aVirOrbsPI[h];
+
+        double ** caonop = Caono->pointer(h);
+        double ** caomop = Ca_->pointer(h);
+        double ** cmonop = Cmono->pointer(h);
+
+        for (int mu = 0; mu < nsopi_[h]; mu++) {
+            for (int a = 0; a < vnew; a++) {
+                double dum = 0.0;
+                for (int b = 0; b < vold; b++) {
+                    dum += caomop[mu][b+doccpi_[h]] * cmonop[b][a];
+                }
+                caonop[mu][a] = dum;
+            }
+        }
+    }
+
+    // overwrite current C matrix:
+    for (int h = 0; h < nirrep_; h++) {
+
+        int vnew = newVirOrbsPI[h];
+        int vold = aVirOrbsPI[h];
+
+        double ** c_newv = Caono->pointer(h);
+        double ** c_oldv = Ca_->pointer(h);
+
+        for (int mu = 0; mu < nsopi_[h]; mu++) {
+            for (int a = 0; a < vnew; a++) {
+                c_oldv[mu][a+doccpi_[h]] = c_newv[mu][a];
+            }
+        }
+    }
+
+    // adjust number of frozen virtual orbitals:
+    for (int h = 0; h < nirrep_; h++) {
+        frzvpi_[h] += aVirOrbsPI[h] - newVirOrbsPI[h];
+    }
+
+    // put modified orbital energies back into epsilon_a
+    boost::shared_ptr<Vector> eps = epsilon_a_;
+    for (int h = 0; h < nirrep_; h++) {
+        double * epsp = eps->pointer(h);
+        double * eigp = eigvalF->pointer(h);
+        for (int a = 0; a < newVirOrbsPI[h]; a++) {
+            epsp[doccpi_[h]+a] = eigp[a];
+        }
+    }
+
+    // free memory
+    delete newVirOrbsPI;
+
+    delete aOccOrbsPI;
+    delete bOccOrbsPI;
+    delete aVirOrbsPI;
+    delete bVirOrbsPI;
+    delete aOccEvals;
+    delete bOccEvals;
+    delete aVirEvals;
+    delete bVirEvals;
+
+    tstop();
 }
 
 // DF FNO class members
