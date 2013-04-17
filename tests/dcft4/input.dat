@@ -68,16 +68,30 @@ compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (si
 
 set algorithm qc
 set ao_basis none
+set qc_type simultaneous
 energy('dcft')
 
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (quadratically-convergent, ao_basis=none)");     #TEST
-compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (quadratically-convergent, ao_basis=none)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
 
 set ao_basis disk
 energy('dcft')
 
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (quadratically-convergent, ao_basis=disk)");     #TEST
-compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (quadratically-convergent, ao_basis=disk)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=simultaneous, ao_basis=disk)");                #TEST
+
+set ao_basis none
+set qc_type twostep
+energy('dcft')
+
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=twostep, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=twostep, ao_basis=none)");                #TEST
+
+set ao_basis disk
+energy('dcft')
+
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "DC-06 SCF Energy (qc, qc_type=twostep, ao_basis=disk)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "DC-06 Energy (qc, qc_type=twostep, ao_basis=disk)");                #TEST
 
 set dcft_functional dc-12
 set algorithm twostep
@@ -128,10 +142,17 @@ compare_values(refodc06scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Ene
 compare_values(refodc06, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=none)");                #TEST
 
 set algorithm qc
+set qc_type simultaneous
 energy('dcft')
 
-compare_values(refodc06scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Energy (quadratically-convergent, ao_basis=none)");     #TEST
-compare_values(refodc06, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (quadratically-convergent, ao_basis=none)");                #TEST
+compare_values(refodc06scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc06, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
+
+set qc_type twostep
+energy('dcft')
+
+compare_values(refodc06scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Energy (qc, qc_type=twostep, ao_basis=none)");     #TEST
+compare_values(refodc06, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (qc, qc_type=twostep, ao_basis=none)");                #TEST
 
 set dcft_functional odc-12
 energy('dcft')
@@ -140,7 +161,8 @@ compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Ene
 compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
 
 set algorithm qc
+set qc_type simultaneous
 energy('dcft')
 
-compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (quadratically-convergent, ao_basis=none)");     #TEST
-compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (quadratically-convergent, ao_basis=none)");                #TEST
+compare_values(refodc12scf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (qc, qc_type=simultaneous, ao_basis=none)");     #TEST
+compare_values(refodc12, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (qc, qc_type=simultaneous, ao_basis=none)");                #TEST
