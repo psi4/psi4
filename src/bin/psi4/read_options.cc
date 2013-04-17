@@ -685,6 +685,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
     /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
     options.add_bool("DO_CCD_DISP",false);
+    /*- Do MBPT dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3, if also doing CCD? !expert -*/
+    options.add_bool("DO_MBPT_DISP",true);
     /*- E converge value for CCD -*/
     options.add_double("CCD_E_CONVERGENCE",1E-8);
     /*- Convergence tolerance for CCD amplitudes -*/
@@ -714,6 +716,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     natural orbitals are discarded for evaluating the (vv|vv) terms in monomer CCD
     equations. -*/
     options.add_double("OCC_TOLERANCE_T2",1.0E-6);
+    /*- Nuke the (vv|vv) ladder term? !expert -*/
+    options.add_bool("NUKE_EM_RICO", false);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
     default is conservative, but there isn't much to be gained from

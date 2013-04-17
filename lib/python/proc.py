@@ -1711,12 +1711,15 @@ def run_sapt(name, **kwargs):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
     elif (name.lower() == 'sapt2+'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+(3)'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+(ccd)'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)

@@ -45,7 +45,6 @@ protected:
     double *);
 
   // CCD Dispersion Values
-
   double e_disp2d_ccd_;
   double e_disp22s_ccd_;
   double e_disp22t_ccd_;
@@ -59,6 +58,9 @@ protected:
   int max_ccd_vecs_;
   double ccd_e_conv_;
   double ccd_t_conv_;
+
+  // Do MBPT and CCD dispersion?
+  bool mbpt_disp_;
 
   // CCD Dispersion Methods
   void r_ccd_prep(char *, char *, char *, char *, char *, char *, char *, 
