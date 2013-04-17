@@ -93,13 +93,16 @@ DCFTSolver::init()
         // The number of IDPs is set to zero in the beginning
         nidp_ = 0;
 
-        dim_ = nalpha_ * navir_ + nbeta_ * nbvir_;
-        dim_ += (nalpha_ * (nalpha_ - 1) / 2) * (navir_ * (navir_ - 1) / 2);
-        dim_ += (nalpha_ * nbeta_) * (navir_ * nbvir_);
-        dim_ += (nbeta_ * (nbeta_ - 1) / 2) * (nbvir_ * (nbvir_ - 1) / 2);
+        dim_orbitals_ = nalpha_ * navir_ + nbeta_ * nbvir_;
+        dim_cumulant_ = (nalpha_ * (nalpha_ - 1) / 2) * (navir_ * (navir_ - 1) / 2);
+        dim_cumulant_ += (nalpha_ * nbeta_) * (navir_ * nbvir_);
+        dim_cumulant_ += (nbeta_ * (nbeta_ - 1) / 2) * (nbvir_ * (nbvir_ - 1) / 2);
+        dim_ = dim_orbitals_ + dim_cumulant_;
 
-        lookup_ = new int[dim_];
-        ::memset(lookup_, '\0', sizeof(int)*dim_);
+        lookup_orbitals_ = new int[dim_orbitals_];
+        ::memset(lookup_orbitals_, '\0', sizeof(int)*dim_orbitals_);
+        lookup_cumulant_ = new int[dim_cumulant_];
+        ::memset(lookup_cumulant_, '\0', sizeof(int)*dim_cumulant_);
     }
 
     // Fill up Kappa array
