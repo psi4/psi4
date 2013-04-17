@@ -80,6 +80,8 @@ protected:
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     void run_twostep_dcft();
+    int run_twostep_dcft_cumulant_updates();
+    void run_twostep_dcft_orbital_updates();
     void run_simult_dcft();
     void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
@@ -284,10 +286,10 @@ protected:
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
     SharedMatrix so_h_;
-    /// The alpha Fock matrix (without Tau contribution) in the SO basis
-    SharedMatrix F0a_;
-    /// The beta Fock matrix (without Tau contribution) in the SO basis
-    SharedMatrix F0b_;
+    /// The alpha Fock matrix (without Tau contribution) in the MO basis
+    SharedMatrix moF0a_;
+    /// The beta Fock matrix (without Tau contribution) in the MO basis
+    SharedMatrix moF0b_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis

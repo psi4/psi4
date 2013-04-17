@@ -14,10 +14,16 @@ DCFTSolver::run_qc_dcft()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
 
-    fprintf(outfile, "\n\n\t*=======================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy    NIter  DIIS *\n"
-                         "\t*---------------------------------------------------------------------------------------*\n");
-
+    if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        fprintf(outfile, "\n\n\t*==========================================================================================*\n"
+                             "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(NR)  DIIS *\n"
+                             "\t*------------------------------------------------------------------------------------------*\n");
+    }
+    else {
+        fprintf(outfile, "\n\n\t*====================================================================================================*\n"
+                             "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(Orb)  NI(Cum)  DIIS *\n"
+                             "\t*----------------------------------------------------------------------------------------------------*\n");
+    }
     bool orbitalsDone     = false;
     bool cumulantDone     = false;
     bool energyConverged  = false;
@@ -25,6 +31,7 @@ DCFTSolver::run_qc_dcft()
 
     int cycle = 0;
     int cycle_NR = 0;
+    int cycle_jacobi = 0;
 
     // Copy the reference orbitals and to use them as the reference for the orbital rotation
     old_ca_->copy(Ca_);
@@ -92,9 +99,9 @@ DCFTSolver::run_qc_dcft()
                 update_cumulant_nr();
             }
             else {
-                update_cumulant_jacobi();
+                cycle_jacobi = run_twostep_dcft_cumulant_updates();
             }
-            // Now update orbitals
+            // Compute the rotation for the orbitals
             compute_orbital_rotation_nr();
             // DIIS
             if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
@@ -126,11 +133,20 @@ DCFTSolver::run_qc_dcft()
                 dpd_buf4_close(&Lab);
                 dpd_buf4_close(&Lbb);
             }
+            // Update orbitals
             rotate_orbitals();
             // Print the iterative trace
-            fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d   %-3s *\n",
-                    cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
-                    new_total_energy_, cycle_NR, diisString.c_str());
+            if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d    %-3s *\n",
+                        cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
+                        new_total_energy_, cycle_NR, diisString.c_str());
+            }
+            else {
+                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d      %3d      %-3s *\n",
+                        cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
+                        new_total_energy_, cycle_NR, cycle_jacobi, diisString.c_str());
+
+            }
             fflush(outfile);
             if (orbital_idp_ != 0) {
                 // Update the density
@@ -146,7 +162,12 @@ DCFTSolver::run_qc_dcft()
 
     }
 
-    fprintf(outfile, "\t*=======================================================================================*\n");
+    if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        fprintf(outfile, "\t*==========================================================================================*\n");
+    }
+    else {
+        fprintf(outfile, "\t*====================================================================================================*\n");
+    }
 
     if(!orbitalsDone || !cumulantDone || !densityConverged || !energyConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
@@ -174,6 +195,12 @@ DCFTSolver::compute_orbital_gradient(){
     Fb_->copy(so_h_);
     // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
     process_so_ints();
+    // Form F0 matrix
+    moF0a_->copy(Fa_);
+    moF0b_->copy(Fb_);
+    // Transform the F0 matrix to the MO basis
+    moF0a_->transform(Ca_);
+    moF0b_->transform(Cb_);
     // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
     Fa_->add(g_tau_a_);
     Fb_->add(g_tau_b_);

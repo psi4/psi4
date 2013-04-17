@@ -1029,8 +1029,8 @@ namespace psi{ namespace dcft{
 
       dpdfile2 Gtau;
 
-      moFa_->copy(F0a_);
-      moFb_->copy(F0b_);
+      moFa_->copy(moF0a_);
+      moFb_->copy(moF0b_);
 
       // Copy MO basis GTau to the memory
 
