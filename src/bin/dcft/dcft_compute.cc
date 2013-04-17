@@ -30,6 +30,10 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\n\tDCFT Functional:    \t\t %s", options_.get_str("DCFT_FUNCTIONAL").c_str());
     fprintf(outfile, "\n\tAlgorithm:          \t\t %s", options_.get_str("ALGORITHM").c_str());
     fprintf(outfile, "\n\tAO-Basis Integrals: \t\t %s", options_.get_str("AO_BASIS").c_str());
+    if (options_.get_str("ALGORITHM") == "QC") {
+        fprintf(outfile, "\n\tQC type:            \t\t %s", options_.get_str("QC_TYPE").c_str());
+        fprintf(outfile, "\n\tQC coupling:        \t\t %s", options_.get_bool("QC_COUPLING") ? "TRUE" : "FALSE");
+    }
 
     // Things that are not implemented yet...
     if (options_.get_str("DERTYPE") == "FIRST" && !(options_.get_str("DCFT_FUNCTIONAL") == "DC-06")) throw FeatureNotImplemented("requested DCFT functional", "Analytic gradients", __FILE__, __LINE__);
@@ -274,31 +278,14 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
 
     SharedMatrix tmp = SharedMatrix(new Matrix("temp", nirrep_, nsopi_, nsopi_));
 
-    dpdbuf4 Laa, Lab, Lbb;
-    dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
-                  ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
-                  ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
+    // Set up DIIS
     DIISManager scfDiisManager(maxdiis_, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
-    DIISManager lambdaDiisManager(maxdiis_, "DCFT DIIS Lambdas",DIISManager::LargestError,DIISManager::InCore);
     if ((nalpha_ + nbeta_) > 1) {
         scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(),
                                              DIISEntry::Matrix, scf_error_b_.get());
         scfDiisManager.set_vector_size(2, DIISEntry::Matrix, Fa_.get(),
                                        DIISEntry::Matrix, Fb_.get());
-        lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa,
-                                                DIISEntry::DPDBuf4, &Lab,
-                                                DIISEntry::DPDBuf4, &Lbb);
-        lambdaDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Laa,
-                                          DIISEntry::DPDBuf4, &Lab,
-                                          DIISEntry::DPDBuf4, &Lbb);
     }
-    dpd_buf4_close(&Laa);
-    dpd_buf4_close(&Lab);
-    dpd_buf4_close(&Lbb);
-
     // Update the orbitals
     int nSCFCycles = 0;
     // Reset the booleans that control the convergence
