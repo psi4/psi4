@@ -1851,7 +1851,6 @@ DCFTSolver::iterate_conjugate_gradients() {
         converged = (residual_rms < cumulant_threshold_);
 
         if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
-//        fprintf(outfile, "%d RMS = %8.5e %-3s\n", cycle, residual_rms, diisString.c_str());
         if (cycle > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
 
     }
@@ -1868,58 +1867,58 @@ DCFTSolver::iterate_conjugate_gradients() {
 
 }
 
-//void
-//DCFTSolver::iterate_steepest_descent() {
+void
+DCFTSolver::iterate_steepest_descent() {
 
-//    bool converged_micro = false;
-//    int counter = 0;
+    bool converged_micro = false;
+    int counter = 0;
 
-//    double delta_new = 0.0;
-//    // New element of the Krylov subspace
-//    double *Q = new double[nidp_];
+    double delta_new = 0.0;
+    // New element of the Krylov subspace
+    double *Q = new double[nidp_];
 
-//    form_sigma_vector(Xnew_, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
-//    // Compute residual and form guess for the step vector d
-//    for (int p = 0; p < nidp_; ++p) {
-//        R[p] = (-1.0) * (sigma[p] - qc_gradient_[p] + Hd[p] * Xnew_[p]);
-//        delta_new += R[p] * R[p];
-//    }
+    form_sigma_vector(Xnew_, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
+    // Compute residual and form guess for the step vector d
+    for (int p = 0; p < nidp_; ++p) {
+        R[p] = (-1.0) * (sigma[p] - qc_gradient_[p] + Hd[p] * Xnew_[p]);
+        delta_new += R[p] * R[p];
+    }
 
-//    while (!converged_micro) {
+    while (!converged_micro) {
 
-//        double residual_rms = 0.0;
+        double residual_rms = 0.0;
 
-//        form_sigma_vector(R, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
-//        double rT_q = 0.0;
-//        // Compute the element of the Krylov subspace Q = H * d_old
-//        for (int p = 0; p < nidp_; ++p) {
-//            Q[p] = sigma[p] + Hd[p] * R[p];
-//            rT_q += R[p] * Q[p];
-//        }
-//        // Compute scale factor for the optimal directon vector length (step length)
-//        double alpha = delta_new / rT_q;
-//        delta_new = 0.0;
-//        for (int p = 0; p < nidp_; ++p) {
-//            // Update X
-//            Xnew_[p] += alpha * R[p];
-//            // Update the residual
-//            R[p] -= alpha * Q[p];
-//            delta_new += R[p] * R[p];
-//            residual_rms += R[p] * R[p];
-//        }
+        form_sigma_vector(R, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
+        double rT_q = 0.0;
+        // Compute the element of the Krylov subspace Q = H * d_old
+        for (int p = 0; p < nidp_; ++p) {
+            Q[p] = sigma[p] + Hd[p] * R[p];
+            rT_q += R[p] * Q[p];
+        }
+        // Compute scale factor for the optimal directon vector length (step length)
+        double alpha = delta_new / rT_q;
+        delta_new = 0.0;
+        for (int p = 0; p < nidp_; ++p) {
+            // Update X
+            Xnew_[p] += alpha * R[p];
+            // Update the residual
+            R[p] -= alpha * Q[p];
+            delta_new += R[p] * R[p];
+            residual_rms += R[p] * R[p];
+        }
 
-//        counter++;
-//        // Compute RMS of the residual
-//        residual_rms = sqrt(residual_rms/nidp_);
-//        // Check convergence
-//        converged_micro = (residual_rms < convergence_);
-//        if (print_ > 1) fprintf(outfile, "\n %d RMS = %8.5e ", counter, residual_rms);
-//        if (counter > maxIt_) break;
-//    }
+        counter++;
+        // Compute RMS of the residual
+        residual_rms = sqrt(residual_rms/nidp_);
+        // Check convergence
+        converged_micro = (residual_rms < convergence_);
+        if (print_ > 1) fprintf(outfile, "\n %d RMS = %8.5e ", counter, residual_rms);
+        if (counter > maxIt_) break;
+    }
 
-//    nSCFCycles_ = counter;
+    nSCFCycles_ = counter;
 
-//}
+}
 
 void
 DCFTSolver::check_qc_convergence() {
