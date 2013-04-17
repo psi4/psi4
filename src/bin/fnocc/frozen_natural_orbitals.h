@@ -27,12 +27,11 @@ class FrozenNO : public Wavefunction {
 
     // mp2 energy in full basis
     double emp2;
-    long int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,nvirt_no;
+    long int nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,nvirt_no;
 
     void common_init();
-    void TransformIntegrals(double*Dab);
-    void TransformOVOV();
 };
+
 class DFFrozenNO : public FrozenNO {
   public:
     DFFrozenNO(boost::shared_ptr<Wavefunction>wfn,Options&options);
