@@ -241,7 +241,7 @@ DIISManager::add_entry(int numQuantities, ...)
                 break;
             case DIISEntry::Vector:
                 vector = va_arg(args, Vector*);
-                for(int h = 0; h < matrix->nirrep(); ++h){
+                for(int h = 0; h < vector->nirrep(); ++h){
                     for(int row = 0; row < vector->dimpi()[h]; ++row){
                             *arrayPtr++ = vector->get(h, row);
                     }
