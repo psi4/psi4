@@ -116,6 +116,9 @@ void OCCWave::common_init()
     else {
         double temp2;
         temp2 = -log10(tol_grad) - 1.5;
+        if (temp2 >= 5.0) {
+            temp2 = 4.0;
+        }
         mograd_max = pow(10.0, -temp2);
 	fprintf(outfile,"\tMAX orbital gradient is changed to : %12.2e\n", mograd_max);
 	fflush(outfile);
@@ -335,7 +338,7 @@ void OCCWave::title()
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE") fprintf(outfile,"                       OMP2.5 (OO-MP2.5)   \n");
    else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE") fprintf(outfile,"                       MP2.5  \n");
    fprintf(outfile,"              Program Written by Ugur Bozkaya,\n") ; 
-   fprintf(outfile,"              Latest Revision April 9, 2013.\n") ;
+   fprintf(outfile,"              Latest Revision April 16, 2013.\n") ;
    fprintf(outfile,"\n");
    fprintf(outfile," ============================================================================== \n");
    fprintf(outfile," ============================================================================== \n");
