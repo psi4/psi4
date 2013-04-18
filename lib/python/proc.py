@@ -2433,15 +2433,6 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
 
-    # override symmetry for fno-cc
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule = PsiMod.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
@@ -2493,11 +2484,6 @@ def run_fnocc(name, **kwargs):
         cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-
-    # restore symmetry for fno-cc
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     # restore options
     optstash.restore()
@@ -2558,15 +2544,6 @@ def run_cepa(name, **kwargs):
 
     PsiMod.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level)
 
-    # override symmetry for fno-cepa
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule = PsiMod.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
@@ -2598,11 +2575,6 @@ def run_cepa(name, **kwargs):
             PsiMod.print_out("\n")
         else:
             oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
-
-    # restore symmetry for fno-cepa
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     # restore options 
     optstash.restore()

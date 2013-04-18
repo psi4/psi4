@@ -124,7 +124,7 @@ void SAPT2::disp20()
   free_block(tARBS);
   free_block(vARBS);
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     double **C_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals",
       foccA_,noccA_,0,no_nvirA_);
     double **C_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",
