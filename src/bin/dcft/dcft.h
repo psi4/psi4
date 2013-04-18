@@ -85,7 +85,7 @@ protected:
     void run_simult_dcft();
     void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
-    virtual SharedMatrix compute_gradient_();
+    virtual SharedMatrix compute_gradient();
     void response_guess();
     void gradient_init();
     void compute_lagrangian_OV();
