@@ -49,7 +49,7 @@ void SCFGrad::common_init()
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
-SharedMatrix SCFGrad::compute_gradient_()
+SharedMatrix SCFGrad::compute_gradient()
 {
     // => Echo <= //
 

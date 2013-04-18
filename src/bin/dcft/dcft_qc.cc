@@ -14,10 +14,16 @@ DCFTSolver::run_qc_dcft()
     // Quadratically-convergent algorithm: solution of the Newton-Raphson equations
     // for the simultaneous optimization of the cumulant and the orbitals
 
-    fprintf(outfile, "\n\n\t*=======================================================================================*\n"
-                         "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy    NIter  DIIS *\n"
-                         "\t*---------------------------------------------------------------------------------------*\n");
-
+    if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        fprintf(outfile, "\n\n\t*==========================================================================================*\n"
+                             "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(NR)  DIIS *\n"
+                             "\t*------------------------------------------------------------------------------------------*\n");
+    }
+    else {
+        fprintf(outfile, "\n\n\t*====================================================================================================*\n"
+                             "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(Orb)  NI(Cum)  DIIS *\n"
+                             "\t*----------------------------------------------------------------------------------------------------*\n");
+    }
     bool orbitalsDone     = false;
     bool cumulantDone     = false;
     bool energyConverged  = false;
@@ -25,6 +31,7 @@ DCFTSolver::run_qc_dcft()
 
     int cycle = 0;
     int cycle_NR = 0;
+    int cycle_jacobi = 0;
 
     // Copy the reference orbitals and to use them as the reference for the orbital rotation
     old_ca_->copy(Ca_);
@@ -82,7 +89,7 @@ DCFTSolver::run_qc_dcft()
             // Compute sigma vector in the basis of IDPs
             compute_sigma_vector();
             // Solve the NR equations using conjugate gradients
-            cycle_NR = iterate_conjugate_gradients();
+            cycle_NR = iterate_nr_conjugate_gradients();
             // Check the convergence by computing the change in the orbitals and the cumulant
             check_qc_convergence();
             orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
@@ -92,9 +99,9 @@ DCFTSolver::run_qc_dcft()
                 update_cumulant_nr();
             }
             else {
-                update_cumulant_jacobi();
+                cycle_jacobi = run_twostep_dcft_cumulant_updates();
             }
-            // Now update orbitals
+            // Compute the rotation for the orbitals
             compute_orbital_rotation_nr();
             // DIIS
             if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
@@ -126,11 +133,20 @@ DCFTSolver::run_qc_dcft()
                 dpd_buf4_close(&Lab);
                 dpd_buf4_close(&Lbb);
             }
+            // Update orbitals
             rotate_orbitals();
             // Print the iterative trace
-            fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %3d   %-3s *\n",
-                    cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
-                    new_total_energy_, cycle_NR, diisString.c_str());
+            if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d    %-3s *\n",
+                        cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
+                        new_total_energy_, cycle_NR, diisString.c_str());
+            }
+            else {
+                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f   %3d      %3d      %-3s *\n",
+                        cycle, orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
+                        new_total_energy_, cycle_NR, cycle_jacobi, diisString.c_str());
+
+            }
             fflush(outfile);
             if (orbital_idp_ != 0) {
                 // Update the density
@@ -146,7 +162,12 @@ DCFTSolver::run_qc_dcft()
 
     }
 
-    fprintf(outfile, "\t*=======================================================================================*\n");
+    if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
+        fprintf(outfile, "\t*==========================================================================================*\n");
+    }
+    else {
+        fprintf(outfile, "\t*====================================================================================================*\n");
+    }
 
     if(!orbitalsDone || !cumulantDone || !densityConverged || !energyConverged)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
@@ -174,6 +195,12 @@ DCFTSolver::compute_orbital_gradient(){
     Fb_->copy(so_h_);
     // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
     process_so_ints();
+    // Form F0 matrix
+    moF0a_->copy(Fa_);
+    moF0b_->copy(Fb_);
+    // Transform the F0 matrix to the MO basis
+    moF0a_->transform(Ca_);
+    moF0b_->transform(Cb_);
     // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
     Fa_->add(g_tau_a_);
     Fb_->add(g_tau_b_);
@@ -1740,7 +1767,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
 }
 
 int
-DCFTSolver::iterate_conjugate_gradients() {
+DCFTSolver::iterate_nr_conjugate_gradients() {
 
     // Conjugate gradients solution of the NR equations
 
@@ -1762,6 +1789,8 @@ DCFTSolver::iterate_conjugate_gradients() {
     double residual_rms;
 
     while (!converged) {
+
+        cycle++;
 
         residual_rms = 0.0;
 
@@ -1806,7 +1835,6 @@ DCFTSolver::iterate_conjugate_gradients() {
         // Check convergence
         converged = (residual_rms < cumulant_threshold_);
 
-        cycle++;
         if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e\n", cycle, residual_rms);
         if (cycle > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
 
@@ -1821,6 +1849,60 @@ DCFTSolver::iterate_conjugate_gradients() {
     }
 
     return cycle;
+
+}
+
+int
+DCFTSolver::iterate_nr_jacobi() {
+
+    SharedVector Xold(new Vector("Old step vector in the IDP basis", nidp_));
+
+    bool converged_micro = false;
+    int counter = 0;
+
+    double residual_rms;
+
+    // Jacobi solution of the NR equations
+    while (!converged_micro) {
+
+        counter++;
+
+        residual_rms = 0.0;
+
+        // Compute sigma vector
+        compute_sigma_vector();
+
+        double residual_rms = 0.0;
+        // Update X
+        for (int p = 0; p < nidp_; ++p) {
+            // Compute residual: R = sigma - g + Hd * Xold
+            double value_r = (-1.0) * (gradient_->get(p) - sigma_->get(p) - Hd_->get(p) * X_->get(p));
+            R_->set(p, value_r);
+            // Update X: Xnew = Xold - R / Hd
+            if (p < orbital_idp_) {
+                X_->set(p, Xold->get(p) - value_r / Hd_->get(p));
+            }
+            else {
+                X_->set(p, Xold->get(p) - 0.25 * value_r / Hd_->get(p));
+            }
+            // Store the square of the residual
+            residual_rms += value_r * value_r;
+        }
+        // Compute RMS of the residual
+        residual_rms = sqrt(residual_rms/nidp_);
+        // Save current X
+        for (int p = 0; p < nidp_; ++p) {
+            double value = X_->get(p);
+            Xold->set(p, value);
+            D_->set(p, value);
+        }
+        // Check convergence
+        converged_micro = (residual_rms < cumulant_threshold_);
+        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e %-3s\n", counter, residual_rms);
+        if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
+    }
+
+    return counter;
 
 }
 

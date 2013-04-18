@@ -80,10 +80,12 @@ protected:
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     void run_twostep_dcft();
+    int run_twostep_dcft_cumulant_updates();
+    void run_twostep_dcft_orbital_updates();
     void run_simult_dcft();
     void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
-    virtual SharedMatrix compute_gradient_();
+    virtual SharedMatrix compute_gradient();
     void response_guess();
     void gradient_init();
     void compute_lagrangian_OV();
@@ -115,7 +117,8 @@ protected:
     void compute_sigma_vector_orb_cum();
     void compute_sigma_vector_cum_cum();
     void compute_sigma_vector_cum_orb();
-    int iterate_conjugate_gradients();
+    int iterate_nr_conjugate_gradients();
+    int iterate_nr_jacobi();
     void check_qc_convergence();
     void compute_orbital_rotation_nr();
     void update_cumulant_nr();
@@ -284,10 +287,10 @@ protected:
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
     SharedMatrix so_h_;
-    /// The alpha Fock matrix (without Tau contribution) in the SO basis
-    SharedMatrix F0a_;
-    /// The beta Fock matrix (without Tau contribution) in the SO basis
-    SharedMatrix F0b_;
+    /// The alpha Fock matrix (without Tau contribution) in the MO basis
+    SharedMatrix moF0a_;
+    /// The beta Fock matrix (without Tau contribution) in the MO basis
+    SharedMatrix moF0b_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
