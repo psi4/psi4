@@ -981,7 +981,6 @@ AC_CONFIG_FILES([
           src/bin/cceom/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
