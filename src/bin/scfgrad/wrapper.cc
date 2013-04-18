@@ -13,7 +13,7 @@ PsiReturnType scfgrad(Options &options)
     tstart();
 
     boost::shared_ptr<SCFGrad> grad(new SCFGrad());
-    SharedMatrix G = grad->compute_gradient_();
+    SharedMatrix G = grad->compute_gradient();
 
     Process::environment.set_gradient(G); 
     Process::environment.wavefunction()->set_gradient(G);

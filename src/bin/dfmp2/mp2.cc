@@ -174,7 +174,7 @@ double DFMP2::compute_energy()
 
     return energies_["Total Energy"];
 }
-SharedMatrix DFMP2::compute_gradient_()
+SharedMatrix DFMP2::compute_gradient()
 {
     print_header();
 
