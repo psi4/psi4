@@ -3,15 +3,10 @@
 
 #include <libparallel/parallel.h>
 #include <psi4-dec.h>
-#include <libyeti/env.h>
 #include <string>
 
 namespace boost {
 template<class T> class shared_ptr;
-}
-
-namespace yeti {
-class Env;
 }
 
 namespace psi {
@@ -22,14 +17,10 @@ namespace psi {
     // Useful typedef's
     typedef PsiReturnType (*plugin_t)(Options &);
     typedef int (*read_options_t)(std::string, Options&);
-    typedef void (*init_plugin_t)(const boost::shared_ptr<worldcomm>& comm, const Process::Environment& env,
-                                  const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio,
-                                  const yeti::Env &yetiEnv);
+    typedef void (*init_plugin_t)();
 
     // The following lines are used in plugins
-    extern "C" void init_plugin(const boost::shared_ptr<worldcomm>& comm, const psi::Process::Environment& env,
-                                const boost::shared_ptr<Chkpt> &chkpt, const boost::shared_ptr<PSIO> &psio,
-                                const yeti::Env &yetiEnv);
+    extern "C" void init_plugin();
     #define INIT_PLUGIN psi::init_plugin_t init_plugin_p = &psi::init_plugin;
 
     // The following lines are used by the PSI4 driver.
@@ -64,8 +55,6 @@ namespace psi {
       @param plugin A plugin_info struct that contains the plugin to free.
     */
     void plugin_close(const plugin_info& plugin);
-
-    static yeti::Env yetiEnv;
 }
 
 #endif
