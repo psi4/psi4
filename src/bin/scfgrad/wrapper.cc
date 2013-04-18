@@ -23,4 +23,16 @@ PsiReturnType scfgrad(Options &options)
     return Success;
 }
 
+PsiReturnType scfhess(Options &options)
+{
+    tstart();
+
+    boost::shared_ptr<SCFGrad> grad(new SCFGrad());
+    SharedMatrix G = grad->compute_hessian();
+
+    tstop();
+
+    return Success;
+}
+
 }} // End Namespaces
