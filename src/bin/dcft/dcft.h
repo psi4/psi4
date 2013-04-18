@@ -117,7 +117,8 @@ protected:
     void compute_sigma_vector_orb_cum();
     void compute_sigma_vector_cum_cum();
     void compute_sigma_vector_cum_orb();
-    int iterate_conjugate_gradients();
+    int iterate_nr_conjugate_gradients();
+    int iterate_nr_jacobi();
     void check_qc_convergence();
     void compute_orbital_rotation_nr();
     void update_cumulant_nr();

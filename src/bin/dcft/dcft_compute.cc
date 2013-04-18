@@ -320,10 +320,10 @@ DCFTSolver::run_twostep_dcft_orbital_updates() {
         if(orbitals_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
             if(scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
                 diisString += "S";
-        }
-        if(scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1){
-            diisString += "/E";
-            scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
+            if(scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1){
+                diisString += "/E";
+                scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
+            }
         }
         // Transform the Fock matrix to the symmetrically orhogonalized basis set and digonalize it
         // Obtain new orbitals
