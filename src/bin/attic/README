@@ -1,0 +1,4 @@
+This "attic" directory is where code lives that was once worked on but hasn't
+been in a long while. These libraries are not currently used in PSI4.
+
+This was also to clean up the lib directory to reduce confusion for users.
