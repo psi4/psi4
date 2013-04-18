@@ -10,7 +10,7 @@ void SAPT2p::disp22t()
 
   double e_disp220t;
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       "AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
       "BS NO RI Integrals",PSIF_SAPT_AMPS,"tARAR NO Amplitudes",foccA_,
@@ -30,7 +30,7 @@ void SAPT2p::disp22t()
 
   double e_disp202t;
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       "BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
       "AR NO RI Integrals",PSIF_SAPT_AMPS,"tBSBS NO Amplitudes",foccB_,
@@ -55,7 +55,7 @@ void SAPT2p::disp22t()
     fflush(outfile);
   }
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     double scale = e_disp20_/e_no_disp20_;
     e_disp220t *= scale;
     e_disp202t *= scale;
@@ -76,14 +76,14 @@ void SAPT2p::disp22tccd()
     fprintf(outfile,"\n");
   }
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     natural_orbitalify_ccd();
   }
 
   double e_disp220t;
 
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     e_disp220t = disp220tccd(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
       "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes","T BSAR Natorb Amplitudes", 
@@ -103,7 +103,7 @@ void SAPT2p::disp22tccd()
 
   double e_disp202t;
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     e_disp202t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
       "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes","T ARBS Natorb Amplitudes", 
@@ -128,7 +128,7 @@ void SAPT2p::disp22tccd()
     fflush(outfile);
   }
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     double scale = e_disp20_/e_no_disp20_;
     e_disp220t *= scale;
     e_disp202t *= scale;

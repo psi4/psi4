@@ -9,6 +9,8 @@ memory 250 mb
 
 
 
+
+
 molecule HF {
 1 2
 H
@@ -75,5 +77,15 @@ energy('dcft')
 
 
 set ao_basis disk
+energy('dcft')
+
+
+set dcft_functional odc-06
+set algorithm simultaneous
+set ao_basis none
+energy('dcft')
+
+
+set dcft_functional odc-12
 energy('dcft')
 
