@@ -19,8 +19,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <libdist_matrix/dist_mat.h>
-
 using namespace boost;
 
 namespace psi {
@@ -844,29 +842,6 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
 
 void MintsHelper::play()
 {
-#if defined(HAVE_MADNESS)
-    int pnrows = sqrt(WorldComm->nproc());
-    int pncols = WorldComm->nproc() / pnrows;
-
-    std::vector<int> pgrid_dimension_sizes(2);
-    pgrid_dimension_sizes[0] = pnrows;
-    pgrid_dimension_sizes[1] = pncols;
-
-    process_grid pgrid(pgrid_dimension_sizes);
-
-    Distributed_Matrix A(pgrid, 5, 5, 2, "A");
-    Distributed_Matrix B(pgrid, 5, 5, 2, "B");
-    Vector X(5);
-
-    A.fill(1.0);
-    fprintf(outfile, "Pre diag call\n");
-    A.print();
-    A.diagonalize(B, X);
-    fprintf(outfile, "Post diag call\n");
-    A.print();
-    B.print();
-    X.print();
-#endif
 }
 
 } // namespace psi
