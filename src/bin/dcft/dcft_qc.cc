@@ -89,7 +89,7 @@ DCFTSolver::run_qc_dcft()
             // Compute sigma vector in the basis of IDPs
             compute_sigma_vector();
             // Solve the NR equations using conjugate gradients
-            cycle_NR = iterate_conjugate_gradients();
+            cycle_NR = iterate_nr_conjugate_gradients();
             // Check the convergence by computing the change in the orbitals and the cumulant
             check_qc_convergence();
             orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
@@ -1767,7 +1767,7 @@ DCFTSolver::compute_sigma_vector_cum_orb() {
 }
 
 int
-DCFTSolver::iterate_conjugate_gradients() {
+DCFTSolver::iterate_nr_conjugate_gradients() {
 
     // Conjugate gradients solution of the NR equations
 
@@ -1777,12 +1777,6 @@ DCFTSolver::iterate_conjugate_gradients() {
 
     int cycle = 0;
 
-//    // Set up DIIS
-//    DIISManager scfDiisManager(maxdiis_, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
-//    if ((nalpha_ + nbeta_) > 1) {
-//        scfDiisManager.set_error_vector_size(1, DIISEntry::Vector, R_.get());
-//        scfDiisManager.set_vector_size(1, DIISEntry::Vector, X_.get());
-//    }
     // Compute residual and form guess for the step vector D
     for (int p = 0; p < nidp_; ++p) {
         double value_r = gradient_->get(p) - sigma_->get(p) - Hd_->get(p) * X_->get(p);
@@ -1798,7 +1792,6 @@ DCFTSolver::iterate_conjugate_gradients() {
 
         cycle++;
 
-//        std::string diisString;
         residual_rms = 0.0;
 
         // Compute sigma vector
@@ -1817,14 +1810,6 @@ DCFTSolver::iterate_conjugate_gradients() {
 
         delta_old = delta_new;
         delta_new = 0.0;
-//        if(residual_rms < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
-//            if(scfDiisManager.add_entry(2, R_.get(), X_.get()))
-//                diisString += "S";
-//        }
-//        if(scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1){
-//            diisString += "/E";
-//            scfDiisManager.extrapolate(1, X_.get());
-//        }
         for (int p = 0; p < nidp_; ++p) {
             // Update X
             X_->set(p, X_->get(p) + alpha * D_->get(p));
@@ -1867,56 +1852,57 @@ DCFTSolver::iterate_conjugate_gradients() {
 
 }
 
-void
-DCFTSolver::iterate_steepest_descent() {
+int
+DCFTSolver::iterate_nr_jacobi() {
+
+    SharedVector Xold(new Vector("Old step vector in the IDP basis", nidp_));
 
     bool converged_micro = false;
     int counter = 0;
 
-    double delta_new = 0.0;
-    // New element of the Krylov subspace
-    double *Q = new double[nidp_];
+    double residual_rms;
 
-    form_sigma_vector(Xnew_, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
-    // Compute residual and form guess for the step vector d
-    for (int p = 0; p < nidp_; ++p) {
-        R[p] = (-1.0) * (sigma[p] - qc_gradient_[p] + Hd[p] * Xnew_[p]);
-        delta_new += R[p] * R[p];
-    }
-
+    // Jacobi solution of the NR equations
     while (!converged_micro) {
 
-        double residual_rms = 0.0;
-
-        form_sigma_vector(R, sigma, kappa_idp_, lambda_idp_, ind_pairs_);
-        double rT_q = 0.0;
-        // Compute the element of the Krylov subspace Q = H * d_old
-        for (int p = 0; p < nidp_; ++p) {
-            Q[p] = sigma[p] + Hd[p] * R[p];
-            rT_q += R[p] * Q[p];
-        }
-        // Compute scale factor for the optimal directon vector length (step length)
-        double alpha = delta_new / rT_q;
-        delta_new = 0.0;
-        for (int p = 0; p < nidp_; ++p) {
-            // Update X
-            Xnew_[p] += alpha * R[p];
-            // Update the residual
-            R[p] -= alpha * Q[p];
-            delta_new += R[p] * R[p];
-            residual_rms += R[p] * R[p];
-        }
-
         counter++;
+
+        residual_rms = 0.0;
+
+        // Compute sigma vector
+        compute_sigma_vector();
+
+        double residual_rms = 0.0;
+        // Update X
+        for (int p = 0; p < nidp_; ++p) {
+            // Compute residual: R = sigma - g + Hd * Xold
+            double value_r = (-1.0) * (gradient_->get(p) - sigma_->get(p) - Hd_->get(p) * X_->get(p));
+            R_->set(p, value_r);
+            // Update X: Xnew = Xold - R / Hd
+            if (p < orbital_idp_) {
+                X_->set(p, Xold->get(p) - value_r / Hd_->get(p));
+            }
+            else {
+                X_->set(p, Xold->get(p) - 0.25 * value_r / Hd_->get(p));
+            }
+            // Store the square of the residual
+            residual_rms += value_r * value_r;
+        }
         // Compute RMS of the residual
         residual_rms = sqrt(residual_rms/nidp_);
+        // Save current X
+        for (int p = 0; p < nidp_; ++p) {
+            double value = X_->get(p);
+            Xold->set(p, value);
+            D_->set(p, value);
+        }
         // Check convergence
-        converged_micro = (residual_rms < convergence_);
-        if (print_ > 1) fprintf(outfile, "\n %d RMS = %8.5e ", counter, residual_rms);
-        if (counter > maxIt_) break;
+        converged_micro = (residual_rms < cumulant_threshold_);
+        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e %-3s\n", counter, residual_rms);
+        if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
     }
 
-    nSCFCycles_ = counter;
+    return counter;
 
 }
 
