@@ -152,6 +152,11 @@ void SAPT2p::print_header()
   long int ovov = occ*occ*vir*vir;
   long int vvnri = vir*vir*ndf_;
   double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
+  if (ccd_disp_) {
+    double ccd_memory = 8.0*(ovov*5L)/1000000.0;
+    memory = (memory > ccd_memory ? memory : ccd_memory);
+  }
+
   if (print_) {
     fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
     fflush(outfile);
