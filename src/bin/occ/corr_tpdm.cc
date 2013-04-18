@@ -256,9 +256,9 @@ void OCCWave::omp3_tpdm_vvvv()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
    
  if (reference_ == "RESTRICTED") {
-    // NOTE: A VVVV-sort takes too long time, hence I will not symmetrize the 
-    // TPDM VVVV-block. However, in future for analytical gradients 
-    // I need to symmetrize it.
+    // NOTE: A VVVV-sort takes too long time, and there is no OOC for psrq type sorting. 
+    // Hence I will not symmetrize the TPDM VVVV-block. 
+    // However, in for analytical gradients I need to symmetrize it.
     
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -283,8 +283,12 @@ void OCCWave::omp3_tpdm_vvvv()
     if (time4grad == 1) {
     // Symmetrize the VVVV block
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , psrq, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|DB>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|DB>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
     dpd_buf4_close(&G);
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
@@ -294,7 +298,7 @@ void OCCWave::omp3_tpdm_vvvv()
     dpd_buf4_close(&V);
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-    }
+    } // enf if (time4grad == 1) 
 
     //Print 
     if (print_ > 3) {
@@ -409,9 +413,9 @@ void OCCWave::ocepa_tpdm_vvvv()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
    
  if (reference_ == "RESTRICTED") {
-    // NOTE: A VVVV-sort takes too long time, hence I will not symmetrize the 
-    // TPDM VVVV-block. However, in the case of analytical gradients 
-    // I need to symmetrize it.
+    // NOTE: A VVVV-sort takes too long time, and there is no OOC for psrq type sorting. 
+    // Hence I will not symmetrize the TPDM VVVV-block. 
+    // However, in for analytical gradients I need to symmetrize it.
     
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -428,8 +432,12 @@ void OCCWave::ocepa_tpdm_vvvv()
     if (time4grad == 1) {
     // Symmetrize the VVVV block
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , psrq, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|DB>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|DB>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
     dpd_buf4_close(&G);
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
@@ -439,7 +447,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_close(&V);
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-    }
+    } // enf if (time4grad == 1) 
 
     //Print 
     if (print_ > 3) {

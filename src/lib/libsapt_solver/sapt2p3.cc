@@ -173,6 +173,11 @@ void SAPT2p3::print_header()
   long int ovov = occ*occ*vir*vir;
   long int vvnri = vir*vir*ndf_;
   double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
+  if (ccd_disp_) {
+    double ccd_memory = 8.0*(ovov*5L)/1000000.0;
+    memory = (memory > ccd_memory ? memory : ccd_memory);
+  }
+
   if (print_) {
     fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
     fflush(outfile);
@@ -180,6 +185,12 @@ void SAPT2p3::print_header()
   if (options_.get_bool("SAPT_MEM_CHECK"))
     if (mem < vvnri + ovov*3L) 
       throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  fprintf(outfile,"    Natural Orbital Cutoff: %11.3E\n", occ_cutoff_);
+  fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
+  fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
+  fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
+  fprintf(outfile,"\n");
 
   fflush(outfile);
 }
@@ -189,7 +200,7 @@ void SAPT2p3::print_results()
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
   e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_ 
     + e_exch_ind22_;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_;
   else
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_disp22t_;
@@ -213,7 +224,7 @@ void SAPT2p3::print_results()
   double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_
     + e_ind30r_ + e_exch_ind30r_;
   double tot_disp = 0.0;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
       + e_est_disp22t_ + e_disp30_ + e_exch_disp30_ + e_ind_disp30_ 
       + e_exch_ind_disp30_;
@@ -224,7 +235,7 @@ void SAPT2p3::print_results()
 
   if (ccd_disp_) {
     tot_disp = 0.0;
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_est_disp22t_ccd_;
     else
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_disp22t_ccd_;
@@ -292,7 +303,7 @@ void SAPT2p3::print_results()
       e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
     fprintf(outfile,"      Disp22 (T)          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       fprintf(outfile,"      Est. Disp22 (T)     %16.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
   }
@@ -303,7 +314,7 @@ void SAPT2p3::print_results()
       e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
     fprintf(outfile,"      Disp22 (T) (CCD)    %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       fprintf(outfile,"      Est. Disp22 (T) (CCD)%15.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
   }
