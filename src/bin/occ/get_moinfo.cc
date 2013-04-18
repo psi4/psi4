@@ -217,7 +217,7 @@ if (reference_ == "RESTRICTED") {
 /************************** occ_off & vir_off ***********************************************/
 /********************************************************************************************/ 
 /********************************************************************************************/ 
-    // occ_qt = occ_sym_block + occ_off =>convert occ sym block index to occ qt index
+    // occ_qt = occ_sym_block + occ_off => convert occ sym block index to occ qt index
     // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index 
     // vir_qt = vir_sym_block + vir_off 
     // general_qt = vir_sym_block + vir_off + nocc

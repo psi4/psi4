@@ -111,9 +111,14 @@ protected:
     void compute_orbital_gradient();
     void form_idps();
     void compute_sigma_vector();
+    void compute_sigma_vector_orb_orb();
+    void compute_sigma_vector_orb_cum();
+    void compute_sigma_vector_cum_cum();
+    void compute_sigma_vector_cum_orb();
     int iterate_conjugate_gradients();
     void check_qc_convergence();
-    void update_cumulant_and_orbitals_nr();
+    void compute_orbital_rotation_nr();
+    void update_cumulant_nr();
     void run_davidson();
     void davidson_guess();
     // Exact Tau
@@ -173,17 +178,23 @@ protected:
     /// The total number of orbital independent pairs for the current NR step
     int orbital_idp_;
     /// The number of cumulant independent pairs for the current NR step (Alpha-Alpha spin)
-    int lambda_idp_aa_;
+    int cumulant_idp_aa_;
     /// The number of cumulant independent pairs for the current NR step (Alpha-Beta spin)
-    int lambda_idp_ab_;
+    int cumulant_idp_ab_;
     /// The number of cumulant independent pairs for the current NR step (Beta-Beta spin)
-    int lambda_idp_bb_;
+    int cumulant_idp_bb_;
     /// The total number of cumulant independent pairs for the current NR step
-    int lambda_idp_;
+    int cumulant_idp_;
     /// The maximum number of IDPs ever possible
     int dim_;
-    /// The lookup array that determines which compound indices belong to IDPs and which don't
-    int *lookup_;
+    /// The maximum number of IDPs possible for orbital updates
+    int dim_orbitals_;
+    /// The maximum number of IDPs possible for cumulant updates
+    int dim_cumulant_;
+    /// The lookup array that determines which compound indices belong to orbital IDPs and which don't
+    int *lookup_orbitals_;
+    /// The lookup array that determines which compound indices belong to cumulant IDPs and which don't
+    int *lookup_cumulant_;
     /// The number of the guess subspace vectors for the Davidson diagonalization
     int nguess_;
     /// The dimension of the subspace in the Davidson diagonalization
