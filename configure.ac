@@ -948,11 +948,8 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
-          src/lib/libmatrix/Makefile
-          src/lib/libdist_matrix/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
-          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
@@ -960,8 +957,6 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-          src/lib/libsmartptr/Makefile
-          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
@@ -986,7 +981,6 @@ AC_CONFIG_FILES([
           src/bin/cceom/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
