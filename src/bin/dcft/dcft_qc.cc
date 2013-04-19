@@ -24,10 +24,6 @@ DCFTSolver::run_qc_dcft()
                              "\t* Cycle   RMS Orb Grad   RMS Lambda Error    delta E         Total Energy     NI(Orb)  NI(Cum)  DIIS *\n"
                              "\t*----------------------------------------------------------------------------------------------------*\n");
     }
-    bool orbitalsDone     = false;
-    bool cumulantDone     = false;
-    bool energyConverged  = false;
-    bool densityConverged = false;
 
     int cycle = 0;
     int cycle_NR = 0;
@@ -62,7 +58,7 @@ DCFTSolver::run_qc_dcft()
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lbb);
 
-    while((!orbitalsDone || !cumulantDone || !energyConverged || !densityConverged) && cycle++ < maxiter_ ) {
+    while((!orbitalsDone_ || !cumulantDone_ || !energyConverged_ || !densityConverged_) && cycle++ < maxiter_ ) {
 
         std::string diisString;
         // Compute the generalized Fock matrix and orbital gradient in the MO basis
@@ -82,7 +78,7 @@ DCFTSolver::run_qc_dcft()
         // Add lambda energy to the DCFT total energy
         new_total_energy_ += lambda_energy_;
         // Check convergence of the total DCFT energy
-        energyConverged = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
+        energyConverged_ = fabs(old_total_energy_ - new_total_energy_) < cumulant_threshold_;
         // Determine the independent pairs (IDPs) and create array for the orbital and cumulant gradient in the basis of IDPs
         form_idps();
         if (nidp_ != 0) {
@@ -92,8 +88,8 @@ DCFTSolver::run_qc_dcft()
             cycle_NR = iterate_nr_conjugate_gradients();
             // Check the convergence by computing the change in the orbitals and the cumulant
             check_qc_convergence();
-            orbitalsDone = orbitals_convergence_ < orbitals_threshold_;
-            cumulantDone = cumulant_convergence_ < cumulant_threshold_;
+            orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
+            cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
             // Update cumulant first
             if (options_.get_str("QC_TYPE") == "SIMULTANEOUS") {
                 update_cumulant_nr();
@@ -150,7 +146,7 @@ DCFTSolver::run_qc_dcft()
             fflush(outfile);
             if (orbital_idp_ != 0) {
                 // Update the density
-                densityConverged = update_scf_density() < orbitals_threshold_;
+                densityConverged_ = update_scf_density() < orbitals_threshold_;
                 // Write orbitals to the checkpoint file
                 write_orbitals_to_checkpoint();
                 // Transform two-electron integrals to the MO basis using new orbitals, build denominators
@@ -169,15 +165,9 @@ DCFTSolver::run_qc_dcft()
         fprintf(outfile, "\t*====================================================================================================*\n");
     }
 
-    if(!orbitalsDone || !cumulantDone || !densityConverged || !energyConverged)
+    if(!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
         throw ConvergenceError<int>("DCFT", maxiter_, cumulant_threshold_,
                                cumulant_convergence_, __FILE__, __LINE__);
-
-    // Make sure that the orbital phase is retained and the Fock matrix is diagonal for the gradients
-
-    orbitalsDone_ = true;
-    cumulantDone_ = true;
-    densityConverged_ = true;
 
 }
 
