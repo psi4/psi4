@@ -1603,11 +1603,12 @@ DCFTSolver::update_orbital_response()
                 double value = 0.0;
                 for(int j = 0 ; j < naoccpi_[h]; ++j){
                     value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j));
+                    value += z_ia.matrix[h][j][a] * moFa_->get(h, j, i);
                 }
                 for(int b = 0 ; b < navirpi_[h]; ++b){
                     value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (avir_tau_->get(h,a,b));
+                    value -= z_ia.matrix[h][i][b] * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
                 }
-                value -= z_ia.matrix[h][i][a] * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
                 value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
                 a_ria->set(h, i, a, value);
                 r_ia.matrix[h][i][a] = value;
@@ -1652,11 +1653,12 @@ DCFTSolver::update_orbital_response()
                 double value = 0.0;
                 for(int j = 0 ; j < nboccpi_[h]; ++j){
                     value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j));
+                    value += z_ia.matrix[h][j][a] * moFb_->get(h, j, i);
                 }
                 for(int b = 0 ; b < nbvirpi_[h]; ++b){
                     value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (bvir_tau_->get(h,a,b));
+                    value -= z_ia.matrix[h][i][b] * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
                 }
-                value -= z_ia.matrix[h][i][a] * (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
                 value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
                 b_ria->set(h, i, a, value);
                 r_ia.matrix[h][i][a] = value;
@@ -3944,12 +3946,13 @@ DCFTSolver::compute_ewdm()
                 double value = 0.0;
                 for(int j = 0 ; j < naoccpi_[h]; ++j){
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) * (aocc_tau_->get(h,i,j) + kappa_mo_a_->get(h,i,j));
+                    value -= 0.25 * z_OV.matrix[h][j][a] * moFa_->get(h, j, i);
                 }
                 for(int b = 0 ; b < navirpi_[h]; ++b){
                     value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (avir_tau_->get(h,a,b));
+                    value -= 0.25 * z_OV.matrix[h][i][b] * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
-                value -= 0.25 * z_OV.matrix[h][i][a] * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) + moFa_->get(h, i, i));
                 aW.set(h, i, a + naoccpi_[h], value);
                 aW.set(h, a + naoccpi_[h], i, value);
                 a_zia->set(h, i, a + naoccpi_[h], z_OV.matrix[h][i][a]);
@@ -4037,12 +4040,13 @@ DCFTSolver::compute_ewdm()
                 double value = 0.0;
                 for(int j = 0 ; j < nboccpi_[h]; ++j){
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) * (bocc_tau_->get(h,i,j) + kappa_mo_b_->get(h,i,j));
+                    value -= 0.25 * z_OV.matrix[h][j][a] * moFb_->get(h, j, i);
                 }
                 for(int b = 0 ; b < nbvirpi_[h]; ++b){
                     value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (bvir_tau_->get(h,a,b));
+                    value -= 0.25 * z_OV.matrix[h][i][b] * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
-                value -= 0.25 * z_OV.matrix[h][i][a] * (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) + moFb_->get(h, i, i));
                 b_zia->set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
                 bW.set(h, i, a + nboccpi_[h], value);
                 bW.set(h, a + nboccpi_[h], i, value);
