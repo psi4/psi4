@@ -21,6 +21,7 @@ autom4te.cache
 
 # Compiled Python files. Regenerated automatically
 *.pyc
+*.pyo
 
 # Files resulting from running PSI4
 output.dat
