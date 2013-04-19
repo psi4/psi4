@@ -492,6 +492,27 @@ PsiReturnType CoupledCluster::CCSDIterations() {
      fprintf(outfile,"  QCISD iterations converged!\n");
   fprintf(outfile,"\n");
 
+  // T1 and D1 diagnostics:
+
+  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  fprintf(outfile,"        T1 diagnostic:                   %20.12lf\n",t1diag);
+  boost::shared_ptr<Matrix>T (new Matrix(o,o));
+  boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
+  boost::shared_ptr<Vector>eigval (new Vector(o));
+  double ** Tp = T->pointer();
+  for (int i = 0; i < o; i++) {
+      for (int j = 0; j < o; j++) {
+          double dum = 0.0;
+          for (int a = 0; a < v; a++) {
+              dum += t1[a*o+i] * t1[a*o+j];
+          }
+          Tp[i][j] = dum;
+      }
+  }
+  T->diagonalize(eigvec,eigval,descending);
+  fprintf(outfile,"        D1 diagnostic:                   %20.12lf\n",sqrt(eigval->pointer()[0]));
+  fprintf(outfile,"\n");
+
   // delta mp2 correction for fno computations:
   if (options_.get_bool("NAT_ORBS")){
       double delta_emp2 = Process::environment.globals["MP2 CORRELATION ENERGY"] - emp2;
@@ -2670,6 +2691,27 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
+  fprintf(outfile,"\n");
+
+  // T1 and D1 diagnostics:
+
+  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  fprintf(outfile,"        T1 diagnostic:                  %20.12lf\n",t1diag);
+  boost::shared_ptr<Matrix>T (new Matrix(o,o));
+  boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
+  boost::shared_ptr<Vector>eigval (new Vector(o));
+  double ** Tp = T->pointer();
+  for (int i = 0; i < o; i++) {
+      for (int j = 0; j < o; j++) {
+          double dum = 0.0;
+          for (int a = 0; a < v; a++) {
+              dum += t1[a*o+i] * t1[a*o+j];
+          }
+          Tp[i][j] = dum;
+      }
+  }
+  T->diagonalize(eigvec,eigval,descending);
+  fprintf(outfile,"        D1 diagnostic:                  %20.12lf\n",sqrt(eigval->pointer()[0]));
   fprintf(outfile,"\n");
 
   // delta mp2 correction for fno computations:
