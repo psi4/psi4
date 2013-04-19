@@ -2314,7 +2314,7 @@ void TwoElectronInt::compute_quartet_deriv2(int sh1, int sh2, int sh3, int sh4)
     int nprim2 = s2.nprimitive();
     int nprim3 = s3.nprimitive();
     int nprim4 = s4.nprimitive();
-    size_t nprim;
+    size_t nprim = 0;
 
     double A[3], B[3], C[3], D[3];
     A[0] = s1.center()[0];

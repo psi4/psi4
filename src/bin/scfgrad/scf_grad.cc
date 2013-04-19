@@ -893,6 +893,8 @@ SharedMatrix SCFGrad::compute_hessian()
     timer_off("Hess: S");
 
     // => Two-Electron Hessian <= //
+    /**
+
     timer_on("Hess: JK");
 
     boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad(2);
@@ -942,6 +944,8 @@ SharedMatrix SCFGrad::compute_hessian()
         hessians["Exchange"]->scale(-1.0);
     }
     timer_off("Hess: JK");
+    
+    **/
 
     // => XC Hessian <= //
     timer_on("Hess: XC");
@@ -982,11 +986,11 @@ SharedMatrix SCFGrad::compute_hessian()
     if (print_ > 1) {
         for (int i = 0; i < hessian_terms.size(); i++) {
             if (hessians.count(hessian_terms[i])) {
-                hessians[hessian_terms[i]]->print_atom_vector(); 
+                hessians[hessian_terms[i]]->print();
             }
         }
     } else {
-        hessians["Total"]->print_atom_vector();
+        hessians["Total"]->print();
     }
 
     return hessians["Total"]; 
