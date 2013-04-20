@@ -466,6 +466,7 @@ namespace psi{ namespace dcft{
       double *Gb = init_array(ntriso_);
       double *Va = init_array(ntriso_);
       double *Vb = init_array(ntriso_);
+
       int soOffset = 0;
       for(int h = 0; h < nirrep_; ++h){
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
@@ -1770,14 +1771,14 @@ namespace psi{ namespace dcft{
           soOffset += nsopi_[h];
       }
 
-      delete [] Ta;
-      delete [] Tb;
-      delete [] Va;
-      delete [] Vb;
-      delete [] Da;
-      delete [] Db;
-      delete [] Ga;
-      delete [] Gb;
+      free(Ta);
+      free(Tb);
+      free(Va);
+      free(Vb);
+      free(Da);
+      free(Db);
+      free(Ga);
+      free(Gb);
 
       dcft_timer_off("DCFTSolver::build_G");
   }

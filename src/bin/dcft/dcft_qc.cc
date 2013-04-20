@@ -1888,7 +1888,7 @@ DCFTSolver::iterate_nr_jacobi() {
         }
         // Check convergence
         converged_micro = (residual_rms < cumulant_threshold_);
-        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e %-3s\n", counter, residual_rms);
+        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
         if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
     }
 
