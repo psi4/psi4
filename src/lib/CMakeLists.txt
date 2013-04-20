@@ -1,4 +1,5 @@
 add_subdirectory(libint)
+add_subdirectory(libderiv)
 
 #
 # A function to populate a list of files expected from LIBINT
