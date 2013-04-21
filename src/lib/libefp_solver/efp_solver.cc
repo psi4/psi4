@@ -37,6 +37,7 @@ using namespace psi;
 namespace psi { namespace efp {
 EFP::EFP(Options& options): options_(options) 
 {
+fprintf(outfile,"efp constructor calling common_init\n");
 	common_init();
 }
 
@@ -63,6 +64,7 @@ void EFP::common_init() {
     enum efp_result res;
     int print = options_.get_int("PRINT");
 
+fprintf(outfile,"efp::common_init reads efp options from local options_\n");
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
 
@@ -107,11 +109,13 @@ fprintf(outfile, "\nDERTYPE: %s\n", dertype.c_str());
     molecule_ = Process::environment.molecule();
     nfrag_ = options_["FRAGS"].size();
 
+fprintf(outfile,"efp::common_init calls efp_create\n");
     efp_ = efp_create();
 
     if (!efp_)
         throw PsiException("EFP::common_init():", __FILE__, __LINE__);
 
+fprintf(outfile,"efp::common_init calls efp_set_opts\n");
     if (res = efp_set_opts(efp_, &opts))
         throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
@@ -147,6 +151,7 @@ void EFP::SetGeometry(){
 
        molecule_->print();
 
+fprintf(outfile,"\n in efp::SetGeometry\n");
 fprintf(outfile, "\n molecule_->nfragments(): %d", molecule_->nfragments());
 fprintf(outfile, "\n nfrag_: %d", nfrag_);
 fprintf(outfile, "\n get_frag_count(): %d", get_frag_count());
