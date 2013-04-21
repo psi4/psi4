@@ -1359,17 +1359,19 @@ double **SAPT2::get_DF_ints_nongimp(int filenum, const char *label, int startA,
 
   double** AA = get_DF_ints(filenum,label,startA,stopA,startB,stopB);
   
-  double** A = block_matrix(lengthAB,ndf_);
+  // So dirty that it could only go in Ed's code. Won't cause a memory leak though
+  double* g = AA[0];
+  double* n = AA[0]; 
+  
   for (int ab = 0; ab < lengthAB; ab++) {
-    ::memcpy((void*) A[ab],(void*) AA[ab], sizeof(double) * ndf_); 
-  }   
+    AA[ab] = n;
+    ::memmove(n,g,sizeof(double) * ndf_);
+    n += ndf_;
+    g += ndf_ + 3;
+  }
 
-  free_block(AA);
-
-  return(A);
+  return AA;
 }
-
-
 
 void SAPT2::antisym(double *A, int nocc, int nvir)
 {
