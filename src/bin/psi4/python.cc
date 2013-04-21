@@ -183,9 +183,11 @@ std::string py_get_outfile_name()
 void py_psi_prepare_options_for_module(std::string const & name)
 {
     // Tell the options object which module is about to run
+fprintf(outfile,"in py_psi_prepare_options for module %s\n", name.c_str());
     Process::environment.options.set_current_module(name);
     // Figure out the defaults for any options that have not been specified
     read_options(name, Process::environment.options, false);
+fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").c_str());
     if (plugins.count(name)) {
         // Easy reference
         plugin_info& info = plugins[name];
@@ -499,7 +501,10 @@ double py_psi_cctriples()
 
 boost::shared_ptr<psi::efp::EFP> py_psi_efp_init()
 {
+fprintf(outfile,"in py_psi_efp_init() call prepare_options_for_module efp\n");
     py_psi_prepare_options_for_module("EFP");
+fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").c_str());
+
     if (psi::efp::efp_init(Process::environment.options) == Success) {
         return Process::environment.get_efp();
     }
