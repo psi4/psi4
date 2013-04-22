@@ -2,6 +2,24 @@ project(psi4)
 cmake_minimum_required(VERSION 2.8)
 
 #
+# Psi4 configuration
+#
+set(PSI_VERSION \"4.0\")
+set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
+set(top_objdir \"${PROJECT_BINARY_DIR}\")
+include(CheckIncludeFiles)
+check_include_files(dlfcn.h HAVE_DLFCN)
+include(CheckFunctionExists)
+check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
+include(CheckSymbolExists)
+check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
+include(cmake/Restrict.cmake)
+test_restrict(restrict)
+configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
+set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
+configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
+
+#
 # Libint configuration
 #
 set(LIBINT_TMPDIR "") # I haven't quite figured out the scratch stuff yet
@@ -31,7 +49,6 @@ execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYINC OUTPUT_STRI
 # Turn the flags into proper lists
 string(REPLACE "-I" "" PYINC ${PYINC})
 string(REPLACE " " ";" PYINC ${PYINC})
-string(REPLACE " " ";" PYLIB ${PYLIB})
 
 if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
    message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
@@ -57,34 +74,41 @@ else()
     set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
     set(BOOSTINC ${PROJECT_BINARY_DIR}/boost)
     foreach(component ${BOOST_COMPONENTS})
-        set(BOOSTLIB ${BOOSTLIB} ${BOOSTLIBDIR}/${component})
+        set(BOOSTLIB ${BOOSTLIB} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
     add_subdirectory(boost)
 endif()
 
+
 #
-# Psi4 configuration
+# The location of compiled libraries and executables
 #
-set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
-set(top_objdir \"${PROJECT_BINARY_DIR}\")
-configure_file(include/psiconfig.h.in include/psiconfig.h)
-configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
-# The location of libraries and executables
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 
-
 set(CMAKE_INCLUDE_CURRENT_DIR true)
 set(INCDIRS ${BOOSTINC};${PSIINC};${PYINC})
 include_directories(${INCDIRS})
 
-#foreach (_variableName ${INCDIRS})
-#    message(STATUS "${_variableName}")
+#
+# Psi Libraries
+#
+#set (PSILIB 3index mints)
+#foreach(lib ${PSILIB})
+#    set(tmppath "${PROJECT_SOURCE_DIR}/src/lib/lib${lib}/")
+#    file(GLOB tmpsrc "${tmppath}" "${tmppath}/*.cc")
+#    set(filelist "")
+#    foreach(src ${tmpsrc})
+#        get_filename_component(filename ${src} NAME)
+#        set(filelist ${filelist} " ${filename}")
+#    endforeach()
+#    set(OUTFILE "${tmppath}CMakeLists.txt")
+#    file(write
 #endforeach()
-#return()
+
 add_subdirectory(src)
 
 

@@ -2,6 +2,7 @@ add_custom_command(
     COMMAND tar xzf ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz 
     OUTPUT ${BOOSTVER}
     COMMENT Unpacking Boost
+    DEPENDS ${PROJECT_SOURCE_DIR}/boost/${BOOSTVER}.tar.gz
 )
 
 add_custom_command(
@@ -11,6 +12,7 @@ add_custom_command(
     WORKING_DIRECTORY ${BOOSTVER}
     DEPENDS ${BOOSTVER}
     OUTPUT boost.compiled
+    OUTPUT ${BOOSTLIB}
     COMMENT Configuring and building Boost 
 )
 
