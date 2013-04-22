@@ -95,7 +95,9 @@ DCFTSolver::run_qc_dcft()
                 update_cumulant_nr();
             }
             else {
+                double old_energy = old_total_energy_;
                 cycle_jacobi = run_twostep_dcft_cumulant_updates();
+                old_total_energy_ = old_energy;
             }
             // Compute the rotation for the orbitals
             compute_orbital_rotation_nr();
@@ -1888,7 +1890,7 @@ DCFTSolver::iterate_nr_jacobi() {
         }
         // Check convergence
         converged_micro = (residual_rms < cumulant_threshold_);
-        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e %-3s\n", counter, residual_rms);
+        if (print_ > 3) fprintf(outfile, "%d RMS = %8.5e \n", counter, residual_rms);
         if (counter > maxiter_) throw PSIEXCEPTION ("Solution of the Newton-Raphson equations did not converge");
     }
 

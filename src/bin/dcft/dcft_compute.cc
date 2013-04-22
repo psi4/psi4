@@ -36,10 +36,9 @@ DCFTSolver::compute_energy()
     }
 
     // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && !(options_.get_str("DCFT_FUNCTIONAL") == "DC-06")) throw FeatureNotImplemented("requested DCFT functional", "Analytic gradients", __FILE__, __LINE__);
+    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCFT_FUNCTIONAL") == "DC-12")) throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "AO_BASIS = DISK", __FILE__, __LINE__);
     if (!(options_.get_str("ALGORITHM") == "TWOSTEP") && options_.get_str("DCFT_FUNCTIONAL") == "CEPA0") throw FeatureNotImplemented("CEPA0", "Requested DCFT algorithm", __FILE__, __LINE__);
-//    if (options_.get_str("ALGORITHM") == "QC" && options_.get_str("DERTYPE") == "FIRST") throw FeatureNotImplemented("QC-DC-06", "Analytic gradients", __FILE__, __LINE__);
 
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_) throw PSIEXCEPTION("Two-step algorithm cannot be run orbital-optimized DCFT methods");
