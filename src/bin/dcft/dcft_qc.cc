@@ -95,7 +95,9 @@ DCFTSolver::run_qc_dcft()
                 update_cumulant_nr();
             }
             else {
+                double old_energy = old_total_energy_;
                 cycle_jacobi = run_twostep_dcft_cumulant_updates();
+                old_total_energy_ = old_energy;
             }
             // Compute the rotation for the orbitals
             compute_orbital_rotation_nr();

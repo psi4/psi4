@@ -840,7 +840,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
-      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2 DCFT");
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
