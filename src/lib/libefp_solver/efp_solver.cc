@@ -658,6 +658,58 @@ void EFP::print_out() {
     //molecule_->print();  // TODO: used to work, broken now?
 }
 
+/**
+ * Resetting of EFP options
+ */
+void EFP::set_options() {
+
+    fprintf(outfile,"efp::set_options() passing options to libefp\n");
+
+    struct efp_opts opts;
+    memset(&opts, 0, sizeof(struct efp_opts));
+
+    elst_enabled_ = options_.get_bool("EFP_ELST");
+    pol_enabled_  = options_.get_bool("EFP_POL");
+    disp_enabled_ = options_.get_bool("EFP_DISP");
+    exch_enabled_ = options_.get_bool("EFP_EXCH");
+
+    std::string dertype = options_.get_str("DERTYPE");
+
+    do_grad_ = false;
+    if (dertype == "FIRST")
+        do_grad_ = true;
+
+    if (elst_enabled_)
+        opts.terms |= EFP_TERM_ELEC;
+    if (pol_enabled_)
+        opts.terms |= EFP_TERM_POL;
+    if (disp_enabled_)
+        opts.terms |= EFP_TERM_DISP;
+    if (exch_enabled_)
+        opts.terms |= EFP_TERM_XR;
+
+    std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
+    std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
+
+    if (elst_damping == "SCREEN")
+        opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
+    else if (elst_damping == "OVERLAP")
+        opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
+    else if (elst_damping == "OFF")
+        opts.elec_damp = EFP_ELEC_DAMP_OFF;
+
+    if (disp_damping == "TT")
+        opts.disp_damp = EFP_DISP_DAMP_TT;
+    else if (disp_damping == "OVERLAP")
+        opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
+    else if (disp_damping == "OFF")
+        opts.disp_damp = EFP_DISP_DAMP_OFF;
+
+    enum efp_result res;
+    if (res = efp_set_opts(efp_, &opts))
+        throw PsiException("EFP::set_options(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+}
+
 }
 
 } // End namespaces

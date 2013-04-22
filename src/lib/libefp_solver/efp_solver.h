@@ -33,6 +33,7 @@ class EFP {
     public:
         EFP(Options& options);
         ~EFP();
+        void set_options();
 
 //****AVC****//
         /// Set geometry
