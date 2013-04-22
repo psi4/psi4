@@ -94,7 +94,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
   /*- Derivative level !expert -*/
-  options.add_str("DERTYPE", "FIRST", "NONE FIRST SECOND RESPONSE");
+  options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to ``Matrix::print_mat``. !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
   /*- List of properties to compute -*/

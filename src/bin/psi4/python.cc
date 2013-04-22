@@ -124,6 +124,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
     namespace efp        { PsiReturnType efp_init(Options&);  }
+    namespace efp        { PsiReturnType efp_set_options();   }
     namespace stable     { PsiReturnType stability(Options&); }
     namespace occwave    { PsiReturnType occwave(Options&);   }
     namespace adc        { PsiReturnType adc(Options&);       }
@@ -510,6 +511,12 @@ fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").
     }
     else
         throw PSIEXCEPTION("Unable to initialize EFP library.");
+}
+
+void py_psi_efp_set_options() {
+fprintf(outfile,"py_psi_efp_set_options\n");
+    py_psi_prepare_options_for_module("EFP");
+    Process::environment.get_efp()->set_options();
 }
 
 double py_psi_fnocc()
@@ -1353,6 +1360,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
     def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
     def("efp_init", py_psi_efp_init, "Initializes the EFP library and returns an EFP object.");
+    def("efp_set_options", py_psi_efp_set_options, "Set EFP options from environment options object.");
     def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");

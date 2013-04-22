@@ -12,5 +12,9 @@ no_reorient
 no_com
 }
 
+set efp {
+ dertype first
+}
+
 optimize('efp')
 

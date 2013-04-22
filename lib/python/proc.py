@@ -2806,6 +2806,7 @@ def run_efp(name, **kwargs):
     #efp = PsiMod.efp_init()
     PsiMod.print_out('Executing run_efp in proc.py...\n')
     efp = PsiMod.get_active_efp()
+    PsiMod.efp_set_options()
     returnvalue = efp.Compute()
     return returnvalue
 
@@ -2816,6 +2817,7 @@ def run_efp_gradient(name, **kwargs):
     #PsiMod.set_global_option('DERTYPE', 'FIRST')
     #PsiMod.set_local_option('SCF','DERTYPE', 'FIRST')
     efp = PsiMod.get_active_efp()
+    PsiMod.efp_set_options()
     returnvalue = efp.Compute()
     return returnvalue
 
