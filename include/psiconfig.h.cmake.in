@@ -1,0 +1,63 @@
+
+#ifndef _psi_include_psiconfig_h
+#define _psi_include_psiconfig_h
+
+/* Define if you have <stdint.h>.  */
+#cmakedefine HAVE_STDINT_H
+
+/* PSI version information */
+#define PSI_VERSION @PSI_VERSION@
+//#define @PSI_BUILDID@
+//#define @PSI_BUGREPORT@
+
+/* Top source code directory */
+#define PSI_TOP_SRCDIR @top_srcdir@
+#define PSI_TOP_OBJDIR @top_objdir@
+
+/* MPI? */
+#cmakedefine HAVE_MPI
+
+/* MADNESS? */
+#cmakedefine HAVE_MADNESS
+
+/* ELEMENTAL? */
+#cmakedefine HAVE_ELEMENTAL
+
+/* ScaLAPACK? */
+#cmakedefine HAVE_SCALAPACK
+
+/* Defined if we are using MKL */
+#cmakedefine HAVE_MKL
+
+/* Defined if we are using an MKL with mkl_malloc (MKL version 10+ supposedly) */
+#cmakedefine HAVE_MKL_MALLOC
+
+#cmakedefine HAVE_CMATH
+#cmakedefine HAVE_CSTDIO
+#cmakedefine HAVE_CSTDLIB
+#cmakedefine HAVE_CSTRING
+#cmakedefine HAVE_CSTDDEF
+#cmakedefine HAVE_DECL_PUTENV
+#cmakedefine HAVE_PUTENV
+#cmakedefine HAVE_DECL_SETENV
+#cmakedefine HAVE_SETENV
+#cmakedefine HAVE_FUNC_ISINF
+#cmakedefine HAVE_FUNC_ERF
+
+/* Have dlfcn.h for dlopen and friends */
+#cmakedefine HAVE_DLFCN_H
+
+/* Compiler supports __builtin_expected */
+#cmakedefine HAVE_BUILTIN_EXPECT
+
+/* Compiler supports __builtin_prefetch */
+#cmakedefine HAVE_BUILTIN_PREFETCH
+
+/* Compiler supports __builtin_constant_p */
+#cmakedefine HAVE_BUILTIN_CONSTANT_P
+
+/* Restrict keyword definition */
+#cmakedefine restrict
+
+#endif /* _psi_src_psiconfig_h */
+
