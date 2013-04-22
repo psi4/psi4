@@ -86,6 +86,8 @@ protected:
     void run_simult_dcft_oo();
     // DCFT analytic gradient subroutines
     virtual SharedMatrix compute_gradient();
+    void compute_gradient_dc();
+    void compute_gradient_odc();
     void response_guess();
     void gradient_init();
     void compute_lagrangian_OV();
@@ -103,7 +105,8 @@ protected:
     void update_cumulant_response();
     void compute_lagrangian_OO();
     void compute_lagrangian_VV();
-    void compute_ewdm();
+    void compute_ewdm_dc();
+    void compute_ewdm_odc();
     void compute_relaxed_density_OOOO();
     void compute_relaxed_density_OOVV();
     void compute_relaxed_density_OVOV();
@@ -133,6 +136,7 @@ protected:
     void compute_unrelaxed_density_OOOO();
     void compute_unrelaxed_density_OOVV();
     void compute_unrelaxed_density_OVOV();
+    void compute_unrelaxed_density_VVVV();
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
     void compute_orbital_rotation_jacobi();
