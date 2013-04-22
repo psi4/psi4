@@ -13,10 +13,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace boost {
-class once_flag;
-}
-
 namespace psi {
 
     extern FILE *outfile;
@@ -89,7 +85,7 @@ class BasisSet
     boost::shared_ptr<Molecule> molecule_;
 
     // Has static information been initialized?
-    static boost::once_flag initialized_shared_;
+    static bool initialized_shared_;
 
 public:
     BasisSet();
