@@ -55,9 +55,9 @@ configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 # Perhaps move to libint's cmakelists.txt file
 #
 set(LIBINT_TMPDIR "") # I haven't quite figured out the scratch stuff yet
-set(LIBINT_OPT_AM 5)    # A.M. level for ERIs
-set(LIBDERIV_OPT_AM1 4) # A.M. level for 1st derivative ERIs
-set(LIBDERIV_OPT_AM2 3) # A.M. level for 2nd derivative ERIs
+set(LIBINT_OPT_AM 3)    # A.M. level for ERIs
+set(LIBDERIV_OPT_AM1 2) # A.M. level for 1st derivative ERIs
+set(LIBDERIV_OPT_AM2 1) # A.M. level for 2nd derivative ERIs
 math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
 math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
 math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
