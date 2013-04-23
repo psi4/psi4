@@ -64,8 +64,8 @@ if (wfn_type_ != "OMP2") {
    if (twopdm_abcd_type == "DIRECT" ) {
         // With this algorithm cost changes to v5 => o2v4 + o2v3, roughly v/o times faster 
  	// X_MNFA = 2\sum{E,C} [2t_MN^CE(1) - t_MN^EC(1)] * <FA|CE>   
-        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "X <OO|VV>");
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[O,O]"),
+                  ID("[V,V]"), ID("[O,O]"), 0, "X <VV|OO>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
         if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
@@ -76,9 +76,10 @@ if (wfn_type_ != "OMP2") {
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
         }
-        dpd_contract444(&T, &K, &X, 0, 0, 2.0, 0.0);
+        dpd_contract444(&K, &T, &X, 0, 0, 2.0, 0.0);
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
+        dpd_buf4_sort(&X, PSIF_OCC_DENSITY, rspq, ID("[O,O]"), ID("[V,V]"), "X <OO|VV>");
 	dpd_buf4_close(&X);
 
         // OMP2.5
@@ -200,8 +201,8 @@ else if (reference_ == "UNRESTRICTED") {
 if (wfn_type_ != "OMP2") { 
    if (twopdm_abcd_type == "DIRECT" ) {
  	// X_MNAC = 1/4 \sum{E,F} t_MN^EF * <AC||EF> = 1/2 \sum{E,F} t_MN^EF * <AC|EF>  
-        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "X <OO|VV>");
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[O,O]"),
+                  ID("[V,V]"), ID("[O,O]"), 0, "X <VV|OO>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
         if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
@@ -212,9 +213,10 @@ if (wfn_type_ != "OMP2") {
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
         }
-        dpd_contract444(&T, &K, &X, 0, 0, 0.5, 0.0);
+        dpd_contract444(&K, &T, &X, 0, 0, 0.5, 0.0);
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
+        dpd_buf4_sort(&X, PSIF_OCC_DENSITY, rspq, ID("[O,O]"), ID("[V,V]"), "X <OO|VV>");
 	dpd_buf4_close(&X);
 
         // OMP2.5
@@ -226,8 +228,8 @@ if (wfn_type_ != "OMP2") {
         }
 
 	// X_mnac = 1/4 \sum{e,f} t_mn^ef * <ac||ef> = 1/2 \sum{e,f} t_mn^ef * <ac|ef> 
-        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "X <oo|vv>");
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[o,o]"),
+                  ID("[v,v]"), ID("[o,o]"), 0, "X <vv|oo>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
         if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
@@ -238,9 +240,10 @@ if (wfn_type_ != "OMP2") {
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
         }
-        dpd_contract444(&T, &K, &X, 0, 0, 0.5, 0.0);
+        dpd_contract444(&K, &T, &X, 0, 0, 0.5, 0.0);
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
+        dpd_buf4_sort(&X, PSIF_OCC_DENSITY, rspq, ID("[o,o]"), ID("[v,v]"), "X <oo|vv>");
 	dpd_buf4_close(&X);
 
         // OMP2.5
@@ -252,8 +255,8 @@ if (wfn_type_ != "OMP2") {
         }
 
         // X_MnAc = \sum{E,f} t_Mn^Ef * <Ac|Ef> 
-        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "X <Oo|Vv>");
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[O,o]"),
+                  ID("[V,v]"), ID("[O,o]"), 0, "X <Vv|Oo>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,v]"), ID("[V,v]"),
                   ID("[V,v]"), ID("[V,v]"), 0, "MO Ints <Vv|Vv>");
         if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
@@ -264,9 +267,10 @@ if (wfn_type_ != "OMP2") {
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
         }
-        dpd_contract444(&T, &K, &X, 0, 0, 1.0, 0.0);
+        dpd_contract444(&K, &T, &X, 0, 0, 1.0, 0.0);
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
+        dpd_buf4_sort(&X, PSIF_OCC_DENSITY, rspq, ID("[O,o]"), ID("[V,v]"), "X <Oo|Vv>");
 	dpd_buf4_close(&X);
 
         // OMP2.5
