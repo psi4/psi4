@@ -3,7 +3,7 @@
 #
 include(../CMakeLists.libint.txt)
 build_libint_files(LI_SRC ${LIBINT_OPT_AM})
-set(LI_SRC ${LI_SRC} init_libint.cc)
+set(LI_SRC ${LI_SRC} init_libint.cc vrr_build.c)
 
 #foreach (f ${LI_SRC})
 #    message(STATUS "LIBINT CONTAINS ${f}")
@@ -13,7 +13,7 @@ add_library(int STATIC ${LI_SRC})
 # Build the compiler
 #
 set(COMPILER_SRC build_libint.c emit_hrr_build.c emit_hrr_build_macro.c emit_order.c
-                 emit_vrr_build.c emit_vrr_build_macro.c mem_man.c)# vrr_build.c)
+                 emit_vrr_build.c emit_vrr_build_macro.c mem_man.c)
 add_executable(libint_compiler ${COMPILER_SRC})
 
 #
