@@ -3,7 +3,7 @@
 */
 
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>

@@ -14,6 +14,9 @@
 #define PSI_TOP_SRCDIR @top_srcdir@
 #define PSI_TOP_OBJDIR @top_objdir@
 
+/* The PSI4 Datadir */
+#define INSTALLEDPSIDATADIR @psi4datadir@
+
 /* MPI? */
 #cmakedefine HAVE_MPI
 

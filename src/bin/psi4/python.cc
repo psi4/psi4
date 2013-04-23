@@ -16,7 +16,7 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>

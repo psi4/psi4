@@ -3,7 +3,7 @@
 
 subdirs = \
 transqt2 dcft fnocc ccenergy cctriples ccsort scf mp2 mcscf\
-dfmp2 sapt dftsapt cchbar cclambda ccdensity transqt mints deriv scfgrad \
+dfmp2 sapt dftsapt cchbar cclambda ccdensity transqt mints_wrapper deriv_wrapper scfgrad \
 optking psimrcc findif ccresponse detci cceom occ adc \
 mrcc stable thermo psi4
 
