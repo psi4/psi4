@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include "liboptions.h"
-#include "python.h"
+#include "liboptions_python.h"
 
 #include <exception.h>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions

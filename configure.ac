@@ -961,14 +961,12 @@ AC_CONFIG_FILES([
 
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
-          src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
           src/bin/mp2/Makefile
-          src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
@@ -979,15 +977,14 @@ AC_CONFIG_FILES([
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cceom/Makefile
-          src/bin/cis/Makefile
           src/bin/scf/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/dftsapt/Makefile
-          src/bin/mints/Makefile
-          src/bin/deriv/Makefile
+          src/bin/mints_wrapper/Makefile
+          src/bin/deriv_wrapper/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile

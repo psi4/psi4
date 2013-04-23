@@ -5,6 +5,7 @@ cmake_minimum_required(VERSION 2.8)
 # Psi4 configuration
 #
 set(PSI_VERSION \"4.0\")
+set(psi4datadir \"${CMAKE_INSTALL_PREFIX}\")
 set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
 set(top_objdir \"${PROJECT_BINARY_DIR}\")
 include(CheckIncludeFiles)
@@ -39,6 +40,12 @@ set(PSIINC ${PROJECT_BINARY_DIR}/include
            ${PROJECT_SOURCE_DIR}/src/lib
            ${PROJECT_BINARY_DIR}/src/lib)
 
+#
+# BLAS and LAPACK
+#
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
 #
@@ -88,26 +95,15 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
+set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints moinfo options
+           parallel plugin psio qt sapt_solver scf_solver trans util adc ccdensity
+           ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv detci
+           dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
+           sapt scf scfgrad stable thermo transqt transqt2)
 
 set(CMAKE_INCLUDE_CURRENT_DIR true)
 set(INCDIRS ${BOOSTINC};${PSIINC};${PYINC})
 include_directories(${INCDIRS})
-
-#
-# Psi Libraries
-#
-#set (PSILIB 3index mints)
-#foreach(lib ${PSILIB})
-#    set(tmppath "${PROJECT_SOURCE_DIR}/src/lib/lib${lib}/")
-#    file(GLOB tmpsrc "${tmppath}" "${tmppath}/*.cc")
-#    set(filelist "")
-#    foreach(src ${tmpsrc})
-#        get_filename_component(filename ${src} NAME)
-#        set(filelist ${filelist} " ${filename}")
-#    endforeach()
-#    set(OUTFILE "${tmppath}CMakeLists.txt")
-#    file(write
-#endforeach()
 
 add_subdirectory(src)
 

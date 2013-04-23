@@ -8,6 +8,7 @@
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
+#include "exception.h"
 #define EXTERN
 #include "globals.h"
 

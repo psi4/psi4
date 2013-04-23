@@ -126,7 +126,7 @@ macro(BUILD_LIBDERIV_FILES MYINTFILES MYOPT_AM ADDBUILD)
             endforeach()
         endif()
     endforeach()
-    if(${ADD_BUILD})
+    if(${ADDBUILD})
         # hrr1_build_XY.cc
         # hrr3_build_XY.cc
         foreach(i RANGE ${MYNEW_AM})
