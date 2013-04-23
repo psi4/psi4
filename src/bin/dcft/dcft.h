@@ -132,6 +132,7 @@ protected:
     void compute_F_intermediate();
     void form_density_weighted_fock();
     // Orbital-optimized DCFT
+    void run_simult_dc_guess();
     double compute_orbital_residual();
     void compute_unrelaxed_density_OOOO();
     void compute_unrelaxed_density_OOVV();
