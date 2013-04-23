@@ -131,7 +131,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints moinfo options
            parallel plugin psio qt sapt_solver scf_solver trans util adc ccdensity
-           ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv detci
+           ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv_wrapper detci
            dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
            sapt scf scfgrad stable thermo transqt transqt2)
 
