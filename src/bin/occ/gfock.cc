@@ -43,7 +43,7 @@ if (reference_ == "RESTRICTED") {
 if (wfn_type_ != "OMP2") { 
    // Build X intermediate 
    if (twopdm_abcd_type == "DIRECT" ) {
-        // With this algorithm cost changes to o2v4 + ov4 => o3v3 + o3v2, roughly v/o times faster 
+        // With this algorithm cost changes to v5 => o2v4 + o2v3, roughly v/o times faster 
  	// X_MNIC = 2\sum{E,F} t_MN^EF(1) * <IC|EF>   
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
