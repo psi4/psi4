@@ -711,10 +711,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     two-electron integrals in the evaluation of CCD T2 amplitudes?
     Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS_V4",false);
-    /*- Do use MP2 natural orbital approximations for the $v^4$ block of
-    two-electron integrals in the evaluation of disp30 amplitudes?
-    Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS_D3",false);
     
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for in each of the above three truncations
