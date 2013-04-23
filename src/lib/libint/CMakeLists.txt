@@ -29,6 +29,7 @@ add_executable(libint_compiler ${COMPILER_SRC})
 # Generate the libint files, after building the compiler, only if libint.compiled doesn't exist
 #
 add_custom_command(
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/src/lib/libint/vrr_build.c ${PROJECT_BINARY_DIR}/src/lib/libint
     COMMAND libint_compiler
     COMMAND touch libint.compiled
     DEPENDS libint_compiler
