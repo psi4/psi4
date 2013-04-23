@@ -169,7 +169,6 @@ void SAPT2p::print_header()
   fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
   fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
   fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
-  fprintf(outfile,"    Disp(30) Truncation:    %11s\n", (nat_orbs_d3_ ? "Yes" : "No"));
   fprintf(outfile,"\n");
 
   fflush(outfile);

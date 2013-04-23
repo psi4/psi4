@@ -37,7 +37,6 @@ protected:
   bool nat_orbs_t3_;
   bool nat_orbs_t2_;
   bool nat_orbs_v4_;
-  bool nat_orbs_d3_;
   double occ_cutoff_;
 
   double e_elst10_;
