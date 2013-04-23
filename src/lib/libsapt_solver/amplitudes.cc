@@ -1427,23 +1427,96 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile,
     
   free_block(tARBS);
 
-  double **t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
-    
-  double **B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
-  double **B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+  double **t2ABRS;
+  if (nat_orbs_d3_) {
+    int navirA = no_nvirA_;
+    int navirB = no_nvirB_;
+    double** tABRs = block_matrix(aoccA*aoccB,nvirA*navirB);
+    C_DGEMM('N','N',aoccA*aoccB*nvirA,navirB,nvirB,1.0,tABRS[0],nvirB,no_CB_[0],navirB,0.0,tABRs[0],navirB);
+    double** tABrs = block_matrix(aoccA*aoccB,navirA*navirB);
+    for (int ab = 0; ab < aoccA * aoccB; ab++) {
+      C_DGEMM('T','N',navirA,navirB,nvirA,1.0,no_CA_[0],navirA,tABRs[ab],navirB,0.0,tABrs[ab],navirB);
+    } 
+    free_block(tABRs);
 
-  double **X_RS = block_matrix(nvirA,nvirB*nvirB);
+    double **B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+    double** B_p_rR = block_matrix(navirA*nvirA,ndf_ + 3);
+    C_DGEMM('T','N',navirA,nvirA*(ndf_+3),nvirA,1.0,no_CA_[0],navirA,B_p_RR[0],nvirA*(ndf_+3),0.0,B_p_rR[0],nvirA*(ndf_+3));
+    free_block(B_p_RR);
+    double** B_p_rr = block_matrix(navirA*navirA,ndf_ + 3);
+    for (int r = 0; r < navirA; r++) {
+        C_DGEMM('T','N',navirA,ndf_+3,nvirA,1.0,no_CA_[0],navirA,B_p_rR[r*nvirA],ndf_+3,0.0,B_p_rr[r*navirA],ndf_+3);        
+    }
+    free_block(B_p_rR);
 
-  for (int r=0; r < nvirA; r++) {
-    C_DGEMM('N','T',nvirA,nvirB*nvirB,ndf_+3,1.0,&(B_p_RR[r*nvirA][0]),
-      ndf_+3,&(B_p_SS[0][0]),ndf_+3,0.0,&(X_RS[0][0]),nvirB*nvirB);
-    C_DGEMM('N','T',aoccA*aoccB,nvirA*nvirB,nvirB,1.0,&(tABRS[0][r*nvirB]),
-      nvirA*nvirB,&(X_RS[0][0]),nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
+    double **B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+    double** B_p_sS = block_matrix(navirB*nvirB,ndf_ + 3);
+    C_DGEMM('T','N',navirB,nvirB*(ndf_+3),nvirB,1.0,no_CB_[0],navirB,B_p_SS[0],nvirB*(ndf_+3),0.0,B_p_sS[0],nvirB*(ndf_+3));
+    free_block(B_p_SS);
+    double** B_p_ss = block_matrix(navirB*navirB,ndf_ + 3);
+    for (int s = 0; s < navirB; s++) {
+        C_DGEMM('T','N',navirB,ndf_+3,nvirB,1.0,no_CB_[0],navirB,B_p_sS[s*nvirB],ndf_+3,0.0,B_p_ss[s*navirB],ndf_+3);        
+    }
+    free_block(B_p_sS);
+
+    double** t2rsAB = block_matrix(navirA*navirB,aoccA*aoccB);
+
+    double **X_RS = block_matrix(navirA,navirB*navirB);
+
+    for (int r=0; r < navirA; r++) {
+      C_DGEMM('N','T',navirA,navirB*navirB,ndf_+3,1.0,&(B_p_rr[r*navirA][0]),
+        ndf_+3,&(B_p_ss[0][0]),ndf_+3,0.0,&(X_RS[0][0]),navirB*navirB);
+      C_DGEMM('T','T',navirB,aoccA*aoccB,navirA*navirB,1.0,X_RS[0],
+        navirB,tABRS[0],navirA*navirB,0.0,t2rsAB[r*navirB],aoccA*aoccB);
+    }
+
+    free_block(B_p_rr);
+    free_block(B_p_ss);
+    free_block(X_RS);
+    free_block(tABrs);
+
+    double** t2ABrs = block_matrix(aoccA*aoccB,navirA*navirB);
+    for (int rs = 0; rs < navirA * navirB; rs++) {
+        C_DCOPY(aoccA * aoccB, t2rsAB[rs], 1, &t2ABrs[0][rs], navirA * navirB);
+    }
+    free_block(t2rsAB);
+
+    double** t2ABrS = block_matrix(aoccA*aoccB,navirA*nvirB);
+    C_DGEMM('N','T',aoccA*aoccB*navirA,nvirB,navirB,1.0,tABrs[0],navirB,no_CB_[0],navirB,0.0,t2ABrS[0],nvirB);
+    free_block(t2ABrs);
+    t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+    for (int ab = 0; ab < aoccA * aoccB; ab++) {
+      C_DGEMM('N','N',nvirA,nvirB,navirA,1.0,no_CA_[0],navirA,t2ABrS[ab],nvirB,0.0,t2ABRS[ab],nvirB);
+    }
+    free_block(t2ABrS);
+
+  } else {
+
+    double **t2RSAB = block_matrix(nvirA*nvirB,aoccA*aoccB);
+      
+    double **B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+    double **B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+
+    double **X_RS = block_matrix(nvirA,nvirB*nvirB);
+
+    for (int r=0; r < nvirA; r++) {
+      C_DGEMM('N','T',nvirA,nvirB*nvirB,ndf_+3,1.0,&(B_p_RR[r*nvirA][0]),
+        ndf_+3,&(B_p_SS[0][0]),ndf_+3,0.0,&(X_RS[0][0]),nvirB*nvirB);
+      C_DGEMM('T','T',nvirB,aoccA*aoccB,nvirA*nvirB,1.0,X_RS[0],
+        nvirB,tABRS[0],nvirA*nvirB,0.0,t2RSAB[r*nvirB],aoccA*aoccB);
+    }
+
+    free_block(B_p_RR);
+    free_block(B_p_SS);
+    free_block(X_RS);
+
+    t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+    for (int rs = 0; rs < nvirA * nvirB; rs++) {
+        C_DCOPY(aoccA * aoccB, t2RSAB[rs], 1, &t2ABRS[0][rs], nvirA * nvirB);
+    }
+    free_block(t2RSAB);
+
   }
-
-  free_block(B_p_RR);
-  free_block(B_p_SS);
-  free_block(X_RS);
 
   double **B_p_AA = get_DF_ints(AAintfile,AAlabel,foccA,noccA,foccA,noccA);
   double **B_p_BB = get_DF_ints(BBintfile,BBlabel,foccB,noccB,foccB,noccB);
@@ -1493,7 +1566,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile,
   free_block(t2ABRS);
 
   B_p_BB = get_DF_ints(BBintfile,BBlabel,foccB,noccB,foccB,noccB);
-  B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+  double** B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
 
   double **BRBR = block_matrix(aoccB*nvirA,aoccB*nvirA);
 
@@ -1512,7 +1585,7 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile,
   free_block(BRBR);
 
   B_p_AA = get_DF_ints(AAintfile,AAlabel,foccA,noccA,foccA,noccA);
-  B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+  double** B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
 
   double **ASAS = block_matrix(aoccA*nvirB,aoccA*nvirB);
 
