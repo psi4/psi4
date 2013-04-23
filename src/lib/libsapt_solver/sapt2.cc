@@ -33,6 +33,7 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
   nat_orbs_t3_ = options.get_bool("NAT_ORBS_T3");
   nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");
   nat_orbs_v4_ = options.get_bool("NAT_ORBS_V4");
+  nat_orbs_d3_ = options.get_bool("NAT_ORBS_D3");
   occ_cutoff_ = options.get_double("OCC_TOLERANCE");
 
   ioff_ = (int *) malloc (sizeof(int) * (nso_*(nso_+1)/2));
@@ -192,6 +193,7 @@ void SAPT2::print_header()
   fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
   fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
   fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
+  fprintf(outfile,"    Disp(30) Truncation:    %11s\n", (nat_orbs_d3_ ? "Yes" : "No"));
   fprintf(outfile,"\n");
 
   fflush(outfile);
