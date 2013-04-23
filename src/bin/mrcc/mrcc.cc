@@ -13,6 +13,8 @@
 #include <libqt/qt.h>
 #include <vector>
 
+#include <../bin/fnocc/frozen_natural_orbitals.h>
+
 #include <psifiles.h>
 
 #include <fstream>
@@ -626,7 +628,15 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     fprintf(outfile, "        method %d\n        exlevel %d\n        fullname %s\n\n",
             method, exlevel, fullname.c_str());
 
-    boost::shared_ptr<Wavefunction> wave     = Process::environment.wavefunction();
+    boost::shared_ptr<Wavefunction> wave;
+    //   freeze MP2 natural virtual orbitals?
+    if ( options.get_bool("NAT_ORBS") ) {
+        boost::shared_ptr<psi::fnocc::FrozenNO> fno(new psi::fnocc::FrozenNO(Process::environment.wavefunction(),options));
+        fno->ComputeNaturalOrbitals();
+        wave = (boost::shared_ptr<Wavefunction>)fno;
+    }else {
+        wave = Process::environment.wavefunction();
+    }
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
 
     // Orbitals spaces

@@ -9,7 +9,7 @@ memory 250 mb
 
 #CEPA0
 
-molecule HF {
+molecule OO {
 0 3
 O
 O 1 R

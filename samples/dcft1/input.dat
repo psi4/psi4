@@ -1,9 +1,13 @@
-#! DC-06 calculation for the He dimer. This performs a
+#! DC-06, DC-12, ODC-06 and ODC-12 calculation for the He dimer. This performs a
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the MO Basis.
 
 memory 250 mb
 
+# DC-06
+# DC-12
+# ODC-06
+# ODC-12
 
 molecule he2 {
     He
@@ -11,7 +15,7 @@ molecule he2 {
 }
 
 set globals {
-    r_convergence 11
+    r_convergence 12
     ao_basis    none
     algorithm   simultaneous
     basis       6-31G**
@@ -20,3 +24,13 @@ set globals {
 
 energy('dcft')
 
+set dcft_functional dc-06
+
+set dcft_functional dc-12
+energy('dcft')
+
+set dcft_functional odc-06
+energy('dcft')
+
+set dcft_functional odc-12
+energy('dcft')

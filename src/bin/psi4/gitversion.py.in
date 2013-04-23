@@ -3,8 +3,11 @@ import subprocess
 
 top_srcdir = "@top_srcdir@"
 
+# The checking / removing is to ensure dependencies are handled properly by Make.
+# The introduction of cmake should make this less complicated
 def write_version(version, branch):
     version_str = "#define GIT_VERSION \"{%s} %s\"\n" % (branch, version)
+    open('gitversion.h.tmp', 'w').write(version_str)
     if len(version) == 0:
         version_str = "#undef GIT_VERSION"
 

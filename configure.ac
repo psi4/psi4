@@ -948,11 +948,8 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
-          src/lib/libmatrix/Makefile
-          src/lib/libdist_matrix/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
-          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
@@ -960,20 +957,16 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-          src/lib/libsmartptr/Makefile
-          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
-          src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
           src/bin/mp2/Makefile
-          src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
@@ -984,16 +977,14 @@ AC_CONFIG_FILES([
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cceom/Makefile
-          src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/dftsapt/Makefile
-          src/bin/mints/Makefile
-          src/bin/deriv/Makefile
+          src/bin/mints_wrapper/Makefile
+          src/bin/deriv_wrapper/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
@@ -1018,6 +1009,7 @@ AC_CONFIG_FILES([
           tests/dcft5/Makefile
           tests/dcft6/Makefile
           tests/dcft7/Makefile
+          tests/dcft-grad1/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile

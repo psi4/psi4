@@ -3,6 +3,7 @@
 #include <limits>
 #include <cstdio>
 #include "utility.h"
+#include "exception.h"
 
 // Error Function alternative
 #ifndef HAVE_FUNC_ERF

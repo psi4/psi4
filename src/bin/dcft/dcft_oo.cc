@@ -11,6 +11,9 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::run_simult_dcft_oo()
 {
+
+    if (options_.get_bool("ODC_GUESS")) run_simult_dc_guess();
+
     // This is the simultaneous orbital/lambda update algorithm for the orbital-optimized methods
     int cycle = 0;
 
@@ -146,6 +149,32 @@ DCFTSolver::run_simult_dcft_oo()
     }
 
     fprintf(outfile, "\t*=================================================================================*\n");
+}
+
+void
+DCFTSolver::run_simult_dc_guess()
+{
+
+    double lambda_conv = cumulant_threshold_;
+    double orbital_conv = orbitals_threshold_;
+
+    cumulant_threshold_ = options_.get_double("GUESS_R_CONVERGENCE");
+    orbitals_threshold_ = options_.get_double("GUESS_R_CONVERGENCE");
+    orbital_optimized_ = false;
+
+    fprintf(outfile, "\n\n\tComputing the guess using the %s functional", exact_tau_ ? "DC-12" : "DC-06");
+    fprintf(outfile, "\n\tGuess energy, orbitals and cumulants are converged to %4.3e", options_.get_double("GUESS_R_CONVERGENCE"));
+    run_simult_dcft();
+
+    orbital_optimized_ = true;
+    cumulantDone_ = false;
+    orbitalsDone_ = false;
+
+    cumulant_threshold_ = lambda_conv;
+    orbitals_threshold_ = orbital_conv;
+
+    fprintf(outfile, "\n\tNow running the %s computation...", options_.get_str("DCFT_FUNCTIONAL").c_str());
+
 }
 
 double
