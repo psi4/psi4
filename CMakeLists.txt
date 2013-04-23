@@ -1,6 +1,10 @@
 project(psi4)
 cmake_minimum_required(VERSION 2.8)
 
+# cmake modules are relative to this file
+get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
+set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
+
 #
 # Psi4 configuration
 #
@@ -8,20 +12,45 @@ set(PSI_VERSION \"4.0\")
 set(psi4datadir \"${CMAKE_INSTALL_PREFIX}\")
 set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
 set(top_objdir \"${PROJECT_BINARY_DIR}\")
+
+#set(PSI_VERSION "4.0")
+set(PACKAGE_VERSION "4.0git")
+set(PACKAGE_NAME PSI)
+set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
+set(PACKAGE_BUGREPORT "psicode@users.sourceforge.net")
+
+if( CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR AND NOT MSVC_IDE )
+  message(FATAL_ERROR "In-source builds are not allowed.
+Please create a directory and run cmake from there, passing the path
+to this source directory as the last argument.
+This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
+Please delete them.")
+endif()
+
+#set(top_srcdir "${PROJECT_SOURCE_DIR}\")
+#set(top_objdir "${PROJECT_BINARY_DIR}\")
+
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
+
 include(CheckFunctionExists)
 check_function_exists(MKL_Free_Buffers HAVE_MKL) # NEEDS TO BE TESTED
+
 include(CheckSymbolExists)
 check_symbol_exists(MPI_Finalize mpi.h HAVE_MPI) # NEEDS TO BE TESTED
+
 include(cmake/Restrict.cmake)
 test_restrict(restrict)
+
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
+
+# Is this needed for the script?
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
 #
 # Libint configuration
+# Perhaps move to libint's cmakelists.txt file
 #
 set(LIBINT_TMPDIR "") # I haven't quite figured out the scratch stuff yet
 set(LIBINT_OPT_AM 5)    # A.M. level for ERIs
@@ -48,6 +77,7 @@ find_package(LAPACK REQUIRED)
 add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
+#  We don't really need the interpreter. Could we just use the PythonLibs method?
 #
 find_package(PythonInterp REQUIRED)
 set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
