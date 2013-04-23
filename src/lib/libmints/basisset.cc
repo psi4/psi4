@@ -10,7 +10,6 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 
 #include <stdexcept>
 #include <cstdio>
@@ -40,7 +39,7 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
-boost::once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
+bool BasisSet::initialized_shared_ = false;
 
 std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
@@ -57,7 +56,9 @@ bool has_ending (std::string const &fullString, std::string const &ending)
 
 BasisSet::BasisSet()
 {
-    call_once(initialize_singletons, initialized_shared_);
+    if (initialized_shared_ == false)
+        initialize_singletons();
+    initialized_shared_ = true;
 }
 
 boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
@@ -471,7 +472,7 @@ void BasisSet::refresh()
     shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
     shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
     shell_center_.clear();               shell_center_.resize(nshell(), 0);
-    function_center_.clear();            
+    function_center_.clear();
     center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
     center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
     center_to_shell_[0] = 0;

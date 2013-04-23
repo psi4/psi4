@@ -29,7 +29,7 @@
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <psifiles.h>
 #include <libfock/jk.h>
 

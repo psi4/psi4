@@ -3,7 +3,7 @@
 */
 
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>
@@ -806,6 +806,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
+      /*- Convergence criterion for the density cumulant and orbital guess for the
+      variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_double("GUESS_R_CONVERGENCE", 1e-3);
       /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
@@ -841,7 +844,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
-      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2 DCFT");
+      /*- Whether to perform a guess DC-06 or DC-12 computation for ODC-06 or ODC-12 methods, respectively.
+          Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_bool("ODC_GUESS", false);
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);

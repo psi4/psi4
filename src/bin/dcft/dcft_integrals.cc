@@ -34,7 +34,8 @@ DCFTSolver::transform_integrals()
     if((options_.get_str("AO_BASIS") == "NONE")){
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     }
-    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")) || orbital_optimized_) {
+    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
+                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS") || orbital_optimized_) {
         // Compute the integrals needed for the MO Hessian
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
@@ -213,7 +214,8 @@ DCFTSolver::transform_integrals()
     }
 
     // VVVO and OOOV integrals are needed for the QC algorithm
-    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")) || orbital_optimized_) {
+    if ((options_.get_str("ALGORITHM") == "QC" && options_.get_bool("QC_COUPLING")
+                                               && options_.get_str("QC_TYPE") == "SIMULTANEOUS") || orbital_optimized_) {
         // <VO|OO> type
 
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
@@ -251,19 +253,29 @@ DCFTSolver::transform_integrals()
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[o,V]"), ID("[o,O]"), "MO Ints <oV|oO>");
         dpd_buf4_close(&I);
 
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[o,O]"),
+                      ID("[o,V]"), ID("[o,O]"), 0, "MO Ints <oV|oO>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[o,V]"), ID("[O,o]"), "MO Ints <oV|Oo>");
+        dpd_buf4_close(&I);
+
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,o]"),
                       ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqsp, ID("[v,O]"), ID("[o,O]"), "MO Ints <vO|oO>");
         dpd_buf4_close(&I);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>=O]+"), ID("[v,o]"),
-                      ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,o]"), ID("[O>=O]+"), "MO Ints (vo|OO)");
-        dpd_buf4_close(&I);
-
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,O]"), ID("[o,O]"),
                       ID("[v,O]"), ID("[o,O]"), 0, "MO Ints <vO|oO>");
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[O,v]"), ID("[O,o]"), "MO Ints <Ov|Oo>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,o]"),
+                      ID("[O,v]"), ID("[O,o]"), 0, "MO Ints <Ov|Oo>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[O,v]"), ID("[o,O]"), "MO Ints <Ov|oO>");
+        dpd_buf4_close(&I);
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>=O]+"), ID("[v,o]"),
+                      ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,o]"), ID("[O>=O]+"), "MO Ints (vo|OO)");
         dpd_buf4_close(&I);
 
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
@@ -308,6 +320,11 @@ DCFTSolver::transform_integrals()
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[O,V]"), "MO Ints (vv|OV)");
         dpd_buf4_close(&I);
 
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,v]"),
+                      ID("[O,v]"), ID("[V,v]"), 0, "MO Ints <Ov|Vv>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[O,v]"), ID("[v,V]"), "MO Ints <Ov|vV>");
+        dpd_buf4_close(&I);
+
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
                       ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqsp, ID("[o,V]"), ID("[v,V]"), "MO Ints <oV|vV>");
@@ -315,9 +332,13 @@ DCFTSolver::transform_integrals()
 
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[v,V]"),
                       ID("[o,V]"), ID("[v,V]"), 0, "MO Ints <oV|vV>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[o,V]"), ID("[V,v]"), "MO Ints <oV|Vv>");
         dpd_buf4_close(&I);
 
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[v,V]"),
+                      ID("[o,V]"), ID("[v,V]"), 0, "MO Ints <oV|vV>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
+        dpd_buf4_close(&I);
 
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[o,v]"),
                       ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");

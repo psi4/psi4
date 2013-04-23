@@ -297,10 +297,10 @@ DCFTSolver::print_opdm()
     }
     fprintf(outfile, "\n\n");
     for (int h = 0; h < nirrep_; ++h)
-        delete [] irrepLabels[h];
-    delete[] irrepLabels;
-    delete[] aIrrepCount;
-    delete[] bIrrepCount;
+        free(irrepLabels[h]);
+    free(irrepLabels);
+    free(aIrrepCount);
+    free(bIrrepCount);
 }
 
 void

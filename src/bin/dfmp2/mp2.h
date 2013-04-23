@@ -97,7 +97,7 @@ public:
     virtual ~DFMP2();
 
     double compute_energy();
-    virtual SharedMatrix compute_gradient_();
+    virtual SharedMatrix compute_gradient();
 
 }; 
 

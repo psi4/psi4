@@ -309,15 +309,39 @@ namespace psi{ namespace dcft{
       so_h_->add(T);
       so_h_->add(V);
 
-      epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-      epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
-      Ca_->copy(reference_wavefunction_->Ca());
-      Cb_->copy(reference_wavefunction_->Cb());
-      moFa_->copy(reference_wavefunction_->Fa());
-      moFa_->transform(Ca_);
-      moFb_->copy(reference_wavefunction_->Fb());
-      moFb_->transform(Cb_);
-      update_scf_density();
+      std::string guess = options_.get_str("DCFT_GUESS");
+      if(guess != "DCFT"){
+          epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+          epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
+          Ca_->copy(reference_wavefunction_->Ca());
+          Cb_->copy(reference_wavefunction_->Cb());
+          moFa_->copy(reference_wavefunction_->Fa());
+          moFa_->transform(Ca_);
+          moFb_->copy(reference_wavefunction_->Fb());
+          moFb_->transform(Cb_);
+          update_scf_density();
+      }
+      else {
+          fprintf(outfile, "\n\n\tReading orbitals from previous job");
+          // Read the orbitals from the checkpoint file
+          double **aEvecs = chkpt_->rd_alpha_scf();
+          Ca_->set(aEvecs);
+          free_block(aEvecs);
+          double **bEvecs = chkpt_->rd_beta_scf();
+          Cb_->set(bEvecs);
+          free_block(bEvecs);
+
+          Fa_ = SharedMatrix(new Matrix("Alpha SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
+          Fb_ = SharedMatrix(new Matrix("Beta SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
+          Fa_->copy(so_h_);
+          Fb_->copy(so_h_);
+          moFa_->copy(so_h_);
+          moFb_->copy(so_h_);
+          moFa_->transform(Ca_);
+          moFb_->transform(Cb_);
+          update_scf_density();
+
+      }
       dcft_timer_off("DCFTSolver::scf_guess");
   }
 
@@ -466,6 +490,7 @@ namespace psi{ namespace dcft{
       double *Gb = init_array(ntriso_);
       double *Va = init_array(ntriso_);
       double *Vb = init_array(ntriso_);
+
       int soOffset = 0;
       for(int h = 0; h < nirrep_; ++h){
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
@@ -1029,8 +1054,8 @@ namespace psi{ namespace dcft{
 
       dpdfile2 Gtau;
 
-      moFa_->copy(F0a_);
-      moFb_->copy(F0b_);
+      moFa_->copy(moF0a_);
+      moFb_->copy(moF0b_);
 
       // Copy MO basis GTau to the memory
 
@@ -1770,14 +1795,14 @@ namespace psi{ namespace dcft{
           soOffset += nsopi_[h];
       }
 
-      delete [] Ta;
-      delete [] Tb;
-      delete [] Va;
-      delete [] Vb;
-      delete [] Da;
-      delete [] Db;
-      delete [] Ga;
-      delete [] Gb;
+      free(Ta);
+      free(Tb);
+      free(Va);
+      free(Vb);
+      free(Da);
+      free(Db);
+      free(Ga);
+      free(Gb);
 
       dcft_timer_off("DCFTSolver::build_G");
   }

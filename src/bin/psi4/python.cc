@@ -16,7 +16,7 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -55,6 +55,7 @@ namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
     namespace scfgrad    { PsiReturnType scfgrad(Options &);  }
+    namespace scfgrad    { PsiReturnType scfhess(Options &);  }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
@@ -176,6 +177,12 @@ int py_psi_scfgrad()
 {
     py_psi_prepare_options_for_module("SCF");
     return scfgrad::scfgrad(Process::environment.options);
+}
+
+int py_psi_scfhess()
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scfgrad::scfhess(Process::environment.options);
 }
 
 int py_psi_deriv()
@@ -1086,6 +1093,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("mints", py_psi_mints, "Runs mints, which generate molecular integrals on disk.");
     def("deriv", py_psi_deriv, "Runs deriv, which contracts density matrices with derivative integrals, to compute gradients.");
     def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
+    def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
 
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject*, PyObject*);
