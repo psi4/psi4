@@ -8,6 +8,7 @@ set(PSI_VERSION \"4.0\")
 set(psi4datadir \"${CMAKE_INSTALL_PREFIX}\")
 set(top_srcdir \"${PROJECT_SOURCE_DIR}\")
 set(top_objdir \"${PROJECT_BINARY_DIR}\")
+find_package(OpenMP)
 include(CheckIncludeFiles)
 check_include_files(dlfcn.h HAVE_DLFCN)
 include(CheckFunctionExists)
@@ -39,6 +40,7 @@ set(PSIINC ${PROJECT_BINARY_DIR}/include
            ${PROJECT_SOURCE_DIR}/include
            ${PROJECT_SOURCE_DIR}/src/lib
            ${PROJECT_BINARY_DIR}/src/lib)
+
 
 #
 # BLAS and LAPACK
