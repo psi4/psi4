@@ -99,6 +99,7 @@ endif()
 # Boost Detection 
 #
 # N.B. Update boost/CMakeLists.txt if this list of components changes
+set(Boost_USE_STATIC_LIBS   ON)
 set(BOOST_COMPONENTS filesystem python regex thread system serialization)
 find_package(Boost 1.47.0 COMPONENTS ${BOOST_COMPONENTS})
 if(Boost_FOUND)
