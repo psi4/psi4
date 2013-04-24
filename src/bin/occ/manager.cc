@@ -348,22 +348,16 @@ void OCCWave::mp2_manager()
         // Compute Analytic Gradients
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-	    fprintf(outfile,"\tComputing PDMs...\n");
+	    fprintf(outfile,"\tComputing response density matrices...\n");
 	    fflush(outfile);
 	    omp2_response_pdms();
-	    fprintf(outfile,"\tPDMs are done.\n");
             fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
             fflush(outfile);
 	    gfock();
-            fprintf(outfile,"\tOff-diagonal blocks of GFM are done.\n");
             fprintf(outfile,"\tForming independent-pairs...\n");
             fflush(outfile);
 	    idp2();
-            fprintf(outfile,"\tIndependent-pairs are done.\n");
             fprintf(outfile,"\tComputing orbital gradient...\n");
-            fflush(outfile);
-	    mograd();
-            fprintf(outfile,"\tOrbital gradient is done.\n");
             fflush(outfile);
 	    mograd();
             coord_grad();
@@ -821,23 +815,18 @@ void OCCWave::mp3_manager()
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing PDMs...\n");
+            fprintf(outfile,"\tComputing response density matrices...\n");
             fflush(outfile);
 	    omp3_response_pdms();
-            fprintf(outfile,"\tPDMs are done.\n");
             fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
             fflush(outfile);
 	    gfock();
-            fprintf(outfile,"\tOff-diagonal blocks of GFM are done.\n");
             fprintf(outfile,"\tForming independent-pairs...\n");
             fflush(outfile);
 	    idp2();
-            fprintf(outfile,"\tIndependent-pairs are done.\n");
             fprintf(outfile,"\tComputing orbital gradient...\n");
             fflush(outfile);
 	    mograd();
-            fprintf(outfile,"\tOrbital gradient is done.\n");
-            fflush(outfile);
             coord_grad();
             if (ekt_ip_ == "TRUE") ekt_ip();
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
@@ -1098,22 +1087,18 @@ void OCCWave::cepa_manager()
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing PDMs...\n");
+            fprintf(outfile,"\tComputing response density matrices...\n");
             fflush(outfile);
 	    ocepa_response_pdms();
-            fprintf(outfile,"\tPDMs are done.\n");
             fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
             fflush(outfile);
 	    gfock();
-            fprintf(outfile,"\tOff-diagonal blocks of GFM are done.\n");
             fprintf(outfile,"\tForming independent-pairs...\n");
             fflush(outfile);
 	    idp2();
-            fprintf(outfile,"\tIndependent-pairs are done.\n");
             fprintf(outfile,"\tComputing orbital gradient...\n");
             fflush(outfile);
 	    mograd();
-            fprintf(outfile,"\tOrbital gradient is done.\n");
             coord_grad();
             if (ekt_ip_ == "TRUE") ekt_ip();
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
@@ -1435,22 +1420,18 @@ void OCCWave::mp2_5_manager()
         if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
             time4grad = 1;
 	    fprintf(outfile,"\tAnalytic gradient computation is starting...\n");
-            fprintf(outfile,"\tComputing PDMs...\n");
+            fprintf(outfile,"\tComputing response density matrices...\n");
             fflush(outfile);
 	    omp3_response_pdms();
-            fprintf(outfile,"\tPDMs are done.\n");
             fprintf(outfile,"\tComputing off-diagonal blocks of GFM...\n");
             fflush(outfile);
 	    gfock();
-            fprintf(outfile,"\tOff-diagonal blocks of GFM are done.\n");
             fprintf(outfile,"\tForming independent-pairs...\n");
             fflush(outfile);
 	    idp2();
-            fprintf(outfile,"\tIndependent-pairs are done.\n");
             fprintf(outfile,"\tComputing orbital gradient...\n");
             fflush(outfile);
 	    mograd();
-            fprintf(outfile,"\tOrbital gradient is done.\n");
             coord_grad();
             if (ekt_ip_ == "TRUE") ekt_ip();
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
