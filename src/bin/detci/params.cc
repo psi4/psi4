@@ -201,8 +201,8 @@ void get_parameters(Options &options)
     }
   }  /* end ROHF parsing */
   else {
-    Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-    Parameters.Ms0 = 0;
+    throw InputException("Invalid DETCI reference " + Parameters.ref,
+      "REFERENCE", __FILE__, __LINE__);
   }
 
   if (options["MS0"].has_changed())
