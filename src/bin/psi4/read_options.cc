@@ -3,7 +3,7 @@
 */
 
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>
@@ -35,7 +35,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
   irrep (these are not excited in a correlated wavefunction, nor can they be
-  optimized in MCSCF. This trumps |globals__num_frozen_docc| and 
+  optimized in MCSCF. This trumps |globals__num_frozen_docc| and
   |globals__freeze_core|. -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
@@ -48,13 +48,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- The number of virtual orbitals to freeze in later correlated computations. -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
-  ``TRUE`` will default to freezing the standard default number of core 
+  ``TRUE`` will default to freezing the standard default number of core
   orbitals.  For PSI, the standard number of core orbitals is the
   number of orbitals in the nearest previous noble gas atom.
-  More precise control over the number of frozen orbitals can be attained 
-  by using the keywords |globals__num_frozen_docc| (gives the total number 
-  of orbitals to freeze, program picks the lowest-energy orbitals) 
-  or |globals__frozen_docc| (gives the number of orbitals to freeze per 
+  More precise control over the number of frozen orbitals can be attained
+  by using the keywords |globals__num_frozen_docc| (gives the total number
+  of orbitals to freeze, program picks the lowest-energy orbitals)
+  or |globals__frozen_docc| (gives the number of orbitals to freeze per
   irreducible representation) -*/
   options.add_str("FREEZE_CORE", "FALSE", "FALSE TRUE");
 
@@ -122,7 +122,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
 
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
@@ -685,6 +685,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
     /*- Do CCD dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3? !expert -*/
     options.add_bool("DO_CCD_DISP",false);
+    /*- Do MBPT dispersion correction in SAPT2+, SAPT2+(3) or SAPT2+3, if also doing CCD? !expert -*/
+    options.add_bool("DO_MBPT_DISP",true);
     /*- E converge value for CCD -*/
     options.add_double("CCD_E_CONVERGENCE",1E-8);
     /*- Convergence tolerance for CCD amplitudes -*/
@@ -700,15 +702,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do natural orbitals to speed up evaluation of the triples
     contribution to dispersion by truncating the virtual orbital space?
     Recommended true for all SAPT computations. -*/
-    options.add_bool("NAT_ORBS",false);
+    options.add_bool("NAT_ORBS_T3",false);
     /*- Do use MP2 natural orbital approximations for the $v^4$ block of
     two-electron integrals in the evaluation of second-order T2 amplitudes?
-    This approximation is promising for accuracy and computational savings,
-    but it has not been rigorously tested. -*/
+    Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS_T2",false);
+    /*- Do use MP2 natural orbital approximations for the $v^4$ block of
+    two-electron integrals in the evaluation of CCD T2 amplitudes?
+    Recommended true for all SAPT computations. -*/
+    options.add_bool("NAT_ORBS_V4",false);
+    
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
-    natural orbitals are discarded for evaluating the triples contribution
-    to dispersion. -*/
+    natural orbitals are discarded for in each of the above three truncations
+    -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
@@ -789,25 +795,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       In the cases where the convergence problems are encountered (especially
       for highly symmetric systems) QC algorithm can be used. -*/
       options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS QC");
-      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.-*/
+      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties-*/
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- Chooses the type of the quadratically-convergent algorithm (effective for ALGORITHM = QC).
+      If set to TWOSTEP the Newton-Raphson equations are only solved for the orbital updates,
+      the cumulant is updated using the standard Jacobi algorithm. If set to SIMULTANEOUS both cumulant
+      and orbitals are updated in a single Newton-Raphson step. -*/
+      options.add_str("QC_TYPE", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates, as well as
       the solution of the density cumulant and orbital response equations. In the orbital updates controls
       the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Maximum number of density cumulant update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of density cumulant response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of the orbital update micro-iterations per
-      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
-      maximum number of orbital response micro-iterations per
-      macro-iteration for the solution of the response equations
-      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of the macro-iterations for both the energy and the solution of the response equations -*/
+      /*- Convergence criterion for the density cumulant and orbital guess for the
+      variationally orbital-optimized DCFT methods. Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_double("GUESS_R_CONVERGENCE", 1e-3);
+      /*- Maximum number of the macro- or micro-iterations for both the energy and the solution of the response equations -*/
       options.add_int("MAXITER", 40);
       /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
       Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
@@ -830,10 +832,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- The shift applied to the denominator in the density cumulant update iterations !expert-*/
       options.add_double("TIKHONOW_OMEGA", 0.0);
-//      /* Controls whether to compute the DCFT energy with the Tau^2 correction to Tau !expert*/
-//      options.add_bool("TAU_SQUARED", false);
-      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation !expert-*/
-      options.add_bool("TPDM", false);
       /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
       For practical applications only the default must be used !expert-*/
       options.add_bool("MO_RELAX", true);
@@ -844,16 +842,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CACHELEVEL", 2);
       /*- Minimum absolute value below which integrals are neglected !expert-*/
       options.add_double("INTS_TOLERANCE", 1e-14);
-      /*- Controls whether to force the occupation to be that of the SCF guess.
-          For practical applications only the default must be used !expert-*/
-      options.add_bool("LOCK_OCC", true);
       /*- Whether to read the orbitals from a previous computation, or to compute
           an MP2 guess !expert -*/
-      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2 DCFT");
+      /*- Whether to perform a guess DC-06 or DC-12 computation for ODC-06 or ODC-12 methods, respectively.
+          Currently only available for ALGORITHM = SIMULTANEOUS. -*/
+      options.add_bool("ODC_GUESS", false);
       /*- Controls whether to relax the guess orbitals by taking the guess density cumulant
       and performing orbital update on the first macroiteration (for ALOGRITHM = TWOSTEP only) !expert-*/
       options.add_bool("RELAX_GUESS_ORBITALS", false);
-      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC only) -*/
+      /*- Controls whether to include the coupling terms in the DCFT electronic Hessian (for ALOGRITHM = QC
+      with QC_TYPE = SIMULTANEOUS only) -*/
       options.add_bool("QC_COUPLING", true);
       /*- Performs stability analysis of the DCFT energy !expert-*/
       options.add_bool("STABILITY_CHECK", false);
@@ -874,9 +873,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
       options.add_bool("RELAX_TAU", true);
       /*- Chooses appropriate DCFT method -*/
-      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 CEPA0");
-      //      /* Specify orbital basis to be used in the DCFT iterations !expert */
-      //      options.add_str("DCFT_BASIS", "MO", "MO NSO");
+      options.add_str("DCFT_FUNCTIONAL", "DC-06", "DC-06 DC-12 ODC-06 ODC-12 CEPA0");
 
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -907,7 +904,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF");
+    /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
+    options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
     /*- Memory safety factor for allocating JK -*/
@@ -923,8 +922,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     optimizations, in which case READ becomes the default after the first
     geometry step. -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- Do write a MOLDEN output file?  If so, the filename will end in 
-    .molden, and the prefix is determined by |globals__writer_file_label| 
+    /*- Do write a MOLDEN output file?  If so, the filename will end in
+    .molden, and the prefix is determined by |globals__writer_file_label|
     (if set), or else by the name of the output file plus the name of
     the current molecule. -*/
     options.add_bool("MOLDEN_WRITE", false);
@@ -1056,6 +1055,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
     /*- Fitting Condition !expert -*/
     options.add_double("DF_FITTING_CONDITION", 1.0E-12);
+    /*- FastDF Fitting Metric -*/
+    options.add_str("DF_METRIC", "COULOMB", "COULOMB EWALD OVERLAP");
+    /*- FastDF SR Ewald metric range separation parameter -*/
+    options.add_double("DF_THETA", 1.0);
+    /*- FastDF geometric fitting domain selection algorithm -*/
+    options.add_str("DF_DOMAINS", "DIATOMIC", "DIATOMIC SPHERES");
+    /*- Bump function min radius -*/
+    options.add_double("DF_BUMP_R0", 0.0);
+    /*- Bump function max radius -*/
+    options.add_double("DF_BUMP_R1", 0.0);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -1629,7 +1638,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "ADC" || options.read_globals()) {
      /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF");
+    options.add_str("REFERENCE", "RHF", "RHF");
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
@@ -1936,6 +1945,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
+    /*- Convergence criterion for energy. See Table :ref:`Post-SCF
+    Convergence <table:conv_corl>` for default convergence criteria for
+    different calculation types. -*/
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
@@ -2010,8 +2023,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
-    /*- Convergence criterion for Breuckner orbitals. The convergence
-       is determined based on the largest $T_1$ amplitude. -*/
+    /*- Convergence criterion for Breuckner orbitals. The convergence is
+    determined based on the largest $T_1$ amplitude.  Default adjusts
+    depending on |ccenergy__e_convergence|. -*/
     options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
     /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
@@ -2188,7 +2202,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-9);
@@ -2295,12 +2309,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
-      /*- Specify distances between atoms to be frozen -*/
+      /*- Specify distances between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DISTANCE", "");
-      /*- Specify angles between atoms to be frozen -*/
+      /*- Specify angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_BEND", "");
-      /*- Specify dihedral angles between atoms to be frozen -*/
+      /*- Specify dihedral angles between atoms to be frozen (unchanged) -*/
       options.add_str("FROZEN_DIHEDRAL", "");
+      /*- Specify distances between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DISTANCE", "");
+      /*- Specify angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_BEND", "");
+      /*- Specify dihedral angles between atoms to be fixed (eq. value specified) -*/
+      options.add_str("FIXED_DIHEDRAL", "");
 
       /*- SUBSECTION Convergence Control -*/
 
@@ -2377,6 +2397,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- When determining connectivity, a bond is assigned if interatomic distance
       is less than (this number) * sum of covalent radii. -*/
       options.add_double("COVALENT_CONNECT", 1.3);
+      /*- When connecting disparate fragments when frag_mode = SIMPLE, a "bond"
+      is assigned if interatomic distance is less than (this number) * sum of covalent radii. The
+      value is then increased until all the fragments are connected (directly or indirectly). -*/
+      options.add_double("INTERFRAGMENT_CONNECT", 1.8);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
       /*- Do only generate the internal coordinates and then stop? -*/
@@ -2395,13 +2419,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
-      /*- In constrained optimizations, for internal coordinates with user-specified
+      /*In constrained optimizations, for internal coordinates with user-specified
       equilibrium values, this is the force constant (in au) used to apply an additional
       force to each coordinate.  If the user is only concerned to satify the desired constraint,
       then the user need only ensure that this value is sufficiently large.  Alternatively,
       the user may specify this value to apply a force of a particular magnitude, in which case the
-      given equilibrium value may or may not be reached by the optimization. -*/
-      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0);
+      given equilibrium value may or may not be reached by the optimization.
+      Currently, we specify the value of eq. not the force applied, so this keyword may go away.
+      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0); */
       /*- If doing a static line search, scan this many points. -*/
       options.add_int("LINESEARCH_STATIC_N", 8);
       /*- If doing a static line search, this fixes the shortest step, whose largest
@@ -2420,13 +2445,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
-      /*- Do write a gradient output file?  If so, the filename will end in 
-      .grad, and the prefix is determined by |globals__writer_file_label| 
+      /*- Do write a gradient output file?  If so, the filename will end in
+      .grad, and the prefix is determined by |globals__writer_file_label|
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("GRADIENT_WRITE", false);
-      /*- Do write a hessian output file?  If so, the filename will end in 
-      .hess, and the prefix is determined by |globals__writer_file_label| 
+      /*- Do write a hessian output file?  If so, the filename will end in
+      .hess, and the prefix is determined by |globals__writer_file_label|
       (if set), or else by the name of the output file plus the name of
       the current molecule. -*/
       options.add_bool("HESSIAN_WRITE", false);
@@ -2462,12 +2487,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("EP_MAXITER",30);
     /*- Convergence criterion for energy. See Table :ref:`Post-SCF
     Convergence <table:conv_corl>` for default convergence criteria for
-    different calculation types. -*/ 
+    different calculation types. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for amplitudes (residuals). -*/
     options.add_double("R_CONVERGENCE",1e-5);
-    /*- Convergence criterion for RMS orbital gradient. -*/
-    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
+    /*- Convergence criterion for RMS orbital gradient. Default adjusts
+    depending on |occ__e_convergence|. -*/
+    options.add_double("RMS_MOGRAD_CONVERGENCE",1e-6);
     /*- Convergence criterion for maximum orbital gradient -*/
     options.add_double("MAX_MOGRAD_CONVERGENCE",1e-3);
     /*- Maximum step size in orbital-optimization procedure -*/
@@ -2479,7 +2505,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MP2 same-spin scaling value -*/
     options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- MP2 Spin-opposite scaling (SOS) value -*/
-    options.add_double("MP2_SOS_SCALE",1.3);  
+    options.add_double("MP2_SOS_SCALE",1.3);
     /*- Spin-opposite scaling (SOS) value for optimized-MP2 orbitals -*/
     options.add_double("MP2_SOS_SCALE2",1.2);
     /*- CEPA opposite-spin scaling value from SCS-CCSD -*/
@@ -2499,13 +2525,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LINEQ_SOLVER","CDGESV","CDGESV FLIN POPLE");
     /*- The algorithm for orthogonalization of MOs -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
-    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step 
-     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation    
+    /*- The optimization algorithm. Modified Steepest-Descent (MSD) takes a Newton-Raphson (NR) step
+     with a crude approximation to diagonal elements of the MO Hessian. The ORB_RESP option obtains the orbital rotation
      parameters by solving the orbital-reponse (coupled-perturbed CC) equations. Additionally, for both methods a DIIS extrapolation
      will be performed with the DO_DIIS = TRUE option. -*/
     options.add_str("OPT_METHOD","ORB_RESP","MSD ORB_RESP");
-    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the 
-      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian 
+    /*- The algorithm will be used for solving the orbital-response equations. The LINEQ option create the MO Hessian and solve the
+      simultaneous linear equations with method choosen by the LINEQ_SOLVER option. The PCG option does not create the MO Hessian
       explicitly, instead it solves the simultaneous equations iteratively with the preconditioned conjugate gradient method. -*/
     options.add_str("ORB_RESP_SOLVER","PCG","PCG LINEQ");
     /*- Type of PCG beta parameter (Fletcher-Reeves or Polak-Ribiere). -*/
@@ -2516,8 +2542,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SOS_TYPE","SOS","SOS SOSPI");
     /*- Type of the wavefunction. -*/
     options.add_str("WFN_TYPE","OMP2","OMP2 OMP3 OCEPA OMP2.5");
-    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm. 
-    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to 
+    /*- How to take care of the TPDM VVVV-block. The COMPUTE option means it will be computed via an IC/OOC algoritm.
+    The DIRECT option (default) means it will not be computed and stored, instead its contribution will be directly added to
     Generalized-Fock Matrix. -*/
     options.add_str("TPDM_ABCD_TYPE","DIRECT","DIRECT COMPUTE");
     /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
@@ -2526,7 +2552,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- Do apply level shifting? -*/
-    options.add_bool("DO_LEVEL_SHIFT",false);
+    options.add_bool("DO_LEVEL_SHIFT",true);
     /*- Do print OCC orbital energies? -*/
     options.add_bool("OCC_ORBS_PRINT",false);
     /*- Do perform spin-component-scaled OMP2 (SCS-OMP2)? In all computation, SCS-OMP2 energy is computed automatically.
@@ -2598,6 +2624,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           in fort.56. -*/
       options.add_int("MRCC_NUM_TRIPLET_ROOTS", 0);
 
+      /*- Number of root in case of open shell system. This becomes ``ndoub`` (option \#13)
+         int fort.56. -*/
+      options.add_int("MRCC_NUM_DOUBLET_ROOTS", 0);
+
       /*- The program restarts from the previously
           calculated parameters if it is 1. In case it is 2, the program
           executes automatically the lower-level calculations of the same
@@ -2612,7 +2642,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           calculation is performed automatically for the excited states.
           This overrides all automatic determination of method
           and will only work with :py:func:`~driver.energy`.
-          This becomes CC/CI (option \#5) in fort.56 
+          This becomes CC/CI (option \#5) in fort.56
 
           .. table:: MRCC methods
 
@@ -2658,8 +2688,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 100);
       /*- Desired number of DIIS vectors -*/
       options.add_int("DIIS_MAX_VECS", 8);
-      /*- Do use low memory option for triples contribution? Note that this 
-          option is enabled automatically if the memory requirements of the 
+      /*- Do use low memory option for triples contribution? Note that this
+          option is enabled automatically if the memory requirements of the
           conventional algorithm would exceed the available resources -*/
       options.add_bool("TRIPLES_LOW_MEMORY",false);
       /*- Do compute triples contribution? !expert -*/
@@ -2696,7 +2726,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_CCSD",false);
 
       /*- Do use density fitting in CC? This keyword is used internally
-          by the driver. Changing its value will have no effect on the 
+          by the driver. Changing its value will have no effect on the
           computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
@@ -2713,10 +2743,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       won't have any effect on the procedure. !expert -*/
       options.add_str("CEPA_LEVEL","CEPA(0)");
       /*- Compute the dipole moment? Note that dipole moments
-      are only available in the FNOCC module for the ACPF, 
+      are only available in the FNOCC module for the ACPF,
       AQCC, CISD, and CEPA(0) methods. -*/
       options.add_bool("DIPMOM",false);
-      /*- Flag to exclude singly excited configurations from a 
+      /*- Flag to exclude singly excited configurations from a
       coupled-pair computation.  -*/
       options.add_bool("CEPA_NO_SINGLES",false);
   }

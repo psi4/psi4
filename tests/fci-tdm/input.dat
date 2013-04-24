@@ -28,6 +28,7 @@ docc [1,0,0,0]
 socc [1,0,0,0]
 dipmom true
 num_roots 2
+df_scf_guess false
 }
 
 thisenergy = energy('fci')

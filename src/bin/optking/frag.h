@@ -243,6 +243,15 @@ class FRAG {
   */
   bool apply_frozen_constraints(std::string R_list, std::string B_list, std::string D_list);
 
+  /**
+   * @param R_list string of atom pairs + equilibrium value for fixed distances
+   * @param B_list string of atom triplets + equilibrium value for fixed bends
+   * @param D_list string of atom quartets + equilibrium value for fixed dihedrals
+   * @returns True if any constraints are present.
+  */
+  bool apply_fixed_constraints(std::string R_string, std::string B_string, std::string D_string);
+
+
 };
 
 }

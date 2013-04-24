@@ -13,7 +13,11 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
-.PHONY: help autodocclean clean realclean trigger html latexpdf-user latexpdf-prog html-user html-prog docs default
+# Install target
+include ../MakeVars
+SPHINXDIR = $(htmldir)/sphinx
+
+.PHONY: help autodocclean clean realclean trigger html install latexpdf-user latexpdf-prog html-user html-prog docs default
 
 all: default
 default: html
@@ -288,6 +292,10 @@ writtendoc: $(addprefix $(SOURCEDIR)/,$(MISCDOC) $(STATICDOC))
 
 
 #####  run Sphinx with html/latex builder with index/appendices contents variations  #####
+
+install: html
+	mkdir -p $(DESTDIR)$(SPHINXDIR)
+	cp -pr $(BUILDDIR)/html/* $(DESTDIR)$(SPHINXDIR)
 
 html: trigger autodoc writtendoc | $(subdirs)
 	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst

@@ -17,6 +17,7 @@ SAPT2p::SAPT2p(Options& options, boost::shared_ptr<PSIO> psio,
   e_sapt2p_ccd_(0.0)
 {
   ccd_disp_ = options_.get_bool("DO_CCD_DISP");
+  mbpt_disp_  = (!ccd_disp_ ? true : options_.get_bool("DO_MBPT_DISP"));
   ccd_maxiter_ = options_.get_int("CCD_MAXITER");
   max_ccd_vecs_ = options_.get_int("MAX_CCD_DIISVECS");
   min_ccd_vecs_ = options_.get_int("MIN_CCD_DIISVECS");
@@ -83,12 +84,17 @@ double SAPT2p::compute_energy()
   timer_on("Disp21             ");
     disp21();
   timer_off("Disp21             ");
+
+  if (mbpt_disp_) {
+
   timer_on("Disp22 (SDQ)       ");
     disp22sdq();
   timer_off("Disp22 (SDQ)       ");
   timer_on("Disp22 (T)         ");
     disp22t();
   timer_off("Disp22 (T)         ");
+
+  }
 
   if (ccd_disp_) {
  
@@ -146,6 +152,11 @@ void SAPT2p::print_header()
   long int ovov = occ*occ*vir*vir;
   long int vvnri = vir*vir*ndf_;
   double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
+  if (ccd_disp_) {
+    double ccd_memory = 8.0*(ovov*5L)/1000000.0;
+    memory = (memory > ccd_memory ? memory : ccd_memory);
+  }
+
   if (print_) {
     fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
     fflush(outfile);
@@ -153,6 +164,12 @@ void SAPT2p::print_header()
   if (options_.get_bool("SAPT_MEM_CHECK"))
     if (mem < vvnri + ovov*3L) 
       throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  fprintf(outfile,"    Natural Orbital Cutoff: %11.3E\n", occ_cutoff_);
+  fprintf(outfile,"    Disp(T3) Truncation:    %11s\n", (nat_orbs_t3_ ? "Yes" : "No"));
+  fprintf(outfile,"    CCD (vv|vv) Truncation: %11s\n", (nat_orbs_v4_ ? "Yes" : "No"));
+  fprintf(outfile,"    MBPT T2 Truncation:     %11s\n", (nat_orbs_t2_ ? "Yes" : "No"));
+  fprintf(outfile,"\n");
 
   fflush(outfile);
 }
@@ -162,7 +179,7 @@ void SAPT2p::print_results()
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
   e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_ 
     + e_exch_ind22_;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_;
   else
     e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_disp22t_;
@@ -173,7 +190,7 @@ void SAPT2p::print_results()
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF + e_ind22_ + e_exch_ind22_;
   double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_;
   double tot_disp = 0.0;
-  if (nat_orbs_)
+  if (nat_orbs_t3_)
     tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
       + e_est_disp22t_;
   else
@@ -182,7 +199,7 @@ void SAPT2p::print_results()
 
   if (ccd_disp_) {
     tot_disp = 0.0;
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_est_disp22t_ccd_;
     else
       tot_disp = e_disp2d_ccd_ + e_exch_disp20_ + e_disp22s_ccd_ + e_disp22t_ccd_;
@@ -226,13 +243,15 @@ void SAPT2p::print_results()
     e_disp20_*1000.0,e_disp20_*pc_hartree2kcalmol);
   fprintf(outfile,"      Disp21           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp21_*1000.0,e_disp21_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Disp22 (SDQ)     %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
-  fprintf(outfile,"      Disp22 (T)       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
-  if (nat_orbs_)
-    fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
+  if (mbpt_disp_) {
+    fprintf(outfile,"      Disp22 (SDQ)     %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp22sdq_*1000.0,e_disp22sdq_*pc_hartree2kcalmol);
+    fprintf(outfile,"      Disp22 (T)       %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_disp22t_*1000.0,e_disp22t_*pc_hartree2kcalmol);
+    if (nat_orbs_t3_)
+      fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
+        e_est_disp22t_*1000.0,e_est_disp22t_*pc_hartree2kcalmol);
+  }
   if (ccd_disp_) {
     fprintf(outfile,"      Disp2 (CCD)      %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp2d_ccd_*1000.0,e_disp2d_ccd_*pc_hartree2kcalmol);
@@ -240,7 +259,7 @@ void SAPT2p::print_results()
       e_disp22s_ccd_*1000.0,e_disp22s_ccd_*pc_hartree2kcalmol);
     fprintf(outfile,"      Disp22 (T) (CCD) %16.8lf mH %16.8lf kcal mol^-1\n",
       e_disp22t_ccd_*1000.0,e_disp22t_ccd_*pc_hartree2kcalmol);
-    if (nat_orbs_)
+    if (nat_orbs_t3_)
       fprintf(outfile,"      Est. Disp22 (T)  %16.8lf mH %16.8lf kcal mol^-1\n",
         e_est_disp22t_ccd_*1000.0,e_est_disp22t_ccd_*pc_hartree2kcalmol);
   }
@@ -253,8 +272,10 @@ void SAPT2p::print_results()
     e_sapt0_*1000.0,e_sapt0_*pc_hartree2kcalmol);
   fprintf(outfile,"    Total SAPT2        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt2_*1000.0,e_sapt2_*pc_hartree2kcalmol);
-  fprintf(outfile,"    Total SAPT2+       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2p_*1000.0,e_sapt2p_*pc_hartree2kcalmol);
+  if (mbpt_disp_) {
+    fprintf(outfile,"    Total SAPT2+       %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_sapt2p_*1000.0,e_sapt2p_*pc_hartree2kcalmol);
+  }
   if (ccd_disp_) {
     fprintf(outfile,"    Total SAPT2+(CCD)  %16.8lf mH %16.8lf kcal mol^-1\n",
       e_sapt2p_ccd_*1000.0,e_sapt2p_ccd_*pc_hartree2kcalmol);
@@ -267,10 +288,11 @@ void SAPT2p::print_results()
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
-  Process::environment.globals["SAPT SAPT2+ ENERGY"] = e_sapt2p_;
-  Process::environment.globals["SAPT ENERGY"] = e_sapt2p_;
-  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
-
+  if (mbpt_disp_) {
+      Process::environment.globals["SAPT SAPT2+ ENERGY"] = e_sapt2p_;
+      Process::environment.globals["SAPT ENERGY"] = e_sapt2p_;
+      Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
+  }
   if (ccd_disp_) {
       Process::environment.globals["SAPT SAPT2+(CCD) ENERGY"] = e_sapt2p_ccd_;
       Process::environment.globals["SAPT ENERGY"] = e_sapt2p_ccd_;

@@ -47,7 +47,7 @@ void set_params(void)
       else if (s == "SD") Opt_params.step_type = OPT_PARAMS::SD;
       else if (s == "LINESEARCH_STATIC") Opt_params.step_type = OPT_PARAMS::LINESEARCH_STATIC;
    }
-   else { // set defaults for step type
+   else { // Set defaults for step type.
      if (Opt_params.opt_type == OPT_PARAMS::MIN)
        Opt_params.step_type = OPT_PARAMS::RFO;
      else if (Opt_params.opt_type == OPT_PARAMS::TS)
@@ -73,6 +73,13 @@ void set_params(void)
 // is less than (this number) * sum of covalent radii {double}
 //  Opt_params.scale_connectivity = 1.3;
     Opt_params.scale_connectivity = options.get_double("COVALENT_CONNECT");
+
+// When determining connectivity BETWEEN FRAGMENTS when fragment mode is set to
+// SIMPLE, distance coordinates are created if atoms on different fragments
+// are at a distance less than (this number) * sum of covalent radii {double}
+// The criterion is gradually increased until all fragments are connected.
+//  Opt_params.interfragment_scale_connectivity = 1.8;
+    Opt_params.interfragment_scale_connectivity = options.get_double("INTERFRAGMENT_CONNECT");
 
 // Whether to treat multiple molecule fragments as a single bonded molecule;
 // or via interfragment coordinates ; a primary difference is that in MULTI mode,
@@ -295,7 +302,7 @@ void set_params(void)
     Opt_params.keep_intcos = true;
 
   // for intcos with user-specified equilibrium values - this is the force constant
-  Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
+  //Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
 
   // Currently, a static line search merely displaces along the gradient in internal
   // coordinates generating LINESEARCH_STATIC_N geometries.  The other two keywords
@@ -355,6 +362,10 @@ void set_params(void)
 // scale = i / 10   (default 13)
   i = rem_read(REM_GEOM_OPT2_SCALE_CONNECTIVITY);
   Opt_params.scale_connectivity = i / 10.0;
+
+// scale = i / 10   (default 18) // not yet implemented in QChem
+  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_SCALE_CONNECTIVITY);
+  Opt_params.interfragment_scale_connectivity = i/ 10;
 
 // multi-mode (0=single ; 1= multi) (default 0)
   i = rem_read(REM_GEOM_OPT2_FRAGMENT_MODE);
@@ -455,6 +466,10 @@ void set_params(void)
     Opt_params.efp_fragments_only = false;
   }
 
+  // for intcos with user-specified equilibrium values - this is the force constant
+  //i = rem_read(REM_INTCO_FIXED_EQ_FORCE_CONSTANT);
+  //Opt_params.fixed_eq_val_force_constant = i / 10; // default (20 -> 2 au)
+
   Opt_params.consecutive_backsteps_allowed = rem_read(REM_GEOM_OPT2_CONSECUTIVE_BACKSTEPS);
 
   // if steepest-descent, then make much larger default
@@ -465,11 +480,16 @@ void set_params(void)
 
 #endif
 
-// Strings that carry user-specified constraints (from input, probably)
+// Strings that carry user-specified constraints
+// "frozen" means unchanging, while "fixed" means eq. value is specified
 #if defined(OPTKING_PACKAGE_PSI)
   Opt_params.frozen_distance_str = options.get_str("FROZEN_DISTANCE");
   Opt_params.frozen_bend_str     = options.get_str("FROZEN_BEND");
   Opt_params.frozen_dihedral_str = options.get_str("FROZEN_DIHEDRAL");
+
+  Opt_params.fixed_distance_str = options.get_str("FIXED_DISTANCE");
+  Opt_params.fixed_bend_str     = options.get_str("FIXED_BEND");
+  Opt_params.fixed_dihedral_str = options.get_str("FIXED_DIHEDRAL");
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // Read QChem input and write all the frozen distances into a string
   if (rem_read(REM_GEOM_OPT2_FROZEN_DISTANCES) > 0) {
@@ -572,6 +592,8 @@ void print_params(void) {
   fprintf(outfile, "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
 
   fprintf(outfile, "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
+  fprintf(outfile, "interfragment_scale_connectivity = %18.2e\n",
+    Opt_params.interfragment_scale_connectivity);
 
   if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE)
   fprintf(outfile, "fragment_mode          = %18s\n", "single");
@@ -679,8 +701,19 @@ void print_params(void) {
   else
   fprintf(outfile, "efp_fragments_only     = %18s\n", "false");
 
-  fprintf(outfile, "frozen_distances: \n");
+  fprintf(outfile, "frozen_distance: \n");
   fprintf(outfile, "%s\n", Opt_params.frozen_distance_str.c_str());
+  fprintf(outfile, "frozen_bend: \n");
+  fprintf(outfile, "%s\n", Opt_params.frozen_bend_str.c_str());
+  fprintf(outfile, "frozen_dihedral: \n");
+  fprintf(outfile, "%s\n", Opt_params.frozen_dihedral_str.c_str());
+
+  fprintf(outfile, "fixed_distance: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_distance_str.c_str());
+  fprintf(outfile, "fixed_bend: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_bend_str.c_str());
+  fprintf(outfile, "fixed_dihedral: \n");
+  fprintf(outfile, "%s\n", Opt_params.fixed_dihedral_str.c_str());
 }
 
 }

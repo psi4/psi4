@@ -22,7 +22,7 @@ void SAPT2::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,
@@ -636,7 +636,7 @@ void SAPT2p::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,
@@ -785,7 +785,7 @@ void SAPT2p3::amplitudes()
   pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
     PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_ || nat_orbs_t2_) {
     natural_orbitalify(PSIF_SAPT_AMPS,"pRR Density Matrix",evalsA_,foccA_,
       noccA_,nvirA_,'A');
     natural_orbitalify(PSIF_SAPT_AMPS,"pSS Density Matrix",evalsB_,foccB_,
@@ -1427,23 +1427,32 @@ void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile,
     
   free_block(tARBS);
 
-  double **t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+  double **t2RSAB = block_matrix(nvirA*nvirB,aoccA*aoccB);
     
-  double **B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+  double **B_p_RR = block_matrix(nvirA,ndf_+3);
   double **B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
 
   double **X_RS = block_matrix(nvirA,nvirB*nvirB);
 
+  psio_address next_RR = PSIO_ZERO;
   for (int r=0; r < nvirA; r++) {
-    C_DGEMM('N','T',nvirA,nvirB*nvirB,ndf_+3,1.0,&(B_p_RR[r*nvirA][0]),
+    psio_->read(AAintfile,RRlabel,(char*) B_p_RR[0], sizeof(double)*nvirA*(ndf_+3),next_RR,&next_RR); 
+
+    C_DGEMM('N','T',nvirA,nvirB*nvirB,ndf_+3,1.0,B_p_RR[0],
       ndf_+3,&(B_p_SS[0][0]),ndf_+3,0.0,&(X_RS[0][0]),nvirB*nvirB);
-    C_DGEMM('N','T',aoccA*aoccB,nvirA*nvirB,nvirB,1.0,&(tABRS[0][r*nvirB]),
-      nvirA*nvirB,&(X_RS[0][0]),nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
+    C_DGEMM('T','T',nvirB,aoccA*aoccB,nvirA*nvirB,1.0,X_RS[0],
+      nvirB,tABRS[0],nvirA*nvirB,0.0,t2RSAB[r*nvirB],aoccA*aoccB);
   }
 
   free_block(B_p_RR);
   free_block(B_p_SS);
   free_block(X_RS);
+
+  double** t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+  for (int rs = 0; rs < nvirA * nvirB; rs++) {
+      C_DCOPY(aoccA * aoccB, t2RSAB[rs], 1, &t2ABRS[0][rs], nvirA * nvirB);
+  }
+  free_block(t2RSAB);
 
   double **B_p_AA = get_DF_ints(AAintfile,AAlabel,foccA,noccA,foccA,noccA);
   double **B_p_BB = get_DF_ints(BBintfile,BBlabel,foccB,noccB,foccB,noccB);

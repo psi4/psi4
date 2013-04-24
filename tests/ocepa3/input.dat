@@ -1,8 +1,8 @@
 #! OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
 
 refnuc      =   25.59060766929188  #TEST
-refscf      = -129.25292774600072 #TEST
-refocepa    = -129.67618786551816 #TEST
+refscf      = -129.25292774600291 #TEST
+refocepa    = -129.67619003025513 #TEST
 
 memory 250 mb
 

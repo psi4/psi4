@@ -1,5 +1,5 @@
 #include "liboptions.h"
-#include "python.h"
+#include "liboptions_python.h"
 
 namespace psi {
 

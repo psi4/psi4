@@ -163,8 +163,8 @@ def run_scs_omp2(name, **kwargs):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp2'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    elif (lowername == 'scs-mi-omp2'):
-        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+    #elif (lowername == 'scs-mi-omp2'):
+    #    PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp2-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
@@ -290,8 +290,8 @@ def run_scs_omp3(name, **kwargs):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCS')
     elif (lowername == 'scsn-omp3'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSN')
-    elif (lowername == 'scs-mi-omp3'):
-        PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
+    #elif (lowername == 'scs-mi-omp3'):
+    #    PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSMI')
     elif (lowername == 'scs-omp3-vdw'):
         PsiMod.set_local_option('OCC', 'SCS_TYPE', 'SCSVDW')
 
@@ -536,7 +536,7 @@ def run_scf_gradient(name, **kwargs):
 
     run_scf(name, **kwargs)
 
-    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'DIRECT'):
+    if (PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF'):
 
         # if the df_basis_scf basis is not set, pick a sensible one.
         if PsiMod.get_global_option('DF_BASIS_SCF') == '':
@@ -547,11 +547,7 @@ def run_scf_gradient(name, **kwargs):
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-        PsiMod.scfgrad()
-
-    else:
-        PsiMod.deriv()
-
+    PsiMod.scfgrad()
     optstash.restore()
 
 
@@ -598,7 +594,9 @@ def scf_helper(name, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'GUESS'],
-        ['SCF', 'DF_INTS_IO'])
+        ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'SCF_TYPE'] # Hack: scope gets changed internally with the Andy trick
+    )
 
     # if the df_basis_scf basis is not set, pick a sensible one.
     if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
@@ -821,7 +819,7 @@ def run_dfmp2_gradient(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
@@ -902,6 +900,10 @@ def run_cc_gradient(name, **kwargs):
     elif (name.lower() == 'ccsd(t)'):
         PsiMod.set_local_option('CCLAMBDA', 'WFN', 'CCSD_T')
         PsiMod.set_local_option('CCDENSITY', 'WFN', 'CCSD_T')
+
+        user_ref = PsiMod.get_option('CCENERGY', 'REFERENCE')
+        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+            raise ValidationError('Reference %s for CCSD(T) gradients is not available.' % user_ref)
 
     PsiMod.cchbar()
     PsiMod.cclambda()
@@ -1169,7 +1171,7 @@ def run_dfmp2_property(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
@@ -1195,6 +1197,11 @@ def run_eom_cc(name, **kwargs):
         PsiMod.set_local_option('CCEOM', 'WFN', 'EOM_CCSD')
         run_ccenergy('ccsd', **kwargs)
     elif (name.lower() == 'eom-cc2'):
+
+        user_ref = PsiMod.get_option('CCENERGY', 'REFERENCE')
+        if (user_ref != 'RHF') and (user_ref != 'UHF'):
+            raise ValidationError('Reference %s for EOM-CC2 is not available.' % user_ref)
+
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'EOM_CC2')
         PsiMod.set_local_option('CCSORT', 'WFN', 'EOM_CC2')
         PsiMod.set_local_option('CCENERGY', 'WFN', 'EOM_CC2')
@@ -1257,6 +1264,9 @@ def run_adc(name, **kwargs):
     .. caution:: Get rid of active molecule lines- should be handled in energy.
 
     """
+    if (PsiMod.get_option('ADC', 'REFERENCE') != 'RHF'):
+        raise ValidationError('ADC requires reference RHF')
+
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
@@ -1375,6 +1385,10 @@ def run_detci(name, **kwargs):
         ['DETCI', 'FCI'],
         ['DETCI', 'EX_LEVEL'])
 
+    user_ref = PsiMod.get_option('DETCI', 'REFERENCE')
+    if (user_ref != 'RHF') and (user_ref != 'ROHF'):
+        raise ValidationError('Reference %s for DETCI is not available.' % user_ref)
+
     if (name.lower() == 'zapt'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'ZAPTN')
         PsiMod.set_local_option('DETCI', 'WFN', 'ZAPTN')
@@ -1482,7 +1496,7 @@ def run_dfmp2(name, **kwargs):
 
     optstash.restore()
 
-    if (name.upper() == 'SCS-DFMP2') or (name.upper() == 'SCS-DF-MP2'):
+    if (name.upper() == 'SCS-MP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DF-MP2') or (name.upper() == 'DFMP2') or (name.upper() == 'MP2'):
         return e_dfmp2
@@ -1697,12 +1711,15 @@ def run_sapt(name, **kwargs):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2')
     elif (name.lower() == 'sapt2+'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+(3)'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', False)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+3')
         PsiMod.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
+        PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', False)
     elif (name.lower() == 'sapt2+(ccd)'):
         PsiMod.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT2+')
         PsiMod.set_local_option('SAPT', 'DO_CCD_DISP', True)
@@ -2416,15 +2433,6 @@ def run_fnocc(name, **kwargs):
         PsiMod.set_local_option('FNOCC','COMPUTE_MP4_TRIPLES', True)
         PsiMod.set_local_option('FNOCC','COMPUTE_TRIPLES', True)
 
-    # override symmetry for fno-cc
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule = PsiMod.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
@@ -2476,11 +2484,6 @@ def run_fnocc(name, **kwargs):
         cemp4    = PsiMod.get_variable("MP4 CORRELATION ENERGY")
         PsiMod.set_variable("CURRENT ENERGY",emp4)
         PsiMod.set_variable("CURRENT CORRELATION ENERGY",cemp4)
-
-    # restore symmetry for fno-cc
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     # restore options
     optstash.restore()
@@ -2541,15 +2544,6 @@ def run_cepa(name, **kwargs):
 
     PsiMod.set_local_option('FNOCC', 'CEPA_LEVEL', cepa_level)
 
-    # override symmetry for fno-cepa
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule = PsiMod.get_active_molecule()
-        user_pg = molecule.schoenflies_symbol()
-        molecule.reset_point_group('c1')
-        molecule.update_geometry()
-        if user_pg != 'c1':
-            PsiMod.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
-
     # throw an exception for open-shells
     if (PsiMod.get_option('SCF','REFERENCE') != 'RHF' ):
         raise ValidationError("Error: %s requires \"reference rhf\"." % lowername)
@@ -2581,11 +2575,6 @@ def run_cepa(name, **kwargs):
             PsiMod.print_out("\n")
         else:
             oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
-
-    # restore symmetry for fno-cepa
-    if (PsiMod.get_option('FNOCC','NAT_ORBS')):
-        molecule.reset_point_group(user_pg)
-        molecule.update_geometry()
 
     # restore options 
     optstash.restore()

@@ -107,10 +107,10 @@ void CoupledCluster::common_init() {
   memory = Process::environment.get_memory();
 
   // SCS MP2 and CCSD
-  emp2_os_fac = options_.get_double("MP2_SCALE_OS");
-  emp2_ss_fac = options_.get_double("MP2_SCALE_SS");
-  eccsd_os_fac = options_.get_double("CC_SCALE_OS");
-  eccsd_ss_fac = options_.get_double("CC_SCALE_SS");
+  emp2_os_fac = options_.get_double("MP2_OS_SCALE");
+  emp2_ss_fac = options_.get_double("MP2_SS_SCALE");
+  eccsd_os_fac = options_.get_double("CC_OS_SCALE");
+  eccsd_ss_fac = options_.get_double("CC_SS_SCALE");
 
   // quit if number of virtuals is less than number of doubly occupied
   if (nvirt<ndoccact){
@@ -490,6 +490,27 @@ PsiReturnType CoupledCluster::CCSDIterations() {
      fprintf(outfile,"  CCSD iterations converged!\n");
   else
      fprintf(outfile,"  QCISD iterations converged!\n");
+  fprintf(outfile,"\n");
+
+  // T1 and D1 diagnostics:
+
+  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  fprintf(outfile,"        T1 diagnostic:                   %20.12lf\n",t1diag);
+  boost::shared_ptr<Matrix>T (new Matrix(o,o));
+  boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
+  boost::shared_ptr<Vector>eigval (new Vector(o));
+  double ** Tp = T->pointer();
+  for (int i = 0; i < o; i++) {
+      for (int j = 0; j < o; j++) {
+          double dum = 0.0;
+          for (int a = 0; a < v; a++) {
+              dum += t1[a*o+i] * t1[a*o+j];
+          }
+          Tp[i][j] = dum;
+      }
+  }
+  T->diagonalize(eigvec,eigval,descending);
+  fprintf(outfile,"        D1 diagnostic:                   %20.12lf\n",sqrt(eigval->pointer()[0]));
   fprintf(outfile,"\n");
 
   // delta mp2 correction for fno computations:
@@ -2670,6 +2691,27 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
+  fprintf(outfile,"\n");
+
+  // T1 and D1 diagnostics:
+
+  double t1diag = F_DNRM2(o*v,t1,1) / sqrt(2.0 * o);
+  fprintf(outfile,"        T1 diagnostic:                  %20.12lf\n",t1diag);
+  boost::shared_ptr<Matrix>T (new Matrix(o,o));
+  boost::shared_ptr<Matrix>eigvec (new Matrix(o,o));
+  boost::shared_ptr<Vector>eigval (new Vector(o));
+  double ** Tp = T->pointer();
+  for (int i = 0; i < o; i++) {
+      for (int j = 0; j < o; j++) {
+          double dum = 0.0;
+          for (int a = 0; a < v; a++) {
+              dum += t1[a*o+i] * t1[a*o+j];
+          }
+          Tp[i][j] = dum;
+      }
+  }
+  T->diagonalize(eigvec,eigval,descending);
+  fprintf(outfile,"        D1 diagnostic:                  %20.12lf\n",sqrt(eigval->pointer()[0]));
   fprintf(outfile,"\n");
 
   // delta mp2 correction for fno computations:

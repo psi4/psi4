@@ -45,7 +45,6 @@ protected:
     double *);
 
   // CCD Dispersion Values
-
   double e_disp2d_ccd_;
   double e_disp22s_ccd_;
   double e_disp22t_ccd_;
@@ -59,6 +58,9 @@ protected:
   int max_ccd_vecs_;
   double ccd_e_conv_;
   double ccd_t_conv_;
+
+  // Do MBPT and CCD dispersion?
+  bool mbpt_disp_;
 
   // CCD Dispersion Methods
   void r_ccd_prep(char *, char *, char *, char *, char *, char *, char *, 
@@ -77,29 +79,33 @@ protected:
     double *, int, int, int, int, int, int);
   double s_ccd_iterate(char *, char *, char *, char *, char *, char *, 
     char *, char *, char *, char *, char *, char *, char *, char *, char *,
-    double *, int, int, int, double **, int);
+    double *, int, int, int, boost::shared_ptr<Matrix>);
   double s_ccd_amplitudes(char *, char *, char *, char *, char *, char *, 
     char *, char *, char *, char *, char *, char *, char *, char *, char *,
-    double *, int, int, int, double **, int);
-
-  void disp_s_prep(char *, char *, char *, char *, int, char *, char *, 
-    char *, int, char *, double *, int, int, int, int, int, int);
-  void natural_orbitalify_ccd();
+    double *, int, int, int, boost::shared_ptr<Matrix>);
 
   void ccd_prep(char *, char *, char *, char *, char *, char *, char *, 
     char *, char *, int, char *, char *, char *, double *, int, int, int, 
-    int, double **, char *);
+    boost::shared_ptr<Matrix>, char *);
   double ccd_energy(char *, char *, int, int);
   void ccd_iterate(char *, char *, char *, char *, char *, char *, char *,
-    char *, char *, char *, double *, int, int, int, double **, int);
+    char *, char *, char *, double *, int, int, int, boost::shared_ptr<Matrix>);
   double ccd_amplitudes(char *, char *, char *, char *, char *, char *, 
-    char *, char *, char *, char *, double *, int, int, int, double **, int);
+    char *, char *, char *, char *, double *, int, int, int, boost::shared_ptr<Matrix>);
 
-  double **vvvv_ccd(char *, char *, char *, int, int, double **, int, int);
+  void vvvv_prep(char*, char*, double**, int, int, boost::shared_ptr<Matrix>);
+  double **vvvv_ccd(char *, char *, char *, int, int, boost::shared_ptr<Matrix>);
+  boost::shared_ptr<Matrix> mo2no(int ampfile, char* VV_opdm, int nvir, double cutoff);
 
   double **read_IJKL(int, char *, int, int);
   void write_IJKL(double **, int, char *, int, int);
   
+  // CCD (S)
+  void disp_s_prep(char *, char *, char *, char *, int, char *, char *, 
+    char *, int, char *, double *, int, int, int, int, int, int);
+
+  // CCD (T)
+  void natural_orbitalify_ccd();
   double disp220tccd(int, char *, int, char *, char *, int, char *, int, char *,
     char *, double *, double *, int, int, int, int, int, int);
 

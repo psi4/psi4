@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
@@ -600,7 +601,7 @@ void get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters.ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.ex_lvl) )->str();
+      str += boost::lexical_cast<std::string>( Parameters.ex_lvl) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters.ex_allow);
@@ -673,7 +674,7 @@ void get_parameters(Options &options)
     i = options["AVG_STATES"].size();
     if (i < 1 || i > Parameters.num_roots) {
       std::string str = "Invalid number of states to average (";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+      str += boost::lexical_cast<std::string>( i) ;
       str += ")";
       throw PsiException(str,__FILE__,__LINE__);
     }
@@ -686,7 +687,7 @@ void get_parameters(Options &options)
       if (Parameters.average_states[i] < 1) {
         std::string str = "AVG_STATES start numbering from 1.\n";
         str += "Invalid state number ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.average_states[i]) )->str();
+        str += boost::lexical_cast<std::string>( Parameters.average_states[i]) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
       Parameters.average_states[i] -= 1; /* number from 1 externally */
@@ -696,7 +697,7 @@ void get_parameters(Options &options)
     if (options["AVG_WEIGHTS"].has_changed()) {
       if (options["AVG_WEIGHTS"].size() != Parameters.average_num) {
         std::string str = "Mismatched number of average weights (";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+        str += boost::lexical_cast<std::string>( i) ;
         str += ")";
         throw PsiException(str,__FILE__,__LINE__);
       }

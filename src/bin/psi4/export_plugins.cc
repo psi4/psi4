@@ -82,7 +82,7 @@ int py_psi_plugin(std::string fullpathname)
     fflush(outfile);
 
     // Have the plugin copy the environment to get current options.
-    info.init_plugin(WorldComm, Process::environment, _default_chkpt_lib_, _default_psio_lib_, psi::yetiEnv);
+    info.init_plugin();
 
     // Call the plugin
     int ret = info.plugin(Process::environment.options);

@@ -14,9 +14,6 @@ set {
   basis cc-pvdz
   guess sad
   mo_maxiter 200
-  e_convergence 10
-  d_convergence 8
-  rms_mograd_convergence 8
 }
 # Test against Analytic second derivatives from PSI3. #TEST
 grad_freqs = PsiMod.Vector(7)  #TEST
@@ -32,4 +29,4 @@ grad_freqs.set(0, 6, 3497.387) #TEST
 frequencies('ocepa',dertype=0)
 fd_freqs = PsiMod.wavefunction().frequencies()                                           #TEST
 compare_vectors(grad_freqs, fd_freqs, 0,                                                 #TEST
- "Frequencies by gradient points vs. Frequencies by energy points to 1 cm^-1")           #TEST
+ "Frequencies by gradient points vs. Frequencies by energy points to 1 cm^-1 ")           #TEST

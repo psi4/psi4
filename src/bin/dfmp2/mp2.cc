@@ -26,7 +26,6 @@ namespace dfmp2 {
 
 void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ)
 {
-    return;  // There's a bug, so deactivate this code, for now.
     // The density matrix
     SharedMatrix c1MO_c1NO(new Matrix("NOs", nmo_, nmo_));
     SharedVector occ_c1(new Vector("NO Occupations", nmo_));
@@ -50,17 +49,18 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
     }
     // Now, copy over the full matrix, whenever nonzero columns are
     for(int h = 0; h < nirrep_; ++h){
+        if (nsopi_[h] == 0) continue;
+        double *CStemp = new double[nsopi_[h]];
         double **pC1 = SO_c1NO->pointer(h);
+        double **Smat = S_->pointer(h);
         int symcol = 0;
         for(int col = 0; col < nmo_; ++col){
-            bool found = false;
-            for(int row = 0; row < nsopi_[h]; ++row){
-                if(fabs(pC1[row][col]) > 1.0E-3){
-                    found = true;
-                    break;
-                }
-            }
-            if(found){
+            // Compute orthonormalized self-overlap, to see if it's nonzero.
+            // If it is, grab this orbital and store it in the symmetry NO matrix.
+            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0],
+                    nsopi_[h], &(pC1[0][col]), nmo_, 0.0, CStemp, 1);
+            double overlap = C_DDOT(nsopi_[h], CStemp, 1, &(pC1[0][col]), nmo_);
+            if(overlap > 0.8){
                 for(int row = 0; row < nsopi_[h]; ++row){
                     Cno->set(h, row, symcol, pC1[row][col]);
                 }
@@ -68,7 +68,17 @@ void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, Sh
                 symcol++;
             }
         }
+        delete [] CStemp;
+        if(symcol != nmopi_[h]){
+            fprintf(outfile, "Problem determining natural orbital and density matrix symmetries.\n"
+                    "Future calls to oeprop will not work, using this density.  Try disabling symmetry.\n\n");
+            occ->zero();
+            Cno->zero();
+            Dso->zero();
+            return;
+        }
     }
+
     // Backtransform Density matrix to the SO basis
     //
     // D(SO) = C[SO->MO(c1)] D[MO] SO->MO[C1]t
@@ -2215,6 +2225,7 @@ void RDFMP2::form_Z()
     double** dPpqp = dPpq->pointer();
     SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
     double** APp = AP->pointer();
+    SharedMatrix Dtemp;
 
     if(options_.get_bool("OPDM_RELAX")){
         psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
@@ -2300,25 +2311,25 @@ void RDFMP2::form_Z()
 
         Ppq->add(dPpq);
 
-        SharedMatrix D = Ppq->clone();
+        Dtemp = Ppq->clone();
         // Add in the reference contribution
         for (int i = 0; i < nocc; ++i)
-            D->add(i, i, 2.0);
+            Dtemp->add(i, i, 1.0);
         Ca_ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 relaxed density", nsopi_, nsopi_));
     }else{
         // Don't relax the OPDM
-        SharedMatrix D = Ppq->clone();
+        Dtemp = Ppq->clone();
         // Add in the reference contribution
         for (int i = 0; i < nocc; ++i)
-            D->add(i, i, 2.0);
+            Dtemp->add(i, i, 1.0);
         Ca_ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
         epsilon_a_ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
         Da_ = SharedMatrix(new Matrix("DF-MP2 unrelaxed density", nsopi_, nsopi_));
     }
 
-    compute_opdm_and_nos(Ppq, Da_, Ca_, epsilon_a_);
+    compute_opdm_and_nos(Dtemp, Da_, Ca_, epsilon_a_);
     Cb_ = Ca_;
     epsilon_b_ = epsilon_a_;
     Db_ = Da_;

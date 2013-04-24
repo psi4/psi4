@@ -11,18 +11,36 @@ namespace psi{ namespace occwave{
   
 void OCCWave::coord_grad()
 {
-      if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") omp3_tpdm_vvvv();
-      else if (wfn_type_ == "OCEPA") ocepa_tpdm_vvvv();
+      if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
+          fprintf(outfile,"\tComputing G_abcd...\n");
+          fflush(outfile);
+          omp3_tpdm_vvvv();
+      }
+      else if (wfn_type_ == "OCEPA") { 
+          fprintf(outfile,"\tComputing G_abcd...\n");
+          fflush(outfile);
+          ocepa_tpdm_vvvv();
+      }
+      fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
+      fflush(outfile);
       gfock_diag();
      
       // For Standard methods  
       if (orb_opt_ == "FALSE") {
+          fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
+          fflush(outfile);
           z_vector();
+          fprintf(outfile,"\tForming relaxed response density matrices...\n");
+          fflush(outfile);
           effective_pdms();
+          fprintf(outfile,"\tForming relaxed GFM...\n");
+          fflush(outfile);
           effective_gfock();
       }
 
       dump_ints();
+      fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
+      fflush(outfile);
       dump_pdms();
 }// 
 

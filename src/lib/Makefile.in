@@ -1,11 +1,28 @@
  
 .PHONY:	default all install depend clean dclean targetclean
 
-subdirs = libint libderiv libciomr libchkpt libqt libpsio libiwl libdpd \
-          libutil liboptions libmatrix libdist_matrix \
-          libmints libtrans libparallel lib3index libfunctional libdisp libfock libscf_solver \
-          libdiis libsapt_solver libplugin \
-          libmoinfo libsmartptr libyeti
+subdirs = libint \
+		  libderiv \
+		  libciomr \
+		  libchkpt \
+		  libqt \
+		  libpsio \
+		  libiwl \
+		  libdpd \
+		  libutil \
+		  liboptions \
+		  libmints \
+		  libtrans \
+		  libparallel \
+		  lib3index \
+		  libfunctional \
+		  libdisp \
+		  libfock \
+		  libscf_solver \
+		  libdiis \
+		  libsapt_solver \
+		  libplugin \
+		  libmoinfo
 
 all: default
 
