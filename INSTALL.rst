@@ -49,11 +49,6 @@ I. Compilation Prerequisites
      will fail. The library is called ``python-devel`` for Fedora and
      ``python-dev`` for Ubuntu.
 
-* A version of MPI is required to compile distributed-parallel PSI; 
-  MPICH2 is recommended.
-  (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
-  seems to fix it.)
-
 * GNU utilities: (see http://www.gnu.org)
 
   * make
@@ -288,8 +283,7 @@ compiling and installing the PSI4 package.
      * ``--with-cxx=compiler`` --- Use this option to specify a C++ compiler.
        One should use compilers that generate reentrant code, if possible.
        The default search order for compilers is: xlC_r (AIX only), g++, c++,
-       icpc, cxx.  For distributed-parallel compilation, MPI is required and 
-       you need to use mpicxx (where this has been added to your PATH).
+       icpc, cxx.  
   
      * ``--with-fc=compiler`` --- Use this option to specify a Fortran-77 compiler,
        which is used to determine linking coventions for BLAS and LAPACK libraries
