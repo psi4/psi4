@@ -260,6 +260,7 @@ void OCCWave::omp3_tpdm_vvvv()
     // Hence I will not symmetrize the TPDM VVVV-block. 
     // However, in for analytical gradients I need to symmetrize it.
     
+    if (time4grad == 0) {
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
@@ -274,31 +275,46 @@ void OCCWave::omp3_tpdm_vvvv()
 
     // For OMP2.5 G_ABCD(2) = 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     if (wfn_type_ == "OMP2.5") {
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    dpd_buf4_scm(&G, 0.5);
-    dpd_buf4_close(&G);
+        dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+        dpd_buf4_scm(&G, 0.5);
+        dpd_buf4_close(&G);
     }
+    }// end if (time4grad == 0) 
 
-    if (time4grad == 1) {
+    else if (time4grad == 1) {
     // Symmetrize the VVVV block
+    // buf_axpy assume that half of each buffer can be stored incore, hence it is a problem
+    // for 2 VVVV type matrices. 
+    dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_init(&L, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau_1 <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AD|CB>");    
+    // G_ABCD(2) = 1/4\sum_{M,N} T_MN^CB(1) (2T_MN^AD(1) - T_MN^DA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 0.0);
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|BD>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|BD>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <VV|VV>");
+    dpd_buf4_close(&G);
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|DB>");
+    // G_ABCD(2) += 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 1.0);
     dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|DB>");
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
-    dpd_buf4_close(&G);
-    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    dpd_buf4_init(&V, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AD|CB>");
-    dpd_buf4_axpy(&V, &G, 1.0); // 1.0*V + G -> G
-    dpd_buf4_close(&V);
-    dpd_buf4_scm(&G, 0.5);
-    dpd_buf4_close(&G);
-    } // enf if (time4grad == 1) 
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&L);
+
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+        dpd_buf4_scm(&G, 0.5);
+        dpd_buf4_close(&G);
+    }
+    } // end else if (time4grad == 1) 
 
     //Print 
     if (print_ > 3) {
@@ -417,6 +433,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     // Hence I will not symmetrize the TPDM VVVV-block. 
     // However, in for analytical gradients I need to symmetrize it.
     
+    if (time4grad == 0) {
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
@@ -428,7 +445,36 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+    }// end if (time4grad == 0) 
 
+    else if (time4grad == 1) {
+    // Symmetrize the VVVV block
+    // buf_axpy assume that half of each buffer can be stored incore, hence it is a problem
+    // for 2 VVVV type matrices. 
+    dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&L, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AD|CB>");    
+    // G_ABCD(2) = 1/4\sum_{M,N} T_MN^CB(1) (2T_MN^AD(1) - T_MN^DA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 0.0);
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|BD>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|BD>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <VV|VV>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    // G_ABCD(2) += 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&L);
+    } // end else if (time4grad == 1)
+
+    /*
     if (time4grad == 1) {
     // Symmetrize the VVVV block
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
@@ -448,6 +494,7 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     } // enf if (time4grad == 1) 
+    */
 
     //Print 
     if (print_ > 3) {
