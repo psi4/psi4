@@ -12,45 +12,35 @@ namespace psi{ namespace occwave{
 void OCCWave::coord_grad()
 {
       if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") {
-          fprintf(outfile,"\tSymmetrizing PDMs...\n");
+          fprintf(outfile,"\tComputing G_abcd...\n");
           fflush(outfile);
           omp3_tpdm_vvvv();
-          fprintf(outfile,"\tPDMs are symmetrized.\n");
-          fflush(outfile);
       }
       else if (wfn_type_ == "OCEPA") { 
-          fprintf(outfile,"\tSymmetrizing PDMs...\n");
+          fprintf(outfile,"\tComputing G_abcd...\n");
           fflush(outfile);
           ocepa_tpdm_vvvv();
-          fprintf(outfile,"\tPDMs are symmetrized.\n");
-          fflush(outfile);
       }
       fprintf(outfile,"\tComputing diagonal blocks of GFM...\n");
       fflush(outfile);
       gfock_diag();
-      fprintf(outfile,"\tDiagonal blocks of GFM are done.\n");
-      fflush(outfile);
      
       // For Standard methods  
       if (orb_opt_ == "FALSE") {
-          fprintf(outfile,"\tSolving the orbital Z-vector equations...\n");
+          fprintf(outfile,"\tSolving orbital Z-vector equations...\n");
           fflush(outfile);
           z_vector();
-          fprintf(outfile,"\tOrbital Z-vector is done.\n");
-          fflush(outfile);
-          fprintf(outfile,"\tForming effective PDMs...\n");
+          fprintf(outfile,"\tForming relaxed response density matrices...\n");
           fflush(outfile);
           effective_pdms();
-          fprintf(outfile,"\tEfective PDMs are done.\n");
-          fflush(outfile);
-          fprintf(outfile,"\tForming effective GFM...\n");
+          fprintf(outfile,"\tForming relaxed GFM...\n");
           fflush(outfile);
           effective_gfock();
-          fprintf(outfile,"\tEfective GFM is done.\n");
-          fflush(outfile);
       }
 
       dump_ints();
+      fprintf(outfile,"\tWriting particle density matrices and GFM to disk...\n");
+      fflush(outfile);
       dump_pdms();
 }// 
 
