@@ -27,9 +27,6 @@ This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
 Please delete them.")
 endif()
 
-#set(top_srcdir "${PROJECT_SOURCE_DIR}\")
-#set(top_objdir "${PROJECT_BINARY_DIR}\")
-
 find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -51,6 +48,7 @@ test_restrict(restrict)
 configure_file(include/psiconfig.h.cmake.in include/psiconfig.h)
 
 # Is this needed for the script?
+# TODO: Fix gitversion.py to work without setting top_srcdir...maybe use PROJECT_SOURCE_DIR
 set(top_srcdir ${PROJECT_SOURCE_DIR}) # The quotes are added in the source, in this case
 configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 
@@ -70,60 +68,61 @@ configure_file(src/lib/libint/libint_config.h.in src/lib/libint/libint_config.h)
 configure_file(src/lib/libderiv/libderiv_config.h.in src/lib/libderiv/libderiv_config.h)
 
 # Psi4-specific includes and libraries
-set(PSIINC ${PROJECT_BINARY_DIR}/include 
-           ${PROJECT_SOURCE_DIR}/include
-           ${PROJECT_SOURCE_DIR}/src/lib
-           ${PROJECT_BINARY_DIR}/src/lib)
-
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(
+    ${PROJECT_BINARY_DIR}/include 
+    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/src/lib
+    ${PROJECT_BINARY_DIR}/src/lib
+)
 
 #
 # BLAS and LAPACK
 #
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+#find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
 add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
 #  We don't really need the interpreter. Could we just use the PythonLibs method?
 #
-find_package(PythonInterp REQUIRED)
-set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYLIB OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYINC OUTPUT_STRIP_TRAILING_WHITESPACE)
-# Turn the flags into proper lists
-string(REPLACE "-I" "" PYINC ${PYINC})
-string(REPLACE " " ";" PYINC ${PYINC})
+#find_package(PythonInterp REQUIRED)
+#set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
+#execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYLIB OUTPUT_STRIP_TRAILING_WHITESPACE)
+#execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYINC OUTPUT_STRIP_TRAILING_WHITESPACE)
+## Turn the flags into proper lists
+#string(REPLACE "-I" "" PYINC ${PYINC})
+#string(REPLACE " " ";" PYINC ${PYINC})
+#
+#if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
+#   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
+#                       "is installed and that python-config exists in the same directory as the python executable.")
+#endif()
 
-if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
-   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
-                       "is installed and that python-config exists in the same directory as the python executable.")
-endif()
+find_package(PythonLibs REQUIRED)
+include_directories(${PYTHON_INCLUDE_DIRS})
 
 #
 # Boost Detection 
 #
 # N.B. Update boost/CMakeLists.txt if this list of components changes
-set(Boost_USE_STATIC_LIBS   ON)
-set(BOOST_COMPONENTS filesystem python regex thread system serialization)
-find_package(Boost 1.47.0 COMPONENTS ${BOOST_COMPONENTS})
-if(Boost_FOUND)
-    # Use the Boost installation detected on this system
-    set(BOOSTLIB ${Boost_LIBRARIES})
-    set(BOOSTINC ${Boost_INCLUDE_DIRS})
-else()
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_COMPONENTS filesystem python regex thread system serialization)
+find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
+if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
     message(WARNING "Boost not found. The pre-packaged version will be built.")
     # The version bundled with Psi4
     set(BOOSTVER boost_1_53_0)
     # Link and include information
     set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
-    set(BOOSTINC ${PROJECT_BINARY_DIR}/boost)
-    foreach(component ${BOOST_COMPONENTS})
-        set(BOOSTLIB ${BOOSTLIB} "${BOOSTLIBDIR}/libboost_${component}.a")
+    set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost)
+    foreach(component ${Boost_COMPONENTS})
+        set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
     add_subdirectory(boost)
 endif()
-
+include_directories(${Boost_INCLUDE_DIRS})
 
 #
 # The location of compiled libraries and executables
@@ -137,14 +136,10 @@ set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints 
            parallel plugin psio qt sapt_solver scf_solver trans util adc ccdensity
            ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv_wrapper detci
            dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
-           sapt scf scfgrad stable thermo transqt transqt2)
-
-set(CMAKE_INCLUDE_CURRENT_DIR true)
-set(INCDIRS ${BOOSTINC};${PSIINC};${PYINC})
-include_directories(${INCDIRS})
+           sapt scf scfgrad stable thermo transqt transqt2
+)
 
 add_subdirectory(src)
-
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
