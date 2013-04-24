@@ -19,8 +19,6 @@
 
 #include <boost/foreach.hpp>
 
-#include <libdist_matrix/dist_mat.h>
-
 using namespace boost;
 
 namespace psi {
@@ -73,6 +71,34 @@ public:
 };
 
 
+MintsHelper::MintsHelper(Options & options, int print)
+    : options_(options), print_(print)
+{
+    init_helper();
+}
+
+MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
+    : options_(Process::environment.options), print_(0)
+{
+    init_helper(basis);
+}
+
+MintsHelper::MintsHelper()
+    : options_(Process::environment.options), print_(0)
+{
+    init_helper();
+}
+
+MintsHelper::MintsHelper(boost::shared_ptr<Wavefunction> wavefunction)
+    : options_(wavefunction->options())
+{
+    init_helper(wavefunction);
+}
+
+MintsHelper::~MintsHelper()
+{
+}
+
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
     if (wavefunction) {
@@ -91,11 +117,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 
     // Make sure molecule is valid.
     molecule_->update_geometry();
-
-    // Print the molecule.
-    if (print_)
-        molecule_->print();
-
+    //
     // Read in the basis set
     if (wavefunction && !basisset_)
         basisset_ = wavefunction->basisset();
@@ -104,24 +126,10 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
         basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
     }
 
-    // Print the basis set
-    if (print_)
-        basisset_->print_detail();
-
-    // Create integral factory
-    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
-
-    // Get the SO basis object.
-    sobasis_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
-
-    // Obtain dimensions from the sobasis
-    const Dimension dimension = sobasis_->dimension();
-
-    // Create a matrix factory and initialize it
-    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory());
-    factory_->init_with(dimension, dimension);
+    common_init();
 }
-void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
+
+void MintsHelper::init_helper(boost::shared_ptr<BasisSet> basis)
 {
     basisset_ = basis;
     molecule_ = basis->molecule();
@@ -130,6 +138,11 @@ void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
     // Make sure molecule is valid.
     molecule_->update_geometry();
 
+    common_init();
+}
+
+void MintsHelper::common_init()
+{
     // Print the molecule.
     if (print_)
         molecule_->print();
@@ -150,31 +163,9 @@ void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
     // Create a matrix factory and initialize it
     factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory());
     factory_->init_with(dimension, dimension);
-}
 
-MintsHelper::MintsHelper(Options & options, int print): options_(options), print_(print)
-{
-    init_helper();
-}
-
-MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
-    : options_(Process::environment.options), print_(0)
-{
-    init_helper_2(basis);
-}
-
-MintsHelper::MintsHelper() : options_(Process::environment.options), print_(0)
-{
-    init_helper();
-}
-
-MintsHelper::MintsHelper(boost::shared_ptr<Wavefunction> wavefunction) :options_(wavefunction->options())
-{
-    init_helper(wavefunction);
-}
-
-MintsHelper::~MintsHelper()
-{
+    // Integral cutoff
+    cutoff_ = Process::environment.options.get_double("INTS_TOLERANCE");
 }
 
 boost::shared_ptr<PetiteList> MintsHelper::petite_list() const
@@ -233,6 +224,7 @@ void MintsHelper::integrals()
     fprintf(outfile, "      Number of atomic orbitals:      %4d\n", basisset_->nao());
     fprintf(outfile, "      Number of basis functions:      %4d\n\n", basisset_->nbf());
     fprintf(outfile, "      Number of irreps:               %4d\n", sobasis_->nirrep());
+    fprintf(outfile, "      Integral cutoff                 %4.2e\n", cutoff_);
     fprintf(outfile, "      Number of functions per irrep: [");
     for (int i=0; i<sobasis_->nirrep(); ++i) {
         fprintf(outfile, "%4d ", sobasis_->nfunction_in_irrep(i));
@@ -266,7 +258,7 @@ void MintsHelper::integrals()
                      "        stored in file %d.\n\n", PSIF_OEI);
 
     // Open the IWL buffer where we will store the integrals.
-    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
+    IWL ERIOUT(psio_.get(), PSIF_SO_TEI, cutoff_, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
@@ -293,7 +285,7 @@ void MintsHelper::integrals_erf(double w)
 {
     double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
 
-    IWL ERIOUT(psio_.get(), PSIF_SO_ERF_TEI, 0.0, 0, 0);
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERF_TEI, cutoff_, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
@@ -325,7 +317,7 @@ void MintsHelper::integrals_erfc(double w)
 {
     double omega = (w == -1.0 ? options_.get_double("OMEGA_ERF") : w);
 
-    IWL ERIOUT(psio_.get(), PSIF_SO_ERFC_TEI, 0.0, 0, 0);
+    IWL ERIOUT(psio_.get(), PSIF_SO_ERFC_TEI, cutoff_, 0, 0);
     IWLWriter writer(ERIOUT);
 
     // Get ERI object
@@ -850,29 +842,6 @@ boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
 
 void MintsHelper::play()
 {
-#if defined(HAVE_MADNESS)
-    int pnrows = sqrt(WorldComm->nproc());
-    int pncols = WorldComm->nproc() / pnrows;
-
-    std::vector<int> pgrid_dimension_sizes(2);
-    pgrid_dimension_sizes[0] = pnrows;
-    pgrid_dimension_sizes[1] = pncols;
-
-    process_grid pgrid(pgrid_dimension_sizes);
-
-    Distributed_Matrix A(pgrid, 5, 5, 2, "A");
-    Distributed_Matrix B(pgrid, 5, 5, 2, "B");
-    Vector X(5);
-
-    A.fill(1.0);
-    fprintf(outfile, "Pre diag call\n");
-    A.print();
-    A.diagonalize(B, X);
-    fprintf(outfile, "Post diag call\n");
-    A.print();
-    B.print();
-    X.print();
-#endif
 }
 
 } // namespace psi

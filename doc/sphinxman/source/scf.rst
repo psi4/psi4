@@ -44,35 +44,47 @@ An illustrative example of using the SCF module is as follows::
 
 This will run a UHF computation for triplet molecular oxygen (the ground state)
 using a PK algorithm for the Electron Repulsion Integrals (ERI) and starting
-from a Superposition of Atomic Densities (SAD) guess. After printing all manner
-of titles, geometries, sizings, and algorithm choices, the SCF finally reaches
-the iterations::
+from a Superposition of Atomic Densities (SAD) guess. DF integrals are
+automatically used to converge the DF-SCF solution before the PK algorithm is
+activated.  After printing all manner of titles, geometries, sizings, and
+algorithm choices, the SCF finally reaches the iterations::
 
-                        Total Energy        Delta E     Density RMS
 
-    @UHF iter   0:  -149.76856421865352   -4.69109e+01   0.00000e+00
-    @UHF iter   1:  -149.59793338958522    1.70631e-01   5.72371e-02
-    @UHF iter   2:  -149.62408782458331   -2.61544e-02   8.04195e-03 DIIS
-    @UHF iter   3:  -149.62679515182390   -2.70733e-03   2.51542e-03 DIIS
-    @UHF iter   4:  -149.62726459105770   -4.69439e-04   1.06897e-03 DIIS
-    @UHF iter   5:  -149.62730549814114   -4.09071e-05   2.70311e-04 DIIS
-    @UHF iter   6:  -149.62730736371790   -1.86558e-06   5.94924e-05 DIIS
-    @UHF iter   7:  -149.62730740227752   -3.85596e-08   9.93250e-06 DIIS
-    @UHF iter   8:  -149.62730740325136   -9.73841e-10   1.88088e-06 DIIS
-    @UHF iter   9:  -149.62730740326214   -1.07718e-11   1.80706e-07 DIIS
-    @UHF iter  10:  -149.62730740326231   -1.70530e-13   2.19128e-08 DIIS
+                        Total Energy        Delta E     RMS |[F,P]|
 
-The algorithm takes 10 true iterations to converge the energy and density to 
-1.0E-8, plus the trivial iteration due to the SAD guess.
-The energy on the zero-th iteration is not variational due to the improper
-idempotence properties of the SAD guess, but the first true iteration is within
-2.0E-4 relative error of the final answer, highlighting the
-efficiency of the SAD guess. The energy and density then converge smoothly,
-assisted by Pulay's Direct Inversion of the Iterative Subspace (DIIS), which is
-activated by default. DIIS from a high-quality guess is usually sufficient to
-converge the nonlinear SCF equations, however enhanced control of DIIS
-parameters and additional convergence algorithms are available and detailed
-below. 
+   @UHF iter   0:  -149.76816019169962   -1.49768e+02   1.36000e-01
+   @UHF iter   1:  -149.59759112756984    1.70569e-01   2.42437e-02
+   @UHF iter   2:  -149.62372414554761   -2.61330e-02   6.10239e-03 DIIS
+   @UHF iter   3:  -149.62643112722810   -2.70698e-03   2.17299e-03 DIIS
+   @UHF iter   4:  -149.62690062294968   -4.69496e-04   5.66895e-04 DIIS
+   @UHF iter   5:  -149.62694151409750   -4.08911e-05   1.26359e-04 DIIS
+   @UHF iter   6:  -149.62694337042228   -1.85632e-06   1.84114e-05 DIIS
+   @UHF iter   7:  -149.62694340901407   -3.85918e-08   2.91692e-06 DIIS
+   @UHF iter   8:  -149.62694340999002   -9.75945e-10   3.11857e-07 DIIS
+
+   DF guess converged.
+   ...
+
+   @UHF iter   9:  -149.62730705470665   -3.63645e-04   8.63718e-05 DIIS
+   @UHF iter  10:  -149.62730737347948   -3.18773e-07   1.50227e-05 DIIS
+   @UHF iter  11:  -149.62730738537107   -1.18916e-08   3.80497e-06 DIIS
+   @UHF iter  12:  -149.62730738624032   -8.69250e-10   7.06690e-07 DIIS
+
+The first set of iterations are from the DF portion of the computation, the
+second set use the exact (but much slower) PK algorithm. Within the DF portion
+of the computation, the zeroth-iteration uses a non-idempotent density matrix
+obtained from the SAD guess, so the energy is unphysically low. However, the
+first true iteration is quite close to the final DF energy, highlighting the
+efficiency of the SAD guess. Pulay's DIIS procedure is then used to accelerate
+SCF convergence, with the DF phase reaching convergence in eight true
+iterations. When used together, SAD and DIIS are usually sufficient to converge
+the SCF for all but the most difficult systems. Additional convergence
+techniques are available for more difficult cases, and are detailed below. At
+this point, the code switches on the requested PK integrals technology, which
+requires only four full iterations to reach convergence, starting from the DF
+guess. This hybrid DF/conventional procedure can significantly accelerate SCF
+computations requiring exact integrals, especially when used in concert with the
+integral-direct conventional algorithm.
 
 After the iterations are completed, a number of one-electron properties are
 printed, and some bookkeeping is performed to set up possible correlated
@@ -487,11 +499,10 @@ OUT_OF_CORE
     ERIs. Overcomes the memory bottleneck of the current PK algorithm. Integrals are
     generated only once, and symmetry is utilized to reduce number of integrals. 
 DIRECT
-    An in-core repeated integral evaluation algorithm using
-    exact ERIs. Symmetry is used to reduce the number of integrals, and no disk is
-    used. However, integral regeneration is quite costly, implying that this
-    algorithm should be used only if there is not enough disk space for the
-    ``OUT_OF_CORE`` algorithm. 
+    A threaded, sieved, integral-direct algorithm, with full permutational
+    symmetry. This algorithm is brand new, but seems to be reasonably fast up to
+    1500 basis function, uses zero disk, and can obtain significant speedups with
+    negligible error loss if the |scf__ints_tolerance| value is set to 1.0E-8 or so.
 DF [:ref:`Default <table:conv_scf>`]
     A density-fitted algorithm designed for computations with thousands of basis
     functions. This algorithm is highly optimized, and is threaded with a mixture of
@@ -508,6 +519,20 @@ identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications).
 
+Recently, we have added the automatic capability to use the extremely fast DF
+code for intermediate convergence of the orbitals, for |scf__scf_type| other
+than ``DF``. At the moment, the code defaults to cc-pVDZ-JKFIT as the
+auxiliary basis, unless the user specifies |scf__df_basis_scf| manually. For
+some atoms, cc-pVDZ-JKFIT is not defined, so this procedure will fail. In these
+cases, you will see an error message of the form::
+
+    RuntimeError: sanity check failed! Gaussian94BasisSetParser::parser: 
+    Unable to find the basis set for HE
+
+This failure can be fixed by either setting |scf__df_basis_scf| to an auxiliary
+basis set defined for all atoms in the system, or by setting |scf__df_scf_guess|
+to false, which disables this acceleration entirely.
+
 Convergence and Algorithm Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -522,13 +547,13 @@ Convergence and Algorithm Defaults
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 8                    | 8                    |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 8                    | 8                    |                 |
+    |                    | frequency [#f7]_   | 8                    | 8                    |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
     | SCF of post-HF     | energy             | 8                    | 8                    | PK [#f3]_       |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | optimization       | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
-    |                    | frequency          | 10                   | 10                   |                 |
+    |                    | frequency [#f7]_   | 10                   | 10                   |                 |
     +                    +--------------------+----------------------+----------------------+                 +
     |                    | CC property [#f2]_ | 10                   | 10                   |                 |
     +--------------------+--------------------+----------------------+----------------------+-----------------+
@@ -544,7 +569,7 @@ Convergence and Algorithm Defaults
     +                    +--------------------+----------------------+-------------------------+
     |                    | optimization       | 8                    |                         |
     +                    +--------------------+----------------------+-------------------------+
-    |                    | frequency          | 8                    |                         |
+    |                    | frequency [#f7]_   | 8                    |                         |
     +                    +--------------------+----------------------+-------------------------+
     |                    | CC property [#f2]_ | 8                    |                         |
     +--------------------+--------------------+----------------------+-------------------------+
@@ -573,6 +598,12 @@ Convergence and Algorithm Defaults
    according to the quantum chemical method and so its default value is set
    by each module individually.
 
+.. [#f7] For frequency computations by finite difference of energies,
+   convergence criteria are tightened further still to 10 for
+   |scf__e_convergence| and |scf__d_convergence| for SCF of HF or DFT, 11
+   for |scf__e_convergence| and |scf__d_convergence| for SCF of post-HF,
+   and 10 for E_CONVERGENCE for post-HF of post-HF.
+
 Recommendations
 ~~~~~~~~~~~~~~~
 
@@ -587,12 +618,14 @@ practical calculations:
   number of electrons, unlike some other programs). For instance, we have found
   that a simple SAD guess is often as good as doing a full SCF in a 3-21G basis
   and then performing a cast-up, at a fraction of the cost.  However, SAD and
-  DOCC/SOCC arrays do not play very well together at the moment. 
+  DOCC/SOCC arrays do not play very well together at the moment. Also, the SAD
+  UHF guess is very slow in large basis sets, so you may want to cast up for
+  >TZ.
 * For wall time, ``DF`` may be a factor of ten or more faster than the exact
   integral technologies available in PSI4. 
   Use ``DF`` unless you need absolute accuracy or do not
   have a -JKFIT auxiliary set for your primary basis/atom type. Then use
-  ``OUT_OF_CORE`` unless you run out of disk space.
+  ``DIRECT``.
 * Don't mess with the DIIS convergence options unless convergence is a problem.
   We have optimized the parameters for efficiency over a wide array of system
   types.  
@@ -603,13 +636,16 @@ The "best-practice" input file for HF is::
     memory 1 GB # As much as you've got, the DF algorithm can use
 
     molecule {
-    He
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
     }
 
     set {
     basis cc-pvdz
     scf_type df
     guess sad
+    ints_tolerance 1.0E-10 # Even this is epically tight, 1.0E-8 is OK
     }
 
     energy('scf')

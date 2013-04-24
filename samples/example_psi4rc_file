@@ -31,7 +31,10 @@ psi4_io.set_default_path('/scratch/parrish/')
 #psi4_io.set_specific_path(32, './')
 
 # Set a specific file number to be retained where it lies
-# and not be removed by psiclean
+# and not be removed by psiclean.  Note that saving files
+# in this way is only suitable for single task input files
+# and may cause problems for input files with multiple 
+# tasks
 #psi4_io.set_specific_retention(32, True)
 
 

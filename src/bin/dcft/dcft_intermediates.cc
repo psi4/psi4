@@ -10,7 +10,7 @@ namespace psi{ namespace dcft{
  * Builds the intermediate tensors
  */
 void
-DCFTSolver::build_intermediates()
+DCFTSolver::build_cumulant_intermediates()
 {
     dcft_timer_on("DCFTSolver::build_intermediates()");
 
@@ -384,7 +384,7 @@ DCFTSolver::build_intermediates()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+    if (exact_tau_) {
         form_density_weighted_fock();
     }
     compute_F_intermediate();

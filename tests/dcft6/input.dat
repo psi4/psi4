@@ -17,7 +17,7 @@ refdcftx    = -150.185859013565732  #TEST
 #CEPA0
 refdcftcepa = -150.188254445548893  #TEST
 
-molecule HF {
+molecule OO {
 0 3
 O
 O 1 R

@@ -137,15 +137,6 @@ if (reference_ == "RESTRICTED") {
 
     // If LINEQ FAILED!
     if (pcg_conver != 0) {
-       // Build zvector again
-       for(int x = 0; x < nidpA; x++) {
-	  int a = idprowA[x];
-	  int i = idpcolA[x];
-	  int h = idpirrA[x];
-	  double value = FockA->get(h, a + occpiA[h], a + occpiA[h]) - FockA->get(h, i, i);  
-	  zvectorA->set(x, -wogA->get(x) / (2.0*value));
-       }
-
        fprintf(outfile,"\tWarning!!! MO Hessian matrix is near-singular, switching to MSD. \n");
        fflush(outfile);
     } // end if pcg_conver = 0

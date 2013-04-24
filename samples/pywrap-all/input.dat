@@ -30,6 +30,7 @@ optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2
 banner('Test [2] database(energy())')
 set basis_guess sto-3g
 set mp2_type conv
+set df_scf_guess false
 db('mp2','RGC10',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])
 revoke_global_option_changed('BASIS_GUESS')
 

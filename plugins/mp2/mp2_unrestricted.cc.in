@@ -5,7 +5,7 @@
 #include <libpsio/psio.h>
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
-#include "ccfiles.h"
+#include "psifiles.h"
 #include "libiwl/iwl.hpp"
 #define EXTERN
 #include "globals.h"

@@ -2,7 +2,7 @@
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
+#include <liboptions/liboptions_python.h>
 #include <psi4-dec.h>
 #include "superfunctional.h"
 

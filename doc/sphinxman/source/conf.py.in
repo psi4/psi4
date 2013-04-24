@@ -312,18 +312,18 @@ rst_prolog = """
 """
 
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
-extlinks = {'source':    ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
-            'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
-            'srcbasis':  ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', ''),
-            'srcplugin': ('http://sirius.chem.vt.edu/trac/browser/plugins/%s', ''),
-            'srcdb':     ('http://sirius.chem.vt.edu/trac/browser/lib/databases/%s.py', '') }
+extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'),
+            'srcsample': ('https://github.com/psi4/psi4/blob/master/samples/%s/input.dat', ''),
+            'srcbasis':  ('https://github.com/psi4/psi4/blob/master/lib/basis/%s.gbs', ''),
+            'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
+            'srcdb':     ('https://github.com/psi4/psi4/blob/master/lib/databases/%s.py', '') }
 
 # Uncomment these lines for named releases
-#extlinks = {'source':    ('https://github.com/psi4/SUBSTITITE_HERE/blob/master/%s', 'psi4/'),
-#            'srcsample': ('https://github.com/psi4/SUBSTITITE_HERE/blob/master/samples/%s/input.dat', ''),
-#            'srcbasis':  ('https://github.com/psi4/SUBSTITITE_HERE/blob/master/lib/basis/%s.gbs', ''),
-#            'srcplugin': ('https://github.com/psi4/SUBSTITITE_HERE/blob/master/tests/%s', ''),
-#            'srcdb':     ('https://github.com/psi4/SUBSTITITE_HERE/blob/master/lib/databases/%s.py', '') }
+#extlinks = {'source':    ('https://github.com/psi4/SUBSTITUTE_HERE/blob/master/%s', 'psi4/'),
+#            'srcsample': ('https://github.com/psi4/SUBSTITUTE_HERE/blob/master/samples/%s/input.dat', ''),
+#            'srcbasis':  ('https://github.com/psi4/SUBSTITUTE_HERE/blob/master/lib/basis/%s.gbs', ''),
+#            'srcplugin': ('https://github.com/psi4/SUBSTITUTE_HERE/blob/master/plugins/%s', ''),
+#            'srcdb':     ('https://github.com/psi4/SUBSTITUTE_HERE/blob/master/lib/databases/%s.py', '') }
 
 # corrects baseline for inline math + other custom stuff for inline math, such as non-default math fonts etc.
 pngmath_latex_preamble=r'\usepackage[active]{preview}'

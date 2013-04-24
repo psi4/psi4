@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta3+])
+define([psi_version],[4.0.0-beta4+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -688,11 +688,11 @@ AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
 AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
 AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
 
-AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
-  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
-    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-  ])
-])
+#AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
+#  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
+#    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
+#  ])
+#])
 
 AC_CHECK_LIB(m,erf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ERF,1)])
 
@@ -948,11 +948,8 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
-          src/lib/libmatrix/Makefile
-          src/lib/libdist_matrix/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
-          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
@@ -960,20 +957,16 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-          src/lib/libsmartptr/Makefile
-          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
-          src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
           src/bin/mp2/Makefile
-          src/bin/clag/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
@@ -984,16 +977,14 @@ AC_CONFIG_FILES([
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cceom/Makefile
-          src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/dftsapt/Makefile
-          src/bin/mints/Makefile
-          src/bin/deriv/Makefile
+          src/bin/mints_wrapper/Makefile
+          src/bin/deriv_wrapper/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
@@ -1017,6 +1008,8 @@ AC_CONFIG_FILES([
           tests/dcft4/Makefile
           tests/dcft5/Makefile
           tests/dcft6/Makefile
+          tests/dcft7/Makefile
+          tests/dcft-grad1/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile
@@ -1034,6 +1027,7 @@ AC_CONFIG_FILES([
           tests/opt4/Makefile
           tests/opt5/Makefile
           tests/opt6/Makefile
+          tests/opt7/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
@@ -1053,6 +1047,7 @@ AC_CONFIG_FILES([
           tests/dfmp2-1/Makefile
           tests/dfmp2-2/Makefile
           tests/dfmp2-3/Makefile
+          tests/dfmp2-4/Makefile
           tests/pywrap-db1/Makefile
           tests/pywrap-db2/Makefile
           tests/pywrap-cbs1/Makefile

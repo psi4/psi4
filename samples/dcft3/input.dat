@@ -16,6 +16,7 @@ set globals {
     ao_basis    disk
     algorithm   twostep
     basis       6-31G**
+    df_scf_guess false
 }
 
 energy('dcft')
