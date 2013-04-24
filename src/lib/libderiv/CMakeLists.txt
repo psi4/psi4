@@ -23,6 +23,7 @@ foreach(abcval ${ABC})
     endforeach()
 endforeach()
 add_library(deriv STATIC ${LD_SRC})
+add_dependencies(deriv int)
 
 #
 # Build the compiler
