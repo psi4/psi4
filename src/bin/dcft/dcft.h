@@ -45,6 +45,13 @@ protected:
 
     void finalize();
     void transform_integrals();
+    void transform_core_integrals();
+    void sort_OOOO_integrals();
+    void sort_OOVV_integrals();
+    void sort_VVVV_integrals();
+    void sort_OVOV_integrals();
+    void sort_OVVV_integrals();
+    void sort_OOOV_integrals();
     void init();
     void compute_dcft_energy();
     void compute_cepa0_energy();
