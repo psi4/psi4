@@ -1,0 +1,966 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta4+ Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. A. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+    Process ID:  83061
+    PSI4DATADIR: /Users/alex/psi4/lib
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
+#! Only simultaneous algorithm is tested.
+
+memory 250 mb
+
+refscf      = -149.65367728294785   #TEST
+refmp2      = -150.17316961260252   #TEST
+
+# ODC-06
+refdcftscf  = -149.074169972872937  #TEST
+refdcft     = -150.194310452116127  #TEST
+
+# ODC-12                             #TEST
+refdcftxscf = -149.090539944500989  #TEST
+refdcftx    = -150.189699136183066  #TEST
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set globals {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   simultaneous
+    basis       cc-pcvtz
+}
+
+set dcft_functional odc-06
+energy('dcft')
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, get_variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcft, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=none)");                #TEST
+
+set dcft_functional odc-12
+energy('dcft')
+
+compare_values(refdcftxscf, get_variable("DCFT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=none)");     #TEST
+compare_values(refdcftx, get_variable("DCFT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=none)");                #TEST
+
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on Silverblade.local
+*** at Wed Apr 24 14:49:04 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -1.000000000000
+           O          0.000000000000     0.000000000000     1.000000000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =   32.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 16
+  Nalpha       = 9
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PCVTZ
+    Number of shells: 30
+    Number of basis function: 86
+    Number of Cartesian functions: 98
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        19      19       0       0       0       0
+     B1g        4       4       0       0       0       0
+     B2g       10      10       0       0       0       0
+     B3g       10      10       0       0       0       0
+     Au         4       4       0       0       0       0
+     B1u       19      19       0       0       0       0
+     B2u       10      10       0       0       0       0
+     B3u       10      10       0       0       0       0
+   -------------------------------------------------------
+    Total      86      86       9       7       7       2
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              30
+      Number of SO shells:              15
+      Number of primitives:             62
+      Number of atomic orbitals:        98
+      Number of basis functions:        86
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  19    4   10   10    4   19   10   10 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Number of shells: 48
+    Number of basis function: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.6797415199E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+	SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+   @UHF iter   1:  -129.29465917244488   -1.29295e+02   3.22311e-01 
+   @UHF iter   2:  -139.10214886389588   -9.80749e+00   1.36278e-01 DIIS
+   @UHF iter   3:  -148.87869957213735   -9.77655e+00   4.97719e-02 DIIS
+   @UHF iter   4:  -149.63249426556638   -7.53795e-01   6.97837e-03 DIIS
+   @UHF iter   5:  -149.65265747870376   -2.01632e-02   7.48219e-04 DIIS
+   @UHF iter   6:  -149.65299712707463   -3.39648e-04   1.78513e-04 DIIS
+   @UHF iter   7:  -149.65302304437301   -2.59173e-05   3.43589e-05 DIIS
+   @UHF iter   8:  -149.65302391536019   -8.70987e-07   4.45719e-06 DIIS
+   @UHF iter   9:  -149.65302393224860   -1.68884e-08   4.31110e-07 DIIS
+   @UHF iter  10:  -149.65302393236635   -1.17751e-10   7.29229e-08 DIIS
+   @UHF iter  11:  -149.65302393237093   -4.57590e-12   1.88251e-08 DIIS
+   @UHF iter  12:  -149.65302393237141   -4.83169e-13   4.45568e-09 DIIS
+   @UHF iter  13:  -149.65302393237138    2.84217e-14   7.95338e-10 DIIS
+   @UHF iter  14:  -149.65302393237121    1.70530e-13   1.11505e-10 DIIS
+   @UHF iter  15:  -149.65302393237144   -2.27374e-13   1.58804e-11 DIIS
+   @UHF iter  16:  -149.65302393237147   -2.84217e-14   2.62435e-12 DIIS
+   @UHF iter  17:  -149.65302393237133    1.42109e-13   4.91260e-13 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              30
+      Number of SO shells:              15
+      Number of primitives:             62
+      Number of atomic orbitals:        98
+      Number of basis functions:        86
+
+      Number of irreps:                  8
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  19    4   10   10    4   19   10   10 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 857167 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     620] index = [             0,192510]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          0E+00
+
+   @UHF iter  18:  -149.65367288698874   -6.48955e-04   1.49820e-04 DIIS
+   @UHF iter  19:  -149.65367722260785   -4.33562e-06   1.51286e-05 DIIS
+   @UHF iter  20:  -149.65367727814740   -5.55395e-08   3.72170e-06 DIIS
+   @UHF iter  21:  -149.65367728257942   -4.43202e-09   7.01207e-07 DIIS
+   @UHF iter  22:  -149.65367728290178   -3.22359e-10   1.97067e-07 DIIS
+   @UHF iter  23:  -149.65367728294379   -4.20073e-11   5.64888e-08 DIIS
+   @UHF iter  24:  -149.65367728294757   -3.78009e-12   1.08418e-08 DIIS
+   @UHF iter  25:  -149.65367728294768   -1.13687e-13   1.07175e-09 DIIS
+   @UHF iter  26:  -149.65367728294763    5.68434e-14   2.07753e-10 DIIS
+   @UHF iter  27:  -149.65367728294763    0.00000e+00   2.45488e-11 DIIS
+   @UHF iter  28:  -149.65367728294754    8.52651e-14   5.32675e-12 DIIS
+   @UHF iter  29:  -149.65367728294768   -1.42109e-13   7.71930e-13 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.987006734E-02
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.029870067E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1Ag   -20.720693     1B1u  -20.719199     2Ag    -1.857588  
+	   2B1u   -1.147190     1B2u   -0.903173     1B3u   -0.903173  
+	   3Ag    -0.812143     1B2g   -0.480847     1B3g   -0.480847  
+
+	Alpha Virtual:                                                        
+
+	   3B1u    0.456848     2B3u    0.661966     2B2u    0.661966  
+	   4Ag     0.700746     5Ag     0.736877     2B2g    0.798297  
+	   2B3g    0.798297     4B1u    0.934468     5B1u    1.294683  
+	   1B1g    1.410878     6Ag     1.410878     3B3u    1.642980  
+	   3B2u    1.642980     1Au     1.926335     6B1u    1.926335  
+	   7Ag     2.350885     7B1u    2.473959     3B2g    2.533963  
+	   3B3g    2.533963     4B2u    3.758443     4B3u    3.758443  
+	   8Ag     4.054153     4B3g    4.127305     4B2g    4.127305  
+	   9Ag     4.629772     8B1u    4.757626     2B1g    4.934414  
+	  10Ag     4.934414     5B3u    5.147096     5B2u    5.147096  
+	   6B2u    5.207130     6B3u    5.207130     5B3g    5.663376  
+	   5B2g    5.663376    11Ag     5.915955     9B1u    6.143614  
+	  10B1u    6.196397     3B1g    6.489150    12Ag     6.489150  
+	  11B1u    6.490437     2Au     6.490437     3Au     6.745606  
+	  12B1u    6.745606     6B2g    6.758688     6B3g    6.758688  
+	   7B2u    7.104799     7B3u    7.104799    13Ag     8.255031  
+	   7B2g    8.280988     7B3g    8.280988    13B1u   10.563284  
+	   8B2u   25.804117     8B3u   25.804117     8B3g   26.111344  
+	   8B2g   26.111344    14B1u   26.693303    14Ag    26.844820  
+	  15Ag    28.480459    15B1u   29.264886    16Ag    43.653236  
+	   4B1g   43.653236    17Ag    43.667021     9B2u   43.696920  
+	   9B3u   43.696920    16B1u   43.713001     4Au    43.713001  
+	   9B2g   43.891605     9B3g   43.891605    17B1u   45.126952  
+	  10B2u  138.046258    10B3u  138.046258    10B2g  138.273431  
+	  10B3g  138.273431    18B1u  138.923484    18Ag   138.997772  
+	  19Ag   148.312478    19B1u  149.957793  
+
+	Beta Occupied:                                                        
+
+	   1Ag   -20.668520     1B1u  -20.666223     2Ag    -1.749125  
+	   2B1u   -0.941842     3Ag    -0.735793     1B2u   -0.658607  
+	   1B3u   -0.658607  
+
+	Beta Virtual:                                                         
+
+	   1B2g    0.179248     1B3g    0.179248     3B1u    0.486962  
+	   4Ag     0.700525     2B2u    0.714166     2B3u    0.714166  
+	   5Ag     0.761262     2B2g    0.898322     2B3g    0.898322  
+	   4B1u    1.004004     5B1u    1.336539     1B1g    1.460834  
+	   6Ag     1.460834     3B2u    1.712865     3B3u    1.712865  
+	   6B1u    2.025454     1Au     2.025454     7Ag     2.385724  
+	   7B1u    2.496188     3B3g    2.586066     3B2g    2.586066  
+	   4B2u    3.870683     4B3u    3.870683     8Ag     4.079587  
+	   4B3g    4.229786     4B2g    4.229786     9Ag     4.673500  
+	   8B1u    4.803585    10Ag     4.969376     2B1g    4.969376  
+	   5B3u    5.184033     5B2u    5.184033     6B2u    5.266404  
+	   6B3u    5.266404     5B2g    5.733192     5B3g    5.733192  
+	  11Ag     5.986382     9B1u    6.177330    10B1u    6.235652  
+	  11B1u    6.563732     2Au     6.563732     3B1g    6.616303  
+	  12Ag     6.616303     6B2g    6.823096     6B3g    6.823096  
+	  12B1u    6.846637     3Au     6.846637     7B3u    7.163785  
+	   7B2u    7.163785    13Ag     8.277347     7B2g    8.320332  
+	   7B3g    8.320332    13B1u   10.609186     8B2u   25.859160  
+	   8B3u   25.859160     8B2g   26.165829     8B3g   26.165829  
+	  14B1u   26.712254    14Ag    26.867372    15Ag    28.510788  
+	  15B1u   29.293521    16Ag    43.689739    17Ag    43.705286  
+	   4B1g   43.705286     9B2u   43.726805     9B3u   43.726805  
+	  16B1u   43.764904     4Au    43.764904     9B2g   43.921398  
+	   9B3g   43.921398    17B1u   45.149393    10B2u  138.059683  
+	  10B3u  138.059683    10B2g  138.286808    10B3g  138.286808  
+	  18B1u  138.928984    18Ag   139.003355    19Ag   148.323082  
+	  19B1u  149.967937  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+	SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:  -149.65367728294768
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             32.0000000000000000
+    One-Electron Energy =                -269.2037835000248265
+    Two-Electron Energy =                  87.5501062170771434
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                       -149.6536772829476831
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Silverblade.local at Wed Apr 24 14:49:08 2013
+Module time:
+	user time   =       3.13 seconds =       0.05 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       3.13 seconds =       0.05 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on Silverblade.local
+*** at Wed Apr 24 14:49:08 2013
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	***********************************************************************************
+
+	Transforming two-electron integrals...
+	Computing MP2 amplitude guess...
+
+	*Total Hartree-Fock energy        = -149.653677282947683
+	 Alpha - Alpha MP2 energy         =   -0.068673352579478
+	 Alpha - Beta  MP2 energy         =   -0.389193273762647
+	 Beta  - Beta  MP2 energy         =   -0.061625703312432
+	 Total MP2 correlation energy     =   -0.519492329654557
+	*Total MP2 energy                 = -150.173169612602265
+
+	DCFT Functional:    		 ODC-06
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 NONE
+
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        7.072e-02         9.535e-04     -7.334e-03   -150.180503249406627      *
+	* 2        1.681e-02         2.417e-04     -1.134e-02   -150.191838950810705      *
+	* 3        8.252e-03         9.175e-05     -1.264e-03   -150.193102540651267      *
+	* 4        2.775e-03         4.330e-05     -7.295e-04   -150.193832062202262      *
+	* 5        1.636e-03         2.248e-05     -2.194e-04   -150.194051444148641      *
+	* 6        6.870e-04         1.256e-05     -1.261e-04   -150.194177521543054  S   *
+	* 7        3.736e-04         7.247e-06     -5.759e-05   -150.194235111767881  S   *
+	* 8        1.784e-04         4.287e-06     -3.295e-05   -150.194268064208217  S   *
+	* 9        9.570e-05         2.571e-06     -1.767e-05   -150.194285731217235  S/E *
+	* 10       4.121e-06         1.172e-07     -2.465e-05   -150.194310383063709  S/E *
+	* 11       4.004e-06         1.038e-07      2.564e-07   -150.194310126623094  S/E *
+	* 12       1.802e-06         5.472e-08     -1.217e-07   -150.194310248338894  S/E *
+	* 13       3.288e-07         1.528e-08     -1.523e-07   -150.194310400680109  S/E *
+	* 14       8.064e-08         4.730e-09     -6.915e-08   -150.194310469835045  S/E *
+	* 15       2.013e-08         1.481e-09      1.373e-08   -150.194310456107132  S/E *
+	* 16       9.799e-09         4.254e-10      2.313e-09   -150.194310453794628  S/E *
+	* 17       3.342e-09         1.217e-10      1.466e-09   -150.194310452328153  S/E *
+	* 18       8.745e-10         4.354e-11      4.628e-10   -150.194310451865306  S/E *
+	* 19       9.557e-11         1.033e-11     -1.908e-10   -150.194310452056129  S/E *
+	* 20       5.279e-11         3.413e-12     -4.766e-11   -150.194310452103792  S/E *
+	* 21       1.492e-11         9.810e-13     -1.501e-11   -150.194310452118799  S/E *
+	* 22       6.881e-12         3.688e-13      2.757e-12   -150.194310452116042  S/E *
+	* 23       2.872e-12         1.231e-13     -1.990e-13   -150.194310452116241  S/E *
+	* 24       8.841e-13         4.197e-14      8.527e-14   -150.194310452116156  S/E *
+	*=================================================================================*
+
+	*DCFT SCF Energy                                 = -149.074169972872966
+	*DCFT Lambda Energy                              =   -1.120140479243183
+	*DCFT Total Energy                               = -150.194310452116156
+
+	Orbital occupations:
+		Alpha occupied orbitals
+		   1Ag       0.9995     1B1u      0.9995     2Ag       0.9920     2B1u      0.9905  
+		   1B3u      0.9881     1B2u      0.9881     1B3g      0.9835     1B2g      0.9835  
+		   3Ag       0.9825  
+
+		Beta occupied orbitals
+		   1Ag       0.9994     1B1u      0.9994     2Ag       0.9899     2B1u      0.9831  
+		   3Ag       0.9817     1B2u      0.9676     1B3u      0.9676  
+
+		Alpha virtual orbitals
+		   3B1u      0.0132     2B2u      0.0057     2B3u      0.0057     2B2g      0.0051  
+		   2B3g      0.0051     4Ag       0.0049     3B3u      0.0046     3B2u      0.0046  
+		   4B1u      0.0045     1B1g      0.0036     5Ag       0.0036     1Au       0.0028  
+		   5B1u      0.0028     6Ag       0.0023     6B1u      0.0022     7Ag       0.0017  
+		   7B1u      0.0015     4B3u      0.0015     4B2u      0.0015     3B2g      0.0012  
+		   3B3g      0.0012     4B3g      0.0010     4B2g      0.0010     8Ag       0.0008  
+		   9Ag       0.0007     8B1u      0.0007     2B1g      0.0006    10Ag       0.0006  
+		  11Ag       0.0006     5B2u      0.0006     5B3u      0.0006     5B3g      0.0004  
+		   5B2g      0.0004     9B1u      0.0004     2Au       0.0004    10B1u      0.0004  
+		   3Au       0.0003    11B1u      0.0003     3B1g      0.0003    12Ag       0.0003  
+		   6B2u      0.0003     6B3u      0.0003    12B1u      0.0003     7B2u      0.0002  
+		   7B3u      0.0002     6B2g      0.0002     6B3g      0.0002    13Ag       0.0001  
+		   7B3g      0.0001     7B2g      0.0001     8B2u      0.0001     8B3u      0.0001  
+		  13B1u      0.0001    14Ag       0.0001    14B1u      0.0001     8B2g      0.0001  
+		   8B3g      0.0001    15Ag       0.0001    15B1u      0.0001    16Ag       0.0000  
+		  16B1u      0.0000     9B2u      0.0000     9B3u      0.0000     9B3g      0.0000  
+		   9B2g      0.0000    17Ag       0.0000     4B1g      0.0000    17B1u      0.0000  
+		   4Au       0.0000    18B1u      0.0000    18Ag       0.0000    10B3u      0.0000  
+		  10B2u      0.0000    10B2g      0.0000    10B3g      0.0000    19Ag       0.0000  
+		  19B1u      0.0000  
+
+		Beta virtual orbitals
+		   1B2g      0.0222     1B3g      0.0222     3B1u      0.0110     4Ag       0.0052  
+		   2B2g      0.0047     2B3g      0.0047     2B3u      0.0035     2B2u      0.0035  
+		   4B1u      0.0028     1B1g      0.0027     5Ag       0.0027     3B3u      0.0023  
+		   3B2u      0.0023     5B1u      0.0022     6Ag       0.0021     6B1u      0.0014  
+		   7Ag       0.0014     8Ag       0.0009     1Au       0.0008     7B1u      0.0008  
+		   4B3u      0.0007     4B2u      0.0007     8B1u      0.0007     3B2g      0.0007  
+		   3B3g      0.0007     9Ag       0.0007     4B3g      0.0005     4B2g      0.0005  
+		  10Ag       0.0005     5B2u      0.0005     5B3u      0.0005     9B1u      0.0004  
+		   2B1g      0.0003    11Ag       0.0003     3B1g      0.0003    12Ag       0.0003  
+		   5B3g      0.0003     5B2g      0.0003     6B2u      0.0002     6B3u      0.0002  
+		  10B1u      0.0002     2Au       0.0002    11B1u      0.0002     3Au       0.0002  
+		  12B1u      0.0002     7B2u      0.0002     7B3u      0.0002    13Ag       0.0001  
+		   6B2g      0.0001     6B3g      0.0001    14Ag       0.0001    13B1u      0.0001  
+		  15Ag       0.0001     7B3g      0.0001     7B2g      0.0001    14B1u      0.0001  
+		   8B2u      0.0001     8B3u      0.0001    15B1u      0.0001     8B2g      0.0001  
+		   8B3g      0.0001    16Ag       0.0000    16B1u      0.0000     9B3u      0.0000  
+		   9B2u      0.0000    17B1u      0.0000     9B3g      0.0000     9B2g      0.0000  
+		  17Ag       0.0000    18Ag       0.0000    10B3u      0.0000    10B2u      0.0000  
+		  10B2g      0.0000    10B3g      0.0000    18B1u      0.0000    19Ag       0.0000  
+		   4B1g      0.0000    19B1u      0.0000     4Au       0.0000  
+
+
+*** tstop() called on Silverblade.local at Wed Apr 24 14:51:42 2013
+Module time:
+	user time   =     101.76 seconds =       1.70 minutes
+	system time =      28.72 seconds =       0.48 minutes
+	total time  =        154 seconds =       2.57 minutes
+Total time:
+	user time   =     104.89 seconds =       1.75 minutes
+	system time =      28.86 seconds =       0.48 minutes
+	total time  =        158 seconds =       2.63 minutes
+
+*** tstart() called on Silverblade.local
+*** at Wed Apr 24 14:51:42 2013
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Full point group: D_inf_h
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -1.000000000000
+           O          0.000000000000     0.000000000000     1.000000000000
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =   32.000000000000000
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 16
+  Nalpha       = 9
+  Nbeta        = 7
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-12
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PCVTZ
+    Number of shells: 30
+    Number of basis function: 86
+    Number of Cartesian functions: 98
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag        19      19       0       0       0       0
+     B1g        4       4       0       0       0       0
+     B2g       10      10       0       0       0       0
+     B3g       10      10       0       0       0       0
+     Au         4       4       0       0       0       0
+     B1u       19      19       0       0       0       0
+     B2u       10      10       0       0       0       0
+     B3u       10      10       0       0       0       0
+   -------------------------------------------------------
+    Total      86      86       9       7       7       2
+   -------------------------------------------------------
+
+  Starting with a DF guess...
+
+ OEINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              30
+      Number of SO shells:              15
+      Number of primitives:             62
+      Number of atomic orbitals:        98
+      Number of basis functions:        86
+
+      Number of irreps:                  8
+      Number of functions per irrep: [  19    4   10   10    4   19   10   10 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+  ==> Integral Setup <==
+
+  ==> DFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory (MB):               178
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          0E+00
+    Fitting Condition:       1E-12
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: CC-PVDZ-JKFIT
+    Number of shells: 48
+    Number of basis function: 140
+    Number of Cartesian functions: 162
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 1.6797415199E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+	Occupation by irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+	SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+   @UHF iter   1:  -129.29465917244488   -1.29295e+02   3.22311e-01 
+   @UHF iter   2:  -139.10214886389588   -9.80749e+00   1.36278e-01 DIIS
+   @UHF iter   3:  -148.87869957213729   -9.77655e+00   4.97719e-02 DIIS
+   @UHF iter   4:  -149.63249426556638   -7.53795e-01   6.97837e-03 DIIS
+   @UHF iter   5:  -149.65265747870365   -2.01632e-02   7.48219e-04 DIIS
+   @UHF iter   6:  -149.65299712707471   -3.39648e-04   1.78513e-04 DIIS
+   @UHF iter   7:  -149.65302304437304   -2.59173e-05   3.43589e-05 DIIS
+   @UHF iter   8:  -149.65302391536022   -8.70987e-07   4.45719e-06 DIIS
+   @UHF iter   9:  -149.65302393224854   -1.68883e-08   4.31110e-07 DIIS
+   @UHF iter  10:  -149.65302393236635   -1.17808e-10   7.29229e-08 DIIS
+   @UHF iter  11:  -149.65302393237101   -4.66116e-12   1.88251e-08 DIIS
+   @UHF iter  12:  -149.65302393237130   -2.84217e-13   4.45568e-09 DIIS
+   @UHF iter  13:  -149.65302393237130    0.00000e+00   7.95338e-10 DIIS
+   @UHF iter  14:  -149.65302393237135   -5.68434e-14   1.11505e-10 DIIS
+   @UHF iter  15:  -149.65302393237138   -2.84217e-14   1.58805e-11 DIIS
+   @UHF iter  16:  -149.65302393237155   -1.70530e-13   2.62392e-12 DIIS
+   @UHF iter  17:  -149.65302393237138    1.70530e-13   4.92500e-13 DIIS
+
+  DF guess converged.
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              30
+      Number of SO shells:              15
+      Number of primitives:             62
+      Number of atomic orbitals:        98
+      Number of basis functions:        86
+
+      Number of irreps:                  8
+      Integral cutoff                 0.00e+00
+      Number of functions per irrep: [  19    4   10   10    4   19   10   10 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 857167 non-zero two-electron integrals.
+        Stored in file 33.
+
+	Batch   1 pq = [       0,     620] index = [             0,192510]
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory (MB):               178
+    Schwarz Cutoff:          0E+00
+
+   @UHF iter  18:  -149.65367288698874   -6.48955e-04   1.49820e-04 DIIS
+   @UHF iter  19:  -149.65367722260780   -4.33562e-06   1.51286e-05 DIIS
+   @UHF iter  20:  -149.65367727814740   -5.55396e-08   3.72170e-06 DIIS
+   @UHF iter  21:  -149.65367728257934   -4.43194e-09   7.01207e-07 DIIS
+   @UHF iter  22:  -149.65367728290175   -3.22416e-10   1.97067e-07 DIIS
+   @UHF iter  23:  -149.65367728294387   -4.21210e-11   5.64888e-08 DIIS
+   @UHF iter  24:  -149.65367728294743   -3.55271e-12   1.08418e-08 DIIS
+   @UHF iter  25:  -149.65367728294768   -2.55795e-13   1.07175e-09 DIIS
+   @UHF iter  26:  -149.65367728294771   -2.84217e-14   2.07754e-10 DIIS
+   @UHF iter  27:  -149.65367728294760    1.13687e-13   2.45486e-11 DIIS
+   @UHF iter  28:  -149.65367728294757    2.84217e-14   5.32664e-12 DIIS
+   @UHF iter  29:  -149.65367728294771   -1.42109e-13   7.72075e-13 DIIS
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.987006734E-02
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.029870067E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1Ag   -20.720693     1B1u  -20.719199     2Ag    -1.857588  
+	   2B1u   -1.147190     1B3u   -0.903173     1B2u   -0.903173  
+	   3Ag    -0.812143     1B2g   -0.480847     1B3g   -0.480847  
+
+	Alpha Virtual:                                                        
+
+	   3B1u    0.456848     2B2u    0.661966     2B3u    0.661966  
+	   4Ag     0.700746     5Ag     0.736877     2B2g    0.798297  
+	   2B3g    0.798297     4B1u    0.934468     5B1u    1.294683  
+	   1B1g    1.410878     6Ag     1.410878     3B2u    1.642980  
+	   3B3u    1.642980     1Au     1.926335     6B1u    1.926335  
+	   7Ag     2.350885     7B1u    2.473959     3B3g    2.533963  
+	   3B2g    2.533963     4B2u    3.758443     4B3u    3.758443  
+	   8Ag     4.054153     4B3g    4.127305     4B2g    4.127305  
+	   9Ag     4.629772     8B1u    4.757626     2B1g    4.934414  
+	  10Ag     4.934414     5B2u    5.147096     5B3u    5.147096  
+	   6B2u    5.207130     6B3u    5.207130     5B2g    5.663376  
+	   5B3g    5.663376    11Ag     5.915955     9B1u    6.143614  
+	  10B1u    6.196397     3B1g    6.489150    12Ag     6.489150  
+	  11B1u    6.490437     2Au     6.490437    12B1u    6.745606  
+	   3Au     6.745606     6B2g    6.758688     6B3g    6.758688  
+	   7B3u    7.104799     7B2u    7.104799    13Ag     8.255031  
+	   7B2g    8.280988     7B3g    8.280988    13B1u   10.563284  
+	   8B2u   25.804117     8B3u   25.804117     8B2g   26.111344  
+	   8B3g   26.111344    14B1u   26.693303    14Ag    26.844820  
+	  15Ag    28.480459    15B1u   29.264886    16Ag    43.653236  
+	   4B1g   43.653236    17Ag    43.667021     9B2u   43.696920  
+	   9B3u   43.696920    16B1u   43.713001     4Au    43.713001  
+	   9B2g   43.891605     9B3g   43.891605    17B1u   45.126952  
+	  10B3u  138.046258    10B2u  138.046258    10B2g  138.273431  
+	  10B3g  138.273431    18B1u  138.923484    18Ag   138.997772  
+	  19Ag   148.312478    19B1u  149.957793  
+
+	Beta Occupied:                                                        
+
+	   1Ag   -20.668520     1B1u  -20.666223     2Ag    -1.749125  
+	   2B1u   -0.941842     3Ag    -0.735793     1B2u   -0.658607  
+	   1B3u   -0.658607  
+
+	Beta Virtual:                                                         
+
+	   1B2g    0.179248     1B3g    0.179248     3B1u    0.486962  
+	   4Ag     0.700525     2B2u    0.714166     2B3u    0.714166  
+	   5Ag     0.761262     2B2g    0.898322     2B3g    0.898322  
+	   4B1u    1.004004     5B1u    1.336539     1B1g    1.460834  
+	   6Ag     1.460834     3B2u    1.712865     3B3u    1.712865  
+	   6B1u    2.025454     1Au     2.025454     7Ag     2.385724  
+	   7B1u    2.496188     3B3g    2.586066     3B2g    2.586066  
+	   4B2u    3.870683     4B3u    3.870683     8Ag     4.079587  
+	   4B3g    4.229786     4B2g    4.229786     9Ag     4.673500  
+	   8B1u    4.803585     2B1g    4.969376    10Ag     4.969376  
+	   5B2u    5.184033     5B3u    5.184033     6B2u    5.266404  
+	   6B3u    5.266404     5B3g    5.733192     5B2g    5.733192  
+	  11Ag     5.986382     9B1u    6.177330    10B1u    6.235652  
+	  11B1u    6.563732     2Au     6.563732     3B1g    6.616303  
+	  12Ag     6.616303     6B2g    6.823096     6B3g    6.823096  
+	   3Au     6.846637    12B1u    6.846637     7B2u    7.163785  
+	   7B3u    7.163785    13Ag     8.277347     7B2g    8.320332  
+	   7B3g    8.320332    13B1u   10.609186     8B2u   25.859160  
+	   8B3u   25.859160     8B2g   26.165829     8B3g   26.165829  
+	  14B1u   26.712254    14Ag    26.867372    15Ag    28.510788  
+	  15B1u   29.293521    16Ag    43.689739    17Ag    43.705286  
+	   4B1g   43.705286     9B2u   43.726805     9B3u   43.726805  
+	  16B1u   43.764904     4Au    43.764904     9B2g   43.921398  
+	   9B3g   43.921398    17B1u   45.149393    10B3u  138.059683  
+	  10B2u  138.059683    10B2g  138.286808    10B3g  138.286808  
+	  18B1u  138.928984    18Ag   139.003355    19Ag   148.323082  
+	  19B1u  149.967937  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     3,    0,    0,    0,    0,    2,    1,    1 ]
+	SOCC [     0,    0,    1,    1,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:  -149.65367728294771
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             32.0000000000000000
+    One-Electron Energy =                -269.2037835000247696
+    Two-Electron Energy =                  87.5501062170770581
+    DFT Exchange-Correlation Energy =       0.0000000000000000
+    Empirical Dispersion Energy =           0.0000000000000000
+    Total Energy =                       -149.6536772829477115
+
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+  ==> Properties <==
+
+
+Properties computed using the SCF density density matrix
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on Silverblade.local at Wed Apr 24 14:51:46 2013
+Module time:
+	user time   =       3.17 seconds =       0.05 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =     108.10 seconds =       1.80 minutes
+	system time =      29.01 seconds =       0.48 minutes
+	total time  =        162 seconds =       2.70 minutes
+
+*** tstart() called on Silverblade.local
+*** at Wed Apr 24 14:51:46 2013
+
+
+
+	***********************************************************************************
+	*                        Density Cumulant Functional Theory                       *
+	*                     by Alexander Sokolov and Andy Simmonett                     *
+	***********************************************************************************
+
+	Transforming two-electron integrals...
+	Computing MP2 amplitude guess...
+
+	*Total Hartree-Fock energy        = -149.653677282947712
+	 Alpha - Alpha MP2 energy         =   -0.067974695049424
+	 Alpha - Beta  MP2 energy         =   -0.384397304845840
+	 Beta  - Beta  MP2 energy         =   -0.059960787381650
+	 Total MP2 correlation energy     =   -0.512332787276914
+	*Total MP2 energy                 = -150.166010070224615
+
+	DCFT Functional:    		 ODC-12
+	Algorithm:          		 SIMULTANEOUS
+	AO-Basis Integrals: 		 NONE
+
+	*=================================================================================*
+	* Cycle   Max Orb Grad    RMS Lambda Error   delta E        Total Energy     DIIS *
+	*---------------------------------------------------------------------------------*
+	* 1        6.910e-02         9.432e-04     -1.074e-02   -150.176750403578296      *
+	* 2        1.670e-02         2.465e-04     -1.080e-02   -150.187555337898942      *
+	* 3        7.967e-03         8.654e-05     -1.109e-03   -150.188664679244368      *
+	* 4        2.609e-03         3.757e-05     -6.921e-04   -150.189356824625349      *
+	* 5        1.507e-03         1.812e-05     -1.629e-04   -150.189519687828721      *
+	* 6        6.039e-04         9.438e-06     -9.720e-05   -150.189616886034997  S   *
+	* 7        3.173e-04         5.061e-06     -3.822e-05   -150.189655105176399  S   *
+	* 8        1.421e-04         2.787e-06     -2.127e-05   -150.189676370204069  S   *
+	* 9        7.207e-05         1.556e-06     -1.032e-05   -150.189686694011243  S/E *
+	* 10       2.198e-06         8.073e-08     -1.197e-05   -150.189698659968769  S/E *
+	* 11       6.242e-07         3.350e-08     -4.766e-07   -150.189699136527395  S/E *
+	* 12       2.670e-07         1.405e-08     -1.164e-08   -150.189699148167335  S/E *
+	* 13       5.235e-08         2.578e-09      9.904e-09   -150.189699138263165  S/E *
+	* 14       9.877e-09         7.907e-10      1.088e-09   -150.189699137175069  S/E *
+	* 15       2.127e-09         2.472e-10      8.229e-10   -150.189699136352147  S/E *
+	* 16       1.144e-09         7.051e-11      2.136e-10   -150.189699136138557  S/E *
+	* 17       3.742e-10         1.665e-11      2.208e-11   -150.189699136116474  S/E *
+	* 18       9.850e-11         4.724e-12     -4.263e-11   -150.189699136159106  S/E *
+	* 19       4.382e-11         1.259e-12     -1.720e-11   -150.189699136176301  S/E *
+	* 20       9.927e-12         2.961e-13     -5.855e-12   -150.189699136182156  S/E *
+	* 21       2.540e-12         1.010e-13     -1.108e-12   -150.189699136183265  S/E *
+	* 22       8.494e-13         4.870e-14      1.421e-13   -150.189699136183123  S/E *
+	*=================================================================================*
+
+	*DCFT SCF Energy                                 = -149.090539944501074
+	*DCFT Lambda Energy                              =   -1.099159191682041
+	*DCFT Total Energy                               = -150.189699136183123
+
+	Orbital occupations:
+		Alpha occupied orbitals
+		   1Ag       0.9995     1B1u      0.9995     2Ag       0.9922     2B1u      0.9908  
+		   1B3u      0.9885     1B2u      0.9885     1B3g      0.9841     1B2g      0.9841  
+		   3Ag       0.9831  
+
+		Beta occupied orbitals
+		   1Ag       0.9994     1B1u      0.9994     2Ag       0.9902     2B1u      0.9837  
+		   3Ag       0.9823     1B3u      0.9698     1B2u      0.9698  
+
+		Alpha virtual orbitals
+		   3B1u      0.0126     2B3u      0.0053     2B2u      0.0053     2B2g      0.0049  
+		   2B3g      0.0049     4Ag       0.0046     3B3u      0.0045     3B2u      0.0045  
+		   4B1u      0.0042     1B1g      0.0035     5Ag       0.0035     1Au       0.0027  
+		   5B1u      0.0027     6Ag       0.0022     6B1u      0.0022     7Ag       0.0016  
+		   7B1u      0.0015     4B2u      0.0014     4B3u      0.0014     3B2g      0.0012  
+		   3B3g      0.0012     4B3g      0.0010     4B2g      0.0010     8Ag       0.0008  
+		   9Ag       0.0007     8B1u      0.0007     2B1g      0.0006    10Ag       0.0006  
+		  11Ag       0.0006     5B3u      0.0006     5B2u      0.0006     5B3g      0.0004  
+		   5B2g      0.0004     2Au       0.0004     9B1u      0.0004    10B1u      0.0004  
+		  11B1u      0.0003     3Au       0.0003     3B1g      0.0003    12Ag       0.0003  
+		   6B3u      0.0003     6B2u      0.0003    12B1u      0.0003     7B2u      0.0002  
+		   7B3u      0.0002     6B3g      0.0002     6B2g      0.0002    13Ag       0.0001  
+		   7B3g      0.0001     7B2g      0.0001     8B2u      0.0001     8B3u      0.0001  
+		  14Ag       0.0001    13B1u      0.0001    14B1u      0.0001     8B2g      0.0001  
+		   8B3g      0.0001    15Ag       0.0001    15B1u      0.0001    16Ag       0.0000  
+		  16B1u      0.0000     9B3u      0.0000     9B2u      0.0000     9B3g      0.0000  
+		   9B2g      0.0000     4B1g      0.0000    17Ag       0.0000    17B1u      0.0000  
+		   4Au       0.0000    18B1u      0.0000    18Ag       0.0000    10B3u      0.0000  
+		  10B2u      0.0000    10B2g      0.0000    10B3g      0.0000    19Ag       0.0000  
+		  19B1u      0.0000  
+
+		Beta virtual orbitals
+		   1B2g      0.0201     1B3g      0.0201     3B1u      0.0105     4Ag       0.0050  
+		   2B2g      0.0044     2B3g      0.0044     2B2u      0.0034     2B3u      0.0034  
+		   4B1u      0.0027     5Ag       0.0026     1B1g      0.0026     3B2u      0.0022  
+		   3B3u      0.0022     5B1u      0.0021     6Ag       0.0020     6B1u      0.0014  
+		   7Ag       0.0013     8Ag       0.0009     1Au       0.0008     7B1u      0.0008  
+		   8B1u      0.0007     4B2u      0.0007     4B3u      0.0007     3B2g      0.0007  
+		   3B3g      0.0007     9Ag       0.0006     4B3g      0.0005     4B2g      0.0005  
+		  10Ag       0.0005     5B3u      0.0005     5B2u      0.0005     9B1u      0.0004  
+		   2B1g      0.0003    11Ag       0.0003     3B1g      0.0003    12Ag       0.0003  
+		   5B3g      0.0003     5B2g      0.0003     6B3u      0.0002     6B2u      0.0002  
+		  10B1u      0.0002     2Au       0.0002    11B1u      0.0002     3Au       0.0002  
+		  12B1u      0.0002     7B3u      0.0002     7B2u      0.0002    13Ag       0.0001  
+		   6B2g      0.0001     6B3g      0.0001    14Ag       0.0001    13B1u      0.0001  
+		  15Ag       0.0001     7B2g      0.0001     7B3g      0.0001    14B1u      0.0001  
+		   8B2u      0.0001     8B3u      0.0001     8B2g      0.0001     8B3g      0.0001  
+		  15B1u      0.0001    16Ag       0.0000    16B1u      0.0000     9B2u      0.0000  
+		   9B3u      0.0000    17B1u      0.0000     9B3g      0.0000     9B2g      0.0000  
+		  17Ag       0.0000    18Ag       0.0000    10B2u      0.0000    10B3u      0.0000  
+		  10B2g      0.0000    10B3g      0.0000    18B1u      0.0000    19Ag       0.0000  
+		   4B1g      0.0000    19B1u      0.0000     4Au       0.0000  
+
+
+*** tstop() called on Silverblade.local at Wed Apr 24 14:54:09 2013
+Module time:
+	user time   =      94.05 seconds =       1.57 minutes
+	system time =      26.42 seconds =       0.44 minutes
+	total time  =        143 seconds =       2.38 minutes
+Total time:
+	user time   =     202.15 seconds =       3.37 minutes
+	system time =      55.43 seconds =       0.92 minutes
+	total time  =        305 seconds =       5.08 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

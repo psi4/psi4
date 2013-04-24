@@ -7,12 +7,12 @@ refscf      = -149.65367728294785   #TEST
 refmp2      = -150.17316961260252   #TEST
 
 # ODC-06
-refdcftscf  = -149.072345340609985   #TEST
-refdcft     = -150.194249110612475  #TEST
+refdcftscf  = -149.074169972872937  #TEST
+refdcft     = -150.194310452116127  #TEST
 
 # ODC-12                             #TEST
-refdcftxscf = -149.088952475611620  #TEST
-refdcftx    = -150.189646216910717  #TEST
+refdcftxscf = -149.090539944500989  #TEST
+refdcftx    = -150.189699136183066  #TEST
 
 molecule OO {
 0 3

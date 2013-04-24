@@ -247,7 +247,6 @@ DCFTSolver::gradient_init()
     bvir_ptau_ = SharedMatrix(new Matrix("MO basis Perturbed Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_));
 
     dpdbuf4 I;
-    dpdfile2 H;
 
     // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
 
@@ -273,262 +272,37 @@ DCFTSolver::gradient_init()
     if ((options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC")
             || (options_.get_str("DCFT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC"
                 && !options_.get_bool("QC_COUPLING") && options_.get_str("QC_TYPE") != "SIMULTANEOUS")) {
-        // <VO|OO> type
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                      ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,O]"), ID("[O,O]"), "MO Ints <VO|OO>");
+        sort_OOOV_integrals();
+
+        sort_OVVV_integrals();
+
+        // (OV|OV)
+
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+                      ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[O,V]"), "MO Ints (ov|OV)");
         dpd_buf4_close(&I);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                      ID("[V,O]"), ID("[O>=O]+"), 0, "MO Ints (VO|OO)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[O,O]"), ID("[O,V]"), "MO Ints (OO|OV)");
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqps, ID("[V,O]"), ID("[O,V]"), "MO Ints <VO|OV>");
         dpd_buf4_close(&I);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
-                      ID("[V,O]"), ID("[O,O]"), 0, "MO Ints <VO|OO>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[O,V]"), ID("[O,O]"), "MO Ints <OV|OO>");
+        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
+        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqps, ID("[v,o]"), ID("[o,v]"), "MO Ints <vo|ov>");
         dpd_buf4_close(&I);
 
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
-                      ID("[O,V]"), ID("[O,O]"), 0, "MO Ints <OV|OO>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[O,O]"), ID("[O,V]"), "MO Ints <OO|OV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,o]"),
-                      ID("[V,O]"), ID("[o>=o]+"), 0, "MO Ints (VO|oo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,o]"), ID("[O,o]"), "MO Ints <Vo|Oo>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[o,o]"),
-                      ID("[V,O]"), ID("[o>=o]+"), 0, "MO Ints (VO|oo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,o]"), ID("[V,O]"), "MO Ints (oo|VO)");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[O,o]"),
-                      ID("[V,o]"), ID("[O,o]"), 0, "MO Ints <Vo|Oo>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[o,V]"), ID("[o,O]"), "MO Ints <oV|oO>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[o,O]"),
-                      ID("[o,V]"), ID("[o,O]"), 0, "MO Ints <oV|oO>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[o,V]"), ID("[O,o]"), "MO Ints <oV|Oo>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,o]"),
-                      ID("[O>=O]+"), ID("[v,o]"), 0, "MO Ints (OO|vo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqsp, ID("[v,O]"), ID("[o,O]"), "MO Ints <vO|oO>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,O]"), ID("[o,O]"),
-                      ID("[v,O]"), ID("[o,O]"), 0, "MO Ints <vO|oO>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[O,v]"), ID("[O,o]"), "MO Ints <Ov|Oo>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,o]"),
-                      ID("[O,v]"), ID("[O,o]"), 0, "MO Ints <Ov|Oo>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[O,v]"), ID("[o,O]"), "MO Ints <Ov|oO>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
-                      ID("[v,o]"), ID("[o>=o]+"), 0, "MO Ints (vo|oo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[v,o]"), ID("[o,o]"), "MO Ints <vo|oo>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
-                      ID("[v,o]"), ID("[o>=o]+"), 0, "MO Ints (vo|oo)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rsqp, ID("[o,o]"), ID("[o,v]"), "MO Ints (oo|ov)");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
-                      ID("[v,o]"), ID("[o,o]"), 0, "MO Ints <vo|oo>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[o,v]"), ID("[o,o]"), "MO Ints <ov|oo>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,o]"),
-                      ID("[o,v]"), ID("[o,o]"), 0, "MO Ints <ov|oo>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,o]"), ID("[o,v]"), "MO Ints <oo|ov>");
-        dpd_buf4_close(&I);
-
-        // <OV|VV> type
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                      ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,V]"), ID("[V,V]"), "MO Ints <OV|VV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
-                      ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[V,V]"), ID("[O,V]"), "MO Ints <VV|OV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[v,v]"),
-                      ID("[O,V]"), ID("[v>=v]+"), 0, "MO Ints (OV|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[O,v]"), ID("[V,v]"), "MO Ints <Ov|Vv>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[v,v]"),
-                      ID("[O,V]"), ID("[v>=v]+"), 0, "MO Ints (OV|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[O,V]"), "MO Ints (vv|OV)");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,v]"),
-                      ID("[O,v]"), ID("[V,v]"), 0, "MO Ints <Ov|Vv>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[O,v]"), ID("[v,V]"), "MO Ints <Ov|vV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,v]"),
-                      ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqsp, ID("[o,V]"), ID("[v,V]"), "MO Ints <oV|vV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[v,V]"),
-                      ID("[o,V]"), ID("[v,V]"), 0, "MO Ints <oV|vV>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, pqsr, ID("[o,V]"), ID("[V,v]"), "MO Ints <oV|Vv>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[v,V]"),
-                      ID("[o,V]"), ID("[v,V]"), 0, "MO Ints <oV|vV>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, qpsr, ID("[V,o]"), ID("[V,v]"), "MO Ints <Vo|Vv>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                      ID("[o,v]"), ID("[v>=v]+"), 0, "MO Ints (ov|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[o,v]"), ID("[v,v]"), "MO Ints <ov|vv>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
-                      ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[o,v]"), "MO Ints <vv|ov>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>=V]+"), ID("[o,v]"),
-                      ID("[V>=V]+"), ID("[o,v]"), 0, "MO Ints (VV|ov)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[V>=V]+"), "MO Ints (ov|VV)");
-        dpd_buf4_close(&I);
     }
 
+    // Hack for now. TODO: Implement AO_BASIS=DISK algorithm for gradients
     // (VV|VV)
-
-    if(options_.get_str("AO_BASIS") == "DISK"){
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
-                      ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
-                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,v]"), ID("[V,v]"), "MO Ints <Vv|Vv>");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
-                      ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[v,v]"), ID("[V,V]"), "MO Ints (vv|VV)");
-        dpd_buf4_close(&I);
-
-        dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
-                      ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
-        dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv|vv>");
-        dpd_buf4_close(&I);
-    }
-
-    // (OV|OV)
-
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[o,v]"),
-                  ID("[O,V]"), ID("[o,v]"), 0, "MO Ints (OV|ov)");
-    dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rspq, ID("[o,v]"), ID("[O,V]"), "MO Ints (ov|OV)");
-    dpd_buf4_close(&I);
-
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqps, ID("[V,O]"), ID("[O,V]"), "MO Ints <VO|OV>");
-    dpd_buf4_close(&I);
-
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
-    dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, rqps, ID("[v,o]"), ID("[o,v]"), "MO Ints <vo|ov>");
-    dpd_buf4_close(&I);
+    if(options_.get_str("AO_BASIS") == "DISK") sort_VVVV_integrals();
 
     // Transform one-electron integrals to the MO basis and store them in the DPD file
 
-    if (!orbital_optimized_) {
-        Matrix aH(so_h_);
-        Matrix bH(so_h_);
-        aH.transform(Ca_);
-        bH.transform(Cb_);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int i = 0 ; i < naoccpi_[h]; ++i){
-                for(int j = 0 ; j < naoccpi_[h]; ++j){
-                    H.matrix[h][i][j] = aH.get(h, i, j);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int a = 0 ; a < navirpi_[h]; ++a){
-                for(int b = 0 ; b < navirpi_[h]; ++b){
-                    H.matrix[h][a][b] = aH.get(h, naoccpi_[h] + a, naoccpi_[h] + b);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int i = 0 ; i < nboccpi_[h]; ++i){
-                for(int j = 0 ; j < nboccpi_[h]; ++j){
-                    H.matrix[h][i][j] = bH.get(h, i, j);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int a = 0 ; a < nbvirpi_[h]; ++a){
-                for(int b = 0 ; b < nbvirpi_[h]; ++b){
-                    H.matrix[h][a][b] = bH.get(h, nboccpi_[h] + a, nboccpi_[h] + b);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int i = 0 ; i < naoccpi_[h]; ++i){
-                for(int j = 0 ; j < navirpi_[h]; ++j){
-                    H.matrix[h][i][j] = aH.get(h, i, naoccpi_[h] + j);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-
-        dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
-        dpd_file2_mat_init(&H);
-        for(int h = 0; h < nirrep_; ++h){
-            for(int i = 0 ; i < nboccpi_[h]; ++i){
-                for(int j = 0 ; j < nbvirpi_[h]; ++j){
-                    H.matrix[h][i][j] = bH.get(h, i, nboccpi_[h] + j);
-                }
-            }
-        }
-        dpd_file2_mat_wrt(&H);
-        dpd_file2_close(&H);
-    }
+    if (!orbital_optimized_) transform_core_integrals();
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
