@@ -22,7 +22,15 @@ add_executable(psi4 clean.cc create_new_plugin.cc export_benchmarks.cc export_bl
 
 # Add the python link commands in as raw commands
 set(LINKLIBS ${BOOSTLIB} ${PSILIB} ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-set_target_properties(psi4 PROPERTIES LINK_FLAGS ${PYLIB})
+#set_target_properties(psi4 PROPERTIES LINK_FLAGS ${PYLIB})
 
-add_dependencies(psi4 ${LINKLIBS})
-target_link_libraries(psi4 ${LINKLIBS})
+#add_dependencies(psi4 ${LINKLIBS})
+target_link_libraries(psi4
+    ${PSILIB}
+    ${Boost_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${BLAS_LIBRARIES}
+    ${PYTHON_LIBRARIES}
+)
+
+
