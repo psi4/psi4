@@ -4,7 +4,10 @@
 #include <psi4-dec.h>
 
 #include <cstdio>
+#include <utility>
+#include <algorithm>
 
+using namespace std;
 using namespace psi;
 using namespace boost;
 
@@ -179,30 +182,50 @@ void MoldenWriter::write(const std::string &filename)
 
     // Dump MO's to the molden file
     fprintf(molden, "[MO]\n");
+
+    std::vector<std::pair<double, std::pair<int, int> > > mos;
+
     // do alpha's
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-            fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-            fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
-            fprintf(molden, " Spin= Alpha\n");
-            int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
-            fprintf(molden, " Occup= %3.1d\n", occ);
-            for (int so=0; so<wavefunction_->nso(); ++so)
-                fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
+            mos.push_back(make_pair(Ea.get(h, n), make_pair(h, n)));
         }
+    }
+    std::sort(mos.begin(), mos.end());
+
+    for (int i=0; i<mos.size(); ++i) {
+        int h = mos[i].second.first;
+        int n = mos[i].second.second;
+
+        fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
+        fprintf(molden, " Ene= %20.10f\n", Ea.get(h, n));
+        fprintf(molden, " Spin= Alpha\n");
+        int occ = n < (wavefunction_->nalphapi()[h]) ? 1.0 : 0.0;
+        fprintf(molden, " Occup= %3.1d\n", occ);
+        for (int so=0; so<wavefunction_->nso(); ++so)
+           fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
+    mos.clear();
     for (int h=0; h<wavefunction_->nirrep(); ++h) {
         for (int n=0; n<wavefunction_->nmopi()[h]; ++n) {
-            fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
-            fprintf(molden, " Ene= %20.10f\n", Eb.get(h, n));
-            fprintf(molden, " Spin= Beta\n");
-            int occ = n < (wavefunction_->nbetapi()[h]) ? 1.0 : 0.0;
-            fprintf(molden, " Occup= %3.1d\n", occ);
-            for (int so=0; so<wavefunction_->nso(); ++so)
-                fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
+            mos.push_back(make_pair(Eb.get(h, n), make_pair(h, n)));
         }
+    }
+    std::sort(mos.begin(), mos.end());
+
+    for (int i=0; i<mos.size(); ++i) {
+        int h = mos[i].second.first;
+        int n = mos[i].second.second;
+
+        fprintf(molden, " Sym= %s\n", ct.gamma(h).symbol());
+        fprintf(molden, " Ene= %20.10f\n", Eb.get(h, n));
+        fprintf(molden, " Spin= Beta\n");
+        int occ = n < (wavefunction_->nbetapi()[h]) ? 1.0 : 0.0;
+        fprintf(molden, " Occup= %3.1d\n", occ);
+        for (int so=0; so<wavefunction_->nso(); ++so)
+            fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
     }
 
     fclose(molden);
