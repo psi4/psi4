@@ -46,6 +46,7 @@ procedures = {
             'cepa0'         : run_cepa0,
             'omp2.5'        : run_omp2_5,
             'dftsapt'       : run_dftsapt,
+            'saptdft'       : run_dftsapt,
             'infsapt'       : run_infsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
