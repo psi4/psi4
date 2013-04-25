@@ -886,11 +886,12 @@ void SAPT2p3::amplitudes()
 
     inddisp30_amps();
 
+    timer_on("Disp30-Amps        ");
     disp30_amps(PSIF_SAPT_AMPS,"tARBS Amplitudes",PSIF_SAPT_AA_DF_INTS,
       "AA RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
       "BB RI Integrals","SS RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
       foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,"Disp30 uARBS Amplitudes");
-
+    timer_off("Disp30-Amps        ");
   }
 }
 
