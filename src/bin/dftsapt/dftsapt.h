@@ -120,8 +120,6 @@ protected:
 
     // Build the S_ij matrix in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij(boost::shared_ptr<Matrix> S);
-    // Build the S^2 expansion in the dimer occupied space
-    boost::shared_ptr<Matrix> build_Sij_2(boost::shared_ptr<Matrix> Sij);
     // Build the S^\infty expansion in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij_n(boost::shared_ptr<Matrix> Sij);
     // Build the Cbar matrices
