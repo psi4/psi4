@@ -17,8 +17,6 @@ class Array2d;
 class Array3d;
 class Array1i;
 class Array3i;
-
-
   
 class Array1d
 {
@@ -104,6 +102,7 @@ class Array2d
   void print(FILE *out);
   void release();
   void set(int i, int j, double value);
+  void set(double **A);
   double get(int i, int j);
   void add(const Array2d* Adum);
   void add(int i, int j, double value);
