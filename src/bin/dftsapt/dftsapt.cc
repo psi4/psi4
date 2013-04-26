@@ -373,11 +373,12 @@ void DFTSAPT::fock_terms()
     // Electrostatic potential of monomer A (ov space of B)
     boost::shared_ptr<Matrix> w_A = build_w(W_A,Cocc_B_,Cvir_B_);
 
+    W_A.reset();
+    W_B.reset();
+
     // ==> Exchange Terms (S^2) <== //
     
     double Exch10_2 = 0.0;
-
-    // => Compute the T matrices <= //
 
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
@@ -459,19 +460,21 @@ void DFTSAPT::fock_terms()
     fprintf(outfile, "\n");
     fflush(outfile);
 
-    // Clear up some memory (TODO)
-
     // ==> Uncorrelated Second-Order Response Terms [Induction] <== //
 
-    // Compute CPHF
+    // Compute CPKS
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,w_B,w_A);
     boost::shared_ptr<Matrix> x_A = x_sol.first;
     boost::shared_ptr<Matrix> x_B = x_sol.second;
 
+    // Backward in Ed's convention
+    x_A->scale(-1.0);
+    x_B->scale(-1.0);
+
     // ==> Induction <== //
 
-    double Ind20r_AB = - x_A->vector_dot(w_B);
-    double Ind20r_BA = - x_B->vector_dot(w_A);
+    double Ind20r_AB = 2.0 * x_A->vector_dot(w_B);
+    double Ind20r_BA = 2.0 * x_B->vector_dot(w_A);
     double Ind20r = Ind20r_AB + Ind20r_BA;
 
     energies_["Ind20,r (A<-B)"] = Ind20r_AB;
@@ -484,24 +487,6 @@ void DFTSAPT::fock_terms()
     fflush(outfile);
 
     // ==> Exchange-Induction <== //
-
-    // => Fock-like matrices <= //
-
-    boost::shared_ptr<Matrix> h_A(V_A->clone());
-    h_A->copy(J_A);
-    h_A->scale(2.0);
-    h_A->add(V_A);
-    h_A->subtract(K_A);
-    J_A.reset();
-    V_A.reset();
-
-    boost::shared_ptr<Matrix> h_B(V_B->clone());
-    h_B->copy(J_B);
-    h_B->scale(2.0);
-    h_B->add(V_B);
-    h_B->subtract(K_B);
-    J_B.reset();
-    V_B.reset();
 
     // => New pertubations <= //
     
@@ -529,38 +514,47 @@ void DFTSAPT::fock_terms()
     // => Unload the JK Object <= //
 
     boost::shared_ptr<Matrix> J_O      = J[0]; 
-    boost::shared_ptr<Matrix> K_O      = K[0]; 
     boost::shared_ptr<Matrix> J_X_A    = J[1]; 
     boost::shared_ptr<Matrix> J_X_B    = J[2]; 
 
-    J_O->scale(0.5); 
-    K_O->scale(0.5); 
-    J_X_A->scale(0.5); 
-    J_X_B->scale(0.5); 
+    boost::shared_ptr<Matrix> K_O      = K[0]; 
+    boost::shared_ptr<Matrix> K_X_A    = K[1]; 
+    boost::shared_ptr<Matrix> K_X_B    = K[2]; 
 
     // Clear the JK memory 
     jk.reset();
-
+    
     // New generalized densities
-    boost::shared_ptr<Matrix> O   = build_D(Cocc_A_,C_O_A);
     boost::shared_ptr<Matrix> X_A = build_D(Cocc_A_,C_X_A);
     boost::shared_ptr<Matrix> X_B = build_D(Cocc_B_,C_X_B);
+
+    // Don't need these, in AO basis now
+    C_O_A.reset(); 
+    C_X_A.reset(); 
+    C_X_B.reset(); 
 
     // Exch-Ind20 (A<-B)
     double ExchInd20_AB = 0.0;
     std::vector<double> ExchInd20_AB_terms;
-    ExchInd20_AB_terms.resize(11);
-    ExchInd20_AB_terms[0]  += 2.0 * X_A->vector_dot(K_B);
-    ExchInd20_AB_terms[1]  += 2.0 * triple(X_A,S,D_B)->vector_dot(h_A);
-    ExchInd20_AB_terms[2]  += 2.0 * X_A->vector_dot(J_O);
-    ExchInd20_AB_terms[3]  -= 1.0 * X_A->vector_dot(K_O->transpose());
-    ExchInd20_AB_terms[4]  += 1.0 * triple(X_B,S,X_A)->vector_dot(h_B);
-    ExchInd20_AB_terms[5]  -= 2.0 * triple(D_B,S,triple(X_A,S,D_B))->vector_dot(W_A);
-    ExchInd20_AB_terms[6]  -= 2.0 * triple(D_B,S,O)->vector_dot(J_X_A);
-    ExchInd20_AB_terms[7]  -= 1.0 * triple(O,S,X_A)->vector_dot(W_B);
-    ExchInd20_AB_terms[8]  -= 0.5 * triple(X_A,S,O->transpose())->vector_dot(W_B);
-    ExchInd20_AB_terms[9]  -= 1.0 * triple(D_B,S,X_A)->vector_dot(K_O->transpose());
-    ExchInd20_AB_terms[10] += 1.0 * triple(X_A,S,D_B)->vector_dot(K_O);
+    ExchInd20_AB_terms.resize(18);
+    ExchInd20_AB_terms[0]  -= 2.0 * X_A->vector_dot(K_B);
+    ExchInd20_AB_terms[1]  -= 4.0 * triple(D_B,S,X_A)->vector_dot(J_A);
+    ExchInd20_AB_terms[2]  += 2.0 * triple(D_A,S,D_B)->vector_dot(K_X_A);
+    ExchInd20_AB_terms[3]  -= 4.0 * triple(D_A,S,D_B)->vector_dot(J_X_A);
+    ExchInd20_AB_terms[4]  += 2.0 * triple(D_B,S,X_A)->vector_dot(K_A); 
+    ExchInd20_AB_terms[5]  -= 4.0 * triple(X_A,S,D_B)->vector_dot(J_B);
+    ExchInd20_AB_terms[6]  += 2.0 * triple(X_A,S,D_B)->vector_dot(K_B);
+    ExchInd20_AB_terms[7]  += 4.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(J_A);
+    ExchInd20_AB_terms[8]  += 4.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(J_B);
+    ExchInd20_AB_terms[9]  -= 2.0 * triple(X_A,S,D_B)->vector_dot(K_O);
+    ExchInd20_AB_terms[10] += 4.0 * triple(triple(D_B,S,D_A),S,D_B)->vector_dot(J_X_A);
+    ExchInd20_AB_terms[11] += 4.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(J_B);
+    ExchInd20_AB_terms[12] -= 2.0 * triple(D_B,S,X_A)->vector_dot(K_O->transpose());
+    ExchInd20_AB_terms[13] -= 2.0 * triple(D_B,S,X_A)->vector_dot(V_A); 
+    ExchInd20_AB_terms[14] -= 2.0 * triple(X_A,S,D_B)->vector_dot(V_B);
+    ExchInd20_AB_terms[15] += 2.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(V_A);
+    ExchInd20_AB_terms[16] += 2.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(V_B);
+    ExchInd20_AB_terms[17] += 2.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(V_B);
     for (int k = 0; k < ExchInd20_AB_terms.size(); k++) {
         ExchInd20_AB += ExchInd20_AB_terms[k];
     }
@@ -573,23 +567,29 @@ void DFTSAPT::fock_terms()
     fflush(outfile);
 
     K_O->transpose_this();
-    O->transpose_this();
 
     // Exch-Ind20 (B<-A)
     double ExchInd20_BA = 0.0;
     std::vector<double> ExchInd20_BA_terms;
-    ExchInd20_BA_terms.resize(11);
-    ExchInd20_BA_terms[0]  += 2.0 * X_B->vector_dot(K_A);
-    ExchInd20_BA_terms[1]  += 2.0 * triple(X_B,S,D_A)->vector_dot(h_B);
-    ExchInd20_BA_terms[2]  += 2.0 * X_B->vector_dot(J_O);
-    ExchInd20_BA_terms[3]  -= 1.0 * X_B->vector_dot(K_O->transpose());
-    ExchInd20_BA_terms[4]  += 1.0 * triple(X_A,S,X_B)->vector_dot(h_A);
-    ExchInd20_BA_terms[5]  -= 2.0 * triple(D_A,S,triple(X_B,S,D_A))->vector_dot(W_B);
-    ExchInd20_BA_terms[6]  -= 2.0 * triple(D_A,S,O)->vector_dot(J_X_B);
-    ExchInd20_BA_terms[7]  -= 1.0 * triple(O,S,X_B)->vector_dot(W_A);
-    ExchInd20_BA_terms[8]  -= 0.5 * triple(X_B,S,O->transpose())->vector_dot(W_A);
-    ExchInd20_BA_terms[9]  -= 1.0 * triple(D_A,S,X_B)->vector_dot(K_O->transpose());
-    ExchInd20_BA_terms[10] += 1.0 * triple(X_B,S,D_A)->vector_dot(K_O);
+    ExchInd20_BA_terms.resize(18);
+    ExchInd20_BA_terms[0]  -= 2.0 * X_B->vector_dot(K_A);
+    ExchInd20_BA_terms[1]  -= 4.0 * triple(D_A,S,X_B)->vector_dot(J_B);
+    ExchInd20_BA_terms[2]  += 2.0 * triple(D_B,S,D_A)->vector_dot(K_X_B);
+    ExchInd20_BA_terms[3]  -= 4.0 * triple(D_B,S,D_A)->vector_dot(J_X_B);
+    ExchInd20_BA_terms[4]  += 2.0 * triple(D_A,S,X_B)->vector_dot(K_B); 
+    ExchInd20_BA_terms[5]  -= 4.0 * triple(X_B,S,D_A)->vector_dot(J_A);
+    ExchInd20_BA_terms[6]  += 2.0 * triple(X_B,S,D_A)->vector_dot(K_A);
+    ExchInd20_BA_terms[7]  += 4.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(J_B);
+    ExchInd20_BA_terms[8]  += 4.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(J_A);
+    ExchInd20_BA_terms[9]  -= 2.0 * triple(X_B,S,D_A)->vector_dot(K_O);
+    ExchInd20_BA_terms[10] += 4.0 * triple(triple(D_A,S,D_B),S,D_A)->vector_dot(J_X_B);
+    ExchInd20_BA_terms[11] += 4.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(J_A);
+    ExchInd20_BA_terms[12] -= 2.0 * triple(D_A,S,X_B)->vector_dot(K_O->transpose());
+    ExchInd20_BA_terms[13] -= 2.0 * triple(D_A,S,X_B)->vector_dot(V_B); 
+    ExchInd20_BA_terms[14] -= 2.0 * triple(X_B,S,D_A)->vector_dot(V_A);
+    ExchInd20_BA_terms[15] += 2.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(V_B);
+    ExchInd20_BA_terms[16] += 2.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(V_A);
+    ExchInd20_BA_terms[17] += 2.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(V_A);
     for (int k = 0; k < ExchInd20_BA_terms.size(); k++) {
         ExchInd20_BA += ExchInd20_BA_terms[k];
     }
@@ -835,10 +835,6 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > DFTSAPT::comput
 
     // Unpack
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = make_pair(cpks->x_A_,cpks->x_B_);
-
-    // Scale up for electron pairs
-    x_sol.first->scale(2.0);
-    x_sol.second->scale(2.0);
 
     return x_sol;
 }
