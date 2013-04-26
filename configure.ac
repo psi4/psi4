@@ -948,6 +948,7 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
+          src/lib/libthce/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/libtrans/Makefile
