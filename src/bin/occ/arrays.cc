@@ -1,3 +1,5 @@
+// Latest revision on April 25, 2013.
+
 #include <stdio.h>
 #include <libqt/qt.h>
 #include "arrays.h"
@@ -386,11 +388,20 @@ void Array2d::set(int i, int j, double value)
   A2d_[i][j]=value;  
 }//
 
+void Array2d::set(double **A)
+{
+      if (A == NULL) return;
+      for (int i=0; i<dim1_; ++i) {
+        for (int j=0; j<dim2_; ++j) {
+          A2d_[i][j] = A[i][j];
+        }
+      }
+}//
+
 double Array2d::get(int i, int j)
 { 
   return A2d_[i][j];
 }//
-
 
 void Array2d::gemm(bool transa, bool transb, double alpha, const Array2d* a, const Array2d* b, double beta)
 {
