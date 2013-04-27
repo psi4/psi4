@@ -647,6 +647,57 @@ void DFTSAPT::mp2_terms()
         nT = omp_get_max_threads();
     #endif
 
+    // => Stashed Variables <= //
+
+    boost::shared_ptr<Matrix> S   = vars_["S"];
+    boost::shared_ptr<Matrix> D_A = vars_["D_A"];
+    boost::shared_ptr<Matrix> V_A = vars_["V_A"];
+    boost::shared_ptr<Matrix> J_A = vars_["J_A"];
+    boost::shared_ptr<Matrix> K_A = vars_["K_A"];
+    boost::shared_ptr<Matrix> D_B = vars_["D_B"];
+    boost::shared_ptr<Matrix> V_B = vars_["V_B"];
+    boost::shared_ptr<Matrix> J_B = vars_["J_B"];
+    boost::shared_ptr<Matrix> K_B = vars_["K_B"];
+    boost::shared_ptr<Matrix> K_O = vars_["K_O"];
+
+    // => Auxiliary C matrices <= //
+
+    boost::shared_ptr<Matrix> Cr1 = triple(D_B,S,Cavir_A_);
+    Cr1->scale(-1.0);
+    Cr1->add(Cavir_A_);
+    boost::shared_ptr<Matrix> Cs1 = triple(D_A,S,Cavir_B_);
+    Cs1->scale(-1.0);
+    Cs1->add(Cavir_B_);
+    boost::shared_ptr<Matrix> Ca2 = triple(D_B,S,Caocc_A_);
+    boost::shared_ptr<Matrix> Cb2 = triple(D_A,S,Caocc_B_);
+    boost::shared_ptr<Matrix> Cr3 = triple(D_B,S,Cavir_A_);
+    boost::shared_ptr<Matrix> CrX = triple(triple(D_A,S,D_B),S,Cavir_A_);
+    Cr3->subtract(CrX);
+    Cr3->scale(2.0);
+    boost::shared_ptr<Matrix> Cs3 = triple(D_A,S,Cavir_B_);
+    boost::shared_ptr<Matrix> CsX = triple(triple(D_B,S,D_A),S,Cavir_B_);
+    Cs3->subtract(CsX);
+    Cs3->scale(2.0);
+    boost::shared_ptr<Matrix> Ca4 = triple(triple(D_A,S,D_B),S,Caocc_A_);
+    Ca4->scale(-2.0);    
+    boost::shared_ptr<Matrix> Cb4 = triple(triple(D_B,S,D_A),S,Caocc_B_);
+    Cb4->scale(-2.0);    
+
+    // => Auxiliary V matrices <= //
+
+    // TODO
+
+    S.reset();
+    D_A.reset();
+    V_A.reset();
+    J_A.reset();
+    K_A.reset();
+    D_B.reset();
+    V_B.reset();
+    J_B.reset();
+    K_B.reset();
+    K_O.reset();
+
     // => Memory <= //
     
     // TODO: Account for 2-index overhead in memory
@@ -664,6 +715,14 @@ void DFTSAPT::mp2_terms()
     Cs.push_back(Cavir_A_);  
     Cs.push_back(Caocc_B_);  
     Cs.push_back(Cavir_B_);  
+    Cs.push_back(Cr1);  
+    Cs.push_back(Cs1);  
+    Cs.push_back(Ca2);  
+    Cs.push_back(Cb2);  
+    Cs.push_back(Cr3);  
+    Cs.push_back(Cs3);  
+    Cs.push_back(Ca4);  
+    Cs.push_back(Cb4);  
     boost::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
     df->set_C(Call);
 
@@ -672,9 +731,25 @@ void DFTSAPT::mp2_terms()
     df->add_space("r",offset,offset+Cavir_A_->colspi()[0]); offset += Cavir_A_->colspi()[0];
     df->add_space("b",offset,offset+Caocc_B_->colspi()[0]); offset += Caocc_B_->colspi()[0];
     df->add_space("s",offset,offset+Cavir_B_->colspi()[0]); offset += Cavir_B_->colspi()[0];
+    df->add_space("r1",offset,offset+Cr1->colspi()[0]); offset += Cr1->colspi()[0];
+    df->add_space("s1",offset,offset+Cs1->colspi()[0]); offset += Cs1->colspi()[0];
+    df->add_space("a2",offset,offset+Ca2->colspi()[0]); offset += Ca2->colspi()[0];
+    df->add_space("b2",offset,offset+Cb2->colspi()[0]); offset += Cb2->colspi()[0];
+    df->add_space("r3",offset,offset+Cr3->colspi()[0]); offset += Cr3->colspi()[0];
+    df->add_space("s3",offset,offset+Cs3->colspi()[0]); offset += Cs3->colspi()[0];
+    df->add_space("a4",offset,offset+Ca4->colspi()[0]); offset += Ca4->colspi()[0];
+    df->add_space("b4",offset,offset+Cb4->colspi()[0]); offset += Cb4->colspi()[0];
 
     df->add_pair_space("Aar", "a", "r");
     df->add_pair_space("Abs", "b", "s"); 
+    df->add_pair_space("Bas", "a", "s1");
+    df->add_pair_space("Bbr", "b", "r1"); 
+    df->add_pair_space("Cas", "a2","s");
+    df->add_pair_space("Cbr", "b2","r"); 
+    df->add_pair_space("Dar", "a", "r3");
+    df->add_pair_space("Dbs", "b", "s3"); 
+    df->add_pair_space("Ear", "a4","r");
+    df->add_pair_space("Ebs", "b4","s"); 
 
     df->compute();
 
@@ -682,8 +757,25 @@ void DFTSAPT::mp2_terms()
 
     boost::shared_ptr<Tensor> AarT = ints["Aar"];
     boost::shared_ptr<Tensor> AbsT = ints["Abs"];
+    boost::shared_ptr<Tensor> BasT = ints["Bas"];
+    boost::shared_ptr<Tensor> BbrT = ints["Bbr"];
+    boost::shared_ptr<Tensor> CasT = ints["Cas"];
+    boost::shared_ptr<Tensor> CbrT = ints["Cbr"];
+    boost::shared_ptr<Tensor> DarT = ints["Dar"];
+    boost::shared_ptr<Tensor> DbsT = ints["Dbs"];
+    boost::shared_ptr<Tensor> EarT = ints["Ear"];
+    boost::shared_ptr<Tensor> EbsT = ints["Ebs"];
 
     df.reset();
+
+    Cr1.reset();
+    Cs1.reset();
+    Ca2.reset();
+    Cb2.reset();
+    Cr3.reset();
+    Cs3.reset();
+    Ca4.reset();
+    Cb4.reset();
 
     // => Blocking <= //
 
@@ -709,6 +801,12 @@ void DFTSAPT::mp2_terms()
 
     boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_a*nr,nQ));
     boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_b*ns,nQ));
+    boost::shared_ptr<Matrix> Bas(new Matrix("Bas",max_a*ns,nQ));
+    boost::shared_ptr<Matrix> Bbr(new Matrix("Bbr",max_b*nr,nQ));
+    boost::shared_ptr<Matrix> Cas(new Matrix("Cas",max_a*ns,nQ));
+    boost::shared_ptr<Matrix> Cbr(new Matrix("Cbr",max_b*nr,nQ));
+    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",max_a*nr,nQ));
+    boost::shared_ptr<Matrix> Dbs(new Matrix("Dbs",max_b*ns,nQ));
 
     // => Thread Work Arrays <= //
 
@@ -723,6 +821,12 @@ void DFTSAPT::mp2_terms()
 
     double** Aarp = Aar->pointer();
     double** Absp = Abs->pointer();
+    double** Basp = Bas->pointer();
+    double** Bbrp = Bbr->pointer();
+    double** Casp = Cas->pointer();
+    double** Cbrp = Cbr->pointer();
+    double** Darp = Dar->pointer();
+    double** Dbsp = Dbs->pointer();
     double*  eap  = eps_aocc_A_->pointer();
     double*  ebp  = eps_aocc_B_->pointer();
     double*  erp  = eps_avir_A_->pointer();
@@ -732,6 +836,38 @@ void DFTSAPT::mp2_terms()
     
     FILE* Aarf = AarT->file_pointer();
     FILE* Absf = AbsT->file_pointer();
+    FILE* Basf = BasT->file_pointer();
+    FILE* Bbrf = BbrT->file_pointer();
+    FILE* Casf = CasT->file_pointer();
+    FILE* Cbrf = CbrT->file_pointer();
+    FILE* Darf = DarT->file_pointer();
+    FILE* Dbsf = DbsT->file_pointer();
+    FILE* Earf = EarT->file_pointer();
+    FILE* Ebsf = EbsT->file_pointer();
+
+    // => Slice D + E -> D <= //
+
+    fseek(Darf,0L,SEEK_SET);
+    fseek(Earf,0L,SEEK_SET);
+    for (int astart = 0; astart < na; astart += max_a) {
+        int nablock = (astart + max_a >= na ? na - astart : max_a);
+        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
+        fread(Aarp[0],sizeof(double),nablock*nrQ,Earf);
+        C_DAXPY(nablock*nrQ,1.0,Aarp[0],1,Darp[0],1);
+        fseek(Darf,sizeof(double)*astart*nrQ,SEEK_SET);
+        fwrite(Darp[0],sizeof(double),nablock*nrQ,Darf); 
+    }
+
+    fseek(Dbsf,0L,SEEK_SET);
+    fseek(Ebsf,0L,SEEK_SET);
+    for (int bstart = 0; bstart < nb; bstart += max_b) {
+        int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+        fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
+        fread(Absp[0],sizeof(double),nbblock*nsQ,Ebsf);
+        C_DAXPY(nbblock*nsQ,1.0,Absp[0],1,Dbsp[0],1);
+        fseek(Dbsf,sizeof(double)*bstart*nsQ,SEEK_SET);
+        fwrite(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf); 
+    }
 
     // => Targets <= //
 
@@ -741,16 +877,28 @@ void DFTSAPT::mp2_terms()
     // ==> Master Loop <== //
 
     fseek(Aarf,0L,SEEK_SET);
+    fseek(Basf,0L,SEEK_SET);
+    fseek(Casf,0L,SEEK_SET);
+    fseek(Darf,0L,SEEK_SET);
     for (int astart = 0; astart < na; astart += max_a) {
         int nablock = (astart + max_a >= na ? na - astart : max_a);
 
         fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
+        fread(Basp[0],sizeof(double),nablock*nsQ,Basf);
+        fread(Casp[0],sizeof(double),nablock*nsQ,Casf);
+        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
 
         fseek(Absf,0L,SEEK_SET);
+        fseek(Bbrf,0L,SEEK_SET);
+        fseek(Cbrf,0L,SEEK_SET);
+        fseek(Dbsf,0L,SEEK_SET);
         for (int bstart = 0; bstart < nb; bstart += max_b) {
             int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
 
             fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
+            fread(Bbrp[0],sizeof(double),nbblock*nrQ,Bbrf);
+            fread(Cbrp[0],sizeof(double),nbblock*nrQ,Cbrf);
+            fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
 
             long int nab = nablock * nbblock;
                 
@@ -767,6 +915,8 @@ void DFTSAPT::mp2_terms()
                 double** Trsp = Trs[thread]->pointer();
                 double** Vrsp = Vrs[thread]->pointer();
 
+                // => Amplitudes, Disp20 <= //
+
                 C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,0.0,Vrsp[0],ns);
 
                 for (int r = 0; r < nr; r++) {
@@ -775,6 +925,22 @@ void DFTSAPT::mp2_terms()
                         Disp20 += 4.0 * Trsp[r][s] * Vrsp[r][s];
                     }
                 }
+
+                // => Q1-Q3 <= //
+
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Bbrp[(b + bstart)*nr],nQ,Basp[(a + astart)*ns],nQ,0.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Cbrp[(b + bstart)*nr],nQ,Casp[(a + astart)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Dbsp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Darp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
+
+                for (int r = 0; r < nr; r++) {
+                    for (int s = 0; s < ns; s++) {
+                        ExchDisp20 -= 2.0 * Trsp[r][s] * Vrsp[r][s];
+                    }
+                }
+
+                // TODO V,J,K <= //          
+
             }
         } 
     }
@@ -966,9 +1132,18 @@ boost::shared_ptr<Matrix> DFTSAPT::build_C_X(boost::shared_ptr<Matrix> x, boost:
 }
 boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C)
 {
-    int n = A->nrow();
-    boost::shared_ptr<Matrix> D(A->clone());
-    boost::shared_ptr<Matrix> E(A->clone());
+    int Ar = A->nrow();
+    int Ac = A->ncol();
+    int Br = B->nrow();
+    int Bc = B->ncol();
+    int Cr = C->nrow();
+    int Cc = C->ncol();
+
+    if (Ac != Br) throw PSIEXCEPTION("Nonconforming GEMM");
+    if (Bc != Cr) throw PSIEXCEPTION("Nonconforming GEMM");
+
+    boost::shared_ptr<Matrix> D(new Matrix("T",Ar,Bc));
+    boost::shared_ptr<Matrix> E(new Matrix("T",Ar,Cc));
     
     double** Ap = A->pointer();    
     double** Bp = B->pointer();    
@@ -976,8 +1151,8 @@ boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::sh
     double** Dp = D->pointer();    
     double** Ep = E->pointer();    
 
-    C_DGEMM('N','N',n,n,n,1.0,Ap[0],n,Bp[0],n,0.0,Dp[0],n);
-    C_DGEMM('N','N',n,n,n,1.0,Dp[0],n,Cp[0],n,0.0,Ep[0],n);
+    C_DGEMM('N','N',Ar,Bc,Ac,1.0,Ap[0],Ac,Bp[0],Bc,0.0,Dp[0],Bc);
+    C_DGEMM('N','N',Ar,Cc,Bc,1.0,Dp[0],Bc,Cp[0],Cc,0.0,Ep[0],Cc);
 
     return E;
 }
