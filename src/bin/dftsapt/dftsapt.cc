@@ -2,6 +2,8 @@
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include <libfock/jk.h>
+#include <libthce/thce.h>
+#include <libthce/lreri.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <libpsio/psio.h>
@@ -534,83 +536,253 @@ void DFTSAPT::fock_terms()
     C_X_B.reset(); 
 
     // Exch-Ind20 (A<-B)
-    double ExchInd20_AB = 0.0;
-    std::vector<double> ExchInd20_AB_terms;
-    ExchInd20_AB_terms.resize(18);
-    ExchInd20_AB_terms[0]  -= 2.0 * X_A->vector_dot(K_B);
-    ExchInd20_AB_terms[1]  -= 4.0 * triple(D_B,S,X_A)->vector_dot(J_A);
-    ExchInd20_AB_terms[2]  += 2.0 * triple(D_A,S,D_B)->vector_dot(K_X_A);
-    ExchInd20_AB_terms[3]  -= 4.0 * triple(D_A,S,D_B)->vector_dot(J_X_A);
-    ExchInd20_AB_terms[4]  += 2.0 * triple(D_B,S,X_A)->vector_dot(K_A); 
-    ExchInd20_AB_terms[5]  -= 4.0 * triple(X_A,S,D_B)->vector_dot(J_B);
-    ExchInd20_AB_terms[6]  += 2.0 * triple(X_A,S,D_B)->vector_dot(K_B);
-    ExchInd20_AB_terms[7]  += 4.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(J_A);
-    ExchInd20_AB_terms[8]  += 4.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(J_B);
-    ExchInd20_AB_terms[9]  -= 2.0 * triple(X_A,S,D_B)->vector_dot(K_O);
-    ExchInd20_AB_terms[10] += 4.0 * triple(triple(D_B,S,D_A),S,D_B)->vector_dot(J_X_A);
-    ExchInd20_AB_terms[11] += 4.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(J_B);
-    ExchInd20_AB_terms[12] -= 2.0 * triple(D_B,S,X_A)->vector_dot(K_O->transpose());
-    ExchInd20_AB_terms[13] -= 2.0 * triple(D_B,S,X_A)->vector_dot(V_A); 
-    ExchInd20_AB_terms[14] -= 2.0 * triple(X_A,S,D_B)->vector_dot(V_B);
-    ExchInd20_AB_terms[15] += 2.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(V_A);
-    ExchInd20_AB_terms[16] += 2.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(V_B);
-    ExchInd20_AB_terms[17] += 2.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(V_B);
-    for (int k = 0; k < ExchInd20_AB_terms.size(); k++) {
-        ExchInd20_AB += ExchInd20_AB_terms[k];
+    double ExchInd20r_AB = 0.0;
+    std::vector<double> ExchInd20r_AB_terms;
+    ExchInd20r_AB_terms.resize(18);
+    ExchInd20r_AB_terms[0]  -= 2.0 * X_A->vector_dot(K_B);
+    ExchInd20r_AB_terms[1]  -= 4.0 * triple(D_B,S,X_A)->vector_dot(J_A);
+    ExchInd20r_AB_terms[2]  += 2.0 * triple(D_A,S,D_B)->vector_dot(K_X_A);
+    ExchInd20r_AB_terms[3]  -= 4.0 * triple(D_A,S,D_B)->vector_dot(J_X_A);
+    ExchInd20r_AB_terms[4]  += 2.0 * triple(D_B,S,X_A)->vector_dot(K_A); 
+    ExchInd20r_AB_terms[5]  -= 4.0 * triple(X_A,S,D_B)->vector_dot(J_B);
+    ExchInd20r_AB_terms[6]  += 2.0 * triple(X_A,S,D_B)->vector_dot(K_B);
+    ExchInd20r_AB_terms[7]  += 4.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(J_A);
+    ExchInd20r_AB_terms[8]  += 4.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(J_B);
+    ExchInd20r_AB_terms[9]  -= 2.0 * triple(X_A,S,D_B)->vector_dot(K_O);
+    ExchInd20r_AB_terms[10] += 4.0 * triple(triple(D_B,S,D_A),S,D_B)->vector_dot(J_X_A);
+    ExchInd20r_AB_terms[11] += 4.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(J_B);
+    ExchInd20r_AB_terms[12] -= 2.0 * triple(D_B,S,X_A)->vector_dot(K_O->transpose());
+    ExchInd20r_AB_terms[13] -= 2.0 * triple(D_B,S,X_A)->vector_dot(V_A); 
+    ExchInd20r_AB_terms[14] -= 2.0 * triple(X_A,S,D_B)->vector_dot(V_B);
+    ExchInd20r_AB_terms[15] += 2.0 * triple(triple(D_B,S,X_A),S,D_B)->vector_dot(V_A);
+    ExchInd20r_AB_terms[16] += 2.0 * triple(triple(X_A,S,D_B),S,D_A)->vector_dot(V_B);
+    ExchInd20r_AB_terms[17] += 2.0 * triple(triple(D_A,S,D_B),S,X_A)->vector_dot(V_B);
+    for (int k = 0; k < ExchInd20r_AB_terms.size(); k++) {
+        ExchInd20r_AB += ExchInd20r_AB_terms[k];
     }
     if (debug_) {
-        for (int k = 0; k < ExchInd20_AB_terms.size(); k++) {
-            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20_AB_terms[k]);
+        for (int k = 0; k < ExchInd20r_AB_terms.size(); k++) {
+            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20r_AB_terms[k]);
         }
     }
-    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20_AB);
+    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
     fflush(outfile);
 
     K_O->transpose_this();
 
     // Exch-Ind20 (B<-A)
-    double ExchInd20_BA = 0.0;
-    std::vector<double> ExchInd20_BA_terms;
-    ExchInd20_BA_terms.resize(18);
-    ExchInd20_BA_terms[0]  -= 2.0 * X_B->vector_dot(K_A);
-    ExchInd20_BA_terms[1]  -= 4.0 * triple(D_A,S,X_B)->vector_dot(J_B);
-    ExchInd20_BA_terms[2]  += 2.0 * triple(D_B,S,D_A)->vector_dot(K_X_B);
-    ExchInd20_BA_terms[3]  -= 4.0 * triple(D_B,S,D_A)->vector_dot(J_X_B);
-    ExchInd20_BA_terms[4]  += 2.0 * triple(D_A,S,X_B)->vector_dot(K_B); 
-    ExchInd20_BA_terms[5]  -= 4.0 * triple(X_B,S,D_A)->vector_dot(J_A);
-    ExchInd20_BA_terms[6]  += 2.0 * triple(X_B,S,D_A)->vector_dot(K_A);
-    ExchInd20_BA_terms[7]  += 4.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(J_B);
-    ExchInd20_BA_terms[8]  += 4.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(J_A);
-    ExchInd20_BA_terms[9]  -= 2.0 * triple(X_B,S,D_A)->vector_dot(K_O);
-    ExchInd20_BA_terms[10] += 4.0 * triple(triple(D_A,S,D_B),S,D_A)->vector_dot(J_X_B);
-    ExchInd20_BA_terms[11] += 4.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(J_A);
-    ExchInd20_BA_terms[12] -= 2.0 * triple(D_A,S,X_B)->vector_dot(K_O->transpose());
-    ExchInd20_BA_terms[13] -= 2.0 * triple(D_A,S,X_B)->vector_dot(V_B); 
-    ExchInd20_BA_terms[14] -= 2.0 * triple(X_B,S,D_A)->vector_dot(V_A);
-    ExchInd20_BA_terms[15] += 2.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(V_B);
-    ExchInd20_BA_terms[16] += 2.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(V_A);
-    ExchInd20_BA_terms[17] += 2.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(V_A);
-    for (int k = 0; k < ExchInd20_BA_terms.size(); k++) {
-        ExchInd20_BA += ExchInd20_BA_terms[k];
+    double ExchInd20r_BA = 0.0;
+    std::vector<double> ExchInd20r_BA_terms;
+    ExchInd20r_BA_terms.resize(18);
+    ExchInd20r_BA_terms[0]  -= 2.0 * X_B->vector_dot(K_A);
+    ExchInd20r_BA_terms[1]  -= 4.0 * triple(D_A,S,X_B)->vector_dot(J_B);
+    ExchInd20r_BA_terms[2]  += 2.0 * triple(D_B,S,D_A)->vector_dot(K_X_B);
+    ExchInd20r_BA_terms[3]  -= 4.0 * triple(D_B,S,D_A)->vector_dot(J_X_B);
+    ExchInd20r_BA_terms[4]  += 2.0 * triple(D_A,S,X_B)->vector_dot(K_B); 
+    ExchInd20r_BA_terms[5]  -= 4.0 * triple(X_B,S,D_A)->vector_dot(J_A);
+    ExchInd20r_BA_terms[6]  += 2.0 * triple(X_B,S,D_A)->vector_dot(K_A);
+    ExchInd20r_BA_terms[7]  += 4.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(J_B);
+    ExchInd20r_BA_terms[8]  += 4.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(J_A);
+    ExchInd20r_BA_terms[9]  -= 2.0 * triple(X_B,S,D_A)->vector_dot(K_O);
+    ExchInd20r_BA_terms[10] += 4.0 * triple(triple(D_A,S,D_B),S,D_A)->vector_dot(J_X_B);
+    ExchInd20r_BA_terms[11] += 4.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(J_A);
+    ExchInd20r_BA_terms[12] -= 2.0 * triple(D_A,S,X_B)->vector_dot(K_O->transpose());
+    ExchInd20r_BA_terms[13] -= 2.0 * triple(D_A,S,X_B)->vector_dot(V_B); 
+    ExchInd20r_BA_terms[14] -= 2.0 * triple(X_B,S,D_A)->vector_dot(V_A);
+    ExchInd20r_BA_terms[15] += 2.0 * triple(triple(D_A,S,X_B),S,D_A)->vector_dot(V_B);
+    ExchInd20r_BA_terms[16] += 2.0 * triple(triple(X_B,S,D_A),S,D_B)->vector_dot(V_A);
+    ExchInd20r_BA_terms[17] += 2.0 * triple(triple(D_B,S,D_A),S,X_B)->vector_dot(V_A);
+    for (int k = 0; k < ExchInd20r_BA_terms.size(); k++) {
+        ExchInd20r_BA += ExchInd20r_BA_terms[k];
     }
     if (debug_) {
-        for (int k = 0; k < ExchInd20_BA_terms.size(); k++) {
-            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20_BA_terms[k]);
+        for (int k = 0; k < ExchInd20r_BA_terms.size(); k++) {
+            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20r_BA_terms[k]);
         }
     }
-    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20_BA);
+    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
     fflush(outfile);
 
-    double ExchInd20 = ExchInd20_AB + ExchInd20_BA;
-    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20);
+    K_O->transpose_this();
+
+    double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
+    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
     fprintf(outfile,"\n");
     fflush(outfile);
+
+    energies_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
+    energies_["Exch-Ind20,r (B->A)"] = ExchInd20r_BA;
+    energies_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
+
+
+    vars_["S"]   = S;
+    vars_["D_A"] = D_A;
+    vars_["V_A"] = V_A;
+    vars_["J_A"] = J_A;
+    vars_["K_A"] = K_A;
+    vars_["D_B"] = D_B;
+    vars_["V_B"] = V_B;
+    vars_["J_B"] = J_B;
+    vars_["K_B"] = K_B;
+    vars_["K_O"] = K_O;
 }
 void DFTSAPT::mp2_terms()
 {
     fprintf(outfile, "  PT2 TERMS:\n\n");
 
-    // TODO 
+    // => Sizing <= //
+
+    int nn = primary_->nbf();
+
+    int na = Caocc_A_->colspi()[0];
+    int nb = Caocc_B_->colspi()[0];
+    int nr = Cavir_A_->colspi()[0];
+    int ns = Cavir_B_->colspi()[0];
+    int nQ = mp2fit_->nbf();
+    size_t nrQ = nr * (size_t) nQ;
+    size_t nsQ = ns * (size_t) nQ;
+    
+    int nT = 1;
+    #ifdef _OPENMP
+        nT = omp_get_max_threads();
+    #endif
+
+    // => Memory <= //
+    
+    // TODO: Account for 2-index overhead in memory
+    long int mem = memory_;
+    mem -= 6L * nn * nn;
+
+    // => Integrals from the THCE <= //
+
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,mp2fit_,Process::environment.options);
+    df->set_memory(mem);
+    df->clear();
+
+    std::vector<boost::shared_ptr<Matrix> > Cs;
+    Cs.push_back(Caocc_A_);  
+    Cs.push_back(Cavir_A_);  
+    Cs.push_back(Caocc_B_);  
+    Cs.push_back(Cavir_B_);  
+    boost::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
+    df->set_C(Call);
+
+    int offset = 0;
+    df->add_space("a",offset,offset+Caocc_A_->colspi()[0]); offset += Caocc_A_->colspi()[0];
+    df->add_space("r",offset,offset+Cavir_A_->colspi()[0]); offset += Cavir_A_->colspi()[0];
+    df->add_space("b",offset,offset+Caocc_B_->colspi()[0]); offset += Caocc_B_->colspi()[0];
+    df->add_space("s",offset,offset+Cavir_B_->colspi()[0]); offset += Cavir_B_->colspi()[0];
+
+    df->add_pair_space("Aar", "a", "r");
+    df->add_pair_space("Abs", "b", "s"); 
+
+    df->compute();
+
+    std::map<std::string, boost::shared_ptr<Tensor> >& ints = df->ints();
+
+    boost::shared_ptr<Tensor> AarT = ints["Aar"];
+    boost::shared_ptr<Tensor> AbsT = ints["Abs"];
+
+    df.reset();
+
+    // => Blocking <= //
+
+    long int overhead = 0L;
+    overhead += 2L * nT * nr * ns;
+
+    long int rem = mem - overhead;
+
+    if (rem < 0L) {
+        throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
+    }
+
+    long int cost_a = 2L * nr * nQ + 2L * ns * nQ;
+    long int max_a = rem / (2L * cost_a);
+    long int max_b = max_a;
+    max_a = (max_a > na ? na : max_a);
+    max_b = (max_b > nb ? nb : max_b);
+    if (max_a < 1L || max_b < 1L) {
+        throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
+    }
+
+    // => Tensor Slices <= //
+
+    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_a*nr,nQ));
+    boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_b*ns,nQ));
+
+    // => Thread Work Arrays <= //
+
+    std::vector<boost::shared_ptr<Matrix> > Trs;
+    std::vector<boost::shared_ptr<Matrix> > Vrs;
+    for (int t = 0; t < nT; t++) {
+        Trs.push_back(boost::shared_ptr<Matrix>(new Matrix("Trs",nr,ns)));
+        Vrs.push_back(boost::shared_ptr<Matrix>(new Matrix("Vrs",nr,ns)));
+    }
+
+    // => Pointers <= //
+
+    double** Aarp = Aar->pointer();
+    double** Absp = Abs->pointer();
+    double*  eap  = eps_aocc_A_->pointer();
+    double*  ebp  = eps_aocc_B_->pointer();
+    double*  erp  = eps_avir_A_->pointer();
+    double*  esp  = eps_avir_B_->pointer();
+
+    // => File Pointers <= //
+    
+    FILE* Aarf = AarT->file_pointer();
+    FILE* Absf = AbsT->file_pointer();
+
+    // => Targets <= //
+
+    double Disp20 = 0.0;
+    double ExchDisp20 = 0.0;
+
+    // ==> Master Loop <== //
+
+    fseek(Aarf,0L,SEEK_SET);
+    for (int astart = 0; astart < na; astart += max_a) {
+        int nablock = (astart + max_a >= na ? na - astart : max_a);
+
+        fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
+
+        fseek(Absf,0L,SEEK_SET);
+        for (int bstart = 0; bstart < nb; bstart += max_b) {
+            int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+
+            fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
+
+            long int nab = nablock * nbblock;
+                
+            #pragma omp parallel for schedule(dynamic) reduction(+: Disp20, ExchDisp20)
+            for (long int ab = 0L; ab < nab; ab++) {
+                int a = ab / nbblock;
+                int b = ab % nbblock;
+
+                int thread = 0;
+                #ifdef _OPENMP
+                    thread = omp_get_thread_num();
+                #endif
+
+                double** Trsp = Trs[thread]->pointer();
+                double** Vrsp = Vrs[thread]->pointer();
+
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,0.0,Vrsp[0],ns);
+
+                for (int r = 0; r < nr; r++) {
+                    for (int s = 0; s < ns; s++) {
+                        Trsp[r][s] = Vrsp[r][s] / (eap[a + astart] + ebp[b + bstart] - erp[r] - esp[s]);
+                        Disp20 += 4.0 * Trsp[r][s] * Vrsp[r][s];
+                    }
+                }
+            }
+        } 
+    }
+
+    fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
+    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
+    fprintf(outfile,"\n");
+    fflush(outfile);
 }
 void DFTSAPT::print_trailer() const 
 {

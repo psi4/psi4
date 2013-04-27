@@ -100,7 +100,7 @@ void LRERI::load_options(Options& options)
     print_ = options.get_int("PRINT");
     debug_ = options.get_int("DEBUG");
     bench_ = options.get_int("BENCH");
-    memory_ = (options.get_double("THC_MEMORY_FACTOR") * Process::environment.get_memory() / 8L); 
+    memory_ = (0.9 * Process::environment.get_memory() / 8L); 
 }
 void LRERI::set_C(boost::shared_ptr<Matrix> C) 
 {
@@ -214,7 +214,7 @@ boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost
 void DFERI::load_options(Options& options)
 {
     LRERI::load_options(options);
-    J_cutoff_ = options.get_double("THC_J_CUTOFF"); 
+    J_cutoff_ = options.get_double("DF_FITTING_CONDITION"); 
     schwarz_cutoff_ = options.get_double("INTS_TOLERANCE");
 }
 void DFERI::add_pair_space(const std::string& name, const std::string& space1, const std::string& space2)
