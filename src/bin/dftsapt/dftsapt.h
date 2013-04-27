@@ -102,6 +102,9 @@ protected:
     boost::shared_ptr<Vector> eps_fvir_A_;
     // Monomer B eps vector (frozen vir)
     boost::shared_ptr<Vector> eps_fvir_B_;
+
+    // Shared matrices (Fock-like)
+    std::map<std::string, boost::shared_ptr<Matrix> > vars_;
     
     // Print author/sizing/spec info
     virtual void print_header() const;
