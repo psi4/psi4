@@ -245,6 +245,9 @@ void DFTSAPT::fock_terms()
     boost::shared_ptr<Matrix> D_A    = build_D(Cocc_A_, Cocc_A_);
     boost::shared_ptr<Matrix> D_B    = build_D(Cocc_B_, Cocc_B_);
 
+    boost::shared_ptr<Matrix> P_A    = build_D(Cvir_A_, Cvir_A_);
+    boost::shared_ptr<Matrix> P_B    = build_D(Cvir_B_, Cvir_B_);
+
     // => Compute the V matrices <= //
 
     boost::shared_ptr<Matrix> V_A = build_V(primary_A_);
@@ -617,10 +620,12 @@ void DFTSAPT::fock_terms()
 
     vars_["S"]   = S;
     vars_["D_A"] = D_A;
+    vars_["P_A"] = P_A;
     vars_["V_A"] = V_A;
     vars_["J_A"] = J_A;
     vars_["K_A"] = K_A;
     vars_["D_B"] = D_B;
+    vars_["P_B"] = P_B;
     vars_["V_B"] = V_B;
     vars_["J_B"] = J_B;
     vars_["K_B"] = K_B;
@@ -651,10 +656,12 @@ void DFTSAPT::mp2_terms()
 
     boost::shared_ptr<Matrix> S   = vars_["S"];
     boost::shared_ptr<Matrix> D_A = vars_["D_A"];
+    boost::shared_ptr<Matrix> P_A = vars_["P_A"];
     boost::shared_ptr<Matrix> V_A = vars_["V_A"];
     boost::shared_ptr<Matrix> J_A = vars_["J_A"];
     boost::shared_ptr<Matrix> K_A = vars_["K_A"];
     boost::shared_ptr<Matrix> D_B = vars_["D_B"];
+    boost::shared_ptr<Matrix> P_B = vars_["P_B"];
     boost::shared_ptr<Matrix> V_B = vars_["V_B"];
     boost::shared_ptr<Matrix> J_B = vars_["J_B"];
     boost::shared_ptr<Matrix> K_B = vars_["K_B"];
@@ -685,18 +692,117 @@ void DFTSAPT::mp2_terms()
 
     // => Auxiliary V matrices <= //
 
-    // TODO
+    boost::shared_ptr<Matrix> Jbr = triple(Caocc_B_,J_A,Cavir_A_,true,false,false);
+    Jbr->scale(2.0);
+    boost::shared_ptr<Matrix> Kbr = triple(Caocc_B_,K_A,Cavir_A_,true,false,false);
+    Kbr->scale(-1.0);
+
+    boost::shared_ptr<Matrix> Jas = triple(Caocc_A_,J_B,Cavir_B_,true,false,false);
+    Jas->scale(2.0);
+    boost::shared_ptr<Matrix> Kas = triple(Caocc_A_,K_B,Cavir_B_,true,false,false);
+    Kas->scale(-1.0);
+
+    boost::shared_ptr<Matrix> KOas = triple(Caocc_A_,K_O,Cavir_B_,true,false,false);
+    KOas->scale(1.0);
+    boost::shared_ptr<Matrix> KObr = triple(Caocc_B_,K_O,Cavir_A_,true,true,false);
+    KObr->scale(1.0);
+
+    boost::shared_ptr<Matrix> JBas = triple(triple(Caocc_A_,S,D_B,true,false,false),J_A,Cavir_B_);
+    JBas->scale(-2.0);
+    boost::shared_ptr<Matrix> JAbr = triple(triple(Caocc_B_,S,D_A,true,false,false),J_B,Cavir_A_);
+    JAbr->scale(-2.0);
+
+    boost::shared_ptr<Matrix> Jbs = triple(Caocc_B_,J_A,Cavir_B_,true,false,false);
+    Jbs->scale(4.0);
+    boost::shared_ptr<Matrix> Jar = triple(Caocc_A_,J_B,Cavir_A_,true,false,false);
+    Jar->scale(4.0);
+
+    boost::shared_ptr<Matrix> JAas = triple(triple(Caocc_A_,J_B,D_A,true,false,false),S,Cavir_B_);
+    JAas->scale(-2.0);
+    boost::shared_ptr<Matrix> JBbr = triple(triple(Caocc_B_,J_A,D_B,true,false,false),S,Cavir_A_);
+    JBbr->scale(-2.0);
+
+    // Get your signs right Hesselmann!
+    boost::shared_ptr<Matrix> Vbs = triple(Caocc_B_,V_A,Cavir_B_,true,false,false);
+    Vbs->scale(2.0);
+    boost::shared_ptr<Matrix> Var = triple(Caocc_A_,V_B,Cavir_A_,true,false,false);
+    Var->scale(2.0);
+    boost::shared_ptr<Matrix> VBas = triple(triple(Caocc_A_,S,D_B,true,false,false),V_A,Cavir_B_);
+    VBas->scale(-1.0);
+    boost::shared_ptr<Matrix> VAbr = triple(triple(Caocc_B_,S,D_A,true,false,false),V_B,Cavir_A_);
+    VAbr->scale(-1.0);
+    boost::shared_ptr<Matrix> VRas = triple(triple(Caocc_A_,V_B,P_A,true,false,false),S,Cavir_B_);
+    VRas->scale(1.0);
+    boost::shared_ptr<Matrix> VSbr = triple(triple(Caocc_B_,V_A,P_B,true,false,false),S,Cavir_A_);
+    VSbr->scale(1.0);
+
+    boost::shared_ptr<Matrix> Sas = triple(Caocc_A_,S,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Sbr = triple(Caocc_B_,S,Cavir_A_,true,false,false);
+
+    boost::shared_ptr<Matrix> Qbr(Jbr->clone());
+    Qbr->zero();
+    Qbr->add(Jbr);
+    Qbr->add(Kbr);
+    Qbr->add(KObr);
+    Qbr->add(JAbr);
+    Qbr->add(JBbr);
+    Qbr->add(VAbr);
+    Qbr->add(VSbr);
+
+    boost::shared_ptr<Matrix> Qas(Jas->clone());
+    Qas->zero();
+    Qas->add(Jas);
+    Qas->add(Kas);
+    Qas->add(KOas);
+    Qas->add(JAas);
+    Qas->add(JBas);
+    Qas->add(VBas);
+    Qas->add(VRas);
+
+    boost::shared_ptr<Matrix> SBar = triple(triple(Caocc_A_,S,D_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> SAbs = triple(triple(Caocc_B_,S,D_A,true,false,false),S,Cavir_B_);
+
+    boost::shared_ptr<Matrix> Qar(Jar->clone());
+    Qar->zero();
+    Qar->add(Jar);    
+    Qar->add(Var);
+
+    boost::shared_ptr<Matrix> Qbs(Jbs->clone());
+    Qbs->zero();
+    Qbs->add(Jbs);    
+    Qbs->add(Vbs);
+
+    Jbr.reset();
+    Kbr.reset();
+    Jas.reset();
+    Kas.reset();
+    KOas.reset();
+    KObr.reset();
+    JBas.reset();
+    JAbr.reset();
+    Jbs.reset();
+    Jar.reset();
+    JAas.reset();
+    JBbr.reset(); 
 
     S.reset();
     D_A.reset();
+    P_A.reset();
     V_A.reset();
     J_A.reset();
     K_A.reset();
     D_B.reset();
+    P_B.reset();
     V_B.reset();
     J_B.reset();
     K_B.reset();
     K_O.reset();
+    Vbs.reset();
+    Var.reset();
+    VBas.reset();
+    VAbr.reset();
+    VRas.reset();
+    VSbr.reset();
 
     // => Memory <= //
     
@@ -827,6 +933,17 @@ void DFTSAPT::mp2_terms()
     double** Cbrp = Cbr->pointer();
     double** Darp = Dar->pointer();
     double** Dbsp = Dbs->pointer();
+
+    double** Sasp = Sas->pointer();
+    double** Sbrp = Sbr->pointer();
+    double** SBarp = SBar->pointer();
+    double** SAbsp = SAbs->pointer();
+
+    double** Qasp = Qas->pointer();
+    double** Qbrp = Qbr->pointer();
+    double** Qarp = Qar->pointer();
+    double** Qbsp = Qbs->pointer();
+
     double*  eap  = eps_aocc_A_->pointer();
     double*  ebp  = eps_aocc_B_->pointer();
     double*  erp  = eps_avir_A_->pointer();
@@ -926,21 +1043,27 @@ void DFTSAPT::mp2_terms()
                     }
                 }
 
-                // => Q1-Q3 <= //
+                // => Exch-Disp20 <= //
+
+                // > Q1-Q3 < //
 
                 C_DGEMM('N','T',nr,ns,nQ,1.0,Bbrp[(b + bstart)*nr],nQ,Basp[(a + astart)*ns],nQ,0.0,Vrsp[0],ns);
                 C_DGEMM('N','T',nr,ns,nQ,1.0,Cbrp[(b + bstart)*nr],nQ,Casp[(a + astart)*ns],nQ,1.0,Vrsp[0],ns);
                 C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Dbsp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
                 C_DGEMM('N','T',nr,ns,nQ,1.0,Darp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
+            
+                // > V,J,K < //
+        
+                C_DGER(nr,ns,1.0,Qbrp[b + bstart],1,Sasp[a + astart],1,Vrsp[0],ns);
+                C_DGER(nr,ns,1.0,Sbrp[b + bstart],1,Qasp[a + astart],1,Vrsp[0],ns);
+                C_DGER(nr,ns,1.0,Qarp[a + astart],1,SAbsp[b + bstart],1,Vrsp[0],ns);
+                C_DGER(nr,ns,1.0,SBarp[a + astart],1,Qbsp[b + bstart],1,Vrsp[0],ns);
 
                 for (int r = 0; r < nr; r++) {
                     for (int s = 0; s < ns; s++) {
                         ExchDisp20 -= 2.0 * Trsp[r][s] * Vrsp[r][s];
                     }
                 }
-
-                // TODO V,J,K <= //          
-
             }
         } 
     }
@@ -1130,7 +1253,7 @@ boost::shared_ptr<Matrix> DFTSAPT::build_C_X(boost::shared_ptr<Matrix> x, boost:
 
     return R;
 }
-boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C)
+boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA, bool tB, bool tC)
 {
     int Ar = A->nrow();
     int Ac = A->ncol();
@@ -1138,6 +1261,14 @@ boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::sh
     int Bc = B->ncol();
     int Cr = C->nrow();
     int Cc = C->ncol();
+
+    int Al = Ac;
+    int Bl = Bc;
+    int Cl = Cc;
+
+    if (tA) { int T = Ar; Ar = Ac; Ac = T; }
+    if (tB) { int T = Br; Br = Bc; Bc = T; }
+    if (tC) { int T = Cr; Cr = Cc; Cc = T; }
 
     if (Ac != Br) throw PSIEXCEPTION("Nonconforming GEMM");
     if (Bc != Cr) throw PSIEXCEPTION("Nonconforming GEMM");
@@ -1151,8 +1282,8 @@ boost::shared_ptr<Matrix> DFTSAPT::triple(boost::shared_ptr<Matrix> A, boost::sh
     double** Dp = D->pointer();    
     double** Ep = E->pointer();    
 
-    C_DGEMM('N','N',Ar,Bc,Ac,1.0,Ap[0],Ac,Bp[0],Bc,0.0,Dp[0],Bc);
-    C_DGEMM('N','N',Ar,Cc,Bc,1.0,Dp[0],Bc,Cp[0],Cc,0.0,Ep[0],Cc);
+    C_DGEMM((tA ? 'T' : 'N'),(tB ? 'T' : 'N'),Ar,Bc,Ac,1.0,Ap[0],Al,Bp[0],Bl,0.0,Dp[0],Bc);
+    C_DGEMM('N',(tC ? 'T' : 'N'),Ar,Cc,Bc,1.0,Dp[0],Bc,Cp[0],Cl,0.0,Ep[0],Cc);
 
     return E;
 }
