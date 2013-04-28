@@ -135,8 +135,8 @@ protected:
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
-    // Triple GEMM (all matrices must be square)
-    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C);
+    // Triple GEMM
+    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
     // Build the C_O matrix
     boost::shared_ptr<Matrix> build_C_O(boost::shared_ptr<Matrix> C, boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> P);
     // Build the C_X matrix
