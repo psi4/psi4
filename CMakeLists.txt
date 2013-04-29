@@ -85,21 +85,21 @@ add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
 #  We don't really need the interpreter. Could we just use the PythonLibs method?
-#
-#find_package(PythonInterp REQUIRED)
-#set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-#execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYLIB OUTPUT_STRIP_TRAILING_WHITESPACE)
-#execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYINC OUTPUT_STRIP_TRAILING_WHITESPACE)
-## Turn the flags into proper lists
-#string(REPLACE "-I" "" PYINC ${PYINC})
-#string(REPLACE " " ";" PYINC ${PYINC})
-#
-#if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
-#   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
-#                       "is installed and that python-config exists in the same directory as the python executable.")
-#endif()
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonInterp REQUIRED)
+set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
+execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Turn the flags into proper lists
+string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+
+##if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
+##   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
+##                       "is installed and that python-config exists in the same directory as the python executable.")
+##endif()
+#
+#find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 #
