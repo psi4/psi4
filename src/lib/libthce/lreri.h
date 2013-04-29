@@ -42,8 +42,6 @@ protected:
     
     /// Set defaults
     void common_init();
-    /// Print info
-    virtual void print_header() = 0;
 
     /// Inverse fitting metric
     boost::shared_ptr<Matrix> Jm12(boost::shared_ptr<BasisSet> auxiliary, double condition);
@@ -72,6 +70,8 @@ public:
 
     // => Computers <= // 
 
+    /// Print info
+    virtual void print_header(int level = 1) = 0;
     /// R: Compute the desired ERI factorization
     virtual void compute() = 0; 
     
@@ -117,8 +117,6 @@ protected:
     
     /// Set defaults
     void common_init();
-    /// Print info
-    virtual void print_header();
 
     void allocate();
     void transform();
@@ -148,6 +146,8 @@ public:
 
     // => Computers <= // 
 
+    /// Print info
+    virtual void print_header(int level = 1);
     /// R: Compute the requested DF 3-index integrals
     virtual void compute();
     /// Handle to computed disk tensors, by name in add_pair above
@@ -200,8 +200,6 @@ protected:
     
     /// Set defaults
     void common_init();
-    /// Print info
-    virtual void print_header();
 
     /// Build all requred X matrices (np x nP, core)
     std::map<std::string, boost::shared_ptr<Tensor> > build_X(bool meth = false);
@@ -248,6 +246,8 @@ public:
 
     // => Computers <= // 
 
+    /// Print info
+    virtual void print_header(int level = 1);
     /// R: Compute the requested LS-LSTHC factors
     virtual void compute();
     /// LS-LSTHC factors [X1,X2,Z,X3,X4,L12,L34,Sinv12,Sinv34]
