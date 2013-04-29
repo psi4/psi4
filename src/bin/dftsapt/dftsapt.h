@@ -109,7 +109,7 @@ protected:
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
-    virtual void print_trailer() const;
+    virtual void print_trailer();
 
     // Hartree-Fock-like terms (Elst, Exch, Ind)
     virtual void fock_terms();
@@ -125,22 +125,16 @@ protected:
     boost::shared_ptr<Matrix> build_Sij(boost::shared_ptr<Matrix> S);
     // Build the S^\infty expansion in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij_n(boost::shared_ptr<Matrix> Sij);
-    // Build the Cbar matrices
+    // Build the Cbar matrices from S^\infty
     std::map<std::string, boost::shared_ptr<Matrix> > build_Cbar(boost::shared_ptr<Matrix> S);
-
-    // Build a generalized density matrix
-    boost::shared_ptr<Matrix> build_D(boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
-    // Build the CPKS RHS (ov-space)
-    boost::shared_ptr<Matrix> build_w(boost::shared_ptr<Matrix> W, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
+
+    // Double GEMM
+    boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
     // Triple GEMM
-    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
-    // Build the C_O matrix
-    boost::shared_ptr<Matrix> build_C_O(boost::shared_ptr<Matrix> C, boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> P);
-    // Build the C_X matrix
-    boost::shared_ptr<Matrix> build_C_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> C);
+    boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
 
     // Protected constructor (use factory below)
     DFTSAPT();

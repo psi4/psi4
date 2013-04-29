@@ -187,7 +187,7 @@ void JK::common_init()
     #ifdef _OPENMP
     omp_nthread_ = omp_get_max_threads();
     #endif
-    cutoff_ = 0.0;
+    cutoff_ = 1.0E-12;
 
     do_J_ = true;
     do_K_ = true;

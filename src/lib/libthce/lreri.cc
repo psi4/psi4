@@ -229,35 +229,33 @@ void DFERI::clear()
     pair_spaces_order_.clear();
     ints_.clear();
 }
-void DFERI::print_header()
+void DFERI::print_header(int level)
 {
-    if (print_) {
-        fprintf(outfile, "\n");
-        fprintf(outfile, "         ------------------------------------------------------------\n");
-        fprintf(outfile, "                                     DF-ERI                          \n"); 
-        fprintf(outfile, "                         Rob Parrish and Ed Hohenstein               \n"); 
-        fprintf(outfile, "         ------------------------------------------------------------\n\n");
+    fprintf(outfile, "  ==> DFERI: Density Fitted 3-Index Tensors <==\n\n");
+    fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
+    fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
+    fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
+    fprintf(outfile, "\n");
 
-        fprintf(outfile, " ==> Options <==\n\n");
-        fprintf(outfile, "    Schwarz cutoff = %11.3E\n", schwarz_cutoff_);
-        fprintf(outfile, "    J cutoff       = %11.3E\n", J_cutoff_);
-        fprintf(outfile, "    Mem (GB)       = %11zu\n", (memory_ * 8L / 1073741824L)); 
-        fprintf(outfile, "\n");
-
-        fprintf(outfile, " ==> Primary Basis <==\n\n");
+    if (level > 1) {
+        fprintf(outfile, "   => Primary Basis <=\n\n");
         primary_->print_by_level(outfile, print_);
-
-        fprintf(outfile, " ==> Auxiliary Basis <==\n\n");
-        auxiliary_->print_by_level(outfile, print_);
-        
-        fprintf(outfile, " ==> Orbital Spaces: <==\n\n");
+    }
+    
+    fprintf(outfile, "   => Auxiliary Basis <=\n\n");
+    auxiliary_->print_by_level(outfile, print_);
+    
+    if (level > 1) {
+        fprintf(outfile, "   => Orbital Spaces: <=\n\n");
         fprintf(outfile, "    %12s %12s %12s\n", "Space", "Start", "End");
         for (int i = 0; i < spaces_order_.size(); i++) {
             fprintf(outfile, "    %12s %12d %12d\n", spaces_order_[i].c_str(), spaces_[spaces_order_[i]].first, spaces_[spaces_order_[i]].second);
         }
         fprintf(outfile, "\n");
-
-        fprintf(outfile, " ==> Required Orbital Pair Spaces: <==\n\n");
+    }
+    
+    if (level > 1) {
+        fprintf(outfile, "   => Required Orbital Pair Spaces: <=\n\n");
         fprintf(outfile, "    %12s %12s %12s\n", "Tensor", "Space 1", "Space 2");
         for (int i = 0; i < pair_spaces_order_.size(); i++) {
             fprintf(outfile, "    %12s %12s %12s\n", pair_spaces_order_[i].c_str(), pair_spaces_[pair_spaces_order_[i]].first.c_str(), pair_spaces_[pair_spaces_order_[i]].second.c_str());
@@ -267,8 +265,6 @@ void DFERI::print_header()
 }
 void DFERI::compute()
 {
-    print_header();
-
     // => Allocation <= //
     
     allocate();
@@ -631,7 +627,7 @@ void LSTHCERI::clear()
     eri_spaces_order_.clear();
     ints_.clear();
 }
-void LSTHCERI::print_header()
+void LSTHCERI::print_header(int level)
 {
     if (print_) {
         fprintf(outfile, "\n");
