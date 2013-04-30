@@ -152,6 +152,8 @@ public:
     virtual void compute();
     /// Handle to computed disk tensors, by name in add_pair above
     std::map<std::string, boost::shared_ptr<Tensor> >& ints() { return ints_; }
+    /// Return the J matrix raised to the desired power
+    boost::shared_ptr<Matrix> Jpow(double power = -1.0/2.0);
 
     // => Setters <= //
 
