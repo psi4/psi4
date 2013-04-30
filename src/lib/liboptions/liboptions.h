@@ -11,6 +11,12 @@
 // Forward boost python object
 #include <boost/python/object_fwd.hpp>
 
+namespace boost{
+    namespace python{
+        class list;
+    }
+}
+
 namespace psi {
 extern FILE *outfile;
 
@@ -77,6 +83,7 @@ public:
     virtual std::string to_string() const;
     virtual int to_integer() const;
     virtual double to_double() const;
+    virtual boost::python::list to_list() const;
 
     virtual void assign(DataType*);
     virtual void assign(bool);
@@ -219,6 +226,7 @@ public:
     std::string to_string() const;
     int to_integer() const;
     double to_double() const;
+    boost::python::list to_list() const;
 
     bool is_array() const;
     unsigned int size() const;
@@ -280,6 +288,7 @@ public:
     virtual unsigned int size() const;
 
     virtual std::string to_string() const;
+    virtual boost::python::list to_list() const;
 
     virtual void reset();
 };

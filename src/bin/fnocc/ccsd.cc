@@ -235,8 +235,7 @@ double CoupledCluster::compute_energy() {
 
      // if low memory or CIM, need to generate one last set of integrals
      if (reference_wavefunction_->isCIM() || isLowMemory){
-        long int memory = memory - (long int)(!t2_on_disk)*o*o*v*v;
-        Sort_OV3_LowMemory(memory,o,v,reference_wavefunction_->isCIM());
+        Sort_OV3_LowMemory(memory - 8L*(long int)(!t2_on_disk)*o*o*v*v,o,v,reference_wavefunction_->isCIM());
      }
 
      // now there should be space for t2

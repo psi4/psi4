@@ -15,7 +15,7 @@ set(top_objdir \"${PROJECT_BINARY_DIR}\")
 
 #set(PSI_VERSION "4.0")
 set(PACKAGE_VERSION "4.0git")
-set(PACKAGE_NAME PSI)
+set(PACKAGE_NAME "Psi")
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "psicode@users.sourceforge.net")
 
@@ -27,6 +27,9 @@ This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
 Please delete them.")
 endif()
 
+#
+# OpenMP
+#
 find_package(OpenMP)
 if (OPENMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
@@ -85,21 +88,21 @@ add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
 #  We don't really need the interpreter. Could we just use the PythonLibs method?
-#
-#find_package(PythonInterp REQUIRED)
-#set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-#execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYLIB OUTPUT_STRIP_TRAILING_WHITESPACE)
-#execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYINC OUTPUT_STRIP_TRAILING_WHITESPACE)
-## Turn the flags into proper lists
-#string(REPLACE "-I" "" PYINC ${PYINC})
-#string(REPLACE " " ";" PYINC ${PYINC})
-#
-#if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
-#   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
-#                       "is installed and that python-config exists in the same directory as the python executable.")
-#endif()
 
-find_package(PythonLibs REQUIRED)
+find_package(PythonInterp REQUIRED)
+set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
+execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
+# Turn the flags into proper lists
+string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+string(REPLACE " " ";" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
+
+##if(PYLIB STREQUAL "" OR PYINC STREQUAL "")
+##   message(FATAL_ERROR "Python development libraries were not detected. Make sure that the development version "
+##                       "is installed and that python-config exists in the same directory as the python executable.")
+##endif()
+#
+#find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 #
@@ -107,7 +110,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 #
 # N.B. Update boost/CMakeLists.txt if this list of components changes
 set(Boost_USE_STATIC_LIBS ON)
-set(Boost_COMPONENTS filesystem python regex thread system serialization)
+set(Boost_COMPONENTS filesystem python regex serialization system thread )
 find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
 if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
@@ -116,13 +119,22 @@ if(NOT Boost_FOUND)
     set(BOOSTVER boost_1_53_0)
     # Link and include information
     set(BOOSTLIBDIR ${PROJECT_BINARY_DIR}/boost/${BOOSTVER}/stage/lib)
-    set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost)
+    set(Boost_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/boost/${BOOSTVER})
     foreach(component ${Boost_COMPONENTS})
         set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
     add_subdirectory(boost)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
+
+#
+# PThreads
+#
+find_package(Threads)
+#get_cmake_property(_variableNames VARIABLES)
+#foreach (_variableName ${_variableNames})
+#    message(STATUS "${_variableName}=${${_variableName}}")
+#endforeach()
 
 #
 # The location of compiled libraries and executables
@@ -133,7 +145,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints moinfo options
-           parallel plugin psio qt sapt_solver scf_solver trans util adc ccdensity
+           parallel plugin psio qt sapt_solver scf_solver thce trans util adc ccdensity
            ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv_wrapper detci
            dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
            sapt scf scfgrad stable thermo transqt transqt2
