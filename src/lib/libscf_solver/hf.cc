@@ -1389,7 +1389,7 @@ double HF::compute_energy()
 
     // Andy trick 2.0
     std::string old_scf_type = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
          fprintf(outfile, "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets 
@@ -1553,7 +1553,7 @@ double HF::compute_energy()
         if (frac_enabled_ && !frac_performed_) converged = false;
 
         // If a DF Guess environment, reset the JK object, and keep running
-        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
             fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
             converged = false;
             if(initialized_diis_manager_)
