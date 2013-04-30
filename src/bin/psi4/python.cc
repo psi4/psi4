@@ -827,6 +827,8 @@ object py_psi_get_local_option(std::string const & module, std::string const & k
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
@@ -842,6 +844,8 @@ object py_psi_get_global_option(std::string const & key)
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
@@ -859,6 +863,8 @@ object py_psi_get_option(std::string const & module, std::string const & key)
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
+    else if (data.type() == "array")
+        return object(data.to_list());
 
     return object();
 }
