@@ -1141,6 +1141,12 @@ void DFTSAPT::tdhf_demo()
     std::vector<double> Disp20_terms(omega.size());
     std::vector<double> Disp2C_terms(omega.size());;
 
+    time_t start;
+    time_t stop;
+
+    start = time(NULL);
+    fprintf(outfile,"    %-3s %11s %15s %15s %11s %10s\n", "N", "Omega", "Disp20 [H]", "Disp2C [H]", "Ratio", "Time [s]");
+
     for (int w = 0; w < omega.size(); w++) {
 
         boost::shared_ptr<Matrix> UA = uncoupled_susceptibility(omega[w],eps_aocc_A_,eps_avir_A_,DarT);
@@ -1153,37 +1159,32 @@ void DFTSAPT::tdhf_demo()
         UAJ.reset();
         UBJ.reset();
         
-        //boost::shared_ptr<Matrix> CA = coupled_susceptibility(omega[w],eps_aocc_A_,eps_avir_A_,vars,freq_max_k_);
-        //boost::shared_ptr<Matrix> CB = coupled_susceptibility(omega[w],eps_aocc_B_,eps_avir_B_,vars,freq_max_k_);
-        //boost::shared_ptr<Matrix> CAJ = doublet(CA,J);
-        //boost::shared_ptr<Matrix> CBJ = doublet(CB,J); 
-        //Disp2C_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * CAJ->vector_dot(CBJ->transpose());
-        //CA.reset();
-        //CB.reset();
-        //CAJ.reset();
-        //CBJ.reset();
+        boost::shared_ptr<Matrix> CA = coupled_susceptibility_debug(omega[w],eps_aocc_A_,eps_avir_A_,AaaT,AarT,ArrT,DarT);
+        boost::shared_ptr<Matrix> CB = coupled_susceptibility_debug(omega[w],eps_aocc_B_,eps_avir_B_,AbbT,AbsT,AssT,DbsT);
+        boost::shared_ptr<Matrix> CAJ = doublet(CA,J);
+        boost::shared_ptr<Matrix> CBJ = doublet(CB,J); 
+        Disp2C_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * CAJ->vector_dot(CBJ->transpose());
+        CA.reset();
+        CB.reset();
+        CAJ.reset();
+        CBJ.reset();
+
+        stop = time(NULL);
+        fprintf(outfile,"    %-3d %11.3E %15.12lf %15.12lf %11.3E %10ld\n", w+1,omega[w],Disp20_terms[w],Disp2C_terms[w],Disp2C_terms[w] / Disp20_terms[w],stop-start);
+        fflush(outfile);
 
     } 
+        
+    fprintf(outfile,"\n");
 
     for (int w = 0; w < omega.size(); w++) {
         Disp20 += Disp20_terms[w];
         Disp2C += Disp2C_terms[w];
     }
 
-    if (debug_) {
-        for (int k = 0; k < omega.size(); k++) {
-            fprintf(outfile,"    (%2d) w = %24.16E, a = %24.16E\n", k+1,omega[k], alpha[k]);
-        }
-        for (int k = 0; k < omega.size(); k++) {
-            fprintf(outfile,"    Disp20 (%2d)         = %18.12lf H\n",k+1,Disp20_terms[k]);
-        }
-        for (int k = 0; k < omega.size(); k++) {
-            fprintf(outfile,"    Disp2C (%2d)         = %18.12lf H\n",k+1,Disp2C_terms[k]);
-        }
-    }
-
-    fprintf(outfile,"    Disp20               = %18.12lf H\n",Disp20);
-    fprintf(outfile,"    Disp2C               = %18.12lf H\n",Disp2C);
+    fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
+    fprintf(outfile,"    Disp2C              = %18.12lf H\n",Disp2C);
+    fprintf(outfile,"    Ratio               = %18.12lf\n",Disp2C/Disp20);
     fprintf(outfile,"\n");
     fflush(outfile);
 }
@@ -1281,6 +1282,104 @@ boost::shared_ptr<Matrix> DFTSAPT::coupled_susceptibility(
 
     return C;
 }
+boost::shared_ptr<Matrix> DFTSAPT::coupled_susceptibility_debug(
+    double omega, 
+    boost::shared_ptr<Vector> ea, 
+    boost::shared_ptr<Vector> er, 
+    boost::shared_ptr<Tensor> AaaT,
+    boost::shared_ptr<Tensor> AarT,
+    boost::shared_ptr<Tensor> ArrT,
+    boost::shared_ptr<Tensor> DarT)
+{
+    int na = AarT->sizes()[0];
+    int nr = AarT->sizes()[1];
+    int nQ = AarT->sizes()[2];
+
+    FILE* Aaaf = AaaT->file_pointer();
+    FILE* Aarf = AarT->file_pointer();
+    FILE* Arrf = ArrT->file_pointer();
+    FILE* Darf = DarT->file_pointer();
+    
+    fseek(Aaaf,0L,SEEK_SET);
+    fseek(Aarf,0L,SEEK_SET);
+    fseek(Arrf,0L,SEEK_SET);
+    fseek(Darf,0L,SEEK_SET);
+
+    boost::shared_ptr<Matrix> Aaa(new Matrix("Aaa",na*na,nQ));
+    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",na*nr,nQ));
+    boost::shared_ptr<Matrix> Arr(new Matrix("Arr",nr*nr,nQ));
+    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",na*nr,nQ));
+    double** Aaap = Aaa->pointer();
+    double** Aarp = Aar->pointer();
+    double** Arrp = Arr->pointer();
+    double** Darp = Dar->pointer();
+
+    fread(Aaap[0],sizeof(double),na*na*(size_t)nQ,Aaaf);
+    fread(Aarp[0],sizeof(double),na*nr*(size_t)nQ,Aarf);
+    fread(Arrp[0],sizeof(double),nr*nr*(size_t)nQ,Arrf);
+    fread(Darp[0],sizeof(double),na*nr*(size_t)nQ,Darf);
+
+    double* eap = ea->pointer();
+    double* erp = er->pointer();
+
+    boost::shared_ptr<Matrix> Iarar(new Matrix("Iarar",na*nr,na*nr));
+    boost::shared_ptr<Matrix> Iaarr(new Matrix("Iaarr",na*na,nr*nr));
+    double** Iararp = Iarar->pointer();
+    double** Iaarrp = Iaarr->pointer();
+
+    C_DGEMM('N','T',na*nr,na*nr,nQ,1.0,Aarp[0],nQ,Aarp[0],nQ,0.0,Iararp[0],na*nr);
+    C_DGEMM('N','T',na*na,nr*nr,nQ,1.0,Aaap[0],nQ,Arrp[0],nQ,0.0,Iaarrp[0],nr*nr);
+    
+    boost::shared_ptr<Matrix> H1(new Matrix("H1",na*nr,na*nr));
+    boost::shared_ptr<Matrix> H2(new Matrix("H2",na*nr,na*nr));
+    double** H1p = H1->pointer();
+    double** H2p = H2->pointer();
+
+    for (int a1 = 0; a1 < na; a1++) {
+    for (int a2 = 0; a2 < na; a2++) {
+    for (int r1 = 0; r1 < nr; r1++) {
+    for (int r2 = 0; r2 < nr; r2++) {
+        H1p[a1*nr+r1][a2*nr+r2] = 4.0 * Iararp[a1*nr+r1][a2*nr+r2] - Iararp[a1*nr+r2][a2*nr+r1] - Iaarrp[a1*na+a2][r1*nr+r2]; 
+        H2p[a1*nr+r1][a2*nr+r2] = Iararp[a1*nr+r2][a2*nr+r1] - Iaarrp[a1*na+a2][r1*nr+r2]; 
+    }}}}
+
+    for (int a1 = 0; a1 < na; a1++) {
+    for (int r1 = 0; r1 < nr; r1++) {
+        H1p[a1*nr+r1][a1*nr+r1] += (erp[r1] - eap[a1]);
+        H2p[a1*nr+r1][a1*nr+r1] += (erp[r1] - eap[a1]);
+    }}
+
+    Iarar.reset();
+    Iaarr.reset();
+
+    boost::shared_ptr<Matrix> A(new Matrix("A",na*nr,na*nr));
+    double** Ap = A->pointer();
+
+    C_DGEMM('N','N',na*nr,na*nr,na*nr,1.0,H2p[0],na*nr,H1p[0],na*nr,0.0,Ap[0],na*nr);
+
+    for (int a1 = 0; a1 < na; a1++) {
+    for (int r1 = 0; r1 < nr; r1++) {
+        Ap[a1*nr+r1][a1*nr+r1] += omega * omega;
+    }} 
+
+    A->power(-1.0); 
+
+    C_DGEMM('N','N',na*nr,na*nr,na*nr,-4.0,Ap[0],na*nr,H2p[0],na*nr,0.0,H1p[0],na*nr);
+
+    A.reset();
+    H2.reset();
+
+    boost::shared_ptr<Matrix> C2(new Matrix("C2",na*nr,nQ));
+    boost::shared_ptr<Matrix> C(new Matrix("C",nQ,nQ));
+    double** C2p = C2->pointer();
+    double** Cp  = C->pointer();
+
+    C_DGEMM('N','N',na*nr,nQ,na*nr,1.0,H1p[0],na*nr,Darp[0],nQ,0.0,C2p[0],nQ);
+    C_DGEMM('T','N',nQ,nQ,na*nr,1.0,Darp[0],nQ,C2p[0],nQ,0.0,Cp[0],nQ); 
+
+    return C;
+}
+
 boost::shared_ptr<Matrix> DFTSAPT::inner(
     boost::shared_ptr<Tensor> LT, 
     boost::shared_ptr<Tensor> RT, 

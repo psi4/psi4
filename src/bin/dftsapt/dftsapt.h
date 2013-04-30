@@ -154,6 +154,15 @@ protected:
         boost::shared_ptr<Vector> er, 
         std::map<std::string, boost::shared_ptr<Tensor> >& vars,
         int nmax);
+    // Grab a coupled susceptibility in the RI basis (N^6)
+    boost::shared_ptr<Matrix> coupled_susceptibility_debug(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> AaaT,
+        boost::shared_ptr<Tensor> AarT,
+        boost::shared_ptr<Tensor> ArrT,
+        boost::shared_ptr<Tensor> DarT);
 
     // => Utility Routines <= //
 
