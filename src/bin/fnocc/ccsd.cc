@@ -2369,8 +2369,7 @@ double DFCoupledCluster::compute_energy() {
 
   PsiReturnType status = Success;
 
-  tstart();
-  WriteBanner();
+  //WriteBanner();
   AllocateMemory();
   status = CCSDIterations();
 
@@ -2390,6 +2389,7 @@ double DFCoupledCluster::compute_energy() {
   free(tempt);
   free(tempv);
 
+  // tstart in fnocc
   tstop();
 
   // mp2 energy
@@ -3067,22 +3067,8 @@ void DFCoupledCluster::AllocateMemory() {
      throw PsiException("df_ccsd requires symmetry c1",__FILE__,__LINE__);
   }
 
-  // generate 3-index integrals (if they weren't generated during FNO construction)
   ischolesky_ = ( options_.get_str("DF_BASIS_CC") == "CHOLESKY" );
-
-  if ( !options_.get_bool("NAT_ORBS") ) {
-      ThreeIndexIntegrals();
-  }else {
-      nQ = (int)Process::environment.globals["DFCC NAUX"];
-  }
-
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Type of density fitting:                %2s\n", ischolesky_ ? "CD" : "RI");
-  if (ischolesky_) {
-      fprintf(outfile,"  Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-  }
-  fprintf(outfile,"  Number of auxiliary functions:       %5li\n",nQ);
-  fprintf(outfile,"\n");
+  nQ          = (int)Process::environment.globals["DFCC NAUX"];
 
   // orbital energies
   boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
@@ -3129,14 +3115,15 @@ void DFCoupledCluster::AllocateMemory() {
   total_memory       *= 8./1024./1024.;
   df_memory          *= 8./1024./1024.;
 
-  fprintf(outfile,"  Total memory requirements:       %9.2lf mb\n",df_memory+total_memory);
-  fprintf(outfile,"  3-index integrals:               %9.2lf mb\n",df_memory);
-  fprintf(outfile,"  CCSD intermediates:              %9.2lf mb\n",total_memory);
+  fprintf(outfile,"  ==> Memory <==\n\n");
+  fprintf(outfile,"        Total memory requirements:       %9.2lf mb\n",df_memory+total_memory);
+  fprintf(outfile,"        3-index integrals:               %9.2lf mb\n",df_memory);
+  fprintf(outfile,"        CCSD intermediates:              %9.2lf mb\n",total_memory);
   fprintf(outfile,"\n");
 
   if (1.0 * memory / 1024. / 1024. < total_memory + df_memory) {
      fprintf(outfile,"\n");
-     fprintf(outfile,"  error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",total_memory+df_memory-1.0*memory/1024./1024.);
+     fprintf(outfile,"        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",total_memory+df_memory-1.0*memory/1024./1024.);
      fprintf(outfile,"\n");
      fflush(outfile);
      throw PsiException("not enough memory (ccsd).",__FILE__,__LINE__);
@@ -3145,13 +3132,13 @@ void DFCoupledCluster::AllocateMemory() {
       long int nthreads = omp_get_max_threads();
       double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
       if (tempmem > memory) {
-          fprintf(outfile,"\n  <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          fprintf(outfile,"\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
       }
       if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
          isLowMemory = true;
          tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
       }
-      fprintf(outfile,"  memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
+      fprintf(outfile,"        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
 
   // allocate some memory for 3-index tensors
