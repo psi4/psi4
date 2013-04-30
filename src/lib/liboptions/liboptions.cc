@@ -140,6 +140,11 @@ double DataType::to_double() const
     throw DataTypeException("don't know how to convert to a double");
 }
 
+boost::python::list DataType::to_list() const
+{
+    throw DataTypeException("don't know how to convert to a list");
+}
+
 void DataType::assign(DataType*)
 {
     throw DataTypeException("assign(DataType*) failure");
