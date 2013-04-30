@@ -53,20 +53,29 @@ PsiReturnType fnocc(Options &options) {
 
   }else {
 
-      // generate frozen natural orbitals?
-      if (options.get_bool("NAT_ORBS")){
-          tstart();
-          boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(Process::environment.wavefunction(),options));
-          fno->ComputeNaturalOrbitals();
-          wfn = (boost::shared_ptr<Wavefunction>)fno;
-          tstop();
-      }else {
-          wfn = Process::environment.wavefunction();
-      }
+      tstart();
+      fflush(outfile);
+      fprintf(outfile,"\n\n");
+      fprintf(outfile, "        *******************************************************\n");
+      fprintf(outfile, "        *                                                     *\n");
+      fprintf(outfile, "        *                       DF-CCSD                       *\n");
+      fprintf(outfile, "        *                 Density-fitted CCSD                 *\n");
+      fprintf(outfile, "        *                                                     *\n");
+      fprintf(outfile, "        *                   Eugene DePrince                   *\n");
+      fprintf(outfile, "        *                                                     *\n");
+      fprintf(outfile, "        *******************************************************\n");
+      fprintf(outfile,"\n\n");
+      fflush(outfile);
+
+      // send all dfcc jobs through fno so semicanon orbs computed in one place.
+      boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(Process::environment.wavefunction(),options));
+      fno->ComputeNaturalOrbitals();
+      wfn = (boost::shared_ptr<Wavefunction>)fno;
 
       // ccsd(t)!
       boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
       ccsd->compute_energy();
+      tstop();
   }
 
   return  Success;
