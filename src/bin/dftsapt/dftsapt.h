@@ -9,6 +9,7 @@ namespace psi {
 
 class JK;
 class Options;
+class Tensor;
 
 namespace dftsapt {
 
@@ -105,6 +106,13 @@ protected:
 
     // Shared matrices (Fock-like)
     std::map<std::string, boost::shared_ptr<Matrix> > vars_;
+
+    // Number of frequency points in Casimir-Poldar
+    int freq_points_;   
+    // Frequency scale in Casimir-Poldar
+    double freq_scale_;
+    // Maximum number of terms in Casimir-Poldar susceptibility coupling
+    int freq_max_k_;
     
     // Print author/sizing/spec info
     virtual void print_header() const;
@@ -130,6 +138,50 @@ protected:
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
+
+    // Try out some TDHF Disp2
+    void tdhf_demo();
+    // Grab an uncoupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> uncoupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> Bar);
+    // Grab a coupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> coupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        std::map<std::string, boost::shared_ptr<Tensor> >& vars,
+        int nmax);
+    // Grab a coupled susceptibility in the RI basis (N^6)
+    boost::shared_ptr<Matrix> coupled_susceptibility_debug(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> AaaT,
+        boost::shared_ptr<Tensor> AarT,
+        boost::shared_ptr<Tensor> ArrT,
+        boost::shared_ptr<Tensor> DarT);
+
+    // => Utility Routines <= //
+
+    // Inner product LT' * lambda * RT => Result
+    boost::shared_ptr<Matrix> inner(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> lambda = boost::shared_ptr<Matrix>());
+    // Fitting product RT * metric => Result
+    boost::shared_ptr<Tensor> fitting(
+        const std::string& name, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> metric);
+    // DAXPY, alpha L + beta R => R
+    void axpy(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        double alpha = 1.0,
+        double beta = 1.0);
 
     // Double GEMM
     boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
@@ -212,6 +264,27 @@ public:
     virtual ~CPKS_SAPT();
 
     void compute_cpks();
+};
+
+class GaussChebyshev {
+
+protected:
+    int npoint_;
+    double scale_;
+
+    std::vector<double> nodes_;
+    std::vector<double> weights_;
+
+public:
+    GaussChebyshev(int npoint, double scale);
+    ~GaussChebyshev();
+    
+    void print_header();
+    void compute();
+
+    std::vector<double>& nodes() { return nodes_; }
+    std::vector<double>& weights() { return weights_; }
+
 };
 
 }} // End namespace

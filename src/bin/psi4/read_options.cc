@@ -780,6 +780,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
   * $E@@{ind,resp}^{(20)}$ term. -*/
   options.add_double("D_CONVERGENCE",1e-8);
+  /*- Number of frequency points in Casimir-Poldar integral -*/
+  options.add_int("FREQ_POINTS",8);
+  /*- Frequency scale in Casimir-Poldar integral -*/
+  options.add_double("FREQ_SCALE",0.1);
+  /*- Maximum number of terms in susceptibility coupling -*/
+  options.add_int("FREQ_MAX_K",2);
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
   }
