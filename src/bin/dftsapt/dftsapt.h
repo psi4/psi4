@@ -9,6 +9,7 @@ namespace psi {
 
 class JK;
 class Options;
+class Tensor;
 
 namespace dftsapt {
 
@@ -102,11 +103,21 @@ protected:
     boost::shared_ptr<Vector> eps_fvir_A_;
     // Monomer B eps vector (frozen vir)
     boost::shared_ptr<Vector> eps_fvir_B_;
+
+    // Shared matrices (Fock-like)
+    std::map<std::string, boost::shared_ptr<Matrix> > vars_;
+
+    // Number of frequency points in Casimir-Poldar
+    int freq_points_;   
+    // Frequency scale in Casimir-Poldar
+    double freq_scale_;
+    // Maximum number of terms in Casimir-Poldar susceptibility coupling
+    int freq_max_k_;
     
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
-    virtual void print_trailer() const;
+    virtual void print_trailer();
 
     // Hartree-Fock-like terms (Elst, Exch, Ind)
     virtual void fock_terms();
@@ -122,22 +133,60 @@ protected:
     boost::shared_ptr<Matrix> build_Sij(boost::shared_ptr<Matrix> S);
     // Build the S^\infty expansion in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij_n(boost::shared_ptr<Matrix> Sij);
-    // Build the Cbar matrices
+    // Build the Cbar matrices from S^\infty
     std::map<std::string, boost::shared_ptr<Matrix> > build_Cbar(boost::shared_ptr<Matrix> S);
-
-    // Build a generalized density matrix
-    boost::shared_ptr<Matrix> build_D(boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
-    // Build the CPKS RHS (ov-space)
-    boost::shared_ptr<Matrix> build_w(boost::shared_ptr<Matrix> W, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
-    // Triple GEMM (all matrices must be square)
-    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C);
-    // Build the C_O matrix
-    boost::shared_ptr<Matrix> build_C_O(boost::shared_ptr<Matrix> C, boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> P);
-    // Build the C_X matrix
-    boost::shared_ptr<Matrix> build_C_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> C);
+
+    // Try out some TDHF Disp2
+    void tdhf_demo();
+    // Grab an uncoupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> uncoupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> Bar);
+    // Grab a coupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> coupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        std::map<std::string, boost::shared_ptr<Tensor> >& vars,
+        int nmax);
+    // Grab a coupled susceptibility in the RI basis (N^6)
+    boost::shared_ptr<Matrix> coupled_susceptibility_debug(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> AaaT,
+        boost::shared_ptr<Tensor> AarT,
+        boost::shared_ptr<Tensor> ArrT,
+        boost::shared_ptr<Tensor> DarT);
+
+    // => Utility Routines <= //
+
+    // Inner product LT' * lambda * RT => Result
+    boost::shared_ptr<Matrix> inner(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> lambda = boost::shared_ptr<Matrix>());
+    // Fitting product RT * metric => Result
+    boost::shared_ptr<Tensor> fitting(
+        const std::string& name, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> metric);
+    // DAXPY, alpha L + beta R => R
+    void axpy(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        double alpha = 1.0,
+        double beta = 1.0);
+
+    // Double GEMM
+    boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
+    // Triple GEMM
+    boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
 
     // Protected constructor (use factory below)
     DFTSAPT();
@@ -215,6 +264,27 @@ public:
     virtual ~CPKS_SAPT();
 
     void compute_cpks();
+};
+
+class GaussChebyshev {
+
+protected:
+    int npoint_;
+    double scale_;
+
+    std::vector<double> nodes_;
+    std::vector<double> weights_;
+
+public:
+    GaussChebyshev(int npoint, double scale);
+    ~GaussChebyshev();
+    
+    void print_header();
+    void compute();
+
+    std::vector<double>& nodes() { return nodes_; }
+    std::vector<double>& weights() { return weights_; }
+
 };
 
 }} // End namespace
