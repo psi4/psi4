@@ -267,7 +267,7 @@ bool UHF::diis()
 
 void UHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
         // Build the Fock Matrix

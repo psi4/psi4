@@ -367,7 +367,7 @@ void RHF::save_sapt_info()
 
 void RHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
 #define ID(x) ints.DPD_ID(x)
