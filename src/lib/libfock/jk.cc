@@ -3179,8 +3179,6 @@ void DFJK::initialize_wK_core()
         eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
         buffer[Q] = eri[Q]->buffer();
     }
-printf("hey!\n");fflush(stdout);
-exit(0);
 
     const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
     const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
