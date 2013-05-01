@@ -58,6 +58,8 @@ public:
 */
 class BasisSetParser
 {
+protected:
+    std::string filename_;
 public:
     //! If the parser needs to force spherical or cartesian (e.g., loading old guess)
     bool force_puream_or_cartesian_;

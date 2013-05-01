@@ -77,6 +77,7 @@ BasisSetParser::~BasisSetParser()
 vector<string> BasisSetParser::load_file(const std::string& filename,
                                          const std::string& basisname)
 {
+    filename_ = filename;
     int me = WorldComm->me();
     int nproc = WorldComm->nproc();
 
@@ -336,7 +337,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
         }
     }
     if (found == false)
-        throw BasisSetNotFound("Gaussian94BasisSetParser::parser: Unable to find the basis set for " + symbol, __FILE__, __LINE__);
+        throw BasisSetNotFound("Gaussian94BasisSetParser::parser: Unable to find the basis set for " + symbol + " in " + filename_, __FILE__, __LINE__);
 
     // The constructor, or the caller, should refresh the basis set.
     return shell_list;
