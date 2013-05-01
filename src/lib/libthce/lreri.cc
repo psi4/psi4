@@ -263,6 +263,72 @@ void DFERI::print_header(int level)
         fprintf(outfile, "\n");
     }
 }
+boost::shared_ptr<Matrix> DFERI::Jpow(double power)
+{
+    // Everybody likes them some inverse square root metric, eh?
+
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+    #endif
+    
+    int naux = auxiliary_->nbf();
+
+    boost::shared_ptr<Matrix> J(new Matrix("J", naux, naux));
+    double** Jp = J->pointer();
+
+    boost::shared_ptr<IntegralFactory> Jfactory(new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > Jeri;
+    for (int thread = 0; thread < nthread; thread++) {
+        Jeri.push_back(boost::shared_ptr<TwoBodyAOInt>(Jfactory->eri()));
+    }
+
+    std::vector<std::pair<int, int> > Jpairs;
+    for (int M = 0; M < auxiliary_->nshell(); M++) {
+        for (int N = 0; N <= M; N++) {
+            Jpairs.push_back(std::pair<int,int>(M,N));
+        }
+    }
+    long int num_Jpairs = Jpairs.size();
+
+    #pragma omp parallel for schedule(dynamic) num_threads(nthread)
+    for (long int PQ = 0L; PQ < num_Jpairs; PQ++) {
+
+        int thread = 0;
+        #ifdef _OPENMP
+            thread = omp_get_thread_num();
+        #endif
+
+        std::pair<int,int> pair = Jpairs[PQ];
+        int P = pair.first; 
+        int Q = pair.second;
+
+        Jeri[thread]->compute_shell(P,0,Q,0);
+
+        int np = auxiliary_->shell(P).nfunction();
+        int op = auxiliary_->shell(P).function_index();
+        int nq = auxiliary_->shell(Q).nfunction();
+        int oq = auxiliary_->shell(Q).function_index();
+
+        const double* buffer = Jeri[thread]->buffer();
+        
+        for (int p = 0; p < np; p++) {
+        for (int q = 0; q < nq; q++) {
+            Jp[p + op][q + oq] = 
+            Jp[q + oq][p + op] = 
+                (*buffer++);
+        }} 
+    } 
+    Jfactory.reset();
+    Jeri.clear();
+
+    // > Invert J < //
+    if (power != 1.0) {
+        J->power(power, J_cutoff_);
+    }
+
+    return J;
+}
 void DFERI::compute()
 {
     // => Allocation <= //

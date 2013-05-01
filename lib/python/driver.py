@@ -596,6 +596,11 @@ def gradient(name, **kwargs):
         raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
             % (lowername, dertype))
 
+    # no analytic derivatives for scf_type cd
+    if PsiMod.get_option('SCF','SCF_TYPE') == 'CD':
+        if (dertype == 1 ):
+            raise ValidationError('No analytic derivatives for SCF_TYPE CD.')
+
     # Make sure the molecule the user provided is the active one
     if ('molecule' in kwargs):
         activate(kwargs['molecule'])

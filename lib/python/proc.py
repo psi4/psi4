@@ -94,6 +94,11 @@ def run_mp2(name, **kwargs):
     optstash = OptionsState(
         ['OCC', 'ORB_OPT'])
 
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
     PsiMod.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     run_omp2(name, **kwargs)
 
@@ -114,8 +119,8 @@ def run_oldmp2(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -869,8 +874,8 @@ def run_ccenergy(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -933,8 +938,8 @@ def run_bccd(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -1440,8 +1445,8 @@ def run_detci(name, **kwargs):
     if not (('bypass_scf' in kwargs) and yes.match(str(kwargs['bypass_scf']))):
         scf_helper(name, **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+        # If the scf type is DF/CD, then the AO integrals were never written to disk
+        if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
             PsiMod.MintsHelper().integrals()
 
     PsiMod.transqt2()
@@ -2326,14 +2331,15 @@ def run_fnodfcc(name, **kwargs):
         PsiMod.set_local_option('FNOCC', 'COMPUTE_TRIPLES', True)
         PsiMod.set_local_option('FNOCC', 'NAT_ORBS', True)
 
-    # set scf-type to df unless the user wants something else
+    # set scf-type to cd unless the user wants something else
     if PsiMod.has_option_changed('SCF','SCF_TYPE') == False:
-       PsiMod.set_local_option('SCF','SCF_TYPE', 'DF')
+       PsiMod.set_local_option('SCF','SCF_TYPE', 'CD')
 
-    if PsiMod.get_option('FNOCC','DF_BASIS_CC') == '':
-       basis   = PsiMod.get_global_option('BASIS')
-       dfbasis = corresponding_rifit(basis)
-       PsiMod.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
+    # the default auxiliary basis is a set of CD vectors
+    #if PsiMod.get_option('FNOCC','DF_BASIS_CC') == '':
+    #   basis   = PsiMod.get_global_option('BASIS')
+    #   dfbasis = corresponding_rifit(basis)
+    #   PsiMod.set_local_option('FNOCC','DF_BASIS_CC',dfbasis)
 
     scf_helper(name,**kwargs)
     PsiMod.fnocc()
@@ -2440,8 +2446,8 @@ def run_fnocc(name, **kwargs):
     # scf
     scf_helper(name,**kwargs)
 
-    # if the scf type is df, then the ao integrals were never generated.
-    if PsiMod.get_option('SCF','SCF_TYPE') == 'DF' :
+    # if the scf type is df/cd, then the ao integrals were never written to disk.
+    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
         mints = PsiMod.MintsHelper()
         mints.integrals()
 
@@ -2551,8 +2557,8 @@ def run_cepa(name, **kwargs):
     PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
     scf_helper(name, **kwargs)
 
-    # If the scf type is DF, then the AO integrals were never generated
-    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
+    # If the scf type is DF/CD, then the AO integrals were never written to disk
+    if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF' or PsiMod.get_option('SCF', 'SCF_TYPE') == 'CD':
         mints = PsiMod.MintsHelper()
         mints.integrals()
 

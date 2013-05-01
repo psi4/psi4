@@ -1542,10 +1542,10 @@ def complete_basis_set(name, **kwargs):
 
        - Need to add more extrapolation schemes
 
-    As represented in the equation below, a CBS energy method is defined in four
-    sequential stages (scf, corl, delta, delta2) covering treatment of the
-    reference total energy, the correlation energy, a delta correction to the
-    correlation energy, and a second delta correction. Each is activated by its
+    As represented in the equation below, a CBS energy method is defined in several
+    sequential stages (scf, corl, delta, delta2, delta3, delta4, delta5) covering treatment 
+    of the reference total energy, the correlation energy, a delta correction to the
+    correlation energy, and a second delta correction, etc.. Each is activated by its
     stage_wfn keyword and is only allowed if all preceding stages are active.
 
     .. include:: cbs_eqn.rst
@@ -1594,6 +1594,10 @@ def complete_basis_set(name, **kwargs):
            * cisdtq
            * ci\ *n*
            * fci
+           * mrccsd
+           * mrccsd(t)
+           * mrccsdt
+           * mrccsdt(q)
 
     :type name: string
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
@@ -1633,6 +1637,42 @@ def complete_basis_set(name, **kwargs):
         Indicates the inferior energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
+    :type delta3_wfn: string
+    :param delta3_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
+
+        Indicates the (superior) energy method for which a third delta correction
+        to the correlation energy is to be obtained.
+
+    :type delta3_wfn_lesser: string
+    :param delta3_wfn_lesser: |dl| ``'mp2'`` |dr| || ``'ccsd(t)'`` || etc.
+
+        Indicates the inferior energy method for which a third delta correction
+        to the correlation energy is to be obtained.
+
+    :type delta4_wfn: string
+    :param delta4_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
+
+        Indicates the (superior) energy method for which a fourth delta correction
+        to the correlation energy is to be obtained.
+
+    :type delta4_wfn_lesser: string
+    :param delta4_wfn_lesser: |dl| ``'mp2'`` |dr| || ``'ccsd(t)'`` || etc.
+
+        Indicates the inferior energy method for which a fourth delta correction
+        to the correlation energy is to be obtained.
+
+    :type delta5_wfn: string
+    :param delta5_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
+
+        Indicates the (superior) energy method for which a fifth delta correction
+        to the correlation energy is to be obtained.
+
+    :type delta5_wfn_lesser: string
+    :param delta5_wfn_lesser: |dl| ``'mp2'`` |dr| || ``'ccsd(t)'`` || etc.
+
+        Indicates the inferior energy method for which a fifth delta correction
+        to the correlation energy is to be obtained.
+
     * Basis Sets
         Currently, the basis set set through ``set`` commands have no influence
         on a cbs calculation.
@@ -1659,6 +1699,24 @@ def complete_basis_set(name, **kwargs):
     :param delta2_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the second delta correction
+        to the correlation energy.
+
+    :type delta3_basis: :ref:`basis string <apdx:basisElement>`
+    :param delta3_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
+
+        Indicates the sequence of basis sets employed for the third delta correction
+        to the correlation energy.
+
+    :type delta4_basis: :ref:`basis string <apdx:basisElement>`
+    :param delta4_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
+
+        Indicates the sequence of basis sets employed for the fourth delta correction
+        to the correlation energy.
+
+    :type delta5_basis: :ref:`basis string <apdx:basisElement>`
+    :param delta5_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
+
+        Indicates the sequence of basis sets employed for the fifth delta correction
         to the correlation energy.
 
     * Schemes
@@ -1688,6 +1746,24 @@ def complete_basis_set(name, **kwargs):
     :param delta2_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
+        to the correlation energy.
+
+    :type delta3_scheme: function
+    :param delta3_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+
+        Indicates the basis set extrapolation scheme to be applied to the third delta correction
+        to the correlation energy.
+
+    :type delta4_scheme: function
+    :param delta4_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+
+        Indicates the basis set extrapolation scheme to be applied to the fourth delta correction
+        to the correlation energy.
+
+    :type delta5_scheme: function
+    :param delta5_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
+
+        Indicates the basis set extrapolation scheme to be applied to the fifth delta correction
         to the correlation energy.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
@@ -1841,6 +1917,20 @@ def complete_basis_set(name, **kwargs):
                         'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
     VARH['fci'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'fcicorl': 'FCI CORRELATION ENERGY'}
+    VARH['mrccsd'] = {      'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                        'mrccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['mrccsd(t)'] = {   'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                        'mrccsdcorl': 'CCSD CORRELATION ENERGY',
+                     'mrccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+    VARH['mrccsdt'] = {     'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                       'mrccsdtcorl': 'CCSDT CORRELATION ENERGY'}
+    VARH['mrccsdt(q)'] = {  'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                       'mrccsdtcorl': 'CCSDT CORRELATION ENERGY',
+                    'mrccsdt(q)corl': 'CCSDT(Q) CORRELATION ENERGY'}
 
     for cilevel in range(2, 99):
         VARH['ci%s' % (str(cilevel))] = {
@@ -1852,6 +1942,9 @@ def complete_basis_set(name, **kwargs):
     do_corl = 0
     do_delta = 0
     do_delta2 = 0
+    do_delta3 = 0
+    do_delta4 = 0
+    do_delta5 = 0
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
@@ -1916,18 +2009,66 @@ def complete_basis_set(name, **kwargs):
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
             raise ValidationError('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 
+    # Establish method for third delta correction energy
+    if 'delta3_wfn' in kwargs:
+        do_delta3 = 1
+        cbs_delta3_wfn = kwargs['delta3_wfn'].lower()
+        if not (cbs_delta3_wfn in VARH.keys()):
+            raise ValidationError('Requested DELTA3 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta3_wfn))
+
+        if 'delta3_wfn_lesser' in kwargs:
+            cbs_delta3_wfn_lesser = kwargs['delta3_wfn_lesser'].lower()
+        else:
+            cbs_delta3_wfn_lesser = 'mp2'
+        if not (cbs_delta3_wfn_lesser in VARH.keys()):
+            raise ValidationError('Requested DELTA3 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta3_wfn_lesser))
+
+    # Establish method for fourth delta correction energy
+    if 'delta4_wfn' in kwargs:
+        do_delta4 = 1
+        cbs_delta4_wfn = kwargs['delta4_wfn'].lower()
+        if not (cbs_delta4_wfn in VARH.keys()):
+            raise ValidationError('Requested DELTA4 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta4_wfn))
+
+        if 'delta4_wfn_lesser' in kwargs:
+            cbs_delta4_wfn_lesser = kwargs['delta4_wfn_lesser'].lower()
+        else:
+            cbs_delta4_wfn_lesser = 'mp2'
+        if not (cbs_delta4_wfn_lesser in VARH.keys()):
+            raise ValidationError('Requested DELTA4 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta4_wfn_lesser))
+
+    # Establish method for fifth delta correction energy
+    if 'delta5_wfn' in kwargs:
+        do_delta5 = 1
+        cbs_delta5_wfn = kwargs['delta5_wfn'].lower()
+        if not (cbs_delta5_wfn in VARH.keys()):
+            raise ValidationError('Requested DELTA5 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta5_wfn))
+
+        if 'delta5_wfn_lesser' in kwargs:
+            cbs_delta5_wfn_lesser = kwargs['delta5_wfn_lesser'].lower()
+        else:
+            cbs_delta5_wfn_lesser = 'mp2'
+        if not (cbs_delta5_wfn_lesser in VARH.keys()):
+            raise ValidationError('Requested DELTA5 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta5_wfn_lesser))
+
     # Check that user isn't skipping steps in scf + corl + delta + delta2 sequence
-    if do_scf and not do_corl and not do_delta and not do_delta2:
+    if   do_scf and not do_corl and not do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
         pass
-    elif do_scf and do_corl and not do_delta and not do_delta2:
+    elif do_scf and do_corl and not do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
         pass
-    elif do_scf and do_corl and do_delta and not do_delta2:
+    elif do_scf and do_corl and do_delta and not do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
         pass
-    elif do_scf and do_corl and do_delta and do_delta2:
+    elif do_scf and do_corl and do_delta and do_delta2 and not do_delta3 and not do_delta4 and not do_delta5:
+        pass
+    elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and not do_delta4 and not do_delta5:
+        pass
+    elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and do_delta4 and not do_delta5:
+        pass
+    elif do_scf and do_corl and do_delta and do_delta2 and do_delta3 and do_delta4 and do_delta5:
         pass
     else:
-        raise ValidationError('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
-            (do_scf, do_corl, do_delta, do_delta2))
+        raise ValidationError('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) + delta3 (%s) + delta4 (%s) + delta5 (%s) not valid. These steps are cummulative.' %
+            (do_scf, do_corl, do_delta, do_delta2, do_delta3, do_delta4, do_delta5))
 
     # Establish list of valid basis sets for correlation energy
     if do_corl:
@@ -1960,6 +2101,27 @@ def complete_basis_set(name, **kwargs):
         else:
             raise ValidationError('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
 
+    # Establish list of valid basis sets for third delta correction energy
+    if do_delta3:
+        if 'delta3_basis' in kwargs:
+            BSTD3, ZETD3 = validate_bracketed_basis(kwargs['delta3_basis'].lower())
+        else:
+            raise ValidationError('DELTA3 basis sets through keyword \'%s\' are required.' % ('delta3_basis'))
+
+    # Establish list of valid basis sets for fourth delta correction energy
+    if do_delta4:
+        if 'delta4_basis' in kwargs:
+            BSTD4, ZETD4 = validate_bracketed_basis(kwargs['delta4_basis'].lower())
+        else:
+            raise ValidationError('DELTA4 basis sets through keyword \'%s\' are required.' % ('delta4_basis'))
+
+    # Establish list of valid basis sets for fifth delta correction energy
+    if do_delta5:
+        if 'delta5_basis' in kwargs:
+            BSTD5, ZETD5 = validate_bracketed_basis(kwargs['delta5_basis'].lower())
+        else:
+            raise ValidationError('DELTA5 basis sets through keyword \'%s\' are required.' % ('delta5_basis'))
+
     # Establish treatment for scf energy (validity check useless since python will catch it long before here)
     cbs_scf_scheme = highest_1
     if 'scf_scheme' in kwargs:
@@ -1979,6 +2141,21 @@ def complete_basis_set(name, **kwargs):
     cbs_delta2_scheme = highest_1
     if 'delta2_scheme' in kwargs:
         cbs_delta2_scheme = kwargs['delta2_scheme']
+
+    # Establish treatment for delta3 correction energy
+    cbs_delta3_scheme = highest_1
+    if 'delta3_scheme' in kwargs:
+        cbs_delta3_scheme = kwargs['delta3_scheme']
+
+    # Establish treatment for delta4 correction energy
+    cbs_delta4_scheme = highest_1
+    if 'delta4_scheme' in kwargs:
+        cbs_delta4_scheme = kwargs['delta4_scheme']
+
+    # Establish treatment for delta5 correction energy
+    cbs_delta5_scheme = highest_1
+    if 'delta5_scheme' in kwargs:
+        cbs_delta5_scheme = kwargs['delta5_scheme']
 
     # Build string of title banner
     cbsbanners = ''
@@ -2020,6 +2197,33 @@ def complete_basis_set(name, **kwargs):
         NEED = call_function_in_1st_argument(cbs_delta2_scheme,
             mode='requisition', basisname=BSTD2, basiszeta=ZETD2, wfnname=cbs_delta2_wfn_lesser)
         GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, reconstitute_bracketed_basis(NEED), cbs_delta2_wfn_lesser, NEED, -1, 0.0])))
+
+    if do_delta3:
+        NEED = call_function_in_1st_argument(cbs_delta3_scheme,
+            mode='requisition', basisname=BSTD3, basiszeta=ZETD3, wfnname=cbs_delta3_wfn)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta3', cbs_delta3_scheme, reconstitute_bracketed_basis(NEED), cbs_delta3_wfn, NEED, +1, 0.0])))
+
+        NEED = call_function_in_1st_argument(cbs_delta3_scheme,
+            mode='requisition', basisname=BSTD3, basiszeta=ZETD3, wfnname=cbs_delta3_wfn_lesser)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta3', cbs_delta3_scheme, reconstitute_bracketed_basis(NEED), cbs_delta3_wfn_lesser, NEED, -1, 0.0])))
+
+    if do_delta4:
+        NEED = call_function_in_1st_argument(cbs_delta4_scheme,
+            mode='requisition', basisname=BSTD4, basiszeta=ZETD4, wfnname=cbs_delta4_wfn)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta4', cbs_delta4_scheme, reconstitute_bracketed_basis(NEED), cbs_delta4_wfn, NEED, +1, 0.0])))
+
+        NEED = call_function_in_1st_argument(cbs_delta4_scheme,
+            mode='requisition', basisname=BSTD4, basiszeta=ZETD4, wfnname=cbs_delta4_wfn_lesser)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta4', cbs_delta4_scheme, reconstitute_bracketed_basis(NEED), cbs_delta4_wfn_lesser, NEED, -1, 0.0])))
+
+    if do_delta5:
+        NEED = call_function_in_1st_argument(cbs_delta5_scheme,
+            mode='requisition', basisname=BSTD5, basiszeta=ZETD5, wfnname=cbs_delta5_wfn)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta5', cbs_delta5_scheme, reconstitute_bracketed_basis(NEED), cbs_delta5_wfn, NEED, +1, 0.0])))
+
+        NEED = call_function_in_1st_argument(cbs_delta5_scheme,
+            mode='requisition', basisname=BSTD5, basiszeta=ZETD5, wfnname=cbs_delta5_wfn_lesser)
+        GRAND_NEED.append(dict(zip(d_fields, ['delta5', cbs_delta5_scheme, reconstitute_bracketed_basis(NEED), cbs_delta5_wfn_lesser, NEED, -1, 0.0])))
 
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].items():
@@ -2163,6 +2367,15 @@ def complete_basis_set(name, **kwargs):
     if do_delta2:
         tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[4]['d_stage'], GRAND_NEED[4]['d_wfn'] + ' - ' + GRAND_NEED[5]['d_wfn'],
                   '/', GRAND_NEED[4]['d_basis'], '', GRAND_NEED[4]['d_energy'] - GRAND_NEED[5]['d_energy'], GRAND_NEED[4]['d_scheme'].__name__)
+    if do_delta3:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[6]['d_stage'], GRAND_NEED[6]['d_wfn'] + ' - ' + GRAND_NEED[7]['d_wfn'],
+                  '/', GRAND_NEED[6]['d_basis'], '', GRAND_NEED[6]['d_energy'] - GRAND_NEED[7]['d_energy'], GRAND_NEED[6]['d_scheme'].__name__)
+    if do_delta4:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[8]['d_stage'], GRAND_NEED[8]['d_wfn'] + ' - ' + GRAND_NEED[9]['d_wfn'],
+                  '/', GRAND_NEED[8]['d_basis'], '', GRAND_NEED[8]['d_energy'] - GRAND_NEED[9]['d_energy'], GRAND_NEED[8]['d_scheme'].__name__)
+    if do_delta5:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[10]['d_stage'], GRAND_NEED[10]['d_wfn'] + ' - ' + GRAND_NEED[11]['d_wfn'],
+                  '/', GRAND_NEED[10]['d_basis'], '', GRAND_NEED[10]['d_energy'] - GRAND_NEED[11]['d_energy'], GRAND_NEED[10]['d_scheme'].__name__)
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
 
