@@ -2,7 +2,7 @@
 # Figure out which files libint will produce, and compile them
 #
 include(../CMakeLists.libint.txt)
-build_libint_files(LI_SRC ${useroptLIBINT_MAX_AM})
+build_libint_files(LI_SRC ${LIBINT_OPT_AM})
 set(LI_SRC ${LI_SRC} init_libint.cc vrr_build.c)
 
 #foreach (f ${LI_SRC})
