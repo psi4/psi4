@@ -1145,27 +1145,30 @@ void DFTSAPT::tdhf_demo()
     time_t stop;
 
     start = time(NULL);
+    fprintf(outfile,"    ----------------------------------------------------------------------\n");
     fprintf(outfile,"    %-3s %11s %15s %15s %11s %10s\n", "N", "Omega", "Disp20 [H]", "Disp2C [H]", "Ratio", "Time [s]");
+    fprintf(outfile,"    ----------------------------------------------------------------------\n");
+    fflush(outfile);
 
     for (int w = 0; w < omega.size(); w++) {
 
         boost::shared_ptr<Matrix> UA = uncoupled_susceptibility(omega[w],eps_aocc_A_,eps_avir_A_,DarT);
-        boost::shared_ptr<Matrix> UB = uncoupled_susceptibility(omega[w],eps_aocc_B_,eps_avir_B_,DbsT);
         boost::shared_ptr<Matrix> UAJ = doublet(UA,J);
-        boost::shared_ptr<Matrix> UBJ = doublet(UB,J); 
-        Disp20_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * UAJ->vector_dot(UBJ->transpose());
         UA.reset();
+        boost::shared_ptr<Matrix> UB = uncoupled_susceptibility(omega[w],eps_aocc_B_,eps_avir_B_,DbsT);
+        boost::shared_ptr<Matrix> UBJ = doublet(UB,J); 
         UB.reset();
+        Disp20_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * UAJ->vector_dot(UBJ->transpose());
         UAJ.reset();
         UBJ.reset();
         
         boost::shared_ptr<Matrix> CA = coupled_susceptibility_debug(omega[w],eps_aocc_A_,eps_avir_A_,AaaT,AarT,ArrT,DarT);
-        boost::shared_ptr<Matrix> CB = coupled_susceptibility_debug(omega[w],eps_aocc_B_,eps_avir_B_,AbbT,AbsT,AssT,DbsT);
         boost::shared_ptr<Matrix> CAJ = doublet(CA,J);
-        boost::shared_ptr<Matrix> CBJ = doublet(CB,J); 
-        Disp2C_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * CAJ->vector_dot(CBJ->transpose());
         CA.reset();
+        boost::shared_ptr<Matrix> CB = coupled_susceptibility_debug(omega[w],eps_aocc_B_,eps_avir_B_,AbbT,AbsT,AssT,DbsT);
+        boost::shared_ptr<Matrix> CBJ = doublet(CB,J); 
         CB.reset();
+        Disp2C_terms[w] -= 1.0 / (2.0 * M_PI) * alpha[w] * CAJ->vector_dot(CBJ->transpose());
         CAJ.reset();
         CBJ.reset();
 
@@ -1175,6 +1178,7 @@ void DFTSAPT::tdhf_demo()
 
     } 
         
+    fprintf(outfile,"    ----------------------------------------------------------------------\n");
     fprintf(outfile,"\n");
 
     for (int w = 0; w < omega.size(); w++) {
@@ -1814,9 +1818,14 @@ void CPKS_SAPT::compute_cpks()
     fprintf(outfile, "    Convergence = %11.3E\n", delta_);
     fprintf(outfile, "\n");
 
-    fprintf(outfile, "    ------------------------------\n");
-    fprintf(outfile, "    %4s %11s  %11s \n", "Iter", "Monomer A", "Monomer B");
-    fprintf(outfile, "    ------------------------------\n");
+    time_t start;
+    time_t stop;
+    
+    start = time(NULL);
+
+    fprintf(outfile, "    -----------------------------------------\n");
+    fprintf(outfile, "    %-4s %11s  %11s  %10s\n", "Iter", "Monomer A", "Monomer B", "Time [s]");
+    fprintf(outfile, "    -----------------------------------------\n");
     fflush(outfile);
 
     int iter;
@@ -1867,9 +1876,11 @@ void CPKS_SAPT::compute_cpks()
             r2B = sqrt(C_DDOT(no*nv,rp[0],1,rp[0],1)) / b2B; 
         } 
 
-        fprintf(outfile, "    %4d %11.3E%1s %11.3E%1s\n", iter+1,
+        stop = time(NULL);
+        fprintf(outfile, "    %-4d %11.3E%1s %11.3E%1s %10d\n", iter+1,
             r2A, (r2A < delta_ ? "*" : " "), 
-            r2B, (r2B < delta_ ? "*" : " ")
+            r2B, (r2B < delta_ ? "*" : " "),
+            stop-start
             );
         fflush(outfile);
 
@@ -1904,7 +1915,7 @@ void CPKS_SAPT::compute_cpks()
         } 
     }
     
-    fprintf(outfile, "    ------------------------------\n");
+    fprintf(outfile, "    -----------------------------------------\n");
     fprintf(outfile, "\n");
     fflush(outfile);
 
