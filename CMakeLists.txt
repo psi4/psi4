@@ -6,6 +6,25 @@ get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 
 #
+# Command line options
+#
+include(cmake/GetValue.cmake)
+set(ALL_USEROPTS "")
+
+#OPTION PREFIX           The installation directory for psi4 (string)
+get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
+#OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
+get_value(useroptUSE_SYSTEM_BOOST   USE_SYSTEM_BOOST   TRUE)
+#OPTION LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
+get_value(useroptLIBINT_MAX_AM   LIBINT_MAX_AM   5)
+
+# This will be echoed at the end of configure, and also output to a file so the build can be replicated
+set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
+foreach(opt ${ALL_USEROPTS})
+    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D ${opt}")
+endforeach()
+
+#
 # Psi4 configuration
 #
 set(PSI_VERSION \"4.0\")
@@ -59,11 +78,9 @@ configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 # Libint configuration
 # Perhaps move to libint's cmakelists.txt file
 #
-set(LIBINT_TMPDIR "") # I haven't quite figured out the scratch stuff yet
-set(LIBINT_OPT_AM 3)    # A.M. level for ERIs
-set(LIBDERIV_OPT_AM1 2) # A.M. level for 1st derivative ERIs
-set(LIBDERIV_OPT_AM2 1) # A.M. level for 2nd derivative ERIs
-math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
+math(EXPR LIBDERIV_OPT_AM1 ${useroptLIBINT_MAX_AM}-1) # A.M. level for 1st derivative ERIs
+math(EXPR LIBDERIV_OPT_AM2 ${useroptLIBINT_MAX_AM}-2) # A.M. level for 2nd derivative ERIs
+math(EXPR LIBINT_NEW_AM ${useroptLIBINT_MAX_AM}*2)
 math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
 math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
 math(EXPR LIBDERIV_NEW_AM12 ${LIBDERIV_OPT_AM2}*2)
@@ -111,7 +128,11 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 # N.B. Update boost/CMakeLists.txt if this list of components changes
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_COMPONENTS filesystem python regex serialization system thread )
-find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
+if(NOT USE_SYSTEM_BOOST)
+    message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
+else()
+    find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
+endif()
 if(NOT Boost_FOUND)
     # Add the Boost version bundled with Psi4 as a dependency
     message(WARNING "Boost not found. The pre-packaged version will be built.")
@@ -152,6 +173,14 @@ set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints 
 )
 
 add_subdirectory(src)
+
+#
+# Echo the directory information back
+#
+set(RECONFIGURE_PSI "${PROJECT_BINARY_DIR}/reconfigure.sh")
+message("The following command can be used to exactly reproduce this build. It can also be found in ${RECONFIGURE_PSI}:\n")
+message("${CONFIGURE_CMD}\n")
+configure_file(cmake/reconfigure.sh.in reconfigure.sh)
 
 #get_cmake_property(_variableNames VARIABLES)
 #foreach (_variableName ${_variableNames})
