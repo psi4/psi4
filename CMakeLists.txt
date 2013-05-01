@@ -13,6 +13,8 @@ set(ALL_USEROPTS "")
 
 #OPTION CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
 get_value(useroptCXX_FLAGS   CXX_FLAGS   "\"\"")
+#OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
+get_value(useroptLAPACK      LAPACK   "\"\"")
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
 get_value(useroptLD_FLAGS    LD_FLAGS   "\"\"")
 #OPTION PREFIX           The installation directory for psi4 (string)
@@ -106,8 +108,21 @@ include_directories(
 #
 # BLAS and LAPACK
 #
-#find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
+#if(useroptBLAS)
+#    set(BLAS_Libraries ${useroptBLAS})
+#    message(WARNING "Skipping BLAS detection and using these flags: ${useroptBLAS}")
+#else()
+#    find_package(BLAS REQUIRED)
+#endif()
+if(NOT useroptLAPACK STREQUAL "\"\"")
+    set(LAPACK_Libraries ${useroptLAPACK})
+    message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
+else()
+    find_package(LAPACK REQUIRED)
+endif()
+#if(NOT MKL_Found)
+#    find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
+#endif()
 add_definitions(-DFC_SYMBOL=2)
 #
 # Python Detection 
@@ -115,7 +130,7 @@ add_definitions(-DFC_SYMBOL=2)
 
 find_package(PythonInterp REQUIRED)
 set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
 # Turn the flags into proper lists
 string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
@@ -135,7 +150,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 # N.B. Update boost/CMakeLists.txt if this list of components changes
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_COMPONENTS filesystem python regex serialization system thread )
-if(NOT USE_SYSTEM_BOOST)
+if(NOT useroptUSE_SYSTEM_BOOST)
     message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
 else()
     find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
@@ -151,6 +166,9 @@ if(NOT Boost_FOUND)
     foreach(component ${Boost_COMPONENTS})
         set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(Boost_LIBRARIES ${Boost_LIBRARIES} -lrt)
+    endif()
     add_subdirectory(boost)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
@@ -172,12 +190,7 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints moinfo options
-           parallel plugin psio qt sapt_solver scf_solver thce trans util adc ccdensity
-           ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv_wrapper detci
-           dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
-           sapt scf scfgrad stable thermo transqt transqt2
-)
+set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
 
 add_subdirectory(src)
 
