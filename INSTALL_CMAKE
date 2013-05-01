@@ -28,6 +28,9 @@ CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
 LD_FLAGS         Extra flags to be used in linking (string)
                  default:""
 
+LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
+                 default:""
+
 LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
                  derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
                  default:5
