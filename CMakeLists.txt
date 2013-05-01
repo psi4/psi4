@@ -77,10 +77,11 @@ configure_file(src/bin/psi4/gitversion.py.in src/bin/psi4/gitversion.py)
 #
 # Libint configuration
 # Perhaps move to libint's cmakelists.txt file
-#
-math(EXPR LIBDERIV_OPT_AM1 ${useroptLIBINT_MAX_AM}-1) # A.M. level for 1st derivative ERIs
-math(EXPR LIBDERIV_OPT_AM2 ${useroptLIBINT_MAX_AM}-2) # A.M. level for 2nd derivative ERIs
-math(EXPR LIBINT_NEW_AM ${useroptLIBINT_MAX_AM}*2)
+
+set(LIBINT_OPT_AM ${useroptLIBINT_MAX_AM})
+math(EXPR LIBDERIV_OPT_AM1 ${LIBINT_OPT_AM}-1) # A.M. level for 1st derivative ERIs
+math(EXPR LIBDERIV_OPT_AM2 ${LIBINT_OPT_AM}-2) # A.M. level for 2nd derivative ERIs
+math(EXPR LIBINT_NEW_AM ${LIBINT_OPT_AM}*2)
 math(EXPR LIBDERIV_NEW_AM1 ${LIBDERIV_OPT_AM1}*2)
 math(EXPR LIBDERIV_NEW_AM2 ${LIBDERIV_OPT_AM2}*2)
 math(EXPR LIBDERIV_NEW_AM12 ${LIBDERIV_OPT_AM2}*2)
