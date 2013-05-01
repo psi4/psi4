@@ -19,14 +19,21 @@ or
 
     cmake ..
 
-These can be mixed in any order, with -D commands taking precedence.  Psi4 currently recognizes the following options:-
+These can be mixed in any order, with -D commands taking precedence.  Psi4
+currently recognizes the following options:-
+
+CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
+                 default:""
+
+LD_FLAGS         Extra flags to be used in linking (string)
+                 default:""
+
+LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
+                 derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
+                 default:5
 
 PREFIX           The installation directory for psi4 (string)
                  default:/usr/local/psi4
 
 USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
                  default:true
-
-LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
-                 derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
-                 default:5
