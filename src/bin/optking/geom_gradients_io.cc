@@ -71,13 +71,13 @@ void MOLECULE::read_geom_grad(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
-    
+
   SharedMatrix pgradient;
   if (psi::Process::environment.wavefunction()) {
     pgradient = psi::Process::environment.wavefunction()->gradient();
   } else {
     pgradient = psi::Process::environment.gradient();
-  }    
+  }
 
   Matrix& gradient = *pgradient.get();
 
@@ -193,7 +193,7 @@ void MOLECULE::read_geom_grad(void) {
     for (int i = 0; i < EFPfrag; ++i)
       EFPatom += AtomsinEFP[i];
     fprintf(outfile,"\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
-  }     
+  }
 
   double *QX;
   INTEGER *QZ, QNATOMS;
@@ -243,12 +243,12 @@ void MOLECULE::read_geom_grad(void) {
     double *efp_f = init_array(6);
     for (int i=0; i<6; ++i)
       efp_f[i] = -1 * QGrad[3*QNATOMS_real + 6*f + i];
-    
+
     efp_fragments[f]->set_forces(efp_f);
     free_array(efp_f);
   }
   free_array(QGrad);
-  
+
   if (Opt_params.efp_fragments) {
     energy = EFP::GetInstance()->GetEnergy();
   }
@@ -363,6 +363,10 @@ double ** OPT_DATA::read_cartesian_H(void) const {
     fprintf(outfile,"\tCartesian Hessian matrix read: \n");
     print_matrix(outfile, H_cart, Ncart, Ncart);
     fflush(outfile);
+  }
+  else {
+      fprintf(outfile, "\tCartesian Hessian matrix read in from external file.\n");
+      fflush(outfile);
   }
 
   return H_cart;
