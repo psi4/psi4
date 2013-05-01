@@ -38,5 +38,15 @@ LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=
 PREFIX           The installation directory for psi4 (string)
                  default:/usr/local/psi4
 
+PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be
+                 a corresponding python-config script in this location for Psi to work, i.e. Python development
+                 version. (string)
+                 default:""
+
 USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
                  default:true
+
+
+It is strongly recommended that you delete the CMakeCache.txt in the object
+directory when changing build parameters, to prevent previous cached values
+being used instead of those being passed to cmake.
