@@ -424,18 +424,20 @@ double DFFrozenNO::compute_energy(){
  * build natural orbitals and transform TEIs
  */
 void DFFrozenNO::ComputeNaturalOrbitals(){
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Build 3-index integrals:\n");
+  bool nat_orbs = options_.get_bool("NAT_ORBS");
+
+  if (nat_orbs) {
+      fflush(outfile);
+      fprintf(outfile, "  ==> Frozen Natural Orbitals <==\n");
+      fprintf(outfile,"\n");
+      fflush(outfile);
+  } else {
+      fflush(outfile);
+      fprintf(outfile, "  ==> Semicanonical Orbitals <==\n");
+      fprintf(outfile,"\n");
+  }
+  fprintf(outfile,"  ==> 3-index integrals <==\n");
   fprintf(outfile,"\n");
 
   long int o = ndoccact;
@@ -456,7 +458,11 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
       psio->open(PSIF_DCC_QSO,PSIO_OPEN_NEW);
       psio->write_entry(PSIF_DCC_QSO,"qso",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
+      fprintf(outfile,"        Number of auxiliary functions:       %5li\n",nQ);
   }else{
+
+      // if scf-type was CD, no need to rebuild integrals TODO
+
       // Cholesky 3-index integrals
       boost::shared_ptr<BasisSet> primary = basisset();
       boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
@@ -472,7 +478,13 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
       psio->open(PSIF_DCC_QSO,PSIO_OPEN_NEW);
       psio->write_entry(PSIF_DCC_QSO,"qso",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
+      fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", tol);
+      fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
   }
+  fprintf(outfile,"\n");
+
+  // stick nQ in process environment so ccsd can know it
+  Process::environment.globals["DFCC NAUX"] = (double)nQ;
 
   long int memory = Process::environment.get_memory();
   if ( memory < 8L*(3L*nso*nso+nso*nso*nQ+o*v*nQ) ) {
@@ -497,7 +509,7 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
       }
   }
 
-  // the resulting Fock matrix is NOT diagonal in the o-o and v-v spaces.  make it so!
+  // the resulting Fock matrix might not be diagonal in the o-o and v-v spaces.  make it so!
 
   // virtual space:
   nvirt_no = nvirt;
@@ -550,6 +562,17 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   // modify c matrix
   ModifyCa_occ(newFock);
 
+  // if we don't need natural orbitals, return.
+  if ( ! nat_orbs ) {
+      free(tmp2);
+      free(temp);
+      free(Dab);
+      free(neweps);
+      free(newFock);
+      free(Qov);
+      return;
+  }
+
   // transform Qov:
   for (long int q = 0; q < nQ; q++) {
      for (long int i = 0; i < o; i++) {
@@ -564,8 +587,6 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   }
   free(tmp2);
 
-  // stick nQ in process environment so ccsd can know it
-  Process::environment.globals["DFCC NAUX"] = (double)nQ;
 
   if ( memory < 8L*(o*o*v*v+o*v*nQ) ) {
       throw PsiException("not enough memory (fno)",__FILE__,__LINE__);

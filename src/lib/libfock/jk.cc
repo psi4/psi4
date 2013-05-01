@@ -12,6 +12,8 @@
 #include "cubature.h"
 #include "points.h"
 
+#include<lib3index/cholesky.h>
+
 #include <sstream>
 
 #ifdef _OPENMP
@@ -37,7 +39,28 @@ boost::shared_ptr<JK> JK::build_JK()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
 
-    if (options.get_str("SCF_TYPE") == "DF") {
+    if (options.get_str("SCF_TYPE") == "CD") {
+
+        CDJK* jk = new CDJK(primary,options.get_double("CHOLESKY_TOLERANCE"));
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_IO"].has_changed())
+            jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
+        if (options["DF_FITTING_CONDITION"].has_changed())
+            jk->set_condition(options.get_double("DF_FITTING_CONDITION"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+
+        return boost::shared_ptr<JK>(jk);
+
+    } else if (options.get_str("SCF_TYPE") == "DF") {
 
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
 
@@ -2598,6 +2621,7 @@ void DFJK::free_w_temps()
 }
 void DFJK::preiterations()
 {
+
     // DF requires constant sieve, must be static throughout object life
     if (!sieve_) {
         sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
@@ -2605,6 +2629,7 @@ void DFJK::preiterations()
 
     // Core or disk?
     is_core_ =  is_core();
+
 
     if (is_core_)
         initialize_JK_core();
@@ -2618,6 +2643,7 @@ void DFJK::preiterations()
             initialize_wK_disk();
     }
 }
+
 void DFJK::compute_JK()
 {
     max_nocc_ = max_nocc();
@@ -3940,7 +3966,6 @@ void DFJK::block_J(double** Qmnp, int naux)
         timer_on("JK: J2");
         C_DGEMV('T',naux,num_nm,1.0,Qmnp[0],num_nm,dp,1,0.0,J2p,1);
         timer_off("JK: J2");
-
         for (unsigned long int mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
             int n = function_pairs[mn].second;
@@ -4134,6 +4159,99 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
         timer_on("JK: wK2");
         C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,wKp[0],nbf);
         timer_off("JK: wK2");
+    }
+}
+
+CDJK::CDJK(boost::shared_ptr<BasisSet> primary, double cholesky_tolerance):
+    DFJK(primary,primary), cholesky_tolerance_(cholesky_tolerance)
+{
+}
+CDJK::~CDJK()
+{
+}
+void CDJK::initialize_JK_disk()
+{
+    throw PsiException("Disk algorithm for CD JK not implemented.",__FILE__,__LINE__);
+}
+
+void CDJK::initialize_JK_core()
+{
+    // generate CD integrals with lib3index
+    timer_on("CD: cholesky decomposition");
+    boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary_,primary_,primary_,primary_));
+    boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
+    Ch->choleskify();
+    ncholesky_  = Ch->Q();
+    boost::shared_ptr<Matrix> L = Ch->L();
+    double ** Lp = L->pointer();
+    timer_off("CD: cholesky decomposition");
+
+    int ntri = sieve_->function_pairs().size();
+    ULI three_memory = ncholesky_ * ntri;
+    ULI nbf = primary_->nbf();
+
+    if ( memory_ - (ULI)sizeof(double) * three_memory - (ULI)sizeof(double)* ncholesky_ * nbf * nbf < 0)
+        throw PsiException("Not enough memory for CD.",__FILE__,__LINE__);
+
+    Qmn_ = SharedMatrix(new Matrix("Qmn (CD Integrals)", ncholesky_ , ntri));
+
+    double** Qmnp = Qmn_->pointer();
+
+    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+
+    timer_on("CD: schwarz");
+    for (long int mu = 0; mu < nbf; mu++) {
+        for (long int nu = mu; nu < nbf; nu++) {
+            if ( schwarz_fun_pairs[mu*(mu+1)/2+nu] < 0 ) continue;
+            for (long int P = 0; P < ncholesky_; P++) {
+                Qmnp[P][schwarz_fun_pairs[nu*(nu+1)/2+mu]] = Lp[P][mu * nbf + nu];
+            }
+        }
+    }
+    timer_off("CD: schwarz");
+
+    if (df_ints_io_ == "SAVE") {
+        psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
+        psio_->close(unit_,1);
+    }
+}
+void CDJK::manage_JK_core()
+{
+    for (int Q = 0 ; Q < ncholesky_; Q += max_rows_) {
+        int naux = (ncholesky_ - Q <= max_rows_ ? ncholesky_ - Q : max_rows_);
+        if (do_J_) {
+            timer_on("JK: J");
+            block_J(&Qmn_->pointer()[Q],naux);
+            timer_off("JK: J");
+        }
+        if (do_K_) {
+            timer_on("JK: K");
+            block_K(&Qmn_->pointer()[Q],naux);
+            timer_off("JK: K");
+        }
+    }
+}
+void CDJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> CDJK: Cholesky-decomposed J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:             %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:             %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:            %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) {
+            throw PsiException("no wk for scf_type cd.",__FILE__,__LINE__);
+            //fprintf(outfile, "    Omega:                %11.3E\n", omega_);
+        }
+        fprintf(outfile, "    OpenMP threads:       %11d\n", omp_nthread_);
+        fprintf(outfile, "    Integrals threads:    %11d\n", df_ints_num_threads_);
+        fprintf(outfile, "    Memory (MB):          %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:            %11s\n",  (is_core_ ? "Core" : "Disk"));
+        fprintf(outfile, "    Integral Cache:       %11s\n",  df_ints_io_.c_str());
+        fprintf(outfile, "    Schwarz Cutoff:       %11.0E\n", cutoff_);
+        fprintf(outfile, "    Cholesky tolerance:   %11.2E\n", cholesky_tolerance_);
+        fprintf(outfile, "    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
 }
 

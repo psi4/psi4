@@ -592,6 +592,7 @@ public:
     virtual void print_header() const;
 };
 
+
 /**
  * Class DFJK
  *
@@ -739,6 +740,54 @@ public:
     * type on output file
     */
     virtual void print_header() const;
+};
+/**
+ * Class CDJK
+ *
+ * JK implementation using 
+ * cholesky decomposition technology
+ */
+class CDJK : public DFJK {
+
+protected:
+    // the number of cholesky vectors
+    long int ncholesky_;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    virtual bool is_core() { return true; }
+
+    // => J <= //
+    virtual void initialize_JK_core();
+    virtual void initialize_JK_disk();
+    virtual void manage_JK_core();
+
+    double cholesky_tolerance_;
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+
+public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     * @param tol tolerance for cholesky decomposition.
+     */
+    CDJK( boost::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+
+    /// Destructor
+    virtual ~CDJK();
+
 };
 
 /**
