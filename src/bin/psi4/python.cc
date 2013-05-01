@@ -1178,7 +1178,7 @@ void Python::initialize()
 
 void Python::finalize()
 {
-    Py_Finalize();
+//    Py_Finalize();
 }
 
 #define PY_TRY(ptr, command)  \
@@ -1202,6 +1202,19 @@ void Python::run(FILE *input)
 
     if (!Py_IsInitialized()) {
         s = strdup("psi");
+
+#if PY_MAJOR_VERSION == 2
+        if (PyImport_AppendInittab(strdup("PsiMod"), initPsiMod) == -1) {
+            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+            abort();
+        }
+#else
+        if (PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod) == -1) {
+            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+            abort();
+        }
+#endif
+
         // Py_InitializeEx(0) causes sig handlers to not be installed.
         Py_InitializeEx(0);
         #if PY_VERSION_HEX >= 0x03000000
@@ -1228,9 +1241,12 @@ void Python::run(FILE *input)
 #if PY_MAJOR_VERSION == 2
         PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
 #else
-        PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+        PY_TRY(str    , PyUnicode_FromString(psiDataDirWithPython.c_str()));
 #endif
+
+        // Append to the path list
         PyList_Append(path, str);
+
         Py_DECREF(str);
         Py_DECREF(path);
         Py_DECREF(sysmod);
@@ -1244,11 +1260,6 @@ void Python::run(FILE *input)
         }
 
         try {
-#if PY_MAJOR_VERSION == 2
-            PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
-#else
-            PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod);
-#endif
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
@@ -1295,6 +1306,7 @@ void Python::run(FILE *input)
 
     if (s)
       free(s);
+    Process::environment.molecule().reset();
     Process::environment.wavefunction().reset();
     py_psi_plugin_close_all();
 }
