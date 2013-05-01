@@ -10,15 +10,18 @@ set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 #
 include(cmake/GetValue.cmake)
 set(ALL_USEROPTS "")
+set(EMPTY "\"\"")
 
 #OPTION CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
-get_value(useroptCXX_FLAGS   CXX_FLAGS   "\"\"")
+get_value(useroptCXX_FLAGS   CXX_FLAGS   ${EMPTY})
 #OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACK      LAPACK   "\"\"")
+get_value(useroptLAPACK      LAPACK   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLD_FLAGS    LD_FLAGS   "\"\"")
+get_value(useroptLD_FLAGS    LD_FLAGS   ${EMPTY})
 #OPTION PREFIX           The installation directory for psi4 (string)
 get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
+#OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
+get_value(useroptPYTHON      PYTHON   ${EMPTY})
 #OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
 get_value(useroptUSE_SYSTEM_BOOST   USE_SYSTEM_BOOST   TRUE)
 #OPTION LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
@@ -114,7 +117,7 @@ include_directories(
 #else()
 #    find_package(BLAS REQUIRED)
 #endif()
-if(NOT useroptLAPACK STREQUAL "\"\"")
+if(NOT useroptLAPACK STREQUAL EMPTY)
     set(LAPACK_Libraries ${useroptLAPACK})
     message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
 else()
@@ -124,11 +127,16 @@ endif()
 #    find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
 #endif()
 add_definitions(-DFC_SYMBOL=2)
+
 #
 # Python Detection 
-#  We don't really need the interpreter. Could we just use the PythonLibs method?
-
-find_package(PythonInterp REQUIRED)
+#
+if(NOT useroptPYTHON STREQUAL EMPTY)
+    set(PYTHON_EXECUTABLE ${useroptPYTHON})
+    message(WARNING "Skipping Python detection and using this version: ${useroptPYTHON}")
+else()
+    find_package(PythonInterp REQUIRED)
+endif()
 set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
 execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
