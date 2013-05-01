@@ -10,13 +10,18 @@ set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 #
 include(cmake/GetValue.cmake)
 set(ALL_USEROPTS "")
+set(EMPTY "\"\"")
 
 #OPTION CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
-get_value(useroptCXX_FLAGS   CXX_FLAGS   "\"\"")
+get_value(useroptCXX_FLAGS   CXX_FLAGS   ${EMPTY})
+#OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
+get_value(useroptLAPACK      LAPACK   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLD_FLAGS    LD_FLAGS   "\"\"")
+get_value(useroptLD_FLAGS    LD_FLAGS   ${EMPTY})
 #OPTION PREFIX           The installation directory for psi4 (string)
 get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
+#OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
+get_value(useroptPYTHON      PYTHON   ${EMPTY})
 #OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
 get_value(useroptUSE_SYSTEM_BOOST   USE_SYSTEM_BOOST   TRUE)
 #OPTION LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
@@ -106,16 +111,34 @@ include_directories(
 #
 # BLAS and LAPACK
 #
-#find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
+#if(useroptBLAS)
+#    set(BLAS_Libraries ${useroptBLAS})
+#    message(WARNING "Skipping BLAS detection and using these flags: ${useroptBLAS}")
+#else()
+#    find_package(BLAS REQUIRED)
+#endif()
+if(NOT useroptLAPACK STREQUAL EMPTY)
+    set(LAPACK_Libraries ${useroptLAPACK})
+    message(WARNING "Skipping LAPACK detection and using these flags: ${useroptLAPACK}")
+else()
+    find_package(LAPACK REQUIRED)
+endif()
+#if(NOT MKL_Found)
+#    find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
+#endif()
 add_definitions(-DFC_SYMBOL=2)
+
 #
 # Python Detection 
-#  We don't really need the interpreter. Could we just use the PythonLibs method?
-
-find_package(PythonInterp REQUIRED)
+#
+if(NOT useroptPYTHON STREQUAL EMPTY)
+    set(PYTHON_EXECUTABLE ${useroptPYTHON})
+    message(WARNING "Skipping Python detection and using this version: ${useroptPYTHON}")
+else()
+    find_package(PythonInterp REQUIRED)
+endif()
 set(PYCONFIG ${PYTHON_EXECUTABLE}-config)
-execute_process(COMMAND ${PYCONFIG} --libs     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYCONFIG} --ldflags  OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${PYCONFIG} --include  OUTPUT_VARIABLE PYTHON_INCLUDE_DIRS OUTPUT_STRIP_TRAILING_WHITESPACE)
 # Turn the flags into proper lists
 string(REPLACE "-I" "" PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIRS})
@@ -135,7 +158,7 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 # N.B. Update boost/CMakeLists.txt if this list of components changes
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_COMPONENTS filesystem python regex serialization system thread )
-if(NOT USE_SYSTEM_BOOST)
+if(NOT useroptUSE_SYSTEM_BOOST)
     message(WARNING "Skipping Boost detection, and forcing Psi to build the bundled version.")
 else()
     find_package(Boost 1.47.0 COMPONENTS ${Boost_COMPONENTS})
@@ -151,6 +174,9 @@ if(NOT Boost_FOUND)
     foreach(component ${Boost_COMPONENTS})
         set(Boost_LIBRARIES ${Boost_LIBRARIES} "${BOOSTLIBDIR}/libboost_${component}.a")
     endforeach()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+        set(Boost_LIBRARIES ${Boost_LIBRARIES} -lrt)
+    endif()
     add_subdirectory(boost)
 endif()
 include_directories(${Boost_INCLUDE_DIRS})
@@ -172,12 +198,7 @@ file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
-set(PSILIB 3index chkpt ciomr deriv diis disp dpd fock functional iwl int mints moinfo options
-           parallel plugin psio qt sapt_solver scf_solver thce trans util adc ccdensity
-           ccenergy cceom cchbar cclambda ccresponse ccsort cctriples dcft deriv_wrapper detci
-           dfmp2 dftsapt findif fnocc mcscf mints_wrapper mp2 mrcc occ optking psimrcc
-           sapt scf scfgrad stable thermo transqt transqt2
-)
+set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
 
 add_subdirectory(src)
 
