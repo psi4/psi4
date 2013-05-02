@@ -36,8 +36,7 @@ import warnings
 from driver import *
 from wrappers import *
 from molutil import *
-from text import *
-from procutil import *
+import p4util
 
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
@@ -55,7 +54,7 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     if not ('func_cbs' in kwargs):
         kwargs['func_cbs'] = energy
@@ -100,7 +99,7 @@ def allen_focal_point(name='mp2', **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     if not ('func_cbs' in kwargs):
         kwargs['func_cbs'] = energy
@@ -230,7 +229,7 @@ def allen_focal_point(name='mp2', **kwargs):
 #
 #    """
 #    lowername = name.lower()
-#    kwargs = kwargs_lower(kwargs)
+#    kwargs = p4util.kwargs_lower(kwargs)
 #
 #    plugfile = psi4.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
 #    psi4.plugin_load("%s" % (plugfile))

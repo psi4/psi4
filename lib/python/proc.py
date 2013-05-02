@@ -32,14 +32,11 @@ import shutil
 import os
 import subprocess
 import re
-import physconst
+import p4const
+import p4util
+from p4regex import *
 from molutil import *
-from text import *
-from procutil import *
-from basislist import *
 from functional import *
-from optproc import *
-from util import *
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
@@ -505,7 +502,7 @@ def run_scf(name, **kwargs):
     """
     lowername = name.lower()
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'SCF_TYPE'],
         ['SCF', 'REFERENCE'])
@@ -553,7 +550,7 @@ def run_scf_gradient(name, **kwargs):
     a SCF gradient calculation.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'])
 
@@ -567,7 +564,7 @@ def run_scf_gradient(name, **kwargs):
 
         # if the df_basis_scf basis is not set, pick a sensible one.
         if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = corresponding_jkfit(psi4.get_global_option('BASIS'))
+            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
             if jkbasis:
                 psi4.set_global_option('DF_BASIS_SCF', jkbasis)
                 psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
@@ -615,7 +612,7 @@ def scf_helper(name, **kwargs):
     output file types for SCF).
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['PUREAM'],
         ['BASIS'],
         ['DF_BASIS_SCF'],
@@ -628,14 +625,14 @@ def scf_helper(name, **kwargs):
     # if the df_basis_scf basis is not set, pick a sensible one.
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
         if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = corresponding_jkfit(psi4.get_global_option('BASIS'))
+            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
             if jkbasis:
                 psi4.set_global_option('DF_BASIS_SCF', jkbasis)
                 psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
             else:
                 raise ValidationError('Keyword DF_BASIS_SCF is required.')
 
-    optstash2 = OptionsState(
+    optstash2 = p4util.OptionsState(
         ['BASIS'],
         ['DF_BASIS_SCF'],
         ['SCF', 'SCF_TYPE'],
@@ -693,7 +690,7 @@ def scf_helper(name, **kwargs):
     if do_broken:
         molecule.set_multiplicity(3)
         psi4.print_out('\n')
-        banner('  Computing high-spin triplet guess  ')
+        p4util.banner('  Computing high-spin triplet guess  ')
         psi4.print_out('\n')
 
     # cast set-up
@@ -706,7 +703,7 @@ def scf_helper(name, **kwargs):
 
         if (castdf):
             if yes.match(str(castdf)):
-                guessbasisdf = corresponding_jkfit(guessbasis)
+                guessbasisdf = p4util.corresponding_jkfit(guessbasis)
             else:
                 guessbasisdf = castdf
 
@@ -723,7 +720,7 @@ def scf_helper(name, **kwargs):
 
         # Print some info about the guess
         psi4.print_out('\n')
-        banner('Guess SCF, %s Basis' % (guessbasis))
+        p4util.banner('Guess SCF, %s Basis' % (guessbasis))
         psi4.print_out('\n')
 
     # the FIRST scf call
@@ -736,7 +733,7 @@ def scf_helper(name, **kwargs):
         molecule.set_multiplicity(1)
         psi4.set_local_option('SCF', 'GUESS', 'READ')
         psi4.print_out('\n')
-        banner('  Computing broken symmetry solution from high-spin triplet guess  ')
+        p4util.banner('  Computing broken symmetry solution from high-spin triplet guess  ')
         psi4.print_out('\n')
 
     # cast clean-up
@@ -752,7 +749,7 @@ def scf_helper(name, **kwargs):
 
         # Print the banner for the standard operation
         psi4.print_out('\n')
-        banner(name.upper())
+        p4util.banner(name.upper())
         psi4.print_out('\n')
 
 
@@ -790,7 +787,7 @@ def run_dfmp2_gradient(name, **kwargs):
     a DFMP2 gradient calculation.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['DF_BASIS_SCF'],
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'])
@@ -818,7 +815,7 @@ def run_dfmp2_gradient(name, **kwargs):
     else:
         # if the df_basis_scf basis is not set, pick a sensible one.
         if psi4.get_global_option('DF_BASIS_SCF') == '':
-            jkbasis = corresponding_jkfit(psi4.get_global_option('BASIS'))
+            jkbasis = p4util.corresponding_jkfit(psi4.get_global_option('BASIS'))
             if jkbasis:
                 psi4.set_global_option('DF_BASIS_SCF', jkbasis)
                 psi4.print_out('\n  No DF_BASIS_SCF auxiliary basis selected, defaulting to %s\n\n' % (jkbasis))
@@ -828,12 +825,12 @@ def run_dfmp2_gradient(name, **kwargs):
         scf_helper(name, **kwargs)
 
     psi4.print_out('\n')
-    banner('DFMP2')
+    p4util.banner('DFMP2')
     psi4.print_out('\n')
 
     # if the df_basis_mp2 basis is not set, pick a sensible one.
     if psi4.get_global_option('DF_BASIS_MP2') == '':
-        ribasis = corresponding_rifit(psi4.get_global_option('BASIS'))
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
         if ribasis:
             psi4.set_global_option('DF_BASIS_MP2', ribasis)
             psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
@@ -859,7 +856,7 @@ def run_ccenergy(name, **kwargs):
     """
     lowername = name.lower()
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['CCSORT', 'WFN'],
         ['CCENERGY', 'WFN'])
@@ -1005,7 +1002,7 @@ def run_scf_property(name, **kwargs):
     since SCF properties all handled through oeprop.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
@@ -1035,7 +1032,7 @@ def run_cc_property(name, **kwargs):
 
     if 'properties' in kwargs:
         properties = kwargs.pop('properties')
-        properties = drop_duplicates(properties)
+        properties = p4util.drop_duplicates(properties)
 
         for prop in properties:
             if prop in oneel_properties:
@@ -1254,7 +1251,7 @@ def run_eom_cc_gradient(name, **kwargs):
     an EOM-CCSD gradient calculation.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['CCDENSITY', 'XI'],
         ['CCDENSITY', 'ZETA'],
         ['CCLAMBDA', 'ZETA'],
@@ -1306,7 +1303,7 @@ def run_dft(name, **kwargs):
     a density-functional-theory calculation.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'REFERENCE'],
         ['SCF', 'SCF_TYPE'],
@@ -1341,7 +1338,7 @@ def run_dft(name, **kwargs):
 
         # if the df_basis_mp2 basis is not set, pick a sensible one.
         if psi4.get_global_option('DF_BASIS_MP2') == '':
-            ribasis = corresponding_rifit(psi4.get_global_option('BASIS'))
+            ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
             if ribasis:
                 psi4.set_global_option('DF_BASIS_MP2', ribasis)
                 psi4.print_out('  No DF_BASIS_MP2 auxiliary basis selected, defaulting to %s\n' % (ribasis))
@@ -1371,7 +1368,7 @@ def run_dft_gradient(name, **kwargs):
     a density-functional-theory gradient calculation.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'DFT_FUNCTIONAL'],
         ['SCF', 'REFERENCE'],
         ['SCF', 'SCF_TYPE'])
@@ -1403,7 +1400,7 @@ def run_detci(name, **kwargs):
     CIn, MPn, and ZAPTn.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['DETCI', 'WFN'],
         ['DETCI', 'MAX_NUM_VECS'],
@@ -1831,7 +1828,7 @@ def run_dftsapt(name, **kwargs):
 
     psi4.IO.set_default_namespace('dimer')
     psi4.print_out('\n')
-    banner('Dimer HF')
+    p4util.banner('Dimer HF')
     psi4.print_out('\n')
     if (sapt_basis == 'dimer'):
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
@@ -1845,7 +1842,7 @@ def run_dftsapt(name, **kwargs):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
-    banner('Monomer A HF')
+    p4util.banner('Monomer A HF')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
     wfn_monomerA = psi4.wavefunction()
@@ -1855,7 +1852,7 @@ def run_dftsapt(name, **kwargs):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
-    banner('Monomer B HF')
+    p4util.banner('Monomer B HF')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
     wfn_monomerB = psi4.wavefunction()
@@ -1895,7 +1892,7 @@ def run_infsapt(name, **kwargs):
     a INF-SAPT0 calculation of any level.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
@@ -1941,7 +1938,7 @@ def run_infsapt(name, **kwargs):
 
     psi4.IO.set_default_namespace('dimer')
     psi4.print_out('\n')
-    banner('Dimer HF')
+    p4util.banner('Dimer HF')
     psi4.print_out('\n')
     if (sapt_basis == 'dimer'):
         psi4.set_global_option('DF_INTS_IO', 'SAVE')
@@ -1955,7 +1952,7 @@ def run_infsapt(name, **kwargs):
         psi4.IO.change_file_namespace(97, 'dimer', 'monomerA')
     psi4.IO.set_default_namespace('monomerA')
     psi4.print_out('\n')
-    banner('Monomer A HF')
+    p4util.banner('Monomer A HF')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
     wfn_monomerA = psi4.wavefunction()
@@ -1965,7 +1962,7 @@ def run_infsapt(name, **kwargs):
         psi4.IO.change_file_namespace(97, 'monomerA', 'monomerB')
     psi4.IO.set_default_namespace('monomerB')
     psi4.print_out('\n')
-    banner('Monomer B HF')
+    p4util.banner('Monomer B HF')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
     wfn_monomerB = psi4.wavefunction()
@@ -1978,7 +1975,7 @@ def run_infsapt(name, **kwargs):
 
     # if the df_basis_sapt basis is not set, pick a sensible one.
     if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = corresponding_rifit(psi4.get_global_option('BASIS'))
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
         if ribasis:
             psi4.set_global_option('DF_BASIS_SAPT', ribasis)
             psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
@@ -1986,7 +1983,7 @@ def run_infsapt(name, **kwargs):
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
     psi4.print_out('\n')
-    banner(name.upper())
+    p4util.banner(name.upper())
     psi4.print_out('\n')
 
     e_sapt = psi4.infsapt(wfn_dimer,wfn_monomerA,wfn_monomerB)
@@ -2005,7 +2002,7 @@ def run_sapt_ct(name, **kwargs):
     a charge-transfer SAPT calcuation of any level.
 
     """
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'])
 
     # Alter default algorithm
@@ -2044,7 +2041,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.IO.set_default_namespace('dimer')
     psi4.set_local_option('SCF', 'SAPT', '2-dimer')
     psi4.print_out('\n')
-    banner('Dimer HF')
+    p4util.banner('Dimer HF')
     psi4.print_out('\n')
     psi4.set_global_option('DF_INTS_IO', 'SAVE')
     e_dimer = scf_helper('RHF', **kwargs)
@@ -2056,7 +2053,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.IO.set_default_namespace('monomerA')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
-    banner('Monomer A HF (Dimer Basis)')
+    p4util.banner('Monomer A HF (Dimer Basis)')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
 
@@ -2066,7 +2063,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.IO.set_default_namespace('monomerB')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
-    banner('Monomer B HF (Dimer Basis)')
+    p4util.banner('Monomer B HF (Dimer Basis)')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
     psi4.set_global_option('DF_INTS_IO', df_ints_io)
@@ -2075,7 +2072,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.IO.set_default_namespace('monomerAm')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_A')
     psi4.print_out('\n')
-    banner('Monomer A HF (Monomer Basis)')
+    p4util.banner('Monomer A HF (Monomer Basis)')
     psi4.print_out('\n')
     e_monomerA = scf_helper('RHF', **kwargs)
 
@@ -2083,7 +2080,7 @@ def run_sapt_ct(name, **kwargs):
     psi4.IO.set_default_namespace('monomerBm')
     psi4.set_local_option('SCF', 'SAPT', '2-monomer_B')
     psi4.print_out('\n')
-    banner('Monomer B HF (Monomer Basis)')
+    p4util.banner('Monomer B HF (Monomer Basis)')
     psi4.print_out('\n')
     e_monomerB = scf_helper('RHF', **kwargs)
 
@@ -2115,12 +2112,12 @@ def run_sapt_ct(name, **kwargs):
         psi4.set_local_option('SAPT', 'DO_THIRD_ORDER', True)
         psi4.set_local_option('SAPT', 'DO_CCD_DISP', True)
     psi4.print_out('\n')
-    banner('SAPT Charge Transfer')
+    p4util.banner('SAPT Charge Transfer')
     psi4.print_out('\n')
 
     # if the df_basis_sapt basis is not set, pick a sensible one.
     if psi4.get_global_option('DF_BASIS_SAPT') == '':
-        ribasis = corresponding_rifit(psi4.get_global_option('BASIS'))
+        ribasis = p4util.corresponding_rifit(psi4.get_global_option('BASIS'))
         if ribasis:
             psi4.set_global_option('DF_BASIS_SAPT', ribasis)
             psi4.print_out('  No DF_BASIS_SAPT auxiliary basis selected, defaulting to %s\n' % (ribasis))
@@ -2128,7 +2125,7 @@ def run_sapt_ct(name, **kwargs):
             raise ValidationError('Keyword DF_BASIS_SAPT is required.')
 
     psi4.print_out('\n')
-    banner('Dimer Basis SAPT')
+    p4util.banner('Dimer Basis SAPT')
     psi4.print_out('\n')
     psi4.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
     psi4.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
@@ -2136,7 +2133,7 @@ def run_sapt_ct(name, **kwargs):
     CTd = psi4.get_variable('SAPT CT ENERGY')
 
     psi4.print_out('\n')
-    banner('Monomer Basis SAPT')
+    p4util.banner('Monomer Basis SAPT')
     psi4.print_out('\n')
     psi4.IO.change_file_namespace(PSIF_SAPT_MONOMERA, 'monomerAm', 'dimer')
     psi4.IO.change_file_namespace(PSIF_SAPT_MONOMERB, 'monomerBm', 'dimer')
@@ -2147,9 +2144,9 @@ def run_sapt_ct(name, **kwargs):
     psi4.print_out('\n\n')
     psi4.print_out('    SAPT Charge Transfer Analysis\n')
     psi4.print_out('  -----------------------------------------------------------------------------\n')
-    line1 = '    SAPT Induction (Dimer Basis)      %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTd * 1000.0, CTd * physconst.psi_hartree2kcalmol)
-    line2 = '    SAPT Induction (Monomer Basis)    %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTm * 1000.0, CTm * physconst.psi_hartree2kcalmol)
-    line3 = '    SAPT Charge Transfer              %10.4lf mH    %10.4lf kcal mol^-1\n\n' % (CT * 1000.0, CT * physconst.psi_hartree2kcalmol)
+    line1 = '    SAPT Induction (Dimer Basis)      %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTd * 1000.0, CTd * p4const.psi_hartree2kcalmol)
+    line2 = '    SAPT Induction (Monomer Basis)    %10.4lf mH    %10.4lf kcal mol^-1\n' % (CTm * 1000.0, CTm * p4const.psi_hartree2kcalmol)
+    line3 = '    SAPT Charge Transfer              %10.4lf mH    %10.4lf kcal mol^-1\n\n' % (CT * 1000.0, CT * p4const.psi_hartree2kcalmol)
     psi4.print_out(line1)
     psi4.print_out(line2)
     psi4.print_out(line3)
@@ -2300,7 +2297,7 @@ def run_mrcc(name, **kwargs):
 
     # Dump iface contents to output
     psi4.print_out('\n')
-    banner('Full results from MRCC')
+    p4util.banner('Full results from MRCC')
     psi4.print_out('\n')
     psi4.print_out(iface_contents)
 
@@ -2545,11 +2542,10 @@ def run_cepa(name, **kwargs):
 
     """
     lowername = name.lower()
-    uppername = name.upper()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # save user options
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['TRANSQT2', 'WFN'],
         ['FNOCC', 'NAT_ORBS'],
         ['FNOCC', 'RUN_CEPA'],

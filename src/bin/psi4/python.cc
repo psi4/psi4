@@ -1353,7 +1353,7 @@ void Python::run(FILE *input)
 
             // Process the input file
             PyObject *input;
-            PY_TRY(input, PyImport_ImportModule("input") );
+            PY_TRY(input, PyImport_ImportModule("inputparser") );
             PyObject *function;
             PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
             PyObject *pargs;

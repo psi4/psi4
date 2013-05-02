@@ -29,13 +29,13 @@ properties, and vibrational frequency calculations.
 """
 import sys
 import psi4
+import p4util
 from proc import *
-from text import *
-from procutil import *
 from functional import *
-from psifiles import *
-# never import wrappers or aliases into this file
+import p4const
+from p4regex import *
 
+# never import wrappers or aliases into this file
 
 # Procedure lookup tables
 procedures = {
@@ -510,9 +510,9 @@ def energy(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -562,10 +562,10 @@ def gradient(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
     dertype = 1
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -728,9 +728,9 @@ def gradient(name, **kwargs):
 
             fmaster = open('OPT-master.in', 'w')
             fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-            fmaster.write(format_molecule_for_input(molecule))
-            fmaster.write(format_options_for_input())
-            format_kwargs_for_input(fmaster, 2, **kwargs)
+            fmaster.write(p4util.format_molecule_for_input(molecule))
+            fmaster.write(p4util.format_options_for_input())
+            p4util.format_kwargs_for_input(fmaster, 2, **kwargs)
             fmaster.write("""%s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername))
             fmaster.write(instructionsM)
             fmaster.close()
@@ -742,13 +742,13 @@ def gradient(name, **kwargs):
             # Build string of title banner
             banners = ''
             banners += """psi4.print_out('\\n')\n"""
-            banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n + 1)
+            banners += """p4util.banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n + 1)
             banners += """psi4.print_out('\\n')\n\n"""
 
             if (opt_mode.lower() == 'continuous'):
                 # Print information to output.dat
                 psi4.print_out('\n')
-                banner('Loading displacement %d of %d' % (n + 1, ndisp))
+                p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
                 # Print information to the screen
                 print(' %d' % (n + 1), end="")
@@ -774,9 +774,9 @@ def gradient(name, **kwargs):
                 # S/R: Prepare molecule, options, and kwargs
                 freagent = open('%s.in' % (rfile), 'w')
                 freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
-                freagent.write(format_molecule_for_input(molecule))
-                freagent.write(format_options_for_input())
-                format_kwargs_for_input(freagent, **kwargs)
+                freagent.write(p4util.format_molecule_for_input(molecule))
+                freagent.write(p4util.format_options_for_input())
+                p4util.format_kwargs_for_input(freagent, **kwargs)
 
                 # S/R: Prepare function call and energy save
                 freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
@@ -881,9 +881,9 @@ def property(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -1043,7 +1043,7 @@ def optimize(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     full_hess_every = psi4.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
@@ -1054,7 +1054,7 @@ def optimize(name, **kwargs):
         isSowReap = True
     if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
         isSowReap = True
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'GUESS'])
 
     n = 1
@@ -1096,7 +1096,7 @@ def optimize(name, **kwargs):
             if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
                 if(psi4.me() == 0):
-                    shutil.copy(restartfile, get_psifile(1))
+                    shutil.copy(restartfile, p4util.get_psifile(1))
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
@@ -1139,7 +1139,7 @@ def optimize(name, **kwargs):
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
         if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
-            kwargs['opt_datafile'] = get_psifile(1)
+            kwargs['opt_datafile'] = p4util.get_psifile(1)
             kwargs['mode'] = 'sow'
 
         n += 1
@@ -1284,7 +1284,7 @@ def frequency(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
     dertype = 2
 
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['SCF', 'E_CONVERGENCE'],
         ['SCF', 'D_CONVERGENCE'],
         ['E_CONVERGENCE'])
@@ -1415,7 +1415,7 @@ def frequency(name, **kwargs):
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
             psi4.print_out('\n')
-            banner('Loading displacement %d of %d' % (n + 1, ndisp))
+            p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
             print(' %d' % (n + 1), end="")
@@ -1492,7 +1492,7 @@ def frequency(name, **kwargs):
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
             psi4.print_out('\n')
-            banner('Loading displacement %d of %d' % (n + 1, ndisp))
+            p4util.banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
             print(' %d' % (n + 1), end="")
@@ -1546,7 +1546,7 @@ freq = frequency
 def hessian(name, **kwargs):
     r"""Function to compute force constants. Presently identical to frequency()."""
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
 

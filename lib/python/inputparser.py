@@ -30,7 +30,7 @@ module calls that access the C++ side of Psi4.
 
 """
 import psi4
-from pubchem import getPubChemResults, PubChemObj
+import pubchem
 import re
 import os
 import sys
@@ -150,7 +150,7 @@ def process_pubchem_command(matchobj):
     string = matchobj.group(2)
     if re.match(r'^\s*[0-9]+\s*$', string):
         # This is just a number - must be a CID
-        pcobj = PubChemObj(int(string), '', '')
+        pcobj = pubchem.PubChemObj(int(string), '', '')
         try:
             return pcobj.getMoleculeString()
         except Exception as e:
@@ -158,7 +158,7 @@ def process_pubchem_command(matchobj):
     else:
         # Search pubchem for the provided string
         try:
-            results = getPubChemResults(string)
+            results = pubchem.getPubChemResults(string)
         except Exception as e:
             return e.message
 
@@ -676,23 +676,14 @@ def process_input(raw_input, print_level=1):
 
     # imports
     imports = 'from psi4 import *\n'
-    imports += 'from physconst import *\n'
+    imports += 'from p4const import *\n'
+    imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
     imports += 'from driver import *\n'
-    imports += 'from text import *\n'
-    imports += 'from inpsight import *\n'
     imports += 'from wrappers import *\n'
     imports += 'from gaussian_n import *\n'
     imports += 'from aliases import *\n'
-    imports += 'from psiexceptions import *\n'
-    imports += 'from util import *\n'
-    imports += 'from qmmm import *\n'
-    imports += 'from frac import *\n'
-    imports += 'from diatomic import *\n'
     imports += 'from functional import *\n'
-    imports += 'from pubchem import *\n'
-    imports += 'from psifiles import *\n'
-    imports += 'import pickle\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)

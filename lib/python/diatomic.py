@@ -21,11 +21,11 @@
 #
 
 import psi4
-from physconst import psi_bohr2angstroms, psi_hartree2aJ, psi_amu2kg, psi_h, psi_c
+import p4const
 from math import sqrt, pi
 from diatomic_fits import *
 
-def diatomic_anharmonicity(rvals, energies):
+def anharmonicity(rvals, energies, mol = None):
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using either a 5 or 9 point Legendre fit, locates the minimum
        energy point, and then applies second order vibrational perturbation theory to obtain spectroscopic
@@ -45,7 +45,7 @@ def diatomic_anharmonicity(rvals, energies):
                  corresponding to the spectroscopic constants in cm-1
     """
 
-    angstrom_to_bohr = 1.0 / psi_bohr2angstroms
+    angstrom_to_bohr = 1.0 / p4const.psi_bohr2angstroms
     angstrom_to_meter = 10e-10;
 
     if len(rvals) != len(energies):
@@ -64,7 +64,9 @@ def diatomic_anharmonicity(rvals, energies):
     elif (npoints == 9):
         optx = rvals[4]
 
-    mol = psi4.get_active_molecule()
+    # Molecule can be passed in be user. Look at the function definition above.
+    if mol == None:
+        mol = psi4.get_active_molecule()
     natoms = mol.natom()
     if natoms != 2:
         raise Exception("The current molecule must be a diatomic for this code to work!")
@@ -96,15 +98,15 @@ def diatomic_anharmonicity(rvals, energies):
     if (npoints == 5):
         energy = function_5pt(rvals, energies, optx)
         first = first_deriv_5pt(rvals, energies, optx)
-        secd = second_deriv_5pt(rvals, energies, optx) * psi_hartree2aJ
-        third = third_deriv_5pt(rvals, energies, optx) * psi_hartree2aJ
-        fourth = fourth_deriv_5pt(rvals, energies, optx) * psi_hartree2aJ
+        secd = second_deriv_5pt(rvals, energies, optx) * p4const.psi_hartree2aJ
+        third = third_deriv_5pt(rvals, energies, optx) * p4const.psi_hartree2aJ
+        fourth = fourth_deriv_5pt(rvals, energies, optx) * p4const.psi_hartree2aJ
     elif (npoints == 9):
         energy = function_9pt(rvals, energies, optx)
         first = first_deriv_9pt(rvals, energies, optx)
-        secd = second_deriv_9pt(rvals, energies, optx) * psi_hartree2aJ
-        third = third_deriv_9pt(rvals, energies, optx) * psi_hartree2aJ
-        fourth = fourth_deriv_9pt(rvals, energies, optx) * psi_hartree2aJ
+        secd = second_deriv_9pt(rvals, energies, optx) * p4const.psi_hartree2aJ
+        third = third_deriv_9pt(rvals, energies, optx) * p4const.psi_hartree2aJ
+        fourth = fourth_deriv_9pt(rvals, energies, optx) * p4const.psi_hartree2aJ
 
     psi4.print_out("\nEquilibrium Energy %20.14f Hartrees\n" % energy)
     psi4.print_out("Gradient           %20.14f\n" % first)
@@ -112,14 +114,14 @@ def diatomic_anharmonicity(rvals, energies):
     psi4.print_out("Cubic Force Constant     %14.7f MDYNE/A**2\n" % third)
     psi4.print_out("Quartic Force Constant   %14.7f MDYNE/A**3\n" % fourth)
 
-    hbar = psi_h / (2.0 * pi)
-    mu = ((m1*m2)/(m1+m2))*psi_amu2kg
+    hbar = p4const.psi_h / (2.0 * pi)
+    mu = ((m1*m2)/(m1+m2))*p4const.psi_amu2kg
     we = 5.3088375e-11*sqrt(secd/mu)
     wexe = (1.2415491e-6)*(we/secd)**2 * ((5.0*third*third)/(3.0*secd)-fourth)
 
     # Rotational constant: Be
-    I = ((m1*m2)/(m1+m2)) * psi_amu2kg * (optx * angstrom_to_meter)**2
-    B = psi_h / (8.0 * pi**2 * psi_c * I)
+    I = ((m1*m2)/(m1+m2)) * p4const.psi_amu2kg * (optx * angstrom_to_meter)**2
+    B = p4const.psi_h / (8.0 * pi**2 * p4const.psi_c * I)
 
     # alpha_e and quartic centrifugal distortion constant
     ae = -(6.0 * B**2 / we) * ((1.05052209e-3*we*third)/(sqrt(B * secd**3))+1.0)
@@ -127,8 +129,8 @@ def diatomic_anharmonicity(rvals, energies):
 
     # B0 and r0 (plus re check using Be)
     B0 = B - ae / 2.0
-    r0 = sqrt(psi_h / (8.0 * pi**2 * mu * psi_c * B0))
-    recheck = sqrt(psi_h / (8.0 * pi**2 * mu * psi_c * B))
+    r0 = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B0))
+    recheck = sqrt(p4const.psi_h / (8.0 * pi**2 * mu * p4const.psi_c * B))
     r0 /= angstrom_to_meter;
     recheck /= angstrom_to_meter;
 

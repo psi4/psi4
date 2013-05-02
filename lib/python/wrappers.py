@@ -32,12 +32,12 @@ import math
 import warnings
 import pickle
 import copy
-import physconst
+import p4const
+import p4util
 from driver import *
 from molutil import *
-from text import *
-from collections import defaultdict
-from procutil import *
+from p4regex import *
+import collections
 # never import aliases into this file
 
 
@@ -173,7 +173,7 @@ def auto_fragments(name, **kwargs):
 
 def n_body(name, **kwargs):
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -402,7 +402,7 @@ def n_body(name, **kwargs):
         for n in Ns:
             for k in range(len(energies_full[n])):
                 psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k],
-                   physconst.psi_hartree2kcalmol * energies_full[n][k]))
+                   p4const.psi_hartree2kcalmol * energies_full[n][k]))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -411,7 +411,7 @@ def n_body(name, **kwargs):
         for n in Ns:
             for k in range(len(energies_mon[n])):
                 psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_mon[n][k],
-                   physconst.psi_hartree2kcalmol * energies_mon[n][k]))
+                   p4const.psi_hartree2kcalmol * energies_mon[n][k]))
         psi4.print_out('\n')
 
     if bsse == 'both':
@@ -420,7 +420,7 @@ def n_body(name, **kwargs):
         for n in Ns:
             for k in range(len(energies_mon[n])):
                 psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, energies_full[n][k] - energies_mon[n][k],
-                   physconst.psi_hartree2kcalmol * (energies_full[n][k] - energies_mon[n][k])))
+                   p4const.psi_hartree2kcalmol * (energies_full[n][k] - energies_mon[n][k])))
         psi4.print_out('\n')
 
     psi4.print_out('    ==> N-Body Interaction Energy Analysis: N-Body Energies <==\n\n')
@@ -437,7 +437,7 @@ def n_body(name, **kwargs):
                 E = energies_full[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, physconst.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
                 En += E
             energies_n_full[n] = En
         for n in Ns:
@@ -447,7 +447,7 @@ def n_body(name, **kwargs):
             kk = n - 2
             energies_n_full[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
             psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_full[n],
-               physconst.psi_hartree2kcalmol * energies_n_full[n]))
+               p4const.psi_hartree2kcalmol * energies_n_full[n]))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -462,7 +462,7 @@ def n_body(name, **kwargs):
                 E = energies_mon[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_mon[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, physconst.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
                 En += E
             energies_n_mon[n] = En
         for n in Ns:
@@ -472,7 +472,7 @@ def n_body(name, **kwargs):
             kk = n - 2
             energies_n_mon[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
             psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_mon[n],
-               physconst.psi_hartree2kcalmol * energies_n_mon[n]))
+               p4const.psi_hartree2kcalmol * energies_n_mon[n]))
         psi4.print_out('\n')
 
     if bsse == 'both':
@@ -488,7 +488,7 @@ def n_body(name, **kwargs):
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l] - 1]
                     E += energies_mon[1][combos[n][k][l] - 1]
-                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, physconst.psi_hartree2kcalmol * E))
+                psi4.print_out('     %6d %6d %24.16E %24.16E\n' % (n, k + 1, E, p4const.psi_hartree2kcalmol * E))
                 En += E
             energies_n_bsse[n] = En
         for n in Ns:
@@ -498,7 +498,7 @@ def n_body(name, **kwargs):
             kk = n - 2
             energies_n_bsse[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
             psi4.print_out('     %6d %6s %24.16E %24.16E\n' % (n, 'Total', energies_n_bsse[n],
-               physconst.psi_hartree2kcalmol * energies_n_bsse[n]))
+               p4const.psi_hartree2kcalmol * energies_n_bsse[n]))
         psi4.print_out('\n')
 
     psi4.print_out('    ==> N-Body Interaction Energy Analysis: Non-Additivities <==\n\n')
@@ -512,7 +512,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_full[Ns[k]] - energies_n_full[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
         psi4.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -524,7 +524,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_mon[Ns[k]] - energies_n_mon[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
         psi4.print_out('\n')
 
     if bsse == 'both':
@@ -536,7 +536,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_bsse[Ns[k]] - energies_n_bsse[Ns[k + 1]]
-            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol * E))
+            psi4.print_out('     %6s %24.16E %24.16E\n' % (n, E, p4const.psi_hartree2kcalmol * E))
         psi4.print_out('\n')
 
     # Put everything back the way it was
@@ -619,7 +619,7 @@ def cp(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -661,7 +661,7 @@ def cp(name, **kwargs):
     molecule.update_geometry()
 
     psi4.print_out("\n")
-    banner("CP Computation: Complex.\nFull Basis Set.")
+    p4util.banner("CP Computation: Complex.\nFull Basis Set.")
     psi4.print_out("\n")
     e_dimer = call_function_in_1st_argument(func, **kwargs)
     #e_dimer = energy(name, **kwargs)
@@ -677,7 +677,7 @@ def cp(name, **kwargs):
     for cluster in monomers:
         activate(cluster)
         psi4.print_out("\n")
-        banner(("CP Computation: Monomer %d.\n Full Basis Set." % (cluster_n + 1)))
+        p4util.banner(("CP Computation: Monomer %d.\n Full Basis Set." % (cluster_n + 1)))
         psi4.print_out("\n")
         e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
         #e_monomer_full.append(energy(name,**kwargs))
@@ -695,7 +695,7 @@ def cp(name, **kwargs):
             activate(cluster)
             psi4.print_out("\n")
             #cluster.print_to_output()
-            banner(("CP Computation: Monomer %d.\n Monomer Set." % (cluster_n + 1)))
+            p4util.banner(("CP Computation: Monomer %d.\n Monomer Set." % (cluster_n + 1)))
             psi4.print_out("\n")
             e_monomer_bsse.append(call_function_in_1st_argument(func, **kwargs))
             #e_monomer_bsse.append(energy(name,**kwargs))
@@ -707,7 +707,7 @@ def cp(name, **kwargs):
     activate(molecule)
 
     if (check_bsse == False):
-        cp_table = Table(rows=["System:"], cols=["Energy (full):"])
+        cp_table = p4util.Table(rows=["System:"], cols=["Energy (full):"])
         cp_table["Complex"] = [e_dimer]
         for cluster_n in range(0, len(monomers)):
             key = "Monomer %d" % (cluster_n + 1)
@@ -738,16 +738,16 @@ def cp(name, **kwargs):
         psi4.set_variable('UNCP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
 
     psi4.print_out("\n")
-    banner("CP Computation: Results.")
+    p4util.banner("CP Computation: Results.")
     psi4.print_out("\n")
 
-    banner("Hartree", 2)
+    p4util.banner("Hartree", 2)
     psi4.print_out("\n")
 
     psi4.print_out(str(cp_table))
 
     psi4.print_out("\n")
-    banner("kcal*mol^-1", 2)
+    p4util.banner("kcal*mol^-1", 2)
     psi4.print_out("\n")
 
     cp_table.scale()
@@ -924,7 +924,7 @@ def database(name, db_name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -948,7 +948,7 @@ def database(name, db_name, **kwargs):
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (psi4.Process.environment["PSIDATADIR"]))
     sys.path.append('%s/lib/databases' % psi4.psi_top_srcdir())
-    database = import_ignorecase(db_name)
+    database = p4util.import_ignorecase(db_name)
     if database is None:
         psi4.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         psi4.print_out('\nSearch path that was tried:\n')
@@ -1102,7 +1102,7 @@ def database(name, db_name, **kwargs):
         if (db_benchmark.lower() == 'default'):
             pass
         else:
-            BIND = getattr_ignorecase(database, 'BIND_' + db_benchmark)
+            BIND = p4util.getattr_ignorecase(database, 'BIND_' + db_benchmark)
             if BIND is None:
                 raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
 
@@ -1156,11 +1156,11 @@ def database(name, db_name, **kwargs):
     temp = []
     for rxn in HRXN:
         temp.append(ACTV['%s-%s' % (dbse, rxn)])
-    HSYS = drop_duplicates(sum(temp, []))
+    HSYS = p4util.drop_duplicates(sum(temp, []))
 
     # Sow all the necessary reagent computations
     psi4.print_out("\n\n")
-    banner(("Database %s Computation" % (db_name)))
+    p4util.banner(("Database %s Computation" % (db_name)))
     psi4.print_out("\n")
 
     #   write index of calcs to output file
@@ -1209,13 +1209,13 @@ def database(name, db_name, **kwargs):
         VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
-        exec(format_molecule_for_input(GEOS[rgt]))
+        exec(p4util.format_molecule_for_input(GEOS[rgt]))
         molecule = psi4.get_active_molecule()
 
         # build string of title banner
         banners = ''
         banners += """psi4.print_out('\\n')\n"""
-        banners += """banner(' Database %s Computation: Reagent %s \\n   %s')\n""" % (db_name, rgt, TAGL[rgt])
+        banners += """p4util.banner(' Database %s Computation: Reagent %s \\n   %s')\n""" % (db_name, rgt, TAGL[rgt])
         banners += """psi4.print_out('\\n')\n\n"""
 
         # build string of lines that defines contribution of rgt to each rxn
@@ -1276,7 +1276,7 @@ def database(name, db_name, **kwargs):
         # reap: opens individual reagent output file, collects results into a dictionary
         if (db_mode.lower() == 'continuous'):
             exec(banners)
-            exec(format_molecule_for_input(GEOS[rgt]))
+            exec(p4util.format_molecule_for_input(GEOS[rgt]))
             exec(commands)
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, psi4.get_global_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
@@ -1300,7 +1300,7 @@ def database(name, db_name, **kwargs):
             freagent = open('%s.in' % (rgt), 'w')
             freagent.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
             freagent.write(banners)
-            freagent.write(format_molecule_for_input(GEOS[rgt]))
+            freagent.write(p4util.format_molecule_for_input(GEOS[rgt]))
 
             freagent.write(commands)
             freagent.write('''\npickle_kw = ("""''')
@@ -1364,7 +1364,7 @@ def database(name, db_name, **kwargs):
 
     # Reap all the necessary reaction computations
     psi4.print_out("\n")
-    banner(("Database %s Results" % (db_name)))
+    p4util.banner(("Database %s Results" % (db_name)))
     psi4.print_out("\n")
 
     maxactv = []
@@ -1375,7 +1375,7 @@ def database(name, db_name, **kwargs):
     tables = ''
 
     #   find any reactions that are incomplete
-    FAIL = defaultdict(int)
+    FAIL = collections.defaultdict(int)
     for rxn in HRXN:
         db_rxn = dbse + '-' + str(rxn)
         for i in range(len(ACTV[db_rxn])):
@@ -1435,9 +1435,9 @@ def database(name, db_name, **kwargs):
             ERXN[db_rxn] = 0.0
             for i in range(len(ACTV[db_rxn])):
                 ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
-            error = physconst.psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
+            error = p4const.psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
 
-            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], physconst.psi_hartree2kcalmol * ERXN[db_rxn], error)
+            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], p4const.psi_hartree2kcalmol * ERXN[db_rxn], error)
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -1818,7 +1818,7 @@ def complete_basis_set(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -2182,7 +2182,7 @@ def complete_basis_set(name, **kwargs):
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """psi4.print_out('\\n')\n"""
-    cbsbanners += """banner(' CBS Setup ')\n"""
+    cbsbanners += """p4util.banner(' CBS Setup ')\n"""
     cbsbanners += """psi4.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
@@ -2301,7 +2301,7 @@ def complete_basis_set(name, **kwargs):
         # Build string of title banner
         cbsbanners = ''
         cbsbanners += """psi4.print_out('\\n')\n"""
-        cbsbanners += """banner(' CBS Computation: %s / %s ')\n""" % (mc['f_wfn'].upper(), mc['f_basis'].upper())
+        cbsbanners += """p4util.banner(' CBS Computation: %s / %s ')\n""" % (mc['f_wfn'].upper(), mc['f_basis'].upper())
         cbsbanners += """psi4.print_out('\\n')\n\n"""
         exec(cbsbanners)
 
@@ -2330,7 +2330,7 @@ def complete_basis_set(name, **kwargs):
     # Build string of title banner
     cbsbanners = ''
     cbsbanners += """psi4.print_out('\\n')\n"""
-    cbsbanners += """banner(' CBS Results ')\n"""
+    cbsbanners += """p4util.banner(' CBS Results ')\n"""
     cbsbanners += """psi4.print_out('\\n')\n\n"""
     exec(cbsbanners)
 
