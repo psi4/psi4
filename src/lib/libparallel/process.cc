@@ -37,6 +37,11 @@
 #include <omp.h>
 #endif
 
+// Apple doesn't provide the environ global variable
+#if defined(__APPLE__) && !defined(environ)
+#   include <crt_externs.h>
+#   define environ (*_NSGetEnviron())
+#endif
 
 using namespace std;
 using namespace psi;
@@ -47,8 +52,10 @@ Process::Arguments Process::arguments;
 const std::string empty_;
 
 // Need to split each entry by the first '=', left side is key, right the value
-void Process::Environment::init(char **envp)
+void Process::Environment::init()
 {
+    // If envp is NULL, try to obtain envp from enviorn in unistd.h
+
     string psi4datadir;
 
     // First set some defaults:
@@ -57,10 +64,10 @@ void Process::Environment::init(char **envp)
 
     // Go through user provided environment overwriting defaults if necessary
     int i=0;
-    if (envp) {
-        while (envp[i] != NULL) {
+    if (environ) {
+        while (environ[i] != NULL) {
             std::vector<std::string> strs;
-            boost::split(strs, envp[i], boost::is_any_of("="));
+            boost::split(strs, environ[i], boost::is_any_of("="));
             environment_[strs[0]] = strs[1];
 
             // I'm tired of having to (re)set PSIDATADIR for PSI3/4

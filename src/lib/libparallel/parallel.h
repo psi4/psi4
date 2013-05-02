@@ -46,29 +46,29 @@ typedef psi::LocalCommWrapper           worldcomm;
 #if 0
 #if !defined(HAVE_MADNESS) && !defined(HAVE_ELEMENTAL)
 #include <libparallel/local.h>
-typedef     psi::LocalCommWrapper       worldcomm;
+typedef     psi::LocalCommWrapper       WorldComm_t;
 #elif !defined(HAVE_MADNESS) && defined(HAVE_ELEMENTAL)
 #include <libparallel/elem.h>
 typedef     psi::ElemCommWrapper        worldcomm;
 #elif defined(HAVE_MADNESS)
 #include <libparallel/mad.h>
-typedef     psi::MADNESSCommWrapper     worldcomm;
+typedef     psi::MADNESSCommWrapper     WorldComm_t;
 #endif
 #endif
 
 namespace psi {
 
     extern FILE *outfile;
-    extern boost::shared_ptr<worldcomm> WorldComm;
+    extern boost::shared_ptr<WorldComm_t> WorldComm;
 
     // A templated version of init comunicator.
     template <typename comm_type>
-    static comm_type* init_specific_communicator(int &argc, char **argv) {
+    static comm_type* initialize_specific_communicator(const int &argc, char **argv) {
         return new comm_type(argc, argv);
     }
 
     // Create a communicator from Comm typedef'ed above.
-    worldcomm* Init_Communicator(int &argc, char **argv);
+    WorldComm_t* initialize_communicator(const int &argc, char **argv);
 
 }
 
