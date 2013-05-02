@@ -59,5 +59,8 @@
 /* Restrict keyword definition */
 #undef restrict
 
+/* Making a standalone Python module */
+#undef MAKE_PYTHON_MODULE
+
 #endif /* _psi_src_psiconfig_h */
 
