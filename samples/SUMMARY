@@ -226,6 +226,9 @@ cisd-sp:      6-31G** H2O Test CISD Energy Point
 cisd-sp-2:    6-31G** H2O Test CISD Energy Point
 
 
+dcft-grad1:   DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
+
+
 dcft1:        DC-06, DC-12, ODC-06 and ODC-12 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
@@ -572,9 +575,6 @@ pywrap-basis:  SAPT calculation on bimolecular complex where monomers are unspec
 
 
 pywrap-cbs1:  Various basis set extrapolation tests
-
-
-pywrap-checkrun:  This checks that all energy methods can run with a minimal input and set symmetry.
 
 
 pywrap-checkrun-convcrit:  Advanced python example sets different sets of scf/post-scf conv crit and check to be sure computation has actually converged to the expected accuracy.
