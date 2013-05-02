@@ -65,7 +65,7 @@ public:
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
     public:
-        void init(char **envp);
+        void initialize();
 
         /// The symmetry of the molecule, before any displacements have been made
         boost::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
@@ -116,7 +116,7 @@ public:
         int argc_;
         char **argv_;
     public:
-        void init(int argc, char **argv);
+        void initialize(int argc, char **argv);
 
         int argc() const;
 
