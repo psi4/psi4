@@ -25,7 +25,7 @@ from __future__ import print_function
 to data tables and text.
 
 """
-import PsiMod
+import psi4
 import sys
 import re
 import physconst
@@ -182,7 +182,7 @@ def banner(text, type=1, width=35):
         for line in lines:
             banner += (' ' + line + ' ').center(max_length, '=')
 
-    PsiMod.print_out(banner)
+    psi4.print_out(banner)
 
 
 def print_stdout(stuff):

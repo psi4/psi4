@@ -2,8 +2,8 @@
 .. _`sec:psimod`:
 
 ==============================
-PsiMod: Linking C++ and Python
+psi4: Linking C++ and Python
 ==============================
 
-.. literalinclude:: autodoc_man_PsiMod.txt
+.. literalinclude:: autodoc_man_psi4.txt
 

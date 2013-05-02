@@ -42,14 +42,14 @@ set sapt {
 
 energy('sapt2+(3)')
 
-Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
-Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
-Eind = PsiMod.get_variable("SAPT IND ENERGY")
-Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
-ESAPT0 = PsiMod.get_variable("SAPT SAPT0 ENERGY")
-ESAPT2 = PsiMod.get_variable("SAPT SAPT2 ENERGY")
-ESAPT2p = PsiMod.get_variable("SAPT SAPT2+ ENERGY")
-ESAPT2pp3 = PsiMod.get_variable("SAPT SAPT2+(3) ENERGY")
+Eelst = psi4.get_variable("SAPT ELST ENERGY")
+Eexch = psi4.get_variable("SAPT EXCH ENERGY")
+Eind = psi4.get_variable("SAPT IND ENERGY")
+Edisp = psi4.get_variable("SAPT DISP ENERGY")
+ESAPT0 = psi4.get_variable("SAPT SAPT0 ENERGY")
+ESAPT2 = psi4.get_variable("SAPT SAPT2 ENERGY")
+ESAPT2p = psi4.get_variable("SAPT SAPT2+ ENERGY")
+ESAPT2pp3 = psi4.get_variable("SAPT SAPT2+(3) ENERGY")
 
 Eref = [ -0.040757702991,  #TEST
           0.046258791045,  #TEST

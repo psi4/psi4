@@ -45,7 +45,7 @@ terminated by a semicolon.  Then, if the user had defined a molecule called
 water.print\_to\_output()}.
 
 Direct interaction with the Psi module from Python requires function calls that
-look like {\tt PsiMod.call\_some\_function()}.  This is not very friendly to
+look like {\tt psi4.call\_some\_function()}.  This is not very friendly to
 your average user, so a preprocessor checks for known Psi syntax and turns it
 into valid Python, before handing it off for excecution.  This preprocessor is
 purely Python, and lives in {\tt \$PSI4/lib/python/input.py}.  For example, the
@@ -59,11 +59,11 @@ set scf {
 \end{verbatim}
 is converted to the following text
 \begin{verbatim}
-PsiMod.set_default_options_for_module("SCF")
-PsiMod.set_option("SCF_TYPE", "DIRECT")
-PsiMod.set_option("BASIS", "cc-pVDZ")
-PsiMod.set_option("RI_BASIS_SCF", "cc-pVDZ-HF")
-PsiMod.set_option("GUESS", "core")
+psi4.set_default_options_for_module("SCF")
+psi4.set_option("SCF_TYPE", "DIRECT")
+psi4.set_option("BASIS", "cc-pVDZ")
+psi4.set_option("RI_BASIS_SCF", "cc-pVDZ-HF")
+psi4.set_option("GUESS", "core")
 \end{verbatim}
 which can be handled by Python.
 

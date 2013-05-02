@@ -3,6 +3,6 @@
 
 import pydoc
 
-with open("autodoc_man_PsiMod.txt", "w") as f:
-    f.write(pydoc.plain(pydoc.render_doc(PsiMod)))
+with open("autodoc_man_psi4.txt", "w") as f:
+    f.write(pydoc.plain(pydoc.render_doc(psi4)))
 

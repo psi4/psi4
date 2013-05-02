@@ -28,7 +28,7 @@ Place in this file quickly defined procedures such as
    - simple modifications to existing methods
 
 """
-import PsiMod
+import psi4
 import re
 import os
 import math
@@ -168,13 +168,13 @@ def allen_focal_point(name='mp2', **kwargs):
 #
 #    .. math:: E_{total}^{\text{MP2.5}} = E_{total,\; \text{SCF}} \; + E_{corl,\; \text{MP2}} + E_{corl, \; \text{MP3}}
 #
-#    :PSI variables: 
+#    :PSI variables:
 #
-#    .. hlist:: 
-#       :columns: 1 
-#     
-#       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>` 
-#       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>` 
+#    .. hlist::
+#       :columns: 1
+#
+#       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>`
+#       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>`
 #
 #    >>> energy('mp2.5')
 #
@@ -184,25 +184,25 @@ def allen_focal_point(name='mp2', **kwargs):
 #
 #    # Run detci calculation and collect conventional quantities
 #    energy('mp3', **kwargs)
-#    e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
-#    ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
-#    ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
+#    e_scf = psi4.get_variable('SCF TOTAL ENERGY')
+#    ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
+#    ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
 #    e_mp2 = e_scf + ce_mp2
 #    e_mp3 = e_scf + ce_mp3
 #
 #    # Compute quantities particular to MP2.5
 #    ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
 #    e_mp25 = e_scf + ce_mp25
-#    PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
-#    PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
-#    PsiMod.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
-#    PsiMod.set_variable('CURRENT ENERGY', e_mp25)
+#    psi4.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)
+#    psi4.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
+#    psi4.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
+#    psi4.set_variable('CURRENT ENERGY', e_mp25)
 #
 #    # build string of title banner and print results
 #    banners = ''
-#    banners += """PsiMod.print_out('\\n')\n"""
+#    banners += """psi4.print_out('\\n')\n"""
 #    banners += """banner(' MP2.5 ')\n"""
-#    banners += """PsiMod.print_out('\\n')\n\n"""
+#    banners += """psi4.print_out('\\n')\n\n"""
 #    exec(banners)
 #
 #    tables = ''
@@ -213,14 +213,14 @@ def allen_focal_point(name='mp2', **kwargs):
 #    tables += """  MP2 correlation energy:                  %16.8f\n""" % (ce_mp2)
 #    tables += """  MP2.5 correlation energy:                %16.8f\n""" % (ce_mp25)
 #    tables += """  MP3 correlation energy:                  %16.8f\n""" % (ce_mp3)
-#    PsiMod.print_out(tables)
+#    psi4.print_out(tables)
 #
 #    return e_mp25
 
 
 # A direct translation of a plugin input file into a function call. Function calls are the only
 #     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
-#     but is an example of what to do for a more complicated procedure where different options 
+#     but is an example of what to do for a more complicated procedure where different options
 #     are set for different qc steps.
 #def run_plugin_omega(name, **kwargs):
 #    r"""Function encoding sequence of PSI module and plugin calls, as well
@@ -232,25 +232,25 @@ def allen_focal_point(name='mp2', **kwargs):
 #    lowername = name.lower()
 #    kwargs = kwargs_lower(kwargs)
 #
-#    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
-#    PsiMod.plugin_load("%s" % (plugfile))
+#    plugfile = psi4.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
+#    psi4.plugin_load("%s" % (plugfile))
 #
-#    PsiMod.set_global_option('BASIS', 'AUG-CC-PVDZ')
-#    PsiMod.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
-#    PsiMod.set_global_option('REFERENCE', 'UHF')
-#    PsiMod.set_global_option('SCF_TYPE', 'DF')
+#    psi4.set_global_option('BASIS', 'AUG-CC-PVDZ')
+#    psi4.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
+#    psi4.set_global_option('REFERENCE', 'UHF')
+#    psi4.set_global_option('SCF_TYPE', 'DF')
 #    energy('scf', **kwargs)
 #
-#    PsiMod.set_global_option('dft_functional', 'wB97')
-#    PsiMod.set_global_option('dft_order_spherical', 25)
-#    PsiMod.set_global_option('dft_num_radial', 35)
-#    PsiMod.set_global_option('omega_procedure', 'ip')
-#    PsiMod.set_global_option('maxiter', 50)
-#    PsiMod.set_global_option('d_convergence', 5)
-#    PsiMod.set_global_option('e_convergence', 7)
-#    PsiMod.plugin("plugin_omega.so")
+#    psi4.set_global_option('dft_functional', 'wB97')
+#    psi4.set_global_option('dft_order_spherical', 25)
+#    psi4.set_global_option('dft_num_radial', 35)
+#    psi4.set_global_option('omega_procedure', 'ip')
+#    psi4.set_global_option('maxiter', 50)
+#    psi4.set_global_option('d_convergence', 5)
+#    psi4.set_global_option('e_convergence', 7)
+#    psi4.plugin("plugin_omega.so")
 #
-#    return PsiMod.get_variable('SCF TOTAL ENERGY')
+#    return psi4.get_variable('SCF TOTAL ENERGY')
 
 
 # Integration with driver routines

@@ -1044,7 +1044,7 @@ void translate_psi_exception(const PsiException& e)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
-BOOST_PYTHON_MODULE(PsiMod)
+BOOST_PYTHON_MODULE(psi4)
 {
 
 #ifdef MAKE_STANDALONE
@@ -1290,12 +1290,12 @@ void Python::run(FILE *input)
         s = strdup("psi");
 
 #if PY_MAJOR_VERSION == 2
-        if (PyImport_AppendInittab(strdup("PsiMod"), initPsiMod) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), initPsiMod) == -1) {
             fprintf(stderr, "Unable to register PsiMod with your Python.\n");
             abort();
         }
 #else
-        if (PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod) == -1) {
+        if (PyImport_AppendInittab(strdup("psi4"), PyInit_PsiMod) == -1) {
             fprintf(stderr, "Unable to register PsiMod with your Python.\n");
             abort();
         }
@@ -1348,7 +1348,7 @@ void Python::run(FILE *input)
         try {
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
-            s = strdup("import PsiMod");
+            s = strdup("import psi4");
             PyRun_SimpleString(s);
 
             // Process the input file

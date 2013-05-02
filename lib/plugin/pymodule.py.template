@@ -1,4 +1,4 @@
-import PsiMod
+import psi4
 import re
 import os
 import input

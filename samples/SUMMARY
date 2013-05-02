@@ -595,7 +595,7 @@ pywrap-db1:   Database calculation, so no molecule section in input file. Portio
 pywrap-db2:   Database calculation, run in sow/reap mode.
 
 
-pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
+pywrap-db3:   Test that Python Molecule class processes geometry like psi4 Molecule class.
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.

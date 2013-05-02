@@ -39,7 +39,7 @@ molecule c4nh4 {
 }
 
 # Test against analytic second derivatives from PSI3 (for now). #TEST
-anal_freqs = PsiMod.Vector(21) #TEST
+anal_freqs = psi4.Vector(21) #TEST
 anal_freqs.set(0, 0,  -184.0613) #TEST
 anal_freqs.set(0, 1,   236.5665) #TEST
 anal_freqs.set(0, 2,   601.8179) #TEST
@@ -62,7 +62,7 @@ anal_freqs.set(0,18,  3182.4027) #TEST
 anal_freqs.set(0,19,  3224.7634) #TEST
 anal_freqs.set(0,20,  3244.2997) #TEST
 
-a1_freqs = PsiMod.Vector(7) #TEST
+a1_freqs = psi4.Vector(7) #TEST
 a1_freqs.set(0, 0, anal_freqs[ 4]) #TEST
 a1_freqs.set(0, 1, anal_freqs[ 7]) #TEST
 a1_freqs.set(0, 2, anal_freqs[10]) #TEST
@@ -71,12 +71,12 @@ a1_freqs.set(0, 4, anal_freqs[15]) #TEST
 a1_freqs.set(0, 5, anal_freqs[16]) #TEST
 a1_freqs.set(0, 6, anal_freqs[18]) #TEST
 
-a2_freqs = PsiMod.Vector(3) #TEST
+a2_freqs = psi4.Vector(3) #TEST
 a2_freqs.set(0, 0, anal_freqs[6]) #TEST
 a2_freqs.set(0, 1, anal_freqs[12]) #TEST
 a2_freqs.set(0, 2, anal_freqs[19]) #TEST
 
-b1_freqs = PsiMod.Vector(6) #TEST
+b1_freqs = psi4.Vector(6) #TEST
 b1_freqs.set(0, 0, anal_freqs[1]) #TEST
 b1_freqs.set(0, 1, anal_freqs[3]) #TEST
 b1_freqs.set(0, 2, anal_freqs[8]) #TEST
@@ -84,7 +84,7 @@ b1_freqs.set(0, 3, anal_freqs[11]) #TEST
 b1_freqs.set(0, 4, anal_freqs[14]) #TEST
 b1_freqs.set(0, 5, anal_freqs[17]) #TEST
 
-b2_freqs = PsiMod.Vector(5) #TEST
+b2_freqs = psi4.Vector(5) #TEST
 b2_freqs.set(0, 0, anal_freqs[0]) #TEST
 b2_freqs.set(0, 1, anal_freqs[2]) #TEST
 b2_freqs.set(0, 2, anal_freqs[5]) #TEST
@@ -99,7 +99,7 @@ set globals {
 
 frequencies('scf', dertype=1)
 
-fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(anal_freqs, fd_freqs, 1, "C4NH4 frequencies by gradients (3-pt.) to 0.1 cm^-1") #TEST
 del fd_freqs #TEST
 
@@ -111,7 +111,7 @@ set findif {
 
 frequencies('scf', dertype=1, irrep=2)
 
-fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(a2_freqs, fd_freqs, 3, "C4NH4 frequencies (A2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 
@@ -119,7 +119,7 @@ del fd_freqs #TEST
 
 frequencies('scf', dertype=1, irrep=4)
 
-fd_freqs = PsiMod.wavefunction().frequencies() #TEST
+fd_freqs = psi4.wavefunction().frequencies() #TEST
 compare_vectors(b2_freqs, fd_freqs, 3, "C4NH4 frequencies (B2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
 del fd_freqs #TEST
 
