@@ -49,9 +49,7 @@
 #include "../ccenergy/ccwave.h"
 #include "../mp2/mp2wave.h"
 
-
-#define MAKE_STANDALONE 1
-#ifdef MAKE_STANDALONE
+#if defined(MAKE_PYTHON_MODULE)
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
 #include <libmints/wavefunction.h>
@@ -82,6 +80,12 @@ void export_oeprop();
 void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
+
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     }
 
 namespace opt {
   psi::PsiReturnType optking(psi::Options &);
@@ -1039,28 +1043,19 @@ void translate_psi_exception(const PsiException& e)
     PyErr_SetString(PyExc_RuntimeError, e.what());
 }
 
-
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
 BOOST_PYTHON_MODULE(psi4)
 {
-
-#ifdef MAKE_STANDALONE
-
+#if defined(MAKE_PYTHON_MODULE)
     // Setup the environment
-    Process::arguments.init(0, 0);
-    Process::environment.init(0);
-
-    // Setup globals options
-    Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, true);
-    Process::environment.options.set_read_globals(false);
+    Process::arguments.initialize(0, 0);
+    Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
 
     // Initialize the world communicator
-    int tmp = 0;
-    WorldComm = boost::shared_ptr<worldcomm>(Init_Communicator(tmp, 0));
+    WorldComm = initialize_communicator(0, 0);
 
     // There is only one timer:
     timer_init();
@@ -1068,16 +1063,18 @@ BOOST_PYTHON_MODULE(psi4)
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
-    // Create the scripting object
-    Script::language = boost::shared_ptr<Script>(new Python);
-    // Create base objects in the scripting language and initialize the language
-    Script::language->initialize();
-
     if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
 
     // Initialize the I/O library
     psio_init();
 
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
+    def("initialize", &psi4_python_module_initialize);
+    def("finalize", &psi4_python_module_finalize);
 #endif
 
     register_exception_translator<PsiException>(&translate_psi_exception);
@@ -1267,24 +1264,12 @@ void Python::finalize()
 //    Py_Finalize();
 }
 
-#define PY_TRY(ptr, command)  \
-     if(!(ptr = command)){    \
-         PyErr_Print();       \
-         exit(1);             \
-     }
-
-
 void Python::run(FILE *input)
 {
     using namespace boost::python;
     char *s = 0;
     if (input == NULL)
         return;
-
-    // Setup globals options
-    Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, true);
-    Process::environment.options.set_read_globals(false);
 
     if (!Py_IsInitialized()) {
         s = strdup("psi");

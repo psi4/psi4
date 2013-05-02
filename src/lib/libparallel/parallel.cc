@@ -28,8 +28,8 @@ namespace psi {
 
 boost::shared_ptr<WorldComm_t> WorldComm;
 
-WorldComm_t* initialize_communicator(const int &argc, char **argv) {
-    return initialize_specific_communicator<WorldComm_t>(argc, argv);
+boost::shared_ptr<WorldComm_t> initialize_communicator(const int &argc, char **argv) {
+    return boost::shared_ptr<WorldComm_t>(initialize_specific_communicator<WorldComm_t>(argc, argv));
 }
 
 void init_openmp() {

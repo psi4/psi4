@@ -55,21 +55,24 @@ namespace psi {
     int psi4_driver();
     void psiclean(void);
 
+    extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+
     PSIO *psio = NULL;
 
 }
 
+#if !defined(MAKE_PYTHON_MODULE)
 // This is the ONLY main function in PSI
-int main(int argc, char **argv, char **envp)
+int main(int argc, char **argv)
 {
     using namespace psi;
 
     // Setup the environment
-    Process::arguments.init(argc, argv);
-    Process::environment.init(envp);
+    Process::arguments.initialize(argc, argv);
+    Process::environment.initialize();   // grabs the environment from the global environ variable
 
     // Initialize the world communicator
-    WorldComm = boost::shared_ptr<worldcomm>(Init_Communicator(argc, argv));
+    WorldComm = initialize_communicator(argc, argv);
 
     // There is only one timer:
     timer_init();
@@ -98,6 +101,11 @@ int main(int argc, char **argv, char **envp)
         exit(EXIT_SUCCESS);
     }
 
+    // Setup global options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
     // Finish linking Psi4 into Python, preprocess the input file,
     // and then run the input file.
     Script::language->run(infile);
@@ -122,5 +130,4 @@ int main(int argc, char **argv, char **envp)
     // This needs to be changed to a return value from the processed script
     return EXIT_SUCCESS;
 }
-
-
+#endif

@@ -39,7 +39,6 @@
 #include <psiconfig.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
-#define MAKE_STANDALONE 1
 
 using namespace std;
 
@@ -63,7 +62,6 @@ void print_usage();
 */
 int psi_start(int argc, char *argv[])
 {
-    int i, errcod;
     int next_option;
     // Defaults:
     std::string ifname;
@@ -71,11 +69,11 @@ int psi_start(int argc, char *argv[])
     std::string fprefix;
     std::string templatename;
     std::string pluginname;
-    #ifdef PSIDEBUG
-        bool debug          = true;
-    #else
-        bool debug          = false;
-    #endif
+#if defined(PSIDEBUG)
+    bool debug          = true;
+#else
+    bool debug          = false;
+#endif
     bool append         = false;
     check_only          = false;
     clean_only          = false;
@@ -101,68 +99,69 @@ int psi_start(int argc, char *argv[])
     };
 
     // Check the command line arguments
-    do {
-        next_option = getopt_long(argc, argv, short_options, long_options, NULL);
+    if (argc) {
+        do {
+            next_option = getopt_long(argc, argv, short_options, long_options, NULL);
 
-        switch (next_option) {
-        case 1: // --new-plugin
-            // Let's check the next arugument to see if the user specified a +templatename
-            pluginname = optarg;
-            if (optind < argc) {
-                // check to see if the next arguments starts with + and that the user gave more
-                if (argv[optind][0] == '+' && strlen(argv[optind]) > 1) {
-                    // yes, take it, skipping the +
-                    templatename = &(argv[optind][1]);
-                    optind++;
+            switch (next_option) {
+            case 1: // --new-plugin
+                // Let's check the next arugument to see if the user specified a +templatename
+                pluginname = optarg;
+                if (optind < argc) {
+                    // check to see if the next arguments starts with + and that the user gave more
+                    if (argv[optind][0] == '+' && strlen(argv[optind]) > 1) {
+                        // yes, take it, skipping the +
+                        templatename = &(argv[optind][1]);
+                        optind++;
+                    }
                 }
-            }
-            create_new_plugin(pluginname, templatename);
-            exit(EXIT_SUCCESS);
-            break;
+                create_new_plugin(pluginname, templatename);
+                exit(EXIT_SUCCESS);
+                break;
 
-        case 'a': // -a or --append
-            append = true;
-            break;
+            case 'a': // -a or --append
+                append = true;
+                break;
 
-        case 'n': // -n or --nthread
-            Process::environment.set_n_threads(atoi(optarg));
-            break;
+            case 'n': // -n or --nthread
+                Process::environment.set_n_threads(atoi(optarg));
+                break;
 
-        case 'd': // -d or --debug
-            debug = true;
-            break;
+            case 'd': // -d or --debug
+                debug = true;
+                break;
 
-        case 'h': // -h or --help
-            print_usage();
-            exit(EXIT_SUCCESS);
-            break;
+            case 'h': // -h or --help
+                print_usage();
+                exit(EXIT_SUCCESS);
+                break;
 
-        case 'i': // -i or --input
-            ifname = optarg;
-            break;
+            case 'i': // -i or --input
+                ifname = optarg;
+                break;
 
-        case 'o': // -o or --output
-            ofname = optarg;
-            break;
+            case 'o': // -o or --output
+                ofname = optarg;
+                break;
 
-        case 'p': // -p or --prefix
-            fprefix = optarg;
-            break;
+            case 'p': // -p or --prefix
+                fprefix = optarg;
+                break;
 
-        case 'v': // -v or --verbose
-            verbose = true;
-            break;
+            case 'v': // -v or --verbose
+                verbose = true;
+                break;
 
-        case 'm': // -m or --messy
-            messy = true;
-            break;
+            case 'm': // -m or --messy
+                messy = true;
+                break;
 
-        case 'V': // -V or --version
-            print_version(stdout);
-            exit(EXIT_SUCCESS);
-            break;
+            case 'V': // -V or --version
+                print_version(stdout);
+                exit(EXIT_SUCCESS);
+                break;
 
-/*
+                /*
         case 'c': // -c or --check
             check_only = true;
             outfile = stdout;
@@ -170,33 +169,28 @@ int psi_start(int argc, char *argv[])
             break;
 */
 
-        case 'w': // -w or --wipe
-            clean_only = true;
-            append = true; // to avoid deletion of an existing output file
-            break;
+            case 'w': // -w or --wipe
+                clean_only = true;
+                append = true; // to avoid deletion of an existing output file
+                break;
 
-        case -1: // done with options
-            break;
+            case -1: // done with options
+                break;
 
-        default: // Something else, unexpected
-            printf("Unexpected argument given: -%c\n", next_option);
-            exit(EXIT_FAILURE);
-            break;
+            default: // Something else, unexpected
+                printf("Unexpected argument given: -%c\n", next_option);
+                exit(EXIT_FAILURE);
+                break;
+            }
+        } while (next_option != -1);
+
+        if (optind <= argc-2) {
+            ifname = argv[optind];
+            ofname = argv[optind+1];
         }
-    } while (next_option != -1);
-
-    char *cfname = NULL;
-    char *userhome;
-    FILE *psirc;
-    char *arg;
-    char *tmpstr1;
-
-    if (optind <= argc-2) {
-        ifname = argv[optind];
-        ofname = argv[optind+1];
-    }
-    else if (optind <= argc-1) {
-        ifname = argv[optind];
+        else if (optind <= argc-1) {
+            ifname = argv[optind];
+        }
     }
 
     /* if some args were not specified on command-line - check the environment */
@@ -233,7 +227,7 @@ int psi_start(int argc, char *argv[])
     /* default prefix is not assigned here yet because need to check input file first */
 
     /* open input and output files */
-#ifndef MAKE_STANDALONE
+#if !defined(MAKE_PYTHON_MODULE)
     if(ifname == "stdin") {
         infile=stdin;
         infile_directory = ".";
@@ -251,6 +245,9 @@ int psi_start(int argc, char *argv[])
     }
 #endif
 
+#if defined(MAKE_PYTHON_MODULE)
+    outfile = stdout;
+#else
     if(append) {
         if(ofname == "stdout")
             outfile=stdout;
@@ -268,11 +265,10 @@ int psi_start(int argc, char *argv[])
         fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
         return(PSI_RETURN_FAILURE);
     }
+#endif
 
-    if(debug) {
+    if(debug)
         setbuf(outfile,NULL);
-    }
-
 
     // Initialize Yeti's env
     //yetiEnv.init(WorldComm->me(), ofname.c_str());

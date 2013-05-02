@@ -67,7 +67,7 @@ private:
 
 public:
 
-    ElemCommWrapper (int &argc, char **argv)
+    ElemCommWrapper (const int &argc, char **argv)
     {
         init_openmp();
         elem::Initialize(argc, argv);
