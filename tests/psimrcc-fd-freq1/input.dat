@@ -40,5 +40,5 @@ set psimrcc {
 }
 
 frequencies('psimrcc', dertype=0)
-fd_freq = PsiMod.wavefunction().frequencies()            #TEST
+fd_freq = psi4.wavefunction().frequencies()            #TEST
 compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST
