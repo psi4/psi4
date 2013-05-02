@@ -67,9 +67,12 @@ PsiReturnType fnocc(Options &options) {
       fprintf(outfile,"\n\n");
       fflush(outfile);
 
-      // send all dfcc jobs through fno so semicanon orbs computed in one place.
+      // three-index integrals are generated/read by fno class
       boost::shared_ptr<DFFrozenNO> fno(new DFFrozenNO(Process::environment.wavefunction(),options));
-      fno->ComputeNaturalOrbitals();
+      fno->ThreeIndexIntegrals();
+      if ( options.get_bool("NAT_ORBS") ) {
+          fno->ComputeNaturalOrbitals();
+      }
       wfn = (boost::shared_ptr<Wavefunction>)fno;
 
       // ccsd(t)!

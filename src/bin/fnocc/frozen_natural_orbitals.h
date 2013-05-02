@@ -41,12 +41,15 @@ class DFFrozenNO : public FrozenNO {
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
     void ComputeNaturalOrbitals();
+    void ThreeIndexIntegrals();
 
   protected:
 
     void ModifyCa(double*Dab);
     void ModifyCa_occ(double*Dij);
     void BuildFock(long int nQ,double*Qso,double*F);
+    void TransformQ(long int nQ,double*Qso);
+
 };
 
 }}
