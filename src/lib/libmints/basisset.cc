@@ -839,3 +839,67 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
       ao += INT_NCART(am);
   } // nshell
 }
+
+BasisSet BasisSet::concatinate(const BasisSet& b) const {
+
+    BasisSet temp;
+
+    temp.name_ = name_ + " + " + b.name_;
+    temp.molecule_ = molecule();
+
+    // Copy a's shells to temp
+    temp.shells_ = shells_;
+
+    // Append b's shells to temp
+    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    return temp;
+}
+
+boost::shared_ptr<BasisSet> BasisSet::concatinate(const boost::shared_ptr<BasisSet>& b) const {
+    return boost::shared_ptr<BasisSet>(new BasisSet(concatinate(*b.get())));
+}
+
+BasisSet BasisSet::add(const BasisSet& b) const {
+
+    BasisSet temp;
+
+    temp.name_ = name_ + " + " + b.name_;
+    temp.molecule_ = molecule();
+
+    // Copy a's shells to temp
+    temp.shells_ = shells_;
+
+    // Append b's shells to temp
+    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    // Sort by center number
+    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    // Sort by AM in each center
+    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+                  shell_sorter_am);
+    }
+
+    return temp;
+}
+
+boost::shared_ptr<BasisSet> BasisSet::add(const boost::shared_ptr<BasisSet>& b) const {
+    return boost::shared_ptr<BasisSet>(new BasisSet(add(*b.get())));
+}
+
+
+//boost::shared_ptr<BasisSet> BasisSet::concatinate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) const {
+//    return a->concatinate(b);
+//}

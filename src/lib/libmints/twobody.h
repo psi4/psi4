@@ -53,6 +53,8 @@ protected:
 
     /// Buffer to hold the final integrals.
     double *target_;
+    /// Number of integrals in the current buffer
+    int curr_buff_size_;
     /// Buffer to hold the transformation intermediates.
     double *tformbuf_;
     /// Buffer to hold the initially computed integrals.
@@ -117,7 +119,7 @@ public:
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
 
-    ///Is the shell zero?
+    /// Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
     /// Compute the first derivatives
