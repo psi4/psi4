@@ -252,6 +252,7 @@ void export_mints()
             def("so_angular_momentum", &MintsHelper::so_angular_momentum, "docstring").
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "docstring").
             def("ao_eri", &MintsHelper::ao_eri, "docstring").
+            def("ao_eri_shell", &MintsHelper::ao_eri_shell, "docstring").
             def("ao_erf_eri", &MintsHelper::ao_erf_eri, "docstring").
             def("ao_f12", &MintsHelper::ao_f12, "docstring").
             def("ao_f12_squared", &MintsHelper::ao_f12_squared, "docstring").
@@ -412,7 +413,7 @@ void export_mints()
             def("symmetrize", &Molecule::symmetrize_to_abelian_group, "Finds the highest point Abelian point group within the specified tolerance, and forces the geometry to have that symmetry.").
             def("create_molecule_from_string", &Molecule::create_molecule_from_string, "Returns a new Molecule with member data from the geometry string arg1 in psi4 format").
             staticmethod("create_molecule_from_string").
-                def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
+            def("is_variable", &Molecule::is_variable, "Checks if variable arg2 is in the list, returns true if it is, and returns false if not").
             def("set_variable", &Molecule::set_variable, "Assigns the value arg3 to the variable arg2 in the list of geometry variables, then calls update_geometry()").
             def("get_variable", &Molecule::get_variable, "Checks if variable arg2 is in the list, sets it to val and returns true if it is, and returns false if not").
             def("update_geometry", &Molecule::update_geometry, "Reevaluates the geometry with current variable values, orientation directives, etc. Must be called after initial Molecule definition by string.").
@@ -434,6 +435,7 @@ void export_mints()
     class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
 
     typedef void (BasisSet::*basis_print_out)() const;
+    typedef boost::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const boost::shared_ptr<BasisSet>&) const;
     class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", "docstring", no_init).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
             def("print_detail_out", basis_print_out(&BasisSet::print_detail), "docstring").
@@ -447,8 +449,11 @@ void export_mints()
             def("nshell", &BasisSet::nshell, "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
             def("has_puream", &BasisSet::has_puream, "docstring").
-            def("add", &BasisSet::add, "Adds two basis sets together.").
-            staticmethod("add");
+            def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
+            def("concatinate", ptrversion(&BasisSet::concatinate), "Concatinates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
+            def("add", ptrversion(&BasisSet::add), "Combine two basis sets to make a new one.").
+            //staticmethod("concatinate").
+            def(self + self);
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -525,5 +530,18 @@ void export_mints()
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
+
+    typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init);
+
+    class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
+            def(init<boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >());
+            //def("eri", &IntegralFactory::eri, "docstring")
+
+    //class_<ERI, boost::shared_ptr<ERI>, boost::noncopyable>("ERI", "docstring", no_init).
+    //        def
+    //        def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
 
 }

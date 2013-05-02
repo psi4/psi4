@@ -39,6 +39,7 @@
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <liboptions/liboptions_python.h>
+#include <libutil/libutil.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -1033,6 +1034,12 @@ std::string py_psi_top_srcdir()
     return PSI_TOP_SRCDIR;
 }
 
+void translate_psi_exception(const PsiException& e)
+{
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+}
+
+
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
@@ -1067,11 +1074,13 @@ BOOST_PYTHON_MODULE(PsiMod)
     Script::language->initialize();
 
     if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
-   
+
     // Initialize the I/O library
     psio_init();
 
 #endif
+
+    register_exception_translator<PsiException>(&translate_psi_exception);
 
     docstring_options sphx_doc_options(true, true, false);
 
