@@ -230,6 +230,7 @@ class DFCoupledCluster : public CoupledCluster{
     ///  3-index integrals for density fitting.
     bool ischolesky_;
     long int nQ;
+    long int nQ_scf;
     double*Qmo,*Qov,*Qvv,*Qoo;
     void  ThreeIndexIntegrals();
 
@@ -240,12 +241,11 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// generate t1-transformed 3-index integrals
     virtual void T1Integrals();
+    /// generate t1-transformed Fock matrix
+    virtual void T1Fock();
 
     /// evaluate cc diagrams
     virtual void CCResidual();
-
-    /// evaluate triples
-    PsiReturnType triples();
 
     /// SCS-MP2 function and variables
     void SCS_MP2();

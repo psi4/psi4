@@ -4,10 +4,11 @@ molecule h2o {
 O
 H 1 1.0 
 H 1 1.0 2 104.5
+symmetry c1
 }
 
 set {
-  basis        aug-cc-pvdz
+  basis aug-cc-pvdz
   freeze_core         true
   e_convergence      1e-12
   d_convergence      1e-12
@@ -15,7 +16,10 @@ set {
   cholesky_tolerance 1e-12
   nat_orbs            true
   occ_tolerance       1e-4
+  scf_type cd
+  df_basis_cc cholesky
 }
+# CD-CCSD(T) energy
 energy('df-ccsd(t)')
 edfccsd  = get_variable("CCSD CORRELATION ENERGY")
 edfccsdt = get_variable("CCSD(T) CORRELATION ENERGY")

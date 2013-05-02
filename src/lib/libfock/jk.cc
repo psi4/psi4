@@ -4182,6 +4182,7 @@ void CDJK::initialize_JK_core()
     boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,cholesky_tolerance_,memory_));
     Ch->choleskify();
     ncholesky_  = Ch->Q();
+
     boost::shared_ptr<Matrix> L = Ch->L();
     double ** Lp = L->pointer();
     timer_off("CD: cholesky decomposition");
@@ -4211,6 +4212,9 @@ void CDJK::initialize_JK_core()
     timer_off("CD: schwarz");
 
     if (df_ints_io_ == "SAVE") {
+        // stick ncholesky in process environment for other codes that may use the integrals
+        Process::environment.globals["NAUX (SCF)"] = (double)ncholesky_;
+
         psio_->open(unit_,PSIO_OPEN_NEW);
         psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * ncholesky_);
         psio_->close(unit_,1);
