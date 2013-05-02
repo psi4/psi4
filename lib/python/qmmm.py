@@ -28,7 +28,7 @@ import psi4
 import re
 import os
 import math
-import physconst
+import p4const
 from molutil import *
 from driver import *
 
@@ -143,7 +143,7 @@ class QMMM(object):
         position (*x*, *y*, *z*) Angstroms.
 
         """
-        self.charges.append([Q, x / physconst.psi_bohr2angstroms, y / physconst.psi_bohr2angstroms, z / physconst.psi_bohr2angstroms])
+        self.charges.append([Q, x / p4const.psi_bohr2angstroms, y / p4const.psi_bohr2angstroms, z / p4const.psi_bohr2angstroms])
 
     def __str__(self):
 

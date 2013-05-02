@@ -29,8 +29,9 @@ import shutil
 import random
 import math
 import psi4
-import physconst
-from text import *
+import p4const
+import p4util
+from p4regex import *
 from dashparam import *
 
 
@@ -255,7 +256,7 @@ def BFS(self):
         while len(Queue) > 0:                # BFS within a fragment
             for u in Queue:                  # find all (still white) nearest neighbors to vertex u
                 for i in White:
-                    dist = physconst.psi_bohr2angstroms * math.sqrt((self.x(i) - self.x(u)) ** 2 + \
+                    dist = p4const.psi_bohr2angstroms * math.sqrt((self.x(i) - self.x(u)) ** 2 + \
                         (self.y(i) - self.y(u)) ** 2 + (self.z(i) - self.z(u)) ** 2)
                     if dist < vdW_diameter[self.symbol(u)] + vdW_diameter[self.symbol(i)]:
                         Queue.append(i)      # if you find you, put in the queue

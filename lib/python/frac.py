@@ -23,14 +23,13 @@
 import psi4
 import os
 import math
+import p4util
 from molutil import *
 from driver import *
-from procutil import *
-from util import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(mol, **kwargs):
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # The molecule is required, and should be the neutral species
     mol.update_geometry()
@@ -248,7 +247,7 @@ def frac_traverse(mol, **kwargs):
 
 # Pull all the electrons out, one at a time
 def frac_nuke(mol, **kwargs):
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # The molecule is required, and should be the neutral species
     mol.update_geometry()
@@ -433,7 +432,7 @@ def frac_nuke(mol, **kwargs):
     return E
 
 def ip_fitting(mol, omega_l, omega_r, **kwargs):
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
 
     # By default, zero the omega to 3 digits
     omega_tol = 1.0E-3;
@@ -519,7 +518,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     # Neutral
     if (read):
         psi4.set_global_option("GUESS", "READ")
-        copy_file_to_scratch(read180, 'psi', 'ot', 180)
+        p4util.copy_file_to_scratch(read180, 'psi', 'ot', 180)
 
     mol.set_molecular_charge(charge0)
     mol.set_multiplicity(mult0)
@@ -544,7 +543,7 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     # Cation
     if (read):
         psi4.set_global_option("GUESS", "READ")
-        copy_file_to_scratch(read180, 'psi', 'ot', 180)
+        p4util.copy_file_to_scratch(read180, 'psi', 'ot', 180)
 
     mol.set_molecular_charge(charge1)
     mol.set_multiplicity(mult1)
