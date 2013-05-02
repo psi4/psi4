@@ -43,23 +43,10 @@ typedef psi::MPICommunicator            worldcomm;
 typedef psi::LocalCommWrapper           worldcomm;
 #endif
 
-#if 0
-#if !defined(HAVE_MADNESS) && !defined(HAVE_ELEMENTAL)
-#include <libparallel/local.h>
-typedef     psi::LocalCommWrapper       WorldComm_t;
-#elif !defined(HAVE_MADNESS) && defined(HAVE_ELEMENTAL)
-#include <libparallel/elem.h>
-typedef     psi::ElemCommWrapper        worldcomm;
-#elif defined(HAVE_MADNESS)
-#include <libparallel/mad.h>
-typedef     psi::MADNESSCommWrapper     WorldComm_t;
-#endif
-#endif
-
 namespace psi {
 
     extern FILE *outfile;
-    extern boost::shared_ptr<WorldComm_t> WorldComm;
+    extern boost::shared_ptr<worldcomm> WorldComm;
 
     // A templated version of init comunicator.
     template <typename comm_type>
@@ -68,7 +55,7 @@ namespace psi {
     }
 
     // Create a communicator from Comm typedef'ed above.
-    boost::shared_ptr<WorldComm_t> initialize_communicator(const int &argc, char **argv);
+    boost::shared_ptr<worldcomm> initialize_communicator(const int &argc, char **argv);
 }
 
 //#include "threaded_storage.h"

@@ -1276,13 +1276,13 @@ void Python::run(FILE *input)
         s = strdup("psi");
 
 #if PY_MAJOR_VERSION == 2
-        if (PyImport_AppendInittab(strdup("psi4"), initPsiMod) == -1) {
-            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+        if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
-        if (PyImport_AppendInittab(strdup("psi4"), PyInit_PsiMod) == -1) {
-            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #endif
