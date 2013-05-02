@@ -142,6 +142,7 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+    extern void print_version(FILE *myout);
     extern FILE *outfile;
 }
 

@@ -1755,7 +1755,7 @@ def build_blypd1_superfunctional(name, npoints, deriv):
     sup.set_name('BLYP-D1')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.2, 0.0, 0.0, 0.0))
+    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.2, 0.0, 0.0, 0.0))
 
     return sup
 
@@ -1766,7 +1766,7 @@ def build_b3lypd1_superfunctional(name, npoints, deriv):
     sup.set_name('B3LYP-D1')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
+    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
 
     return sup
 
@@ -1881,7 +1881,7 @@ def build_bp86d1_superfunctional(name, npoints, deriv):
     sup.set_name('BP86-D1')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
+    sup.set_dispersion(psi4.Dispersion.build('-D1', 1.05, 0.0, 0.0, 0.0))
 
     return sup
 
@@ -1937,7 +1937,7 @@ def build_pbed1_superfunctional(name, npoints, deriv):
     sup.set_name('PBE-D1')
 
     # => -D2 <= #
-    sup.set_dispersion(PsiMod.Dispersion.build('-D1', 0.75, 0.0, 0.0, 0.0))
+    sup.set_dispersion(psi4.Dispersion.build('-D1', 0.75, 0.0, 0.0, 0.0))
 
     return sup
 
