@@ -8,31 +8,31 @@ set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 #
 # Command line options
 #
-include(cmake/GetValue.cmake)
 set(ALL_USEROPTS "")
 set(EMPTY "\"\"")
 
+include(cmake/GetValue.cmake)
 #OPTION CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
-get_value(useroptCXX_FLAGS   CXX_FLAGS   ${EMPTY})
+get_value(useroptCXX_FLAGS CXX_FLAGS   ${EMPTY})
 #OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACK      LAPACK   ${EMPTY})
+get_value(useroptLAPACK  LAPACK   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLD_FLAGS    LD_FLAGS   ${EMPTY})
+get_value(useroptLD_FLAGS  LD_FLAGS   ${EMPTY})
 #OPTION PREFIX           The installation directory for psi4 (string)
 get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
 #OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
-get_value(useroptPYTHON      PYTHON   ${EMPTY})
+get_value(useroptPYTHON  PYTHON   ${EMPTY})
 #OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
-get_value(useroptUSE_SYSTEM_BOOST   USE_SYSTEM_BOOST   TRUE)
+get_value(useroptUSE_SYSTEM_BOOST  USE_SYSTEM_BOOST   TRUE)
 #OPTION LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
-get_value(useroptLIBINT_MAX_AM   LIBINT_MAX_AM   5)
+get_value(useroptLIBINT_MAX_AM  LIBINT_MAX_AM  5)
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
 # This will be echoed at the end of configure, and also output to a file so the build can be replicated
 set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
 foreach(opt ${ALL_USEROPTS})
-    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D ${opt}")
+    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D${opt}")
 endforeach()
 
 #

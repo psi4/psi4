@@ -22,6 +22,9 @@ or
 These can be mixed in any order, with -D commands taking precedence.  Psi4
 currently recognizes the following options:-
 
+CXX              The C++ compiler. N.B. This must be set as an environmental variable, not a -D flag. (string)
+                 default:whichever compiler is first detected by cmake
+
 CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
                  default:""
 
