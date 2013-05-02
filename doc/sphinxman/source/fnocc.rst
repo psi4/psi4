@@ -258,25 +258,39 @@ natural orbitals.
 Density-fitted coupled cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Density fitting (DF) or resolution of the identity (RI) techniques are
-popular in quantum chemistry to avoid the computation and storage of the
-4-index electron repulsion integral (ERI) tensor and even to reduce the
-computational scaling of some terms.  DF-CCSD(T) computations are
-available in |Psifour|, with or without the use of FNOs, through the FNOCC
-module.  The implementation and accuracy of the DF-CCSD(T) method are
-described in Ref. [DePrince:2013:inprep]_\.
+Density fitting (DF) [or resolution of the identity (RI)] and Cholesky
+decomposition (CD) techniques are popular in quantum chemistry to avoid
+the computation and storage of the 4-index electron repulsion integral
+(ERI) tensor and even to reduce the computational scaling of some terms.
+DF/CD-CCSD(T) computations are available in |Psifour|, with or without the
+use of FNOs, through the FNOCC module.  The implementation and accuracy of
+the DF/CD-CCSD(T) method are described in Ref. [DePrince:2013:inpress]_\.
 
-The default auxiliary basis set for a DF-CCSD computation is chosen to be
-the RI set (optimized for DFMP2) most similar to the primary basis set.
-For example, if the primary basis set is aug-cc-pVDZ, the default
-auxiliary basis set will be the aug-cc-pVDZ-RI set.  |Psifour| of course
-allows the user to specify any supported predefined basis set as the
-auxiliary set.  Alternatively, the user can request a set defined by the
-partial Cholesky decomposition of the 4-index ERI tensor.
+The DF-CCSD(T) procedure uses two auxiliary basis sets.  The first set
+corresponds to the auxiliary basis set utilized in the SCF procedure,
+defined by the |scf__df_basis_scf| keyword.  By default,
+|scf__df_basis_scf| is chosen to be the JKFIT set most similar to the
+primary basis set.  For example, if the primary basis set is aug-cc-pVDZ,
+the default auxiliary basis set will be the aug-cc-pVDZ-JKFIT set.  This
+auxiliary set is used to define the ERI's used to build the Fock matrix
+used in the DF-CCSD(T) procedure.  The second auxiliary is used to
+approximate all other ERI's in the DF-CCSD(T) procedure. The choice of
+auxiliary basis is controlled by the keyword |fnocc_df_basis_cc|.  By
+default, the auxiliary basis set for correlated portion of a DF-CCSD(T)
+computation is chosen to be the RI set (optimized for DFMP2) most similar
+to the primary basis set.
+
+Alternatively, the user can request that the DF-CCSD(T) procedure use a
+set of vectors defined by the Cholesky decomposition of the ERI tensor as
+the auxiliary basis.  This feature is enabled by specifiyin
+|fnocc_df_basis_cc| as "CHOLESKY".  CD methods are available in the SCF
+procedure as well, by specifying the |scf__scf_type| as "CD".  The
+accuracy of the decomposition can be controlled through the keyword
+|fnocc_cholesky_tolerance|.
 
 The following is a minimal input file that describes a DF-CCSD(T)
 computation using 3-index integrals obtained by partial Cholesky
-decomposition of the 4-index ERI tensor. ::
+decomposition (CD) of the 4-index ERI tensor. ::
 
     molecule h2o {
         0 1
@@ -286,17 +300,16 @@ decomposition of the 4-index ERI tensor. ::
     }
     
     set {
+        scf_type cd
         df_basis_cc cholesky
         basis aug-cc-pvdz
         freeze_core true
     }
     energy('df-ccsd(t)')
 
-The accuracy of the Cholesky decomposition may be controlled through the
-keyword |fnocc__cholesky_tolerance|.  Note that the keyword
-|scf__scf_type| has not been specified here.  By default, a DF-CCSD(T)
-computation exploits DF technology in the SCF procedure, but one can
-override this behavior through this keyword.
+The resulting CCSD(T) correlation energy will be equivalent to that
+obtained from a conventional computation if |fnocc__cholesky_tolerance| is
+chosen to be sufficiently small (e.g.  :math:`10^{-10}`).  
 
 .. _`sec:fnogn`:
 
