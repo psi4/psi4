@@ -31,11 +31,11 @@ ndisp = len(displacements)
 energies = []
 
 for n, displacement in enumerate(displacements):
-  PsiMod.print_out("\n")
+  psi4.print_out("\n")
   banner("Loading displacement %d of %d" % (n+1, ndisp))
   print "    displacment %d" % (n+1)
   c4nh4.update_geometry()  # needed to clear out file32
-  PsiMod.get_active_molecule().set_geometry(displacement)
+  psi4.get_active_molecule().set_geometry(displacement)
   E = energy('scf')
   energies.append(E)
 

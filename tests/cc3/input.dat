@@ -30,10 +30,10 @@ compare_values(refccsd,  get_variable("CCSD correlation energy"), 4, "CCSD contr
 compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
 
 frequencies('ccsd', dertype=1)
-fd_freqs_grad = PsiMod.wavefunction().frequencies()
+fd_freqs_grad = psi4.wavefunction().frequencies()
 
 frequencies('ccsd', dertype=0)
-fd_freqs_energy = PsiMod.wavefunction().frequencies()
+fd_freqs_energy = psi4.wavefunction().frequencies()
 
 compare_vectors(fd_freqs_grad, fd_freqs_energy, 1, "CCSD Grads vs. Energies Findif (3-pt.) freqs to 0.1 cm^-1")
 

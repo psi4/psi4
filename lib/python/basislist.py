@@ -20,14 +20,14 @@
 #@END LICENSE
 #
 
-r"""Module to define a class :py:class:`~BasisFamily` that associates 
+r"""Module to define a class :py:class:`~BasisFamily` that associates
 fitting basis sets to an orbital basis and to provide functions to
 query appropriate fitting bases for any orbital basis distributed
 with Psi4.
 
 """
 import os
-import PsiMod
+import psi4
 from psiexceptions import *
 
 
@@ -36,8 +36,8 @@ basisfamily_list = []
 
 class BasisFamily(object):
     """Class to associate with an orbital basis name *ornate*
-    the gbs file names in which the orbital basis *orbital* 
-    (usually the coded form of *ornate*) and *jkfit*, *rifit*, 
+    the gbs file names in which the orbital basis *orbital*
+    (usually the coded form of *ornate*) and *jkfit*, *rifit*,
     and *dualfit* auxiliary bases can be found.
 
     """
@@ -87,12 +87,12 @@ class BasisFamily(object):
 
 
 def sanitize_basisname(name):
-    """Function to return *name* in coded form, stripped of 
-    characters that confuse filenames, characters into lowercase, 
-    ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, & ``,`` 
+    """Function to return *name* in coded form, stripped of
+    characters that confuse filenames, characters into lowercase,
+    ``+`` into ``p``, ``*`` into ``s``, and ``(``, ``)``, & ``,``
     into ``_``.
     """
-    temp = PsiMod.BasisSet.make_filename(name)
+    temp = psi4.BasisSet.make_filename(name)
     return os.path.splitext(os.path.splitext(temp)[0])[0]
 
 
@@ -117,7 +117,7 @@ def print_basis_families():
     basisfamily_list = load_basis_families()
 
     for fam in basisfamily_list:
-        PsiMod.print_out('%s' % fam)
+        psi4.print_out('%s' % fam)
 
 
 def corresponding_jkfit(name):

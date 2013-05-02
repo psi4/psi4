@@ -28,7 +28,7 @@ import socket
 import shutil
 import random
 import math
-import PsiMod
+import psi4
 import physconst
 from text import *
 from dashparam import *
@@ -279,13 +279,13 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     a full set of dispersion parameters in the absense of *func* or to supply
     individual overrides in the presence of *func*. Returns energy if *dertype* is 0,
     gradient if *dertype* is 1, else tuple of energy and gradient if *dertype*
-    unspecified. The dftd3 executable must be independently compiled and found in 
+    unspecified. The dftd3 executable must be independently compiled and found in
     :envvar:`PATH`.
 
     """
     # Validate arguments
     if self is None:
-        self = PsiMod.get_active_molecule()
+        self = psi4.get_active_molecule()
 
     dashlvl = dashlvl.lower()
     dashlvl = dash_alias['-' + dashlvl][1:] if ('-' + dashlvl) in dash_alias.keys() else dashlvl
@@ -340,8 +340,8 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 
     # Setup unique scratch directory and move in
     current_directory = os.getcwd()
-    psioh = PsiMod.IOManager.shared_object()
-    psio = PsiMod.IO.shared_object()
+    psioh = psi4.IOManager.shared_object()
+    psio = psi4.IO.shared_object()
     os.chdir(psioh.get_default_path())
     dftd3_tmpdir = 'psi.' + str(os.getpid()) + '.' + psio.get_default_namespace() + \
         '.dftd3.' + str(random.randint(0, 99999))
@@ -410,18 +410,18 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     if len(dashdderiv) != self.natom():
         raise ValidationError('Program dftd3 gradient file has %d atoms- %d expected.' % \
             (len(dashdderiv), self.natom()))
-    psi_dashdderiv = PsiMod.Matrix(self.natom(), 3)
+    psi_dashdderiv = psi4.Matrix(self.natom(), 3)
     psi_dashdderiv.set(dashdderiv)
 
     # Print program output to file if verbose
-    verbose = PsiMod.get_option('SCF', 'PRINT')
+    verbose = psi4.get_option('SCF', 'PRINT')
     if verbose >= 3:
-        PsiMod.print_out('\n  ==> DFTD3 Output <==\n')
-        PsiMod.print_out(out)
+        psi4.print_out('\n  ==> DFTD3 Output <==\n')
+        psi4.print_out(out)
         dfile = open(derivfile, 'r')
-        PsiMod.print_out(dfile.read().replace('D', 'E'))
+        psi4.print_out(dfile.read().replace('D', 'E'))
         dfile.close()
-        PsiMod.print_out('\n')
+        psi4.print_out('\n')
 
     # Clean up files and remove scratch directory
     os.unlink(paramfile)
@@ -438,7 +438,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
     os.chdir(current_directory)
 
     # return -D & d(-D)/dx
-    PsiMod.set_variable('DISPERSION CORRECTION ENERGY', dashd)
+    psi4.set_variable('DISPERSION CORRECTION ENERGY', dashd)
     if dertype == -1:
         return dashd, dashdderiv
     elif dertype == 0:
@@ -449,7 +449,7 @@ def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None):
 
 def dynamic_variable_bind(cls):
     """Function to dynamically add extra members to
-    the PsiMod.Molecule class.
+    the psi4.Molecule class.
 
     """
     cls.__setattr__ = new_set_attr
@@ -458,7 +458,7 @@ def dynamic_variable_bind(cls):
     cls.run_dftd3 = run_dftd3
 
 
-dynamic_variable_bind(PsiMod.Molecule)  # pass class type, not class instance
+dynamic_variable_bind(psi4.Molecule)  # pass class type, not class instance
 
 
 #
@@ -475,7 +475,7 @@ def geometry(geom, name="default"):
     from the geometry in string *geom*.
 
     """
-    molecule = PsiMod.Molecule.create_molecule_from_string(geom)
+    molecule = psi4.Molecule.create_molecule_from_string(geom)
     molecule.set_name(name)
 
     activate(molecule)
@@ -485,5 +485,5 @@ def geometry(geom, name="default"):
 
 def activate(mol):
     """Function to set molecule object *mol* as the current active molecule."""
-    PsiMod.set_active_molecule(mol)
-    #PsiMod.IO.set_default_namespace(mol.get_name())
+    psi4.set_active_molecule(mol)
+    #psi4.IO.set_default_namespace(mol.get_name())
