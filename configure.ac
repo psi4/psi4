@@ -305,6 +305,7 @@ AC_ARG_ENABLE([python-module],
     [AC_HELP_STRING([--enable-python-module],
       [Enable building PSI4 as a Python module. @<:@default=no@:>@]) ],
     [
+      MAKE_PYTHON_MODULE=1
       AC_DEFINE([MAKE_PYTHON_MODULE])
       AC_SUBST([MAKE_PYTHON_MODULE])
     ])

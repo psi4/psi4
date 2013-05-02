@@ -68,8 +68,7 @@ namespace psi {
     }
 
     // Create a communicator from Comm typedef'ed above.
-    WorldComm_t* initialize_communicator(const int &argc, char **argv);
-
+    boost::shared_ptr<WorldComm_t> initialize_communicator(const int &argc, char **argv);
 }
 
 //#include "threaded_storage.h"

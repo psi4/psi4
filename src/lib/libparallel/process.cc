@@ -52,7 +52,7 @@ Process::Arguments Process::arguments;
 const std::string empty_;
 
 // Need to split each entry by the first '=', left side is key, right the value
-void Process::Environment::init()
+void Process::Environment::initialize()
 {
     // If envp is NULL, try to obtain envp from enviorn in unistd.h
 
@@ -168,7 +168,7 @@ boost::shared_ptr<Wavefunction> Process::Environment::wavefunction() const
     return wavefunction_;
 }
 
-void Process::Arguments::init(int argc, char **argv)
+void Process::Arguments::initialize(int argc, char **argv)
 {
     argc_ = argc;
     argv_ = argv;
