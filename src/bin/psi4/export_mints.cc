@@ -23,6 +23,7 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
+#include <libmints/twobody.h>
 #include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
@@ -222,6 +223,55 @@ void export_mints()
             def("print_out", &CdSalcList::print, "docstring").
             def("matrix", &CdSalcList::matrix, "docstring");
 
+    class_<GaussianShell, boost::shared_ptr<GaussianShell> >("GaussianShell", "docstring", no_init).
+            add_property("nprimative", &GaussianShell::nprimitive, "docstring").
+            add_property("nfunction", &GaussianShell::nfunction, "docstring").
+            add_property("ncartesian", &GaussianShell::ncartesian, "docstring").
+            add_property("am", &GaussianShell::am, "docstring").
+            add_property("amchar", &GaussianShell::amchar, "docstring").
+            add_property("AMCHAR", &GaussianShell::AMCHAR, "docstring").
+            add_property("ncenter", &GaussianShell::ncenter, "docstring").
+            add_property("function_index", &GaussianShell::function_index, &GaussianShell::set_function_index, "Basis function index where this shell starts.").
+            def("is_cartesian", &GaussianShell::is_cartesian, "docstring").
+            def("is_pure", &GaussianShell::is_pure, "docstring").
+            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
+            //def("center", &GaussianShell::center, "docstring").
+            def("exp", &GaussianShell::exp, "docstring").
+            def("coef", &GaussianShell::coef, "docstring");
+
+
+    typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
+            def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
+            add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring");
+
+    class_<TwoElectronInt, boost::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);
+            def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
+
+    class_<ERI, boost::shared_ptr<ERI>, bases<TwoElectronInt>, boost::noncopyable>("ERI", "docstring", no_init);
+    class_<F12, boost::shared_ptr<F12>, bases<TwoElectronInt>, boost::noncopyable>("F12", "docstring", no_init);
+    class_<F12G12, boost::shared_ptr<F12G12>, bases<TwoElectronInt>, boost::noncopyable>("F12G12", "docstring", no_init);
+    class_<F12Squared, boost::shared_ptr<F12Squared>, bases<TwoElectronInt>, boost::noncopyable>("F12Squared", "docstring", no_init);
+    class_<F12DoubleCommutator, boost::shared_ptr<F12DoubleCommutator>, bases<TwoElectronInt>, boost::noncopyable>("F12DoubleCommutator", "docstring", no_init);
+    class_<ErfERI, boost::shared_ptr<ErfERI>, bases<TwoElectronInt>, boost::noncopyable>("ErfERI", "docstring", no_init);
+    class_<ErfComplementERI, boost::shared_ptr<ErfComplementERI>, bases<TwoElectronInt>,        boost::noncopyable>("ErfComplementERI", "docstring", no_init);
+
+    class_<AOShellCombinationsIterator, boost::shared_ptr<AOShellCombinationsIterator>, boost::noncopyable>("AOShellCombinationsIterator", no_init).
+            add_property("p", &AOShellCombinationsIterator::p, "docstring").
+            add_property("q", &AOShellCombinationsIterator::q, "docstring").
+            add_property("r", &AOShellCombinationsIterator::r, "docstring").
+            add_property("s", &AOShellCombinationsIterator::s, "docstring").
+            def("first", &AOShellCombinationsIterator::first, "docstring").
+            def("next", &AOShellCombinationsIterator::next, "docstring").
+            def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
+
+    class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
+            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet> >()).
+            def("shells_iterator", &IntegralFactory::shells_iterator_ptr, return_value_policy<manage_new_object>(), "docstring").
+            def("eri", &IntegralFactory::eri, return_value_policy<manage_new_object>(), "docstring");
+
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
 
@@ -230,6 +280,7 @@ void export_mints()
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
             def(init<boost::shared_ptr<BasisSet> >()).
+            def("integral", &MintsHelper::integral, "docstring").
             def("integrals", &MintsHelper::integrals, "docstring").
             def("integrals_erf", &MintsHelper::integrals_erf, "docstring").
             def("integrals_erfc", &MintsHelper::integrals_erfc, "docstring").
@@ -435,6 +486,8 @@ void export_mints()
     class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser", "docstring");
 
     typedef void (BasisSet::*basis_print_out)() const;
+    typedef const GaussianShell& (BasisSet::*no_center_version)(int) const;
+    typedef const GaussianShell& (BasisSet::*center_version)(int, int) const;
     typedef boost::shared_ptr<BasisSet> (BasisSet::*ptrversion)(const boost::shared_ptr<BasisSet>&) const;
     class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", "docstring", no_init).
             def("print_out", basis_print_out(&BasisSet::print), "docstring").
@@ -447,6 +500,8 @@ void export_mints()
             def("nao", &BasisSet::nao, "docstring").
             def("nprimitive", &BasisSet::nprimitive, "docstring").
             def("nshell", &BasisSet::nshell, "docstring").
+            def("shell", no_center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
+            def("shell", center_version(&BasisSet::shell), return_value_policy<copy_const_reference>(), "docstring").
             def("max_am", &BasisSet::max_am, "docstring").
             def("has_puream", &BasisSet::has_puream, "docstring").
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
@@ -531,17 +586,6 @@ void export_mints()
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
 
-    typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
-    class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init);
 
-    class_<IntegralFactory, boost::shared_ptr<IntegralFactory>, boost::noncopyable>("IntegralFactory", "docstring", no_init).
-            def(init<boost::shared_ptr<BasisSet> >()).
-            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
-            def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >());
-            //def("eri", &IntegralFactory::eri, "docstring")
-
-    //class_<ERI, boost::shared_ptr<ERI>, boost::noncopyable>("ERI", "docstring", no_init).
-    //        def
-    //        def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
 
 }

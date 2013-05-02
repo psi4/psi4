@@ -24,6 +24,7 @@
 #define _psi_src_lib_libmints_twobody_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/python/list.hpp>
 
 namespace psi {
 
@@ -109,6 +110,14 @@ public:
 
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; }
+
+    /// Get a python list version of the current buffer
+    const boost::python::list py_buffer() const {
+        boost::python::list ret_val;
+        for(int i = 0; i < curr_buff_size_; ++i)
+            ret_val.append(target_[i]);
+        return ret_val;
+    }
 
     /// Returns the integral factory used to create this object
     const IntegralFactory* integral() const { return integral_; }
