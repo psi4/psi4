@@ -27,17 +27,17 @@ FNOCC: Frozen natural orbitals for CCSD(T), QCISD(T), CEPA, and MP4
 Frozen natural orbitals (FNO)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The computational cost of the QCISD(T), CCSD(T), CEPA, and MP4 methods can
-be reduced by constructing a compact representation of the virtual space
-based on the natural orbitals of second-order perturbation theory.  The
-most demanding steps in the CCSD and (T) algorithms scale as
-:math:`{\cal{O}}(o^2v^4)` and :math:`{\cal{O}}(o^3v^4)`, where :math:`o`
-and :math:`v` represent the number of oribitals that are occupied and
-unoccupied (virtual) in the reference function, respectively.  By reducing
-the the size of the virtual space, the cost of evaluating these terms
-reduces by a factor of :math:`(v / v_{FNO})^4`, where :math:`v_{FNO}`
-represents the number of virtual orbitals retained after the FNO
-truncation.
+The computational cost of the CCSD [Purvis:1982]_, CCSD(T)
+[Raghavachari:1989]_, and related methods be reduced by constructing a
+compact representation of the virtual space based on the natural orbitals
+of second-order perturbation theory [Sosa:1989:148]_.  The most demanding
+steps in the CCSD and (T) algorithms scale as :math:`{\cal{O}}(o^2v^4)`
+and :math:`{\cal{O}}(o^3v^4)`, where :math:`o` and :math:`v` represent the
+number of oribitals that are occupied and unoccupied (virtual) in the
+reference function, respectively.  By reducing the the size of the virtual
+space, the cost of evaluating these terms reduces by a factor of :math:`(v
+/ v_{FNO})^4`, where :math:`v_{FNO}` represents the number of virtual
+orbitals retained after the FNO truncation.
 
 The general outline for the FNO procedure in |Psifour| is:
 
@@ -258,7 +258,7 @@ natural orbitals.
 Density-fitted coupled cluster
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Density fitting (DF) [or resolution of the identity (RI)] and Cholesky
+Density fitting (DF) [or the resolution of the identity (RI)] and Cholesky
 decomposition (CD) techniques are popular in quantum chemistry to avoid
 the computation and storage of the 4-index electron repulsion integral
 (ERI) tensor and even to reduce the computational scaling of some terms.
@@ -266,31 +266,28 @@ DF/CD-CCSD(T) computations are available in |Psifour|, with or without the
 use of FNOs, through the FNOCC module.  The implementation and accuracy of
 the DF/CD-CCSD(T) method are described in Ref. [DePrince:2013:inpress]_\.
 
-The DF-CCSD(T) procedure uses two auxiliary basis sets.  The first set
-corresponds to the auxiliary basis set utilized in the SCF procedure,
-defined by the |scf__df_basis_scf| keyword.  By default,
-|scf__df_basis_scf| is chosen to be the JKFIT set most similar to the
-primary basis set.  For example, if the primary basis set is aug-cc-pVDZ,
-the default auxiliary basis set will be the aug-cc-pVDZ-JKFIT set.  This
-auxiliary set is used to define the ERI's used to build the Fock matrix
-used in the DF-CCSD(T) procedure.  The second auxiliary is used to
-approximate all other ERI's in the DF-CCSD(T) procedure. The choice of
-auxiliary basis is controlled by the keyword |fnocc_df_basis_cc|.  By
-default, the auxiliary basis set for correlated portion of a DF-CCSD(T)
-computation is chosen to be the RI set (optimized for DFMP2) most similar
-to the primary basis set.
+The DF-CCSD(T) procedure uses two auxiliary basis sets.  The first set is
+that used in the SCF procedure, defined by the |scf__df_basis_scf|
+keyword.  If this keyword is not specified, an appropriate -JKFIT set is
+automatically selected.  This auxiliary set defines the ERI's used to
+build the Fock matrix used in the DF-CCSD(T) procedure.  The second
+auxiliary set is used to approximate all other ERI's in the DF-CCSD(T)
+procedure. The choice of auxiliary basis is controlled by the keyword
+|fnocc__df_basis_cc|.  By default, |fnocc__df_basis_cc| is the RI set
+(optimized for DFMP2) most appropriate for use with the primary basis.
+For example, if the primary basis is aug-cc-pVDZ, the default
+|fnocc__df_basis_cc| will be aug-cc-pVDZ-RI.
 
 Alternatively, the user can request that the DF-CCSD(T) procedure use a
 set of vectors defined by the Cholesky decomposition of the ERI tensor as
-the auxiliary basis.  This feature is enabled by specifiyin
-|fnocc_df_basis_cc| as "CHOLESKY".  CD methods are available in the SCF
+the auxiliary basis.  This feature is enabled by specifying
+|fnocc__df_basis_cc| as "CHOLESKY".  CD methods can be enabled in the SCF
 procedure as well, by specifying the |scf__scf_type| as "CD".  The
 accuracy of the decomposition can be controlled through the keyword
-|fnocc_cholesky_tolerance|.
+|fnocc__cholesky_tolerance|.
 
-The following is a minimal input file that describes a DF-CCSD(T)
-computation using 3-index integrals obtained by partial Cholesky
-decomposition (CD) of the 4-index ERI tensor. ::
+The following input file sets up a DF-CCSD(T)
+computation using CD integrals ::
 
     molecule h2o {
         0 1
@@ -309,7 +306,7 @@ decomposition (CD) of the 4-index ERI tensor. ::
 
 The resulting CCSD(T) correlation energy will be equivalent to that
 obtained from a conventional computation if |fnocc__cholesky_tolerance| is
-chosen to be sufficiently small (e.g.  :math:`10^{-10}`).  
+sufficiently small (e.g.  :math:`10^{-9}`).  
 
 .. _`sec:fnogn`:
 
