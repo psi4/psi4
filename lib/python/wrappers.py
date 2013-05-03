@@ -1816,6 +1816,9 @@ def complete_basis_set(name, **kwargs):
     >>> # [7] cbs() coupled with database()
     >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
+    >>> # [8] cbs() coupled with optimize()
+    >>> optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
+
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)

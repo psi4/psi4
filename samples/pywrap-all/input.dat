@@ -61,4 +61,4 @@ banner('Test [8] database(opt(energy()))')
 db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
 
 banner('Test [9] alias(cbs(energy()))')
-sherrillgroup_gold_standard()
+sherrill_gold_standard()

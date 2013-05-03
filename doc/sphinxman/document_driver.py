@@ -54,6 +54,8 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
             fdriver.write('   :exclude-members: diatomic_anharmonicity\n')
         elif basename == 'molutil':
             fdriver.write('   :exclude-members: run_dftd3\n')
+        elif basename == 'aliases':
+            fdriver.write('   :exclude-members: sherrill_gold_standard, allen_focal_point\n')
 
     fdriver.write('\n')
 
