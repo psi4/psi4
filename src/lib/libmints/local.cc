@@ -33,7 +33,7 @@ namespace psi {
 Localizer::Localizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C) :
     primary_(primary), C_(C)
 {
-    if (C->nirrep() != 0) {
+    if (C->nirrep() != 1) {
         throw PSIEXCEPTION("Localizer: C matrix is not C1");
     }
     if (C->rowspi()[0] != primary->nbf()) {
@@ -53,7 +53,7 @@ void Localizer::common_init()
     maxiter_ = 50;
     converged_ = false;
 }
-boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options)
+boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options)
 {
     boost::shared_ptr<Localizer> local;
 
@@ -89,6 +89,7 @@ void BoysLocalizer::print_header() const
     fprintf(outfile, "  ==> Boys Localizer <==\n\n");
     fprintf(outfile, "    Convergence = %11.3E\n", convergence_);
     fprintf(outfile, "    Maxiter     = %11d\n", maxiter_);
+    fprintf(outfile, "\n");
     fflush(outfile);
 }
 void BoysLocalizer::localize() 
@@ -139,10 +140,22 @@ void BoysLocalizer::localize()
     double** Lp = L_->pointer();
     double** Up = U_->pointer();
 
-    // => Seed the random the same way <= //
+    // => Seed the random idempotently <= //
     
     srand(0L);
 
+    // => Metric <= //
+
+    double metric = 0.0;
+    for (int xyz = 0; xyz < 3; xyz++) {
+        metric += C_DDOT(nmo,Dp[xyz][0],nmo+1,Dp[xyz][0],nmo+1);
+    }
+    double old_metric = metric;
+    
+    // => Iteration Print <= //
+    fprintf(outfile, "    Iteration %24s %14s %14s\n", "Metric", "Residual" , "Rotations");
+    fprintf(outfile, "    @Boys %4d %24.16E %14s %14s\n", 0, metric, "-", "-");
+    
     // ==> Master Loop <== //
 
     long int rotations = 0L;
@@ -151,7 +164,6 @@ void BoysLocalizer::localize()
     double residual = 1.0;
 
     for (int iter = 1; iter <= maxiter_; iter++) {
-
 
         // => Random Permutation <= //
 
@@ -252,15 +264,24 @@ void BoysLocalizer::localize()
 
         // => Metric <= //
 
-        double metric = 0.0;
+        metric = 0.0;
         for (int xyz = 0; xyz < 3; xyz++) {
             metric += C_DDOT(nmo,Dp[xyz][0],nmo+1,Dp[xyz][0],nmo+1);
         }
+
+        double conv = fabs(metric - old_metric) / fabs(old_metric);
+        old_metric = metric;
         
         // => Iteration Print <= //
-        fprintf(outfile, "    @Boys %4d %24.16E %18zu\n", iter, metric, rotations);
+
+        fprintf(outfile, "    @Boys %4d %24.16E %14.6E %14zu\n", iter, metric, conv, rotations);
         
-        // => Convergence Check (TODO) <= //
+        // => Convergence Check <= //
+
+        if (conv < convergence_) {
+            converged_ = true;      
+            break;
+        }
 
     }   
 

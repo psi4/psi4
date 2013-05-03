@@ -23,6 +23,7 @@
 #include "dftsapt.h"
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
+#include <libmints/local.h>
 #include <libfock/jk.h>
 #include <libthce/thce.h>
 #include <libthce/lreri.h>
@@ -64,6 +65,8 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     DFTSAPT* sapt = new DFTSAPT();
 
     Options& options = Process::environment.options; 
+
+    sapt->type_  = options.get_str("DFT_SAPT_TYPE");
 
     sapt->print_ = options.get_int("PRINT");
     sapt->debug_ = options.get_int("DEBUG");
@@ -131,17 +134,21 @@ double DFTSAPT::compute_energy()
     
     print_header();
 
-    fock_terms();
-    
-    mp2_terms();
-
-    print_trailer();
-    
-    //tdhf_demo();    
-
-    local_fock_terms();
-
-    local_mp2_terms();
+    if (type_ == "SAPT0") {
+        fock_terms();
+        mp2_terms();
+        print_trailer();
+    } else if (type_ == "DFT-SAPT") {
+        fock_terms();
+        mp2_terms();
+        tdhf_demo();
+        print_trailer();
+    } else if (type_ == "L-SAPT0") {
+        local_fock_terms();
+        local_mp2_terms();
+    } else {
+        throw PSIEXCEPTION("DFTSAPT: Unrecognized type");
+    }
 
     Process::environment.globals["SAPT ENERGY"] = 0.0;
 
@@ -168,9 +175,20 @@ void DFTSAPT::print_header() const
     int nmo_A = eps_focc_A_->dim() + eps_aocc_A_->dim() + eps_avir_A_->dim() + eps_fvir_A_->dim();
     int nmo_B = eps_focc_B_->dim() + eps_aocc_B_->dim() + eps_avir_B_->dim() + eps_fvir_B_->dim();
 
+    int nA = 0;
+    for (int A = 0; A < monomer_A_->natom(); A++) {
+        if (monomer_A_->Z(A) != 0.0) nA++;
+    }
+
+    int nB = 0;
+    for (int B = 0; B < monomer_B_->natom(); B++) {
+        if (monomer_B_->Z(B) != 0.0) nB++;
+    }
+
     fprintf(outfile, "    ------------------\n");    
     fprintf(outfile, "    %-6s %5s %5s\n", "Range", "M_A", "M_B");
     fprintf(outfile, "    ------------------\n");    
+    fprintf(outfile, "    %-6s %5d %5d\n", "natom", nA, nB);
     fprintf(outfile, "    %-6s %5d %5d\n", "nso", primary_A_->nbf(), primary_B_->nbf());
     fprintf(outfile, "    %-6s %5d %5d\n", "nmo", nmo_A, nmo_B);
     fprintf(outfile, "    %-6s %5d %5d\n", "nocc", eps_aocc_A_->dim() + eps_focc_A_->dim(), eps_aocc_B_->dim() + eps_focc_B_->dim());
@@ -1005,7 +1023,7 @@ void DFTSAPT::mp2_terms()
 
                 // => Amplitudes, Disp20 <= //
 
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,0.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a)*nr],nQ,Absp[(b)*ns],nQ,0.0,Vrsp[0],ns);
 
                 for (int r = 0; r < nr; r++) {
                     for (int s = 0; s < ns; s++) {
@@ -1018,10 +1036,10 @@ void DFTSAPT::mp2_terms()
 
                 // > Q1-Q3 < //
 
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Bbrp[(b + bstart)*nr],nQ,Basp[(a + astart)*ns],nQ,0.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Cbrp[(b + bstart)*nr],nQ,Casp[(a + astart)*ns],nQ,1.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Dbsp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Darp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Bbrp[(b)*nr],nQ,Basp[(a)*ns],nQ,0.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Cbrp[(b)*nr],nQ,Casp[(a)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a)*nr],nQ,Dbsp[(b)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',nr,ns,nQ,1.0,Darp[(a)*nr],nQ,Absp[(b)*ns],nQ,1.0,Vrsp[0],ns);
             
                 // > V,J,K < //
         
@@ -1050,66 +1068,402 @@ void DFTSAPT::local_fock_terms()
 {
     fprintf(outfile, " LOCAL SCF TERMS:\n\n");
 
-    // ==> Localization <== //
-
-    // ==> Setup <== //    
-
-    // => Compute the D matrices <= //
-    
-    boost::shared_ptr<Matrix> D_A    = doublet(Cocc_A_, Cocc_A_,false,true);
-    boost::shared_ptr<Matrix> D_B    = doublet(Cocc_B_, Cocc_B_,false,true);
-
-    // => Compute the P matrices <= //
-
-    boost::shared_ptr<Matrix> P_A    = doublet(Cvir_A_, Cvir_A_,false,true);
-    boost::shared_ptr<Matrix> P_B    = doublet(Cvir_B_, Cvir_B_,false,true);
-
-    // => Compute the S matrix <= //
+    // ==> S Matrix <== //
 
     boost::shared_ptr<Matrix> S = build_S(primary_);
 
-    // => Compute the V matrices <= //
+    // ==> Localization <== //
 
+    fprintf(outfile,"  Local Orbitals for Monomer A:\n\n");
+
+    boost::shared_ptr<Localizer> localA = Localizer::build("BOYS", primary_, Cocc_A_, Process::environment.options);
+    localA->localize();
+    boost::shared_ptr<Matrix> L_A = localA->L();
+    boost::shared_ptr<Matrix> U_A = localA->U();
+
+    fprintf(outfile,"  Local Orbitals for Monomer B:\n\n");
+
+    boost::shared_ptr<Localizer> localB = Localizer::build("BOYS", primary_, Cocc_B_, Process::environment.options);
+    localB->localize();
+    boost::shared_ptr<Matrix> L_B = localB->L();
+    boost::shared_ptr<Matrix> U_B = localB->U();
+
+    // ==> Sizing <== //
+
+    int nn = primary_->nbf();
+    int na = Caocc_A_->colspi()[0];
+    int nb = Caocc_B_->colspi()[0];
+
+    int nA = 0;
+    std::vector<int> cA;
+    for (int A = 0; A < monomer_A_->natom(); A++) {
+        if (monomer_A_->Z(A) != 0.0) {
+            nA++;
+            cA.push_back(A);
+        }
+    }
+
+    int nB = 0;
+    std::vector<int> cB;
+    for (int B = 0; B < monomer_B_->natom(); B++) {
+        if (monomer_B_->Z(B) != 0.0) {
+            nB++;
+            cB.push_back(B);
+        }
+    }
+
+    int nr = Cavir_A_->colspi()[0];
+    int ns = Cavir_B_->colspi()[0];
+    
+    // ==> DF ERI Setup (JKFIT Type, in Local Basis) <== //    
+
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSet> jkfit = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
+    int nQ = jkfit->nbf();
+    
+    boost::shared_ptr<DFERI> df = DFERI::build(primary_,jkfit,Process::environment.options);
+    df->clear();
+
+    std::vector<boost::shared_ptr<Matrix> > Cs;
+    Cs.push_back(L_A);
+    Cs.push_back(Cavir_A_);  
+    Cs.push_back(L_B);
+    Cs.push_back(Cavir_B_);  
+    boost::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
+    Cs.clear();
+
+    df->set_C(Call);
+    df->set_memory(memory_ - Call->nrow() * Call->ncol());
+
+    int offset = 0;
+    df->add_space("a",offset,offset+Caocc_A_->colspi()[0]); offset += Caocc_A_->colspi()[0];
+    df->add_space("r",offset,offset+Cavir_A_->colspi()[0]); offset += Cavir_A_->colspi()[0];
+    df->add_space("b",offset,offset+Caocc_B_->colspi()[0]); offset += Caocc_B_->colspi()[0];
+    df->add_space("s",offset,offset+Cavir_B_->colspi()[0]); offset += Cavir_B_->colspi()[0];
+
+    df->add_pair_space("Aaa", "a", "a");
+    df->add_pair_space("Abb", "b", "b");
+    df->add_pair_space("Aar", "a", "r");
+    df->add_pair_space("Abs", "b", "s"); 
+
+    df->print_header();
+    df->compute();
+
+    std::map<std::string, boost::shared_ptr<Tensor> >& ints = df->ints();
+    boost::shared_ptr<Tensor> AaaT = ints["Aaa"];
+    boost::shared_ptr<Tensor> AbbT = ints["Abb"];
+    boost::shared_ptr<Tensor> AarT = ints["Aar"];
+    boost::shared_ptr<Tensor> AbsT = ints["Abs"];
+
+    boost::shared_ptr<Matrix> Jm12 = df->Jpow(-1.0/2.0);
+    double** Jm12p = Jm12->pointer();
+
+    df.reset();
+
+    // ==> DF Nuclear Potential Setup (JKFIT Type, in Local Basis) <== //
+
+    boost::shared_ptr<Matrix> VAQ(new Matrix("VAQ",nA,nQ));
+    boost::shared_ptr<Matrix> VBQ(new Matrix("VBQ",nB,nQ));
+    boost::shared_ptr<Matrix> TAQ(new Matrix("TAQ",nA,nQ));
+    boost::shared_ptr<Matrix> TBQ(new Matrix("TBQ",nB,nQ));
+    double** VAQp = VAQ->pointer();
+    double** VBQp = VBQ->pointer();
+    double** TAQp = TAQ->pointer();
+    double** TBQp = TBQ->pointer();
+
+    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(jkfit,BasisSet::zero_ao_basis_set()));
+    boost::shared_ptr<PotentialInt> Vint(static_cast<PotentialInt*>(Vfact->ao_potential()));
+    boost::shared_ptr<Matrix> Zxyz(new Matrix("Zxyz",1,4));
+    double** Zxyzp = Zxyz->pointer();
+    Vint->set_charge_field(Zxyz);
+    boost::shared_ptr<Matrix> Vtemp(new Matrix("Vtemp",nQ,1));
+    double** Vtempp = Vtemp->pointer();
+
+    for (int A = 0; A < nA; A++) {
+        Vtemp->zero();
+        Zxyzp[0][0] = monomer_A_->Z(cA[A]);
+        Zxyzp[0][1] = monomer_A_->x(cA[A]);
+        Zxyzp[0][2] = monomer_A_->y(cA[A]);
+        Zxyzp[0][3] = monomer_A_->z(cA[A]);
+        Vint->compute(Vtemp);
+        ::memcpy(TAQp[A],Vtempp[0],sizeof(double)*nQ);
+    }
+
+    for (int B = 0; B < nB; B++) {
+        Vtemp->zero();
+        Zxyzp[0][0] = monomer_B_->Z(cB[B]);
+        Zxyzp[0][1] = monomer_B_->x(cB[B]);
+        Zxyzp[0][2] = monomer_B_->y(cB[B]);
+        Zxyzp[0][3] = monomer_B_->z(cB[B]);
+        Vint->compute(Vtemp);
+        ::memcpy(TBQp[B],Vtempp[0],sizeof(double)*nQ);
+    }
+
+    Vtemp.reset();
+    Zxyz.reset();
+    Vint.reset();
+    Vfact.reset();
+
+    C_DGEMM('N','N',nA,nQ,nQ,1.0,TAQp[0],nQ,Jm12p[0],nQ,0.0,VAQp[0],nQ);
+    C_DGEMM('N','N',nB,nQ,nQ,1.0,TBQp[0],nQ,Jm12p[0],nQ,0.0,VBQp[0],nQ);
+
+    Jm12.reset();
+    TAQ.reset();
+    TBQ.reset();
+
+    // ==> ELECTROSTATICS <== //
+
+    double Elst10 = 0.0;
+    std::vector<double> Elst10_terms;
+    Elst10_terms.resize(4);
+
+    boost::shared_ptr<Matrix> E_elst(new Matrix("E_elst (A + a x B + b)", nA + na, nB + nb));
+    double** E_elstp = E_elst->pointer(); 
+
+    // => A <-> B <= //
+
+    for (int A = 0; A < nA; A++) {
+        for (int B = 0; B < nB; B++) {
+            E_elstp[A][B] = monomer_A_->Z(cA[A]) * monomer_B_->Z(cB[B]) / (monomer_A_->xyz(cA[A]).distance(monomer_B_->xyz(cB[B])));
+            Elst10_terms[3] += E_elstp[A][B];
+        }
+    }
+
+    // => a <-> b <= //
+
+    boost::shared_ptr<Matrix> AaQ(new Matrix("AaQ",na,nQ));
+    boost::shared_ptr<Matrix> AbQ(new Matrix("AbQ",nb,nQ));
+    double** AaQp = AaQ->pointer();
+    double** AbQp = AbQ->pointer();
+    FILE* Aaaf = AaaT->file_pointer();
+    FILE* Abbf = AbbT->file_pointer();
+
+    for (int a = 0; a < na; a++) {
+        fseek(Aaaf,(a*na+a)*(size_t)nQ*sizeof(double),SEEK_SET);
+        fread(AaQp[a],sizeof(double),nQ,Aaaf);
+    }
+
+    for (int b = 0; b < nb; b++) {
+        fseek(Abbf,(b*nb+b)*(size_t)nQ*sizeof(double),SEEK_SET);
+        fread(AbQp[b],sizeof(double),nQ,Abbf);
+    }
+
+    C_DGEMM('N','T',na,nb,nQ,4.0,AaQp[0],nQ,AbQp[0],nQ,0.0,&E_elstp[nA][nB],nB+nb);
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            Elst10_terms[2] += E_elstp[nA + a][nB + b];
+        }
+    }
+
+    // => A <-> b <= //
+
+    C_DGEMM('N','T',nA,nb,nQ,2.0,VAQp[0],nQ,AbQp[0],nQ,0.0,&E_elstp[0][nB],nB+nb);
+    for (int A = 0; A < nA; A++) {
+        for (int b = 0; b < nb; b++) {
+            Elst10_terms[1] += E_elstp[A][nB + b];
+        }
+    }
+    
+    // => a <-> B <= //
+
+    C_DGEMM('N','T',na,nB,nQ,2.0,AaQp[0],nQ,VBQp[0],nQ,0.0,&E_elstp[nA][0],nB+nb);
+    for (int a = 0; a < na; a++) {
+        for (int B = 0; B < nB; B++) {
+            Elst10_terms[0] += E_elstp[nA + a][B];
+        }
+    }
+
+    E_elst->print();
+
+    for (int k = 0; k < Elst10_terms.size(); k++) {
+        Elst10 += Elst10_terms[k];
+    }
+    if (debug_) {
+        for (int k = 0; k < Elst10_terms.size(); k++) {
+            fprintf(outfile,"    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
+        }
+    }
+    energies_["Elst10,r"] = Elst10;
+    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
+    fflush(outfile);
+
+    // ==> EXCHANGE <== //
+
+    double Exch10_2 = 0.0;
+    std::vector<double> Exch10_2_terms;
+    Exch10_2_terms.resize(3);
+
+    boost::shared_ptr<Matrix> Sab = triplet(L_A,S,L_B,true,false,false);
+    boost::shared_ptr<Matrix> Sba = triplet(L_B,S,L_A,true,false,false);
+    boost::shared_ptr<Matrix> Sas = triplet(L_A,S,Cvir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Sbr = triplet(L_B,S,Cvir_A_,true,false,false);
+    double** Sabp = Sab->pointer();
+    double** Sbap = Sba->pointer();
+    double** Sasp = Sas->pointer();
+    double** Sbrp = Sbr->pointer();
+
+    boost::shared_ptr<Matrix> WBQ(new Matrix("WBQ",1,nQ));
+    double** WBQp = WBQ->pointer();
+    for (int B = 0; B < nB; B++) {
+        C_DAXPY(nQ,1.0,VBQp[B],1,WBQp[0],1);
+    }
+    for (int b = 0; b < nb; b++) {
+        C_DAXPY(nQ,2.0,AbQp[b],1,WBQp[0],1);
+    }
+
+    boost::shared_ptr<Matrix> WAQ(new Matrix("ABQ",1,nQ));
+    double** WAQp = WAQ->pointer();
+    for (int A = 0; A < nA; A++) {
+        C_DAXPY(nQ,1.0,VAQp[A],1,WAQp[0],1);
+    }
+    for (int a = 0; a < na; a++) {
+        C_DAXPY(nQ,2.0,AaQp[a],1,WAQp[0],1);
+    }
+
+    boost::shared_ptr<Matrix> WBar(new Matrix("WBar",na,nr));   
+    double** WBarp = WBar->pointer();
+    boost::shared_ptr<Matrix> WAbs(new Matrix("WAbs",nb,ns));   
+    double** WAbsp = WAbs->pointer();
+
+    boost::shared_ptr<Matrix> TrQ(new Matrix("TrQ",nr,nQ));
+    double** TrQp = TrQ->pointer();
+    boost::shared_ptr<Matrix> TsQ(new Matrix("TsQ",ns,nQ));
+    double** TsQp = TsQ->pointer();
+
+    FILE* Aarf = AarT->file_pointer();
+    fseek(Aarf,0L,SEEK_SET);
+    for (int a = 0; a < na; a++) {
+        fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        C_DGEMV('N',nr,nQ,1.0,TrQp[0],nQ,WBQp[0],1,0.0,WBarp[a],1);
+    }
+   
+    FILE* Absf = AbsT->file_pointer();
+    fseek(Absf,0L,SEEK_SET);
+    for (int b = 0; b < nb; b++) {
+        fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        C_DGEMV('N',ns,nQ,1.0,TsQp[0],nQ,WAQp[0],1,0.0,WAbsp[b],1);
+    }
+   
+    boost::shared_ptr<Matrix> WBab(new Matrix("WBab",na,nb));   
+    double** WBabp = WBab->pointer(); 
+    boost::shared_ptr<Matrix> WAba(new Matrix("WAba",nb,na));   
+    double** WAbap = WAba->pointer(); 
+
+    C_DGEMM('N','T',na,nb,nr,1.0,WBarp[0],nr,Sbrp[0],nr,0.0,WBabp[0],nb);
+    C_DGEMM('N','T',nb,na,ns,1.0,WAbsp[0],ns,Sasp[0],ns,0.0,WAbap[0],na);
+
+    boost::shared_ptr<Matrix> E_exch1(new Matrix("E_exch [a <x- b]", na, nb));
+    double** E_exch1p = E_exch1->pointer();
+    boost::shared_ptr<Matrix> E_exch2(new Matrix("E_exch [a -x> b]", na, nb));
+    double** E_exch2p = E_exch2->pointer();
+
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            E_exch1p[a][b] -= 2.0 * Sabp[a][b] * WBabp[a][b];
+            E_exch2p[a][b] -= 2.0 * Sbap[b][a] * WAbap[b][a];
+        }
+    }
+
+    E_exch1->print();
+    E_exch2->print();
+
+    boost::shared_ptr<Matrix> TbQ(new Matrix("TbQ",nb,nQ));
+    double** TbQp = TbQ->pointer();
+    boost::shared_ptr<Matrix> TaQ(new Matrix("TaQ",na,nQ));
+    double** TaQp = TaQ->pointer();
+    
+    boost::shared_ptr<Tensor> BabT = DiskTensor::build("BabT","na",na,"nb",nb,"nQ",nQ,false,false);
+    FILE* Babf = BabT->file_pointer();
+    fseek(Babf,0L,SEEK_SET);
+    fseek(Aarf,0L,SEEK_SET);
+    for (int a = 0; a < na; a++) {
+        fread(TrQp[0],sizeof(double),nr*nQ,Aarf);
+        C_DGEMM('N','N',nb,nQ,nr,1.0,Sbrp[0],nr,TrQp[0],nQ,0.0,TbQp[0],nQ);
+        fwrite(TbQp[0],sizeof(double),nb*nQ,Babf);
+    }
+   
+    boost::shared_ptr<Tensor> BbaT = DiskTensor::build("BbaT","nb",nb,"na",na,"nQ",nQ,false,false);
+    FILE* Bbaf = BbaT->file_pointer();
+    fseek(Bbaf,0L,SEEK_SET);
+    fseek(Absf,0L,SEEK_SET);
+    for (int b = 0; b < nb; b++) {
+        fread(TsQp[0],sizeof(double),ns*nQ,Absf);
+        C_DGEMM('N','N',na,nQ,ns,1.0,Sasp[0],ns,TsQp[0],nQ,0.0,TaQp[0],nQ);
+        fwrite(TaQp[0],sizeof(double),na*nQ,Bbaf);
+    }
+   
+    boost::shared_ptr<Matrix> E_exch3(new Matrix("E_exch [a <x-x> b]", na, nb));
+    double** E_exch3p = E_exch3->pointer();
+
+    fseek(Babf,0L,SEEK_SET);
+    for (int a = 0; a < na; a++) {
+        fread(TbQp[0],sizeof(double),nb*nQ,Babf);
+        for (int b = 0; b < nb; b++) {
+            fseek(Bbaf,(b*na+a)*(size_t)nQ*sizeof(double),SEEK_SET);
+            fread(TaQp[0],sizeof(double),nQ,Bbaf);
+            E_exch3p[a][b] -= 2.0 * C_DDOT(nQ,TbQp[b],1,TaQp[0],1);
+        }
+    }
+
+    E_exch3->print();
+
+    boost::shared_ptr<Matrix> E_exch(new Matrix("E_exch (a x b)", na, nb));
+    double** E_exchp = E_exch->pointer();
+
+    for (int a = 0; a < na; a++) {
+        for (int b = 0; b < nb; b++) {
+            E_exchp[a][b] = E_exch1p[a][b] +
+                            E_exch2p[a][b] +
+                            E_exch3p[a][b];
+            Exch10_2_terms[0] += E_exch1p[a][b];
+            Exch10_2_terms[1] += E_exch2p[a][b];
+            Exch10_2_terms[2] += E_exch3p[a][b];
+        }
+    }
+
+    E_exch->print();
+
+    for (int k = 0; k < Exch10_2_terms.size(); k++) {
+        Exch10_2 += Exch10_2_terms[k];
+    }
+    if (debug_) {
+        for (int k = 0; k < Exch10_2_terms.size(); k++) {
+            fprintf(outfile,"    Exch10 (S^2) (%1d)    = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+        }
+    }
+    energies_["Exch10(S^2)"] = Exch10_2;
+    fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
+    fprintf(outfile, "\n");
+    fflush(outfile);
+    
+    // => Crap for MP2 <= //
+
+    boost::shared_ptr<Matrix> D_A = doublet(Cocc_A_,Cocc_A_,false,true);
+    boost::shared_ptr<Matrix> D_B = doublet(Cocc_B_,Cocc_B_,false,true);
+
+    boost::shared_ptr<Matrix> P_A = doublet(Cvir_A_,Cvir_A_,false,true);
+    boost::shared_ptr<Matrix> P_B = doublet(Cvir_B_,Cvir_B_,false,true);
+    
     boost::shared_ptr<Matrix> V_A = build_V(primary_A_);
     boost::shared_ptr<Matrix> V_B = build_V(primary_B_);
-    
+
     // => JK Object <= //
 
     boost::shared_ptr<JK> jk = JK::build_JK();
-   
+
     // TODO: Account for 2-index overhead in memory
-    int nA = Cocc_A_->ncol();
-    int nB = Cocc_B_->ncol();
     int nso = Cocc_A_->nrow();
     long int jk_memory = (long int)memory_; 
-    jk_memory -= 24 * nso * nso;
-    jk_memory -=  4 * nA * nso;
-    jk_memory -=  4 * nB * nso;
+    jk_memory -= 14 * nso * nso;
     if (jk_memory < 0L) {
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::fock_terms");
     }
     jk->set_memory((unsigned long int )jk_memory);
-
-    // ==> Generalized Fock Source Terms [Elst/Exch] <== //
-
-    // => Steric Interaction Density Terms (T) <= //
-
-    boost::shared_ptr<Matrix> Sij = build_Sij(S);
-    boost::shared_ptr<Matrix> Sij_n = build_Sij_n(Sij);
-
-    std::map<std::string, boost::shared_ptr<Matrix> > Cbar_n = build_Cbar(Sij_n);
-    boost::shared_ptr<Matrix> C_T_A_n  = Cbar_n["C_T_A"];
-    boost::shared_ptr<Matrix> C_T_B_n  = Cbar_n["C_T_B"];
-    boost::shared_ptr<Matrix> C_T_AB_n = Cbar_n["C_T_AB"];
-    boost::shared_ptr<Matrix> C_T_BA_n = Cbar_n["C_T_BA"];
-
-    Sij.reset();
-    Sij_n.reset();
-
-    boost::shared_ptr<Matrix> C_AS = triplet(P_B,S,Cocc_A_);
-
-    // => Load the JK Object <= //
     
+    // => Load the JK Object <= //
+
+    boost::shared_ptr<Matrix> C_AS = triplet(D_B,S,Cocc_A_,false,false,false);
+
     std::vector<SharedMatrix>& Cl = jk->C_left();
     std::vector<SharedMatrix>& Cr = jk->C_right();
     Cl.clear();
@@ -1118,12 +1472,6 @@ void DFTSAPT::local_fock_terms()
     // J/K[P^A]
     Cl.push_back(Cocc_A_);
     Cr.push_back(Cocc_A_);
-    // J/K[T^A, S^\infty]
-    Cl.push_back(Cocc_A_);
-    Cr.push_back(C_T_A_n);
-    // J/K[T^AB, S^\infty]
-    Cl.push_back(Cocc_A_);
-    Cr.push_back(C_T_AB_n);
     // J/K[S_as]
     Cl.push_back(Cocc_A_);
     Cr.push_back(C_AS);
@@ -1148,312 +1496,24 @@ void DFTSAPT::local_fock_terms()
     const std::vector<SharedMatrix>& K = jk->K();
 
     boost::shared_ptr<Matrix> J_A      = J[0]; 
-    boost::shared_ptr<Matrix> J_T_A_n  = J[1]; 
-    boost::shared_ptr<Matrix> J_T_AB_n = J[2]; 
-    boost::shared_ptr<Matrix> J_AS     = J[3]; 
-    boost::shared_ptr<Matrix> J_B      = J[4]; 
-
+    boost::shared_ptr<Matrix> J_O      = J[1]; 
+    boost::shared_ptr<Matrix> J_B      = J[2]; 
     boost::shared_ptr<Matrix> K_A      = K[0]; 
-    boost::shared_ptr<Matrix> K_T_A_n  = K[1]; 
-    boost::shared_ptr<Matrix> K_T_AB_n = K[2]; 
-    boost::shared_ptr<Matrix> K_AS     = K[3];
-    boost::shared_ptr<Matrix> K_B      = K[4]; 
+    boost::shared_ptr<Matrix> K_O      = K[1]; 
+    boost::shared_ptr<Matrix> K_B      = K[2]; 
 
-    // ==> Electrostatic Terms <== //
+    // => Load <= //
 
-    // Classical physics (watch for cancellation!)
-    double Enuc = 0.0;
-    Enuc += dimer_->nuclear_repulsion_energy();
-    Enuc -= monomer_A_->nuclear_repulsion_energy();
-    Enuc -= monomer_B_->nuclear_repulsion_energy();
-
-    double Elst10 = 0.0;
-    std::vector<double> Elst10_terms;
-    Elst10_terms.resize(4);
-    Elst10_terms[0] += 2.0 * D_A->vector_dot(V_B);
-    Elst10_terms[1] += 2.0 * D_B->vector_dot(V_A);
-    Elst10_terms[2] += 4.0 * D_B->vector_dot(J_A);
-    Elst10_terms[3] += 1.0 * Enuc;
-    for (int k = 0; k < Elst10_terms.size(); k++) {
-        Elst10 += Elst10_terms[k];
-    }
-    if (debug_) {
-        for (int k = 0; k < Elst10_terms.size(); k++) {
-            fprintf(outfile,"    Elst10,r (%1d)        = %18.12lf H\n",k+1,Elst10_terms[k]);
-        }
-    }
-    energies_["Elst10,r"] = Elst10;
-    fprintf(outfile,"    Elst10,r            = %18.12lf H\n",Elst10);
-    fflush(outfile);
-
-    // ==> Exchange Terms (S^\infty) <== //
-    
-    // => Compute the T matrices <= //
-
-    boost::shared_ptr<Matrix> T_A_n  = doublet(Cocc_A_, C_T_A_n, false, true);
-    boost::shared_ptr<Matrix> T_B_n  = doublet(Cocc_B_, C_T_B_n, false, true);
-    boost::shared_ptr<Matrix> T_BA_n = doublet(Cocc_B_, C_T_BA_n, false, true);
-    boost::shared_ptr<Matrix> T_AB_n = doublet(Cocc_A_, C_T_AB_n, false, true);
-
-    C_T_A_n.reset();
-    C_T_B_n.reset();
-    C_T_BA_n.reset();
-    C_T_AB_n.reset();
-
-    double Exch10_n = 0.0;
-    std::vector<double> Exch10_n_terms;
-    Exch10_n_terms.resize(9);
-    Exch10_n_terms[0] -= 2.0 * D_A->vector_dot(K_B); 
-    Exch10_n_terms[1] += 2.0 * T_A_n->vector_dot(V_B);
-    Exch10_n_terms[1] += 4.0 * T_A_n->vector_dot(J_B);
-    Exch10_n_terms[1] -= 2.0 * T_A_n->vector_dot(K_B);
-    Exch10_n_terms[2] += 2.0 * T_B_n->vector_dot(V_A);
-    Exch10_n_terms[2] += 4.0 * T_B_n->vector_dot(J_A);
-    Exch10_n_terms[2] -= 2.0 * T_B_n->vector_dot(K_A);
-    Exch10_n_terms[3] += 2.0 * T_AB_n->vector_dot(V_A); 
-    Exch10_n_terms[3] += 4.0 * T_AB_n->vector_dot(J_A);
-    Exch10_n_terms[3] -= 2.0 * T_AB_n->vector_dot(K_A);
-    Exch10_n_terms[4] += 2.0 * T_AB_n->vector_dot(V_B);
-    Exch10_n_terms[4] += 4.0 * T_AB_n->vector_dot(J_B);
-    Exch10_n_terms[4] -= 2.0 * T_AB_n->vector_dot(K_B);
-    Exch10_n_terms[5] += 4.0 * T_B_n->vector_dot(J_T_AB_n);
-    Exch10_n_terms[5] -= 2.0 * T_B_n->vector_dot(K_T_AB_n);
-    Exch10_n_terms[6] += 4.0 * T_A_n->vector_dot(J_T_AB_n);
-    Exch10_n_terms[6] -= 2.0 * T_A_n->vector_dot(K_T_AB_n);
-    Exch10_n_terms[7] += 4.0 * T_B_n->vector_dot(J_T_A_n);
-    Exch10_n_terms[7] -= 2.0 * T_B_n->vector_dot(K_T_A_n);
-    Exch10_n_terms[8] += 4.0 * T_AB_n->vector_dot(J_T_AB_n);
-    Exch10_n_terms[8] -= 2.0 * T_AB_n->vector_dot(K_T_AB_n);
-    for (int k = 0; k < Exch10_n_terms.size(); k++) {
-        Exch10_n += Exch10_n_terms[k];
-    }
-    if (debug_) {
-        for (int k = 0; k < Exch10_n_terms.size(); k++) {
-            fprintf(outfile,"    Exch10 (%1d)          = %18.12lf H\n",k+1,Exch10_n_terms[k]);
-        }
-    }
-    energies_["Exch10"] = Exch10_n;
-    fprintf(outfile,"    Exch10              = %18.12lf H\n",Exch10_n);
-    fflush(outfile);
-
-    T_A_n.reset();
-    T_B_n.reset();
-    T_BA_n.reset();
-    T_AB_n.reset();
-    J_T_A_n.reset();
-    J_T_AB_n.reset();
-    K_T_A_n.reset();
-    K_T_AB_n.reset();
-
-    // ==> Exchange Terms (S^2) <== //
-    
-    double Exch10_2 = 0.0;
-    std::vector<double> Exch10_2_terms;
-    Exch10_2_terms.resize(3);
-    Exch10_2_terms[0] -= 2.0 * triplet(triplet(D_A,S,D_B),S,P_A)->vector_dot(V_B);
-    Exch10_2_terms[0] -= 4.0 * triplet(triplet(D_A,S,D_B),S,P_A)->vector_dot(J_B);
-    Exch10_2_terms[1] -= 2.0 * triplet(triplet(D_B,S,D_A),S,P_B)->vector_dot(V_A);
-    Exch10_2_terms[1] -= 4.0 * triplet(triplet(D_B,S,D_A),S,P_B)->vector_dot(J_A);
-    Exch10_2_terms[2] -= 2.0 * triplet(P_A,S,D_B)->vector_dot(K_AS);
-    for (int k = 0; k < Exch10_2_terms.size(); k++) {
-        Exch10_2 += Exch10_2_terms[k];
-    }
-    if (debug_) {
-        for (int k = 0; k < Exch10_2_terms.size(); k++) {
-            fprintf(outfile,"    Exch10 (S^2) (%1d)    = %18.12lf H\n",k+1,Exch10_2_terms[k]);
-        }
-    }
-    energies_["Exch10(S^2)"] = Exch10_2;
-    fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
-    fprintf(outfile, "\n");
-    fflush(outfile);
-
-    // Clear up some memory
-    J_AS.reset();
-    K_AS.reset();
-
-    // ==> Uncorrelated Second-Order Response Terms [Induction] <== //
-
-    // => ESP <= //
-        
-    // Electrostatic potential of monomer A (AO)
-    boost::shared_ptr<Matrix> W_A(V_A->clone());
-    W_A->copy(J_A);
-    W_A->scale(2.0);
-    W_A->add(V_A);
-
-    // Electrostatic potential of monomer B (AO)
-    boost::shared_ptr<Matrix> W_B(V_B->clone());
-    W_B->copy(J_B);
-    W_B->scale(2.0);
-    W_B->add(V_B);
-
-    // Electrostatic potential of monomer B (ov space of A)
-    boost::shared_ptr<Matrix> w_B = triplet(Cocc_A_,W_B,Cvir_A_,true,false,false);
-    // Electrostatic potential of monomer A (ov space of B)
-    boost::shared_ptr<Matrix> w_A = triplet(Cocc_B_,W_A,Cvir_B_,true,false,false);
-
-    // Compute CPKS
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,w_B,w_A);
-    boost::shared_ptr<Matrix> x_A = x_sol.first;
-    boost::shared_ptr<Matrix> x_B = x_sol.second;
-    w_A.reset();
-    w_B.reset();
-
-    // Backward in Ed's convention
-    x_A->scale(-1.0);
-    x_B->scale(-1.0);
-
-    // Need these in AO basis
-    boost::shared_ptr<Matrix> X_A = triplet(Cocc_A_,x_A,Cvir_A_,false,false,true);
-    boost::shared_ptr<Matrix> X_B = triplet(Cocc_B_,x_B,Cvir_B_,false,false,true);
-
-    // ==> Induction <== //
-
-    double Ind20r_AB = 2.0 * X_A->vector_dot(W_B);
-    double Ind20r_BA = 2.0 * X_B->vector_dot(W_A);
-    double Ind20r = Ind20r_AB + Ind20r_BA;
-    energies_["Ind20,r (A<-B)"] = Ind20r_AB;
-    energies_["Ind20,r (B->A)"] = Ind20r_BA;
-    energies_["Ind20,r"] = Ind20r;
-    fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
-    fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
-    fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
-    fflush(outfile);
-
-    W_A.reset();
-    W_B.reset();
-
-    // ==> Exchange-Induction <== //
-
-    // => New pertubations <= //
-    
-    boost::shared_ptr<Matrix> C_O_A = triplet(D_B,S,Cocc_A_,false,false,false);
-    boost::shared_ptr<Matrix> C_X_A = doublet(Cvir_A_,x_A,false,true);    
-    boost::shared_ptr<Matrix> C_X_B = doublet(Cvir_B_,x_B,false,true);    
-    
-    x_A.reset();
-    x_B.reset();
-
-    Cl.clear();
-    Cr.clear();
-
-    // J/K[O]
-    Cl.push_back(Cocc_A_);
-    Cr.push_back(C_O_A);
-    // J/K[X_A]
-    Cl.push_back(Cocc_A_);
-    Cr.push_back(C_X_A);
-    // J/K[X_B]
-    Cl.push_back(Cocc_B_);
-    Cr.push_back(C_X_B);
-    
-    // => Compute the JK matrices <= //
-
-    jk->compute();
-
-    // => Unload the JK Object <= //
-
-    boost::shared_ptr<Matrix> J_O      = J[0]; 
-    boost::shared_ptr<Matrix> J_X_A    = J[1]; 
-    boost::shared_ptr<Matrix> J_X_B    = J[2]; 
-
-    boost::shared_ptr<Matrix> K_O      = K[0]; 
-    boost::shared_ptr<Matrix> K_X_A    = K[1]; 
-    boost::shared_ptr<Matrix> K_X_B    = K[2]; 
-
-    // Clear the JK memory 
-    jk.reset();
-    
-    // Don't need these, in AO basis now
-    C_O_A.reset(); 
-    C_X_A.reset(); 
-    C_X_B.reset(); 
-
-    // Exch-Ind20 (A<-B)
-    double ExchInd20r_AB = 0.0;
-    std::vector<double> ExchInd20r_AB_terms;
-    ExchInd20r_AB_terms.resize(18);
-    ExchInd20r_AB_terms[0]  -= 2.0 * X_A->vector_dot(K_B);
-    ExchInd20r_AB_terms[1]  -= 4.0 * triplet(D_B,S,X_A)->vector_dot(J_A);
-    ExchInd20r_AB_terms[2]  += 2.0 * triplet(D_A,S,D_B)->vector_dot(K_X_A);
-    ExchInd20r_AB_terms[3]  -= 4.0 * triplet(D_A,S,D_B)->vector_dot(J_X_A);
-    ExchInd20r_AB_terms[4]  += 2.0 * triplet(D_B,S,X_A)->vector_dot(K_A); 
-    ExchInd20r_AB_terms[5]  -= 4.0 * triplet(X_A,S,D_B)->vector_dot(J_B);
-    ExchInd20r_AB_terms[6]  += 2.0 * triplet(X_A,S,D_B)->vector_dot(K_B);
-    ExchInd20r_AB_terms[7]  += 4.0 * triplet(triplet(D_B,S,X_A),S,D_B)->vector_dot(J_A);
-    ExchInd20r_AB_terms[8]  += 4.0 * triplet(triplet(X_A,S,D_B),S,D_A)->vector_dot(J_B);
-    ExchInd20r_AB_terms[9]  -= 2.0 * triplet(X_A,S,D_B)->vector_dot(K_O);
-    ExchInd20r_AB_terms[10] += 4.0 * triplet(triplet(D_B,S,D_A),S,D_B)->vector_dot(J_X_A);
-    ExchInd20r_AB_terms[11] += 4.0 * triplet(triplet(D_A,S,D_B),S,X_A)->vector_dot(J_B);
-    ExchInd20r_AB_terms[12] -= 2.0 * triplet(D_B,S,X_A)->vector_dot(K_O->transpose());
-    ExchInd20r_AB_terms[13] -= 2.0 * triplet(D_B,S,X_A)->vector_dot(V_A); 
-    ExchInd20r_AB_terms[14] -= 2.0 * triplet(X_A,S,D_B)->vector_dot(V_B);
-    ExchInd20r_AB_terms[15] += 2.0 * triplet(triplet(D_B,S,X_A),S,D_B)->vector_dot(V_A);
-    ExchInd20r_AB_terms[16] += 2.0 * triplet(triplet(X_A,S,D_B),S,D_A)->vector_dot(V_B);
-    ExchInd20r_AB_terms[17] += 2.0 * triplet(triplet(D_A,S,D_B),S,X_A)->vector_dot(V_B);
-    for (int k = 0; k < ExchInd20r_AB_terms.size(); k++) {
-        ExchInd20r_AB += ExchInd20r_AB_terms[k];
-    }
-    if (debug_) {
-        for (int k = 0; k < ExchInd20r_AB_terms.size(); k++) {
-            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20r_AB_terms[k]);
-        }
-    }
-    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
-    fflush(outfile);
-
-    K_O->transpose_this();
-
-    // Exch-Ind20 (B<-A)
-    double ExchInd20r_BA = 0.0;
-    std::vector<double> ExchInd20r_BA_terms;
-    ExchInd20r_BA_terms.resize(18);
-    ExchInd20r_BA_terms[0]  -= 2.0 * X_B->vector_dot(K_A);
-    ExchInd20r_BA_terms[1]  -= 4.0 * triplet(D_A,S,X_B)->vector_dot(J_B);
-    ExchInd20r_BA_terms[2]  += 2.0 * triplet(D_B,S,D_A)->vector_dot(K_X_B);
-    ExchInd20r_BA_terms[3]  -= 4.0 * triplet(D_B,S,D_A)->vector_dot(J_X_B);
-    ExchInd20r_BA_terms[4]  += 2.0 * triplet(D_A,S,X_B)->vector_dot(K_B); 
-    ExchInd20r_BA_terms[5]  -= 4.0 * triplet(X_B,S,D_A)->vector_dot(J_A);
-    ExchInd20r_BA_terms[6]  += 2.0 * triplet(X_B,S,D_A)->vector_dot(K_A);
-    ExchInd20r_BA_terms[7]  += 4.0 * triplet(triplet(D_A,S,X_B),S,D_A)->vector_dot(J_B);
-    ExchInd20r_BA_terms[8]  += 4.0 * triplet(triplet(X_B,S,D_A),S,D_B)->vector_dot(J_A);
-    ExchInd20r_BA_terms[9]  -= 2.0 * triplet(X_B,S,D_A)->vector_dot(K_O);
-    ExchInd20r_BA_terms[10] += 4.0 * triplet(triplet(D_A,S,D_B),S,D_A)->vector_dot(J_X_B);
-    ExchInd20r_BA_terms[11] += 4.0 * triplet(triplet(D_B,S,D_A),S,X_B)->vector_dot(J_A);
-    ExchInd20r_BA_terms[12] -= 2.0 * triplet(D_A,S,X_B)->vector_dot(K_O->transpose());
-    ExchInd20r_BA_terms[13] -= 2.0 * triplet(D_A,S,X_B)->vector_dot(V_B); 
-    ExchInd20r_BA_terms[14] -= 2.0 * triplet(X_B,S,D_A)->vector_dot(V_A);
-    ExchInd20r_BA_terms[15] += 2.0 * triplet(triplet(D_A,S,X_B),S,D_A)->vector_dot(V_B);
-    ExchInd20r_BA_terms[16] += 2.0 * triplet(triplet(X_B,S,D_A),S,D_B)->vector_dot(V_A);
-    ExchInd20r_BA_terms[17] += 2.0 * triplet(triplet(D_B,S,D_A),S,X_B)->vector_dot(V_A);
-    for (int k = 0; k < ExchInd20r_BA_terms.size(); k++) {
-        ExchInd20r_BA += ExchInd20r_BA_terms[k];
-    }
-    if (debug_) {
-        for (int k = 0; k < ExchInd20r_BA_terms.size(); k++) {
-            fprintf(outfile,"    Exch-Ind20,r (%2d)   = %18.12lf H\n",k+1,ExchInd20r_BA_terms[k]);
-        }
-    }
-    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
-    fflush(outfile);
-
-    K_O->transpose_this();
-
-    double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
-    energies_["Exch-Ind20,r (A<-B)"] = ExchInd20r_AB;
-    energies_["Exch-Ind20,r (B->A)"] = ExchInd20r_BA;
-    energies_["Exch-Ind20,r"] = ExchInd20r_AB + ExchInd20r_BA;
-    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
-    fprintf(outfile,"\n");
-    fflush(outfile);
-
-    vars_["S"]   = S;
+    vars_["S"] = S;
+    vars_["U_A"] = U_A;
+    vars_["L_A"] = L_A;
     vars_["D_A"] = D_A;
     vars_["P_A"] = P_A;
     vars_["V_A"] = V_A;
     vars_["J_A"] = J_A;
     vars_["K_A"] = K_A;
+    vars_["U_B"] = U_B;
+    vars_["L_B"] = L_B;
     vars_["D_B"] = D_B;
     vars_["P_B"] = P_B;
     vars_["V_B"] = V_B;
@@ -1474,8 +1534,8 @@ void DFTSAPT::local_mp2_terms()
     int nr = Cavir_A_->colspi()[0];
     int ns = Cavir_B_->colspi()[0];
     int nQ = mp2fit_->nbf();
-    size_t nrQ = nr * (size_t) nQ;
-    size_t nsQ = ns * (size_t) nQ;
+    size_t naQ = na * (size_t) nQ;
+    size_t nbQ = nb * (size_t) nQ;
     
     int nT = 1;
     #ifdef _OPENMP
@@ -1485,11 +1545,15 @@ void DFTSAPT::local_mp2_terms()
     // => Stashed Variables <= //
 
     boost::shared_ptr<Matrix> S   = vars_["S"];
+    boost::shared_ptr<Matrix> U_A = vars_["U_A"];
+    boost::shared_ptr<Matrix> L_A = vars_["L_A"];
     boost::shared_ptr<Matrix> D_A = vars_["D_A"];
     boost::shared_ptr<Matrix> P_A = vars_["P_A"];
     boost::shared_ptr<Matrix> V_A = vars_["V_A"];
     boost::shared_ptr<Matrix> J_A = vars_["J_A"];
     boost::shared_ptr<Matrix> K_A = vars_["K_A"];
+    boost::shared_ptr<Matrix> U_B = vars_["U_B"];
+    boost::shared_ptr<Matrix> L_B = vars_["L_B"];
     boost::shared_ptr<Matrix> D_B = vars_["D_B"];
     boost::shared_ptr<Matrix> P_B = vars_["P_B"];
     boost::shared_ptr<Matrix> V_B = vars_["V_B"];
@@ -1622,11 +1686,13 @@ void DFTSAPT::local_mp2_terms()
     VSbr.reset();
 
     S.reset();
+    L_A.reset();
     D_A.reset();
     P_A.reset();
     V_A.reset();
     J_A.reset();
     K_A.reset();
+    L_B.reset();
     D_B.reset();
     P_B.reset();
     V_B.reset();
@@ -1676,16 +1742,18 @@ void DFTSAPT::local_mp2_terms()
     df->add_space("a4",offset,offset+Ca4->colspi()[0]); offset += Ca4->colspi()[0];
     df->add_space("b4",offset,offset+Cb4->colspi()[0]); offset += Cb4->colspi()[0];
 
-    df->add_pair_space("Aar", "a", "r");
-    df->add_pair_space("Abs", "b", "s"); 
-    df->add_pair_space("Bas", "a", "s1");
-    df->add_pair_space("Bbr", "b", "r1"); 
-    df->add_pair_space("Cas", "a2","s");
-    df->add_pair_space("Cbr", "b2","r"); 
-    df->add_pair_space("Dar", "a", "r3");
-    df->add_pair_space("Dbs", "b", "s3"); 
-    df->add_pair_space("Ear", "a4","r");
-    df->add_pair_space("Ebs", "b4","s"); 
+    // Disk stuff is all transposed for ab exposure
+
+    df->add_pair_space("Aar", "r", "a" );
+    df->add_pair_space("Abs", "s", "b" ); 
+    df->add_pair_space("Bas", "s1","a" );
+    df->add_pair_space("Bbr", "r1","b" ); 
+    df->add_pair_space("Cas", "s", "a2");
+    df->add_pair_space("Cbr", "r", "b2"); 
+    df->add_pair_space("Dar", "r3","a" );
+    df->add_pair_space("Dbs", "s3","b" ); 
+    df->add_pair_space("Ear", "r", "a4");
+    df->add_pair_space("Ebs", "s", "b4"); 
 
     Cr1.reset();
     Cs1.reset();
@@ -1718,7 +1786,7 @@ void DFTSAPT::local_mp2_terms()
     // => Blocking <= //
 
     long int overhead = 0L;
-    overhead += 2L * nT * nr * ns;
+    overhead += 5L * nT * na * nb;
     overhead += 2L * na * ns + 2L * nb * nr + 2L * na * nr + 2L * nb * ns;
     long int rem = memory_ - overhead;
 
@@ -1726,33 +1794,39 @@ void DFTSAPT::local_mp2_terms()
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
-    long int cost_a = 2L * nr * nQ + 2L * ns * nQ;
-    long int max_a = rem / (2L * cost_a);
-    long int max_b = max_a;
-    max_a = (max_a > na ? na : max_a);
-    max_b = (max_b > nb ? nb : max_b);
-    if (max_a < 1L || max_b < 1L) {
+    long int cost_r = 2L * na * nQ + 2L * nb * nQ;
+    long int max_r = rem / (2L * cost_r);
+    long int max_s = max_r;
+    max_r = (max_r > nr ? nr : max_r);
+    max_s = (max_s > ns ? ns : max_s);
+    if (max_s < 1L || max_s < 1L) {
         throw PSIEXCEPTION("Too little dynamic memory for DFTSAPT::mp2_terms");
     }
 
     // => Tensor Slices <= //
 
-    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_a*nr,nQ));
-    boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_b*ns,nQ));
-    boost::shared_ptr<Matrix> Bas(new Matrix("Bas",max_a*ns,nQ));
-    boost::shared_ptr<Matrix> Bbr(new Matrix("Bbr",max_b*nr,nQ));
-    boost::shared_ptr<Matrix> Cas(new Matrix("Cas",max_a*ns,nQ));
-    boost::shared_ptr<Matrix> Cbr(new Matrix("Cbr",max_b*nr,nQ));
-    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",max_a*nr,nQ));
-    boost::shared_ptr<Matrix> Dbs(new Matrix("Dbs",max_b*ns,nQ));
+    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_r*na,nQ));
+    boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_s*nb,nQ));
+    boost::shared_ptr<Matrix> Bas(new Matrix("Bas",max_s*na,nQ));
+    boost::shared_ptr<Matrix> Bbr(new Matrix("Bbr",max_r*nb,nQ));
+    boost::shared_ptr<Matrix> Cas(new Matrix("Cas",max_s*na,nQ));
+    boost::shared_ptr<Matrix> Cbr(new Matrix("Cbr",max_r*nb,nQ));
+    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",max_r*na,nQ));
+    boost::shared_ptr<Matrix> Dbs(new Matrix("Dbs",max_s*nb,nQ));
 
     // => Thread Work Arrays <= //
 
-    std::vector<boost::shared_ptr<Matrix> > Trs;
-    std::vector<boost::shared_ptr<Matrix> > Vrs;
+    std::vector<boost::shared_ptr<Matrix> > Tab;
+    std::vector<boost::shared_ptr<Matrix> > Vab;
+    std::vector<boost::shared_ptr<Matrix> > T2ab;
+    std::vector<boost::shared_ptr<Matrix> > V2ab;
+    std::vector<boost::shared_ptr<Matrix> > Iab;
     for (int t = 0; t < nT; t++) {
-        Trs.push_back(boost::shared_ptr<Matrix>(new Matrix("Trs",nr,ns)));
-        Vrs.push_back(boost::shared_ptr<Matrix>(new Matrix("Vrs",nr,ns)));
+        Tab.push_back(boost::shared_ptr<Matrix>(new Matrix("Tab",na,nb)));
+        Vab.push_back(boost::shared_ptr<Matrix>(new Matrix("Vab",na,nb)));
+        T2ab.push_back(boost::shared_ptr<Matrix>(new Matrix("T2ab",na,nb)));
+        V2ab.push_back(boost::shared_ptr<Matrix>(new Matrix("V2ab",na,nb)));
+        Iab.push_back(boost::shared_ptr<Matrix>(new Matrix("Iab",na,nb)));
     }
 
     // => Pointers <= //
@@ -1798,24 +1872,24 @@ void DFTSAPT::local_mp2_terms()
 
     fseek(Darf,0L,SEEK_SET);
     fseek(Earf,0L,SEEK_SET);
-    for (int astart = 0; astart < na; astart += max_a) {
-        int nablock = (astart + max_a >= na ? na - astart : max_a);
-        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
-        fread(Aarp[0],sizeof(double),nablock*nrQ,Earf);
-        C_DAXPY(nablock*nrQ,1.0,Aarp[0],1,Darp[0],1);
-        fseek(Darf,sizeof(double)*astart*nrQ,SEEK_SET);
-        fwrite(Darp[0],sizeof(double),nablock*nrQ,Darf); 
+    for (int rstart = 0; rstart < nr; rstart += max_r) {
+        int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
+        fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
+        fread(Aarp[0],sizeof(double),nrblock*naQ,Earf);
+        C_DAXPY(nrblock*naQ,1.0,Aarp[0],1,Darp[0],1);
+        fseek(Darf,sizeof(double)*rstart*naQ,SEEK_SET);
+        fwrite(Darp[0],sizeof(double),nrblock*naQ,Darf); 
     }
 
     fseek(Dbsf,0L,SEEK_SET);
     fseek(Ebsf,0L,SEEK_SET);
-    for (int bstart = 0; bstart < nb; bstart += max_b) {
-        int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
-        fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
-        fread(Absp[0],sizeof(double),nbblock*nsQ,Ebsf);
-        C_DAXPY(nbblock*nsQ,1.0,Absp[0],1,Dbsp[0],1);
-        fseek(Dbsf,sizeof(double)*bstart*nsQ,SEEK_SET);
-        fwrite(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf); 
+    for (int sstart = 0; sstart < ns; sstart += max_s) {
+        int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
+        fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
+        fread(Absp[0],sizeof(double),nsblock*nbQ,Ebsf);
+        C_DAXPY(nsblock*nbQ,1.0,Absp[0],1,Dbsp[0],1);
+        fseek(Dbsf,sizeof(double)*sstart*nbQ,SEEK_SET);
+        fwrite(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf); 
     }
 
     // => Targets <= //
@@ -1823,55 +1897,80 @@ void DFTSAPT::local_mp2_terms()
     double Disp20 = 0.0;
     double ExchDisp20 = 0.0;
 
+    // => Local Targets <= //
+    
+    boost::shared_ptr<Matrix> E_disp20(new Matrix("E_disp20", na, nb));
+    boost::shared_ptr<Matrix> E_exch_disp20(new Matrix("E_exch_disp20", na, nb));
+    double** E_disp20p = E_disp20->pointer();
+    double** E_exch_disp20p = E_exch_disp20->pointer();
+
+    // => MO => LO Transform <= //
+    
+    double** UAp = U_A->pointer();
+    double** UBp = U_B->pointer();
+
     // ==> Master Loop <== //
 
     fseek(Aarf,0L,SEEK_SET);
-    fseek(Basf,0L,SEEK_SET);
-    fseek(Casf,0L,SEEK_SET);
+    fseek(Bbrf,0L,SEEK_SET);
+    fseek(Cbrf,0L,SEEK_SET);
     fseek(Darf,0L,SEEK_SET);
-    for (int astart = 0; astart < na; astart += max_a) {
-        int nablock = (astart + max_a >= na ? na - astart : max_a);
+    for (int rstart = 0; rstart < nr; rstart += max_r) {
+        int nrblock = (rstart + max_r >= nr ? nr - rstart : max_r);
 
-        fread(Aarp[0],sizeof(double),nablock*nrQ,Aarf);
-        fread(Basp[0],sizeof(double),nablock*nsQ,Basf);
-        fread(Casp[0],sizeof(double),nablock*nsQ,Casf);
-        fread(Darp[0],sizeof(double),nablock*nrQ,Darf);
+        fread(Aarp[0],sizeof(double),nrblock*naQ,Aarf);
+        fread(Bbrp[0],sizeof(double),nrblock*nbQ,Bbrf);
+        fread(Cbrp[0],sizeof(double),nrblock*nbQ,Cbrf);
+        fread(Darp[0],sizeof(double),nrblock*naQ,Darf);
 
         fseek(Absf,0L,SEEK_SET);
-        fseek(Bbrf,0L,SEEK_SET);
-        fseek(Cbrf,0L,SEEK_SET);
+        fseek(Basf,0L,SEEK_SET);
+        fseek(Casf,0L,SEEK_SET);
         fseek(Dbsf,0L,SEEK_SET);
-        for (int bstart = 0; bstart < nb; bstart += max_b) {
-            int nbblock = (bstart + max_b >= nb ? nb - bstart : max_b);
+        for (int sstart = 0; sstart < ns; sstart += max_s) {
+            int nsblock = (sstart + max_s >= ns ? ns - sstart : max_s);
 
-            fread(Absp[0],sizeof(double),nbblock*nsQ,Absf);
-            fread(Bbrp[0],sizeof(double),nbblock*nrQ,Bbrf);
-            fread(Cbrp[0],sizeof(double),nbblock*nrQ,Cbrf);
-            fread(Dbsp[0],sizeof(double),nbblock*nsQ,Dbsf);
+            fread(Absp[0],sizeof(double),nsblock*nbQ,Absf);
+            fread(Basp[0],sizeof(double),nsblock*naQ,Basf);
+            fread(Casp[0],sizeof(double),nsblock*naQ,Casf);
+            fread(Dbsp[0],sizeof(double),nsblock*nbQ,Dbsf);
 
-            long int nab = nablock * nbblock;
+            long int nrs = nrblock * nsblock;
                 
             #pragma omp parallel for schedule(dynamic) reduction(+: Disp20, ExchDisp20)
-            for (long int ab = 0L; ab < nab; ab++) {
-                int a = ab / nbblock;
-                int b = ab % nbblock;
+            for (long int rs = 0L; rs < nrs; rs++) {
+                int r = rs / nsblock;
+                int s = rs % nsblock;
 
                 int thread = 0;
                 #ifdef _OPENMP
                     thread = omp_get_thread_num();
                 #endif
 
-                double** Trsp = Trs[thread]->pointer();
-                double** Vrsp = Vrs[thread]->pointer();
+                double** Tabp  = Tab[thread]->pointer();
+                double** Vabp  = Vab[thread]->pointer();
+                double** T2abp = T2ab[thread]->pointer();
+                double** V2abp = V2ab[thread]->pointer();
+                double** Iabp  = Iab[thread]->pointer();
 
                 // => Amplitudes, Disp20 <= //
 
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,0.0,Vrsp[0],ns);
+                C_DGEMM('N','T',na,nb,nQ,1.0,Aarp[(r)*na],nQ,Absp[(s)*nb],nQ,0.0,Vabp[0],nb);
+                for (int a = 0; a < na; a++) {
+                    for (int b = 0; b < nb; b++) {
+                        Tabp[a][b] = Vabp[a][b] / (eap[a] + ebp[b] - erp[r + rstart] - esp[s + sstart]);
+                    }
+                }
 
-                for (int r = 0; r < nr; r++) {
-                    for (int s = 0; s < ns; s++) {
-                        Trsp[r][s] = Vrsp[r][s] / (eap[a + astart] + ebp[b + bstart] - erp[r] - esp[s]);
-                        Disp20 += 4.0 * Trsp[r][s] * Vrsp[r][s];
+                C_DGEMM('N','N',na,nb,nb,1.0,Tabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,T2abp[0],nb);
+                C_DGEMM('N','N',na,nb,nb,1.0,Vabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,V2abp[0],nb);
+
+                for (int a = 0; a < na; a++) {
+                    for (int b = 0; b < nb; b++) {
+                        E_disp20p[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
+                        Disp20 += 4.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
 
@@ -1879,26 +1978,33 @@ void DFTSAPT::local_mp2_terms()
 
                 // > Q1-Q3 < //
 
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Bbrp[(b + bstart)*nr],nQ,Basp[(a + astart)*ns],nQ,0.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Cbrp[(b + bstart)*nr],nQ,Casp[(a + astart)*ns],nQ,1.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Aarp[(a + astart)*nr],nQ,Dbsp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
-                C_DGEMM('N','T',nr,ns,nQ,1.0,Darp[(a + astart)*nr],nQ,Absp[(b + bstart)*ns],nQ,1.0,Vrsp[0],ns);
+                C_DGEMM('N','T',na,nb,nQ,1.0,Basp[(s)*na],nQ,Bbrp[(r)*nb],nQ,0.0,Vabp[0],nb);
+                C_DGEMM('N','T',na,nb,nQ,1.0,Casp[(s)*na],nQ,Cbrp[(r)*nb],nQ,1.0,Vabp[0],nb);
+                C_DGEMM('N','T',na,nb,nQ,1.0,Aarp[(r)*na],nQ,Dbsp[(s)*nb],nQ,1.0,Vabp[0],nb);
+                C_DGEMM('N','T',na,nb,nQ,1.0,Darp[(r)*na],nQ,Absp[(s)*nb],nQ,1.0,Vabp[0],nb);
             
                 // > V,J,K < //
         
-                C_DGER(nr,ns,1.0,Qbrp[b + bstart],1,Sasp[a + astart],1,Vrsp[0],ns);
-                C_DGER(nr,ns,1.0,Sbrp[b + bstart],1,Qasp[a + astart],1,Vrsp[0],ns);
-                C_DGER(nr,ns,1.0,Qarp[a + astart],1,SAbsp[b + bstart],1,Vrsp[0],ns);
-                C_DGER(nr,ns,1.0,SBarp[a + astart],1,Qbsp[b + bstart],1,Vrsp[0],ns);
+                C_DGER(na,nb,1.0,&Sasp[0][s + sstart], ns,&Qbrp[0][r + rstart], nr,Vabp[0],nb);
+                C_DGER(na,nb,1.0,&Qasp[0][s + sstart], ns,&Sbrp[0][r + rstart], nr,Vabp[0],nb);
+                C_DGER(na,nb,1.0,&Qarp[0][r + rstart], nr,&SAbsp[0][s + sstart],ns,Vabp[0],nb);
+                C_DGER(na,nb,1.0,&SBarp[0][r + rstart],nr,&Qbsp[0][s + sstart], ns,Vabp[0],nb);
 
-                for (int r = 0; r < nr; r++) {
-                    for (int s = 0; s < ns; s++) {
-                        ExchDisp20 -= 2.0 * Trsp[r][s] * Vrsp[r][s];
+                C_DGEMM('N','N',na,nb,nb,1.0,Vabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,V2abp[0],nb);
+
+                for (int a = 0; a < na; a++) {
+                    for (int b = 0; b < nb; b++) {
+                        E_exch_disp20p[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
             }
         } 
     }
+
+    E_disp20->print();
+    E_exch_disp20->print();
 
     energies_["Disp20"] = Disp20;
     energies_["Exch-Disp20"] = ExchDisp20;

@@ -39,6 +39,9 @@ class DFTSAPT {
 
 protected:
 
+    // SAPT type (until properly subclassed)
+    std::string type_;
+
     // Print flag
     int print_;
     // Debug flag
