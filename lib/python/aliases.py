@@ -1,3 +1,25 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 """Module with functions that call upon those in modules
 :py:mod:`proc`, :py:mod:`driver`, and :py:mod:`wrappers`.
 
@@ -58,6 +80,84 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
         kwargs['delta_basis'] = 'aug-cc-pVTZ'
     if not ('delta_scheme' in kwargs):
         kwargs['delta_scheme'] = highest_1
+
+    return cbs(name, **kwargs)
+
+
+def allen_focal_point(name='mp2', **kwargs):
+    r"""Function to call Wes Allen-style Focal
+    Point Analysis. Insert typical reference here.  Uses
+    :py:func:`~wrappers.complete_basis_set` to evaluate the following
+    expression. SCF employs a three-point extrapolation according
+    to :py:func:`~wrappers.scf_xtpl_helgaker_3`. MP2, CCSD, and
+    CCSD(T) employ two-point extrapolation performed according to
+    :py:func:`~wrappers.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
+    are plain deltas.
+
+    .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}
+
+    >>> energy('allen_focal_point')
+
+    """
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
+    if not ('func_cbs' in kwargs):
+        kwargs['func_cbs'] = energy
+
+    # SCF
+    if not ('scf_basis' in kwargs):
+        kwargs['scf_basis'] = 'cc-pV[Q56]Z'
+    if not ('scf_scheme' in kwargs):
+        kwargs['scf_scheme'] = scf_xtpl_helgaker_3
+
+    # delta MP2 - SCF
+    if not ('corl_wfn' in kwargs):
+        kwargs['corl_wfn'] = 'mp2'
+    if not ('corl_basis' in kwargs):
+        kwargs['corl_basis'] = 'cc-pV[56]Z'
+    if not ('corl_scheme' in kwargs):
+        kwargs['corl_scheme'] = corl_xtpl_helgaker_2
+
+    # delta CCSD - MP2
+    if not ('delta_wfn' in kwargs):
+        kwargs['delta_wfn'] = 'mrccsd'
+    if not ('delta_wfn_lesser' in kwargs):
+        kwargs['delta_wfn_lesser'] = 'mp2'
+    if not ('delta_basis' in kwargs):
+        kwargs['delta_basis'] = 'cc-pV[56]Z'
+    if not ('delta_scheme' in kwargs):
+        kwargs['delta_scheme'] = corl_xtpl_helgaker_2
+
+    # delta CCSD(T) - CCSD
+    if not ('delta2_wfn' in kwargs):
+        kwargs['delta2_wfn'] = 'mrccsd(t)'
+    if not ('delta2_wfn_lesser' in kwargs):
+        kwargs['delta2_wfn_lesser'] = 'mrccsd'
+    if not ('delta2_basis' in kwargs):
+        kwargs['delta2_basis'] = 'cc-pV[56]Z'
+    if not ('delta2_scheme' in kwargs):
+        kwargs['delta2_scheme'] = corl_xtpl_helgaker_2
+
+    # delta CCSDT - CCSD(T)
+    if not ('delta3_wfn' in kwargs):
+        kwargs['delta3_wfn'] = 'mrccsdt'
+    if not ('delta3_wfn_lesser' in kwargs):
+        kwargs['delta3_wfn_lesser'] = 'mrccsd(t)'
+    if not ('delta3_basis' in kwargs):
+        kwargs['delta3_basis'] = 'cc-pVTZ'
+    if not ('delta3_scheme' in kwargs):
+        kwargs['delta3_scheme'] = highest_1
+
+    # delta CCSDT(Q) - CCSDT
+    if not ('delta4_wfn' in kwargs):
+        kwargs['delta4_wfn'] = 'mrccsdt(q)'
+    if not ('delta4_wfn_lesser' in kwargs):
+        kwargs['delta4_wfn_lesser'] = 'mrccsdt'
+    if not ('delta4_basis' in kwargs):
+        kwargs['delta4_basis'] = 'cc-pVDZ'
+    if not ('delta4_scheme' in kwargs):
+        kwargs['delta4_scheme'] = highest_1
 
     return cbs(name, **kwargs)
 

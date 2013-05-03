@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef JK_H
 #define JK_H
 
@@ -592,6 +614,7 @@ public:
     virtual void print_header() const;
 };
 
+
 /**
  * Class DFJK
  *
@@ -739,6 +762,54 @@ public:
     * type on output file
     */
     virtual void print_header() const;
+};
+/**
+ * Class CDJK
+ *
+ * JK implementation using 
+ * cholesky decomposition technology
+ */
+class CDJK : public DFJK {
+
+protected:
+    // the number of cholesky vectors
+    long int ncholesky_;
+
+    // => Required Algorithm-Specific Methods <= //
+
+    virtual bool is_core() { return true; }
+
+    // => J <= //
+    virtual void initialize_JK_core();
+    virtual void initialize_JK_disk();
+    virtual void manage_JK_core();
+
+    double cholesky_tolerance_;
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+
+public:
+    // => Constructors < = //
+
+    /**
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     * @param tol tolerance for cholesky decomposition.
+     */
+    CDJK( boost::shared_ptr<BasisSet> primary, double cholesky_tolerance);
+
+    /// Destructor
+    virtual ~CDJK();
+
 };
 
 /**

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /**
   * Frozen natural orbitals
   * Eugene DePrince
@@ -20,6 +42,7 @@
 #include<libciomr/libciomr.h>
 #include<lib3index/dftensor.h>
 #include<lib3index/cholesky.h>
+#include <libmints/sieve.h>
 
 #include<libdpd/dpd.h>
 #define ID(x) ints->DPD_ID(x)
@@ -420,29 +443,58 @@ double DFFrozenNO::compute_energy(){
   return emp2;
 }
 
-/*
- * build natural orbitals and transform TEIs
- */
-void DFFrozenNO::ComputeNaturalOrbitals(){
-  fflush(outfile);
-  fprintf(outfile,"\n\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *               Frozen Natural Orbitals               *\n");
-  fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *******************************************************\n");
-  fprintf(outfile,"\n\n");
-  fflush(outfile);
+void DFFrozenNO::ThreeIndexIntegrals() {
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Build 3-index integrals:\n");
+  fprintf(outfile,"  ==> 3-index integrals <==\n");
   fprintf(outfile,"\n");
 
   long int o = ndoccact;
   long int v = nvirt;
   long int nQ;
 
+  // 1.  read scf 3-index integrals from disk
+
+  // get ntri from sieve
+  boost::shared_ptr<ERISieve> sieve (new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
+  const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
+  long int ntri = function_pairs.size();
+
+  // read integrals that were written to disk in the scf
+  long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
+  if ( options_.get_str("SCF_TYPE") == "DF" ) {
+      boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+      boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_SCF");
+      nQ_scf = auxiliary->nbf();
+      Process::environment.globals["NAUX (SCF)"] = nQ_scf;
+  }
+
+  boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ_scf,ntri));
+  double** Qmnp = Qmn->pointer();
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * nQ_scf);
+  psio->close(PSIF_DFSCF_BJ,1);
+
+  // unpack and write again in my format
+  boost::shared_ptr<Matrix>L (new Matrix("3-index ERIs (SCF)", nQ_scf , nso*nso));
+  double ** Lp = L->pointer();
+  for (long int mn = 0; mn < ntri; mn++) {
+      long int m = function_pairs[mn].first;
+      long int n = function_pairs[mn].second;
+      for (long int P = 0; P < nQ_scf; P++) {
+          Lp[P][m*nso+n] = Qmnp[P][mn];
+          Lp[P][n*nso+m] = Qmnp[P][mn];
+      }
+  }
+  psio->open(PSIF_DCC_QSO,PSIO_OPEN_NEW);
+  psio->write_entry(PSIF_DCC_QSO,"Qso SCF",(char*)&Lp[0][0],nQ_scf*nso*nso*sizeof(double));
+  psio->close(PSIF_DCC_QSO,1);
+  L.reset();
+  Qmn.reset();
+
+  // for DFCC, assume that the DF basis differs between the SCF and CC (TODO generalize)
   if ( ( options_.get_str("DF_BASIS_CC") != "CHOLESKY" ) ){
+
       boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
       boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, molecule(), "DF_BASIS_CC");
 
@@ -452,127 +504,114 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
       double ** Qso = tmp->pointer();
 
       // write Qso to disk
-      boost::shared_ptr<PSIO> psio(new PSIO());
-      psio->open(PSIF_DCC_QSO,PSIO_OPEN_NEW);
-      psio->write_entry(PSIF_DCC_QSO,"qso",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
+      psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+      psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Qso[0][0],nQ*nso*nso*sizeof(double));
       psio->close(PSIF_DCC_QSO,1);
+      fprintf(outfile,"        Number of auxiliary functions:       %5li\n",nQ);
+
+      // stick nQ in process environment so ccsd can know it
+      Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }else{
-      // Cholesky 3-index integrals
-      boost::shared_ptr<BasisSet> primary = basisset();
-      boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
-      double tol = options_.get_double("CHOLESKY_TOLERANCE");
-      boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,tol,Process::environment.get_memory()));
-      Ch->choleskify();
-      nQ  = Ch->Q();
-      boost::shared_ptr<Matrix> L = Ch->L();
-      double ** Lp = L->pointer();
 
-      // write Qso to disk
-      boost::shared_ptr<PSIO> psio(new PSIO());
-      psio->open(PSIF_DCC_QSO,PSIO_OPEN_NEW);
-      psio->write_entry(PSIF_DCC_QSO,"qso",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
-      psio->close(PSIF_DCC_QSO,1);
+      // Cholesky
+
+      // read integrals from disk if they were generated in the SCF
+      if ( options_.get_str("SCF_TYPE") == "CD" ) {
+          fprintf(outfile,"        Reading Cholesky vectors from disk ...\n");
+          nQ = Process::environment.globals["NAUX (SCF)"];
+          fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
+          fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+
+          // ntri comes from sieve above
+          boost::shared_ptr<Matrix> Qmn = SharedMatrix(new Matrix("Qmn Integrals",nQ,ntri));
+          double** Qmnp = Qmn->pointer();
+          // TODO: use my 3-index integral file in SCF for DFCC jobs
+          psio->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+          psio->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * nQ);
+          psio->close(PSIF_DFSCF_BJ,1);
+
+          boost::shared_ptr<Matrix>L (new Matrix("CD Integrals", nQ , nso*nso));
+          double ** Lp = L->pointer();
+          for (long int mn = 0; mn < ntri; mn++) {
+              long int m = function_pairs[mn].first;
+              long int n = function_pairs[mn].second;
+              for (long int P = 0; P < nQ; P++) {
+                  Lp[P][m*nso+n] = Qmnp[P][mn];
+                  Lp[P][n*nso+m] = Qmnp[P][mn];
+              }
+          }
+          psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+          psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
+          psio->close(PSIF_DCC_QSO,1);
+      }else {
+
+          // generate Cholesky 3-index integrals
+          fprintf(outfile,"        Generating Cholesky vectors ...\n");
+          boost::shared_ptr<BasisSet> primary = basisset();
+          boost::shared_ptr<IntegralFactory> integral (new IntegralFactory(primary,primary,primary,primary));
+          double tol = options_.get_double("CHOLESKY_TOLERANCE");
+          boost::shared_ptr<CholeskyERI> Ch (new CholeskyERI(boost::shared_ptr<TwoBodyAOInt>(integral->eri()),0.0,tol,Process::environment.get_memory()));
+          Ch->choleskify();
+          nQ  = Ch->Q();
+          boost::shared_ptr<Matrix> L = Ch->L();
+          double ** Lp = L->pointer();
+
+          // write Qso to disk
+          psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+          psio->write_entry(PSIF_DCC_QSO,"Qso CC",(char*)&Lp[0][0],nQ*nso*nso*sizeof(double));
+          psio->close(PSIF_DCC_QSO,1);
+          fprintf(outfile,"        Cholesky decomposition threshold: %8.2le\n", tol);
+          fprintf(outfile,"        Number of Cholesky vectors:          %5li\n",nQ);
+
+      }
+
+      // stick nQ in process environment so ccsd can know it
+      Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
+  fprintf(outfile,"\n");
 
+}
+
+/*
+ * build natural orbitals and transform TEIs
+ */
+void DFFrozenNO::ComputeNaturalOrbitals(){
+
+  fflush(outfile);
+  fprintf(outfile, "  ==> Frozen Natural Orbitals <==\n");
+  fprintf(outfile,"\n");
+  fflush(outfile);
+
+  long int o      = ndoccact;
+  long int v      = nvirt;
+  long int nQ     = Process::environment.globals["NAUX (CC)"];
+  long int nQ_scf = Process::environment.globals["NAUX (SCF)"];
   long int memory = Process::environment.get_memory();
+
   if ( memory < 8L*(3L*nso*nso+nso*nso*nQ+o*v*nQ) ) {
       throw PsiException("not enough memory (fno)",__FILE__,__LINE__);
   }
 
-  double * tmp2 = (double*)malloc(nso*nso*nQ*sizeof(double));
   boost::shared_ptr<PSIO> psio(new PSIO());
+
+  // read in 3-index integrals specific to the CC method:
+  double * tmp2 = (double*)malloc(nso*nso*nQ * sizeof(double));
   psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_DCC_QSO,"qso",(char*)&tmp2[0],nQ*nso*nso*sizeof(double));
+  psio->read_entry(PSIF_DCC_QSO,"Qso CC",(char*)&tmp2[0],nQ*nso*nso*sizeof(double));
   psio->close(PSIF_DCC_QSO,1);
 
-  // transform 3-index integrals from AO to MO and build Fock matrix in MO basis
-  double * dfFock = (double*)malloc(nso*nso*sizeof(double));
-  BuildFock(nQ,tmp2,dfFock);
+  // transform Qso -> Qov:
+  TransformQ(nQ,tmp2);
   double * Qov = (double*)malloc(o*v*nQ*sizeof(double));
-  for (long int q = 0; q < nQ; q++) {
-      for (long int i = 0; i < o; i++) {
-          for (long int a = 0; a < v; a++) {
-              Qov[q*o*v+i*v+a] = tmp2[q*nmo*nmo+(i+nfzc)*nmo+(a+ndocc)];
-          }
-      }
-  }
-
-  // the resulting Fock matrix is NOT diagonal in the o-o and v-v spaces.  make it so!
-
-  // virtual space:
-  nvirt_no = nvirt;
-  double*neweps = (double*)malloc(nvirt_no*sizeof(double));
-  double*newFock = (double*)malloc(v*v*sizeof(double));
-  memset((void*)newFock,'\0',v*v*sizeof(double));
-  for (long int a = 0; a < v; a++) {
-      for (long int b = 0; b < v; b++) {
-          newFock[a*v+b] = dfFock[(a+ndocc)*nmo+(b+ndocc)];
-      }
-  }
-  Diagonalize(nvirt_no,newFock,neweps);
-
-  // put orbital energies back in F
-  boost::shared_ptr<Vector> eps_test = epsilon_a();
-  double * tempeps = eps_test->pointer();
-  double * F       = tempeps + nfzc;
-  double * temp    = (double*)malloc(nso*v*sizeof(double));
-  double * Dab     = (double*)malloc(v*v*sizeof(double));
-  F_DCOPY(nvirt_no,neweps,1,F+ndoccact,1);
-
-  // modify c matrix
-  ModifyCa(newFock);
-
-  // transform Qov:
-  for (long int q = 0; q < nQ; q++) {
-     for (long int i = 0; i < o; i++) {
-         for (long int a = 0; a < v; a++) {
-             double dum = 0.0;
-             for (long int b = 0; b < v; b++) {
-                 dum += Qov[q*o*v+i*v+b] * newFock[a*v+b];
-             }
-             tmp2[q*o*v+i*v+a] = dum;
-         }
-     }
-  }
-
-  // occupied space:
-  memset((void*)newFock,'\0',o*o*sizeof(double));
-  for (long int i = 0; i < o; i++) {
-      for (long int j = 0; j < o; j++) {
-          newFock[i*o+j] = dfFock[(i+nfzc)*nmo+(j+nfzc)];
-      }
-  }
-  Diagonalize(o,newFock,neweps);
-
-  // put orbital energies back in F
-  F_DCOPY(o,neweps,1,F,1);
-
-  // modify c matrix
-  ModifyCa_occ(newFock);
-
-  // transform Qov:
-  for (long int q = 0; q < nQ; q++) {
-     for (long int i = 0; i < o; i++) {
-         for (long int a = 0; a < v; a++) {
-             double dum = 0.0;
-             for (long int j = 0; j < o; j++) {
-                 dum += tmp2[q*o*v+j*v+a] * newFock[i*o+j];
-             }
-             Qov[q*o*v+i*v+a] = dum;
-         }
-     }
-  }
+  F_DCOPY(o*v*nQ,tmp2,1,Qov,1);
   free(tmp2);
-
-  // stick nQ in process environment so ccsd can know it
-  Process::environment.globals["DFCC NAUX"] = (double)nQ;
 
   if ( memory < 8L*(o*o*v*v+o*v*nQ) ) {
       throw PsiException("not enough memory (fno)",__FILE__,__LINE__);
   }
 
   // allocate memory for a couple of buffers
-  double*amps2 = (double*)malloc(o*o*v*v*sizeof(double));
+  double * amps2 = (double*)malloc(o*o*v*v*sizeof(double));
 
   // build (ia|jb) integrals
   F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,amps2,o*v);
@@ -582,7 +621,17 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
       throw PsiException("not enough memory (fno)",__FILE__,__LINE__);
   }
 
-  double*amps1 = (double*)malloc(o*o*v*v*sizeof(double));
+  double * amps1 = (double*)malloc(o*o*v*v*sizeof(double));
+
+  nvirt_no = nvirt;
+
+  boost::shared_ptr<Vector> eps_test = epsilon_a();
+  double * tempeps = eps_test->pointer();
+  double * F       = tempeps + nfzc;
+  double * Dab     = (double*)malloc(v*v*sizeof(double));
+  double * temp    = (double*)malloc(nso*v*sizeof(double));
+  double * newFock = (double*)malloc(v*v*sizeof(double));
+  double * neweps  = (double*)malloc(nvirt_no*sizeof(double));
 
   // build mp2 amplitudes for mp2 density
   long int ijab = 0;
@@ -608,16 +657,6 @@ void DFFrozenNO::ComputeNaturalOrbitals(){
   emp2 = emp2_os + emp2_ss;
 
   fprintf(outfile,"        Doubles contribution to MP2 energy in full space: %20.12lf\n",emp2);
-  double emp2_s = 0.0;
-  for (long int a = 0; a < v; a++) {
-      double da = F[a+ndoccact];
-      for (long int i = 0; i < o; i++) {
-          double dia = da - F[i];
-          double dum = - dfFock[(i+nfzc)*nmo+(a+ndocc)]/dia;
-          emp2_s -= 2.0 * dum * dfFock[(i+nfzc)*nmo+(a+ndocc)];
-      }
-  }
-  fprintf(outfile,"        Singles contribution to MP2 energy in full space: %20.12lf\n",emp2_s);
   fprintf(outfile,"\n");
 
   Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
@@ -748,6 +787,40 @@ void DFFrozenNO::ModifyCa_occ(double*Dij){
       }
   }
   free(temp);
+}
+
+void DFFrozenNO::TransformQ(long int nQ,double*Qso) {
+
+    long int o = ndoccact;
+    long int v = nvirt;
+
+    double ** Cap = Ca()->pointer();
+    double * tmp = (double*)malloc(nso*o*nQ*sizeof(double));
+
+    for (int q = 0; q < nQ; q++) {
+        for (int mu = 0; mu < nso; mu++) {
+            for (int i = 0; i < o; i++) {
+                double dum = 0.0;
+                for (int nu = 0; nu < nso; nu++) {
+                    dum += Qso[q*nso*nso+mu*nso+nu] * Cap[nu][nfzc+i];
+                }
+                tmp[q*nso*o+i*nso+mu] = dum;
+            }
+        }
+    }
+    for (int q = 0; q < nQ; q++) {
+        for (int i = 0; i < o; i++) {
+            for (int a = 0; a < v; a++) {
+                double dum = 0.0;
+                for (int nu = 0; nu < nso; nu++) {
+                    dum += tmp[q*nso*o+i*nso+nu] * Cap[nu][nfzc+o+a];
+                }
+                Qso[q*v*o+i*v+a] = dum;
+            }
+        }
+    }
+
+    free(tmp);
 }
 
 void DFFrozenNO::BuildFock(long int nQ,double*Qso,double*F) {
