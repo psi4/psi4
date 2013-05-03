@@ -2359,7 +2359,7 @@ def run_fnodfcc(name, **kwargs):
     if psi4.has_option_changed('SCF','SCF_TYPE') == False:
        psi4.set_global_option('SCF_TYPE', 'DF')
 
-    scf_type = PsiMod.get_option('SCF','SCF_TYPE')
+    scf_type = psi4.get_option('SCF','SCF_TYPE')
     if ( scf_type != 'CD' and scf_type != 'DF' ):
         raise ValidationError("Invalid reference for DFCC.")
 
