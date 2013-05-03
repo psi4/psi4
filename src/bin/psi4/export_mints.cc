@@ -527,7 +527,7 @@ void export_mints()
             def("function_to_center", &BasisSet::function_to_center, "Given a function number, return the number of the center it is on.").
             def("nshell_on_center", &BasisSet::nshell_on_center, "docstring").
             def("ao_to_shell", &BasisSet::ao_to_shell, "docstring").
-            def("concatinate", ptrversion(&BasisSet::concatinate), "Concatinates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
+            def("concatenate", ptrversion(&BasisSet::concatenate), "Concatenates two basis sets together into a new basis without reordering anything. Unless you know what you're doing, you should use the '+' operator instead of this method.").
             def("add", ptrversion(&BasisSet::add), "Combine two basis sets to make a new one.").
             //staticmethod("concatinate").
             def(self + self);

@@ -840,7 +840,7 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
   } // nshell
 }
 
-BasisSet BasisSet::concatinate(const BasisSet& b) const {
+BasisSet BasisSet::concatenate(const BasisSet& b) const {
 
     BasisSet temp;
 
@@ -859,8 +859,8 @@ BasisSet BasisSet::concatinate(const BasisSet& b) const {
     return temp;
 }
 
-boost::shared_ptr<BasisSet> BasisSet::concatinate(const boost::shared_ptr<BasisSet>& b) const {
-    return boost::shared_ptr<BasisSet>(new BasisSet(concatinate(*b.get())));
+boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& b) const {
+    return boost::shared_ptr<BasisSet>(new BasisSet(concatenate(*b.get())));
 }
 
 BasisSet BasisSet::add(const BasisSet& b) const {
@@ -913,6 +913,6 @@ boost::shared_ptr<BasisSet> BasisSet::add(const boost::shared_ptr<BasisSet>& b) 
 }
 
 
-//boost::shared_ptr<BasisSet> BasisSet::concatinate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) const {
-//    return a->concatinate(b);
+//boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) const {
+//    return a->concatenate(b);
 //}

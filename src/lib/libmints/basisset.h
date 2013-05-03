@@ -306,19 +306,19 @@ public:
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 
-    /** Concatinates two basis sets together into a new basis without reordering anything.
+    /** Concatenates two basis sets together into a new basis without reordering anything.
      *  Unless you know what you're doing, you should use the '+' operator instead of
      *  this method.
      */
-    BasisSet concatinate(const BasisSet& b) const;
+    BasisSet concatenate(const BasisSet& b) const;
 
-    boost::shared_ptr<BasisSet> concatinate(const boost::shared_ptr<BasisSet>& b) const;
+    boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& b) const;
 
-    /** Concatinates two basis sets together into a new basis without reordering anything.
+    /** Concatenates two basis sets together into a new basis without reordering anything.
      *  Unless you know what you're doing, you should use the '+' operator instead of
      *  this method.
      */
-    //static boost::shared_ptr<BasisSet> concatinate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
+    //static boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
 
     /** Adds this plus another basis set and returns the result. Equivalent to the '+' operator.
      */
