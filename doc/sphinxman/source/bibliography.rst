@@ -145,6 +145,10 @@ Bibliography
    G. D. Purvis and R. J. Bartlett,
    *J. Chem. Phys.* **76**, 1910-1918 (1982).
 
+.. [Sosa:1989:148]
+   C. Sosa, J. Geersten, G. W. Trucks, R. J. Barlett, and J. A. Franz, 
+   *Chem. Phys. Lett.* **159**, 148–154 (1989).
+
 .. [Roos:1980]
    B. O. Roos,
    *Chem. Phys.* **48**, 157-173 (1980).
@@ -180,6 +184,10 @@ Bibliography
 .. [DePrince:2013:293]
    A. E. DePrince III and C. D. Sherrill,
    *J. Chem. Theory Comput.* **9**, 293-299 (2013).
+
+.. [DePrince:2013:inpress]
+   A. E. DePrince III and C. D. Sherrill,
+   *J. Chem. Theory Comput.* in press.
 
 .. [Curtiss:1991:7221]
    L. A. Curtiss, K. Raghavachari, G. W. Trucks, and J. A. Pople, 

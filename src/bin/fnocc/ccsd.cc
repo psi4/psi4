@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -2369,8 +2391,7 @@ double DFCoupledCluster::compute_energy() {
 
   PsiReturnType status = Success;
 
-  tstart();
-  WriteBanner();
+  //WriteBanner();
   AllocateMemory();
   status = CCSDIterations();
 
@@ -2390,6 +2411,7 @@ double DFCoupledCluster::compute_energy() {
   free(tempt);
   free(tempv);
 
+  // tstart in fnocc
   tstop();
 
   // mp2 energy
@@ -2591,19 +2613,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   memset((void*)Fai,'\0',o*v*sizeof(double));
   memset((void*)Fab,'\0',v*v*sizeof(double));
 
+  T1Fock();
   T1Integrals();
-
-  // singles mp2 energy:
-  double emp2_singles = 0.0;
-  for (int a = 0; a < v; a++) {
-      double da = eps[a+ndoccact];
-      for (int i = 0; i < o; i++) {
-          double dia = da - eps[i];
-          double dum = - Fia[i*v+a]/dia;
-          emp2_singles -= 2.0 * dum * Fia[i*v+a];
-      }
-  }
-  fprintf(outfile,"  Singles mp2 energy %20.12lf\n",emp2_singles);
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Begin singles and doubles coupled cluster iterations\n\n");
@@ -2639,6 +2650,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
       double start;
       if (timer) start = omp_get_wtime();
+      T1Fock();
       T1Integrals();
       if (timer) {
           fprintf(outfile,"        T1-transformed integrals                                        %6.2lf\n",omp_get_wtime() - start);
@@ -2771,6 +2783,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       // need to generate non-t1-transformed 3-index integrals
       F_DCOPY(o*v,t1,1,w1,1);
       memset((void*)t1,'\0',o*v*sizeof(double));
+      T1Fock();
       T1Integrals();
       F_DCOPY(o*v,w1,1,t1,1);
   }
@@ -2778,7 +2791,149 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   return Success;
 }
 
-// t1-transformed 3-index integrals
+// t1-transformed 3-index fock matrix (using 3-index integrals from SCF)
+void DFCoupledCluster::T1Fock(){
+    long int o = ndoccact;
+    long int v = nvirt;
+    long int full = o+v+nfzc+nfzv;
+
+    // Ca_L = C(1-t1^T)
+    // Ca_R = C(1+t1)
+    F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+    F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+
+    #pragma omp parallel for schedule (static)
+    for (int mu = 0; mu < nso; mu++) {
+        for (int a = 0; a < v; a++) {
+            double dum = 0.0;
+            for (int i = 0; i < o; i++) {
+                dum += Ca[mu][i+nfzc] * t1[a*o+i];
+            }
+            Ca_L[mu*full + a + ndocc] -= dum;
+        }
+    }
+    #pragma omp parallel for schedule (static)
+    for (int mu = 0; mu < nso; mu++) {
+        for (int i = 0; i < o; i++) {
+            double dum = 0.0;
+            for (int a = 0; a < v; a++) {
+                dum += Ca[mu][a+ndocc] * t1[a*o+i];
+            }
+            Ca_R[mu*full + i + nfzc] += dum;
+        }
+    }
+
+    // (Q|rs)
+    boost::shared_ptr<PSIO> psio(new PSIO());
+    psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+    psio->read_entry(PSIF_DCC_QSO,"Qso SCF",(char*)&integrals[0],nso*nso*nQ_scf*sizeof(double));
+    psio->close(PSIF_DCC_QSO,1);
+    F_DGEMM('n','n',full,nso*nQ_scf,nso,1.0,Ca_L,full,integrals,nso,0.0,Qmo,full);
+    #pragma omp parallel for schedule (static)
+    for (int q = 0; q < nQ_scf; q++) {
+        for (int mu = 0; mu < nso; mu++) {
+            F_DCOPY(full,Qmo+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
+        }
+    }
+    F_DGEMM('n','n',full,full*nQ_scf,nso,1.0,Ca_R,full,integrals,nso,0.0,Qmo,full);
+
+    // build Fock matrix
+
+    memset((void*)Fij,'\0',o*o*sizeof(double));
+    memset((void*)Fia,'\0',o*v*sizeof(double));
+    memset((void*)Fai,'\0',o*v*sizeof(double));
+    memset((void*)Fab,'\0',v*v*sizeof(double));
+
+    // transform H
+    double ** hp = H->pointer();
+    double * h = (double*)malloc(nmo*nmo*sizeof(double));
+    for (int mu = 0; mu < nso; mu++) {
+        for (int p = 0; p < nmo; p++) {
+            double dum = 0.0;
+            for (int nu = 0; nu < nso; nu++) {
+                dum += Ca_L[nu*full + p + nfzc] * hp[nu][mu];
+            }
+            integrals[p*nso+mu] = dum;
+        }
+    }
+    for (int p = 0; p < nmo; p++) {
+        for (int q = 0; q < nmo; q++) {
+            double dum = 0.0;
+            for (int nu = 0; nu < nso; nu++) {
+                dum += Ca_R[nu*full+q+nfzc] * integrals[p*nso+nu];
+            }
+            h[p*nmo+q] = dum;
+        }
+    }
+
+    // build Fock matrix:  sum_k (Q|kk)
+    double * temp2 = (double*)malloc(nQ_scf*sizeof(double));
+    double * temp3 = (double*)malloc(full*full*sizeof(double));
+    for (int q = 0; q < nQ_scf; q++) {
+        double dum = 0.0;
+        for (int k = 0; k < ndocc; k++) {
+            dum += Qmo[q*full*full + k*full + k];
+        }
+        temp2[q] = 2.0 * dum;
+    }
+
+    // use temp and Qvv as storage for Qmo( q, r, k) and Qmo( q, k, s)
+    for (int q = 0; q < nQ_scf; q++) {
+        for (int r = 0; r < full; r++) {
+            for (int k = 0; k < ndocc; k++) {
+                integrals[q*full*ndocc+k*full+r] = Qmo[q*full*full+r*full+k];
+                Qvv[q*full*ndocc+k*full+r]  = Qmo[q*full*full+k*full+r];
+            }
+        }
+    }
+    // I(r,s) = sum q k (q|ks)(q|rk)
+    F_DGEMM('n','t',full,full,nQ_scf*ndocc,1.0,Qvv,full,integrals,full,0.0,temp3,full);
+
+    // Fij
+    for (int i = 0; i < o; i++) {
+        for (int j = 0; j < o; j++) {
+            double dum = h[i*nmo+j] - temp3[(i+nfzc)*full+(j+nfzc)];
+            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (j+nfzc) , full*full);
+            Fij[i*o+j] = dum;
+        }
+    }
+    // Fia
+    for (int i = 0; i < o; i++) {
+        for (int a = 0; a < v; a++) {
+            double dum = h[i*nmo+a+o] - temp3[(i+nfzc)*full+(a+ndocc)];
+            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (a+ndocc) , full*full);
+            Fia[i*v+a] = dum;
+        }
+    }
+    // Fai
+    for (int a = 0; a < v; a++) {
+        for (int i = 0; i < o; i++) {
+            double dum = h[(a+o)*nmo+i] - temp3[(a+ndocc)*full+(i+nfzc)];
+            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (a+ndocc)*full + (i+nfzc) , full*full);
+            Fai[a*o+i] = dum;
+        }
+    }
+    // Fab
+    for (int a = 0; a < v; a++) {
+        for (int b = 0; b < v; b++) {
+            double dum = h[(a+o)*nmo+b+o] - temp3[(a+ndocc)*full+(b+ndocc)];
+            dum += F_DDOT(nQ_scf,temp2,1,Qmo + (a+ndocc)*full + (b+ndocc) , full*full);
+            Fab[a*v+b] = dum;
+        }
+    }
+
+    // replace eps
+    for (int i = 0; i < o; i++) {
+        eps[i] = Fij[i*o+i];
+    }
+    for (int a = 0; a < v; a++) {
+        eps[a+o] = Fab[a*v+a];
+    }
+
+    free(h);
+    free(temp2);
+    free(temp3);
+}
 void DFCoupledCluster::T1Integrals(){
     long int o = ndoccact;
     long int v = nvirt;
@@ -2810,120 +2965,19 @@ void DFCoupledCluster::T1Integrals(){
         }
     }
 
-    double * temp = integrals;
-
     // (Q|rs)
     boost::shared_ptr<PSIO> psio(new PSIO());
     psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
-    psio->read_entry(PSIF_DCC_QSO,"qso",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
+    psio->read_entry(PSIF_DCC_QSO,"Qso CC",(char*)&integrals[0],nso*nso*nQ*sizeof(double));
     psio->close(PSIF_DCC_QSO,1);
-    //#pragma omp parallel for schedule (static)
-    //for (int q = 0; q < nQ; q++) {
-    //    for (int mu = 0; mu < nso; mu++) {
-    //        F_DCOPY(nso,integrals+q*nso*nso+mu*nso,1,temp+q*nso*nso+mu,nso);
-    //    }
-    //}
-    F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,temp,nso,0.0,Qmo,full);
+    F_DGEMM('n','n',full,nso*nQ,nso,1.0,Ca_L,full,integrals,nso,0.0,Qmo,full);
     #pragma omp parallel for schedule (static)
     for (int q = 0; q < nQ; q++) {
         for (int mu = 0; mu < nso; mu++) {
-            F_DCOPY(full,Qmo+q*nso*full+mu*full,1,temp+q*nso*full+mu,full);
+            F_DCOPY(full,Qmo+q*nso*full+mu*full,1,integrals+q*nso*full+mu,full);
         }
     }
-    F_DGEMM('n','n',full,full*nQ,nso,1.0,Ca_R,full,temp,nso,0.0,Qmo,full);
-
-    // build Fock matrix
-
-    memset((void*)Fij,'\0',o*o*sizeof(double));
-    memset((void*)Fia,'\0',o*v*sizeof(double));
-    memset((void*)Fai,'\0',o*v*sizeof(double));
-    memset((void*)Fab,'\0',v*v*sizeof(double));
-
-    // transform H
-    double ** hp = H->pointer();
-    double * h = (double*)malloc(nmo*nmo*sizeof(double));
-    for (int mu = 0; mu < nso; mu++) {
-        for (int p = 0; p < nmo; p++) {
-            double dum = 0.0;
-            for (int nu = 0; nu < nso; nu++) {
-                dum += Ca_L[nu*full + p + nfzc] * hp[nu][mu];
-            }
-            temp[p*nso+mu] = dum;
-        }
-    }
-    for (int p = 0; p < nmo; p++) {
-        for (int q = 0; q < nmo; q++) {
-            double dum = 0.0;
-            for (int nu = 0; nu < nso; nu++) {
-                dum += Ca_R[nu*full+q+nfzc] * temp[p*nso+nu];
-            }
-            h[p*nmo+q] = dum;
-        }
-    }
-
-    // build Fock matrix:  sum_k (Q|kk)
-    double * temp2 = (double*)malloc(nQ*sizeof(double));
-    double * temp3 = (double*)malloc(full*full*sizeof(double));
-    for (int q = 0; q < nQ; q++) {
-        double dum = 0.0;
-        for (int k = 0; k < ndocc; k++) {
-            dum += Qmo[q*full*full + k*full + k];
-        }
-        temp2[q] = 2.0 * dum;
-    }
-
-    // use temp and Qvv as storage for Qmo( q, r, k) and Qmo( q, k, s)
-    for (int q = 0; q < nQ; q++) {
-        for (int r = 0; r < full; r++) {
-            for (int k = 0; k < ndocc; k++) {
-                temp[q*full*ndocc+k*full+r] = Qmo[q*full*full+r*full+k];
-                Qvv[q*full*ndocc+k*full+r]  = Qmo[q*full*full+k*full+r];
-            }
-        }
-    }
-    // I(r,s) = sum q k (q|ks)(q|rk)
-    F_DGEMM('n','t',full,full,nQ*ndocc,1.0,Qvv,full,temp,full,0.0,temp3,full);
-
-    // Fij
-    for (int i = 0; i < o; i++) {
-        for (int j = 0; j < o; j++) {
-            double dum = h[i*nmo+j] - temp3[(i+nfzc)*full+(j+nfzc)];
-            dum += F_DDOT(nQ,temp2,1,Qmo + (i+nfzc)*full + (j+nfzc) , full*full);
-            Fij[i*o+j] = dum;
-        }
-    }
-    // Fia
-    for (int i = 0; i < o; i++) {
-        for (int a = 0; a < v; a++) {
-            double dum = h[i*nmo+a+o] - temp3[(i+nfzc)*full+(a+ndocc)];
-            dum += F_DDOT(nQ,temp2,1,Qmo + (i+nfzc)*full + (a+ndocc) , full*full);
-            Fia[i*v+a] = dum;
-        }
-    }
-    // Fai
-    for (int a = 0; a < v; a++) {
-        for (int i = 0; i < o; i++) {
-            double dum = h[(a+o)*nmo+i] - temp3[(a+ndocc)*full+(i+nfzc)];
-            dum += F_DDOT(nQ,temp2,1,Qmo + (a+ndocc)*full + (i+nfzc) , full*full);
-            Fai[a*o+i] = dum;
-        }
-    }
-    // Fab
-    for (int a = 0; a < v; a++) {
-        for (int b = 0; b < v; b++) {
-            double dum = h[(a+o)*nmo+b+o] - temp3[(a+ndocc)*full+(b+ndocc)];
-            dum += F_DDOT(nQ,temp2,1,Qmo + (a+ndocc)*full + (b+ndocc) , full*full);
-            Fab[a*v+b] = dum;
-        }
-    }
-
-    // replace eps
-    for (int i = 0; i < o; i++) {
-        eps[i] = Fij[i*o+i];
-    }
-    for (int a = 0; a < v; a++) {
-        eps[a+o] = Fab[a*v+a];
-    }
+    F_DGEMM('n','n',full,full*nQ,nso,1.0,Ca_R,full,integrals,nso,0.0,Qmo,full);
 
     // (Q|vo)
     #pragma omp parallel for schedule (static)
@@ -2964,10 +3018,6 @@ void DFCoupledCluster::T1Integrals(){
             }
         }
     }
-
-    free(h);
-    free(temp2);
-    free(temp3);
 }
 
 double DFCoupledCluster::CheckEnergy(){
@@ -3067,22 +3117,9 @@ void DFCoupledCluster::AllocateMemory() {
      throw PsiException("df_ccsd requires symmetry c1",__FILE__,__LINE__);
   }
 
-  // generate 3-index integrals (if they weren't generated during FNO construction)
   ischolesky_ = ( options_.get_str("DF_BASIS_CC") == "CHOLESKY" );
-
-  if ( !options_.get_bool("NAT_ORBS") ) {
-      ThreeIndexIntegrals();
-  }else {
-      nQ = (int)Process::environment.globals["DFCC NAUX"];
-  }
-
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Type of density fitting:                %2s\n", ischolesky_ ? "CD" : "RI");
-  if (ischolesky_) {
-      fprintf(outfile,"  Cholesky decomposition threshold: %8.2le\n", options_.get_double("CHOLESKY_TOLERANCE"));
-  }
-  fprintf(outfile,"  Number of auxiliary functions:       %5li\n",nQ);
-  fprintf(outfile,"\n");
+  nQ          = (int)Process::environment.globals["NAUX (CC)"];
+  nQ_scf      = (int)Process::environment.globals["NAUX (SCF)"];
 
   // orbital energies
   boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
@@ -3116,27 +3153,30 @@ void DFCoupledCluster::AllocateMemory() {
 
 
   // for the df version, the dimension of the large buffer:
+  long int nQmax = nQ > nQ_scf ? nQ : nQ_scf;
+
   long int dim = 2L*v*v*v;
-  if (2*nQ*o*v>dim)   dim = 2*nQ*o*v;
-  if (o*o*v*v>dim)    dim = o*o*v*v;
-  if (nQ*v*v>dim)     dim = nQ*v*v;
-  if (nQ*nso*nso>dim) dim = nQ*nso*nso;
+  if (2*nQmax*o*v>dim)   dim = 2*nQmax*o*v;
+  if (o*o*v*v>dim)       dim = o*o*v*v;
+  if (nQmax*v*v>dim)     dim = nQmax*v*v;
+  if (nQmax*nso*nso>dim) dim = nQmax*nso*nso;
 
   double total_memory = dim+(o*o*v*v+o*v)+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
-  long int max = nvirt*nvirt*nQ > (nfzv+ndocc+nvirt)*ndocc*nQ ? nvirt*nvirt*nQ : (nfzv+ndocc+nvirt)*ndocc*nQ;
+  long int max = nvirt*nvirt*nQmax > (nfzv+ndocc+nvirt)*ndocc*nQmax ? nvirt*nvirt*nQmax : (nfzv+ndocc+nvirt)*ndocc*nQmax;
   double df_memory    = nQ*(o*o+o*v)+max;
 
   total_memory       *= 8./1024./1024.;
   df_memory          *= 8./1024./1024.;
 
-  fprintf(outfile,"  Total memory requirements:       %9.2lf mb\n",df_memory+total_memory);
-  fprintf(outfile,"  3-index integrals:               %9.2lf mb\n",df_memory);
-  fprintf(outfile,"  CCSD intermediates:              %9.2lf mb\n",total_memory);
+  fprintf(outfile,"  ==> Memory <==\n\n");
+  fprintf(outfile,"        Total memory requirements:       %9.2lf mb\n",df_memory+total_memory);
+  fprintf(outfile,"        3-index integrals:               %9.2lf mb\n",df_memory);
+  fprintf(outfile,"        CCSD intermediates:              %9.2lf mb\n",total_memory);
   fprintf(outfile,"\n");
 
   if (1.0 * memory / 1024. / 1024. < total_memory + df_memory) {
      fprintf(outfile,"\n");
-     fprintf(outfile,"  error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",total_memory+df_memory-1.0*memory/1024./1024.);
+     fprintf(outfile,"        error: not enough memory for ccsd.  increase available memory by %7.2lf mb\n",total_memory+df_memory-1.0*memory/1024./1024.);
      fprintf(outfile,"\n");
      fflush(outfile);
      throw PsiException("not enough memory (ccsd).",__FILE__,__LINE__);
@@ -3145,13 +3185,13 @@ void DFCoupledCluster::AllocateMemory() {
       long int nthreads = omp_get_max_threads();
       double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v*nthreads);
       if (tempmem > memory) {
-          fprintf(outfile,"\n  <<< warning! >>> switched to low-memory (t) algorithm\n\n");
+          fprintf(outfile,"\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
       }
       if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")){
          isLowMemory = true;
          tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o*nthreads);
       }
-      fprintf(outfile,"  memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
+      fprintf(outfile,"        memory requirements for CCSD(T): %9.2lf mb\n\n",tempmem/1024./1024.);
   }
 
   // allocate some memory for 3-index tensors
@@ -3193,7 +3233,7 @@ void DFCoupledCluster::AllocateMemory() {
   Fia   = (double*)malloc(o*v*sizeof(double));
   Fai   = (double*)malloc(o*v*sizeof(double));
   Fab   = (double*)malloc(v*v*sizeof(double));
-  Qmo   = (double*)malloc(nso*nso*nQ*sizeof(double));
+  Qmo   = (double*)malloc(nso*nso*(nQ > nQ_scf ? nQ : nQ_scf)*sizeof(double));
   Ca_R  = (double*)malloc(nso*(nmo+nfzc+nfzv)*sizeof(double));
   Ca_L  = (double*)malloc(nso*(nmo+nfzc+nfzv)*sizeof(double));
   Ca = reference_wavefunction_->Ca()->pointer();

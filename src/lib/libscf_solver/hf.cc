@@ -1,4 +1,26 @@
 /*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*
  *  hf.cpp
  *  matrix
  *
@@ -1389,7 +1411,7 @@ double HF::compute_energy()
 
     // Andy trick 2.0
     std::string old_scf_type = options_.get_str("SCF_TYPE");
-    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+    if (options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
          fprintf(outfile, "  Starting with a DF guess...\n\n");
          if(!options_["DF_BASIS_SCF"].has_changed()) {
              // TODO: Match Dunning basis sets 
@@ -1553,7 +1575,7 @@ double HF::compute_energy()
         if (frac_enabled_ && !frac_performed_) converged = false;
 
         // If a DF Guess environment, reset the JK object, and keep running
-        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF")) {
+        if (converged && options_.get_bool("DF_SCF_GUESS") && !(old_scf_type == "DF" || old_scf_type == "CD")) {
             fprintf(outfile, "\n  DF guess converged.\n\n"); // Be cool dude. 
             converged = false;
             if(initialized_diis_manager_)

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file read_calculation_options
     \defgroup PSI4
 */
@@ -788,6 +810,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("FREQ_MAX_K",2);
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
+  /*- Fork pathway, until I properly subclass these things -*/
+  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT L-SAPT0");
+  /*- Relative convergence in orbital localization -*/
+  options.add_double("LOCAL_CONVERGENCE",1.0E-8);
+  /*- Maximum iterations in localization -*/
+  options.add_int("LOCAL_MAXITER", 50);
+  /*- Localization algorithm -*/
+  options.add_str("LOCAL_TYPE", "BOYS", "BOYS");
+  
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory
@@ -910,7 +941,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
-    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE FAST_DF CD");
+    /*- Tolerance for Cholesky decomposition of the ERI tensor -*/
+    options.add_double("CHOLESKY_TOLERANCE",1e-4);
     /*- Use DF integrals tech to converge the SCF before switching to a conventional tech -*/
     options.add_bool("DF_SCF_GUESS", true);
     /*- Keep JK object for later use? -*/
@@ -2731,9 +2764,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
 
-      /*- Do use density fitting in CC? This keyword is used internally
-          by the driver. Changing its value will have no effect on the
-          computation. -*/
+      /*- Do use density fitting or cholesky decomposition in CC? This 
+      keyword is used internally by the driver. Changing its value 
+      will have no effect on the computation. -*/
       options.add_bool("DFCC",false);
       /*- Auxilliary basis for df-ccsd(t). -*/
       options.add_str("DF_BASIS_CC","");
