@@ -50,13 +50,13 @@ def sherrill_gold_standard(name='mp2', **kwargs):
 
     .. math:: E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}
 
-    [1] single-point energy by this composite method
+    >>> # [1] single-point energy by this composite method
     >>> energy('sherrill_gold_standard')
 
-    [2] finite-difference geometry optimization
+    >>> # [2] finite-difference geometry optimization
     >>> optimize('sherrill_gold_standard')
 
-    [3] finite-difference geometry optimization, overwriting some pre-defined sherrill_gold_standard options
+    >>> # [3] finite-difference geometry optimization, overwriting some pre-defined sherrill_gold_standard options
     >>> optimize('sherrill_gold_standard', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 
     """
@@ -103,10 +103,10 @@ def allen_focal_point(name='mp2', **kwargs):
 
     .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}
 
-    [1] single-point energy by this composite method
+    >>> # [1] single-point energy by this composite method
     >>> energy('allen_focal_point')
 
-    [2] finite-difference geometry optimization embarrasingly parallel
+    >>> # [2] finite-difference geometry optimization embarrasingly parallel
     >>> optimize('allen_focal_point', mode='sow')
 
     """
