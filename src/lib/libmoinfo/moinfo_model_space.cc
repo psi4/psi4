@@ -272,7 +272,7 @@ int MOInfo::get_ref_number(int n, ReferenceType ref_type)
     if(ref_type == UniqueOpenShellRefs) // o
         return(unique_open_shell_refs[n]);
     throw PSIEXCEPTION("MOInfo::get_ref_number(string str, int n) undefined space");
-    return(NULL);
+    return(-1);
 }
 
 /*!
@@ -289,7 +289,7 @@ int MOInfo::get_ref_size(ReferenceType ref_type)
     if(ref_type == UniqueOpenShellRefs) // o
         return(unique_open_shell_refs.size());
     throw PSIEXCEPTION("MOInfo::get_ref_size(string str) undefined space");
-    return(NULL);
+    return(-1);
 }
 
 vector<string> MOInfo::get_matrix_names(std::string str)

@@ -306,6 +306,26 @@ public:
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 
+    /** Concatenates two basis sets together into a new basis without reordering anything.
+     *  Unless you know what you're doing, you should use the '+' operator instead of
+     *  this method.
+     */
+    BasisSet concatenate(const BasisSet& b) const;
+
+    boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& b) const;
+
+    /** Concatenates two basis sets together into a new basis without reordering anything.
+     *  Unless you know what you're doing, you should use the '+' operator instead of
+     *  this method.
+     */
+    //static boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
+
+    /** Adds this plus another basis set and returns the result. Equivalent to the '+' operator.
+     */
+    BasisSet add(const BasisSet& b) const;
+
+    boost::shared_ptr<BasisSet> add(const boost::shared_ptr<BasisSet>& b) const;
+
     // BasisSet friends
     friend class Gaussian94BasisSetParser;
     friend BasisSet operator +(const BasisSet& a, const BasisSet& b);
@@ -353,13 +373,13 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     temp.refresh();
 
     // Sort by AM in each center
-    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-                  shell_sorter_am);
-    }
+//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+//                  shell_sorter_am);
+//    }
 
-    temp.refresh();
+//    temp.refresh();
 
     return temp;
 }
@@ -368,7 +388,6 @@ inline
 boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) {
     return boost::shared_ptr<BasisSet>(new BasisSet(*a.get() + *b.get()));
 }
-
 }
 
 #endif

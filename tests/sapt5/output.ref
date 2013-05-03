@@ -53,7 +53,7 @@ set globals {
 
 energy('sapt0-ct',cast_up=True)
 
-ECT = PsiMod.get_variable("SAPT CT ENERGY")
+ECT = psi4.get_variable("SAPT CT ENERGY")
 --------------------------------------------------------------------------
 
   Memory set to 250.000 MiB by Python script.

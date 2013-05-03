@@ -134,13 +134,13 @@ $(autotarget4): %: $(autodepend4)
 	@srcdir@/separate_userprogman.py @srcdir@
 
 
-# Autodoc PsiMod module
+# Autodoc psi4 module
 autodepend5 = \
 @top_srcdir@/src/bin/psi4/*.cc \
 @top_srcdir@/tests/docs-psimod/input.dat
 
 autotarget5 = \
-$(SOURCEDIR)/autodoc_man_PsiMod.txt
+$(SOURCEDIR)/autodoc_man_psi4.txt
 
 $(autotarget5): %: $(autodepend5)
 	cd ../../tests/docs-psimod; $(MAKE) clean; $(MAKE)
@@ -267,7 +267,7 @@ autodoc: $(autotarget1) $(autotarget3) $(autotarget4) \
 #####  static docs  #####
 
 MISCDOC = \
-psi4banner.png PsiMod.py
+psi4banner.png psi4.py
 
 STATICDOC = \
 abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \

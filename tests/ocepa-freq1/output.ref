@@ -42,7 +42,7 @@ set {
   mo_maxiter 200
 }
 # Test against Analytic second derivatives from PSI3. #TEST
-grad_freqs = PsiMod.Vector(7)  #TEST
+grad_freqs = psi4.Vector(7)  #TEST
 grad_freqs.set(0, 0, 513.956) #TEST
 grad_freqs.set(0, 1, 513.956) #TEST
 grad_freqs.set(0, 2, 722.308) #TEST
@@ -53,7 +53,7 @@ grad_freqs.set(0, 6, 3497.387) #TEST
 
 
 frequencies('ocepa',dertype=0)
-fd_freqs = PsiMod.wavefunction().frequencies()                                           #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                           #TEST
 compare_vectors(grad_freqs, fd_freqs, 0,                                                 #TEST
  "Frequencies by gradient points vs. Frequencies by energy points to 1 cm^-1")           #TEST
 --------------------------------------------------------------------------

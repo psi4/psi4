@@ -39,6 +39,7 @@
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <liboptions/liboptions_python.h>
+#include <libutil/libutil.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -47,6 +48,18 @@
 
 #include "../ccenergy/ccwave.h"
 #include "../mp2/mp2wave.h"
+
+#if defined(MAKE_PYTHON_MODULE)
+#include <libqt/qt.h>
+#include <libpsio/psio.h>
+#include <libmints/wavefunction.h>
+#include <psifiles.h>
+#include <libparallel/parallel.h>
+namespace psi {
+    int psi_start(int argc, char *argv[]);
+    int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix);
+}
+#endif
 
 using namespace psi;
 using namespace boost;
@@ -67,6 +80,12 @@ void export_oeprop();
 void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
+
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     }
 
 namespace opt {
   psi::PsiReturnType optking(psi::Options &);
@@ -123,6 +142,7 @@ namespace psi {
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
+    extern void print_version(FILE *myout);
     extern FILE *outfile;
 }
 
@@ -1019,12 +1039,107 @@ std::string py_psi_top_srcdir()
     return PSI_TOP_SRCDIR;
 }
 
+#if defined(MAKE_PYTHON_MODULE)
+bool psi4_python_module_initialize()
+{
+    static bool initialized = false;
+
+    if (initialized) {
+        printf("Psi4 already initialized.\n");
+        return true;
+    }
+
+    print_version(stdout);
+
+    // Track down the location of PSI4's python script directory.
+    std::string psiDataDirName = Process::environment("PSIDATADIR");
+    std::string psiDataDirWithPython = psiDataDirName + "/python";
+    boost::filesystem::path bf_path;
+    bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+    if(!boost::filesystem::is_directory(bf_path)) {
+        printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+                "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+        return false;
+    }
+
+    // Add PSI library python path
+    PyObject *path, *sysmod, *str;
+    PY_TRY(sysmod , PyImport_ImportModule("sys"));
+    PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+#if PY_MAJOR_VERSION == 2
+    PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+#else
+    PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+#endif
+    PyList_Append(path, str);
+    Py_DECREF(str);
+    Py_DECREF(path);
+    Py_DECREF(sysmod);
+
+    initialized = true;
+
+    return true;
+}
+
+void psi4_python_module_finalize()
+{
+    Process::environment.wavefunction().reset();
+    py_psi_plugin_close_all();
+
+    // Shut things down:
+    WorldComm->sync();
+    // There is only one timer:
+    timer_done();
+
+    psi_stop(infile, outfile, psi_file_prefix);
+    Script::language->finalize();
+
+    WorldComm->sync();
+    WorldComm->finalize();
+}
+#endif
+
+void translate_psi_exception(const PsiException& e)
+{
+    PyErr_SetString(PyExc_RuntimeError, e.what());
+}
+
 // Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_local_option_array, 3, 4)
 
-BOOST_PYTHON_MODULE(PsiMod)
+BOOST_PYTHON_MODULE(psi4)
 {
+#if defined(MAKE_PYTHON_MODULE)
+    // Setup the environment
+    Process::arguments.initialize(0, 0);
+    Process::environment.initialize(); // Defaults to obtaining the environment from the global environ variable
+
+    // Initialize the world communicator
+    WorldComm = initialize_communicator(0, 0);
+
+    // There is only one timer:
+    timer_init();
+
+    // There should only be one of these in Psi4
+    Wavefunction::initialize_singletons();
+
+    if(psi_start(0, 0) == PSI_RETURN_FAILURE) return;
+
+    // Initialize the I/O library
+    psio_init();
+
+    // Setup globals options
+    Process::environment.options.set_read_globals(true);
+    read_options("", Process::environment.options, true);
+    Process::environment.options.set_read_globals(false);
+
+    def("initialize", &psi4_python_module_initialize);
+    def("finalize", &psi4_python_module_finalize);
+#endif
+
+    register_exception_translator<PsiException>(&translate_psi_exception);
+
     docstring_options sphx_doc_options(true, true, false);
 
     enum_<PsiReturnType>("PsiReturnType", "docstring")
@@ -1033,6 +1148,7 @@ BOOST_PYTHON_MODULE(PsiMod)
             .value("Balk", Balk)
             .value("EndLoop", EndLoop)
             .export_values();
+
 
     def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
     def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
@@ -1209,13 +1325,6 @@ void Python::finalize()
 //    Py_Finalize();
 }
 
-#define PY_TRY(ptr, command)  \
-     if(!(ptr = command)){    \
-         PyErr_Print();       \
-         exit(1);             \
-     }
-
-
 void Python::run(FILE *input)
 {
     using namespace boost::python;
@@ -1223,22 +1332,17 @@ void Python::run(FILE *input)
     if (input == NULL)
         return;
 
-    // Setup globals options
-    Process::environment.options.set_read_globals(true);
-    read_options("", Process::environment.options, true);
-    Process::environment.options.set_read_globals(false);
-
     if (!Py_IsInitialized()) {
         s = strdup("psi");
 
 #if PY_MAJOR_VERSION == 2
-        if (PyImport_AppendInittab(strdup("PsiMod"), initPsiMod) == -1) {
-            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+        if (PyImport_AppendInittab(strdup("psi4"), initpsi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #else
-        if (PyImport_AppendInittab(strdup("PsiMod"), PyInit_PsiMod) == -1) {
-            fprintf(stderr, "Unable to register PsiMod with your Python.\n");
+        if (PyImport_AppendInittab(strdup("psi4"), PyInit_psi4) == -1) {
+            fprintf(stderr, "Unable to register psi4 with your Python.\n");
             abort();
         }
 #endif
@@ -1290,12 +1394,12 @@ void Python::run(FILE *input)
         try {
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
-            s = strdup("import PsiMod");
+            s = strdup("import psi4");
             PyRun_SimpleString(s);
 
             // Process the input file
             PyObject *input;
-            PY_TRY(input, PyImport_ImportModule("input") );
+            PY_TRY(input, PyImport_ImportModule("inputparser") );
             PyObject *function;
             PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
             PyObject *pargs;

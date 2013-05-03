@@ -23,7 +23,7 @@ set globals {
 }
 
 # Delete file 32 for now, because UHF has a bug in reading old MOs right now
-psioh = PsiMod.IOManager.shared_object()
+psioh = psi4.IOManager.shared_object()
 psioh.set_specific_retention(32, False)
 
 thisenergy = energy('scf')

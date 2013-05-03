@@ -108,13 +108,13 @@ void SAPT2p::disp22tccd()
   if (nat_orbs_t3_) {
     e_disp220t = disp220tccd(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes","T BSAR Natorb Amplitudes", 
+      "BS NO RI Integrals",PSIF_SAPT_CCD,"T ARAR Natorb Amplitudes","T BSAR Natorb Amplitudes",
       no_evalsA_,no_evalsB_,noccA_,no_nvirA_,foccA_,noccB_,no_nvirB_,foccB_);
   }
   else {
     e_disp220t = disp220tccd(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
       PSIF_SAPT_AA_DF_INTS,"AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-      "BS RI Integrals",PSIF_SAPT_CCD,"T ARAR Amplitudes","T BSAR Amplitudes", 
+      "BS RI Integrals",PSIF_SAPT_CCD,"T ARAR Amplitudes","T BSAR Amplitudes",
       evalsA_,evalsB_,noccA_,nvirA_,foccA_,noccB_,nvirB_,foccB_);
   }
 
@@ -128,13 +128,13 @@ void SAPT2p::disp22tccd()
   if (nat_orbs_t3_) {
     e_disp202t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes","T ARBS Natorb Amplitudes", 
+      "AR NO RI Integrals",PSIF_SAPT_CCD,"T BSBS Natorb Amplitudes","T ARBS Natorb Amplitudes",
       no_evalsB_,no_evalsA_,noccB_,no_nvirB_,foccB_,noccA_,no_nvirA_,foccA_);
   }
   else {
     e_disp202t = disp220tccd(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
       PSIF_SAPT_BB_DF_INTS,"BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
-      "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes","T ARBS Amplitudes", 
+      "AR RI Integrals",PSIF_SAPT_CCD,"T BSBS Amplitudes","T ARBS Amplitudes",
       evalsB_,evalsA_,noccB_,nvirB_,foccB_,noccA_,nvirA_,foccA_);
   }
 
@@ -268,8 +268,8 @@ void SAPT2p::natural_orbitalify_ccd()
 }
 
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
-  const char *RRlabel, int BBfile, const char *BSlabel, int ampfile, 
-  const char *tlabel, int foccA, int noccA, int nvirA, int foccB, int noccB, 
+  const char *RRlabel, int BBfile, const char *BSlabel, int ampfile,
+  const char *tlabel, int foccA, int noccA, int nvirA, int foccB, int noccB,
   int nvirB, double *evalsA, double *evalsB)
 {
   double energy = 0.0;
@@ -370,9 +370,9 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   return(energy);
 }
 
-double SAPT2p::disp220tccd(int AAnum, char *AA_label, int Rnum, char *AR_label, 
-  char *RR_label, int BBnum, char *BS_label, int ampnum, char *tarar, 
-  char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA, 
+double SAPT2p::disp220tccd(int AAnum, const char *AA_label, int Rnum, const char *AR_label,
+  const char *RR_label, int BBnum, const char *BS_label, int ampnum, const char *tarar,
+  const char *tbsar, double *evalsA, double *evalsB, int noccA, int nvirA,
   int foccA, int noccB, int nvirB, int foccB)
 {
   double energy = 0.0;
@@ -426,7 +426,7 @@ double SAPT2p::disp220tccd(int AAnum, char *AA_label, int Rnum, char *AR_label,
                   evalsA[r+noccA+foccA]-evalsA[r1+noccA+foccA];
         t_ARAR[ar][a1r1] /= denom;
       }}
-    }} 
+    }}
   }
 
   double **C_p_AR = block_matrix(noccA*nvirA,ndf_);
@@ -439,10 +439,10 @@ double SAPT2p::disp220tccd(int AAnum, char *AA_label, int Rnum, char *AR_label,
 
   time_t start = time(NULL);
   time_t stop;
-  
+
   for(int b=0,bs=0; b<noccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
-  
+
     psio_address next_DF_BS = psio_get_address(PSIO_ZERO,((foccB + b)*nvirB + s)*
       (ndf_+3)*(ULI) sizeof(double));
     psio_->read(BBnum,BS_label,(char *) &(B_p_bs[0]),sizeof(double)*
