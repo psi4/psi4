@@ -1039,6 +1039,66 @@ std::string py_psi_top_srcdir()
     return PSI_TOP_SRCDIR;
 }
 
+#if defined(MAKE_PYTHON_MODULE)
+bool psi4_python_module_initialize()
+{
+    static bool initialized = false;
+
+    if (initialized) {
+        printf("Psi4 already initialized.\n");
+        return true;
+    }
+
+    print_version(stdout);
+
+    // Track down the location of PSI4's python script directory.
+    std::string psiDataDirName = Process::environment("PSIDATADIR");
+    std::string psiDataDirWithPython = psiDataDirName + "/python";
+    boost::filesystem::path bf_path;
+    bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
+    if(!boost::filesystem::is_directory(bf_path)) {
+        printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+                "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+        return false;
+    }
+
+    // Add PSI library python path
+    PyObject *path, *sysmod, *str;
+    PY_TRY(sysmod , PyImport_ImportModule("sys"));
+    PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+#if PY_MAJOR_VERSION == 2
+    PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
+#else
+    PY_TRY(str    , PyBytes_FromString(psiDataDirWithPython.c_str()));
+#endif
+    PyList_Append(path, str);
+    Py_DECREF(str);
+    Py_DECREF(path);
+    Py_DECREF(sysmod);
+
+    initialized = true;
+
+    return true;
+}
+
+void psi4_python_module_finalize()
+{
+    Process::environment.wavefunction().reset();
+    py_psi_plugin_close_all();
+
+    // Shut things down:
+    WorldComm->sync();
+    // There is only one timer:
+    timer_done();
+
+    psi_stop(infile, outfile, psi_file_prefix);
+    Script::language->finalize();
+
+    WorldComm->sync();
+    WorldComm->finalize();
+}
+#endif
+
 void translate_psi_exception(const PsiException& e)
 {
     PyErr_SetString(PyExc_RuntimeError, e.what());
