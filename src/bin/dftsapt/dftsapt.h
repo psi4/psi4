@@ -124,6 +124,11 @@ protected:
     // MP2-like terms (Disp)
     virtual void mp2_terms();
 
+    // Hartree-Fock-like terms (Elst, Exch, Ind)
+    virtual void local_fock_terms();
+    // MP2-like terms (Disp)
+    virtual void local_mp2_terms();
+
     // Build the AO-basis dimer overlap matrix
     boost::shared_ptr<Matrix> build_S(boost::shared_ptr<BasisSet> basis);
     // Build the potential integral matrix
