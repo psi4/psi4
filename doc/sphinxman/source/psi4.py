@@ -1,9 +1,9 @@
-"""PsiMod module
+"""psi4 module
 The Sphinx documentation system scans all Python modules for docstrings
 and class structure (good) but in doing so imports modules it finds in
 input statements and follows any exposed code like the procedures
-dictionary (bad for Psi4 b/c of PsiMod). So, this fake PsiMod module
-exists to appease Sphinx when it looks for PsiMod.py to import. Any PsiMod
+dictionary (bad for Psi4 b/c of psi4). So, this fake psi4 module
+exists to appease Sphinx when it looks for psi4.py to import. Any psi4
 commands that aren't protected by functions need to have skeleton versions
 here.
 
@@ -155,10 +155,10 @@ class Functional():
     @staticmethod
     def build_base(sstr):
         return Functional()
-  
+
     def alpha(self):
         pass
-    
+
     def citation(self):
         pass
 
@@ -231,7 +231,7 @@ class Dispersion():
     @staticmethod
     def build(sstr, ffloat, ffloat1, ffloat2, ffloat3):
         return Dispersion()
-  
+
 
 class Process():
 

@@ -24,6 +24,7 @@
 #define _psi_src_lib_libmints_twobody_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/python/list.hpp>
 
 namespace psi {
 
@@ -53,6 +54,8 @@ protected:
 
     /// Buffer to hold the final integrals.
     double *target_;
+    /// Number of integrals in the current buffer
+    int curr_buff_size_;
     /// Buffer to hold the transformation intermediates.
     double *tformbuf_;
     /// Buffer to hold the initially computed integrals.
@@ -108,6 +111,14 @@ public:
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; }
 
+    /// Get a python list version of the current buffer
+    const boost::python::list py_buffer() const {
+        boost::python::list ret_val;
+        for(int i = 0; i < curr_buff_size_; ++i)
+            ret_val.append(target_[i]);
+        return ret_val;
+    }
+
     /// Returns the integral factory used to create this object
     const IntegralFactory* integral() const { return integral_; }
 
@@ -117,7 +128,7 @@ public:
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
 
-    ///Is the shell zero?
+    /// Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
     /// Compute the first derivatives

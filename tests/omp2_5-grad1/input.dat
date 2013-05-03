@@ -5,7 +5,7 @@ ref_vals = [                                                       #TEST
              [ 0.000000000000,  0.001564076688, -0.005739927042],  #TEST
              [ 0.000000000000, -0.001564076688, -0.005739927042]   #TEST
            ]                                                       #TEST
-ref = PsiMod.Matrix(3, 3)                                          #TEST
+ref = psi4.Matrix(3, 3)                                          #TEST
 ref.set(ref_vals)
 
 memory 250 mb
@@ -22,6 +22,6 @@ set {
 }
 gradient('omp2.5')
 
-grad = PsiMod.wavefunction().gradient()                           #TEST
+grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
 
