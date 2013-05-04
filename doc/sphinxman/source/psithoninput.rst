@@ -44,7 +44,7 @@ the user).
 The physical constants used within |PSIfour|, which are automatically
 made available within all |PSIfour| input files.
 
-.. literalinclude:: @SFNX_INCLUDE@lib/python/physconst.py
+.. literalinclude:: @SFNX_INCLUDE@lib/python/p4const/physconst.py
    :lines: 25-
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in

@@ -228,13 +228,13 @@ cite the following: [Hohenstein:2010:104107]_.
 Basic Keywords Controlling MP2 NO Approximations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/sapt__nat_orbs.rst
+.. include:: autodir_options_c/sapt__nat_orbs_t2.rst
 .. include:: autodir_options_c/sapt__occ_tolerance.rst
 
 Advanced Keywords Controlling MP2 NO Approximations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. include:: autodir_options_c/sapt__nat_orbs_t2.rst
+.. comment .. include:: autodir_options_c/sapt__nat_orbs_t2.rst
 
 .. index:: SAPT; charge-transfer
 
@@ -304,14 +304,14 @@ input::
     
     set sapt {
         print          1
-        nat_orbs       true
+        nat_orbs_t2    true
         freeze_core    true
     }
     
     energy('sapt2+3')
 
 To reiterate some of the options mentioned above: the
-|sapt__nat_orbs| option will compute MP2 natural orbitals and use
+|sapt__nat_orbs_t2| option will compute MP2 natural orbitals and use
 them in the evaluation of the triples correction to dispersion, and the
 |sapt__freeze_core| option will freeze the core throughout the SAPT
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
