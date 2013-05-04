@@ -119,3 +119,4 @@ class OptionsState(object):
     def restore(self):
         for item in self.data:
             item.restore()
+
