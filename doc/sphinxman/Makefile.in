@@ -224,7 +224,7 @@ autodepend11 = \
 @srcdir@/document_physconst.pl
 
 autotarget11 = \
-@top_srcdir@/lib/python/physconst.py
+@top_srcdir@/lib/python/p4const/physconst.py
 
 $(autotarget11): %: $(autodepend11)
 	@srcdir@/document_physconst.pl @srcdir@
@@ -232,7 +232,7 @@ $(autotarget11): %: $(autodepend11)
 
 # Autodoc basisfamily
 autodepend12 = \
-@top_srcdir@/lib/python/basislist*.py \
+@top_srcdir@/lib/python/p4util/basislist*.py \
 @top_srcdir@/tests/docs-bases/input.dat
 
 autotarget12 = \
@@ -249,7 +249,7 @@ autodepend13 = \
 @srcdir@/document_psifiles.py
 
 autotarget13 = \
-@top_srcdir@/lib/python/psifiles.py \
+@top_srcdir@/lib/python/p4const/psifiles.py \
 $(SOURCEDIR)/autodoc_psifiles.rst
 
 $(autotarget13): %: $(autodepend13)
