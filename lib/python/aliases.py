@@ -28,15 +28,16 @@ Place in this file quickly defined procedures such as
    - simple modifications to existing methods
 
 """
-import psi4
 import re
 import os
 import math
 import warnings
+import psi4
+import p4util
 from driver import *
 from wrappers import *
+#from extend_Molecule import *
 from molutil import *
-import p4util
 
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.

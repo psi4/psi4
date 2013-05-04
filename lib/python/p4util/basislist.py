@@ -30,6 +30,7 @@ import os
 import psi4
 from psiexceptions import *
 
+
 basisfamily_list = []
 
 
@@ -159,3 +160,4 @@ def corresponding_dualfit(name):
         if sanitize_basisname(fam.ornate) == sanitize_basisname(name):
             return fam.dualfit
     return None
+
