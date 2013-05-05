@@ -684,6 +684,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from gaussian_n import *\n'
     imports += 'from aliases import *\n'
     imports += 'from functional import *\n'
+    imports += 'from qmmm import *\n'
     imports += 'psi4_io = psi4.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
