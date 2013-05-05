@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup MP2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <libdpd/dpd.h>
 #define EXTERN
@@ -32,7 +32,7 @@
 
 namespace psi{ namespace mp2{
 
-double amps(void) 
+void amps(void)
 {
   dpdfile2 tIA, tia, fIA, fia, dIA, dia;
   dpdbuf4 tIJAB, tijab, tIjAb, D, dIJAB, dijab, dIjAb;
@@ -79,7 +79,7 @@ double amps(void)
       dpd_file2_close(&tia);
       dpd_file2_close(&dia);
     }
-      
+
     dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
     dpd_buf4_copy(&D, PSIF_CC_TAMPS, "tIJAB");
     dpd_buf4_close(&D);
@@ -116,7 +116,7 @@ double amps(void)
     dpd_buf4_close(&tIJAB);
     dpd_buf4_close(&dIJAB);
   }
-  
+
 }
 
 }} /* End namespaces*/

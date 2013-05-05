@@ -251,8 +251,8 @@ const MassPoint *LebedevGridMgr::findGridByNPoints(int npoints)
 
 void LebedevGridMgr::PrintHelp()
 {
-    fprintf(outfile, "  ==> Valid Lebedev Grids <==\n\n"); 
-    fprintf(outfile, "\t%11s %11s\n", "Points", "Order"); 
+    fprintf(outfile, "  ==> Valid Lebedev Grids <==\n\n");
+    fprintf(outfile, "\t%11s %11s\n", "Points", "Order");
     for (int i = 0; grids_[i].mkGridFn != NULL; i++)
         fprintf(outfile, "\t%11d %11d\n", grids_[i].npoints, grids_[i].order);
     fprintf(outfile, "\n");
@@ -2134,7 +2134,7 @@ void RadialGridMgr::GolombWelsch(int n, double a[], double b[], double q[])
 
 void RadialGridMgr::getLegendreRoots(int n, double r[], double w[])
 {
-    double a[n], bhack[n+1]; 
+    double a[n], bhack[n+1];
     double *const b = &bhack[1]; // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = 0;
@@ -2163,7 +2163,7 @@ void RadialGridMgr::getLaguerreRoots(int n, double r[], double w[])
     // space for that extra element, and then declare that `b'
     // starts one element forward. That is, b[0] = bhack[1]. Then
     // b[-1] = bhack[0] is a valid memory location.
-    double a[n], bhack[n+1]; 
+    double a[n], bhack[n+1];
     double *const b = &bhack[1]; // Note that b[n-1] is unused; it's almost enough to make you want to renumber the arrays.
     for (int i = 0; i < n; i++) {
         a[i] = 2*i+1;
@@ -2321,7 +2321,7 @@ void RadialGridMgr::getMultiExpRoots(int n, double r[], double w[])
     if (n > TABSIZE)
         throw PSIEXCEPTION("PSI4 does not support MultiExp radial grids for n > 200.");
 
-    double a[n], bhack[n+1]; 
+    double a[n], bhack[n+1];
     double *const b = &bhack[1]; // Note that b[n-1] is unused.
     for (int i = 0; i < n; i++) {
         a[i] = alphas[i];
@@ -2654,7 +2654,7 @@ void StandardGridMgr::Initialize_SG1()
     }
 }
 
-class NuclearWeightMgr 
+class NuclearWeightMgr
 {
     enum NuclearSchemes {NAIVE, BECKE, TREUTLER, STRATMANN}; // Must match the nuclearschemenames array!
     static const char *nuclearschemenames[];
@@ -2811,11 +2811,11 @@ double NuclearWeightMgr::GetStratmannCutoff(int A) const
     // Now since abs(a) <= 0.5, abs(2a) <= 1, so the denominator
     // always increases the absolute value of the numerator. Since \mu is
     // constrained to remain between 1 and -1, the (1 + sqrt(stuff))/2a solution
-    // is always out of reach. (If mu were larger than that, 
-    // always 
+    // is always out of reach. (If mu were larger than that,
+    // always
     //   whe
     // mu = 1+(-1\pm sqrt(1+4*a*(nu-1)))/(2*a)
-    // If 
+    // If
     double aij = maxAMatrixEntry;
     double mucutoff = (aij == 0)        ? -0.64 // Then nu = mu, so to get nu < -0.64 we need mu < -0.64
                     : (aij >= 1/6.56)   ? -1    // If aij > 1/6.56 = 1/(4*(1+0.64)), then there's no solution.
@@ -3018,7 +3018,7 @@ OrientationMgr::LMatrix OrientationMgr::RotMatrixFromTwoAxes(LVector ax1, LVecto
 OrientationMgr::LVector OrientationMgr::someUnitVectorPerpendicularTo(LVector v)
 {
     // WE ASSUME THAT V HAS ALREADY BEEN NORMALIZED!
-    LVector w = v; 
+    LVector w = v;
     // Step 1: Find a vector that's linearly independent of v.
     // We can get that by adding 1 to any coordinate as long as it's not
     // already the only nonzero coordinate.
@@ -3164,8 +3164,8 @@ OrientationMgr::LMatrix OrientationMgr::symmetricTopMatrix(boost::shared_ptr<Mol
             continue;
         // Is it a better atom?
         if (fless(XYDist, bestXYDist)
-        ||  fequ(XYDist, bestXYDist) && fless(pos.z, bestZ)
-        ||  fequ(XYDist, bestXYDist) && fequ(pos.z, bestZ) && rotmol[i].atomicNumber < rotmol[bestAtom].atomicNumber) {
+        ||  (fequ(XYDist, bestXYDist) && fless(pos.z, bestZ))
+        ||  (fequ(XYDist, bestXYDist) && fequ(pos.z, bestZ) && rotmol[i].atomicNumber < rotmol[bestAtom].atomicNumber)) {
             bestAtom = i;
             bestXYDist = XYDist;
             bestZ = pos.z;
@@ -4205,7 +4205,7 @@ void MolecularGrid::print(FILE* out, int print) const
     fprintf(out,"\n");
     fprintf(out,"    BS radius alpha  = %14g\n", options_.bs_radius_alpha);
     fprintf(out,"    Pruning alpha    = %14g\n", options_.pruning_alpha);
-    fprintf(out,"    Radial Points    = %14d\n", options_.nradpts); 
+    fprintf(out,"    Radial Points    = %14d\n", options_.nradpts);
     fprintf(out,"    Spherical Points = %14d\n", options_.nangpts);
     fprintf(out,"    Total Points     = %14d\n", npoints_);
     fprintf(out,"    Total Blocks     = %14zu\n", blocks_.size());

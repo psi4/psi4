@@ -105,18 +105,18 @@ void get_params(Options &options)
     params.omega = init_array(1);
     params.omega[0] = options["OMEGA"][0].to_double();
   }
-  else if(count >= 2) { 
+  else if(count >= 2) {
     params.nomega = count-1;
     params.omega = init_array(params.nomega);
     units = options["OMEGA"][count-1].to_string();
     for(i=0; i < (count-1); i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
-      if(units == "HZ" || units == "Hz" || units == "hz") 
+      if(units == "HZ" || units == "Hz" || units == "hz")
         params.omega[i] *= pc_h / pc_hartree2J;
-      else if(units == "AU" || units == "Au" || units == "au") 1; // do nothing
-      else if(units == "NM" || units == "nm") 
+      else if(units == "AU" || units == "Au" || units == "au") continue; // do nothing
+      else if(units == "NM" || units == "nm")
         params.omega[i] = (pc_c*pc_h*1e9)/(params.omega[i]*pc_hartree2J);
-      else if(units == "EV" || units == "ev" || units == "eV") 
+      else if(units == "EV" || units == "ev" || units == "eV")
         params.omega[i] /= pc_hartree2ev;
       else
         throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
