@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -51,7 +51,7 @@ void get_params(Options &options)
   if(params.wfn == "NONE")
      throw PsiException("Invalid value of input keyword WFN", __FILE__, __LINE__);
 
-  if(params.wfn == "BCCD" || params.wfn == "BCCD_T") 
+  if(params.wfn == "BCCD" || params.wfn == "BCCD_T")
     params.brueckner = 1;
   else params.brueckner = 0;
 
@@ -59,16 +59,16 @@ void get_params(Options &options)
   junk = options.get_str("REFERENCE");
   /* if no reference is given, assume rhf */
   if(junk == "RHF") params.ref = 0;
-  else if(junk == "ROHF" && 
-    params.wfn == "MP2" || params.wfn == "CCSD_T" ||
+  else if(junk == "ROHF" &&
+    (params.wfn == "MP2" || params.wfn == "CCSD_T" ||
     params.wfn == "CC3" || params.wfn == "EOM_CC3" ||
-    params.wfn == "CC2" || params.wfn == "EOM_CC2") {
+    params.wfn == "CC2" || params.wfn == "EOM_CC2")) {
     params.ref = 2;
     params.semicanonical = 1;
   }
   else if(junk == "ROHF") params.ref = 1;
   else if(junk == "UHF" ) params.ref = 2;
-  else  
+  else
    throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
   // Allow user to force semicanonical
@@ -84,7 +84,7 @@ void get_params(Options &options)
   if(junk == "NONE") params.dertype = 0;
   else if(junk == "FIRST") params.dertype = 1;
   else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
-  else 
+  else
    throw PsiException("Invalid value of input keyword DERTYPE", __FILE__, __LINE__);
 
   params.print = options.get_int("PRINT");
@@ -107,9 +107,9 @@ void get_params(Options &options)
   cachetype = options.get_str("CACHETYPE");
   if(cachetype == "LOW") params.cachetype = 1;
   else if(cachetype == "LRU") params.cachetype = 0;
-  else 
+  else
     throw PsiException("Error in input: invalid CACHETYPE", __FILE__, __LINE__);
- 
+
 
  if(params.ref == 2) /* No LOW cacheing yet for UHF references */
     params.cachetype = 0;
@@ -178,33 +178,33 @@ void get_params(Options &options)
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
   fprintf(outfile, "\tWave function   =   %6s\n", params.wfn.c_str());
-  
+
   if(params.semicanonical) {
     fprintf(outfile, "\tReference wfn   =     ROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
     fprintf(outfile, "\tReference wfn   =   %5s\n",
-	    (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+        (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   }
-  if(params.brueckner) 
+  if(params.brueckner)
     fprintf(outfile, "\tBrueckner conv. =     %3.1e\n", params.bconv);
   fprintf(outfile, "\tMemory (Mbytes) =     %5.1f\n",params.memory/1e6);
   fprintf(outfile, "\tMaxiter         =   %4d\n", params.maxiter);
   fprintf(outfile, "\tR_Convergence   =     %3.1e\n", params.convergence);
   fprintf(outfile, "\tE_Convergence   =     %3.1e\n", params.e_convergence);
-  fprintf(outfile, "\tRestart         =     %s\n", 
-	  params.restart ? "Yes" : "No");
+  fprintf(outfile, "\tRestart         =     %s\n",
+      params.restart ? "Yes" : "No");
   fprintf(outfile, "\tDIIS            =     %s\n", params.diis ? "Yes" : "No");
   fprintf(outfile, "\tAO Basis        =     %s\n", params.aobasis.c_str());
   fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tCache Level     =     %1d\n", params.cachelev);
-  fprintf(outfile, "\tCache Type      =    %4s\n", 
-	  params.cachetype ? "LOW" : "LRU");
+  fprintf(outfile, "\tCache Type      =    %4s\n",
+      params.cachetype ? "LOW" : "LRU");
   fprintf(outfile, "\tPrint Level     =     %1d\n",  params.print);
   fprintf(outfile, "\tNum. of threads =     %d\n",  params.nthreads);
   fprintf(outfile, "\t# Amps to Print =     %1d\n",  params.num_amps);
   fprintf(outfile, "\tPrint MP2 Amps? =     %s\n",  params.print_mp2_amps ?
-	  "Yes" : "No" );
+      "Yes" : "No" );
   fprintf(outfile, "\tAnalyze T2 Amps =     %s\n",  params.analyze ? "Yes" : "No" );
   fprintf(outfile, "\tPrint Pair Ener =     %s\n",  params.print_pair_energies ? "Yes" : "No" );
 
@@ -212,7 +212,7 @@ void get_params(Options &options)
     fprintf(outfile, "\tSpinadapt Ener. =     %s\n",  params.spinadapt_energies ? "Yes" : "No" );
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
 
-  if ( params.wfn == "CC3" || params.wfn == "EOM_CC3") 
+  if ( params.wfn == "CC3" || params.wfn == "EOM_CC3")
     fprintf(outfile, "\tT3 Ws incore    =     %s\n", params.t3_Ws_incore ? "Yes" : "No");
 
   if(params.local) {
