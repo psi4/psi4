@@ -21,14 +21,14 @@
 #
 
 """Module with utility functions for use in input files."""
-import PsiMod
+import psi4
 import sys
 import os
 import math
 from psiexceptions import *
 
 def oeprop(*args, **kwargs):
-    oe = PsiMod.OEProp()
+    oe = psi4.OEProp()
     if 'title' in kwargs:
         oe.set_title(kwargs['title'])
     for prop in args:
@@ -37,22 +37,22 @@ def oeprop(*args, **kwargs):
 
 def set_memory(bytes):
     """Function to reset the total memory allocation."""
-    PsiMod.set_memory(bytes)
+    psi4.set_memory(bytes)
 
 
 def get_memory():
     """Function to return the total memory allocation."""
-    return PsiMod.get_memory()
+    return psi4.get_memory()
 
 
 def set_num_threads(nthread):
     """Function to reset the number of threads to parallelize across."""
-    PsiMod.set_nthread(nthread)
+    psi4.set_nthread(nthread)
 
 
 def get_num_threads():
     """Function to return the number of threads to parallelize across."""
-    return PsiMod.nthread()
+    return psi4.nthread()
 
 
 def success(label):
@@ -139,10 +139,10 @@ def compare_matrices(expected, computed, digits, label):
 
         if(failed):
             print("Check your output file for reporting of the matrices.")
-            PsiMod.print_out("The Failed Test Matrices\n")
-            PsiMod.print_out("Computed Matrix (2nd matrix passed in)\n")
+            psi4.print_out("The Failed Test Matrices\n")
+            psi4.print_out("Computed Matrix (2nd matrix passed in)\n")
             computed.print_out()
-            PsiMod.print_out("Expected Matrix (1st matrix passed in)\n")
+            psi4.print_out("Expected Matrix (1st matrix passed in)\n")
             expected.print_out()
             sys.exit(1)
     success(label)
@@ -172,9 +172,9 @@ def compare_vectors(expected, computed, digits, label):
                 break
 
         if(failed):
-            PsiMod.print_out("The computed vector\n")
+            psi4.print_out("The computed vector\n")
             computed.print_out()
-            PsiMod.print_out("The reference vector\n")
+            psi4.print_out("The reference vector\n")
             expected.print_out()
             sys.exit(1)
     success(label)
@@ -208,7 +208,7 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     """
 
     pid = str(os.getpid())
-    scratch = PsiMod.IOManager.shared_object().get_file_path(int(unit))
+    scratch = psi4.IOManager.shared_object().get_file_path(int(unit))
 
     cp = '/bin/cp';
     if move:
@@ -260,7 +260,7 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     """
 
     pid = str(os.getpid())
-    scratch = PsiMod.IOManager.shared_object().get_file_path(int(unit))
+    scratch = psi4.IOManager.shared_object().get_file_path(int(unit))
 
     cp = '/bin/cp';
     if move:

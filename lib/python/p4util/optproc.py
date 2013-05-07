@@ -24,7 +24,7 @@ r"""Module to provide mechanism to store and restore option states in driver.
 
 """
 import sys
-import PsiMod
+import psi4
 
 
 class OptionState(object):
@@ -45,13 +45,13 @@ class OptionState(object):
         else:
             self.module = None
 
-        self.value_global = PsiMod.get_global_option(option)
-        self.haschanged_global = PsiMod.has_global_option_changed(option)
+        self.value_global = psi4.get_global_option(option)
+        self.haschanged_global = psi4.has_global_option_changed(option)
         if self.module:
-            self.value_local = PsiMod.get_local_option(self.module, option)
-            self.haschanged_local = PsiMod.has_local_option_changed(self.module, option)
-            self.value_used = PsiMod.get_option(self.module, option)
-            self.haschanged_used = PsiMod.has_option_changed(self.module, option)
+            self.value_local = psi4.get_local_option(self.module, option)
+            self.haschanged_local = psi4.has_local_option_changed(self.module, option)
+            self.value_used = psi4.get_option(self.module, option)
+            self.haschanged_used = psi4.has_option_changed(self.module, option)
         else:
             self.value_local = None
             self.haschanged_local = None
@@ -72,13 +72,13 @@ class OptionState(object):
         return text
 
     def restore(self):
-        PsiMod.set_global_option(self.option, self.value_global)
+        psi4.set_global_option(self.option, self.value_global)
         if not self.haschanged_global:
-            PsiMod.revoke_global_option_changed(self.option)
+            psi4.revoke_global_option_changed(self.option)
         if self.module:
-            PsiMod.set_local_option(self.module, self.option, self.value_local)
+            psi4.set_local_option(self.module, self.option, self.value_local)
             if not self.haschanged_local:
-                PsiMod.revoke_local_option_changed(self.module, self.option)
+                psi4.revoke_local_option_changed(self.module, self.option)
 
 
 class OptionsState(object):
@@ -119,3 +119,4 @@ class OptionsState(object):
     def restore(self):
         for item in self.data:
             item.restore()
+

@@ -134,13 +134,13 @@ $(autotarget4): %: $(autodepend4)
 	@srcdir@/separate_userprogman.py @srcdir@
 
 
-# Autodoc PsiMod module
+# Autodoc psi4 module
 autodepend5 = \
 @top_srcdir@/src/bin/psi4/*.cc \
 @top_srcdir@/tests/docs-psimod/input.dat
 
 autotarget5 = \
-$(SOURCEDIR)/autodoc_man_PsiMod.txt
+$(SOURCEDIR)/autodoc_man_psi4.txt
 
 $(autotarget5): %: $(autodepend5)
 	cd ../../tests/docs-psimod; $(MAKE) clean; $(MAKE)
@@ -224,7 +224,7 @@ autodepend11 = \
 @srcdir@/document_physconst.pl
 
 autotarget11 = \
-@top_srcdir@/lib/python/physconst.py
+@top_srcdir@/lib/python/p4const/physconst.py
 
 $(autotarget11): %: $(autodepend11)
 	@srcdir@/document_physconst.pl @srcdir@
@@ -232,7 +232,7 @@ $(autotarget11): %: $(autodepend11)
 
 # Autodoc basisfamily
 autodepend12 = \
-@top_srcdir@/lib/python/basislist*.py \
+@top_srcdir@/lib/python/p4util/basislist*.py \
 @top_srcdir@/tests/docs-bases/input.dat
 
 autotarget12 = \
@@ -249,7 +249,7 @@ autodepend13 = \
 @srcdir@/document_psifiles.py
 
 autotarget13 = \
-@top_srcdir@/lib/python/psifiles.py \
+@top_srcdir@/lib/python/p4const/psifiles.py \
 $(SOURCEDIR)/autodoc_psifiles.rst
 
 $(autotarget13): %: $(autodepend13)
@@ -267,7 +267,7 @@ autodoc: $(autotarget1) $(autotarget3) $(autotarget4) \
 #####  static docs  #####
 
 MISCDOC = \
-psi4banner.png PsiMod.py
+psi4banner.png psi4.py
 
 STATICDOC = \
 abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \

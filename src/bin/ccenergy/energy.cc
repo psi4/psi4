@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -42,9 +42,12 @@ double uhf_energy(void);
 
 double energy(void)
 {
-  if(params.ref == 0) return(rhf_energy());
-  else if(params.ref == 1) return(rohf_energy());
-  else if(params.ref == 2) return(uhf_energy());
+  double e = 0.0;
+  if(params.ref == 0) e = rhf_energy();
+  else if(params.ref == 1) e = rohf_energy();
+  else if(params.ref == 2) e = uhf_energy();
+
+  return e;
 }
 
 double rhf_energy(void)
@@ -72,11 +75,11 @@ double rhf_energy(void)
 
   moinfo.ecc_ss = ss_energy;
   moinfo.ecc_os = os_energy;
- 
+
   dpd_buf4_close(&S);
   dpd_buf4_close(&tauIjAb);
   dpd_buf4_close(&D);
-  
+
   /*
     fprintf(outfile, "Two AB Energy = %20.14f\n", tauIjAb_energy);
   */
@@ -136,7 +139,7 @@ double rohf_energy(void)
   moinfo.ecc_os = tauIjAb_energy;
 
   return (tIA_energy + tia_energy +
-	  tauIJAB_energy + tauijab_energy + tauIjAb_energy);
+      tauIJAB_energy + tauijab_energy + tauIjAb_energy);
 }
 
 double uhf_energy(void)
@@ -184,12 +187,12 @@ double uhf_energy(void)
   fprintf(outfile, "Two BB Energy = %20.14f\n", E2BB);
   fprintf(outfile, "Two AB Energy = %20.14f\n", E2AB);
   */
-  
+
   /*
   fprintf(outfile,"\n\tOpposite-spin energy  = %20.15f\n",E2AB);
   fprintf(outfile,"\tSame-spin energy  = %20.15f\n",E2AA+E2BB);
   */
- 
+
   // Store the same-spin and opposite-spin pair energies
   // (not including singles here)
   moinfo.ecc_ss = E2AA + E2BB;

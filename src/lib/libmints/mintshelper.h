@@ -47,6 +47,7 @@ private:
     boost::shared_ptr<IntegralFactory> integral_;
     boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<SOBasisSet> sobasis_;
+    boost::shared_ptr<TwoBodyAOInt> eriInts_;
     int print_;
 
     /// Value which any two-electron integral is below is discarded
@@ -59,6 +60,8 @@ private:
                                                  SharedMatrix C3, SharedMatrix C4);
 
     SharedMatrix ao_helper(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints);
+    SharedMatrix ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q);
+
 
     void common_init();
 
@@ -119,6 +122,8 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     SharedMatrix ao_eri();
+    /// AO ERI Shell
+    SharedMatrix ao_eri_shell(int M, int N, int P, int Q);
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega);
     /// MO ERFC Omega Integrals

@@ -373,3 +373,4 @@ def load_basfam_other():
     basis_6311ppg_3df_2p_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_2pd_.add_rifit('aug-cc-pvtz-ri')
     basis_6311ppg_3df_3pd_.add_rifit('aug-cc-pvtz-ri')
+

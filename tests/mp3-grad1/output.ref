@@ -31,7 +31,7 @@ ref_vals = [                                                       #TEST
              [ 0.000000000000,  0.000269094803, -0.004333624599],  #TEST
              [ 0.000000000000, -0.000269094803, -0.004333624599]   #TEST
            ]                                                       #TEST
-ref = PsiMod.Matrix(3, 3)                                          #TEST
+ref = psi4.Matrix(3, 3)                                          #TEST
 ref.set(ref_vals)
 
 memory 250 mb
@@ -48,7 +48,7 @@ set {
 }
 gradient('mp3')
 
-grad = PsiMod.wavefunction().gradient()                           #TEST
+grad = psi4.wavefunction().gradient()                           #TEST
 compare_matrices(ref, grad, 6, "Analytic gradients")              #TEST
 
 --------------------------------------------------------------------------

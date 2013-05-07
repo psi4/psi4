@@ -39,7 +39,7 @@ private:
 
 public:
 
-    LocalCommWrapper(int &argc, char **argv)
+    LocalCommWrapper(const int &argc, char **argv)
     {
         init_openmp();
         me_ = 0;

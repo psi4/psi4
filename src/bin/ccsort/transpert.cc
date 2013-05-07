@@ -22,11 +22,12 @@
 
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
@@ -76,7 +77,7 @@ void transpert(const char *pert)
   int alpha;
   int i, j, ij;
   double *scratch, **TMP, **X, **target;
-  char *name;
+  std::string name;
   double prefactor, anti, sign;
 
   nao = moinfo.nao;
@@ -114,22 +115,22 @@ void transpert(const char *pert)
       else if(alpha == 2) { name = PSIF_AO_NablaZ; moinfo.PZ = target; }
     }
 
-    iwl_rdone(PSIF_OEI, name, scratch, noei_ao, 0, 0, outfile);
+    iwl_rdone(PSIF_OEI, name.c_str(), scratch, noei_ao, 0, 0, outfile);
     for(i=0,ij=0; i < nao; i++)
       for(j=0; j <= i; j++,ij++) {
-	TMP[i][j] = prefactor * sign * scratch[ij];
-	TMP[j][i] = anti * prefactor * sign * scratch[ij];
+    TMP[i][j] = prefactor * sign * scratch[ij];
+    TMP[j][i] = anti * prefactor * sign * scratch[ij];
       }
 
     C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(moinfo.usotao[0][0]),nao,
-	    0,&(X[0][0]),nao);
+        0,&(X[0][0]),nao);
     C_DGEMM('n','n',nso,nso,nao,1,&(moinfo.usotao[0][0]),nao,&(X[0][0]),nao,
-	    0,&(TMP[0][0]),nao);
+        0,&(TMP[0][0]),nao);
 
     C_DGEMM('n','n',nso,nmo,nso,1,&(TMP[0][0]),nao,&(moinfo.scf[0][0]),nmo,
-	    0,&(X[0][0]),nao);
+        0,&(X[0][0]),nao);
     C_DGEMM('t','n',nmo,nmo,nso,1,&(moinfo.scf[0][0]),nmo,&(X[0][0]),nao,
-	    0,&(target[0][0]),nmo);
+        0,&(target[0][0]),nmo);
 
     zero_arr(scratch,noei_ao);
 

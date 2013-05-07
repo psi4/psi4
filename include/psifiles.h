@@ -272,6 +272,10 @@
 
 #define PSIF_HESS              272  /*- Hessian Utility File -*/
 
+#define PSIF_OCC_DPD           273  /*- OCC DPD -*/
+#define PSIF_OCC_DENSITY       274  /*- OCC Density -*/
+#define PSIF_OCC_IABC          275  /*- OCC out-of-core <IA|BC> -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
