@@ -38,6 +38,8 @@
 #include <libtrans/mospace.h>
 #include <libmints/matrix.h>
 
+#define DEBUG 1
+
 namespace psi { namespace ccsort {
 
 /* 
@@ -91,8 +93,11 @@ void fock_uhf(void)
   SharedMatrix Cb = SharedMatrix(Process::environment.wavefunction()->Cb());
   Fa->transform(Ca);
   Fb->transform(Cb);
+
+#if DEBUG
   Fa->print();
   Fb->print();
+#endif
 
   dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
@@ -112,8 +117,10 @@ void fock_uhf(void)
 
   dpd_file2_mat_wrt(&fIJ);
   dpd_file2_mat_wrt(&fij);
+#if DEBUG
   dpd_file2_print(&fIJ, outfile);
   dpd_file2_print(&fij, outfile);
+#endif
   dpd_file2_close(&fIJ);
   dpd_file2_close(&fij);
 
@@ -136,8 +143,10 @@ void fock_uhf(void)
 
   dpd_file2_mat_wrt(&fAB);
   dpd_file2_mat_wrt(&fab);
+#if DEBUG
   dpd_file2_print(&fAB, outfile);
   dpd_file2_print(&fab, outfile);
+#endif
   dpd_file2_close(&fAB);
   dpd_file2_close(&fab);
 
@@ -164,8 +173,10 @@ void fock_uhf(void)
   dpd_file2_mat_wrt(&fia);
   dpd_file2_mat_close(&fIA);
   dpd_file2_mat_close(&fia);
+#if DEBUG
   dpd_file2_print(&fIA, outfile);
   dpd_file2_print(&fia, outfile);
+#endif
   dpd_file2_close(&fIA);
   dpd_file2_close(&fia);
 
@@ -195,8 +206,10 @@ void fock_rhf(void)
   SharedMatrix Ca = SharedMatrix(Process::environment.wavefunction()->Ca());
   Fa->transform(Ca);
   Fb->transform(Ca);
+#if DEBUG
   Fa->print();
   Fb->print();
+#endif
 
   /* Prepare the alpha and beta occ-occ Fock matrix files */
   dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
@@ -221,8 +234,10 @@ void fock_rhf(void)
   dpd_file2_mat_wrt(&fij);
   dpd_file2_mat_close(&fIJ);
   dpd_file2_mat_close(&fij);
+#if DEBUG
   dpd_file2_print(&fIJ, outfile);
   dpd_file2_print(&fij, outfile);
+#endif
   dpd_file2_close(&fIJ);
   dpd_file2_close(&fij);
 
@@ -261,8 +276,10 @@ void fock_rhf(void)
   dpd_file2_mat_wrt(&fab);
   dpd_file2_mat_close(&fAB);
   dpd_file2_mat_close(&fab);
+#if DEBUG
   dpd_file2_print(&fAB, outfile);
   dpd_file2_print(&fab, outfile);
+#endif
   dpd_file2_close(&fAB);
   dpd_file2_close(&fab);
 
@@ -294,8 +311,10 @@ void fock_rhf(void)
   dpd_file2_mat_wrt(&fia);
   dpd_file2_mat_close(&fIA);
   dpd_file2_mat_close(&fia);
+#if DEBUG
   dpd_file2_print(&fIA, outfile);
   dpd_file2_print(&fia, outfile);
+#endif
   dpd_file2_close(&fIA);
   dpd_file2_close(&fia);
 
