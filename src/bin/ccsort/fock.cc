@@ -87,10 +87,10 @@ void fock_uhf(void)
   bvirtpi = moinfo.bvirtpi;
   frdocc = moinfo.frdocc;
 
-  SharedMatrix Fa = SharedMatrix(Process::environment.wavefunction()->Fa());
-  SharedMatrix Fb = SharedMatrix(Process::environment.wavefunction()->Fb());
-  SharedMatrix Ca = SharedMatrix(Process::environment.wavefunction()->Ca());
-  SharedMatrix Cb = SharedMatrix(Process::environment.wavefunction()->Cb());
+  SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
+  SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
+  SharedMatrix Ca = Process::environment.wavefunction()->Ca();
+  SharedMatrix Cb = Process::environment.wavefunction()->Cb();
   Fa->transform(Ca);
   Fb->transform(Cb);
 
@@ -201,11 +201,14 @@ void fock_rhf(void)
   frdocc = moinfo.frdocc;
   fruocc = moinfo.fruocc;
 
-  SharedMatrix Fa = SharedMatrix(Process::environment.wavefunction()->Fa());
-  SharedMatrix Fb = SharedMatrix(Process::environment.wavefunction()->Fb());
-  SharedMatrix Ca = SharedMatrix(Process::environment.wavefunction()->Ca());
+  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
+
+  SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
+  SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
+  SharedMatrix Ca = Process::environment.wavefunction()->Ca();
+  SharedMatrix Cb = Process::environment.wavefunction()->Cb();
   Fa->transform(Ca);
-  Fb->transform(Ca);
+  Fb->transform(Cb);
 #if DEBUG
   Fa->print();
   Fb->print();
