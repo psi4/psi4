@@ -78,9 +78,11 @@ int psi_start(int argc, char *argv[])
     check_only          = false;
     clean_only          = false;
     verbose             = false;
+    skip_input_preprocess = false;
+    interactive_python  = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVdcwo:p:i:sn:m";
+    const char* const short_options = "ahvVdcwo:p:i:sn:mkt";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
@@ -94,6 +96,8 @@ int psi_start(int argc, char *argv[])
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
         { "messy",   0, NULL, 'm' },
+        { "skip-preprocessor",  0, NULL, 'k' },
+        { "interactive", 0, NULL, 't' },
         { "new-plugin", 1, NULL, 1 },  // requires 1 argument
         { NULL,      0, NULL,  0  }
     };
@@ -174,6 +178,14 @@ int psi_start(int argc, char *argv[])
                 append = true; // to avoid deletion of an existing output file
                 break;
 
+            case 'k': // -y or --skip-parser
+                skip_input_preprocess = true;
+                break;
+
+            case 't': // -t or --interactive
+                interactive_python = true;
+                break;
+
             case -1: // done with options
                 break;
 
@@ -192,6 +204,9 @@ int psi_start(int argc, char *argv[])
             ifname = argv[optind];
         }
     }
+
+    if (interactive_python)
+        ofname = "stdout";
 
     /* if some args were not specified on command-line - check the environment */
     if (ifname.empty() && Process::environment("PSI_INPUT").size())
@@ -214,7 +229,7 @@ int psi_start(int argc, char *argv[])
           if (ifname.size() > 4 && (ifname.rfind(".dat")==ifname.size()-4)){
               base_name = ifname.substr(0, ifname.rfind(".dat"));
           }
-          else if (ifname.size()>3 && (ifname.rfind(".in")==ifname.size()-3)){ 
+          else if (ifname.size()>3 && (ifname.rfind(".in")==ifname.size()-3)){
               base_name = ifname.substr(0, ifname.rfind(".in"));
           }
           else {
@@ -298,8 +313,11 @@ void print_usage(void)
     printf("Usage:  psi4 [options] inputfile\n");
     printf(" -a  --append             Append results to output file. Default: Truncate first\n");
     printf(" -c  --check              Run input checks (not implemented).\n");
+    printf(" -d  --debug              Flush the outfile at every fprintf.\n"
+           "                          Default: true iff --with-debug.\n");
     printf(" -h  --help               Display this usage information.\n");
     printf(" -i  --input filename     Input file name. Default: input.dat\n");
+    printf(" -k  --skip-preprocessor  Skips input preprocessing. Expert mode.\n");
     printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
@@ -308,9 +326,8 @@ void print_usage(void)
            "                          that specifies a template to use, for example:\n"
            "                              --new-plugin name +mointegrals\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
+    printf(" -t  --interactive        Start interactive Python session. Expert mode.\n");
     printf(" -v  --verbose            Print a lot of information.\n");
-    printf(" -d  --debug              Flush the outfile at every fprintf.\n"
-           "                          Default: true iff --with-debug.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
 

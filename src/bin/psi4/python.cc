@@ -47,7 +47,7 @@
 #include "psi4.h"
 
 #include "../ccenergy/ccwave.h"
-#include "../mp2/mp2wave.h"
+//#include "../mp2/mp2wave.h"
 
 #if defined(MAKE_PYTHON_MODULE)
 #include <libqt/qt.h>
@@ -457,6 +457,7 @@ double py_psi_ccenergy()
 //        return 0.0;
 }
 
+/*
 double py_psi_mp2()
 {
     py_psi_prepare_options_for_module("MP2");
@@ -469,6 +470,7 @@ double py_psi_mp2()
     double energy = mp2wave->compute_energy();
     return energy;
 }
+*/
 
 double py_psi_cctriples()
 {
@@ -1249,7 +1251,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
     def("dfmp2grad", py_psi_dfmp2grad, "Runs the DF-MP2 gradient.");
 //    def("lmp2", py_psi_lmp2, "docstring");
-    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
+//    def("mp2", py_psi_mp2, "Runs the conventional (slow) MP2 code.");
     def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     def("mrcc_load_densities", py_psi_mrcc_load_densities, "Reads in the density matrices from Kallay's MRCC code.");
@@ -1392,38 +1394,56 @@ void Python::run(FILE *input)
         }
 
         try {
+            string inputfile;
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import psi4");
             PyRun_SimpleString(s);
 
-            // Process the input file
-            PyObject *input;
-            PY_TRY(input, PyImport_ImportModule("inputparser") );
-            PyObject *function;
-            PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
-            PyObject *pargs;
-            PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
-            PyObject *ret;
-            PY_TRY( ret, PyEval_CallObject(function, pargs) );
+            if (!interactive_python) {
+                if (!skip_input_preprocess) {
+                    // Process the input file
+                    PyObject *input;
+                    PY_TRY(input, PyImport_ImportModule("inputparser") );
+                    PyObject *function;
+                    PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
+                    PyObject *pargs;
+                    PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+                    PyObject *ret;
+                    PY_TRY( ret, PyEval_CallObject(function, pargs) );
 
-            char *val;
-            PyArg_Parse(ret, "s", &val);
-            string inputfile = val;
+                    char *val;
+                    PyArg_Parse(ret, "s", &val);
+                    inputfile = val;
 
-            Py_DECREF(ret);
-            Py_DECREF(pargs);
-            Py_DECREF(function);
-            Py_DECREF(input);
+                    Py_DECREF(ret);
+                    Py_DECREF(pargs);
+                    Py_DECREF(function);
+                    Py_DECREF(input);
+                }
+                else
+                    inputfile = file.str();
 
-            if (verbose) {
-                fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
-                fflush(outfile);
+                if (verbose) {
+                    fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
+                    fflush(outfile);
+                }
+
+                str strStartScript(inputfile);
+
+                object objectScriptInit = exec( strStartScript, objectDict, objectDict );
             }
-
-            str strStartScript(inputfile);
-
-            object objectScriptInit = exec( strStartScript, objectDict, objectDict );
+            else { // interactive python
+                // Process the input file
+                PyObject *input;
+                PY_TRY(input, PyImport_ImportModule("interactive") );
+                PyObject *function;
+                PY_TRY(function, PyObject_GetAttrString(input, "run"));
+//                PyObject *pargs;
+//                PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+                PyObject *ret;
+                PY_TRY( ret, PyEval_CallObject(function, NULL) );
+            }
         }
         catch (error_already_set const& e)
         {

@@ -2340,6 +2340,9 @@ def run_fnodfcc(name, **kwargs):
     if user_pg != 'c1':
         psi4.print_out('  FNOCC does not make use of molecular symmetry, further calculations in C1 point group.\n')
 
+    # hack to ensure puream (or not) throughout
+    psi4.set_global_option('PUREAM', psi4.MintsHelper().basisset().has_puream())
+
     # triples?
     if (lowername == 'df-ccsd'):
         psi4.set_local_option('FNOCC', 'COMPUTE_TRIPLES', False)
