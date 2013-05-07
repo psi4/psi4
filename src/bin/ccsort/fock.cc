@@ -75,6 +75,7 @@ void fock_uhf(void)
   int a, b;
   int *aoccpi, *boccpi;
   int *avirtpi, *bvirtpi;
+  int *frdocc;
   dpdfile2 fIJ, fij, fAB, fab, fIA, fia;
 
   nirreps = moinfo.nirreps;
@@ -82,6 +83,7 @@ void fock_uhf(void)
   boccpi = moinfo.boccpi;
   avirtpi = moinfo.avirtpi;
   bvirtpi = moinfo.bvirtpi;
+  frdocc = moinfo.frdocc;
 
   SharedMatrix Fa = SharedMatrix(Process::environment.wavefunction()->Fa());
   SharedMatrix Fb = SharedMatrix(Process::environment.wavefunction()->Fb());
@@ -101,11 +103,11 @@ void fock_uhf(void)
 
     for(i=0; i < aoccpi[h]; i++)
       for(j=0; j < aoccpi[h]; j++)
-        fIJ.matrix[h][i][j] = Fa->get(h,i,j);
+          fIJ.matrix[h][i][j] = Fa->get(h,i + frdocc[h],j + frdocc[h]);
 
     for(i=0; i < boccpi[h]; i++)
       for(j=0; j < boccpi[h]; j++)
-        fij.matrix[h][i][j] = Fb->get(h,i,j);
+        fij.matrix[h][i][j] = Fb->get(h,i + frdocc[h],j + frdocc[h]);
   }
 
   dpd_file2_mat_wrt(&fIJ);
@@ -125,11 +127,11 @@ void fock_uhf(void)
 
     for(a=0; a < avirtpi[h]; a++)
       for(b=0; b < avirtpi[h]; b++)
-        fAB.matrix[h][a][b] = Fa->get(h, a + aoccpi[h], b + aoccpi[h]);
+        fAB.matrix[h][a][b] = Fa->get(h, a + frdocc[h] + aoccpi[h], b + frdocc[h] + aoccpi[h]);
 
     for(a=0; a < bvirtpi[h]; a++)
       for(b=0; b < bvirtpi[h]; b++)
-        fab.matrix[h][a][b] = Fb->get(h, a + boccpi[h], b + boccpi[h]);
+        fab.matrix[h][a][b] = Fb->get(h, a + frdocc[h] + boccpi[h], b + frdocc[h] + boccpi[h]);
   }
 
   dpd_file2_mat_wrt(&fAB);
@@ -150,11 +152,11 @@ void fock_uhf(void)
 
     for(i=0; i < aoccpi[h]; i++)
       for(a=0; a < avirtpi[h]; a++)
-        fIA.matrix[h][i][a] = Fa->get(h, i, a + aoccpi[h]);
+        fIA.matrix[h][i][a] = Fa->get(h, i + frdocc[h], a + frdocc[h] + aoccpi[h]);
 
     for(i=0; i < boccpi[h]; i++)
       for(a=0; a < bvirtpi[h]; a++)
-        fia.matrix[h][i][a] = Fb->get(h, i, a + boccpi[h]);
+        fia.matrix[h][i][a] = Fb->get(h, i + frdocc[h], a + frdocc[h] + boccpi[h]);
   }
 
   /* Close the alpha and beta occ-vir Fock matrix files */
@@ -176,6 +178,8 @@ void fock_rhf(void)
   int nirreps;
   int *occpi, *virtpi;
   int *openpi;
+  int *frdocc;
+  int *fruocc;
   dpdfile2 fIJ, fij, fAB, fab, fIA, fia;
 
   // Take Fock matrix from the wavefunction and transform it to the MO basis
@@ -183,6 +187,8 @@ void fock_rhf(void)
   nirreps = moinfo.nirreps;
   occpi = moinfo.occpi; virtpi = moinfo.virtpi;
   openpi = moinfo.openpi;
+  frdocc = moinfo.frdocc;
+  fruocc = moinfo.fruocc;
 
   SharedMatrix Fa = SharedMatrix(Process::environment.wavefunction()->Fa());
   SharedMatrix Fb = SharedMatrix(Process::environment.wavefunction()->Fb());
@@ -203,11 +209,11 @@ void fock_rhf(void)
 
       for(i=0; i < occpi[h]; i++)
           for(j=0; j < occpi[h]; j++)
-              fIJ.matrix[h][i][j] = Fa->get(h,i,j);
+              fIJ.matrix[h][i][j] = Fa->get(h,i + frdocc[h],j + frdocc[h]);
 
       for(i=0; i < (occpi[h]-openpi[h]); i++)
           for(j=0; j < (occpi[h]-openpi[h]); j++)
-              fij.matrix[h][i][j] = Fb->get(h,i,j);
+              fij.matrix[h][i][j] = Fb->get(h,i + frdocc[h],j + frdocc[h]);
   }
 
   /* Close the alpha and beta occ-occ Fock matrix files */
@@ -231,23 +237,23 @@ void fock_rhf(void)
 
       for(a=0; a < (virtpi[h] - openpi[h]); a++)
           for(b=0; b < (virtpi[h] - openpi[h]); b++)
-              fAB.matrix[h][a][b] = Fa->get(h, a + occpi[h], b + occpi[h]);
+              fAB.matrix[h][a][b] = Fa->get(h, a + frdocc[h] + occpi[h], b + frdocc[h] + occpi[h]);
 
       for(a=0; a < (virtpi[h] - openpi[h]); a++)
           for(b=0; b <(virtpi[h] - openpi[h]); b++)
-              fab.matrix[h][a][b] = Fb->get(h, a + occpi[h], b + occpi[h]);
+              fab.matrix[h][a][b] = Fb->get(h, a + frdocc[h] + occpi[h], b + frdocc[h] + occpi[h]);
 
       for(a=0; a < openpi[h]; a++)
           for(b=0; b < openpi[h]; b++)
-              fab.matrix[h][virtpi[h] - openpi[h] + a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + occpi[h] - openpi[h], b + occpi[h] - openpi[h]);
+              fab.matrix[h][virtpi[h] - openpi[h] + a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + frdocc[h] + occpi[h] - openpi[h], b + frdocc[h] + occpi[h] - openpi[h]);
 
       for(a=0; a < (virtpi[h] - openpi[h]); a++)
           for(b=0; b < openpi[h]; b++)
-              fab.matrix[h][a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + occpi[h], b + occpi[h] - openpi[h]);
+              fab.matrix[h][a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + frdocc[h] + occpi[h], b + frdocc[h] + occpi[h] - openpi[h]);
 
       for(a=0; a < openpi[h]; a++)
-          for(b=0; b <(virtpi[h] - openpi[h]); b++)
-              fab.matrix[h][virtpi[h] - openpi[h] + a][b] = Fb->get(h, a + occpi[h] - openpi[h], b + occpi[h]);
+          for(b=0; b < (virtpi[h] - openpi[h]); b++)
+              fab.matrix[h][virtpi[h] - openpi[h] + a][b] = Fb->get(h, a + frdocc[h] + occpi[h] - openpi[h], b + frdocc[h] + occpi[h]);
   }
 
   /* Close the alpha and beta vir-vir Fock matrix files */
@@ -271,15 +277,15 @@ void fock_rhf(void)
 
       for(i=0; i < occpi[h]; i++)
           for(a=0; a < (virtpi[h] - openpi[h]); a++)
-              fIA.matrix[h][i][a] = Fa->get(h, i, a + occpi[h]);
+              fIA.matrix[h][i][a] = Fa->get(h, i + frdocc[h], a + frdocc[h] + occpi[h]);
 
       for(i=0; i < (occpi[h] - openpi[h]); i++)
           for(a=0; a < (virtpi[h] - openpi[h]); a++)
-              fia.matrix[h][i][a] = Fb->get(h, i, a + occpi[h]);
+              fia.matrix[h][i][a] = Fb->get(h, i + frdocc[h], a + frdocc[h] + occpi[h]);
 
       for(i=0; i < (occpi[h] - openpi[h]); i++)
           for(a=0; a < openpi[h]; a++)
-              fia.matrix[h][i][virtpi[h] - openpi[h] + a] = Fb->get(h, i, a + occpi[h] - openpi[h]);
+              fia.matrix[h][i][virtpi[h] - openpi[h] + a] = Fb->get(h, i + frdocc[h], a + frdocc[h] + occpi[h] - openpi[h]);
 
   }
 
