@@ -20,6 +20,7 @@
  *@END LICENSE
  */
 
+#define PSIF_CIM 273 // TODO: move to psifiles.h
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -111,6 +112,7 @@ void CoupledCluster::common_init() {
      nvirt    = reference_wavefunction_->CIMActiveVirtual();
      nfzc     = ndocc - ndoccact;
      nmo      = ndoccact + nvirt;
+     nfzv     = nmopi_[0] - ndocc - nvirt;
   }else{
      ndoccact = ndocc - nfzc;
      nvirt    = nmo - ndoccact;
@@ -1897,6 +1899,83 @@ void CoupledCluster::UpdateT1(long int iter){
    SCS functions.  get energy in terms of spin components
 
 ================================================================*/
+void DFCoupledCluster::Local_SCS_CCSD(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+
+  // df (ia|bj) formerly E2klcd
+  F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,tempt,o*v);
+
+  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
+  // the dimension of the Rii transformation matrix:
+  int nocc = Rii->colspi()[0];
+  double**Rii_pointer = Rii->pointer();
+  // transform E2iajb back from quasi-canonical basis
+  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempv;
+  }
+  // transform t2 back from quasi-canonical basis
+  for (int a = 0; a < v; a++){
+      for (int b = 0; b < v; b++){
+          for (int i = 0; i < o; i++){
+              for (int j = 0; j < o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  F_DGEMM('N','N',o,v*v*o,o,1.0,&Rii_pointer[0][0],nocc,tb,o,0.0,tempt,o);
+  // resort t(abji) -> t(abij)
+  for (int ab = 0; ab < v*v; ab++){
+      for (int i = 0; i < o; i++){
+          for (int j = 0; j < o; j++){
+              I1[i*o+j] = tempt[ab*o*o+j*o+i];
+          }
+      }
+      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+  }
+  for (int a = 0; a < v; a++){
+      for (int b = 0; b < v; b++){
+          for (int i = 0; i < o; i++){
+              for (int j = 0; j < o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+
+  // energy
+  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+  for (int b = o; b < rs; b++){
+      for (int a = o; a < rs; a++){
+          for (int i = 0; i < o; i++){
+              for (int j = 0; j < o; j++){
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int ijab = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
+              }
+          }
+      }
+  }
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
+  eccsd = eccsd_os + eccsd_ss;
+
+  psio.reset();
+}
 void CoupledCluster::Local_SCS_CCSD(){
 
   long int v = nvirt;
@@ -2698,7 +2777,11 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
   if (iter==maxiter){
      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
-  SCS_CCSD();
+  if (reference_wavefunction_->isCIM()){
+      Local_SCS_CCSD();
+  }else{
+      SCS_CCSD();
+  }
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
@@ -2799,15 +2882,26 @@ void DFCoupledCluster::T1Fock(){
 
     // Ca_L = C(1-t1^T)
     // Ca_R = C(1+t1)
-    F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-    F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+    double * Catemp = (double*)malloc(nso*full*sizeof(double));
+    if ( reference_wavefunction_->isCIM() ) {
+        boost::shared_ptr<PSIO> psio (new PSIO());
+        psio->open(PSIF_CIM,PSIO_OPEN_OLD);
+        psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
+        psio->close(PSIF_CIM,1);
+        F_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
+        F_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
+    }else {
+        F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+        F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+        F_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
+    }
 
     #pragma omp parallel for schedule (static)
     for (int mu = 0; mu < nso; mu++) {
         for (int a = 0; a < v; a++) {
             double dum = 0.0;
             for (int i = 0; i < o; i++) {
-                dum += Ca[mu][i+nfzc] * t1[a*o+i];
+                dum += Catemp[mu*full+i+nfzc] * t1[a*o+i];
             }
             Ca_L[mu*full + a + ndocc] -= dum;
         }
@@ -2817,11 +2911,12 @@ void DFCoupledCluster::T1Fock(){
         for (int i = 0; i < o; i++) {
             double dum = 0.0;
             for (int a = 0; a < v; a++) {
-                dum += Ca[mu][a+ndocc] * t1[a*o+i];
+                dum += Catemp[mu*full+a+ndocc] * t1[a*o+i];
             }
             Ca_R[mu*full + i + nfzc] += dum;
         }
     }
+    free(Catemp);
 
     // (Q|rs)
     boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2895,8 +2990,11 @@ void DFCoupledCluster::T1Fock(){
             double dum = h[i*nmo+j] - temp3[(i+nfzc)*full+(j+nfzc)];
             dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (j+nfzc) , full*full);
             Fij[i*o+j] = dum;
+//if (i==j) printf("%20.12lf %20.12lf\n",Fij[i*o+j],eps[i]);
         }
     }
+//printf("\n\n");
+//exit(0);
     // Fia
     for (int i = 0; i < o; i++) {
         for (int a = 0; a < v; a++) {
@@ -2941,15 +3039,26 @@ void DFCoupledCluster::T1Integrals(){
 
     // Ca_L = C(1-t1^T)
     // Ca_R = C(1+t1)
-    F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
-    F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+    double * Catemp = (double*)malloc(nso*full*sizeof(double));
+    if ( reference_wavefunction_->isCIM() ) {
+        boost::shared_ptr<PSIO> psio (new PSIO());
+        psio->open(PSIF_CIM,PSIO_OPEN_OLD);
+        psio->read_entry(PSIF_CIM,"C matrix",(char*)&Catemp[0],nso*full*sizeof(double));
+        psio->close(PSIF_CIM,1);
+        F_DCOPY(nso*full,&Catemp[0],1,Ca_L,1);
+        F_DCOPY(nso*full,&Catemp[0],1,Ca_R,1);
+    }else {
+        F_DCOPY(nso*full,&Ca[0][0],1,Ca_L,1);
+        F_DCOPY(nso*full,&Ca[0][0],1,Ca_R,1);
+        F_DCOPY(nso*full,&Ca[0][0],1,Catemp,1);
+    }
 
     #pragma omp parallel for schedule (static)
     for (int mu = 0; mu < nso; mu++) {
         for (int a = 0; a < v; a++) {
             double dum = 0.0;
             for (int i = 0; i < o; i++) {
-                dum += Ca[mu][i+nfzc] * t1[a*o+i];
+                dum += Catemp[mu*full+i+nfzc] * t1[a*o+i];
             }
             Ca_L[mu*full + a + ndocc] -= dum;
         }
@@ -2959,11 +3068,12 @@ void DFCoupledCluster::T1Integrals(){
         for (int i = 0; i < o; i++) {
             double dum = 0.0;
             for (int a = 0; a < v; a++) {
-                dum += Ca[mu][a+ndocc] * t1[a*o+i];
+                dum += Catemp[mu*full+a+ndocc] * t1[a*o+i];
             }
             Ca_R[mu*full + i + nfzc] += dum;
         }
     }
+    free(Catemp);
 
     // (Q|rs)
     boost::shared_ptr<PSIO> psio(new PSIO());
@@ -3122,10 +3232,35 @@ void DFCoupledCluster::AllocateMemory() {
   nQ_scf      = (int)Process::environment.globals["NAUX (SCF)"];
 
   // orbital energies
-  boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
-  double * tempeps                   = eps_test->pointer();
-  eps                                = (double*)malloc(nmo*sizeof(double));
-  F_DCOPY(nmo,tempeps+nfzc,1,eps,1);
+  //boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+  //double * tempeps                   = eps_test->pointer();
+  //eps                                = (double*)malloc(nmo*sizeof(double));
+  //F_DCOPY(nmo,tempeps+nfzc,1,eps,1);
+
+  if (!reference_wavefunction_->isCIM()){
+      int count=0;
+      eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+      boost::shared_ptr<Vector> eps_test = reference_wavefunction_->epsilon_a();
+      for (int h=0; h<nirrep_; h++){
+          for (int norb = frzcpi_[h]; norb<doccpi_[h]; norb++){
+              eps[count++] = eps_test->get(h,norb);
+          }
+      }
+      for (int h=0; h<nirrep_; h++){
+          for (int norb = doccpi_[h]; norb<nmopi_[h]-frzvpi_[h]; norb++){
+              eps[count++] = eps_test->get(h,norb);
+          }
+      }
+  }else{
+     // orbital energies in qt ordering:
+     long int count = 0;
+     eps = (double*)malloc((ndoccact+nvirt)*sizeof(double));
+     boost::shared_ptr<Vector> eps_test = reference_wavefunction_->CIMOrbitalEnergies();
+     for (int i = 0; i < ndoccact + nvirt; i++){
+         eps[i] = eps_test->get(0,i+nfzc);
+     }
+     eps_test.reset();
+  }
 
   long int o = ndoccact;
   long int v = nvirt;
