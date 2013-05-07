@@ -486,6 +486,31 @@ SharedMatrix MintsHelper::ao_helper(const std::string& label, boost::shared_ptr<
     return I;
 }
 
+SharedMatrix MintsHelper::ao_shell_getter(const std::string& label, boost::shared_ptr<TwoBodyAOInt> ints, int M, int N, int P, int Q)
+{
+    int mfxn = basisset_->shell(M).nfunction();
+    int nfxn = basisset_->shell(N).nfunction();
+    int pfxn = basisset_->shell(P).nfunction();
+    int qfxn = basisset_->shell(Q).nfunction();
+    SharedMatrix I(new Matrix(label, mfxn*nfxn, pfxn*qfxn));
+    double** Ip = I->pointer();
+    const double* buffer = ints->buffer();
+
+    ints->compute_shell(M,N,P,Q);
+
+    for (int m = 0, index = 0; m < mfxn; m++) {
+        for (int n = 0; n < nfxn; n++) {
+            for (int p = 0; p < pfxn; p++) {
+                for (int q = 0; q < qfxn; q++, index++) {
+                    Ip[m*mfxn + n][p*mfxn + q] = buffer[index];
+                }
+            }
+        }
+    }
+
+    return I;
+}
+
 SharedMatrix MintsHelper::ao_erf_eri(double omega)
 {
     return ao_helper("AO ERF ERI Integrals", boost::shared_ptr<TwoBodyAOInt>(integral_->erf_eri(omega)));
@@ -495,6 +520,14 @@ SharedMatrix MintsHelper::ao_eri()
 {
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri());
     return ao_helper("AO ERI Tensor", ints);
+}
+
+SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q)
+{
+    if(eriInts_ == 0){
+        eriInts_ = boost::shared_ptr<TwoBodyAOInt>(integral_->eri());
+    }
+    return ao_shell_getter("AO ERI Tensor", eriInts_, M, N, P, Q);
 }
 
 SharedMatrix MintsHelper::ao_erfc_eri(double omega)

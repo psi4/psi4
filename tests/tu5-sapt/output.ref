@@ -53,16 +53,16 @@ set globals {
 
 energy('sapt0')
 
-Eelst = PsiMod.get_variable("SAPT ELST ENERGY")   #TEST
-Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")   #TEST
-Eind  = PsiMod.get_variable("SAPT IND ENERGY")    #TEST
-Edisp = PsiMod.get_variable("SAPT DISP ENERGY")   #TEST
-ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")  #TEST
+Eelst = psi4.get_variable("SAPT ELST ENERGY")   #TEST
+Eexch = psi4.get_variable("SAPT EXCH ENERGY")   #TEST
+Eind  = psi4.get_variable("SAPT IND ENERGY")    #TEST
+Edisp = psi4.get_variable("SAPT DISP ENERGY")   #TEST
+ET    = psi4.get_variable("SAPT SAPT0 ENERGY")  #TEST
 
 Eref = [ 85.189064196429,  -0.003378388762,  0.003704416103,  #TEST
          -0.000889316601,  -0.001672292164, -0.002235581423 ] #TEST
 
-#PsiMod.print_variables() #TEST
+#psi4.print_variables() #TEST
 
 compare_values(Eref[0], dimer.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
 compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst") #TEST

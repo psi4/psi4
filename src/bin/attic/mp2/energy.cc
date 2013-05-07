@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup MP2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <libdpd/dpd.h>
 #define EXTERN
@@ -36,11 +36,13 @@ double uhf_energy(void);
 
 double energy(void)
 {
-  if(params.ref == 0) return(rhf_energy());
-  else if(params.ref == 2) return(uhf_energy());
+  double e = 0.0;
+  if(params.ref == 0) e = rhf_energy();
+  else if(params.ref == 2) e = uhf_energy();
+  return e;
 }
 
-double rhf_energy(void) 
+double rhf_energy(void)
 {
   double E = 0;
   dpdbuf4 tIjAb;
@@ -57,7 +59,7 @@ double rhf_energy(void)
   dpd_buf4_close(&tIjAb);
   dpd_buf4_close(&S);
   ss_energy = (E - os_energy);
-  
+
   mo.emp2_os = os_energy;
   mo.emp2_ss = ss_energy;
 
@@ -78,11 +80,11 @@ double rhf_energy(void)
 
 double uhf_energy(void)
 {
-  double E1A = 0; double E1B = 0;	
+  double E1A = 0; double E1B = 0;
   double E2AA = 0; double E2BB = 0; double E2AB = 0;
   dpdfile2 T1, F;
   dpdbuf4 tIJAB, tijab, tIjAb,  D;
-  
+
   if(params.semicanonical) {
     dpd_file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "fIA");
     dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
@@ -96,7 +98,7 @@ double uhf_energy(void)
     dpd_file2_close(&F);
     dpd_file2_close(&T1);
   }
-  
+
   dpd_buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
   dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
   E2AA = dpd_buf4_dot(&D, &tIJAB);
@@ -108,13 +110,13 @@ double uhf_energy(void)
   E2BB = dpd_buf4_dot(&D, &tijab);
   dpd_buf4_close(&D);
   dpd_buf4_close(&tijab);
-  
+
   dpd_buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
   dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
   E2AB = dpd_buf4_dot(&D, &tIjAb);
   dpd_buf4_close(&D);
   dpd_buf4_close(&tIjAb);
-  
+
   if(params.semicanonical)
     return(E1A+E1B+E2AA+E2BB+E2AB);
   else

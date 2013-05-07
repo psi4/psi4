@@ -24,7 +24,7 @@ set scf {
 set mp2 scs on
 
 banner('gold standard')
-energy('sherrillgroup_gold_standard')
+energy('sherrill_gold_standard')
 compare_values(-5.66406119, get_variable('CBS TOTAL ENERGY'), 7, "Au std")
 clean()
 

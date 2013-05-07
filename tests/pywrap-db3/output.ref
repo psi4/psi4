@@ -27,7 +27,7 @@
 import qcdb
 
 ref_nre = 268.617178206572646  #TEST
-ref_geom = PsiMod.Matrix(16,3)
+ref_geom = psi4.Matrix(16,3)
 ref_geom.set(
       [[   0.710500000000,    -0.794637665924,    -1.230622098778],
        [   1.421000000000,    -0.794637665924,     0.000000000000],
@@ -124,7 +124,7 @@ units angstrom
 
 YYY.update_geometry()
 compare_values(ref_nre, YYY.nuclear_repulsion_energy(), 9, "QCDB: Nuclear repulsion energy")   #TEST
-#geom_now = PsiMod.Matrix(16,3)
+#geom_now = psi4.Matrix(16,3)
 geom_now.set(YYY.geometry())
 geom_now.scale(psi_bohr2angstroms)
 compare_matrices(ref_geom, geom_now, 8, "QCDB: geometry and orientation")                        #TEST

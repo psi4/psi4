@@ -12,9 +12,9 @@ ref_vals_odc12= [                                                             #T
                 [ 0.000000000000,     0.000000000000,    -0.070863321661],    #TEST
                 [ 0.000000000000,     0.000000000000,     0.070863321661]     #TEST
                 ]                                                             #TEST
-ref_dc06 = PsiMod.Matrix(2, 3)                                                #TEST
-ref_odc06= PsiMod.Matrix(2, 3)                                                #TEST
-ref_odc12= PsiMod.Matrix(2, 3)                                                #TEST
+ref_dc06 = psi4.Matrix(2, 3)                                                #TEST
+ref_odc06= psi4.Matrix(2, 3)                                                #TEST
+ref_odc12= psi4.Matrix(2, 3)                                                #TEST
 ref_dc06.set(ref_vals_dc06)                                                   #TEST
 ref_odc06.set(ref_vals_odc06)                                                 #TEST
 ref_odc12.set(ref_vals_odc12)                                                 #TEST
@@ -40,24 +40,24 @@ set {
 
 gradient('dcft')
 
-grad_sim = PsiMod.wavefunction().gradient()                                            #TEST
+grad_sim = psi4.wavefunction().gradient()                                            #TEST
 compare_matrices(ref_dc06, grad_sim, 8, "DC-06 analytic gradient (simultaneous)")      #TEST
 
 set algorithm qc
 gradient('dcft')
 
-grad_qc = PsiMod.wavefunction().gradient()                                             #TEST
+grad_qc = psi4.wavefunction().gradient()                                             #TEST
 compare_matrices(ref_dc06, grad_qc, 8, "DC-06 analytic gradient (qc)")                 #TEST
 
 set algorithm simultaneous
 set dcft_functional odc-06
 gradient('dcft')
 
-grad_odc06 = PsiMod.wavefunction().gradient()                                          #TEST
+grad_odc06 = psi4.wavefunction().gradient()                                          #TEST
 compare_matrices(ref_odc06, grad_odc06, 8, "ODC-06 analytic gradient (simultaneous)")  #TEST
 
 set dcft_functional odc-12
 gradient('dcft')
 
-grad_odc12 = PsiMod.wavefunction().gradient()                                          #TEST
+grad_odc12 = psi4.wavefunction().gradient()                                          #TEST
 compare_matrices(ref_odc12, grad_odc12, 8, "ODC-12 analytic gradient (simultaneous)")  #TEST

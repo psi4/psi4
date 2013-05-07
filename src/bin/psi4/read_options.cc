@@ -810,6 +810,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("FREQ_MAX_K",2);
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
+  /*- Fork pathway, until I properly subclass these things -*/
+  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT L-SAPT0");
+  /*- Relative convergence in orbital localization -*/
+  options.add_double("LOCAL_CONVERGENCE",1.0E-8);
+  /*- Maximum iterations in localization -*/
+  options.add_int("LOCAL_MAXITER", 50);
+  /*- Localization algorithm -*/
+  options.add_str("LOCAL_TYPE", "BOYS", "BOYS");
+  
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory

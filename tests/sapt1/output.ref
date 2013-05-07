@@ -59,11 +59,11 @@ set globals {
 
 energy('sapt0')
 
-Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
-Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
-Eind  = PsiMod.get_variable("SAPT IND ENERGY")
-Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
-ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")
+Eelst = psi4.get_variable("SAPT ELST ENERGY")
+Eexch = psi4.get_variable("SAPT EXCH ENERGY")
+Eind  = psi4.get_variable("SAPT IND ENERGY")
+Edisp = psi4.get_variable("SAPT DISP ENERGY")
+ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
 
 compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
 compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")                                                 #TEST

@@ -65,7 +65,7 @@ private:
 
 public:
 
-    MADNESSCommWrapper(int &argc, char **argv)
+    MADNESSCommWrapper(const int &argc, char **argv)
     {
         init_openmp();
 

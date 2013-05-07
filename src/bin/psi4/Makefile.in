@@ -5,7 +5,7 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 MODULE = false
 
-MAKE_MADNESS=@HAVE_MPI@
+MAKE_PYTHON_MODULE=@MAKE_PYTHON_MODULE@
 
 LDLIBS += $(LAPACK) $(BLAS) $(BOOST_FILESYSTEM_LIB) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) $(BOOST_LDFLAGS) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
@@ -16,7 +16,7 @@ FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
 -lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf  -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc \
--lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_fock -lPSI_dcft -lPSI_mcscf -lPSI_sapt -lPSI_dftsapt \
+-lPSI_transqt2 -lPSI_cctriples -lPSI_scf_solver -lPSI_fock -lPSI_dcft -lPSI_mcscf -lPSI_sapt -lPSI_dftsapt \
 -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_transqt \
 -lPSI_ccresponse -lPSI_detci -lPSI_occ -lPSI_mrcc -lPSI_fnocc \
 -lPSI_cceom -lPSI_adc -lPSI_thermo \
@@ -35,6 +35,10 @@ ifeq ($(HAVE_ELEMENTAL),1)
 endif
 ifeq ($(HAVE_SCALAPACK),1)
   PSILIBS += $(scalapacklibs)
+endif
+ifeq ($(MAKE_PYTHON_MODULE),1)
+  LDFLAGS += -shared
+  PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`).so
 endif
 
 # The psilibs need a little extra handling for plugins on linux

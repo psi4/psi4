@@ -23,10 +23,6 @@
 #ifndef DEFINES_
 #define DEFINES_
 
-#define PSIF_OCC_DPD 100
-#define PSIF_OCC_DENSITY 101
-#define PSIF_OCC_IABC 102
-
 #define ID(x) ints->DPD_ID(x)
 
 #define index2(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
