@@ -240,6 +240,14 @@ void fock_rhf(void)
       for(a=0; a < openpi[h]; a++)
           for(b=0; b < openpi[h]; b++)
               fab.matrix[h][virtpi[h] - openpi[h] + a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + occpi[h] - openpi[h], b + occpi[h] - openpi[h]);
+
+      for(a=0; a < (virtpi[h] - openpi[h]); a++)
+          for(b=0; b < openpi[h]; b++)
+              fab.matrix[h][a][virtpi[h] - openpi[h] + b] = Fb->get(h, a + occpi[h], b + occpi[h] - openpi[h]);
+
+      for(a=0; a < openpi[h]; a++)
+          for(b=0; b <(virtpi[h] - openpi[h]); b++)
+              fab.matrix[h][virtpi[h] - openpi[h] + a][b] = Fb->get(h, a + occpi[h] - openpi[h], b + occpi[h]);
   }
 
   /* Close the alpha and beta vir-vir Fock matrix files */
