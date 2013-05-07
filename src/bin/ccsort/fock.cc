@@ -38,7 +38,7 @@
 #include <libtrans/mospace.h>
 #include <libmints/matrix.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 namespace psi { namespace ccsort {
 
@@ -86,6 +86,8 @@ void fock_uhf(void)
   avirtpi = moinfo.avirtpi;
   bvirtpi = moinfo.bvirtpi;
   frdocc = moinfo.frdocc;
+
+//  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
 
   SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
   SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
@@ -201,7 +203,7 @@ void fock_rhf(void)
   frdocc = moinfo.frdocc;
   fruocc = moinfo.fruocc;
 
-  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
+//  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
 
   SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
   SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
