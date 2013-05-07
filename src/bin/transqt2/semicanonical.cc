@@ -66,7 +66,7 @@ void semicanonical_fock(void)
   int i, j;
   double *alpha_evals, *beta_evals;
   double **C_a, **C_b;
-  int nirreps, nmo, nso;
+  int nirreps, nmo, nso, ij, p, q;
 
   nirreps = moinfo.nirreps;
   nso = moinfo.nso;
@@ -75,16 +75,100 @@ void semicanonical_fock(void)
   /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
      and Eigenvalues to the Checkpoint File */
 
+//  double **C_a_old, **C_b_old;
+
+//  C_a_old = block_matrix(nmo,nmo);
+//  C_b_old = block_matrix(nmo,nmo);
+//  C_a_old = Process::environment.wavefunction()->Ca()->to_block_matrix();
+//  C_b_old = Process::environment.wavefunction()->Cb()->to_block_matrix();
+
   Process::environment.wavefunction()->semicanonicalize();
 
   C_a = block_matrix(nmo,nmo);
   C_b = block_matrix(nmo,nmo);
-  alpha_evals = init_array(nmo);
-  beta_evals = init_array(nmo);
   C_a = Process::environment.wavefunction()->Ca()->to_block_matrix();
   C_b = Process::environment.wavefunction()->Cb()->to_block_matrix();
+  alpha_evals = init_array(nmo);
+  beta_evals = init_array(nmo);
   alpha_evals = Process::environment.wavefunction()->epsilon_a()->to_block_vector();
   beta_evals = Process::environment.wavefunction()->epsilon_b()->to_block_vector();
+
+//  /* correct orbital phases for amplitude restarts */
+//  double **SO_S, **MO_S, **X;
+//  double *scratch;
+//  double max;
+//  int max_col, phase_ok = 1;
+
+//  SO_S = block_matrix(nso, nso);
+//  int ntri = nso * (nso+1)/2;
+//  scratch = init_array(ntri);
+//  int stat = iwl_rdone(PSIF_OEI, PSIF_SO_S, scratch, ntri, 0, 0, outfile);
+//  for(i=0,ij=0; i < nso; i++)
+//    for(j=0; j <= i; j++,ij++) {
+//      SO_S[i][j] = SO_S[j][i] = scratch[ij];
+//    }
+//  free(scratch);
+
+//  MO_S = block_matrix(nmo, nmo);
+//  X = block_matrix(nso, nmo);
+//  C_DGEMM('n','n',nso, nmo, nso, 1, &(SO_S[0][0]), nso, &(C_a[0][0]), nmo,
+//      0, &(X[0][0]), nmo);
+//  C_DGEMM('t','n',nmo, nmo, nso, 1, &(C_a_old[0][0]), nmo, &(X[0][0]), nmo,
+//      0, &(MO_S[0][0]), nmo);
+//  free_block(X);
+
+//  for(p=0; p < nmo; p++) {
+//    max = 0.0;
+//    for(q=0; q < nmo; q++) {
+//  if(fabs(MO_S[p][q]) > max) {
+//    max = fabs(MO_S[p][q]); max_col = q;
+//  }
+//    }
+//    if(max_col != p) phase_ok = 0;
+//  }
+
+//  if(phase_ok) {
+//    for(p=0; p < nmo; p++) {
+//  if(MO_S[p][p] < 0.0) {
+//    for(q=0; q < nso; q++)
+//      C_a[q][p] *= -1.0;
+//  }
+//    }
+//  }
+
+//  free_block(MO_S);
+
+//  // Beta spin
+//  /* correct orbital phases for amplitude restarts */
+//  MO_S = block_matrix(nmo, nmo);
+//  X = block_matrix(nso, nmo);
+//  C_DGEMM('n','n',nso, nmo, nso, 1, &(SO_S[0][0]), nso, &(C_b[0][0]), nmo,
+//      0, &(X[0][0]), nmo);
+//  C_DGEMM('t','n',nmo, nmo, nso, 1, &(C_b_old[0][0]), nmo, &(X[0][0]), nmo,
+//      0, &(MO_S[0][0]), nmo);
+//  free_block(X);
+
+//  for(p=0; p < nmo; p++) {
+//    max = 0.0;
+//    for(q=0; q < nmo; q++) {
+//  if(fabs(MO_S[p][q]) > max) {
+//    max = fabs(MO_S[p][q]); max_col = q;
+//  }
+//    }
+//    if(max_col != p) phase_ok = 0;
+//  }
+
+//  if(phase_ok) {
+//    for(p=0; p < nmo; p++) {
+//  if(MO_S[p][p] < 0.0) {
+//    for(q=0; q < nso; q++)
+//      C_a[q][p] *= -1.0;
+//  }
+//    }
+//  }
+
+//  free_block(MO_S);
+//  free_block(SO_S);
 
   chkpt_init(PSIO_OPEN_OLD);
   chkpt_wt_alpha_evals(alpha_evals);
