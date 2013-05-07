@@ -51,6 +51,12 @@ EXT bool messy;
 /*! clean-up */
 EXT bool clean_only;
 
+/*! skip preprocessing the input file */
+EXT bool skip_input_preprocess;
+
+/*! Interactive python session? */
+EXT bool interactive_python;
+
 }
 
 #endif
