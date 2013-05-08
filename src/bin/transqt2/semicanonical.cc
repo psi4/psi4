@@ -140,22 +140,14 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
       Dt[p][q] = D_a[p][q] + D_b[p][q];
 
   /* one-electron contributions */
-  scratch = init_array(ntri);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] = fock_a[j][i] = scratch[ij];
-      fock_b[i][j] = fock_b[j][i] = scratch[ij];
-    }
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, scratch, ntri, 0, 0, outfile);
-  for(i=0, ij=0; i < nso; i++)
-    for(j=0; j <= i; j++, ij++) {
-      fock_a[i][j] += scratch[ij];
-      if(i!=j) fock_a[j][i] += scratch[ij];
-      fock_b[i][j] += scratch[ij];
-      if(i!=j) fock_b[j][i] += scratch[ij];
-    }
-  free(scratch);
+  double **H = Process::environment.wavefunction()->H()->to_block_matrix();
+
+  for(i=0; i < nso; i++) {
+      for(j=0; j <= i; j++) {
+          fock_a[i][j] = fock_a[j][i] = H[i][j];
+          fock_b[i][j] = fock_b[j][i] = H[i][j];
+      }
+  }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, 0.0, 1, 1);
   do {
