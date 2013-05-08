@@ -76,6 +76,7 @@ public:
     virtual ~Localizer();
 
     static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
+    static boost::shared_ptr<Localizer> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
     
     // => Computers <= //
 
@@ -109,6 +110,23 @@ public:
     BoysLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
 
     virtual ~BoysLocalizer();
+
+    virtual void print_header() const;
+    virtual void localize();
+
+};
+
+class PMLocalizer : public Localizer {
+
+protected:
+    
+    /// Set defaults
+    void common_init();
+
+public:
+    PMLocalizer(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
+
+    virtual ~PMLocalizer();
 
     virtual void print_header() const;
     virtual void localize();

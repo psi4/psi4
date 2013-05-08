@@ -817,7 +817,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Maximum iterations in localization -*/
   options.add_int("LOCAL_MAXITER", 50);
   /*- Localization algorithm -*/
-  options.add_str("LOCAL_TYPE", "BOYS", "BOYS");
+  options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
   
   }
   if(name == "DCFT"|| options.read_globals()) {
