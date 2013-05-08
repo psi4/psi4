@@ -87,7 +87,7 @@ void fock_uhf(void)
   bvirtpi = moinfo.bvirtpi;
   frdocc = moinfo.frdocc;
 
-//  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
+  // Take Fock matrix from the wavefunction and transform it to the MO basis
 
   SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
   SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
@@ -202,8 +202,6 @@ void fock_rhf(void)
   openpi = moinfo.openpi;
   frdocc = moinfo.frdocc;
   fruocc = moinfo.fruocc;
-
-//  if (params.semicanonical) Process::environment.wavefunction()->semicanonicalize();
 
   SharedMatrix Fa = Process::environment.wavefunction()->Fa()->clone();
   SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
@@ -322,7 +320,6 @@ void fock_rhf(void)
 #endif
   dpd_file2_close(&fIA);
   dpd_file2_close(&fia);
-
 }
 
 }} // namespace psi::ccsort
