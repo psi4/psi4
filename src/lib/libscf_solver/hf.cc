@@ -402,7 +402,6 @@ void HF::finalize()
 
     //Sphalf_.reset();
     X_.reset();
-    H_.reset();
     T_.reset();
     V_.reset();
     diag_temp_.reset();

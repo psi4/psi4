@@ -207,6 +207,9 @@ void fock_rhf(void)
   SharedMatrix Fb = Process::environment.wavefunction()->Fb()->clone();
   SharedMatrix Ca = Process::environment.wavefunction()->Ca();
   SharedMatrix Cb = Process::environment.wavefunction()->Cb();
+  SharedMatrix H = Process::environment.wavefunction()->H()->clone();
+  H->print();
+
   Fa->transform(Ca);
   Fb->transform(Cb);
 #if DEBUG
