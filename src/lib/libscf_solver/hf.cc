@@ -1332,7 +1332,7 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
-    chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
+    chkpt_->wt_enuc(nuclearrep_);
     chkpt_->wt_orbspi(nmopi_);
     chkpt_->wt_clsdpi(doccpi_);
     chkpt_->wt_openpi(soccpi_);

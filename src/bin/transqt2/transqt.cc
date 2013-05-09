@@ -65,6 +65,11 @@
 #include <psi4-dec.h>
 #include "globals.h"
 
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
+#include <libpsio/psio.hpp>
+
 namespace psi {
   namespace transqt2 {
 
@@ -191,12 +196,17 @@ PsiReturnType transqt2(Options & options)
   timer_off("presort");
 
   /* read the bare one-electron integrals */
+
+  boost::shared_ptr<PSIO> psio_;
+  psio_ = Process::environment.wavefunction()->psio();
+
+  SharedMatrix H_so = Process::environment.wavefunction()->H()->clone();
+  H_so->set_name(PSIF_SO_H);
+  H_so->save(psio_, PSIF_OEI);
+
   oei = init_array(ntri_so);
   H = init_array(ntri_so);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_T, H, ntri_so, 0, 0, outfile);
-  stat = iwl_rdone(PSIF_OEI, PSIF_SO_V, oei, ntri_so, 0, 0, outfile);
-  for(pq=0; pq < ntri_so; pq++)
-    H[pq] += oei[pq];
+  stat = iwl_rdone(PSIF_OEI, PSIF_SO_H, H, ntri_so, 0, 0, outfile);
 
   /* add the remaining one-electron terms to the fzc operator(s) */
   if(params.ref == 0 || params.ref == 1) {
