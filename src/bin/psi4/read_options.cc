@@ -813,7 +813,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Fork pathway, until I properly subclass these things -*/
   options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT L-SAPT0");
   /*- Relative convergence in orbital localization -*/
-  options.add_double("LOCAL_CONVERGENCE",1.0E-8);
+  options.add_double("LOCAL_CONVERGENCE",1.0E-12);
   /*- Maximum iterations in localization -*/
   options.add_int("LOCAL_MAXITER", 50);
   /*- Localization algorithm -*/
