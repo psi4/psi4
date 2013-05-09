@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <strings.h>
@@ -121,30 +121,30 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-  
+
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 0,
-					dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_buf4_mat_irrep_init(&G, h);
+      dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -152,7 +152,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -219,36 +219,36 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
-  
+
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 0,
-					dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_buf4_mat_irrep_init(&G, h);
+      dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  B = g.params->colidx[b];  A = T1.params->colidx[a];
-	  Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
-	      
-	  if((Csym==Bsym) && (Isym==Asym))
-	    value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      B = g.params->colidx[b];  A = T1.params->colidx[a];
+      Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
+
+      if((Csym==Bsym) && (Isym==Asym))
+        value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -256,7 +256,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -322,36 +322,36 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
-  
+
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 0,
-					dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_buf4_mat_irrep_init(&G, h);
+      dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  B = g.params->colidx[b];  A = T1.params->colidx[a];
-	  Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
-	      
-	  if((Csym==Bsym) && (Isym==Asym))
-	    value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      B = g.params->colidx[b];  A = T1.params->colidx[a];
+      Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
+
+      if((Csym==Bsym) && (Isym==Asym))
+        value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -359,7 +359,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -440,30 +440,30 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
-  
+
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 0,
-					dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_buf4_mat_irrep_init(&G, h);
+      dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -471,7 +471,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -553,30 +553,30 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
-  
+
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&G, h); 0,
-					dpd_buf4_mat_irrep_rd(&G, h);
+      dpd_buf4_mat_irrep_init(&G, h);
+      dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -584,7 +584,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -594,7 +594,7 @@ void Gciab(void)
 
     if(params.wfn == "CCSD_T" && params.dertype==1) {
       /* For CCSD(T) gradients, some density contributions are
-	 calculated in cctriples */
+     calculated in cctriples */
       dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 20, 7, 20, 7, 0, "GIDAB");
       dpd_buf4_sort(&G, PSIF_CC_GAMMA, qprs, 21, 7, "GCIAB");
       dpd_buf4_close(&G);
@@ -670,36 +670,36 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 21, 7, 21, 7, 0, "GCIAB");
-  
+
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&G, h);
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  B = g.params->colidx[b];  A = T1.params->colidx[a];
-	  Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
-	      
-	  if((Csym==Bsym) && (Isym==Asym))
-	    value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      B = g.params->colidx[b];  A = T1.params->colidx[a];
+      Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
+
+      if((Csym==Bsym) && (Isym==Asym))
+        value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -707,7 +707,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -773,36 +773,36 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 31, 17, 31, 17, 0, "Gciab");
-  
+
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&G, h);
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  B = g.params->colidx[b];  A = T1.params->colidx[a];
-	  Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
-	      
-	  if((Csym==Bsym) && (Isym==Asym))
-	    value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      B = g.params->colidx[b];  A = T1.params->colidx[a];
+      Bsym = g.params->qsym[b];  Asym = T1.params->qsym[a];
+
+      if((Csym==Bsym) && (Isym==Asym))
+        value -= g.matrix[Csym][C][B] * T1.matrix[Isym][I][A];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -810,7 +810,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -891,30 +891,30 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 26, 28, 26, 28, 0, "GCiAb");
-  
+
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&G, h);
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -922,7 +922,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);
@@ -1004,30 +1004,30 @@ void Gciab(void)
     dpd_file2_mat_rd(&T1);
 
     dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 25, 29, 25, 29, 0, "GcIaB");
-  
+
     for(h=0; h < nirreps; h++) {
       dpd_buf4_mat_irrep_init(&G, h);
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	c = G.params->roworb[h][row][0];
-	i = G.params->roworb[h][row][1];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  a = G.params->colorb[h][col][0];
-	  b = G.params->colorb[h][col][1];
+    c = G.params->roworb[h][row][0];
+    i = G.params->roworb[h][row][1];
+    for(col=0; col < G.params->coltot[h]; col++) {
+      a = G.params->colorb[h][col][0];
+      b = G.params->colorb[h][col][1];
 
-	  value = 0.0;
+      value = 0.0;
 
-	  C = g.params->rowidx[c];  I = T1.params->rowidx[i];
-	  Csym = g.params->psym[c]; Isym = T1.params->psym[i];
-	  A = g.params->colidx[a];  B = T1.params->colidx[b];
-	  Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
-	      
-	  if((Csym==Asym) && (Isym==Bsym))
-	    value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+      C = g.params->rowidx[c];  I = T1.params->rowidx[i];
+      Csym = g.params->psym[c]; Isym = T1.params->psym[i];
+      A = g.params->colidx[a];  B = T1.params->colidx[b];
+      Asym = g.params->qsym[a];  Bsym = T1.params->qsym[b];
 
-	  G.matrix[h][row][col] -= value;
-	}
+      if((Csym==Asym) && (Isym==Bsym))
+        value += g.matrix[Csym][C][A] * T1.matrix[Isym][I][B];
+
+      G.matrix[h][row][col] -= value;
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&G, h);
@@ -1035,7 +1035,7 @@ void Gciab(void)
     }
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-  
+
     dpd_file2_mat_close(&g);
     dpd_file2_close(&g);
     dpd_file2_mat_close(&T1);

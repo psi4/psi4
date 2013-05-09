@@ -115,7 +115,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
 int **cacheprep_rhf(int level, int *cachefiles)
 {
-  int **cachelist;
+  int **cachelist = NULL;
 
   /* The listing of CC files whose entries may be cached */
   cachefiles[PSIF_CC_AINTS] = 1;
@@ -176,6 +176,8 @@ int **cacheprep_rhf(int level, int *cachefiles)
   else {
      PsiException("CCHBAR: invalid cache level!",__FILE__,__LINE__);
   }
+
+  return cachelist;
 }
 
 void cache_abcd_uhf(int **cachelist)

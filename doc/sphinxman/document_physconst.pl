@@ -19,7 +19,7 @@ my $license = read_file($LicenseFile);
 # Now, grab the physical constants
 #
 my $PhysconstFile = $DriverPath . "../../include/physconst.h";
-my $PyPhysconstFile = $DriverPath . "../../lib/python/physconst.py";
+my $PyPhysconstFile = $DriverPath . "../../lib/python/p4const/physconst.py";
 open(PHYSCONST, "<$PhysconstFile") or die "I can't open $PhysconstFile\n";
 open(TEXOUT, ">physconst.tex") or die "I can't write to physconst.tex\n";
 open(PYOUT, ">$PyPhysconstFile") or die "I can't write to $PyPhysconstFile\n";

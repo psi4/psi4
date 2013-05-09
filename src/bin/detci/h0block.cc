@@ -68,13 +68,13 @@ void H0block_init(unsigned int size) {
    else H0block.size = size;
    H0block.coupling_size = Parameters.h0block_coupling_size;
 
-   if (H0block.coupling_size) 
+   if (H0block.coupling_size)
      size2 = H0block.size + H0block.coupling_size;
    else size2 = H0block.size;
 
    if (Parameters.print_lvl > 1)
      fprintf(outfile,"Total H0block size (including coupling): %d\n",size2);
-   
+
    H0block.osize = H0block.size;
    H0block.guess_size = Parameters.h0guess_size;
    H0block.oguess_size = H0block.guess_size;
@@ -82,14 +82,14 @@ void H0block_init(unsigned int size) {
 
    if (H0block.size) {
       H0block.H0b = init_matrix(H0block.size, H0block.size);
-      if (Parameters.precon == PRECON_GEN_DAVIDSON) 
+      if (Parameters.precon == PRECON_GEN_DAVIDSON)
         H0block.H0b_diag_transpose = init_array(H0block.size);
     /*  H0block.H0b_diag_transpose = init_matrix(H0block.size, H0block.size); */
       H0block.H0b_diag = init_matrix(H0block.size, H0block.size);
       H0block.H0b_eigvals = init_array(H0block.size);
-      /* if (Parameters.precon == PRECON_H0BLOCK_INVERT || 
+      /* if (Parameters.precon == PRECON_H0BLOCK_INVERT ||
           Parameters.precon == PRECON_H0BLOCK_ITER_INVERT) */
-      H0block.tmp1 = init_matrix(H0block.size, H0block.size); 
+      H0block.tmp1 = init_matrix(H0block.size, H0block.size);
       if (Parameters.precon == PRECON_H0BLOCK_INVERT)
         H0block.H0b_inv = init_matrix(H0block.size, H0block.size);
       H0block.H00 = init_array(size2);
@@ -112,7 +112,7 @@ void H0block_init(unsigned int size) {
 }
 
 
-void H0block_free(void) 
+void H0block_free(void)
 {
    int i;
 
@@ -132,9 +132,9 @@ void H0block_free(void)
       free_matrix(H0block.H0b, H0block.osize);
       if (Parameters.precon == PRECON_H0BLOCK_INVERT)
         free_matrix(H0block.H0b_inv, H0block.osize);
-    /*  if (Parameters.precon == PRECON_H0BLOCK_INVERT || 
+    /*  if (Parameters.precon == PRECON_H0BLOCK_INVERT ||
           Parameters.precon == PRECON_H0BLOCK_ITER_INVERT) */
-        free_matrix(H0block.tmp1, H0block.osize); 
+        free_matrix(H0block.tmp1, H0block.osize);
       free(H0block.pair);
       if (H0block.nbuf) {
          free(H0block.buf_num);
@@ -151,11 +151,11 @@ void H0block_print(void)
 
    fprintf(outfile, "\nMembers of H0 block:\n\n");
    for (i=0; i<H0block.size; i++) {
-      print_config(CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl, 
-         CalcInfo.num_bet_expl, alplist[H0block.alplist[i]] + 
-         H0block.alpidx[i], betlist[H0block.betlist[i]] + 
+      print_config(CalcInfo.num_ci_orbs, CalcInfo.num_alp_expl,
+         CalcInfo.num_bet_expl, alplist[H0block.alplist[i]] +
+         H0block.alpidx[i], betlist[H0block.betlist[i]] +
          H0block.betidx[i], CalcInfo.num_fzc_orbs,configstring);
-      fprintf(outfile, "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n", 
+      fprintf(outfile, "  %3d [%3d] %10.6lf  Block %2d (%4d,%4d)  %s\n",
          i+1, H0block.pair[i] + 1, H0block.H00[i], H0block.blknum[i],
          H0block.alpidx[i], H0block.betidx[i], configstring);
       }
@@ -176,21 +176,21 @@ int H0block_calc(double E)
       fprintf(outfile, "\nc0b = \n");
       print_mat(&(H0block.c0b), 1, H0block.size, outfile);
       fprintf(outfile, "\ns0b = \n");
-      print_mat(&(H0block.s0b), 1, H0block.size, outfile); 
+      print_mat(&(H0block.s0b), 1, H0block.size, outfile);
       }
 
    if (Parameters.precon == PRECON_GEN_DAVIDSON) {
      if (first_call) {
        first_call = 0;
      /*  for (i=0; i<size; i++)
-          for (j=0; j<size; j++)  
+          for (j=0; j<size; j++)
              H0block.H0b_diag_transpose[i][j] = H0block.H0b_diag[j][i];
      */
        }
      H0xc0 = init_array(size);
      H0xs0 = init_array(size);
      for (i=0; i<size; i++) {
-        for (j=0; j<size; j++) 
+        for (j=0; j<size; j++)
            H0block.H0b_diag_transpose[j] = H0block.H0b_diag[j][i];
         dot_arr(H0block.H0b_diag_transpose, H0block.c0b, size, &H0xc0[i]);
         dot_arr(H0block.H0b_diag_transpose, H0block.s0b, size, &H0xs0[i]);
@@ -200,7 +200,7 @@ int H0block_calc(double E)
         for (j=0; j<size; j++) {
            tval1 = H0xc0[j] * H0block.H0b_diag[i][j];
            tval2 = H0xs0[j] * H0block.H0b_diag[i][j];
-           tval3 = H0block.H0b_eigvals[j] - E; 
+           tval3 = H0block.H0b_eigvals[j] - E;
            if (fabs(tval3) < HD_MIN) tval3 = 0.0;
            else tval3 = 1.0/tval3;
            tval1 *= tval3;
@@ -218,15 +218,15 @@ int H0block_calc(double E)
         fprintf(outfile, "\nc0bp = \n");
         print_mat(&(H0block.c0bp),1,H0block.size+H0block.coupling_size,outfile);
         fprintf(outfile, "\ns0b = \n");
-        print_mat(&(H0block.s0b), 1, H0block.size, outfile); 
+        print_mat(&(H0block.s0b), 1, H0block.size, outfile);
         fprintf(outfile, "\ns0bp = \n");
-        print_mat(&(H0block.s0bp), 1, H0block.size, outfile); 
+        print_mat(&(H0block.s0bp), 1, H0block.size, outfile);
         }
      free(H0xc0);
      free(H0xs0);
      return(1);
      }
-   else if (Parameters.precon == PRECON_H0BLOCK_INVERT || 
+   else if (Parameters.precon == PRECON_H0BLOCK_INVERT ||
             Parameters.precon == PRECON_H0BLOCK_ITER_INVERT) {
 
      /* form H0b-E and take its inverse */
@@ -236,7 +236,7 @@ int H0block_calc(double E)
         H0block.s0bp[i] = H0block.s0b[i]; /* also necessary for pople */
         for (j=0; j<size; j++) {
            H0block.tmp1[i][j] = H0block.H0b[i][j];
-           if (i==j) H0block.tmp1[i][i] -= E; 
+           if (i==j) H0block.tmp1[i][i] -= E;
            }
         }
 
@@ -247,10 +247,10 @@ int H0block_calc(double E)
         }
 
      if (Parameters.precon == PRECON_H0BLOCK_ITER_INVERT) {
-       pople(H0block.tmp1, H0block.c0bp, size, 1, 1e-9, outfile, 
+       pople(H0block.tmp1, H0block.c0bp, size, 1, 1e-9, outfile,
              Parameters.print_lvl);
        if (Parameters.update == UPDATE_OLSEN) {
-         for (i=0; i<size; i++) 
+         for (i=0; i<size; i++)
             for (j=0; j<size; j++) {
                H0block.tmp1[i][j] = H0block.H0b[i][j];
                if (i==j) H0block.tmp1[i][i] -= E;
@@ -266,7 +266,7 @@ int H0block_calc(double E)
          fprintf(outfile, "\nINV(H0 - E)\n");
          print_mat(H0block.H0b_inv, H0block.size, H0block.size, outfile);
          }
- 
+
        /* get c0bp = (H0b - E)^{-1} * c0b */
        mmult(H0block.H0b_inv, 0, &(H0block.c0b), 1, &(H0block.c0bp), 1,
              size, size, 1, 0);
@@ -274,7 +274,7 @@ int H0block_calc(double E)
        /* get s0bp = (H0b - E)^{-1} * s0b */
        mmult(H0block.H0b_inv, 0, &(H0block.s0b), 1, &(H0block.s0bp), 1,
              size, size, 1, 0);
-       } 
+       }
 
      if (Parameters.print_lvl > 4) {
         fprintf(outfile, "\nc0b = \n");
@@ -282,24 +282,25 @@ int H0block_calc(double E)
         fprintf(outfile, "\nc0bp = \n");
         print_mat(&(H0block.c0bp), 1, H0block.size, outfile);
         fprintf(outfile, "\ns0b = \n");
-        print_mat(&(H0block.s0b), 1, H0block.size, outfile); 
+        print_mat(&(H0block.s0b), 1, H0block.size, outfile);
         fprintf(outfile, "\ns0bp = \n");
-        print_mat(&(H0block.s0bp), 1, H0block.size, outfile); 
+        print_mat(&(H0block.s0bp), 1, H0block.size, outfile);
         fprintf(outfile,"DET H0 = %5.4E\n", detH0);
         }
-  
+
       if (detH0 < SMALL_DET) return(0);
       else  return(1);
       }
 
+   return 0;
 }
 
 
 /*
 ** eventually replace this with a somewhat more efficient CIvect member
 ** function which employs the new H0block.buf_member matrix.
-** 
-** cscode == 0 refers to c0b, while cscode == 1 refers to s0b 
+**
+** cscode == 0 refers to c0b, while cscode == 1 refers to s0b
 **
 */
 void H0block_gather(double **mat, int al, int bl, int cscode, int mscode,
@@ -309,12 +310,12 @@ void H0block_gather(double **mat, int al, int bl, int cscode, int mscode,
    double *target;
    int i, aidx, bidx;
 
-   if (cscode == 0) 
+   if (cscode == 0)
       target = H0block.c0b;
-   else if (cscode == 1) 
+   else if (cscode == 1)
       target = H0block.s0b;
    else {
-      printf("(H0block_gather): invalid cscode\n"); 
+      printf("(H0block_gather): invalid cscode\n");
       return;
       }
 
@@ -357,13 +358,13 @@ void H0block_xy(double *x, double *y, double E)
 
   /*
    fprintf(outfile,"-tx = %lf -ty = %lf\n",tx,ty);
-   for (i=0; i<H0block.size; i++) 
+   for (i=0; i<H0block.size; i++)
       fprintf(outfile,"H0block.c0b[%d] = %lf\n",i,H0block.c0b[i]);
-   for (i=0; i<H0block.size; i++) 
+   for (i=0; i<H0block.size; i++)
       fprintf(outfile,"H0block.c0bp[%d] = %lf\n",i,H0block.c0bp[i]);
-   for (i=0; i<H0block.size; i++) 
+   for (i=0; i<H0block.size; i++)
       fprintf(outfile,"H0block.s0b[%d] = %lf\n",i,H0block.s0b[i]);
-   for (i=0; i<H0block.size; i++) 
+   for (i=0; i<H0block.size; i++)
       fprintf(outfile,"H0block.s0bp[%d] = %lf\n",i,H0block.s0bp[i]);
   */
 
@@ -371,7 +372,7 @@ void H0block_xy(double *x, double *y, double E)
    *x += tx;
    dot_arr(H0block.s0b, H0block.c0bp, H0block.size, &ty);
  /*
-   dot_arr(H0block.c0b, H0block.s0bp, H0block.size, &ty); 
+   dot_arr(H0block.c0b, H0block.s0bp, H0block.size, &ty);
  */
    *y += ty;
    /* fprintf(outfile,"+tx = %lf +ty = %lf\n",tx,ty); */
@@ -415,7 +416,7 @@ void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
 
       } /* end loop over members of H0block */
 
-   
+
 }
 
 /*
@@ -433,7 +434,7 @@ void H0block_setup(int num_blocks, int *Ia_code, int *Ib_code)
 **
 ** Author: David Sherrill, November 1996
 ** Modified by Matt Leininger July 1998
-** 
+**
 */
 void H0block_pairup(int guess)
 {
@@ -475,7 +476,7 @@ void H0block_pairup(int guess)
   else if (guess==0) H0block.size = newsize;
 
   H0block_pairup(guess);
-  
+
 }
 
 /*
@@ -486,22 +487,22 @@ void H0block_pairup(int guess)
 ** of the spin-coupling set in the block, it is removed from the
 ** block in order to ensure that the proper spin symmetry is present
 ** in the eigenvectors of the H0 block. This only works if the
-** averaged diagonal elements over a spin-coupling set are used. 
+** averaged diagonal elements over a spin-coupling set are used.
 **
 ** All parameters are taken from the H0block structure.
 **
 ** Author: Matt Leininger, February 1998
 ** Substantial modifications by David Sherrill, October 1998
-** 
+**
 */
-void H0block_spin_cpl_chk(void) 
+void H0block_spin_cpl_chk(void)
 {
   int i,newsize,tmpsize;
   double zero = 1E-13;
   double diff = 0.0, spin_cpl_vals2;
 
   /* nothing to be done if no H0block */
-  if (H0block.size > 0) { 
+  if (H0block.size > 0) {
 
     if (H0block.coupling_size > 0)
       spin_cpl_vals2 = H0block.H00[H0block.size];
@@ -515,7 +516,7 @@ void H0block_spin_cpl_chk(void)
       i--;
       diff = fabs(H0block.H00[i] - spin_cpl_vals2);
     /*  fprintf(outfile,"diff[%d] = %20.15f\n", i, diff); */
-    } 
+    }
 
     newsize = i+1;
 
@@ -524,16 +525,16 @@ void H0block_spin_cpl_chk(void)
       fprintf(outfile, "H0block_spin_cpl_chk!\n");
     }
     H0block.size = newsize;
-  }  
+  }
 
   /****************************************************************
   ** Also need to check the H0 block of the initial guess which may
   ** be smaller than the H0block.size
   ** CDS: I am assuming that guess_size has to be <= H0block.size
   *******************************************************************/
-  if (H0block.guess_size > 0) { 
+  if (H0block.guess_size > 0) {
 
-    if (H0block.guess_size >= H0block.osize) { 
+    if (H0block.guess_size >= H0block.osize) {
       if (H0block.coupling_size > 0)
         spin_cpl_vals2 = H0block.H00[H0block.size];
       else
@@ -562,12 +563,12 @@ void H0block_spin_cpl_chk(void)
 
     H0block.guess_size = newsize;
   }
- 
+
   /****************************************************************
   ** Also need to check the H0 block of the h0block coupling which
   ** will be larger than the H0block.size
   *****************************************************************/
-  if (H0block.coupling_size > 0) { 
+  if (H0block.coupling_size > 0) {
 
     spin_cpl_vals2 = H0block.spin_cp_vals;
     newsize = H0block.size + H0block.coupling_size;
@@ -589,7 +590,7 @@ void H0block_spin_cpl_chk(void)
     }
 
     if (newsize == H0block.size) {
-      fprintf(outfile, 
+      fprintf(outfile,
         "Warning! H0block coupling size reduced to H0block size by ");
       fprintf(outfile, "H0block_spin_cpl_chk!\n");
     }
@@ -604,7 +605,7 @@ void H0block_spin_cpl_chk(void)
 **
 ** This function takes a pair of user-specified
 ** determinants and adds them to the most H0block space (at the expense
-** of two previously determined determinants, if they aren't already 
+** of two previously determined determinants, if they aren't already
 ** present) and stores which H0block determinant numbers they are.
 **
 ** C. David Sherrill, July 2003
