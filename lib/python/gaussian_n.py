@@ -22,16 +22,17 @@
 
 # Gn theory.
 
-import psi4
 import re
 import os
 import math
 import warnings
+import psi4
+import p4const
+import p4util
 from driver import *
+#from extend_Molecule import *
 from molutil import *
-from text import *
-from procutil import *
-from physconst import *
+from p4regex import *
 # never import aliases into this file
 
 def run_gaussian_2(name, **kwargs):
@@ -41,7 +42,7 @@ def run_gaussian_2(name, **kwargs):
         raise ValidationError("""g2 computations require "reference rhf".""")
 
     # stash user options:
-    optstash = OptionsState(
+    optstash = p4util.OptionsState(
         ['FNOCC','COMPUTE_TRIPLES'],
         ['FNOCC','COMPUTE_MP4_TRIPLES'],
         ['FREEZE_CORE'],
@@ -70,7 +71,7 @@ def run_gaussian_2(name, **kwargs):
     freqsum = 0.0
     for i in range (0,nfreq):
         freqsum += freqs.get(i)
-    zpe = freqsum / psi_hartree2wavenumbers * 0.8929 * 0.5
+    zpe = freqsum / p4const.psi_hartree2wavenumbers * 0.8929 * 0.5
     psi4.clean()
 
     # optimize geometry at mp2 (no frozen core) level

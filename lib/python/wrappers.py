@@ -25,19 +25,20 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
-import psi4
 import re
 import os
 import math
 import warnings
 import pickle
 import copy
+import collections
+import psi4
 import p4const
 import p4util
 from driver import *
+#from extend_Molecule import *
 from molutil import *
 from p4regex import *
-import collections
 # never import aliases into this file
 
 
@@ -1816,6 +1817,9 @@ def complete_basis_set(name, **kwargs):
     >>> # [7] cbs() coupled with database()
     >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
+    >>> # [8] cbs() coupled with optimize()
+    >>> optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
+
     """
     lowername = name.lower()
     kwargs = p4util.kwargs_lower(kwargs)
@@ -2292,7 +2296,7 @@ def complete_basis_set(name, **kwargs):
     psi4.print_out(instructions)
 
     psioh = psi4.IOManager.shared_object()
-    psioh.set_specific_retention(PSIF_SCF_MOS, True)
+    psioh.set_specific_retention(p4const.PSIF_SCF_MOS, True)
 
     # Run necessary computations
     for mc in JOBS:
@@ -2325,7 +2329,7 @@ def complete_basis_set(name, **kwargs):
 
         psi4.clean()
 
-    psioh.set_specific_retention(PSIF_SCF_MOS, False)
+    psioh.set_specific_retention(p4const.PSIF_SCF_MOS, False)
 
     # Build string of title banner
     cbsbanners = ''

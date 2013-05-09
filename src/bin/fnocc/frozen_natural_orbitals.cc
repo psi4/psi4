@@ -569,7 +569,6 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
   fprintf(outfile,"\n");
-
 }
 
 /*

@@ -272,12 +272,17 @@
 
 #define PSIF_HESS              272  /*- Hessian Utility File -*/
 
+#define PSIF_OCC_DPD           273  /*- OCC DPD -*/
+#define PSIF_OCC_DENSITY       274  /*- OCC Density -*/
+#define PSIF_OCC_IABC          275  /*- OCC out-of-core <IA|BC> -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
 #define PSIF_SO_S           "SO-basis Overlap Ints"
 #define PSIF_SO_T           "SO-basis Kinetic Energy Ints"
 #define PSIF_SO_V           "SO-basis Potential Energy Ints"
+#define PSIF_SO_H           "SO-basis Core Hamiltonian"
 #define PSIF_AO_S           "AO-basis Overlap Ints"
 #define PSIF_AO_MX          "AO-basis Mu-X Ints"
 #define PSIF_AO_MY          "AO-basis Mu-Y Ints"

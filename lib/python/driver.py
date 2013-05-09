@@ -30,11 +30,10 @@ properties, and vibrational frequency calculations.
 import sys
 import psi4
 import p4util
+import p4const
 from proc import *
 from functional import *
-import p4const
 from p4regex import *
-
 # never import wrappers or aliases into this file
 
 # Procedure lookup tables
@@ -1281,7 +1280,7 @@ def frequency(name, **kwargs):
 
     """
     lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
+    kwargs = p4util.kwargs_lower(kwargs)
     dertype = 2
 
     optstash = p4util.OptionsState(

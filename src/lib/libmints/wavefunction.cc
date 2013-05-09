@@ -80,6 +80,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
     S_ = other->S_;
+    H_ = other->H_;
     molecule_ = other->molecule_;
     psio_ = other->psio_;
     chkpt_ = other->chkpt_;

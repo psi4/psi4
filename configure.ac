@@ -973,7 +973,6 @@ AC_CONFIG_FILES([
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
-          src/bin/mp2/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile

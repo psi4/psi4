@@ -94,9 +94,10 @@ PsiReturnType fnocc(Options &options) {
       fno->ThreeIndexIntegrals();
       if ( options.get_bool("NAT_ORBS") ) {
           fno->ComputeNaturalOrbitals();
+          wfn = (boost::shared_ptr<Wavefunction>)fno;
+      }else {
+          wfn = Process::environment.wavefunction();
       }
-      wfn = (boost::shared_ptr<Wavefunction>)fno;
-
       // ccsd(t)!
       boost::shared_ptr<DFCoupledCluster> ccsd (new DFCoupledCluster(wfn,options));
       ccsd->compute_energy();

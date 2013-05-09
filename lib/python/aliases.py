@@ -28,21 +28,22 @@ Place in this file quickly defined procedures such as
    - simple modifications to existing methods
 
 """
-import psi4
 import re
 import os
 import math
 import warnings
+import psi4
+import p4util
 from driver import *
 from wrappers import *
+#from extend_Molecule import *
 from molutil import *
-import p4util
 
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 
-def sherrillgroup_gold_standard(name='mp2', **kwargs):
+def sherrill_gold_standard(name='mp2', **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
     in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
@@ -50,7 +51,14 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
     .. math:: E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}
 
-    >>> energy('sherrillgroup_gold_standard')
+    >>> # [1] single-point energy by this composite method
+    >>> energy('sherrill_gold_standard')
+
+    >>> # [2] finite-difference geometry optimization
+    >>> optimize('sherrill_gold_standard')
+
+    >>> # [3] finite-difference geometry optimization, overwriting some pre-defined sherrill_gold_standard options
+    >>> optimize('sherrill_gold_standard', corl_basis='cc-pV[DT]Z', delta_basis='3-21g')
 
     """
     lowername = name.lower()
@@ -66,6 +74,7 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
     if not ('corl_wfn' in kwargs):
         kwargs['corl_wfn'] = 'mp2'
+        name = 'mp2'
     if not ('corl_basis' in kwargs):
         kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
     if not ('corl_scheme' in kwargs):
@@ -85,17 +94,21 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
 def allen_focal_point(name='mp2', **kwargs):
     r"""Function to call Wes Allen-style Focal
-    Point Analysis. Insert typical reference here.  Uses
+    Point Analysis. JCP 127 014306.  Uses
     :py:func:`~wrappers.complete_basis_set` to evaluate the following
     expression. SCF employs a three-point extrapolation according
     to :py:func:`~wrappers.scf_xtpl_helgaker_3`. MP2, CCSD, and
     CCSD(T) employ two-point extrapolation performed according to
     :py:func:`~wrappers.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
-    are plain deltas.
+    are plain deltas. This wrapper requires :ref:`Kallay's MRCC code <sec:mrcc>`.
 
-    .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}
+    .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}
 
+    >>> # [1] single-point energy by this composite method
     >>> energy('allen_focal_point')
+
+    >>> # [2] finite-difference geometry optimization embarrasingly parallel
+    >>> optimize('allen_focal_point', mode='sow')
 
     """
     lowername = name.lower()
@@ -113,6 +126,7 @@ def allen_focal_point(name='mp2', **kwargs):
     # delta MP2 - SCF
     if not ('corl_wfn' in kwargs):
         kwargs['corl_wfn'] = 'mp2'
+        name = 'mp2'
     if not ('corl_basis' in kwargs):
         kwargs['corl_basis'] = 'cc-pV[56]Z'
     if not ('corl_scheme' in kwargs):
@@ -254,5 +268,6 @@ def allen_focal_point(name='mp2', **kwargs):
 
 # Integration with driver routines
 #procedures['energy']['mp2.5'] = run_mp2_5
-procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
+procedures['energy']['sherrill_gold_standard'] = sherrill_gold_standard
+procedures['energy']['allen_focal_point'] = allen_focal_point
 #procedures['energy']['plugin_omega'] = run_plugin_omega

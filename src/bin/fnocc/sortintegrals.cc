@@ -362,7 +362,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
       else if (nocc==2){
          val = (double)valptr[Buf->idx];
 
-         if (p<o && q>=o || p>=o && q<o){
+         if ((p<o && q>=o) || (p>=o && q<o)){
             klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
             if (nklcd>=nelem){
@@ -465,7 +465,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
           else if (nocc==2){
              val = (double)valptr[Buf->idx];
 
-             if (p<o && q>=o || p>=o && q<o){
+             if ((p<o && q>=o) || (p>=o && q<o)){
                 klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
                 if (nklcd>=nelem){
@@ -1190,7 +1190,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1226,7 +1226,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1262,7 +1262,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1298,7 +1298,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1341,7 +1341,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1381,7 +1381,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1421,7 +1421,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1461,7 +1461,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1579,7 +1579,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1619,7 +1619,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1659,7 +1659,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1699,7 +1699,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1760,7 +1760,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1796,7 +1796,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1832,7 +1832,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1868,7 +1868,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
