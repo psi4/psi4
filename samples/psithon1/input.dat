@@ -1,5 +1,7 @@
 #! Spectroscopic constants of H2, and the full ci cc-pVTZ level of theory
 
+import diatomic
+
 memory 250 mb
 
 molecule h2{
@@ -20,4 +22,8 @@ for r in rvals:
     h2.R = r
     energies.append(energy('fci'))
 
-phys_consts = diatomic_anharmonicity(rvals, energies)
+# Since h2 is the active molecule it will be used by default in diatomic.anharmonicity
+# However, if you need to provide the routine a molecule pass it as the third parameter:
+#   phys_const = diatomic.anharmonicity(rvals, energies, h2)
+
+phys_consts = diatomic.anharmonicity(rvals, energies)

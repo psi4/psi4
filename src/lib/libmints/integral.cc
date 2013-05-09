@@ -257,6 +257,11 @@ AOShellCombinationsIterator IntegralFactory::shells_iterator()
     return AOShellCombinationsIterator(bs1_, bs2_, bs3_, bs4_);
 }
 
+AOShellCombinationsIterator* IntegralFactory::shells_iterator_ptr()
+{
+    return new AOShellCombinationsIterator(bs1_, bs2_, bs3_, bs4_);
+}
+
 AOIntegralsIterator IntegralFactory::integrals_iterator(int p, int q, int r, int s)
 {
     return AOIntegralsIterator(bs1_->shell(p), bs2_->shell(q), bs3_->shell(r), bs4_->shell(s));

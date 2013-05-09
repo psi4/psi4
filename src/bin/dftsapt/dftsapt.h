@@ -39,6 +39,9 @@ class DFTSAPT {
 
 protected:
 
+    // SAPT type (until properly subclassed)
+    std::string type_;
+
     // Print flag
     int print_;
     // Debug flag
@@ -136,6 +139,8 @@ protected:
     // Maximum number of terms in Casimir-Poldar susceptibility coupling
     int freq_max_k_;
     
+    // => DFTSAPT <= //
+
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
@@ -145,6 +150,19 @@ protected:
     virtual void fock_terms();
     // MP2-like terms (Disp)
     virtual void mp2_terms();
+
+    // => L-SAPT0 <= //
+
+    // Local analysis results
+    std::map<std::string, boost::shared_ptr<Matrix> > local_vars_;
+    // Hartree-Fock-like terms (Elst, Exch, Ind)
+    virtual void local_fock_terms();
+    // MP2-like terms (Disp)
+    virtual void local_mp2_terms();
+    // Local analysis and visualizations setup
+    virtual void local_analysis();
+
+    // => Helper Methods <= //
 
     // Build the AO-basis dimer overlap matrix
     boost::shared_ptr<Matrix> build_S(boost::shared_ptr<BasisSet> basis);

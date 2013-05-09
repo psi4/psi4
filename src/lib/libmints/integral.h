@@ -491,6 +491,7 @@ public:
 
     /// Returns an ERI iterator object, only coded for standard ERIs
     AOShellCombinationsIterator shells_iterator();
+    AOShellCombinationsIterator* shells_iterator_ptr();
 
     /// Initializes spherical harmonic transformations
     virtual void init_spherical_harmonics(int max_am);

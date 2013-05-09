@@ -93,7 +93,7 @@ this covers:
 
 Some documentation is even extracted from Psi4 objects at runtime.
 
-* PsiMod: docstrings for the PsiMod built-in module constructed in :source:`src/bin/psi4`
+* psi4: docstrings for the psi4 built-in module constructed in :source:`src/bin/psi4`
 * DFT: functional availibility and characteristics as encoded in :source:`lib/python/functional.py`
 * BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`lib/python/basislistdunning.py` and :source:`lib/python/basislistother.py`
 

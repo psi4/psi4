@@ -359,7 +359,8 @@ namespace { // anonymous
 
     OrbitalSpace OrbitalSpace::build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, double lindep_tol)
     {
-        boost::shared_ptr<BasisSet> ri_basis = obs + aux_bs;
+//        boost::shared_ptr<BasisSet> ri_basis = obs + aux_bs;
+        boost::shared_ptr<BasisSet> ri_basis = obs->add(aux_bs);
         return orthogonalize("p'", "RIBS", ri_basis, lindep_tol);
     }
 

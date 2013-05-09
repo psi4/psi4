@@ -160,6 +160,9 @@ protected:
     /// Overlap matrix
     SharedMatrix S_;
 
+    /// Core Hamiltonian matrix
+    SharedMatrix H_;
+
     /// Alpha MO coefficients
     SharedMatrix Ca_;
     /// Beta MO coefficients
@@ -319,6 +322,9 @@ public:
 
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }
+
+    /// Returns the core Hamiltonian matrix
+    SharedMatrix H() const { return H_; }
 
     /** Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
      * On entrance, there's only one set of orbitals and orbital energies.  On

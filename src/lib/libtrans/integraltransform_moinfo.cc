@@ -47,7 +47,7 @@ void IntegralTransform::common_initialize()
     sosym_   = init_int_array(nso_);
     mosym_   = init_int_array(nmo_);
     zeros_   = init_int_array(nirreps_);
-    
+
     write_dpd_so_tpdm_ = false;
 
     int count = 0;
@@ -640,7 +640,7 @@ IntegralTransform::process_eigenvectors()
                 }
             }
             if(transformationType_ != Restricted){
-                name = "Beta orbitals for space " + label;
+                name = "Beta orbitals for space " + std::string(1, label);
                 Cb = SharedMatrix(new Matrix(name, nirreps_, sopi_, bOrbsPI_[label]));
                 for(int h = 0; h < nirreps_; ++h){
                     int count = 0;

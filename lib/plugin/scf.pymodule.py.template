@@ -1,4 +1,4 @@
-import PsiMod
+import psi4
 import re
 import os
 import input
@@ -21,11 +21,11 @@ def run_@plugin@(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    # Your plugin's PsiMod run sequence goes here
-    PsiMod.set_global_option('BASIS', 'sto-3g')
-    PsiMod.set_local_option('@PLUGIN@', 'PRINT', 1)
-    returnvalue = PsiMod.plugin('@plugin@.so')
-    PsiMod.set_variable('CURRENT ENERGY', returnvalue)
+    # Your plugin's psi4 run sequence goes here
+    psi4.set_global_option('BASIS', 'sto-3g')
+    psi4.set_local_option('@PLUGIN@', 'PRINT', 1)
+    returnvalue = psi4.plugin('@plugin@.so')
+    psi4.set_variable('CURRENT ENERGY', returnvalue)
 
 
 # Integration with driver routines

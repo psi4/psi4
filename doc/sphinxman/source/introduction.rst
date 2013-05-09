@@ -125,7 +125,8 @@ and reaction energies, is discussed in
 * "Accuracy and Efficiency of Coupled-Cluster Theory Using
   Density Fitting / Cholesky Decomposition, Frozen Natural Orbitals,
   and a T1-Transformed Hamiltonian," A. E. DePrince and C. D. Sherrill,
-  submitted.
+  *J. Chem. Theory Comput.* in press.
+  (doi: `10.1021/ct400250u <http://dx.doi.org/10.1021/ct400250u>`_).
  
 Mukherjee State-Specific Multi-Reference Coupled Cluster (Mk-MRCC)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

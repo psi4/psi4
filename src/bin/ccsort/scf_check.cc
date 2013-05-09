@@ -270,6 +270,7 @@ void scf_check_rhf(void)
 
   moinfo.eref = E1A+E1B+0.5*(E2AA+E2BB)+E2AB + moinfo.enuc + moinfo.efzc;
 
+  fprintf(outfile, "\tNuclear energy               =  %20.14f\n", moinfo.enuc);
   fprintf(outfile, "\tOne-electron energy          =  %20.14f\n", E1A+E1B);
   fprintf(outfile, "\tTwo-electron (AA) energy     =  %20.14f\n", E2AA);
   fprintf(outfile, "\tTwo-electron (BB) energy     =  %20.14f\n", E2BB);

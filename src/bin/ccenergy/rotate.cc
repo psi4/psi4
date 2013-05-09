@@ -38,6 +38,10 @@
 #define EXTERN
 #include "globals.h"
 
+#include <libmints/wavefunction.h>
+#include <libtrans/mospace.h>
+#include <libmints/matrix.h>
+
 namespace psi { namespace ccenergy {
 
 void rhf_fock_build(double **fock, double **D);
@@ -219,6 +223,9 @@ int rotate(void)
     rhf_fock_build(fock, D);
     free_block(D);
 
+    Process::environment.wavefunction()->Fa()->set(fock);
+    Process::environment.wavefunction()->Fb()->set(fock);
+
     /*
     fprintf(outfile, "\n\tSO-basis Fock matrix:\n");
     mat_print(fock, nso, nso, outfile);
@@ -370,6 +377,9 @@ int rotate(void)
     fprintf(outfile, "\n\tNew SCF MOs:\n");
     mat_print(scf_new, nso, nmo, outfile);
     */
+
+    Process::environment.wavefunction()->Ca()->set(scf_new);
+    Process::environment.wavefunction()->Cb()->set(scf_new);
 
     chkpt_wt_scf(scf_new);
     free_block(scf_new);
@@ -537,6 +547,9 @@ int rotate(void)
     free_block(D_a);
     free_block(D_b);
 
+    Process::environment.wavefunction()->Fa()->set(fock_a);
+    Process::environment.wavefunction()->Fb()->set(fock_b);
+
     /* transform the fock matrices to the new alpha and beta MO bases */
     X = block_matrix(nso,nso);
     C_DGEMM('n','n',nso,nmo,nso,1.0,&(fock_a[0][0]),nso,&(scf_a[0][0]),nmo,
@@ -648,6 +661,9 @@ int rotate(void)
     free_block(MO_S);
 
     chkpt_wt_alpha_scf(scf_new);
+
+    Process::environment.wavefunction()->Ca()->set(scf_new);
+
     free_block(scf_new);
     free_block(scf_a_orig);
 
@@ -749,6 +765,9 @@ int rotate(void)
     free_block(MO_S);
 
     chkpt_wt_beta_scf(scf_new);
+
+    Process::environment.wavefunction()->Cb()->set(scf_new);
+
     free_block(scf_new);
     free_block(scf_b_orig);
 

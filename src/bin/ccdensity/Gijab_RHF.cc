@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <stdio.h>
 #include <libdpd/dpd.h>
@@ -106,23 +106,23 @@ void Gijab_RHF(void)
   dpd_buf4_init(&Z, PSIF_CC_TMP4, 0, 10, 10, 10, 10, 0, "Z(IA,ME)");
   dpd_buf4_scm(&Z, -1.0);
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Z, h); 0,
-				      dpd_buf4_mat_irrep_rd(&Z, h);
+    dpd_buf4_mat_irrep_init(&Z, h);
+    dpd_buf4_mat_irrep_rd(&Z, h);
     for(row=0; row < Z.params->rowtot[h]; row++) {
       i = Z.params->roworb[h][row][0];
       a = Z.params->roworb[h][row][1];
       I = T1A.params->rowidx[i];  Isym = T1A.params->psym[i];
       A = T1A.params->colidx[a];  Asym = T1A.params->qsym[a];
-	  
-      for(col=0; col < Z.params->coltot[h]; col++) {
-	m = Z.params->colorb[h][col][0];
-	e = Z.params->colorb[h][col][1];
-	M = T1A.params->rowidx[m];  Msym = T1A.params->psym[m];
-	E = T1A.params->colidx[e];  Esym = T1A.params->qsym[e];
 
-	if((Isym==Esym) && (Msym==Asym))
-	  Z.matrix[h][row][col] += (2* T1A.matrix[Isym][I][E] *
-				    T1A.matrix[Msym][M][A]);
+      for(col=0; col < Z.params->coltot[h]; col++) {
+    m = Z.params->colorb[h][col][0];
+    e = Z.params->colorb[h][col][1];
+    M = T1A.params->rowidx[m];  Msym = T1A.params->psym[m];
+    E = T1A.params->colidx[e];  Esym = T1A.params->qsym[e];
+
+    if((Isym==Esym) && (Msym==Asym))
+      Z.matrix[h][row][col] += (2* T1A.matrix[Isym][I][E] *
+                    T1A.matrix[Msym][M][A]);
       }
     }
     dpd_buf4_mat_irrep_wrt(&Z, h);
@@ -137,23 +137,23 @@ void Gijab_RHF(void)
   dpd_buf4_init(&Z, PSIF_CC_TMP5, 0, 10, 10, 10, 10, 0, "Z(ia,me)");
   dpd_buf4_scm(&Z, -1.0);
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Z, h); 0,
-				      dpd_buf4_mat_irrep_rd(&Z, h);
+    dpd_buf4_mat_irrep_init(&Z, h);
+    dpd_buf4_mat_irrep_rd(&Z, h);
     for(row=0; row < Z.params->rowtot[h]; row++) {
       i = Z.params->roworb[h][row][0];
       a = Z.params->roworb[h][row][1];
       I = T1B.params->rowidx[i];  Isym = T1B.params->psym[i];
       A = T1B.params->colidx[a];  Asym = T1B.params->qsym[a];
-	  
-      for(col=0; col < Z.params->coltot[h]; col++) {
-	m = Z.params->colorb[h][col][0];
-	e = Z.params->colorb[h][col][1];
-	M = T1B.params->rowidx[m];  Msym = T1B.params->psym[m];
-	E = T1B.params->colidx[e];  Esym = T1B.params->qsym[e];
 
-	if((Isym==Esym) && (Msym==Asym))
-	  Z.matrix[h][row][col] += (2* T1B.matrix[Isym][I][E] *
-				    T1B.matrix[Msym][M][A]);
+      for(col=0; col < Z.params->coltot[h]; col++) {
+    m = Z.params->colorb[h][col][0];
+    e = Z.params->colorb[h][col][1];
+    M = T1B.params->rowidx[m];  Msym = T1B.params->psym[m];
+    E = T1B.params->colidx[e];  Esym = T1B.params->qsym[e];
+
+    if((Isym==Esym) && (Msym==Asym))
+      Z.matrix[h][row][col] += (2* T1B.matrix[Isym][I][E] *
+                    T1B.matrix[Msym][M][A]);
       }
     }
     dpd_buf4_mat_irrep_wrt(&Z, h);
@@ -167,23 +167,23 @@ void Gijab_RHF(void)
   dpd_buf4_close(&T);
   dpd_buf4_init(&Z, PSIF_CC_TMP6, 0, 10, 10, 10, 10, 0, "Z(iA,Me)");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Z, h); 0,
-				      dpd_buf4_mat_irrep_rd(&Z, h);
+    dpd_buf4_mat_irrep_init(&Z, h);
+    dpd_buf4_mat_irrep_rd(&Z, h);
     for(row=0; row < Z.params->rowtot[h]; row++) {
       i = Z.params->roworb[h][row][0];
       a = Z.params->roworb[h][row][1];
       I = T1B.params->rowidx[i];  Isym = T1B.params->psym[i];
       A = T1A.params->colidx[a];  Asym = T1A.params->qsym[a];
-	  
-      for(col=0; col < Z.params->coltot[h]; col++) {
-	m = Z.params->colorb[h][col][0];
-	e = Z.params->colorb[h][col][1];
-	M = T1A.params->rowidx[m];  Msym = T1A.params->psym[m];
-	E = T1B.params->colidx[e];  Esym = T1B.params->qsym[e];
 
-	if((Isym==Esym) && (Msym==Asym))
-	  Z.matrix[h][row][col] += (2* T1B.matrix[Isym][I][E] *
-				    T1A.matrix[Msym][M][A]);
+      for(col=0; col < Z.params->coltot[h]; col++) {
+    m = Z.params->colorb[h][col][0];
+    e = Z.params->colorb[h][col][1];
+    M = T1A.params->rowidx[m];  Msym = T1A.params->psym[m];
+    E = T1B.params->colidx[e];  Esym = T1B.params->qsym[e];
+
+    if((Isym==Esym) && (Msym==Asym))
+      Z.matrix[h][row][col] += (2* T1B.matrix[Isym][I][E] *
+                    T1A.matrix[Msym][M][A]);
       }
     }
     dpd_buf4_mat_irrep_wrt(&Z, h);
@@ -197,23 +197,23 @@ void Gijab_RHF(void)
   dpd_buf4_close(&T);
   dpd_buf4_init(&Z, PSIF_CC_TMP7, 0, 10, 10, 10, 10, 0, "Z(Ia,mE)");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Z, h); 0,
-				      dpd_buf4_mat_irrep_rd(&Z, h);
+    dpd_buf4_mat_irrep_init(&Z, h);
+    dpd_buf4_mat_irrep_rd(&Z, h);
     for(row=0; row < Z.params->rowtot[h]; row++) {
       i = Z.params->roworb[h][row][0];
       a = Z.params->roworb[h][row][1];
       I = T1A.params->rowidx[i];  Isym = T1A.params->psym[i];
       A = T1B.params->colidx[a];  Asym = T1B.params->qsym[a];
-	  
-      for(col=0; col < Z.params->coltot[h]; col++) {
-	m = Z.params->colorb[h][col][0];
-	e = Z.params->colorb[h][col][1];
-	M = T1B.params->rowidx[m];  Msym = T1B.params->psym[m];
-	E = T1A.params->colidx[e];  Esym = T1A.params->qsym[e];
 
-	if((Isym==Esym) && (Msym==Asym))
-	  Z.matrix[h][row][col] += (2* T1A.matrix[Isym][I][E] *
-				    T1B.matrix[Msym][M][A]);
+      for(col=0; col < Z.params->coltot[h]; col++) {
+    m = Z.params->colorb[h][col][0];
+    e = Z.params->colorb[h][col][1];
+    M = T1B.params->rowidx[m];  Msym = T1B.params->psym[m];
+    E = T1A.params->colidx[e];  Esym = T1A.params->qsym[e];
+
+    if((Isym==Esym) && (Msym==Asym))
+      Z.matrix[h][row][col] += (2* T1A.matrix[Isym][I][E] *
+                    T1B.matrix[Msym][M][A]);
       }
     }
     dpd_buf4_mat_irrep_wrt(&Z, h);
@@ -376,28 +376,28 @@ void Gijab_RHF(void)
 
   dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 0,
-				      dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_buf4_mat_irrep_init(&G, h);
+    dpd_buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       j = G.params->roworb[h][row][1];
-	  
+
       for(col=0; col < G.params->coltot[h]; col++) {
-	a = G.params->colorb[h][col][0];
-	b = G.params->colorb[h][col][1];
+    a = G.params->colorb[h][col][0];
+    b = G.params->colorb[h][col][1];
 
-	value = 0.0;
+    value = 0.0;
 
-	I = ZZ.params->rowidx[i]; Isym = ZZ.params->psym[i];
-	J = T1.params->rowidx[j]; Jsym = T1.params->psym[j];
-	A = ZZ.params->colidx[a]; Asym = ZZ.params->qsym[a];
-	B = T1.params->colidx[b]; Bsym = T1.params->qsym[b];
+    I = ZZ.params->rowidx[i]; Isym = ZZ.params->psym[i];
+    J = T1.params->rowidx[j]; Jsym = T1.params->psym[j];
+    A = ZZ.params->colidx[a]; Asym = ZZ.params->qsym[a];
+    B = T1.params->colidx[b]; Bsym = T1.params->qsym[b];
 
-	if((Isym==Asym) && (Jsym==Bsym))
-	  value += ZZ.matrix[Isym][I][A] * T1.matrix[Jsym][J][B];
+    if((Isym==Asym) && (Jsym==Bsym))
+      value += ZZ.matrix[Isym][I][A] * T1.matrix[Jsym][J][B];
 
-	G.matrix[h][row][col] -= value;
-	      
+    G.matrix[h][row][col] -= value;
+
       }
     }
     dpd_buf4_mat_irrep_wrt(&G, h);
@@ -433,28 +433,28 @@ void Gijab_RHF(void)
 
   dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 0,
-				      dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_buf4_mat_irrep_init(&G, h);
+    dpd_buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       j = G.params->roworb[h][row][1];
-	  
+
       for(col=0; col < G.params->coltot[h]; col++) {
-	a = G.params->colorb[h][col][0];
-	b = G.params->colorb[h][col][1];
+    a = G.params->colorb[h][col][0];
+    b = G.params->colorb[h][col][1];
 
-	value = 0.0;
+    value = 0.0;
 
-	I = T1.params->rowidx[i]; Isym = T1.params->psym[i];
-	J = ZZ.params->rowidx[j]; Jsym = ZZ.params->psym[j];
-	A = T1.params->colidx[a]; Asym = T1.params->qsym[a];
-	B = ZZ.params->colidx[b]; Bsym = ZZ.params->qsym[b];
+    I = T1.params->rowidx[i]; Isym = T1.params->psym[i];
+    J = ZZ.params->rowidx[j]; Jsym = ZZ.params->psym[j];
+    A = T1.params->colidx[a]; Asym = T1.params->qsym[a];
+    B = ZZ.params->colidx[b]; Bsym = ZZ.params->qsym[b];
 
-	if((Isym==Asym) && (Jsym==Bsym))
-	  value += T1.matrix[Isym][I][A] * ZZ.matrix[Jsym][J][B];
+    if((Isym==Asym) && (Jsym==Bsym))
+      value += T1.matrix[Isym][I][A] * ZZ.matrix[Jsym][J][B];
 
-	G.matrix[h][row][col] -= value;
-	      
+    G.matrix[h][row][col] -= value;
+
       }
     }
     dpd_buf4_mat_irrep_wrt(&G, h);
@@ -492,28 +492,28 @@ void Gijab_RHF(void)
 
   dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 0,
-				      dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_buf4_mat_irrep_init(&G, h);
+    dpd_buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       j = G.params->roworb[h][row][1];
-	  
+
       for(col=0; col < G.params->coltot[h]; col++) {
-	a = G.params->colorb[h][col][0];
-	b = G.params->colorb[h][col][1];
+    a = G.params->colorb[h][col][0];
+    b = G.params->colorb[h][col][1];
 
-	value = 0.0;
+    value = 0.0;
 
-	I = T1.params->rowidx[i]; Isym = T1.params->psym[i];
-	J = ZZ.params->rowidx[j]; Jsym = ZZ.params->psym[j];
-	A = T1.params->colidx[a]; Asym = T1.params->qsym[a];
-	B = ZZ.params->colidx[b]; Bsym = ZZ.params->qsym[b];
+    I = T1.params->rowidx[i]; Isym = T1.params->psym[i];
+    J = ZZ.params->rowidx[j]; Jsym = ZZ.params->psym[j];
+    A = T1.params->colidx[a]; Asym = T1.params->qsym[a];
+    B = ZZ.params->colidx[b]; Bsym = ZZ.params->qsym[b];
 
-	if((Isym==Asym) && (Jsym==Bsym))
-	  value += T1.matrix[Isym][I][A] * ZZ.matrix[Jsym][J][B];
+    if((Isym==Asym) && (Jsym==Bsym))
+      value += T1.matrix[Isym][I][A] * ZZ.matrix[Jsym][J][B];
 
-	G.matrix[h][row][col] += 3.0 * value;
-	      
+    G.matrix[h][row][col] += 3.0 * value;
+
       }
     }
     dpd_buf4_mat_irrep_wrt(&G, h);
@@ -552,28 +552,28 @@ void Gijab_RHF(void)
 
   dpd_buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&G, h); 0,
-				      dpd_buf4_mat_irrep_rd(&G, h);
+    dpd_buf4_mat_irrep_init(&G, h);
+    dpd_buf4_mat_irrep_rd(&G, h);
     for(row=0; row < G.params->rowtot[h]; row++) {
       i = G.params->roworb[h][row][0];
       j = G.params->roworb[h][row][1];
-	  
+
       for(col=0; col < G.params->coltot[h]; col++) {
-	a = G.params->colorb[h][col][0];
-	b = G.params->colorb[h][col][1];
+    a = G.params->colorb[h][col][0];
+    b = G.params->colorb[h][col][1];
 
-	value = 0.0;
+    value = 0.0;
 
-	I = ZZ.params->rowidx[i]; Isym = ZZ.params->psym[i];
-	J = T1.params->rowidx[j]; Jsym = T1.params->psym[j];
-	A = ZZ.params->colidx[a]; Asym = ZZ.params->qsym[a];
-	B = T1.params->colidx[b]; Bsym = T1.params->qsym[b];
+    I = ZZ.params->rowidx[i]; Isym = ZZ.params->psym[i];
+    J = T1.params->rowidx[j]; Jsym = T1.params->psym[j];
+    A = ZZ.params->colidx[a]; Asym = ZZ.params->qsym[a];
+    B = T1.params->colidx[b]; Bsym = T1.params->qsym[b];
 
-	if((Isym==Asym) && (Jsym==Bsym))
-	  value += ZZ.matrix[Isym][I][A] * T1.matrix[Jsym][J][B];
+    if((Isym==Asym) && (Jsym==Bsym))
+      value += ZZ.matrix[Isym][I][A] * T1.matrix[Jsym][J][B];
 
-	G.matrix[h][row][col] += 3.0 * value;
-	      
+    G.matrix[h][row][col] += 3.0 * value;
+
       }
     }
     dpd_buf4_mat_irrep_wrt(&G, h);

@@ -60,13 +60,13 @@ locally to a module, except for those without a module in
 :py:class:`~optproc.OptionsState`. ::
 
     # include if necessary as globals
-    PsiMod.set_global_option('BASIS', guessbasis)
-    PsiMod.set_global_option('DF_BASIS_SCF', guessbasisdf)
+    psi4.set_global_option('BASIS', guessbasis)
+    psi4.set_global_option('DF_BASIS_SCF', guessbasisdf)
 
     # include if necessary as locals
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'MP2')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'MP2')
-    PsiMod.set_local_option('MP2', 'WFN', 'MP2')
+    psi4.set_local_option('TRANSQT2', 'WFN', 'MP2')
+    psi4.set_local_option('CCSORT', 'WFN', 'MP2')
+    psi4.set_local_option('MP2', 'WFN', 'MP2')
 
 If the regular scf module is to be run, run it through
 :py:func:`~proc.scf_helper` so that cast-up can be used. Also, add the
@@ -84,16 +84,16 @@ previously. ::
          # include if TEI are needed beyond scf
 
          # If the scf type is DF, then the AO integrals were never generated
-         if PsiMod.get_option('SCF', 'SCF_TYPE') == 'DF':
-             mints = PsiMod.MintsHelper()
+         if psi4.get_option('SCF', 'SCF_TYPE') == 'DF':
+             mints = psi4.MintsHelper()
              mints.integrals()
  
 Direct any post-scf modules to be run. ::
 
     # include if further post-scf modules are needed
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    PsiMod.mp2()
+    psi4.transqt2()
+    psi4.ccsort()
+    psi4.mp2()
 
 If an :py:class:`~optproc.OptionsState` object was set up, those options
 need to be returned to the original user state with the following. ::

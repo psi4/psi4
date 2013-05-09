@@ -404,7 +404,7 @@ public:
     void print_out_of_planes() const;
 
     /// Save an XYZ file
-    void save_xyz(const std::string & filename) const;
+    void save_xyz(const std::string & filename, bool save_ghosts = true) const;
 
     /// Save an XYZ string
     std::string save_string_xyz() const;
