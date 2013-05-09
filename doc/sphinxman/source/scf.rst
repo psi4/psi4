@@ -491,28 +491,41 @@ contributions to the Fock Matrix. A number of algorithms are available in
 keyword, which may be one of the following
 
 PK [:ref:`Default <table:conv_scf>`]
-    An out-of-core, presorted algorithm using exact ERIs. Quite fast
-    for a zero-error algorithm if enough memory is available. Integrals are
-    generated only once, and symmetry is utilized to reduce number of integrals. 
+    An out-of-core, presorted algorithm using exact ERIs. Quite fast for a
+    zero-error algorithm if enough memory is available. Integrals are
+    generated only once, and symmetry is utilized to reduce number of
+    integrals.
 OUT_OF_CORE
-    An out-of-core, unsorted algorithm using exact
-    ERIs. Overcomes the memory bottleneck of the current PK algorithm. Integrals are
-    generated only once, and symmetry is utilized to reduce number of integrals. 
+    An out-of-core, unsorted algorithm using exact ERIs. Overcomes the
+    memory bottleneck of the current PK algorithm. Integrals are generated
+    only once, and symmetry is utilized to reduce number of integrals.
 DIRECT
     A threaded, sieved, integral-direct algorithm, with full permutational
-    symmetry. This algorithm is brand new, but seems to be reasonably fast up to
-    1500 basis function, uses zero disk, and can obtain significant speedups with
-    negligible error loss if the |scf__ints_tolerance| value is set to 1.0E-8 or so.
+    symmetry. This algorithm is brand new, but seems to be reasonably fast
+    up to 1500 basis function, uses zero disk, and can obtain significant
+    speedups with negligible error loss if the |scf__ints_tolerance| value
+    is set to 1.0E-8 or so.
 DF [:ref:`Default <table:conv_scf>`]
-    A density-fitted algorithm designed for computations with thousands of basis
-    functions. This algorithm is highly optimized, and is threaded with a mixture of
-    parallel BLAS and OpenMP. Note that this algorithm should use the -JKFIT series
-    of auxiliary bases, *not* the -RI or -MP2FIT bases. The default guess for
-    auxiliary basis set should work for all Dunning bases, otherwise the
-    |scf__df_basis_scf| keyword can be used to manually specify the auxiliary basis.
-    This algorithm is preferred unless either absolute accuracy is required
-    [:math:`\gtrsim`\ CCSD(T)] or a -JKFIT auxiliary basis is unavailable for the
-    primary basis/atoms involved. 
+    A density-fitted algorithm designed for computations with thousands of
+    basis functions. This algorithm is highly optimized, and is threaded
+    with a mixture of parallel BLAS and OpenMP. Note that this algorithm
+    should use the -JKFIT series of auxiliary bases, *not* the -RI or
+    -MP2FIT bases. The default guess for auxiliary basis set should work
+    for all Dunning bases, otherwise the |scf__df_basis_scf| keyword can
+    be used to manually specify the auxiliary basis.  This algorithm is
+    preferred unless either absolute accuracy is required
+    [:math:`\gtrsim`\ CCSD(T)] or a -JKFIT auxiliary basis is unavailable
+    for the primary basis/atoms involved.
+CD
+    A threaded algorithm using approximate ERI's obtained by Cholesky
+    decomposition of the ERI tensor.  The accuracy of the Cholesky
+    decomposition is controlled by the keyword |scf__cholesky_tolerance|.
+    This algorithm is similar to the DF algorithm, but it is not suitable
+    for gradient computations.  The algorithm to obtain the Cholesky
+    vectors is not designed for computations with thousands of basis
+    functions.
+
+
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate

@@ -58,14 +58,14 @@ void abci3_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci3,U
 void abci5_terms_new(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI*nabci5,ULI*totalnabci5,struct integral**abci5,ULI binsize,ULI bucketsize,psio_address*addr,ULI filestart,ULI nfiles);
 
 void abcd3_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabcd1,struct integral*abcd1);
-void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim);
-void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim);
-void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim,ULI filestart,ULI nfiles);
+void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim);
+void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim);
+void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim,ULI filestart,ULI nfiles);
 }}
 
 namespace psi{namespace fnocc{
 void SortIntegrals(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,Options&options,bool iscim){
-  struct iwlbuf Buf; 
+  struct iwlbuf Buf;
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
   fflush(outfile);
   fprintf(outfile,"\n");
@@ -164,8 +164,8 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   else
      integralbuffer= new integral[maxelem];
 
-  fprintf(outfile,"        Number of (ab|cd) temporary files:            %5i\n",2*nfiles);
-  fprintf(outfile,"        Number of (ab|ci) temporary files:            %5i\n",3*ov3nfiles);
+  fprintf(outfile,"        Number of (ab|cd) temporary files:            %5li\n",2*nfiles);
+  fprintf(outfile,"        Number of (ab|ci) temporary files:            %5li\n",3*ov3nfiles);
   fprintf(outfile,"        Starting temporary file number:               %5i\n",PSIF_DCC_SORT_START);
   fprintf(outfile,"\n");
   fflush(outfile);
@@ -358,11 +358,11 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
             totalnijak2+=nijak2;
             nijak2=0;
          }
-      } 
+      }
       else if (nocc==2){
          val = (double)valptr[Buf->idx];
 
-         if (p<o && q>=o || p>=o && q<o){
+         if ((p<o && q>=o) || (p>=o && q<o)){
             klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
             if (nklcd>=nelem){
@@ -461,11 +461,11 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
                 totalnijak2+=nijak2;
                 nijak2=0;
              }
-          } 
+          }
           else if (nocc==2){
              val = (double)valptr[Buf->idx];
 
-             if (p<o && q>=o || p>=o && q<o){
+             if ((p<o && q>=o) || (p>=o && q<o)){
                 klcd_terms(val,pq,rs,p,q,r,s,o,v,nklcd,klcd);
 
                 if (nklcd>=nelem){
@@ -523,7 +523,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
          nabcd1[k]=0;
       }
   }
-  for (ULI k = 0; k < ov3nfiles; k++){ 
+  for (ULI k = 0; k < ov3nfiles; k++){
       if (nabci5[k]>0){
          psio->open(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,PSIO_OPEN_OLD);
          psio->write(PSIF_DCC_SORT_START+k+2*nfiles+2*ov3nfiles,"E2abci2",(char*)&abci5[k][0],nabci5[k]*sizeof(struct integral),abci5_addr[k],&abci5_addr[k]);
@@ -708,7 +708,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   psio->write(PSIF_DCC_ABCD1,"E2abcd1",(char*)&tmp[0],lastbin*sizeof(double),abcd1_new,&abcd1_new);
   psio->close(PSIF_DCC_ABCD1,1);
   psio->close(PSIF_DCC_ABCD2,1);
-  
+
 
   delete tmp;
   delete tmp2;
@@ -1175,7 +1175,7 @@ void abci1_terms(double val,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,ULI&nabci1,struc
   }
 }
 /**
-  * ABCD-type integrals, because of weird SJS packing, are really 
+  * ABCD-type integrals, because of weird SJS packing, are really
   * confusing to sort.  I couldn't think of an analytic way to do
   * this, so I resorted to brute force.
   */
@@ -1183,14 +1183,14 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   ULI ind3,a,b,c,d,ind1,ind2,index,flag;
   ULI nvals,vals[16];
   nvals = 0;
-  
+
   a = p-o;
   d = q-o;
   b = r-o;
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1226,7 +1226,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1262,7 +1262,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1298,7 +1298,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1334,14 +1334,14 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   ULI nvals,vals[16];
   ULI k;
   nvals = 0;
-  
+
   a = p-o;
   d = q-o;
   b = r-o;
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1381,7 +1381,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1421,7 +1421,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1461,7 +1461,7 @@ void abcd2_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1572,14 +1572,14 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   ULI nvals,vals[16];
   ULI k;
   nvals = 0;
-  
+
   a = p-o;
   c = q-o;
   b = r-o;
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1619,7 +1619,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1659,7 +1659,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1699,7 +1699,7 @@ void abcd1_terms_new(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI 
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1753,14 +1753,14 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   ULI ind3,a,b,c,d,ind1,ind2,index,flag;
   ULI nvals,vals[16];
   nvals = 0;
-  
+
   a = p-o;
   c = q-o;
   b = r-o;
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1796,7 +1796,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1832,7 +1832,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1868,7 +1868,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (a<=b && c<=d || b<=a && d<=c){
+  if ((a<=b && c<=d) || (b<=a && d<=c)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1901,7 +1901,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
 
 }
 
-void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim,ULI filestart,ULI nfiles){
+void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim,ULI filestart,ULI nfiles){
   boost::shared_ptr<PSIO> psio(new PSIO());
      // bins are coreloads
      ULI nbins,binsize,lastbin;
@@ -1942,7 +1942,7 @@ void SortBlockNewNew(ULI*nelem,ULI blockdim,struct integral*buffer,double*tmp,UL
      }
 }
 
-void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim){
+void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
   boost::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
@@ -2126,7 +2126,7 @@ void SortBlockNew(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI P
      free(buffer2);
   }
 }
-void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim){
+void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,const char*string,ULI maxdim){
   boost::shared_ptr<PSIO> psio(new PSIO());
   // does the block fit in core?
   if (nelem<=maxdim && blockdim<=maxdim){
@@ -2368,4 +2368,4 @@ void SortOVOV(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nv
 }
 
 }} // end of namespaces
-  
+

@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libdpd/dpd.h>
@@ -36,15 +36,15 @@ namespace psi { namespace ccdensity {
 
 /* onepdm_uhf(): Computes the non-R0 parts of the unrelaxed EOM 1pdm
 * intermediates are defined in x_oe_intermediates.c
-* 
+*
 *   D[i][j] = -LR_oo[j][i] - t1[i][f] * L2R1_ov[j][f]
 *
 *   D[a][b] = +LR_vv[a][b] + t1[n][b] * L2R1_ov[n][a]
 *
 *   D[a][i] = +L2R1_ov[i][a]
 *
-*   D[i][a] = + L1R2_ov[i][a] 
-*            - t1[m][a] * LR_oo[m][i] 
+*   D[i][a] = + L1R2_ov[i][a]
+*            - t1[m][a] * LR_oo[m][i]
 *            - t1[i][e] * LR_vv[e][a]
 *            - r1[m][a] * LT2_oo[m][i]
 *            - r1[i][e] * LT2_vv[e][a]
@@ -138,7 +138,7 @@ void x_onepdm_uhf(struct RHO_Params rho_params)
   }
 
   /*
-     D[I][A] = (1-R0)*tIA + L1R2_OV[I][A] 
+     D[I][A] = (1-R0)*tIA + L1R2_OV[I][A]
                - LR_OO[M][I] * t1[M][A]
                - t1[I][E] * LR_vv[E][A]
                - LT2_OO[M][I] * r1[M][A]
@@ -149,14 +149,14 @@ void x_onepdm_uhf(struct RHO_Params rho_params)
   /* (1-R0) * tIA */
   dpd_file2_init(&DIA, PSIF_CC_OEI, G_irr, 0, 1, rho_params.DIA_lbl);
 
-  if ( (G_irr == 0) /* && (!params.connect_xi)*/ ) {
+  if (G_irr == 0) {
     dpd_file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "tIA");
     dpd_file2_axpy(&I, &DIA, 1.0, 0);
     dpd_file2_close(&I);
   }
 
   dpd_file2_init(&Dia, PSIF_CC_OEI, G_irr, 2, 3, rho_params.Dia_lbl);
-  if ( (G_irr == 0) /* && (!params.connect_xi)*/ ) {
+  if (G_irr == 0) {
     dpd_file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "tia");
     dpd_file2_axpy(&I, &Dia, 1.0, 0);
     dpd_file2_close(&I);
@@ -214,31 +214,31 @@ void x_onepdm_uhf(struct RHO_Params rho_params)
   /* term 6, + L2R1_ov[M][E] * t2[i][m][a][e] */
 
   if (!params.connect_xi) {
-    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB"); 
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
     dpd_file2_init(&I, PSIF_EOM_TMP, G_irr, 0, 1, "L2R1_OV");
     dpd_dot24(&I, &T2, &DIA, 0, 0, 1.0, 1.0);
     dpd_file2_close(&I);
     dpd_buf4_close(&T2);
 
-    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb"); 
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
     dpd_file2_init(&I, PSIF_EOM_TMP, G_irr, 2, 3, "L2R1_ov");
     dpd_dot24(&I, &T2, &DIA, 0, 0, 1.0, 1.0);
     dpd_file2_close(&I);
     dpd_buf4_close(&T2);
 
-    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab"); 
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
     dpd_file2_init(&I, PSIF_EOM_TMP, G_irr, 2, 3, "L2R1_ov");
     dpd_dot24(&I, &T2, &Dia, 0, 0, 1.0, 1.0);
     dpd_file2_close(&I);
     dpd_buf4_close(&T2);
 
-    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB"); 
+    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
     dpd_file2_init(&I, PSIF_EOM_TMP, G_irr, 0, 1, "L2R1_OV");
     dpd_dot24(&I, &T2, &Dia, 0, 0, 1.0, 1.0);
     dpd_file2_close(&I);
     dpd_buf4_close(&T2);
   }
-    
+
   /* term 7, - (t1[i][e] * L2R1_ov[M][E]) * t1[m][a] */
 
   if (!params.connect_xi) {
@@ -284,10 +284,10 @@ void x_onepdm_uhf(struct RHO_Params rho_params)
   dpd_file2_init(&Dai, PSIF_CC_OEI, G_irr, 2, 3, rho_params.Dai_lbl);
   dot_ai = dpd_file2_dot_self(&Dai);
   dpd_file2_close(&Dai);
-	fprintf(outfile,"\tOverlaps of onepdm after excited-state parts added.\n");
-	fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
-	fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
-	fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
+    fprintf(outfile,"\tOverlaps of onepdm after excited-state parts added.\n");
+    fprintf(outfile,"\t<DIA|DIA> = %15.10lf     <Dia|Dia> = %15.10lf\n", dot_IA, dot_ia);
+    fprintf(outfile,"\t<DAI|DAI> = %15.10lf     <Dai|Dai> = %15.10lf\n", dot_AI, dot_ai);
+    fprintf(outfile,"\t<Dpq|Dqp> = %15.10lf\n", dot_IA+dot_ia+dot_AI+dot_ai);
   return;
 }
 

@@ -64,7 +64,7 @@ set transqt2 {
   delete_tei false
 }
 
-psioh = PsiMod.IOManager.shared_object()
+psioh = psi4.IOManager.shared_object()
 psioh.set_specific_retention(32, True)
 psioh.set_specific_retention(33, True)
 psioh.set_specific_retention(35, True)

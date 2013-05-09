@@ -170,7 +170,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
     if(aoccpi[h]) {
       evals = init_array(aoccpi[h]);
       work = init_array(3*aoccpi[h]);
-      if(stat = C_DSYEV('v','u', aoccpi[h], &(Foo[h][0][0]), aoccpi[h], evals, work, aoccpi[h]*3)) {
+      if((stat = C_DSYEV('v','u', aoccpi[h], &(Foo[h][0][0]), aoccpi[h], evals, work, aoccpi[h]*3))) {
 
         fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
                 h, stat);
@@ -189,7 +189,7 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
     if(averaged==1 && asoccpi[h]) {
       evals = init_array(asoccpi[h]);
       work = init_array(3*asoccpi[h]);
-      if(stat = C_DSYEV('v','u', asoccpi[h], &(Fss[h][0][0]), asoccpi[h], evals, work, asoccpi[h]*3)) {
+      if((stat = C_DSYEV('v','u', asoccpi[h], &(Fss[h][0][0]), asoccpi[h], evals, work, asoccpi[h]*3))) {
         fprintf(outfile, "rotate(): Error in alpha Fss[%1d] diagonalization. stat = %d\n", h, stat);
         exit(PSI_RETURN_FAILURE);
       }
@@ -207,8 +207,8 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
     if(avirtpi[h]) {
       evals = init_array(avirtpi[h]);
       work = init_array(3*avirtpi[h]);
-      if(stat = C_DSYEV('v','u', avirtpi[h], &(Fvv[h][0][0]), avirtpi[h],
-                        evals, work, avirtpi[h]*3)) {
+      if((stat = C_DSYEV('v','u', avirtpi[h], &(Fvv[h][0][0]), avirtpi[h],
+                        evals, work, avirtpi[h]*3))) {
       fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
               h, stat);
       exit(PSI_RETURN_FAILURE);
@@ -272,8 +272,8 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
         if(boccpi[h]) {
           evals = init_array(boccpi[h]);
           work = init_array(3*boccpi[h]);
-          if(stat = C_DSYEV('v','u', boccpi[h], &(Foo[h][0][0]),
-                          boccpi[h], evals, work, boccpi[h]*3)) {
+          if((stat = C_DSYEV('v','u', boccpi[h], &(Foo[h][0][0]),
+                          boccpi[h], evals, work, boccpi[h]*3))) {
             fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n",
                   h, stat);
             exit(PSI_RETURN_FAILURE);
@@ -290,8 +290,8 @@ void semicanonical_fock(int averaged) /* averaged==0, regular semicanonical; =1 
         if(bvirtpi[h]) {
           evals = init_array(bvirtpi[h]);
           work = init_array(3*bvirtpi[h]);
-          if(stat = C_DSYEV('v','u', bvirtpi[h], &(Fvv[h][0][0]), bvirtpi[h],
-                          evals, work, bvirtpi[h]*3)) {
+          if((stat = C_DSYEV('v','u', bvirtpi[h], &(Fvv[h][0][0]), bvirtpi[h],
+                          evals, work, bvirtpi[h]*3))) {
             fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n",
                   h, stat);
             exit(PSI_RETURN_FAILURE);

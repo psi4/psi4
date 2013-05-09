@@ -24,13 +24,13 @@
 ** \file
 ** \brief Diagonalizes a tridiagonal matrix output by tred2
 ** \ingroup CIOMR
-*/ 
+*/
 
 #include <psifiles.h>
 #include <cstdio>
 #include <cmath>
 
-#define DSIGN(a,b) ((b) >= 0.0) ? (fabs(a)) : (-fabs(a))
+#define DSIGN(a,b) (((b) >= 0.0) ? (fabs(a)) : (-fabs(a)))
 
 namespace psi {
 

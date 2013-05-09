@@ -1696,7 +1696,7 @@ void Molecule::print_out_of_planes () const
     fprintf(outfile, "\n\n");
 }
 
-void Molecule::save_xyz(const std::string& filename) const
+void Molecule::save_xyz(const std::string& filename, bool save_ghosts) const
 {
 
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
@@ -1704,11 +1704,20 @@ void Molecule::save_xyz(const std::string& filename) const
     if (WorldComm->me() == 0) {
         FILE* fh = fopen(filename.c_str(), "w");
 
-        fprintf(fh,"%d\n\n", natom());
+        int N = natom();
+        if (!save_ghosts) {
+            N = 0;
+            for (int i = 0; i < natom(); i++) {
+                if (Z(i)) N++;
+            }
+        }
+
+        fprintf(fh,"%d\n\n", N);
 
         for (int i = 0; i < natom(); i++) {
             Vector3 geom = atoms_[i]->compute();
-            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+            if (save_ghosts || Z(i))
+                fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
 
         fclose(fh);

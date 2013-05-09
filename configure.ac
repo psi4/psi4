@@ -301,8 +301,14 @@ AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 # Check for python interpreter and libraries
 #  Version 2.6 is required because we import Python3 printing from future
 AC_PYTHON([2.6])
-
-
+AC_ARG_ENABLE([python-module],
+    [AC_HELP_STRING([--enable-python-module],
+      [Enable building PSI4 as a Python module. @<:@default=no@:>@]) ],
+    [
+      MAKE_PYTHON_MODULE=1
+      AC_DEFINE([MAKE_PYTHON_MODULE])
+      AC_SUBST([MAKE_PYTHON_MODULE])
+    ])
 
 AC_PROG_PDFLATEX
 AC_PROG_LATEX
@@ -913,7 +919,7 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-######## 
+########
 
 AC_CONFIG_FILES([
           boost/Makefile
@@ -967,7 +973,6 @@ AC_CONFIG_FILES([
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
-          src/bin/mp2/Makefile
           src/bin/stable/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
@@ -1252,13 +1257,3 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 #fi
 
 AC_OUTPUT
-
-if test "$have_boost" == "0"; then
-    echo "====================================================================="
-    echo "Either your Boost is too old, missing components, missing altogether,"
-    echo "or you disabled use of system provided version."
-    echo ""
-    echo "The Boost provided in Psi4 will be compiled."
-    echo "====================================================================="
-fi
-

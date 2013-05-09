@@ -25,12 +25,12 @@
 from __future__ import print_function
 
 """Module with functions to parse the input file and convert
-Psithon into standard Python. Particularly, forms PsiMod
+Psithon into standard Python. Particularly, forms psi4
 module calls that access the C++ side of Psi4.
 
 """
-import PsiMod
-from pubchem import getPubChemResults, PubChemObj
+import psi4
+import pubchem
 import re
 import os
 import sys
@@ -91,10 +91,10 @@ def process_option(spaces, module, key, value, line):
 
     if(global_options):
         # If it's really a global, we need slightly different syntax
-        return spaces + "PsiMod.set_global_option(\"%s\", %s)\n" % (key, value)
+        return spaces + "psi4.set_global_option(\"%s\", %s)\n" % (key, value)
     else:
         # It's a local option, so we need the module name in there too
-        return spaces + "PsiMod.set_local_option(\"%s\", \"%s\", %s)\n" % (module, key, value)
+        return spaces + "psi4.set_local_option(\"%s\", \"%s\", %s)\n" % (module, key, value)
 
 
 def process_set_command(matchobj):
@@ -150,7 +150,7 @@ def process_pubchem_command(matchobj):
     string = matchobj.group(2)
     if re.match(r'^\s*[0-9]+\s*$', string):
         # This is just a number - must be a CID
-        pcobj = PubChemObj(int(string), '', '')
+        pcobj = pubchem.PubChemObj(int(string), '', '')
         try:
             return pcobj.getMoleculeString()
         except Exception as e:
@@ -158,7 +158,7 @@ def process_pubchem_command(matchobj):
     else:
         # Search pubchem for the provided string
         try:
-            results = getPubChemResults(string)
+            results = pubchem.getPubChemResults(string)
         except Exception as e:
             return e.message
 
@@ -200,7 +200,7 @@ def process_molecule_command(matchobj):
         molecule += ',"%s"' % (name)
 
     molecule += ")\n"
-    molecule += '%sPsiMod.IO.set_default_namespace("%s")' % (spaces, name)
+    molecule += '%spsi4.IO.set_default_namespace("%s")' % (spaces, name)
 
     return molecule
 
@@ -211,22 +211,22 @@ def process_extract_command(matchobj):
     name = matchobj.group(2)
     extract = matchobj.group(0)
     extract += spaces + '%s.set_name("%s")' % (name, name)
-    extract += "\n%sPsiMod.set_active_molecule(%s)" % (spaces, name)
-    extract += '\n%sPsiMod.IO.set_default_namespace("%s")' % (spaces, name)
+    extract += "\n%spsi4.set_active_molecule(%s)" % (spaces, name)
+    extract += '\n%spsi4.IO.set_default_namespace("%s")' % (spaces, name)
 
     return extract
 
 
 def process_print_command(matchobj):
     """Function to process match of ``print`` and transform
-    it to ``PsiMod.print_out()``.
+    it to ``psi4.print_out()``.
 
     """
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
     printer = str(spaces)
-    printer += "PsiMod.print_out(str(%s))\n" % str(string)
+    printer += "psi4.print_out(str(%s))\n" % str(string)
 
     return printer
 
@@ -247,7 +247,7 @@ def process_memory_command(matchobj):
     elif (units.upper() == 'GB'):
         memory_amount = val * 1000000000
 
-    command = "%sPsiMod.set_memory(%d)\n" % (spacing, int(memory_amount))
+    command = "%spsi4.set_memory(%d)\n" % (spacing, int(memory_amount))
     return command
 
 
@@ -255,7 +255,7 @@ def process_basis_file(matchobj):
     """Function to process match of ``basis file ...``."""
     spacing = str(matchobj.group(1))
     basisfile = str(matchobj.group(2)).strip()
-    command = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
+    command = "%spsi4.add_user_basis_file(\"%s\")" % (spacing, basisfile)
 
     return command
 
@@ -263,7 +263,7 @@ def process_filename(matchobj):
     """Function to process match of ``filename ...``."""
     spacing = str(matchobj.group(1))
     filename = str(matchobj.group(2)).strip()
-    command = "%sPsiMod.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
+    command = "%spsi4.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
 
     return command
 
@@ -271,7 +271,7 @@ def process_basis_block(matchobj):
     """Function to process match of ``basis name { ... }``."""
     command_lines = re.split('\n', matchobj.group(2))
     spacing = str(matchobj.group(1))
-    result = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
+    result = "%stemppsioman = psi4.IOManager.shared_object()" % spacing
     result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
     basislabel = re.compile(r'\s*\[\s*([-*\(\)\w]+)\s*\]\s*')
 
@@ -286,21 +286,21 @@ def process_basis_block(matchobj):
             m = label_re.match(line)
             if m.group(3):
                 basistype = m.group(3).upper()
-            result += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-            result += "%sPsiMod.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
+            result += "%spsi4.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
         elif(symbol_re.match(line)):
             m = symbol_re.match(line)
             if m.group(3):
                 basistype = m.group(3).upper()
-            result += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-            result += "%sPsiMod.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
+            result += "%spsi4.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"CUSTOM\")" % (spacing, basistype)
             custom_basis = True
         elif(all_re.match(line)):
             m = all_re.match(line)
             if m.group(2):
                 basistype = m.group(2).upper()
-            result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
-            result += "%sPsiMod.set_global_option(\"%s\", \"%s\")" % (spacing, basistype, m.group(1))
+            result += "%spsi4.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+            result += "%spsi4.set_global_option(\"%s\", \"%s\")" % (spacing, basistype, m.group(1))
             custom_basis = False
         else:
             # Ignore blank lines
@@ -315,14 +315,14 @@ def process_basis_block(matchobj):
         if(m):
             if(basisstring != ""):
                 result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-                result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing)
+                result += "%spsi4.add_user_basis_file(psi4tempbasisfile)" % (spacing)
                 result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
                 basisstring = ""
-            basisname = PsiMod.BasisSet.make_filename(m.group(1))
+            basisname = psi4.BasisSet.make_filename(m.group(1))
         basisstring += line + "\n"
     if(basisstring != ""):
         result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-        result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing)
+        result += "%spsi4.add_user_basis_file(psi4tempbasisfile)" % (spacing)
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
     return result
 
@@ -413,7 +413,7 @@ def process_external_command(matchobj):
         else:
             frags[len(frags) - 1].append(line)
 
-    extern += '%sextern_mol_temp = PsiMod.get_active_molecule()\n' % (spacing)
+    extern += '%sextern_mol_temp = psi4.get_active_molecule()\n' % (spacing)
 
     mol_re = re.compile(r'\s*\S+\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
     lines = []
@@ -441,7 +441,7 @@ def process_external_command(matchobj):
         extern += '%sqmmm.addDiffuse(diffuse)\n' % (spacing)
         extern += '\n'
 
-    extern += '%sPsiMod.set_active_molecule(extern_mol_temp)\n' % (spacing)
+    extern += '%spsi4.set_active_molecule(extern_mol_temp)\n' % (spacing)
 
     # 6. If there is anything left, the user messed up
     if (len(lines)):
@@ -454,7 +454,7 @@ def process_external_command(matchobj):
     extern += '%sqmmm.populateExtern()\n' % (spacing)
     extern += '%s%s = qmmm.extern\n' % (spacing, name)
 
-    extern += '%sPsiMod.set_global_option_python("EXTERN", extern)\n' % (spacing)
+    extern += '%spsi4.set_global_option_python("EXTERN", extern)\n' % (spacing)
 
     return extern
 
@@ -579,11 +579,11 @@ def process_input(raw_input, print_level=1):
 
     # Echo the infile on the outfile
     if print_level > 0:
-        PsiMod.print_out("\n  ==> Input File <==\n\n")
-        PsiMod.print_out("--------------------------------------------------------------------------\n")
-        PsiMod.print_out(raw_input)
-        PsiMod.print_out("--------------------------------------------------------------------------\n")
-        PsiMod.flush_outfile()
+        psi4.print_out("\n  ==> Input File <==\n\n")
+        psi4.print_out("--------------------------------------------------------------------------\n")
+        psi4.print_out(raw_input)
+        psi4.print_out("--------------------------------------------------------------------------\n")
+        psi4.flush_outfile()
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
@@ -650,7 +650,7 @@ def process_input(raw_input, print_level=1):
                          re.IGNORECASE)
     temp = re.sub(extract, process_extract_command, temp)
 
-    # Process "print" and transform it to "PsiMod.print_out()"
+    # Process "print" and transform it to "psi4.print_out()"
     #print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
     #temp = re.sub(print_string, process_print_command, temp)
 
@@ -675,25 +675,17 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(file_pid, process_filename, temp)
 
     # imports
-    imports = 'from PsiMod import *\n'
-    imports += 'from physconst import *\n'
+    imports = 'from psi4 import *\n'
+    imports += 'from p4const import *\n'
+    imports += 'from p4util import *\n'
     imports += 'from molutil import *\n'
     imports += 'from driver import *\n'
-    imports += 'from text import *\n'
-    imports += 'from inpsight import *\n'
     imports += 'from wrappers import *\n'
     imports += 'from gaussian_n import *\n'
     imports += 'from aliases import *\n'
-    imports += 'from psiexceptions import *\n'
-    imports += 'from util import *\n'
-    imports += 'from qmmm import *\n'
-    imports += 'from frac import *\n'
-    imports += 'from diatomic import *\n'
     imports += 'from functional import *\n'
-    imports += 'from pubchem import *\n'
-    imports += 'from psifiles import *\n'
-    imports += 'import pickle\n'
-    imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
+    imports += 'from qmmm import *\n'
+    imports += 'psi4_io = psi4.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)
     psirc = ''
@@ -706,7 +698,7 @@ def process_input(raw_input, print_level=1):
 
     # Override scratch directory if user specified via env_var
     scratch = ''
-    scratch_env = PsiMod.Process.environment['PSI_SCRATCH']
+    scratch_env = psi4.Process.environment['PSI_SCRATCH']
     if len(scratch_env):
         scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
 

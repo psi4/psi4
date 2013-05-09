@@ -21,7 +21,7 @@
 #
 
 """Module with non-generic exceptions classes."""
-import PsiMod
+import psi4
 
 
 class PsiException(Exception):
@@ -37,4 +37,4 @@ class ValidationError(PsiException):
     def __init__(self, msg):
         PsiException.__init__(self, msg)
         self.msg = msg
-        PsiMod.print_out('\nPsiException: %s\n\n' % (msg))
+        psi4.print_out('\nPsiException: %s\n\n' % (msg))

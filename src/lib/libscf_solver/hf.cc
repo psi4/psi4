@@ -402,7 +402,6 @@ void HF::finalize()
 
     //Sphalf_.reset();
     X_.reset();
-    H_.reset();
     T_.reset();
     V_.reset();
     diag_temp_.reset();
@@ -1333,7 +1332,7 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_etot(E_);
     chkpt_->wt_escf(E_);
     chkpt_->wt_eref(E_);
-    chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
+    chkpt_->wt_enuc(nuclearrep_);
     chkpt_->wt_orbspi(nmopi_);
     chkpt_->wt_clsdpi(doccpi_);
     chkpt_->wt_openpi(soccpi_);
@@ -1445,11 +1444,12 @@ double HF::compute_energy()
         E_ = compute_initial_E();
     }
 
-
+    bool df = (options_.get_str("SCF_TYPE") == "DF");
 
     if (WorldComm->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
-        fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
+        if (!df) fprintf(outfile, "                        Total Energy        Delta E     RMS |[F,P]|\n\n");
+        else     fprintf(outfile, "                           Total Energy        Delta E     RMS |[F,P]|\n\n");
     }
     fflush(outfile);
 
@@ -1562,8 +1562,10 @@ double HF::compute_energy()
 
         converged = test_convergency();
 
+        df = (options_.get_str("SCF_TYPE") == "DF");
+
         if (WorldComm->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
+            fprintf(outfile, "   @%s%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n", df ? "DF-" : "",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }
@@ -1614,7 +1616,7 @@ double HF::compute_energy()
             fprintf(outfile, "  Energy did not converge, but proceeding anyway.\n\n");
         }
         if (WorldComm->me() == 0) {
-            fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
+            fprintf(outfile, "  @%s%s Final Energy: %20.14f", df ? "DF-" : "", reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
             }

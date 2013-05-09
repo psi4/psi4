@@ -22,7 +22,7 @@
 
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** Simultaneous Expansion Method Iterator
@@ -33,7 +33,7 @@
 ** Last modified by MLL on 25 November 1997
 */
 
-/* #define DEBUG */ 
+/* #define DEBUG */
 
 #include <cstdio>
 #include <cstdlib>
@@ -59,7 +59,7 @@ extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG,
    struct stringwr **alplist, struct stringwr **betlist,
    FILE *outfile);
-extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist, 
+extern void parse_import_vector(SlaterDetSet *sdset, int *i_alplist,
    int *i_alpidx, int *i_betlist, int *i_betidx, int *i_blknums);
 
 extern void H0block_coupling_calc(double E, struct stringwr **alplist,
@@ -68,8 +68,8 @@ extern void H0block_coupling_calc(double E, struct stringwr **alplist,
 #define MALPHA_TOLERANCE 1E-15
 
 void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
-      **betlist, double *evals, double conv_e, 
-      double conv_rms, double enuc, double efzc, 
+      **betlist, double *evals, double conv_e,
+      double conv_rms, double enuc, double efzc,
       int nroots, int maxiter, int maxnvect, FILE *outfile, int print_lvl)
 {
    int i, j, k, l, ij, I, L, L2=0, L3=0, tmpi, detH0;
@@ -91,9 +91,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    double *x, *y, tmpx, tmpy;
    double lse_tolerance, *renorm_c, *E_est, ovlpmax=0.0;
    double cknorm, tvalmatt=0.0, tmp; /* Add by CDS for debugging purposes */
-   int errcod; 
+   int errcod;
    std::string str;
- 
+
    CIvect Cvec;
    CIvect Cvec2;
    CIvect Sigma;
@@ -105,13 +105,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
       CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
       CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit, 
+      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
       CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
    Cvec2.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
       CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
       CIblks.offset, CIblks.num_alp_codes, CIblks.num_bet_codes,
       CalcInfo.nirreps, AlphaG->subgr_per_irrep, maxnvect,
-      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit, 
+      Parameters.num_c_tmp_units, Parameters.first_c_tmp_unit,
       CIblks.first_iablk, CIblks.last_iablk, CIblks.decode);
    Sigma.set(CIblks.vectlen,CIblks.num_blocks,Parameters.icore,Parameters.Ms0,
       CIblks.Ia_code, CIblks.Ib_code, CIblks.Ia_size, CIblks.Ib_size,
@@ -158,12 +158,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       point to the same files ... don't need to repeat the file opens
       for those
    */
-   bool open_old; 
+   bool open_old;
    if (Parameters.restart) open_old = true;
    else open_old = false;
    Cvec.init_io_files(open_old);
    Sigma.init_io_files(open_old);
- 
+
    if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) open_old = true;
    else open_old = false;
    Dvec.init_io_files(open_old);
@@ -181,9 +181,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* allocate memory */
    Dvec.h0block_buf_init();
-   buffer1 = *(Hd.blockptr(0)); 
+   buffer1 = *(Hd.blockptr(0));
    buffer2 = Hd.buf_malloc();
-   Hd.buf_unlock(); 
+   Hd.buf_unlock();
 
 
    /* get some of the stuff from CalcInfo for easier access */
@@ -221,7 +221,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    lambda = init_matrix(maxnvect, maxnvect);
 
    m_lambda = (double ***) malloc (sizeof(double **) * maxnvect);
-   for (i=0; i<maxnvect; i++) 
+   for (i=0; i<maxnvect; i++)
       m_lambda[i] = init_matrix(nroots, maxnvect);
 
    M = (double ***) malloc (sizeof(double **) * nroots);
@@ -234,21 +234,21 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       }
 
    m_alpha = (double ****) malloc (sizeof(double ***) * maxiter);
-   for (i=0; i<maxiter; i++) { 
+   for (i=0; i<maxiter; i++) {
       m_alpha[i] = (double ***) malloc (sizeof(double **) * nroots);
-      for (j=0; j<nroots; j++) 
+      for (j=0; j<nroots; j++)
          m_alpha[i][j] = init_matrix(maxnvect, maxnvect);
       }
 
    if (Parameters.lse) lse_tolerance = Parameters.lse_tolerance;
 
    if (Parameters.nodfile == FALSE) {
-     if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE && 
+     if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
          (i = Dvec.read_num_vecs()) != nroots) {
        fprintf(outfile, "D file contains %d not %d vectors.  Attempting ",
                i, nroots);
        if (Parameters.h0blocksize == 0) {
-         Parameters.guess_vector == PARM_GUESS_VEC_UNIT;
+         Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
          fprintf(outfile, "unit vector guess.\n");
        }
        else {
@@ -264,11 +264,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       i = Sigma.read_num_vecs();
       if (i != L) {
         fprintf(outfile, "%d C vectors and %d Sigma vectors.\n", i, L);
-	if (i < L) {
+    if (i < L) {
           L = i;
-	  Cvec.write_num_vecs(L);
+      Cvec.write_num_vecs(L);
         }
-	fprintf(outfile, "Using %d vectors \n", L);
+    fprintf(outfile, "Using %d vectors \n", L);
       }
       if (L < nroots) {
         str = "Restart failed...  ";
@@ -278,10 +278,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         str += " roots";
         throw PsiException(str,__FILE__,__LINE__);
       }
-        
+
       fprintf(outfile, "\nAttempting Restart with %d vectors\n", L);
 
-   /* open detci.dat and write file_offset and file_number array out to 
+   /* open detci.dat and write file_offset and file_number array out to
       detci.dat */
 
       //Cvec.reset_detfile(CI_VEC);
@@ -290,7 +290,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.set_new_first_buf(i);
       Cvec2.set_new_first_buf(i);
       //Sigma.reset_detfile(SIGMA_VEC);
-      //Sigma2.reset_detfile(SIGMA_VEC); 
+      //Sigma2.reset_detfile(SIGMA_VEC);
       j = Sigma.read_new_first_buf();
       Sigma.set_new_first_buf(j);
       Sigma2.set_new_first_buf(j);
@@ -298,10 +298,10 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        * is only a logical D file not a physical D file */
       if (Parameters.nodfile) {
         //Dvec.reset_detfile(CI_VEC);
-	Dvec.set_new_first_buf(i);
+    Dvec.set_new_first_buf(i);
         //Dvec2.reset_detfile(SIGMA_VEC);
         Dvec2.set_new_first_buf(j);
-	/* I hope I don't double-reset anything w/ next 2 lines */
+    /* I hope I don't double-reset anything w/ next 2 lines */
         Dvec.restart_reord_fp(maxnvect-1);
         Dvec2.restart_reord_fp(maxnvect-1);
         }
@@ -313,17 +313,17 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       // fflush(outfile);
 
       Cvec.buf_lock(buffer1);
-      Sigma.buf_lock(buffer2);    
+      Sigma.buf_lock(buffer2);
 
       for (i=0; i<L; i++) {
          Sigma.read(i, 0);
-         if (print_lvl > 4) { 
+         if (print_lvl > 4) {
             fprintf(outfile, "Sigma[%d] =\n", i);
             Sigma.print(outfile);
             }
          for (j=0; j<=i; j++) {
             Cvec.read(j, 0);
-            if (print_lvl > 4) { 
+            if (print_lvl > 4) {
                fprintf(outfile, "C[%d] =\n", j);
                Cvec.print(outfile);
                }
@@ -349,7 +349,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       if (nroots + L > maxnvect) {
          throw PsiException("Error: Can't do restart if maxnvect < nroots + L",__FILE__,__LINE__);
          }
-      
+
 
       /* gather C and Sigma */
       Cvec.buf_lock(buffer1);
@@ -363,7 +363,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.buf_unlock();
       Dvec.buf_unlock();
       Sigma.buf_lock(buffer1);
-      Dvec2.buf_lock(buffer2); 
+      Dvec2.buf_lock(buffer2);
       for (i=0; i<nroots; i++) {
          Dvec2.gather(i, L, i, alpha[iter2], Sigma);
          }
@@ -372,27 +372,27 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          }
       Dvec2.buf_unlock();
       Sigma.buf_unlock();
-       
+
 
       /*
       for (i=L; i<nroots+L; i++) {
          Cvec.restart_gather(i, L, i-L, alpha[iter2], buffer1, buffer2);
          Sigma.restart_gather(i, L, i-L, alpha[iter2], buffer1, buffer2);
-         } 
+         }
 
-      Cvec.restart_reord_fp(L);  
-      Cvec2.restart_reord_fp(L);  
+      Cvec.restart_reord_fp(L);
+      Cvec2.restart_reord_fp(L);
       Sigma.restart_reord_fp(L);
       Sigma2.restart_reord_fp(L);
       */
-          
+
       zero_mat(G, L, L);
       k = nroots;
       }
-   
+
    /* previous-run d vector */
    else if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE) {
-     fprintf(outfile, "Attempting to use %d previous converged vectors\n", 
+     fprintf(outfile, "Attempting to use %d previous converged vectors\n",
         nroots);
      if (Parameters.nodfile) {
        i = Cvec.read_new_first_buf();
@@ -418,7 +418,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        str += " roots!";
        throw PsiException(str,__FILE__,__LINE__);
      }
-     
+
 
      for (i=0; i<nroots; i++) {
        Cvec.copy(Dvec, i, i);
@@ -434,13 +434,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      tval = 1.0;
      Cvec.buf_lock(buffer1);
      Cvec.init_vals(0, 1, &(CalcInfo.ref_alp_list), &(CalcInfo.ref_alp_rel),
-        &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum, 
+        &(CalcInfo.ref_bet_list), &(CalcInfo.ref_bet_rel), H0block.blknum,
         &tval);
      Cvec.buf_unlock();
      Cvec.write_num_vecs(1);
      Sigma.set_zero_blocks_all();
      k = 1;
-   } 
+   }
 
    /* import a previously exported CI vector */
    else if (Parameters.guess_vector == PARM_GUESS_VEC_IMPORT) {
@@ -456,17 +456,17 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      import_alplist = init_int_array(dets->size);
      import_alpidx  = init_int_array(dets->size);
      import_betlist = init_int_array(dets->size);
-     import_betidx  = init_int_array(dets->size); 
-     import_blknums = init_int_array(dets->size); 
+     import_betidx  = init_int_array(dets->size);
+     import_blknums = init_int_array(dets->size);
 
      parse_import_vector(dets, import_alplist, import_alpidx, import_betlist,
        import_betidx, import_blknums);
-     
+
      k=0;
      for (i=0; i<nroots; i++) {
 
        zero_arr(buffer2, dets->size);
-       slaterdetset_read_vect(PSIF_CIVECT, "CI vector", buffer2, 
+       slaterdetset_read_vect(PSIF_CIVECT, "CI vector", buffer2,
          dets->size, i);
 
        // initialize the values in Cvec
@@ -481,12 +481,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
      Sigma.set_zero_blocks_all();
 
      // when we're done, free the memory
-     slaterdetset_delete_full(dets); 
+     slaterdetset_delete_full(dets);
      free(import_alplist);  free(import_alpidx);
      free(import_betlist);  free(import_betidx);
-     free(import_blknums); 
+     free(import_blknums);
    }
- 
+
    else { /* use H0BLOCK eigenvector guess */
       if (Parameters.precon == PRECON_GEN_DAVIDSON) L = H0block.size;
       else L = H0block.guess_size;
@@ -494,65 +494,65 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       /* fprintf(outfile, " L = %d in sem.cc line 345\n", L); */
       /* N = CIblks.vectlen; The variable N is never used */
       sm_evals = init_array(L);
-     
+
       /* need to fill out sm_evecs into b (pad w/ 0's) */
-      fprintf(outfile, "Using %d initial trial vectors\n", 
+      fprintf(outfile, "Using %d initial trial vectors\n",
          Parameters.num_init_vecs);
 
       Cvec.buf_lock(buffer1);
       for (i=0,k=0; i<L && k < Parameters.num_init_vecs; i++) {
 
-         /* if Ms=0 check sm_evecs[i] to see if it has the correct 
-          * spin symmetry 
+         /* if Ms=0 check sm_evecs[i] to see if it has the correct
+          * spin symmetry
           */
          tmpi=0;
          for (j=0; Parameters.Ms0 && j<L && !tmpi; j++) {
             l = H0block.pair[j];
-            if (l == -1) { 
+            if (l == -1) {
                printf("(sem_iter): Warning: unpaired h0block member!\n");
-               tmpi = 1; 
+               tmpi = 1;
                }
             tval = H0block.H0b_diag[l][i];
             if ((int) Parameters.S % 2) tval = -tval;
             if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
               tmpi = 1;
-              fprintf(outfile,"(sem_iter): H0block.H0b_diag[%d][%d]" 
+              fprintf(outfile,"(sem_iter): H0block.H0b_diag[%d][%d]"
                       " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
-                      " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i], 
+                      " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
                      tval, (H0block.H0b_diag[j][i] - tval));
               }
             }
 
          /* also check that it satisfies any user-specified properties */
          if (!tmpi && Parameters.filter_guess) {
-	   j = Parameters.filter_guess_H0_det1;
-	   l = Parameters.filter_guess_H0_det2;
-           tval = H0block.H0b_diag[l][i];  
-	   if (Parameters.filter_guess_sign == -1) tval = -tval;
-	   if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
-	     tmpi = 1;
-	     fprintf(outfile, "(sem_iter): Guess vector failed user-specified"
-	                      " criterion.\n");
-	     fprintf(outfile, "(sem_iter): H0block.H0b_diag[%d][%d]"
-	             " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
-		     " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
-		     tval, (H0block.H0b_diag[j][i] - tval));
-	   }
-	 }
+       j = Parameters.filter_guess_H0_det1;
+       l = Parameters.filter_guess_H0_det2;
+           tval = H0block.H0b_diag[l][i];
+       if (Parameters.filter_guess_sign == -1) tval = -tval;
+       if (fabs(H0block.H0b_diag[j][i] - tval) > 1.0E-8) {
+         tmpi = 1;
+         fprintf(outfile, "(sem_iter): Guess vector failed user-specified"
+                          " criterion.\n");
+         fprintf(outfile, "(sem_iter): H0block.H0b_diag[%d][%d]"
+                 " - H0block.H0b_diag[%d][%d] = %lf - %lf = %lf"
+             " > 1.0E-8\n", j, i, l, i, H0block.H0b_diag[j][i],
+             tval, (H0block.H0b_diag[j][i] - tval));
+       }
+     }
 
          if (tmpi) continue;
 
          for (j=0; j<L; j++) sm_evals[j] = H0block.H0b_diag[j][i];
 
-         Cvec.init_vals(k, L, H0block.alplist, H0block.alpidx, 
+         Cvec.init_vals(k, L, H0block.alplist, H0block.alpidx,
             H0block.betlist, H0block.betidx, H0block.blknum, sm_evals);
 
          if (Parameters.calc_ssq && Parameters.icore==1) {
             Cvec.buf_unlock();
             tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
-            Cvec.buf_lock(buffer1);  
+            Cvec.buf_lock(buffer1);
             if (fabs(tval - (Parameters.S*(Parameters.S+1.0))) > 1.0E-3) {
-              fprintf(outfile, 
+              fprintf(outfile,
                  "Computed <S^2> not as desired, discarding guess\n");
               }
             else k++;
@@ -564,7 +564,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Sigma.set_zero_blocks_all();
 
       free(sm_evals);
-      /* free(sm_mat); 
+      /* free(sm_mat);
       free_matrix(sm_evecs, L); */
       }
 
@@ -573,11 +573,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
    Cvec.read(0,0);
    Cvec.symnorm(1.0,CI_VEC,TRUE);
    Cvec.buf_unlock();
- 
+
    /* write file_offset and file_number array out to detci.dat */
    //Cvec.write_detfile(CI_VEC);
    //Sigma.write_detfile(SIGMA_VEC);
-   //if (Parameters.print_lvl > 1) 
+   //if (Parameters.print_lvl > 1)
    //  fprintf(outfile,"Restart info written.\n");
    fflush(outfile);
 
@@ -593,7 +593,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    L = k;
    Llast = 0;
- 
+
    if (Parameters.nodfile) {
      Dvec.restart_reord_fp(maxnvect-1);
      Dvec2.restart_reord_fp(maxnvect-1);
@@ -605,7 +605,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Lvec[iter2] = L;
 
       #ifdef DEBUG
-      fprintf(outfile, "L[cur] = %3d, L[last] = %3d\n", L, 
+      fprintf(outfile, "L[cur] = %3d, L[last] = %3d\n", L,
         iter2 > 0 ? Lvec[iter2-1] : 999);
       #endif
 
@@ -615,7 +615,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       for (i=Llast; i<L; i++) {
          Cvec.read(i, 0);
-         if (print_lvl > 3) { 
+         if (print_lvl > 3) {
             fprintf(outfile, "b[%d] =\n", i);
             Cvec.print(outfile);
             }
@@ -639,12 +639,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          for (j=0; j<L; j++) {
             Cvec.read(j, 0);
             G[j][i] = G[i][j] = Cvec * Sigma;
-            } 
+            }
 
          }
        Sigma.write_num_vecs(L);
        Llast = L;
-          
+
 
       /* solve the L x L eigenvalue problem G a = lambda a for M roots */
       sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
@@ -662,8 +662,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
       Cvec.buf_unlock();
       Sigma.buf_unlock();
 
-     if (Parameters.lse && (maxnvect-L <= nroots*Parameters.collapse_size) 
-         && L>2) form_M = 1; 
+     if (Parameters.lse && (maxnvect-L <= nroots*Parameters.collapse_size)
+         && L>2) form_M = 1;
      else form_M = 0;
 
      if (form_M) {
@@ -697,9 +697,9 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
           zero_mat(M[k],maxnvect,maxnvect);
           for (i=0; i<L; i++) {
              for (j=i; j<L; j++) {
-                M[k][i][j] = M[k][j][i] =  sigma_overlap[i][j] 
+                M[k][i][j] = M[k][j][i] =  sigma_overlap[i][j]
                              -2.0 * lambda[iter2][k]* G[i][j];
-                if (i==j) M[k][i][i] += lambda[iter2][k] * lambda[iter2][k]; 
+                if (i==j) M[k][i][i] += lambda[iter2][k] * lambda[iter2][k];
                 }
              }
           } /* end loop over k (nroots) */
@@ -707,14 +707,14 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        if (print_lvl > 2) {
          fprintf(outfile, "\nsigma_overlap matrix (%2d) = \n", iter);
          print_mat(sigma_overlap, L, L, outfile);
- 
+
          for (k=0; k<nroots; k++) {
             fprintf(outfile, "\nM matrix (%2d) for root %d = \n", iter, k);
             print_mat(M[k], L, L, outfile);
             fprintf(outfile, "\n");
             }
          }
- 
+
        /* solve the L x L eigenvalue problem M a = lambda a for M roots */
        for (k=0; k<nroots; k++) {
           sq_rsp(L, L, M[k], m_lambda[iter2][k], 1, m_alpha[iter2][k], 1.0E-14);
@@ -722,8 +722,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",k);
             eivout(m_alpha[iter2][k], m_lambda[iter2][k], L, L, outfile);
             }
-          } 
- 
+          }
+
        }
 
      if (Parameters.print_sigma_overlap) {
@@ -779,18 +779,18 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          m_lambda[0][0][i] = -1.0 * sqrt(m_lambda[0][0][i]) +
            CalcInfo.enuc + CalcInfo.efzc;
        }
-       fprintf(outfile, "\n Guess energy from H^2 = %15.9lf\n", 
+       fprintf(outfile, "\n Guess energy from H^2 = %15.9lf\n",
          m_lambda[0][0][L]);
        fprintf(outfile, "\n M eigenvectors and eigenvalues root %d:\n",0);
        eivout(m_alpha[0][0], m_lambda[0][0], L, L, outfile);
        }
 
-      /* before we form correction vectors see if enough room to 
+      /* before we form correction vectors see if enough room to
        * append new b vectors to Davidson subspace.
        */
- 
-      if ((iter2 - Parameters.collapse_size + 1 >= 0) && (Lvec[iter2 - 
-           Parameters.collapse_size + 1] + nroots * Parameters.collapse_size 
+
+      if ((iter2 - Parameters.collapse_size + 1 >= 0) && (Lvec[iter2 -
+           Parameters.collapse_size + 1] + nroots * Parameters.collapse_size
            > maxnvect) && iter != maxiter) {
 
          Cvec.set_nvect(maxnvect);
@@ -804,20 +804,20 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          Dvec.buf_lock(buffer2);
          zero_int_array(lse_do_arr, nroots);
          for (i=0; i<nroots; i++) {
-            if (form_M && ((collapse_num-last_lse_collapse_num) 
-               >= Parameters.lse_collapse) && 
+            if (form_M && ((collapse_num-last_lse_collapse_num)
+               >= Parameters.lse_collapse) &&
                (fabs(lambda[iter2][i]-lastroot[i]) < lse_tolerance)
-                && (m_lambda[iter2][i][0] > MALPHA_TOLERANCE)) { 
-               lse_do_arr[i] = 1; lse_do++; 
+                && (m_lambda[iter2][i][0] > MALPHA_TOLERANCE)) {
+               lse_do_arr[i] = 1; lse_do++;
               }
             else {
               lse_do_arr[i] = 0;
               if (i==0) break;
               }
             }
-            
+
          for (i=0; i<nroots; i++) {
-            if (lse_do_arr[i]) 
+            if (lse_do_arr[i])
               for (j=0; j<L; j++) cmp_cncoe[j][i] = m_alpha[iter2][i][j][0];
             else
               for (j=0; j<L; j++) cmp_cncoe[j][i] = alpha[iter2][j][i];
@@ -825,43 +825,43 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
         /* transpose the cmp_cncoe matrix to prepare for schmidt orthog */
         zero_mat(tr_cmp_cncoe, maxnvect, maxnvect);
-        for (i=0; i<L; i++) 
+        for (i=0; i<L; i++)
            for (j=0; j<L; j++)
               tr_cmp_cncoe[i][j] = cmp_cncoe[j][i];
 
         tmp = 0.0;
-        for (i=0; i<maxnvect; i++) 
+        for (i=0; i<maxnvect; i++)
            tmp += cmp_cncoe[i][1] * tr_cmp_cncoe[0][i];
 
         if (lse_do && nroots>1) schmidt(tr_cmp_cncoe, nroots, L, outfile);
 
         /* transpose the cmp_cncoe matrix to prepare for schmidt orthog */
-        for (i=0; i<maxnvect; i++) 
+        for (i=0; i<maxnvect; i++)
            for (j=0; j<maxnvect; j++)
               cmp_cncoe[i][j] = tr_cmp_cncoe[j][i];
 
-      if (lse_do) last_lse_collapse_num = collapse_num; 
-      for (i=0; i<nroots; i++)  
-         Dvec.gather(i, L, i, cmp_cncoe, Cvec); 
+      if (lse_do) last_lse_collapse_num = collapse_num;
+      for (i=0; i<nroots; i++)
+         Dvec.gather(i, L, i, cmp_cncoe, Cvec);
 
-       for (i=0; i<nroots; i++) 
+       for (i=0; i<nroots; i++)
           Cvec.copy(Dvec, maxnvect-nroots+i, i);
-       
+
        Cvec.buf_unlock();
        Dvec.buf_unlock();
        Sigma.buf_lock(buffer1);
        Dvec2.buf_lock(buffer2);
 
-       for (i=0; i<nroots; i++) 
+       for (i=0; i<nroots; i++)
           Dvec2.gather(i, L, i, cmp_cncoe, Sigma);
 
-       for (i=0; i<nroots; i++) 
+       for (i=0; i<nroots; i++)
           Sigma.copy(Dvec2, maxnvect-nroots+i, i);
-        
+
        Sigma.buf_unlock();
        Dvec2.buf_unlock();
        L2 = L3 = nroots;
- 
+
        #ifdef DEBUG
        fprintf(outfile, "Gathered vectors 0 to %d and wrote to positions \
           %d to %d\n", L-1, maxnvect-nroots, maxnvect-1);
@@ -879,7 +879,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             zero_mat(clpse_dot, nroots, maxnvect);
             Cvec.buf_lock(buffer1);
             Dvec.buf_lock(buffer2);
-            for (j=0; j<nroots; j++) 
+            for (j=0; j<nroots; j++)
                Dvec.gather(j, Lvec[iter2-i], j, alpha[iter2-i], Cvec);
 
             for (j=0; j<nroots; j++) {
@@ -904,7 +904,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                Dvec2.gather(j, Lvec[iter2-i], j, tmpmat, Sigma);
                }
             for (j=0; j<nroots; j++) {
-               if (!did_root[j]) continue; 
+               if (!did_root[j]) continue;
                for (k=maxnvect-L3; k<maxnvect; k++) {
                   Dvec2.civ_xpeay(-clpse_norm[j] * clpse_dot[j][k], Sigma, j,k);
                   }
@@ -923,16 +923,16 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Cvec.restart_reord_fp(maxnvect-L2);
         Cvec2.restart_reord_fp(maxnvect-L2);
 
-	Cvec.write_new_first_buf();
+    Cvec.write_new_first_buf();
         Sigma.restart_reord_fp(maxnvect-L3);
-        Sigma2.restart_reord_fp(maxnvect-L3); 
-	Sigma.write_new_first_buf();
+        Sigma2.restart_reord_fp(maxnvect-L3);
+    Sigma.write_new_first_buf();
         Cvec.set_nvect(L2);
         Cvec2.set_nvect(L2);
         Sigma.set_nvect(L3);
-        Sigma2.set_nvect(L3); 
-	Cvec.write_num_vecs(L2);
-	Sigma.write_num_vecs(L3);
+        Sigma2.set_nvect(L3);
+    Cvec.write_num_vecs(L2);
+    Sigma.write_num_vecs(L3);
         L = L2;
         Llast = L;
         iter2 = 0;  Lvec[0] = L;
@@ -941,17 +941,17 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         #endif
 
         /* write file_offset and file_number array out to detci.dat */
-	/*
+    /*
         Cvec.write_detfile(CI_VEC);
         Sigma.write_detfile(SIGMA_VEC);
-        if (Parameters.print_lvl > 1) 
+        if (Parameters.print_lvl > 1)
           fprintf(outfile,"Restart info written.\n");
         fflush(outfile);
-	*/
+    */
 
         if (Parameters.nodfile) {
           Dvec.set_nvect(L2);
-          Dvec2.set_nvect(L3); 
+          Dvec2.set_nvect(L3);
           //Dvec.reset_detfile(CI_VEC);
           //Dvec2.reset_detfile(SIGMA_VEC);
           Dvec.restart_reord_fp(maxnvect-1);
@@ -966,8 +966,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            zero_mat(clpse_dot,maxnvect,maxnvect);
            zero_arr(clpse_norm,nroots);
            for (j=1; j<L; j++) {
-              if (Cvec.schmidt_add2(Cvec2,0, j-1, j, j, 
-                clpse_dot[j],&(clpse_norm[j]),&ovlpmax)) L2++; 
+              if (Cvec.schmidt_add2(Cvec2,0, j-1, j, j,
+                clpse_dot[j],&(clpse_norm[j]),&ovlpmax)) L2++;
               }
            if (ovlpmax > S_MAX) fprintf(outfile,"Near degeneracy in b space\n");
            Cvec.buf_unlock();
@@ -978,7 +978,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
               for (k=0; k<L3; k++)
                  Sigma.civ_xpeay(-clpse_norm[j]*clpse_dot[j][k],Sigma2,j,k);
               L3++;
-              }       
+              }
            L = L2;
            Sigma.buf_unlock();
            Sigma2.buf_unlock();
@@ -994,11 +994,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          /* MLL debug */
         /*
          if (1) {
-           for (i=0; i<L; i++) { 
+           for (i=0; i<L; i++) {
               Cvec.read(i,0);
               sigma(alplist, betlist, Cvec, Sigma, oei, tei, Parameters.fci, i);
-              if (print_lvl > 1) { 
-                fprintf(outfile, 
+              if (print_lvl > 1) {
+                fprintf(outfile,
                   "Exact Sigma: (redid multiplication) H * b[%d] = \n", i);
                 Sigma.print(outfile);
                 }
@@ -1016,7 +1016,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            }
 
         /* solve the L x L eigenvalue problem G a = lambda a for M roots */
-        sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14); 
+        sq_rsp(L, L, G, lambda[iter2], 1, alpha[iter2], 1.0E-14);
 
         if (print_lvl > 4) {
            fprintf(outfile, "\n G eigenvectors and eigenvalues:\n");
@@ -1028,12 +1028,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
         if (print_lvl > 1) {
            fprintf(outfile,"  Collapsed Davidson subspace to %d vectors\n",L);
-           if (lse_do) { 
+           if (lse_do) {
              fprintf(outfile,"  Least Squares Extrapolation for Root%c",
                      (lse_do>1) ? 's' : ' ');
-             for (i=0; i<nroots; i++) 
-                if (lse_do_arr[i]) fprintf(outfile," %d", i); 
-             fprintf(outfile,"\n");   
+             for (i=0; i<nroots; i++)
+                if (lse_do_arr[i]) fprintf(outfile," %d", i);
+             fprintf(outfile,"\n");
              }
           }
 
@@ -1041,35 +1041,35 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
         if (Parameters.update == UPDATE_DAVIDSON) {
           /* form the d part of the correction vector */
-          Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec, 
-                     Sigma, buffer1, buffer2, root_converged, (print_lvl > 4), 
+          Dvec.dcalc(nroots, L, alpha[iter2], lambda[iter2], dvecnorm, Cvec,
+                     Sigma, buffer1, buffer2, root_converged, (print_lvl > 4),
                      outfile, E_est);
           }
         else if (Parameters.update == UPDATE_OLSEN) {
-          /* Compute x and y values for E_est */ 
+          /* Compute x and y values for E_est */
           Cvec.buf_lock(buffer1);
           Dvec.buf_lock(buffer2);
-          for (i=0; i<nroots; i++) Dvec.gather(i,L,i,alpha[iter2],Cvec); 
+          for (i=0; i<nroots; i++) Dvec.gather(i,L,i,alpha[iter2],Cvec);
           Dvec.buf_unlock();
           Cvec.buf_unlock();
           for (i=0; i<nroots; i++) {
              olsen_iter_xy(Dvec,Sigma,Hd,&tmpx,&tmpy,buffer1,buffer2,
                lambda[iter2][i]+efzc,i,L,alpha[iter2], alplist, betlist);
              x[i] = tmpx;
-             y[i] = tmpy; 
-             /* fprintf(outfile,"x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);  
-               E_est[i] += efzc; */ 
+             y[i] = tmpy;
+             /* fprintf(outfile,"x[%d] = %lf    y[%d] = %lf\n",i,x[i],i,y[i]);
+               E_est[i] += efzc; */
              errcod = H0block_calc(lambda[iter2][i]);
-             if (!errcod) 
+             if (!errcod)
                fprintf(outfile,"Determinant of H0block is too small.\n");
-             if (Parameters.precon>=PRECON_GEN_DAVIDSON) 
+             if (Parameters.precon>=PRECON_GEN_DAVIDSON)
                H0block_xy(&x[i],&y[i],lambda[iter2][i]);
-        /*   
+        /*
              fprintf(outfile,
-                     "Modified x[%d] = %lf y[%d] = %lf\n",i,x[i],i,y[i]); 
+                     "Modified x[%d] = %lf y[%d] = %lf\n",i,x[i],i,y[i]);
         */
-             E_est[i] = y[i]/x[i]; 
-             /* 
+             E_est[i] = y[i]/x[i];
+             /*
                fprintf(outfile,"E_est[%d] = %20.12f lambda[%d] = %20.12f\n",i,
                     E_est[i]+efzc+enuc,i,lambda[iter2][i]+efzc+enuc);
              */
@@ -1077,7 +1077,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          Dvec.dcalc(nroots,L,alpha[iter2],lambda[iter2],dvecnorm,Cvec,Sigma,
           buffer1,buffer2,root_converged,(print_lvl > 4),outfile,E_est);
          }
-        else { 
+        else {
           throw PsiException("UPDATE option not recognized.  Choose DAVIDSON or OLSEN",__FILE__,__LINE__);
           }
 
@@ -1123,11 +1123,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                Dvec.civ_xpeay(tval, Cvec, i, j);
                }
 
-            fprintf(outfile, "\n* ROOT %d CI total energy = %17.13lf", i+1, 
+            fprintf(outfile, "\n* ROOT %d CI total energy = %17.13lf", i+1,
                evals[i] + enuc + efzc);
 
             if (nroots > 1) {
-               fprintf(outfile, "  (%6.4lf eV, %9.2lf 1/cm)\n", 
+               fprintf(outfile, "  (%6.4lf eV, %9.2lf 1/cm)\n",
                  (evals[i] - evals[0]) * pc_hartree2ev,
                  (evals[i] - evals[0]) * pc_hartree2wavenumbers);
                }
@@ -1137,12 +1137,12 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                zero_arr(mi_coeff, Parameters.nprint);
                Dvec.max_abs_vals(Parameters.nprint, mi_iac, mi_ibc,
                   mi_iaidx, mi_ibidx, mi_coeff, Parameters.neg_only);
-               print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx, 
+               print_vec(Parameters.nprint, mi_iac, mi_ibc, mi_iaidx, mi_ibidx,
                   mi_coeff, AlphaG, BetaG, alplist, betlist, outfile);
                fprintf(outfile, "\n");
                }
             Dvec.write_num_vecs(i+1);  // only if nodfile ?
-            }      
+            }
          Cvec.buf_unlock();
          Dvec.buf_unlock();
          break;
@@ -1161,7 +1161,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
            fprintf(outfile,"\ncknorm for b vector %d = %20.15f\n\n", i,cknorm);
            fprintf(outfile,"before correctn vecs added to list of b vecs\n");
            fprintf(outfile,"\nCvec (b vector) %d =\n", i);
-           Cvec.print(outfile); 
+           Cvec.print(outfile);
            for (j=i; j<L; j++) {
               Cvec2.read(j,0);
               fprintf(outfile,"Cvec2 (b vector) %d =\n", j);
@@ -1176,29 +1176,29 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
       /* form the correction vector and normalize */
 
-      Dvec.buf_lock(buffer1); 
+      Dvec.buf_lock(buffer1);
       for (k=0; k<nroots; k++) {
-         if (root_converged[k]) continue; 
+         if (root_converged[k]) continue;
          Hd.buf_lock(buffer2);
          if (Parameters.precon == PRECON_EVANGELISTI)
-           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+efzc, Hd, Cvec, 
-                buffer1, buffer2, Parameters.precon, L, alplist, 
-                betlist, alpha[iter2]); 
+           tval = Dvec.dcalc_evangelisti(k, L, lambda[iter2][k]+efzc, Hd, Cvec,
+                buffer1, buffer2, Parameters.precon, L, alplist,
+                betlist, alpha[iter2]);
          else tval = Dvec.dcalc2(k, lambda[iter2][k]+efzc, Hd,
                 Parameters.precon, alplist, betlist);
-         if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) { 
-           if (Parameters.h0block_coupling && (iter >= 2)) 
+         if (Parameters.precon >= PRECON_GEN_DAVIDSON && (iter >= 1)) {
+           if (Parameters.h0block_coupling && (iter >= 2))
              H0block_coupling_calc(lambda[iter2][k]+efzc, alplist, betlist);
            Dvec.h0block_buf_precon(&tval, k);
            }
-         if (tval < 1.0E-13 && print_lvl > 0) { 
-           fprintf(outfile,"Warning: Norm of "  
-                  "correction (root %d) is < 1.0E-13\n", k);  
+         if (tval < 1.0E-13 && print_lvl > 0) {
+           fprintf(outfile,"Warning: Norm of "
+                  "correction (root %d) is < 1.0E-13\n", k);
            }
-         Dvec.read(k,0); 
+         Dvec.read(k,0);
          if (Parameters.filter_zero_det) {
            tval -= Dvec.zero_det(Parameters.filter_zero_det_Iac,
-                     Parameters.filter_zero_det_Iaridx, 
+                     Parameters.filter_zero_det_Iaridx,
                      Parameters.filter_zero_det_Ibc,
                      Parameters.filter_zero_det_Ibridx);
          }
@@ -1210,7 +1210,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
             Dvec.print(outfile);
             }
 
-         Hd.buf_unlock();  
+         Hd.buf_unlock();
          Cvec.buf_lock(buffer2);
          /* Schmidt orthog and append d's to b */
          if (Dvec.schmidt_add(Cvec, L)) L++;
@@ -1226,18 +1226,18 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          } /* end loop over roots for new expansion vectors */
 
         Dvec.buf_unlock();
-	Cvec.write_num_vecs(L);
+    Cvec.write_num_vecs(L);
 
         /* MLL Debug 1-8-98 If CI vector is converged too tight the
-        ** norm of the correction vector i.e. the residual vector 
-        ** may become exceedingly small resulting in numerical instabilities 
+        ** norm of the correction vector i.e. the residual vector
+        ** may become exceedingly small resulting in numerical instabilities
         */
 
-         
-     /* 
+
+     /*
         Cvec.buf_lock(buffer1);
         for (i=0; i<L; i++) {
-           Cvec.read(i,0); 
+           Cvec.read(i,0);
            fprintf(outfile,"\nCvec (b vector) %d =\n", i);
            Cvec.print(outfile);
            }
@@ -1246,17 +1246,17 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
         Cvec.buf_lock(buffer1);
         Cvec2.buf_lock(buffer2);
         for (i=0; i<L; i++) {
-           Cvec.read(i,0); 
+           Cvec.read(i,0);
            cknorm = Cvec.checknorm();
            fprintf(outfile,"\nCvec (b vector) %d =\n", i);
-           Cvec.print(outfile); 
-           fprintf(outfile,"\ncknorm for b vector %d after" 
+           Cvec.print(outfile);
+           fprintf(outfile,"\ncknorm for b vector %d after"
                    " correction vectors = %20.15f\n\n",i,cknorm);
            for (j=i; j<L; j++) {
               Cvec2.read(j,0);
               tvalmatt = Cvec * Cvec2;
               fprintf(outfile,"Cvec[%d] * Cvec[%d] = %20.15f\n",i,j,tvalmatt);
-              } 
+              }
            }
          Cvec.buf_unlock();
          Cvec2.buf_unlock();
@@ -1264,8 +1264,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
         /* not sure that you really want to do this every iter...  CDS
         if (Parameters.calc_ssq && Parameters.icore==1) {
-          for (k=0; k<L; k++) 
-            tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k); 
+          for (k=0; k<L; k++)
+            tval = Cvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
           }
         */
 
@@ -1291,7 +1291,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
        }
      }
 
-     newocc = (unsigned char *) malloc(((AlphaG->num_el > BetaG->num_el) ? 
+     newocc = (unsigned char *) malloc(((AlphaG->num_el > BetaG->num_el) ?
        AlphaG->num_el : BetaG->num_el)*sizeof(unsigned char));
 
      stringset_init(&alphastrings,AlphaG->num_str,AlphaG->num_el,
@@ -1304,16 +1304,16 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          for(l=0; l<nlists_per_gr; l++) {
            /* convert occs to Pitzer order */
            for (n=0; n<AlphaG->num_el; n++) {
-             newocc[n] = (unsigned char) 
-               CalcInfo.order[alplist[list_gr][l].occs[n] + 
+             newocc[n] = (unsigned char)
+               CalcInfo.order[alplist[list_gr][l].occs[n] +
                CalcInfo.num_fzc_orbs];
            }
-	   stringset_add(&alphastrings,l+offset,newocc);
+       stringset_add(&alphastrings,l+offset,newocc);
          }
-	 offset += nlists_per_gr;
+     offset += nlists_per_gr;
        }
      }
-   
+
      stringset_init(&betastrings,BetaG->num_str,BetaG->num_el,
                     CalcInfo.num_fzc_orbs, fzc_occ);
      list_gr = 0;
@@ -1324,13 +1324,13 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          for(l=0; l<nlists_per_gr; l++) {
            /* convert occs to Pitzer order */
            for (n=0; n<BetaG->num_el; n++) {
-             newocc[n] = (unsigned char) 
+             newocc[n] = (unsigned char)
                CalcInfo.order[betlist[list_gr][l].occs[n] +
                CalcInfo.num_fzc_orbs];
            }
-	   stringset_add(&betastrings,l+offset,newocc);
+       stringset_add(&betastrings,l+offset,newocc);
          }
-	 offset += nlists_per_gr;
+     offset += nlists_per_gr;
        }
      }
      free(newocc);
@@ -1385,8 +1385,8 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
 
    /* Compute S^2 */
    if (Parameters.calc_ssq && Parameters.icore==1) {
-     for (k=0; k<nroots; k++) 
-       Dvec.calc_ssq(buffer1, buffer2, alplist, betlist, k); 
+     for (k=0; k<nroots; k++)
+       Dvec.calc_ssq(buffer1, buffer2, alplist, betlist, k);
    }
 
    Cvec.close_io_files(1);

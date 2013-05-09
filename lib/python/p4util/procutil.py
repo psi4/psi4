@@ -24,8 +24,8 @@
 import os
 import sys
 import pickle
-import PsiMod
-import input
+import psi4
+import inputparser
 from psiexceptions import *
 
 
@@ -52,8 +52,8 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
     *fileno* (e.g., psi.32) in current namespace *pidspace*.
 
     """
-    psioh = PsiMod.IOManager.shared_object()
-    psio = PsiMod.IO.shared_object()
+    psioh = psi4.IOManager.shared_object()
+    psio = psi4.IO.shared_object()
     filepath = psioh.get_file_path(fileno)
     namespace = psio.get_default_namespace()
     targetfile = filepath + 'psi' + '.' + pidspace + '.' + namespace + '.' + str(fileno)
@@ -62,9 +62,9 @@ def get_psifile(fileno, pidspace=str(os.getpid())):
 
 def format_molecule_for_input(mol):
     """Function to return a string of the output of
-    :py:func:`input.process_input` applied to the XYZ
+    :py:func:`inputparser.process_input` applied to the XYZ
     format of molecule, passed as either fragmented
-    geometry string *mol* or molecule instance *mol*. 
+    geometry string *mol* or molecule instance *mol*.
     Used to capture molecule information from database
     modules and for distributed (sow/reap) input files.
     For the reverse, see :py:func:`molutil.geometry`.
@@ -74,7 +74,7 @@ def format_molecule_for_input(mol):
     if isinstance(mol, basestring):
         mol_string = mol
         mol_name = ''
-    # when mol is PsiMod.Molecule or qcdb.Molecule object
+    # when mol is psi4.Molecule or qcdb.Molecule object
     else:
         # save_string_for_psi4 is the more detailed choice as it includes fragment
         #   (and possibly no_com/no_reorient) info. but this is only available
@@ -87,7 +87,7 @@ def format_molecule_for_input(mol):
 
         mol_name = mol.name()
 
-    commands = 'input.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
+    commands = 'inputparser.process_input("""\nmolecule %s {\n%s\n}\n""", 0)\n' % (mol_name, mol_string)
     return eval(commands)
 
 
@@ -104,14 +104,14 @@ def format_options_for_input():
 
     """
     commands = ''
-    commands += """\nPsiMod.set_memory(%s)\n\n""" % (PsiMod.get_memory())
-    for chgdopt in PsiMod.get_global_option_list():
-        if PsiMod.has_global_option_changed(chgdopt):
-            chgdoptval = PsiMod.get_global_option(chgdopt)
+    commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
+    for chgdopt in psi4.get_global_option_list():
+        if psi4.has_global_option_changed(chgdopt):
+            chgdoptval = psi4.get_global_option(chgdopt)
             if isinstance(chgdoptval, basestring):
-                commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+                commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
             elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
-                commands += """PsiMod.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             else:
                 raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed.' % (chgdopt))
     return commands
@@ -149,7 +149,7 @@ def drop_duplicates(seq):
 def all_casings(input_string):
     """Function to return a generator of all lettercase permutations
     of *input_string*.
-    
+
     """
     if not input_string:
         yield ""
@@ -168,7 +168,7 @@ def getattr_ignorecase(module, attr):
     """Function to extract attribute *attr* from *module* if *attr*
     is available in any possible lettercase permutation. Returns
     attribute if available, None if not.
-    
+
     """
     array = None
     for per in list(all_casings(attr)):
@@ -184,9 +184,9 @@ def getattr_ignorecase(module, attr):
 
 
 def import_ignorecase(module):
-    """Function to import *module* in any possible lettercase 
+    """Function to import *module* in any possible lettercase
     permutation. Returns module object if available, None if not.
-    
+
     """
     modobj = None
     for per in list(all_casings(module)):

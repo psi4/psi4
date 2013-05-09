@@ -490,7 +490,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
-      Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] = 
+      Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
           moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   else {
@@ -505,7 +505,7 @@ PsiReturnType ccenergy(Options &options)
       // LAB TODO  reconsider variable names for ss/os cc
       Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os;
       Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo.ecc_ss*params.scscc_scale_ss;
-      Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os + 
+      Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os +
             moinfo.ecc_ss*params.scscc_scale_ss;
       Process::environment.globals["SCS-CCSD TOTAL ENERGY"] = moinfo.eref +
             moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss;
@@ -524,7 +524,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
-      Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] = 
+      Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
           moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   fprintf(outfile, "\n");
@@ -576,7 +576,7 @@ PsiReturnType ccenergy(Options &options)
     cc3_Wmnie();
     cc3_Wamef();
     cc3_Wabei();
-    params.ref == 0;
+//    params.ref == 0;
   }
 
   if(params.local) {
