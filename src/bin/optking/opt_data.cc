@@ -292,6 +292,8 @@ inline int sign_of_double(double d) {
 // do hessian update
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
+fprintf(outfile, "\nAttempting H_update\n"); fflush(outfile);
+
   if (Opt_params.H_update == OPT_PARAMS::BFGS)
     fprintf(outfile,"\n\tPerforming BFGS update");
   else if (Opt_params.H_update == OPT_PARAMS::MS)

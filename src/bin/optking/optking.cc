@@ -118,16 +118,14 @@ OptReturnType optking(void) {
 
     mol1 = new MOLECULE(0);       // construct an empty molecule
     fprintf(outfile,"\n\tMolecule initialized, optking.cc, 101.\n"); fflush(outfile);
+
+    mol1->add_efp_fragments();
+
     mol1->read_geom_grad();
     fprintf(outfile,"\n\tRead geom grad completed, optking.cc, 103.\n"); fflush(outfile);
-  // determine the number of EFP fragments
-  // read geometry and gradient (into fragment?)
-  // set masses? probably not
-
   }
   else
 //****AVC****//
-
     if (if_intco.is_open()) { // old internal coordinates are present
 
     fprintf(outfile,"\n\tPrevious internal coordinate definitions found.\n"); fflush(outfile);
@@ -222,6 +220,7 @@ OptReturnType optking(void) {
 
   // print geometry and gradient
   mol1->print_geom_grad(outfile);
+fprintf(outfile, "\nOPTKING.cc, line 199, just after mol1->print_geom_grad(outfile)\n");
   //mol1->print_connectivity(outfile); fflush(outfile);
 
   // read binary file for previous steps ; history needed to compute EFP values
@@ -231,9 +230,7 @@ OptReturnType optking(void) {
     fprintf(stdout,"IRC data object created\n");
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   mol1->update_efp_values(); // EFP values calculated from old opt_data
-#endif
 
   // print internal coordinate definitions and values
   mol1->print_intcos(outfile);
@@ -251,10 +248,12 @@ OptReturnType optking(void) {
 
   // print out report on progress
   p_Opt_data->previous_step_report();
+fprintf(outfile, "\noptking.cc, line 229, just after p_Opt_data->previous_step_report()\n");
   p_Opt_data->reset_consecutive_backsteps();
 
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
+fprintf(outfile, "\noptking.cc, line 234, just after mol1->forces()\n"); fflush(outfile);
 
   bool read_H_worked = false;
   if (Opt_params.read_cartesian_H) {
@@ -262,18 +261,20 @@ OptReturnType optking(void) {
     read_H_worked = mol1->cartesian_H_to_internals(H_cart); // transform to internal coordinates
     free_matrix(H_cart);                                    // free Cartesian Hessian
     if (read_H_worked) {
-      fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
+      fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n"); fflush(outfile);
       p_Opt_data->reset_steps_since_last_H();
     }
     else { 
-      fprintf(outfile,"\tUnable to read and transform cartesian Hessian.\n");
+      fprintf(outfile,"\tUnable to read and transform cartesian Hessian.\n"); fflush(outfile);
       mol1->H_guess(); // empirical model guess Hessian
     }
   }
   else if (p_Opt_data->g_iteration() == 1) {
+fprintf(outfile, "\noptking.cc line 250, just before mol1->H_guess()\n"); fflush(outfile);
       mol1->H_guess(); // empirical model guess Hessian
   }
   else { // do Hessian update
+fprintf(outfile, "\noptkinc.cc line 255, about to try p_Opt_data->H_update()\n"); fflush(outfile);
     try {
         p_Opt_data->H_update(*mol1);
     } catch (const char * str) {
@@ -293,6 +294,7 @@ OptReturnType optking(void) {
   // apply user-defined constraints
   mol1->apply_constraint_forces();
   // project out constraints for fixed intcos and unphysical displacements
+fprintf(outfile, "\noptking.cc line 274, just before mol1->project_f_and_H()\n");
   mol1->project_f_and_H();
 
   // step functions put dq in p_Opt_data->step
@@ -404,6 +406,7 @@ OptReturnType optking(void) {
 //#if defined(OPTKING_PACKAGE_PSI)
   fprintf(outfile,"\tStructure for next step:\n");
   mol1->print_geom(); // write geometry for next step to output file
+fprintf(outfile, "optking.cc, line 386, just after mol1->print_geom()\n"); fflush(outfile);
 //#endif
 
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)

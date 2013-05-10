@@ -60,6 +60,7 @@ class EFP_FRAG : public FRAG {
   double *forces;
 //****AVC****//
   double **xyz_geom;
+  double *com;
 //****AVC****//
 
   public:
@@ -69,6 +70,7 @@ class EFP_FRAG : public FRAG {
     forces = init_array(6);
 //****AVC****//
     xyz_geom = init_matrix(3,3);
+    com = init_array(3);
 //****AVC****//
   }
 
@@ -80,12 +82,14 @@ class EFP_FRAG : public FRAG {
   void set_values(double * values_in);
 //****AVC****//
   void set_xyz(double ** xyz_in);
+  void set_com(double *com_in);
 //****AVC****//
   void set_forces(double * forces_in);
 
   double * get_values_pointer(void) const { return values; }
 //****AVC****//
   double ** get_xyz_pointer(void) const { return xyz_geom; }
+  double * get_com_pointer(void) const {return com; }
 //****AVC****//
   double * get_forces_pointer(void) const { return forces; }
 

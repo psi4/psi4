@@ -66,10 +66,21 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
+fprintf(outfile, "\n dq         fq        \n");
+for(int i=0; i<6*efp_fragments.size(); i++)
+  fprintf(outfile, " %10.5f %10.5f\n", dq[i], fq[i]);
+
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
+print_matrix(outfile, H_inv, Nintco, Nintco);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
+
+fprintf(outfile, "\n dq         fq        \n");
+for(int i=0; i<6*efp_fragments.size(); i++)
+  fprintf(outfile, " %10.5f %10.5f\n", dq[i], fq[i]);
+
+fprintf(outfile, "\nin molecule_nr_step.cc line 52, Nintco = %d\n", Nintco);
 
   // Zero steps for frozen fragment
   for (f=0; f<fragments.size(); ++f) {
@@ -80,8 +91,12 @@ void MOLECULE::nr_step(void) {
     }
   }
 
+fprintf(outfile, "\nin molecule_nr_step.cc line 63, Nintco = %d\n", Nintco);
+
   // applies maximum internal coordinate change
   apply_intrafragment_step_limit(dq);
+
+fprintf(outfile, "\nin molecule_nr_step.cc line 68, Nintco = %d\n", Nintco); fflush(outfile);
 
   // get norm |q| and unit vector in the step direction
   nr_dqnorm = sqrt( array_dot(dq, dq, Nintco) );
@@ -89,12 +104,16 @@ void MOLECULE::nr_step(void) {
   array_copy(dq, nr_u, Nintco);
   array_normalize(nr_u, Nintco);
   
+fprintf(outfile, "\nin molecule_nr_step.cc line 76, Nintco = %d\n", Nintco); fflush(outfile);
+
   // get gradient and hessian in step direction
   nr_g = -1 * array_dot(fq, nr_u, Nintco); // gradient, not force
 
   nr_h = 0;
   for (i=0; i<Nintco; ++i)
     nr_h += nr_u[i] * array_dot(H[i], nr_u, Nintco);
+
+fprintf(outfile, "\nin molecule_nr_step.cc line 85, Nintco = %d\n", Nintco); fflush(outfile);
 
   DE_projected = DE_nr_energy(nr_dqnorm, nr_g, nr_h);
   fprintf(outfile,"\tProjected energy change by quadratic approximation: %20.10lf\n", DE_projected);
@@ -118,13 +137,11 @@ void MOLECULE::nr_step(void) {
                                         &(fq[g_interfragment_intco_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
 
-  symmetrize_geom(); // now symmetrize the geometry for next step
+//  symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);
