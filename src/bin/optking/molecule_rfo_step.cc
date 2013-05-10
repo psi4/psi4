@@ -61,6 +61,8 @@ void MOLECULE::rfo_step(void) {
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
 
+fprintf(outfile, "\nmolecule_rfo_step.cc, line 42 MOLECULE::rfo_step()\n");
+
   // build (lower-triangle of) RFO matrix and diagonalize
   double **rfo_mat = init_matrix(dim+1, dim+1);
   for (i=0; i<dim; ++i)
@@ -86,17 +88,25 @@ void MOLECULE::rfo_step(void) {
   // RFO paper says to scale eigenvector to make the last element equal to 1.
   // During the course of an optimization some evects may appear that are bogus leads
   // - the root following can avoid them. 
+
+fprintf(outfile, "\nel problemo:\n");
   for (i=0; i<dim+1; ++i) {
     tval = rfo_mat[i][dim];
     if (fabs(tval) > Opt_params.rfo_normalization_min) {
       for (j=0;j<dim+1;++j)
+      {
+fprintf(outfile, "%7.3f/%-7.3f",rfo_mat[i][j],rfo_mat[i][dim]);
         rfo_mat[i][j] /= rfo_mat[i][dim];
+      }
+fprintf(outfile, "\n");
     }
   }
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"RFO eigenvectors (rows)\n");
     print_matrix(outfile, rfo_mat, dim+1, dim+1);
+fprintf(outfile, "\nmolecule_rfo_step.cc, line 81 MOLECULE::rfo_step()\n");
   }
+
 
   int rfo_root, f;
   double rfo_eval;
@@ -156,6 +166,7 @@ void MOLECULE::rfo_step(void) {
   }
   free_array(lambda);
 
+fprintf(outfile, "\nmolecule_rfo_step.cc line 137, just before rfo_mat\n");
   for (j=0; j<dim; ++j)
     dq[j] = rfo_mat[rfo_root][j]; // leave out last column
 
@@ -220,11 +231,11 @@ void MOLECULE::rfo_step(void) {
                                         &(fq[g_interfragment_intco_offset(I)]) );
   }
 
-#if defined(OPTKING_PACKAGE_QCHEM)
+fprintf(outfile, "\nmolecule_rfo_step.cc, line 201, just before calling efp_fragments[I]->displace()\n");
+
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
-#endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step
 

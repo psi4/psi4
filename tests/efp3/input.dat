@@ -12,6 +12,11 @@ no_reorient
 no_com
 }
 
+set {
+  print 10
+  step_type nr
+}
+
 set efp {
  dertype first
 }

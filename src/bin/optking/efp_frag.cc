@@ -25,6 +25,8 @@
 */
 
 #include "efp_frag.h"
+#include <libmints/matrix.h>
+#include <libmints/vector3.h>
 
 #define EXTERN
 #include "globals.h"
@@ -46,6 +48,17 @@ void EFP_FRAG::set_values(double * values_in) {
 void EFP_FRAG::set_forces(double * forces_in) {
   for (int i=0; i<6; ++i)
     forces[i] = forces_in[i];
+}
+
+void EFP_FRAG::set_xyz(double ** xyz_in) {
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      xyz_geom[i][j] = xyz_in[i][j];
+}
+
+void EFP_FRAG::set_com(double *com_in) {
+  for(int i=0; i<3; i++)
+    com[i] = com_in[i];
 }
 
 // we don't have a valid B matrix for these
@@ -73,23 +86,59 @@ void EFP_FRAG::print_intcos(FILE *fp) {
 }
 
 double **EFP_FRAG::H_guess(void) {
-  double **H = init_matrix(g_nintco(), g_nintco());
+  double **H = init_matrix(6, 6);
 
-  for (int i=0; i<g_nintco(); ++i)
-    H[i][i] = 0.01;
+  for (int xyz=0; xyz<3; xyz++)
+  {
+    H[xyz][xyz] = 0.01;
+    H[xyz+3][xyz+3] = 0.03;
+  }
 
   return H;
 }
 
 //****AVC****//
-#if defined (OPTKING_PACKAGE_QCHEM)
-//****AVC****//
   // Tell QChem to update rotation matrix and com for EFP fragment
-void EFP_FRAG::displace (int efp_frag_index, double *dq) {
-  ::EFP::GetInstance()->displace(efp_frag_index, dq);
+void EFP_FRAG::displace (int efp_frag_index, double *dq)
+{
+fprintf(outfile, "\nEFP_FRAG::displace()\n");
+  using namespace psi;
+
+  Vector3 T(dq[0],dq[1],dq[2]);
+  Vector3 Phi(dq[3],dq[4],dq[5]);
+  double phi = Phi.norm();
+
+  SharedMatrix XYZ(new Matrix("XYZ", 3, 3));
+  SharedMatrix R_XYZ(new Matrix("R_XYZ", 3, 3));
+  SharedMatrix TR_XYZ(new Matrix("TR_XYZ", 3, 3));
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      XYZ->set(i,j,xyz_geom[i][j] - com[j]);
+
+  XYZ->print_out();
+  R_XYZ = XYZ->matrix_3d_rotation(Phi, phi, 0);
+  R_XYZ->print_out();
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      TR_XYZ->set(i,j, R_XYZ->get(i,j) + T.get(j) + com[j]);
+  TR_XYZ->print_out();
+
+  double *xyz_array = init_array(3*3);
+
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      xyz_array[3*i+j] = TR_XYZ->get(i,j);
+
+fprintf(outfile, "\nxyz_array\n");
+  print_array(outfile, xyz_array, 3*3);
+  p_efp->set_frag_coordinates(efp_frag_index, 1, xyz_array);
+  free_array(xyz_array);
+
+fprintf(outfile, "\n Phi            T\n");
+for(int i=0; i<3; i++)
+  fprintf(outfile, "%-15.8f%-15.8f\n", Phi.get(i), T.get(i));
+
 }
-//****AVC****//
-#endif
 //****AVC****//
 
 }

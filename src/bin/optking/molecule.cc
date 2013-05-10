@@ -60,18 +60,6 @@ MOLECULE::MOLECULE(int num_atoms) {
     fragments.push_back(one_frag);
   }
 
-//****AVC****//
-  if(Opt_params.efp_fragments_only)
-  {
-    for(int f=0; f < p_efp->get_frag_count(); f++)
-    {
-      EFP_FRAG *efp_frag = new EFP_FRAG();
-      efp_fragments.push_back(efp_frag);
-fprintf(outfile, "\nefp_fragments.size() : %d\n", efp_fragments.size());
-    }
-  }
-//****AVC****//
-
   return;
 }
 
@@ -132,7 +120,6 @@ void MOLECULE::forces(void) {
   free_matrix(G_inv);
   free_array(temp_arr);
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   // append exernally determined efp forces
   double * efp_force;
   for (int f=0; f<efp_fragments.size(); ++f) {
@@ -140,7 +127,6 @@ void MOLECULE::forces(void) {
     for (int i=0; i<efp_fragments[f]->g_nintco(); ++i)
       f_q[ g_efp_fragment_intco_offset(f) + i ] =  efp_force[i] ;
   }
-#endif
 
   if (Opt_params.print_lvl >= 3) {
     fprintf(outfile,"Internal forces in au\n");
@@ -214,12 +200,10 @@ void MOLECULE::project_f_and_H(void) {
   // compute G = B B^t
   double **G = compute_G(false);
 
-#if defined (OPTKING_PACKAGE_QCHEM)
   // Put 1's on diagonal for EFP coordinates
   for (int I=0; I<efp_fragments.size(); ++I)
-    for (int i=0; i<efp_fragments[i]->g_nintco(); ++i)
+    for (int i=0; i<6; ++i)
       G[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + i] = 1.0;
-#endif
 
   // compute P = G G^-1
   double **G_inv = symm_matrix_inv(G, Nintco, 1);
@@ -335,6 +319,9 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
       for (i=0; i<fragments[f]->g_nintco(); ++i)
         dq[g_intco_offset(f)+i] *= scale;
   }
+
+fprintf(outfile, "\nMOLECULE::apply_intrafragment_step_limit(), fragments.size() = %d\n", fragments.size());
+
   fflush(outfile);
 }
 
@@ -380,8 +367,9 @@ void MOLECULE::H_guess(void) const {
   
       free_matrix(H_interfrag);
     }
-  
-#if defined(OPTKING_PACKAGE_QCHEM)
+
+fprintf(outfile, "\nMOLECULE::H_guess() line 333: efp_fragments.size() = %d\n", efp_fragments.size());
+
     for (int I=0; I<efp_fragments.size(); ++I) {
       double **H_efp_frag = efp_fragments[I]->H_guess();
   
@@ -391,7 +379,6 @@ void MOLECULE::H_guess(void) const {
   
       free_matrix(H_efp_frag);
     }
-#endif
   }
 /*
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
@@ -833,17 +820,22 @@ std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
   return s;
 }
 
-#if defined (OPTKING_PACKAGE_QCHEM)
 // Add dummy EFP fragment which contains no atoms.  Read in the energy
 // and the forces from QChem.  This will only work (maybe:) for QChem
 void MOLECULE::add_efp_fragments(void) {
 
   // get number of EFP fragments
-  int num_efp_frags = ::EFP::GetInstance()->NFragments();
+  int num_efp_frags;
+#if defined (OPTKING_PACKAGE_QCHEM)
+  num_efp_frags = ::EFP::GetInstance()->NFragments();
+#endif
+  num_efp_frags = p_efp->get_frag_count();
   fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
 
-  // get energy
+  // get energy -- Psi4 is reading the energy in geom_gradients_io.cc for EFP cases
+#if defined (OPTKING_PACKAGE_QCHEM)
   energy = ::EFP::GetInstance()->GetEnergy();
+#endif
 
   EFP_FRAG *one_frag;
 
@@ -853,11 +845,13 @@ void MOLECULE::add_efp_fragments(void) {
     // we read external forces and don't compute B matrix for these
     one_frag->add_dummy_intcos(6);
 
+#if defined (OPTKING_PACKAGE_QCHEM)
     // get gradient
     double *g = init_array(6);
     ::EFP::GetInstance()->GetGrad(i,g);
     one_frag->set_forces(g);
     free_array(g);
+#endif
 
     // See note below on EFP values.
 
@@ -882,7 +876,6 @@ void MOLECULE::update_efp_values(void) {
     free_array(vals);
   }
 }
-#endif
 
 }
 

@@ -78,9 +78,7 @@ class MOLECULE {
 
   int g_nfragment(void) const { return fragments.size(); };
 
-#if defined(OPTKING_PACKAGE_QCHEM)
   int g_nefp_fragment(void) const { return efp_fragments.size(); };
-#endif
 
   int g_natom(void) const { // excludes atoms in efp fragments
     int n = 0;
@@ -95,10 +93,8 @@ class MOLECULE {
       n += fragments[f]->g_nintco();
     for (int i=0; i<interfragments.size(); ++i)
       n += interfragments[i]->g_nintco();
-#if defined (OPTKING_PACKAGE_QCHEM)
     for (int e=0; e<efp_fragments.size(); ++e)
       n += efp_fragments[e]->g_nintco();
-#endif
     return n;
   }
 
@@ -116,14 +112,12 @@ class MOLECULE {
     return n;
   }
 
-#if defined (OPTKING_PACKAGE_QCHEM)
   int g_nintco_efp_fragment(void) const {
     int n=0;
     for (int f=0; f<efp_fragments.size(); ++f)
       n += efp_fragments[f]->g_nintco();
     return n;
   }
-#endif
 
   // given fragment index returns first atom in that fragment
   int g_atom_offset(int index) const {
@@ -153,14 +147,12 @@ class MOLECULE {
 
   // given efp_fragment index, returns the absolute index for the first
   // internal coordinate of that efp set
-#if defined (OPTKING_PACKAGE_QCHEM)
   int g_efp_fragment_intco_offset(int index) const {
     int n = g_nintco_intrafragment() + g_nintco_interfragment();
     for (int f=0; f<index; ++f)
       n += efp_fragments[f]->g_nintco();
     return n;
   }
-#endif
 
   double g_energy(void) const { return energy; }
 
@@ -201,20 +193,16 @@ class MOLECULE {
       interfragments[i]->print_intcos(fout, g_atom_offset(a), g_atom_offset(b));
     }
 
-#if defined (OPTKING_PACKAGE_QCHEM)
     for (int i=0; i<efp_fragments.size(); ++i) {
       fprintf(fout,"\t---Fragment %d EFP fragment Coordinates---\n", i+1);
       efp_fragments[i]->print_intcos(fout);
     }
-#endif
   }
 
   // print definition of an internal coordinate from global index 
   std::string get_intco_definition_from_global_index(int coord_index) const;
 
-#if defined (OPTKING_PACKAGE_QCHEM)
   void update_efp_values(void);
-#endif
 
   void print_intco_dat(FILE *fp_intco);
 
@@ -312,7 +300,7 @@ printf("adding %d auxiliary bonds\n", n);
 
   double ** g_geom_2D(void) const {
     double **g_frag;
-    double **g = init_matrix(g_natom(),3);
+    double **g = init_matrix(g_natom()+3*g_nefp_fragment(),3);
 
     for (int f=0; f<fragments.size(); ++f) {
       g_frag = fragments[f]->g_geom();
@@ -321,6 +309,19 @@ printf("adding %d auxiliary bonds\n", n);
           g[g_atom_offset(f)+i][xyz] = g_frag[i][xyz];
       free_matrix(g_frag);
     }
+//****AVC****//
+double **g_efp_frag;
+for(int f=0; f<efp_fragments.size(); f++)
+{
+  g_efp_frag = efp_fragments[f]->get_xyz_pointer();
+  for(int i=0; i<3; i++)
+    for(int xyz=0; xyz<3; xyz++)
+      g[g_atom_offset(fragments.size()-1)+3*f+i][xyz] = g_efp_frag[i][xyz];
+  free_matrix(g_efp_frag);
+}
+
+//****AVC****//
+
     return g;
   }
 

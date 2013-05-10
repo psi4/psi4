@@ -35,11 +35,6 @@ class EFP {
         ~EFP();
         void set_options();
 
-//****AVC****//
-        /// Set geometry
-        void SetGeometry();
-//****AVC****//
-
         /// Compute energy and/or gradient
         void Compute();
 
