@@ -220,6 +220,7 @@ void DFERI::common_init()
 {
     schwarz_cutoff_ = 0.0;
     J_cutoff_ = 1.0E-10;
+    keep_raw_integrals_ = false;
 }
 boost::shared_ptr<DFERI> DFERI::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary, Options& options)
 {
@@ -694,7 +695,9 @@ void DFERI::fit()
                 fwrite(T2p[0],npairs*naux,sizeof(double),fh);
             } 
 
-            ints_.erase(name + "_temp");
+            if (!keep_raw_integrals_) {
+                ints_.erase(name + "_temp");
+            }
         }
     }
 }

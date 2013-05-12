@@ -3585,8 +3585,8 @@ void CPKS_SAPT::compute_cpks()
     preconditioner(r_B,z_B,eps_occ_B_,eps_vir_B_);
 
     // Uncoupled value
-    //fprintf(outfile, "(A<-B): %24.16E\n", -2.0 * z_A->vector_dot(w_A_));
-    //fprintf(outfile, "(B<-A): %24.16E\n", -2.0 * z_B->vector_dot(w_B_));
+    fprintf(outfile, "(A<-B): %24.16E\n", -2.0 * z_A->vector_dot(w_A_));
+    fprintf(outfile, "(B<-A): %24.16E\n", -2.0 * z_B->vector_dot(w_B_));
 
     p_A->copy(z_A);
     p_B->copy(z_B);

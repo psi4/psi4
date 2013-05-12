@@ -139,6 +139,9 @@ protected:
     /// Order of pair spaces, to keep printing nice
     std::vector<std::string> pair_spaces_order_;
 
+    /// Keep the raw (Q|ia)-type integrals? 
+    bool keep_raw_integrals_;
+
     // => Utility Routines <= //
     
     /// Set defaults
@@ -187,6 +190,8 @@ public:
     void set_J_cutoff(double J_cutoff) { J_cutoff_ = J_cutoff; }
     /// Set the schwarz sieve cutoff
     void set_schwarz_cutoff(double schwarz_cutoff) { schwarz_cutoff_ = schwarz_cutoff; }
+    /// Set to keep the raw integrals in (Q|ia) striping?
+    void set_keep_raw_integrals(bool val) { keep_raw_integrals_ = val; }
     
 };
 

@@ -409,12 +409,13 @@ void ASAPT::elst()
     dfA->add_space("s",offsetA,offsetA + ns); offsetA += ns;
     dfA->add_pair_space("Aaa2", "a", "a", -1.0);
     dfA->add_pair_space("Vbs2", "b", "s", 0.0);
+    dfA->set_keep_raw_integrals(true);
     fprintf(outfile,"  ==> Local DF for Monomer A <==\n\n");
     dfA->print_header();
     dfA->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsA = dfA->ints();
     boost::shared_ptr<Tensor> AaaT = intsA["Aaa2"];
-    boost::shared_ptr<Tensor> VbsT = intsA["Vbs2"];
+    boost::shared_ptr<Tensor> VbsT = intsA["Vbs2_temp"]; // (P|bs) striping
     dfA.reset();
 
     boost::shared_ptr<DFERI> dfB = DFERI::build(primary_,jkfitB,Process::environment.options);
@@ -433,12 +434,13 @@ void ASAPT::elst()
     dfB->add_space("r",offsetB,offsetB + nr); offsetB += nr;
     dfB->add_pair_space("Abb2", "b", "b", -1.0);
     dfB->add_pair_space("Var2", "a", "r", 0.0);
+    dfB->set_keep_raw_integrals(true);
     fprintf(outfile,"  ==> Local DF for Monomer B <==\n\n");
     dfB->print_header();
     dfB->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsB = dfB->ints();
     boost::shared_ptr<Tensor> AbbT = intsB["Abb2"];
-    boost::shared_ptr<Tensor> VarT = intsB["Var2"];
+    boost::shared_ptr<Tensor> VarT = intsB["Var2_temp"]; // (Q|ar) striping
     dfB.reset();
 
     // ==> DF Nuclear Potential Setup (JKFIT Type, in Local Basis) <== //
@@ -538,6 +540,7 @@ void ASAPT::elst()
             assA.push_back(cP);    
         }
     }
+    assA.push_back(nA);
 
     std::vector<int> assB;
     for (int P = 0; P < jkfitB->nshell(); P++) {
@@ -547,6 +550,7 @@ void ASAPT::elst()
             assB.push_back(cP);    
         }
     }
+    assB.push_back(nB);
 
     // ==> Elst <== //
 
@@ -616,13 +620,88 @@ void ASAPT::elst()
 
     boost::shared_ptr<Tensor> WBarT = DiskTensor::build("WBar", "nB", nB, "na", na, "nr", nr, false, false);
     FILE* WBarf = WBarT->file_pointer();
+    boost::shared_ptr<Tensor> WAbsT = DiskTensor::build("WAbs", "nA", nA, "nb", nb, "ns", ns, false, false);
+    FILE* WAbsf = WAbsT->file_pointer();
 
-    // TODO
+    // => Nuclear Part (PITA) <= //
+    
+    boost::shared_ptr<IntegralFactory> Vfact(new IntegralFactory(primary_));
+    boost::shared_ptr<PotentialInt> Vint(static_cast<PotentialInt*>(Vfact->ao_potential()));
+    Vint->set_charge_field(Zxyz);
+    boost::shared_ptr<Matrix> Vtemp(new Matrix("Vtemp",nn,nn));
 
-    for (int B = 0; B < nB; B++) {
-        
+    for (int A = 0; A < nA; A++) {
+        Vtemp->zero();
+        Zxyzp[0][0] = mA->Z(A);
+        Zxyzp[0][1] = mA->x(A);
+        Zxyzp[0][2] = mA->y(A);
+        Zxyzp[0][3] = mA->z(A); 
+        Vint->compute(Vtemp);
+        boost::shared_ptr<Matrix> Vbs = triplet(Cocc_B_,Vtemp,Cvir_B_,true,false,false);
+        double** Vbsp = Vbs->pointer();
+        fwrite(Vbsp[0],sizeof(double),nb*ns,WAbsf);
     }
 
+    for (int B = 0; B < nB; B++) {
+        Vtemp->zero();
+        Zxyzp[0][0] = mB->Z(B);
+        Zxyzp[0][1] = mB->x(B);
+        Zxyzp[0][2] = mB->y(B);
+        Zxyzp[0][3] = mB->z(B); 
+        Vint->compute(Vtemp);
+        boost::shared_ptr<Matrix> Var = triplet(Cocc_A_,Vtemp,Cvir_A_,true,false,false);
+        double** Varp = Var->pointer();
+        fwrite(Varp[0],sizeof(double),na*nr,WBarf);
+    }
+
+    // => Electronic Part <= //
+
+    FILE* Vbsf = VbsT->file_pointer();
+    fseek(Vbsf,0L,SEEK_SET);
+    boost::shared_ptr<Matrix> Jbs(new Matrix("Jbs",nb,ns));
+    boost::shared_ptr<Matrix> Vbs(new Matrix("Vbs",nb,ns));
+    double** Vbsp = Vbs->pointer();
+    double** Jbsp = Jbs->pointer();
+    int centerA = 0;
+    for (int P = 0; P < nQA; P++) {
+        fread(Vbsp[0],sizeof(double),nb*ns,Vbsf);
+        C_DAXPY(nb*ns,dAp[P][0],Vbsp[0],1,Jbsp[0],1);
+        if (assA[P+1] != centerA) {
+            fseek(WAbsf,centerA*nb*ns*sizeof(double),SEEK_SET);
+            fread(Vbsp[0],sizeof(double),nb*ns,WAbsf);
+            Jbs->scale(2.0);
+            Vbs->add(Jbs); 
+            fseek(WAbsf,centerA*nb*ns*sizeof(double),SEEK_SET);
+            fwrite(Vbsp[0],sizeof(double),nb*ns,WAbsf);
+            Jbs->zero();
+            centerA++;
+        }
+    }
+
+    FILE* Varf = VarT->file_pointer();
+    fseek(Varf,0L,SEEK_SET);
+    boost::shared_ptr<Matrix> Jar(new Matrix("Jar",na,nr));
+    boost::shared_ptr<Matrix> Var(new Matrix("Var",na,nr));
+    double** Varp = Var->pointer();
+    double** Jarp = Jar->pointer();
+    int centerB = 0;
+    for (int P = 0; P < nQB; P++) {
+        fread(Varp[0],sizeof(double),na*nr,Varf);
+        C_DAXPY(na*nr,dBp[P][0],Varp[0],1,Jarp[0],1);
+        if (assB[P+1] != centerB) {
+            fseek(WBarf,centerB*na*nr*sizeof(double),SEEK_SET);
+            fread(Varp[0],sizeof(double),na*nr,WBarf);
+            Jar->scale(2.0);
+            Var->add(Jar); 
+            fseek(WBarf,centerB*na*nr*sizeof(double),SEEK_SET);
+            fwrite(Varp[0],sizeof(double),na*nr,WBarf);
+            Jar->zero();
+            centerB++;
+        }
+    }
+
+    tensors_["WAbs"] = WAbsT;
+    tensors_["WBar"] = WBarT;
 }
 void ASAPT::exch()
 {
@@ -915,15 +994,151 @@ void ASAPT::ind()
         nT = omp_get_max_threads();
     #endif
 
-    
-    boost::shared_ptr<Matrix> IndAB_atoms(new Matrix("Ind [B<-A] (A x B)", nA, nB));
-    boost::shared_ptr<Matrix> IndBA_atoms(new Matrix("Ind [A<-B] (A x B)", nA, nB));
+    // ==> Stack Variables <== //
 
-    // TODO
+    double** RAp = R_A_->pointer();
+    double** RBp = R_B_->pointer();
+    
+    double*  eap = eps_occ_A_->pointer();
+    double*  ebp = eps_occ_B_->pointer();
+    double*  erp = eps_vir_A_->pointer();
+    double*  esp = eps_vir_B_->pointer();
+
+    FILE* WAbsf = tensors_["WAbs"]->file_pointer();
+    FILE* WBarf = tensors_["WBar"]->file_pointer();
+    
+    boost::shared_ptr<Matrix> S   = vars_["S"];
+    boost::shared_ptr<Matrix> V_A = vars_["V_A"];
+    boost::shared_ptr<Matrix> J_A = vars_["J_A"];
+    boost::shared_ptr<Matrix> V_B = vars_["V_B"];
+    boost::shared_ptr<Matrix> J_B = vars_["J_B"];
+    boost::shared_ptr<Matrix> L_A = Locc_A_;
+    boost::shared_ptr<Matrix> L_B = Locc_B_;
+
+    // ==> Targets <== //
+
+    boost::shared_ptr<Matrix> IndAB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB));
+    boost::shared_ptr<Matrix> IndBA_terms(new Matrix("Ind [B<-A] (b x A)", nb, nA));
+    double** IndAB_termsp = IndAB_terms->pointer();
+    double** IndBA_termsp = IndBA_terms->pointer();
+
+    double Ind20_AB = 0.0; 
+    double Ind20_BA = 0.0;
+
+    // ==> MO Amplitudes/Sources <== //
+
+    boost::shared_ptr<Matrix> xA(new Matrix("xA",na,nr));
+    boost::shared_ptr<Matrix> xB(new Matrix("xB",nb,ns));
+    double** xAp = xA->pointer(); 
+    double** xBp = xB->pointer(); 
+
+    boost::shared_ptr<Matrix> wB(new Matrix("wB",na,nr));
+    boost::shared_ptr<Matrix> wA(new Matrix("wA",nb,ns));
+    double** wBp = wB->pointer(); 
+    double** wAp = wA->pointer(); 
+    
+    // ==> Total ESPs <== //
+
+    boost::shared_ptr<Matrix> W_A(J_A->clone());
+    W_A->copy(J_A);
+    W_A->scale(2.0);
+    W_A->add(V_A);
+
+    boost::shared_ptr<Matrix> W_B(J_B->clone());
+    W_B->copy(J_B);
+    W_B->scale(2.0);
+    W_B->add(V_B);
+
+    boost::shared_ptr<Matrix> wAT = triplet(Locc_B_,W_A,Cvir_B_,true,false,false);
+    boost::shared_ptr<Matrix> wBT = triplet(Locc_A_,W_B,Cvir_A_,true,false,false);
+    double** wATp = wAT->pointer();
+    double** wBTp = wBT->pointer();
+    
+    W_A.reset();
+    W_B.reset();
+
+    // ==> TODO: Total Exchange ESPs <== //
+
+    // ==> A <- B Uncoupled <== //
+
+    fseek(WBarf,0L,SEEK_SET);
+    for (int B = 0; B < nB; B++) {
+
+        // ESP
+        fread(wBp[0],sizeof(double),na*nr,WBarf); 
+        
+        // Uncoupled amplitude
+        for (int a = 0; a < na; a++) {
+            for (int r = 0; r < nr; r++) {
+                xAp[a][r] = wBp[a][r] / (eap[a] - erp[r]);
+            }
+        }
+
+        // Backtransform the amplitude to LO
+        boost::shared_ptr<Matrix> x2A = doublet(Uocc_A_,xA,true,false);
+        double** x2Ap = x2A->pointer();
+
+        // Zip up the Ind20 contributions
+        for (int a = 0; a < na; a++) {
+            double val = 2.0 * C_DDOT(nr,x2Ap[a],1,wBTp[a],1);
+            IndAB_termsp[a][B] = val;
+            Ind20_AB += val;
+        }
+    
+        // TODO: ExchInd20
+
+    } 
+
+    // ==> B <- A Uncoupled <== //
+
+    fseek(WAbsf,0L,SEEK_SET);
+    for (int A = 0; A < nA; A++) {
+
+        // ESP
+        fread(wAp[0],sizeof(double),nb*ns,WAbsf); 
+        
+        // Uncoupled amplitude
+        for (int b = 0; b < nb; b++) {
+            for (int s = 0; s < ns; s++) {
+                xBp[b][s] = wAp[b][s] / (ebp[b] - esp[s]);
+            }
+        }
+
+        // Backtransform the amplitude to LO
+        boost::shared_ptr<Matrix> x2B = doublet(Uocc_B_,xB,true,false);
+        double** x2Bp = x2B->pointer();
+
+        // Zip up the Ind20 contributions
+        for (int b = 0; b < nb; b++) {
+            double val = 2.0 * C_DDOT(ns,x2Bp[b],1,wATp[b],1);
+            IndBA_termsp[b][A] = val;
+            Ind20_BA += val;
+        }
+    
+        // TODO: ExchInd20
+
+    } 
+
+    // ==> LO -> A transform <== //
    
+    boost::shared_ptr<Matrix> IndAB_atoms = doublet(Q_A_,IndAB_terms,false,false);
+    boost::shared_ptr<Matrix> IndBA_atoms = doublet(IndBA_terms,Q_B_,true,true);
+
+    IndAB_atoms->set_name("Ind [B<-A] (A x B)");
+    IndBA_atoms->set_name("Ind [A<-B] (A x B)");
+
     local_vars_["IndAB"] = IndAB_atoms;
     local_vars_["IndBA"] = IndBA_atoms;
-    
+
+    double Ind20 = Ind20_AB + Ind20_BA;
+    energies_["Ind20 (A<-B)"] = Ind20_AB;
+    energies_["Ind20 (B->A)"] = Ind20_BA;
+    energies_["Ind20"] = Ind20;
+    fprintf(outfile,"    Ind20 (A<-B)       = %18.12lf H\n",Ind20_AB);
+    fprintf(outfile,"    Ind20 (A->B)       = %18.12lf H\n",Ind20_BA);
+    fprintf(outfile,"    Ind20              = %18.12lf H\n",Ind20);
+    fprintf(outfile,"\n");
+    fflush(outfile);
 }
 void ASAPT::disp()
 {
@@ -1444,18 +1659,8 @@ void ASAPT::disp()
     //E_exch_disp20->print();
     //E_disp->print();
 
-    boost::shared_ptr<Matrix> Disp_atoms(new Matrix("Disp (A x B)", nA, nB));
-    double** Disp_atomsp = Disp_atoms->pointer();
-
-    for (int b = 0; b < nb; b++) {
-        for (int B = 0; B < nB; B++) {
-            for (int a = 0; a < na; a++) {
-                for (int A = 0; A < nA; A++) {
-                    Disp_atomsp[A][B] += Q2Ap[A][a] * Q2Bp[B][b] * E_dispp[a][b];
-                }
-            }
-        }
-    }
+    boost::shared_ptr<Matrix> Disp_atoms = triplet(Q2A,E_disp,Q2B,false,false,true);
+    Disp_atoms->set_name("Disp (A x B)");
 
     //Disp_atoms->print();
     local_vars_["Disp"] = Disp_atoms;
