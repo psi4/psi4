@@ -62,9 +62,16 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
                                           boost::shared_ptr<Wavefunction> mA,
                                           boost::shared_ptr<Wavefunction> mB)
 {
-    DFTSAPT* sapt = new DFTSAPT();
-
     Options& options = Process::environment.options;
+
+    DFTSAPT* sapt;
+    if (options.get_str("DFT_SAPT_TYPE") == "DFT-SAPT") {
+        sapt = new DFTSAPT();
+    } else if (options.get_str("DFT_SAPT_TYPE") == "ASAPT") {
+        ASAPT* asapt = new ASAPT();
+        asapt->population_type_ = options.get_str("ASAPT_POPULATION_TYPE");
+        sapt = static_cast<DFTSAPT*>(asapt);
+    }
 
     sapt->type_  = options.get_str("DFT_SAPT_TYPE");
 
@@ -143,10 +150,6 @@ double DFTSAPT::compute_energy()
         mp2_terms();
         tdhf_demo();
         print_trailer();
-    } else if (type_ == "L-SAPT0") {
-        local_fock_terms();
-        local_mp2_terms();
-        local_analysis();
     } else {
         throw PSIEXCEPTION("DFTSAPT: Unrecognized type");
     }
@@ -418,7 +421,7 @@ void DFTSAPT::fock_terms()
     }
     if (debug_) {
         for (int k = 0; k < Exch10_2_terms.size(); k++) {
-            fprintf(outfile,"    Exch10 (S^2) (%1d)    = %18.12lf H\n",k+1,Exch10_2_terms[k]);
+            fprintf(outfile,"    Exch10(S^2) (%1d)     = %18.12lf H\n",k+1,Exch10_2_terms[k]);
         }
     }
     energies_["Exch10(S^2)"] = Exch10_2;
@@ -1065,6 +1068,7 @@ void DFTSAPT::mp2_terms()
     fprintf(outfile,"\n");
     fflush(outfile);
 }
+#if 0
 void DFTSAPT::local_fock_terms()
 {
     fprintf(outfile, " LOCAL SCF TERMS:\n\n");
@@ -2799,6 +2803,7 @@ void DFTSAPT::local_analysis()
         fclose(fhB);
     }
 }
+#endif
 void DFTSAPT::tdhf_demo()
 {
     fprintf(outfile, "  TDHF Terms:\n\n");

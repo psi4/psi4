@@ -153,16 +153,14 @@ protected:
 
     // => L-SAPT0 <= //
 
-    // Local analysis results
-    std::map<std::string, boost::shared_ptr<Matrix> > local_vars_;
-    // Hartree-Fock-like terms (Elst, Exch, Ind)
-    virtual void local_fock_terms();
-    // MP2-like terms (Disp)
-    virtual void local_mp2_terms();
-    // Local analysis and visualizations setup
-    virtual void local_analysis();
-    // Bloody classical term
-    virtual void bastard_term();
+    //// Hartree-Fock-like terms (Elst, Exch, Ind)
+    //virtual void local_fock_terms();
+    //// MP2-like terms (Disp)
+    //virtual void local_mp2_terms();
+    //// Local analysis and visualizations setup
+    //virtual void local_analysis();
+    //// Bloody classical term
+    //virtual void bastard_term();
 
     // => Helper Methods <= //
 
@@ -230,12 +228,9 @@ protected:
     // Triple GEMM
     boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
 
-    // Protected constructor (use factory below)
-    DFTSAPT();
-    // Common initialization
     void common_init();
 public:
-    // Destructor, frees memory
+    DFTSAPT();
     virtual ~DFTSAPT();
 
     // Factory constructor, call this with 3 converged SCF jobs (dimer, monomer A, monomer B)
@@ -244,6 +239,66 @@ public:
                                             boost::shared_ptr<Wavefunction> mA);
 
     // Compute the DFT-SAPT analysis
+    virtual double compute_energy();
+
+};
+
+class ASAPT : public DFTSAPT {
+
+friend class DFTSAPT;
+
+    // Local orbital population type
+    std::string population_type_;
+
+    // Local analysis results
+    std::map<std::string, boost::shared_ptr<Matrix> > local_vars_;
+    // 3-index tensors
+    std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
+
+    // Localized occupied orbitals of monomer A (n x a)
+    boost::shared_ptr<Matrix> Locc_A_;
+    // Localized occupied orbitals of monomer B (n x b)
+    boost::shared_ptr<Matrix> Locc_B_;
+    // Localization transformation for monomer A (a x \bar a)
+    boost::shared_ptr<Matrix> Uocc_A_;
+    // Localization transformation for monomer B (b x \bar b)
+    boost::shared_ptr<Matrix> Uocc_B_;
+
+    // Local occupied orbital atomic population (renormalized) of monomer A (A x a)
+    boost::shared_ptr<Matrix> Q_A_;
+    // Local occupied orbital atomic population (renormalized) of monomer B (B x b)
+    boost::shared_ptr<Matrix> Q_B_;
+    // Molecular occupied orbital atomic assignment (renormalized) of monomer A (A x a)
+    boost::shared_ptr<Matrix> R_A_;
+    // Molecular occupied orbital atomic assignment (renormalized) of monomer B (B x b)
+    boost::shared_ptr<Matrix> R_B_;
+
+    // Print author/sizing/spec info
+    virtual void print_header() const;
+    // Obligatory
+    virtual void print_trailer();
+
+    // Compute L and U according to Localizer algorithm and tolerances
+    void localize(); 
+    // Compute Q and R
+    void populate();
+    // Compute Elst
+    void elst();
+    // Compute Exch
+    void exch();
+    // Compute Ind
+    void ind();
+    // Compute Disp
+    void disp();
+    // Analyze and output
+    void analyze();
+
+    void common_init();
+public:
+    ASAPT();
+    virtual ~ASAPT();
+
+    // Compute the A-SAPT analysis
     virtual double compute_energy();
 
 };
