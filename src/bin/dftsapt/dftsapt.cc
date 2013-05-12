@@ -67,10 +67,14 @@ boost::shared_ptr<DFTSAPT> DFTSAPT::build(boost::shared_ptr<Wavefunction> d,
     DFTSAPT* sapt;
     if (options.get_str("DFT_SAPT_TYPE") == "DFT-SAPT") {
         sapt = new DFTSAPT();
+    } else if (options.get_str("DFT_SAPT_TYPE") == "SAPT0") {
+        sapt = new DFTSAPT();
     } else if (options.get_str("DFT_SAPT_TYPE") == "ASAPT") {
         ASAPT* asapt = new ASAPT();
         asapt->population_type_ = options.get_str("ASAPT_POPULATION_TYPE");
         sapt = static_cast<DFTSAPT*>(asapt);
+    } else {
+        throw PSIEXCEPTION("Invalid DFT_SAPT_TYPE");
     }
 
     sapt->type_  = options.get_str("DFT_SAPT_TYPE");

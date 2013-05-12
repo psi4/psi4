@@ -132,6 +132,10 @@ protected:
     std::map<std::string, boost::shared_ptr<Tensor> > ints_;
     /// Requested pair spaces
     std::map<std::string, std::pair<std::string, std::string> > pair_spaces_;
+    /// Requested pair space powers
+    std::map<std::string, double> pair_powers_;
+    /// Requested pair space transpositions (ab|Q) -> (ba|Q)
+    std::map<std::string, bool> pair_transposes_;
     /// Order of pair spaces, to keep printing nice
     std::vector<std::string> pair_spaces_order_;
 
@@ -162,7 +166,7 @@ public:
     // => Pair Space Control <= //
 
     // R: add an orbital pair space to the list of tasks
-    void add_pair_space(const std::string& name, const std::string& space1, const std::string& space2);
+    void add_pair_space(const std::string& name, const std::string& space1, const std::string& space2, double pow = -1.0/2.0, bool transpose12 = false);
     // Clear this DFERI object of tasks
     virtual void clear();
 

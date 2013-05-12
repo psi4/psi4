@@ -397,38 +397,48 @@ void ASAPT::elst()
     dfA->clear();
     std::vector<boost::shared_ptr<Matrix> > CsA;
     CsA.push_back(Cocc_A_);
+    CsA.push_back(Cocc_B_);
+    CsA.push_back(Cvir_B_);
     boost::shared_ptr<Matrix> CallA = Matrix::horzcat(CsA);
     CsA.clear();
     dfA->set_C(CallA);
     dfA->set_memory(memory_);
-    dfA->add_space("a",0,na);
-    dfA->add_pair_space("Aaa2", "a", "a");
+    int offsetA = 0;
+    dfA->add_space("a",offsetA,offsetA + na); offsetA += na;
+    dfA->add_space("b",offsetA,offsetA + nb); offsetA += nb;
+    dfA->add_space("s",offsetA,offsetA + ns); offsetA += ns;
+    dfA->add_pair_space("Aaa2", "a", "a", -1.0);
+    dfA->add_pair_space("Vbs2", "b", "s", 0.0);
     fprintf(outfile,"  ==> Local DF for Monomer A <==\n\n");
     dfA->print_header();
     dfA->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsA = dfA->ints();
     boost::shared_ptr<Tensor> AaaT = intsA["Aaa2"];
-    boost::shared_ptr<Matrix> Jm12A = dfA->Jpow(-1.0/2.0);
-    double** Jm12Ap = Jm12A->pointer();
+    boost::shared_ptr<Tensor> VbsT = intsA["Vbs2"];
     dfA.reset();
 
     boost::shared_ptr<DFERI> dfB = DFERI::build(primary_,jkfitB,Process::environment.options);
     dfB->clear();
     std::vector<boost::shared_ptr<Matrix> > CsB;
     CsB.push_back(Cocc_B_);
+    CsB.push_back(Cocc_A_);
+    CsB.push_back(Cvir_A_);
     boost::shared_ptr<Matrix> CallB = Matrix::horzcat(CsB);
     CsB.clear();
     dfB->set_C(CallB);
     dfB->set_memory(memory_);
-    dfB->add_space("a",0,nb);
-    dfB->add_pair_space("Abb2", "a", "a");
+    int offsetB = 0;
+    dfB->add_space("b",offsetB,offsetB + nb); offsetB += nb;
+    dfB->add_space("a",offsetB,offsetB + na); offsetB += na;
+    dfB->add_space("r",offsetB,offsetB + nr); offsetB += nr;
+    dfB->add_pair_space("Abb2", "b", "b", -1.0);
+    dfB->add_pair_space("Var2", "a", "r", 0.0);
     fprintf(outfile,"  ==> Local DF for Monomer B <==\n\n");
     dfB->print_header();
     dfB->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsB = dfB->ints();
     boost::shared_ptr<Tensor> AbbT = intsB["Abb2"];
-    boost::shared_ptr<Matrix> Jm12B = dfB->Jpow(-1.0/2.0);
-    double** Jm12Bp = Jm12B->pointer();
+    boost::shared_ptr<Tensor> VarT = intsB["Var2"];
     dfB.reset();
 
     // ==> DF Nuclear Potential Setup (JKFIT Type, in Local Basis) <== //
@@ -488,25 +498,17 @@ void ASAPT::elst()
         fread(AbQp[b],sizeof(double),nQB,Abbf);
     }
 
-    boost::shared_ptr<Matrix> eA(new Matrix("dA",nQA,1));
-    double** eAp = eA->pointer();
-    for (int a = 0; a < na; a++) {
-        C_DAXPY(nQA,1.0,AaQp[a],1,eAp[0],1);
-    }
     boost::shared_ptr<Matrix> dA(new Matrix("dA",nQA,1));
     double** dAp = dA->pointer();
-    C_DGEMV('N',nQA,nQA,1.0,Jm12Ap[0],nQA,eAp[0],1,0.0,dAp[0],1); 
-    Jm12A.reset();
-
-    boost::shared_ptr<Matrix> eB(new Matrix("dB",nQB,1));
-    double** eBp = eB->pointer();
-    for (int b = 0; b < nb; b++) {
-        C_DAXPY(nQB,1.0,AbQp[b],1,eBp[0],1);
+    for (int a = 0; a < na; a++) {
+        C_DAXPY(nQA,1.0,AaQp[a],1,dAp[0],1);
     }
+
     boost::shared_ptr<Matrix> dB(new Matrix("dB",nQB,1));
     double** dBp = dB->pointer();
-    C_DGEMV('N',nQB,nQB,1.0,Jm12Bp[0],nQB,eBp[0],1,0.0,dBp[0],1); 
-    Jm12B.reset();
+    for (int b = 0; b < nb; b++) {
+        C_DAXPY(nQB,1.0,AbQp[b],1,dBp[0],1);
+    }
 
     boost::shared_ptr<Matrix> J(new Matrix("J",nQA,nQB));
     double** Jp = J->pointer();
@@ -610,7 +612,16 @@ void ASAPT::elst()
     fprintf(outfile,"\n");
     fflush(outfile);
 
-    // ==> Setup Electrostatic Fields <== //
+    // ==> Setup Atomic Electrostatic Fields for Induction <== //
+
+    boost::shared_ptr<Tensor> WBarT = DiskTensor::build("WBar", "nB", nB, "na", na, "nr", nr, false, false);
+    FILE* WBarf = WBarT->file_pointer();
+
+    // TODO
+
+    for (int B = 0; B < nB; B++) {
+        
+    }
 
 }
 void ASAPT::exch()
@@ -1158,18 +1169,18 @@ void ASAPT::disp()
     df->add_space("a4",offset,offset+Ca4->colspi()[0]); offset += Ca4->colspi()[0];
     df->add_space("b4",offset,offset+Cb4->colspi()[0]); offset += Cb4->colspi()[0];
 
-    // Disk stuff is all transposed for ab exposure
+    // Disk stuff is all transposed for ab exposure, but transforms down to a or b first for speed
 
-    df->add_pair_space("Aar", "r", "a" );
-    df->add_pair_space("Abs", "s", "b" );
-    df->add_pair_space("Bas", "s1","a" );
-    df->add_pair_space("Bbr", "r1","b" );
-    df->add_pair_space("Cas", "s", "a2");
-    df->add_pair_space("Cbr", "r", "b2");
-    df->add_pair_space("Dar", "r3","a" );
-    df->add_pair_space("Dbs", "s3","b" );
-    df->add_pair_space("Ear", "r", "a4");
-    df->add_pair_space("Ebs", "s", "b4");
+    df->add_pair_space("Aar", "a",  "r",  -1.0/2.0, true);
+    df->add_pair_space("Abs", "b",  "s",  -1.0/2.0, true);
+    df->add_pair_space("Bas", "a",  "s1", -1.0/2.0, true);
+    df->add_pair_space("Bbr", "b",  "r1", -1.0/2.0, true);
+    df->add_pair_space("Cas", "a2", "s",  -1.0/2.0, true);
+    df->add_pair_space("Cbr", "b2", "r",  -1.0/2.0, true);
+    df->add_pair_space("Dar", "a",  "r3", -1.0/2.0, true);
+    df->add_pair_space("Dbs", "b",  "s3", -1.0/2.0, true);
+    df->add_pair_space("Ear", "a4", "r",  -1.0/2.0, true);
+    df->add_pair_space("Ebs", "b4", "s",  -1.0/2.0, true);
 
     Cr1.reset();
     Cs1.reset();
