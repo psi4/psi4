@@ -151,17 +151,6 @@ protected:
     // MP2-like terms (Disp)
     virtual void mp2_terms();
 
-    // => L-SAPT0 <= //
-
-    //// Hartree-Fock-like terms (Elst, Exch, Ind)
-    //virtual void local_fock_terms();
-    //// MP2-like terms (Disp)
-    //virtual void local_mp2_terms();
-    //// Local analysis and visualizations setup
-    //virtual void local_analysis();
-    //// Bloody classical term
-    //virtual void bastard_term();
-
     // => Helper Methods <= //
 
     // Build the AO-basis dimer overlap matrix
@@ -178,6 +167,9 @@ protected:
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
+
+    // Build the ExchInd20 potential in the monomer A ov space
+    boost::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
 
     // Try out some TDHF Disp2
     void tdhf_demo();
