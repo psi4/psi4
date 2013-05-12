@@ -161,6 +161,8 @@ protected:
     virtual void local_mp2_terms();
     // Local analysis and visualizations setup
     virtual void local_analysis();
+    // Bloody classical term
+    virtual void bastard_term();
 
     // => Helper Methods <= //
 
