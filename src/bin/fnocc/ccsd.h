@@ -277,6 +277,7 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// CIM SCS-CCSD function and variables
     void Local_SCS_CCSD();
+    void Local_SCS_MP2();
 };
 
 // coupled pair class
