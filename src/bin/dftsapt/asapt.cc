@@ -1643,10 +1643,13 @@ void ASAPT::disp()
 
     // => Local Targets <= //
 
-    boost::shared_ptr<Matrix> E_disp20(new Matrix("E_disp20", na, nb));
-    boost::shared_ptr<Matrix> E_exch_disp20(new Matrix("E_exch_disp20", na, nb));
-    double** E_disp20p = E_disp20->pointer();
-    double** E_exch_disp20p = E_exch_disp20->pointer();
+    std::vector<boost::shared_ptr<Matrix> > E_disp20_threads;
+    std::vector<boost::shared_ptr<Matrix> > E_exch_disp20_threads;
+    for (int t = 0; t < nT; t++) {
+        E_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("E_disp20",na,nb)));
+        E_exch_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("E_exch_disp20",na,nb)));
+    }
+
 
     // => MO => LO Transform <= //
 
@@ -1691,6 +1694,9 @@ void ASAPT::disp()
                     thread = omp_get_thread_num();
                 #endif
 
+                double** E_disp20Tp = E_disp20_threads[thread]->pointer();
+                double** E_exch_disp20Tp = E_exch_disp20_threads[thread]->pointer();
+                
                 double** Tabp  = Tab[thread]->pointer();
                 double** Vabp  = Vab[thread]->pointer();
                 double** T2abp = T2ab[thread]->pointer();
@@ -1713,7 +1719,7 @@ void ASAPT::disp()
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
-                        E_disp20p[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
+                        E_disp20Tp[a][b] += 4.0 * T2abp[a][b] * V2abp[a][b];
                         Disp20 += 4.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
@@ -1739,12 +1745,22 @@ void ASAPT::disp()
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
-                        E_exch_disp20p[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
+                        E_exch_disp20Tp[a][b] -= 2.0 * T2abp[a][b] * V2abp[a][b];
                         ExchDisp20 -= 2.0 * T2abp[a][b] * V2abp[a][b];
                     }
                 }
             }
         }
+    }
+
+    boost::shared_ptr<Matrix> E_disp20(new Matrix("E_disp20", na, nb));
+    boost::shared_ptr<Matrix> E_exch_disp20(new Matrix("E_exch_disp20", na, nb));
+    double** E_disp20p = E_disp20->pointer();
+    double** E_exch_disp20p = E_exch_disp20->pointer();
+
+    for (int t = 0; t < nT; t++) {
+        E_disp20->add(E_disp20_threads[t]);
+        E_exch_disp20->add(E_exch_disp20_threads[t]);
     }
 
     boost::shared_ptr<Matrix> E_disp(new Matrix("E_disp (a x b)", na, nb));
