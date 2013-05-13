@@ -170,6 +170,8 @@ protected:
 
     // Build the ExchInd20 potential in the monomer A ov space
     boost::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
+    // Build the Ind20 potential in the monomer A ov space
+    boost::shared_ptr<Matrix> build_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
 
     // Try out some TDHF Disp2
     void tdhf_demo();
