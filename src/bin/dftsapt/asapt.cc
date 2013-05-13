@@ -136,6 +136,50 @@ void ASAPT::print_header() const
 }
 void ASAPT::print_trailer()
 {
+    energies_["delta HF,r (2)"] = 0.0;
+    if (energies_["HF"] != 0.0) {
+        energies_["delta HF,r (2)"] = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - energies_["Exch-Ind20,r"];
+    }
+
+    energies_["Electrostatics"] = energies_["Elst10,r"];
+    energies_["Exchange"]       = energies_["Exch10"];
+    energies_["Induction"]      = energies_["Ind20,r"] + energies_["Exch-Ind20,r"] + energies_["delta HF,r (2)"];
+    energies_["Dispersion"]     = energies_["Disp20"] + energies_["Exch-Disp20"];
+    energies_["SAPT"]           = energies_["Electrostatics"] + energies_["Exchange"] + energies_["Induction"] + energies_["Dispersion"];
+
+    fprintf(outfile,"\n    SAPT Results  \n");
+    fprintf(outfile,"  -----------------------------------------------------------------------\n");
+    fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Electrostatics"]*1000.0,energies_["Electrostatics"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      energies_["Elst10,r"]*1000.0,energies_["Elst10,r"]*pc_hartree2kcalmol);
+    fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Exchange"]*1000.0,energies_["Exchange"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Exch10"]*1000.0,energies_["Exch10"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      energies_["Exch10(S^2)"]*1000.0,energies_["Exch10(S^2)"]*pc_hartree2kcalmol);
+    fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Induction"]*1000.0,energies_["Induction"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Ind20,r"]*1000.0,energies_["Ind20,r"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Exch-Ind20,r"]*1000.0,energies_["Exch-Ind20,r"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      energies_["delta HF,r (2)"]*1000.0,energies_["delta HF,r (2)"]*pc_hartree2kcalmol);
+    fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Dispersion"]*1000.0,energies_["Dispersion"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["Disp20"]*1000.0,energies_["Disp20"]*pc_hartree2kcalmol);
+    fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      energies_["Exch-Disp20"]*1000.0,energies_["Exch-Disp20"]*pc_hartree2kcalmol);
+
+    fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["HF"]*1000.0,energies_["HF"]*pc_hartree2kcalmol);
+    fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+      energies_["SAPT"]*1000.0,energies_["SAPT"]*pc_hartree2kcalmol);
+    fprintf(outfile,"\n");
+
     fprintf(outfile, "  To the pessimist, the glass is half empty.\n");
     fprintf(outfile, "  To the optimist, the glass is half full.\n");
     fprintf(outfile, "  To the engineer, the glass is twice as big as it needs to be.\n");
