@@ -1954,7 +1954,7 @@ void DFCoupledCluster::Local_SCS_MP2(){
   }
   emp2_os = osenergy;
   emp2_ss = ssenergy;
-  emp2 = emp2_os + emp2_os;
+  emp2 = emp2_os + emp2_ss;
 
   psio.reset();
 }
