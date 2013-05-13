@@ -62,14 +62,14 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 
       fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+cols_per_page; i++) 
-          fprintf(outfile,"      %5d        ",i);
+          fprintf(outfile,"         %5d        ",i);
 
       fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
           fprintf(outfile,"\n%5d ",i);
 
           for(j=first_col; j < first_col+cols_per_page; j++)        
-              fprintf (outfile,"%19.15f",matrix[i][j]);
+              fprintf (outfile,"%22.15f",matrix[i][j]);
         }
 
       fprintf (outfile,"\n");
@@ -81,14 +81,14 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 
       fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+last_page; i++) 
-          fprintf(outfile,"      %5d        ",i);
+          fprintf(outfile,"         %5d        ",i);
       
       fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
 	  fprintf(outfile,"\n%5d ",i);
 
 	  for(j=first_col; j < first_col+last_page; j++)
-	      fprintf (outfile,"%19.15f",matrix[i][j]);
+	      fprintf (outfile,"%22.15f",matrix[i][j]);
 	}
 
       fprintf (outfile,"\n");
