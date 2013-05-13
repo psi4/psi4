@@ -1210,10 +1210,10 @@ void ASAPT::ind()
             double Kval = 2.0 * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
             Ind20u_BA_termsp[b][A] = Jval;
             Ind20u_BA += Jval;
-            ExchInd20u_BA_termsp[b][A] = Jval;
+            ExchInd20u_BA_termsp[b][A] = Kval;
             ExchInd20u_BA += Kval;
-            Ind20u_BA_termsp[b][A] = Jval + Kval;
-            Ind20u_BA += Jval + Kval;
+            Indu_BA_termsp[b][A] = Jval + Kval;
+            Indu_BA += Jval + Kval;
         }
     
     } 
