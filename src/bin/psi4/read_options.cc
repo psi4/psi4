@@ -820,8 +820,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
   /*- The name of the monomer-local electrostatics auxiliary basis set -*/
   options.add_str("DF_BASIS_ELST", "");
-  /*- The number of the stupid debug thing -*/
-  options.add_int("DEBUG_TERM",1);
   
   }
   if(name == "DCFT"|| options.read_globals()) {

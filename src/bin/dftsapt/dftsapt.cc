@@ -1694,139 +1694,96 @@ boost::shared_ptr<Matrix> DFTSAPT::build_exch_ind_pot(std::map<std::string, boos
     boost::shared_ptr<Matrix> J_P = vars["J_P"]; // J[D^B S D^A S D^B]
 
     boost::shared_ptr<Matrix> W(K_B->clone());
-    //boost::shared_ptr<Matrix> T;
-    W->zero();
-    boost::shared_ptr<Matrix> T(K_B->clone());
+    boost::shared_ptr<Matrix> T;
 
-int val = Process::environment.options.get_int("DEBUG_TERM");
-switch (val) {
-
-case 1:
     // 1
     W->copy(K_B);
     W->scale(-1.0);
-break;
-case 2:
 
     // 2
     T = triplet(S,D_B,J_A);
     T->scale(-2.0);
     W->add(T);    
-break;
-case 3:
 
     // 3
     T->copy(K_O);
     T->scale(1.0);
     W->add(T);
-break;
-case 4:
     
     // 4
     T->copy(J_O);
     T->scale(-2.0);
     W->add(T);
-break;
-case 5:
 
     // 5
     T = triplet(S,D_B,K_A);
     T->scale(1.0);
     W->add(T);
-break;
-case 6:
 
     // 6
     T = triplet(J_B,D_B,S);
     T->scale(-2.0);
     W->add(T);
-break;
-case 7:
 
     // 7
     T = triplet(K_B,D_B,S);
     T->scale(1.0);
     W->add(T);
-break;
-case 8:
 
     // 8
     T = triplet(triplet(S,D_B,J_A),D_B,S);
     T->scale(2.0);
     W->add(T);
-break;
-case 9:
 
     // 9
     T = triplet(triplet(J_B,D_A,S),D_B,S);
     T->scale(2.0);
     W->add(T);
-break;
-case 10:
 
     // 10
     T = triplet(K_O,D_B,S);
     T->scale(-1.0);
     W->add(T);
-break;
-case 11:
 
     // 11
     T->copy(J_P);
     T->scale(2.0);
     W->add(T);
-break;
-case 12:
-
+    
     // 12
     T = triplet(triplet(S,D_B,S),D_A,J_B);
     T->scale(2.0);
     W->add(T);
-break;
-case 13:
 
     // 13
     T = triplet(S,D_B,K_O,false,false,true);
     T->scale(-1.0);
     W->add(T);
-break;
-case 14:
 
     // 14
     T = triplet(S,D_B,V_A);
     T->scale(-1.0);
     W->add(T);    
-break;
-case 15:
     
     // 15
     T = triplet(V_B,D_B,S);
     T->scale(-1.0);
     W->add(T);
-break;
-case 16:
     
     // 16
     T = triplet(triplet(S,D_B,V_A),D_B,S);
     T->scale(1.0);
     W->add(T);
-break;
-case 17:
 
     // 17
     T = triplet(triplet(V_B,D_A,S),D_B,S);
     T->scale(1.0);
     W->add(T);
-break;
-case 18:
 
     // 18
     T = triplet(triplet(S,D_B,S),D_A,V_B);
     T->scale(1.0);
     W->add(T);
-break;
-
-}
 
     return triplet(Ca,W,Cr,true,false,false);
 }
