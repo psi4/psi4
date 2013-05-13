@@ -1075,13 +1075,13 @@ void ASAPT::ind()
     mapB["K_O"] = K_O;
     mapB["J_P"] = J_P_B; 
 
-    K_O->transpose_this();
-
     boost::shared_ptr<Matrix> wAT = build_ind_pot(mapB);
     boost::shared_ptr<Matrix> uAT = build_exch_ind_pot(mapB);
     double** wATp = wAT->pointer();
     double** uATp = uAT->pointer();
     
+    K_O->transpose_this();
+
     // ==> Uncoupled Targets <== //
 
     boost::shared_ptr<Matrix> Ind20u_AB_terms(new Matrix("Ind20 [A<-B] (a x B)", na, nB));
