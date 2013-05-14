@@ -339,6 +339,7 @@ def process_pcm_command(matchobj):
     fp.close()
     from pcmpreprocess import preprocess
     preprocess()
+    return "" # The file has been written to disk; nothing needed in Psi4 input
 
 
 def process_external_command(matchobj):
@@ -656,9 +657,9 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(external, process_external_command, temp)
 
     # Process "pcm name? { ... }"
-    external = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}',
+    pcm = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(external, process_pcm_command, temp)
+    temp = re.sub(pcm, process_pcm_command, temp)
 
     # Then remove repeated newlines
     multiplenewlines = re.compile(r'\n+')
