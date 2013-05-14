@@ -205,6 +205,8 @@ def process_molecule_command(matchobj):
     return molecule
 
 
+
+
 def process_extract_command(matchobj):
     """Function to process match of ``extract_subsets``."""
     spaces = matchobj.group(1)
@@ -325,6 +327,18 @@ def process_basis_block(matchobj):
         result += "%spsi4.add_user_basis_file(psi4tempbasisfile)" % (spacing)
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
     return result
+
+
+def process_pcm_command(matchobj):
+    """Function to process match of ``pcm name? { ... }``."""
+    spacing = str(matchobj.group(1)) # Ignore..
+    name = str(matchobj.group(2)) # Ignore..
+    block = str(matchobj.group(3))
+    fp = open('@pcmsolver.inp', 'w')
+    fp.write(block)
+    fp.close()
+    from pcmpreprocess import preprocess
+    preprocess()
 
 
 def process_external_command(matchobj):
@@ -640,6 +654,11 @@ def process_input(raw_input, print_level=1):
     external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(external, process_external_command, temp)
+
+    # Process "pcm name? { ... }"
+    external = re.compile(r'^(\s*?)pcm[=\s]*(\w*?)\s*\{(.*?)^\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(external, process_pcm_command, temp)
 
     # Then remove repeated newlines
     multiplenewlines = re.compile(r'\n+')
