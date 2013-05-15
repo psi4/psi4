@@ -2569,7 +2569,7 @@ double DFCoupledCluster::compute_energy() {
       long int o = ndoccact;
       long int v = nvirt;
 
-      if (!isLowMemory) {
+      if (!isLowMemory && !reference_wavefunction_->isCIM() ) {
           // write (ov|vv) integrals, formerly E2abci, for (t)
           double *tempq = (double*)malloc(v*nQ*sizeof(double));
           // the buffer integrals was at least 2v^3, so these should definitely fit.
@@ -2664,8 +2664,9 @@ double DFCoupledCluster::compute_energy() {
       tstart();
 
       ccmethod = 0;
-      if (isLowMemory) status = lowmemory_triples();
-      else             status = triples();
+      if (isLowMemory)                           status = lowmemory_triples();
+      else if (reference_wavefunction_->isCIM()) status = local_triples();
+      else                                       status = triples();
 
       if (status == Failure){
          throw PsiException(
