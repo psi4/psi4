@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -13,7 +35,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
@@ -53,8 +74,8 @@ void ROHF::common_init()
     Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
     Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
     Cb_      = Ca_;
-    Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
-    Db_      = SharedMatrix(factory_->create_matrix("Beta density matrix"));
+    Da_      = SharedMatrix(factory_->create_matrix("SCF alpha density"));
+    Db_      = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
@@ -258,19 +279,22 @@ void ROHF::save_information()
 {
 }
 
-void ROHF::save_fock()
+void ROHF::compute_orbital_gradient(bool save_diis)
 {
-    if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
-        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-        diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-        initialized_diis_manager_ = true;
-    }
+    SharedMatrix gradient(Feff_);
+    gradient->zero_diagonal();
+    gradient->back_transform(Ct_);
+    Drms_ = gradient->rms();
 
-    SharedMatrix errvec(Feff_);
-    errvec->zero_diagonal();
-    errvec->back_transform(Ct_);
-    diis_manager_->add_entry(2, errvec.get(), soFeff_.get());
+    if(save_diis){
+        if (initialized_diis_manager_ == false) {
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
+            diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
+            initialized_diis_manager_ = true;
+        }
+        diis_manager_->add_entry(2, gradient.get(), soFeff_.get());
+    }
 }
 
 bool ROHF::diis()
@@ -283,12 +307,7 @@ bool ROHF::test_convergency()
     // energy difference
     double ediff = E_ - Eold_;
 
-    // RMS of the density
-    Matrix D_rms;
-    D_rms.copy(Dt_);
-    D_rms.subtract(Dt_old_);
-    Drms_ = D_rms.rms();
-
+    // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
@@ -465,31 +484,21 @@ double ROHF::compute_E()
 
 void ROHF::form_G()
 {
-    /*
-     * This just builds the same Ga and Gb matrices used in UHF
-     */
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the JK object
+    jk_->compute();
 
-        std::vector<SharedMatrix> & C = jk_->C_left();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        
-        // Run the JK object
-        jk_->compute();
-
-        // Pull the J and K matrices off
-        const std::vector<SharedMatrix> & J = jk_->J();
-        const std::vector<SharedMatrix> & K = jk_->K();
-        Ga_->copy(J[0]);
-        Ga_->add(J[1]);
-        Ka_ = K[0];
-        Kb_ = K[1];
-        
-    } else {
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-    }
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    Ga_->copy(J[0]);
+    Ga_->add(J[1]);
+    Ka_ = K[0];
+    Kb_ = K[1];
 
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
@@ -498,7 +507,7 @@ void ROHF::form_G()
 
 void ROHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
         // Build the Fock Matrix

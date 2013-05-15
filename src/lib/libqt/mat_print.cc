@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <cstdio>
 #include <cstdlib>
 
@@ -40,14 +62,14 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 
       fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+cols_per_page; i++) 
-          fprintf(outfile,"      %5d        ",i);
+          fprintf(outfile,"         %5d        ",i);
 
       fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
           fprintf(outfile,"\n%5d ",i);
 
           for(j=first_col; j < first_col+cols_per_page; j++)        
-              fprintf (outfile,"%19.15f",matrix[i][j]);
+              fprintf (outfile,"%22.15f",matrix[i][j]);
         }
 
       fprintf (outfile,"\n");
@@ -59,14 +81,14 @@ int mat_print(double **matrix, int rows, int cols, FILE *outfile)
 
       fprintf(outfile,"\n      ");
       for(i=first_col; i < first_col+last_page; i++) 
-          fprintf(outfile,"      %5d        ",i);
+          fprintf(outfile,"         %5d        ",i);
       
       fprintf (outfile,"\n");
       for(i=0; i < rows; i++) {
 	  fprintf(outfile,"\n%5d ",i);
 
 	  for(j=first_col; j < first_col+last_page; j++)
-	      fprintf (outfile,"%19.15f",matrix[i][j]);
+	      fprintf (outfile,"%22.15f",matrix[i][j]);
 	}
 
       fprintf (outfile,"\n");

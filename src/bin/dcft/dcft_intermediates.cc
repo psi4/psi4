@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "dcft.h"
 #include <libdpd/dpd.h>
 #include <libpsio/psio.hpp>
@@ -10,7 +32,7 @@ namespace psi{ namespace dcft{
  * Builds the intermediate tensors
  */
 void
-DCFTSolver::build_intermediates()
+DCFTSolver::build_cumulant_intermediates()
 {
     dcft_timer_on("DCFTSolver::build_intermediates()");
 
@@ -384,7 +406,7 @@ DCFTSolver::build_intermediates()
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-    if (options_.get_str("DCFT_FUNCTIONAL") == "DC-12") {
+    if (exact_tau_) {
         form_density_weighted_fock();
     }
     compute_F_intermediate();

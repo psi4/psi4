@@ -1,7 +1,30 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_twobody_h
 #define _psi_src_lib_libmints_twobody_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/python/list.hpp>
 
 namespace psi {
 
@@ -31,6 +54,8 @@ protected:
 
     /// Buffer to hold the final integrals.
     double *target_;
+    /// Number of integrals in the current buffer
+    int curr_buff_size_;
     /// Buffer to hold the transformation intermediates.
     double *tformbuf_;
     /// Buffer to hold the initially computed integrals.
@@ -86,6 +111,14 @@ public:
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; }
 
+    /// Get a python list version of the current buffer
+    const boost::python::list py_buffer() const {
+        boost::python::list ret_val;
+        for(int i = 0; i < curr_buff_size_; ++i)
+            ret_val.append(target_[i]);
+        return ret_val;
+    }
+
     /// Returns the integral factory used to create this object
     const IntegralFactory* integral() const { return integral_; }
 
@@ -95,7 +128,7 @@ public:
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
 
-    ///Is the shell zero?
+    /// Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
 
     /// Compute the first derivatives

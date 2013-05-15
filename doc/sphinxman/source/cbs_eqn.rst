@@ -2,13 +2,19 @@
 .. index:: 
    pair: cbs(); theory
 
-.. math:: E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}
+.. math:: E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}} \; + \delta_{\textbf{delta3\_wfn\_lesser}}^{\textbf{delta3\_wfn}} \; + \delta_{\textbf{delta4\_wfn\_lesser}}^{\textbf{delta4\_wfn}} \; + \delta_{\textbf{delta5\_wfn\_lesser}}^{\textbf{delta5\_wfn}}
 
 Here, :math:`\mathcal{F}` is an energy or energy extrapolation scheme, and the following also hold.
 
 .. math:: \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; = \mathcal{F}_{\textbf{delta\_scheme}} \left(E_{corl,\; \textbf{delta\_wfn}}^{\textbf{delta\_basis}}\right) - \mathcal{F}_{\textbf{delta\_scheme}} \left(E_{corl,\; \textbf{delta\_wfn\_lesser}}^{\textbf{delta\_basis}}\right)
 
 .. math:: \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}} \; = \mathcal{F}_{\textbf{delta2\_scheme}} \left(E_{corl,\; \textbf{delta2\_wfn}}^{\textbf{delta2\_basis}}\right) - \mathcal{F}_{\textbf{delta2\_scheme}} \left(E_{corl,\; \textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_basis}}\right)
+
+.. math:: \delta_{\textbf{delta3\_wfn\_lesser}}^{\textbf{delta3\_wfn}} \; = \mathcal{F}_{\textbf{delta3\_scheme}} \left(E_{corl,\; \textbf{delta3\_wfn}}^{\textbf{delta3\_basis}}\right) - \mathcal{F}_{\textbf{delta3\_scheme}} \left(E_{corl,\; \textbf{delta3\_wfn\_lesser}}^{\textbf{delta3\_basis}}\right)
+
+.. math:: \delta_{\textbf{delta4\_wfn\_lesser}}^{\textbf{delta4\_wfn}} \; = \mathcal{F}_{\textbf{delta4\_scheme}} \left(E_{corl,\; \textbf{delta4\_wfn}}^{\textbf{delta4\_basis}}\right) - \mathcal{F}_{\textbf{delta4\_scheme}} \left(E_{corl,\; \textbf{delta4\_wfn\_lesser}}^{\textbf{delta4\_basis}}\right)
+
+.. math:: \delta_{\textbf{delta5\_wfn\_lesser}}^{\textbf{delta5\_wfn}} \; = \mathcal{F}_{\textbf{delta5\_scheme}} \left(E_{corl,\; \textbf{delta5\_wfn}}^{\textbf{delta5\_basis}}\right) - \mathcal{F}_{\textbf{delta5\_scheme}} \left(E_{corl,\; \textbf{delta5\_wfn\_lesser}}^{\textbf{delta5\_basis}}\right)
 
 A translation of this ungainly equation to example [5] below is as
 follows. In words, this is a double- and triple-zeta 2-point

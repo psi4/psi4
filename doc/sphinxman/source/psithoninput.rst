@@ -44,8 +44,8 @@ the user).
 The physical constants used within |PSIfour|, which are automatically
 made available within all |PSIfour| input files.
 
-.. literalinclude:: @SFNX_INCLUDE@lib/python/physconst.py
-   :lines: 3-
+.. literalinclude:: @SFNX_INCLUDE@lib/python/p4const/physconst.py
+   :lines: 25-
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in
 |PSIfour| input files.
@@ -53,8 +53,8 @@ The ``psi_`` prefix is to prevent clashes with user-defined variables in
 .. index:: molecule; specification
 .. _`sec:moleculeSpecification`:
 
-Molecule Specification
-======================
+Molecule and Geometry Specification
+===================================
 
 |PSIfour| has a very flexible input parser that allows the user to provide
 geometries as Cartesian coordinates, Z-matrix variables, or a combination of
@@ -226,19 +226,20 @@ keywords used in the above examples.
 Molecule Keywords
 ^^^^^^^^^^^^^^^^^
 
-In addition to specifying the geometry, additional information can be provided
-in the ``molecule`` block. If two integers are encountered on any line of the
-``molecule`` block, they are interpreted as the molecular charge and multiplicity
-(:math:`2 \times M_s + 1`), respectively.  The symmetry can be specified by a line reading
-:samp:`symmetry {symbol}`, where :samp:`{symbol}` is
-the Schönflies symbol of the (Abelian) point group to use for the
-computation; see Sec. :ref:`sec:symmetry` for more details. This need not be
-specified, as the molecular symmetry is automatically detected by |PSIfour|.
-Certain computations require that the molecule is not reoriented; this can be
-achieved by adding either ``no_reorient`` or ``noreorient``. By default,
-|Angstrom| units are used; this is changed by adding a line that reads
-:samp:`units {spec}`, where :samp:`{spec}` is one of ``ang``,
-``angstrom``, ``a.u.``, ``au``, or ``bohr``.
+In addition to specifying the geometry, additional information can be
+provided in the :samp:`molecule {optional_molecule_name} \\{...\\}` block.
+If two integers :samp:`{charge} {multiplicity}` are encountered on any
+line of the molecule block, they are interpreted as the molecular charge
+and multiplicity (:math:`2 \times M_s + 1`), respectively.  The symmetry
+can be specified by a line reading :samp:`symmetry {symbol}`, where
+:samp:`{symbol}` is the :ref:`Schönflies symbol <sec:symmetry>` of the
+(Abelian) point group to use for the computation.  This need not be
+specified, as the molecular symmetry is automatically detected by
+|PSIfour|.  Certain computations require that the molecule is not
+reoriented; this can be achieved by adding either ``no_reorient`` or
+``noreorient``. By default, |Angstrom| units are used; this is changed by
+adding a line that reads :samp:`units {spec}`, where :samp:`{spec}` is one
+of ``ang``, ``angstrom``, ``a.u.``, ``au``, or ``bohr``.
 
 .. index:: 
    single: Ghost Atoms
@@ -473,7 +474,7 @@ dashes between nonbonded fragements. For example, to study the interaction
 energy of ethane and ethyne molecules, we can use the following molecule
 block::
 
-    molecule{
+    molecule eneyne {
       0 1
       C  0.000000 -0.667578  -2.124659
       C  0.000000  0.667578  -2.124659
@@ -496,6 +497,23 @@ considering interacting fragments, the overall charge is simply the sum of all
 fragment charges, and any unpaired electrons are assumed to be coupled to
 yield the highest possible :math:`M_s` value.
 
+Having defined a molecule containing fragments like ``eneyne`` above, it
+is a simple matter to perform calculations on only a subset of the
+fragments. For instance, the commands below run a scf first on the ethene
+fragment alone (``extract_subsets(1)`` pulls out fragment 1 as Real atoms
+and discards remaining fragments) and next on the ethene fragment with the
+ethyne fragment ghosted (``extract_subsets(1,2)`` pulls out fragment 1 as
+Real atoms and sets fragment 2 as Ghost atoms). For beyond bimolecular
+complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
+
+   mA = eneyne.extract_subsets(1)
+   energy('scf')
+   
+   clean()
+   
+   mAcp = eneyne.extract_subsets(1,2)
+   energy('scf')
+
 .. index::
    single: basis set; specification
    triple: setting; keywords; C-side
@@ -511,33 +529,23 @@ control its function. The keywords can be made global, or scoped to apply to
 certain specific modules. The following examples demonstrate some of the ways
 that global keywords can be specified::
 
+    # all equivalent
+
     set globals basis cc-pVDZ
-    
-     or
-    
+
     set basis cc-pVDZ
-    
-     or
-    
+
     set globals basis = cc-pVDZ
-    
-     or
-    
+
     set basis = cc-pVDZ
-    
-     or
-    
+
     set globals{
       basis cc-pVDZ
     }
     
-     or
-    
     set {
       basis cc-pVDZ
     }
-    
-     or
     
     set {
       basis = cc-pVDZ
@@ -671,27 +679,27 @@ more is available. To specify memory, the ``memory`` keyword should be used. The
 lines are all equivalent methods for specifying that 2 Gb of RAM is available
 to |PSIfour|::
 
+    # all equivalent
+
     memory 2 Gb
     
-     or
-    
     memory 2000 Mb
-    
-     or
     
     memory 2000000 Kb
 
 One convenient way to override the |PSIfour| default memory is to place a
 memory command in the |psirc| file (Sec. :ref:`sec:psirc`). For example,
-the following makes the default memory 2 Gb. However, unless you're
-assured of having only one job running on a node at a time (and all nodes
-on the filesystem with |psirc| have similar memory capacities), it is
-advised to set memory in the input file on a per-calculation basis.::
+the following makes the default memory 2 Gb. ::
 
     set_memory(2000000000)
 
-For parallel jobs, the ``memory`` keyword represents the total memory
-available to the job, *not* the memory per thread.
+However, unless you're assured of having only one job running on a node at
+a time (and all nodes on the filesystem with |psirc| have similar memory
+capacities), it is advised to set memory in the input file on a
+per-calculation basis.
+
+.. note:: For parallel jobs, the ``memory`` keyword represents the total memory
+   available to the job, *not* the memory per thread.
 
 .. _`sec:psiVariables`:
 
@@ -723,27 +731,30 @@ and H atom::
     D_e = psi_hartree2kcalmol*(2*h_energy - h2_energy)
     print"De=%f"%D_e
 
-The :py:func:`~driver.energy` function returns the final result of the computation, which we
-assign to a Python variable. The two energies are then converted to a
-dissociation energy and printed to the output file using standard Python
-notation. Sometimes there are multiple quantities of interest; these can be
-accessed through the ``get_variable()`` function. For example, after performing a
-density fitted MP2 computation, both the spin component scaled energy and the
-unscaled MP2 energy are made available::
+The :py:func:`~driver.energy` function returns the final result of the
+computation, the requested total energy in Hartrees, which we assign to a
+Python variable. The two energies are then converted to a dissociation
+energy and printed to the output file using standard Python notation.
 
-    e_mp2=get_variable('DF-MP2 TOTAL ENERGY')
-    e_scs_mp2=get_variable('SCS-DF-MP2 TOTAL ENERGY')
+Generally, there are multiple quantities of interest. Appendix
+:ref:`apdx:psivariables_module` lists PSI variables variables set by each
+module.  These can be accessed through the ``get_variable()`` function.
+For example, after performing a density fitted MP2 computation, both the
+spin component scaled energy and the unscaled MP2 energy are made
+available::
 
-Each module and the Python driver set PSI variables over the course of
-a calculation.  The values for all can be printed in the output file
-with the input file command ``print_variables()``. Note that
-PSI variables accumulate over a |PSIfour| instance and are not cleared by
-``clean()``. So if you run in a single input file a STO-3G FCI
-followed by a aug-cc-pVQZ SCF followed by a ``print_variables()``
-command, the last will include both :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` and
-:psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`. Don't get excited that you got a high-quality calculation
-cheaply. Refer to Appendix :ref:`apdx:psivariables_module` for a listing of the
-variables set by each module.
+    e_mp2=get_variable('MP2 TOTAL ENERGY')
+    e_scs_mp2=get_variable('SCS-MP2 TOTAL ENERGY')
+
+Each module and the Python driver set PSI variables over the course of a
+calculation.  The values for all can be printed in the output file with
+the input file command ``print_variables()``. Note that PSI variables
+accumulate over a |PSIfour| instance and are not cleared by ``clean()``.
+So if you run in a single input file a STO-3G FCI followed by a
+aug-cc-pVQZ SCF followed by a ``print_variables()`` command, the last will
+include both :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` and :psivar:`FCI
+TOTAL ENERGY <FCITOTALENERGY>`. Don't get excited that you got a
+high-quality calculation cheaply.
 
 .. _`sec:loops`:
 
@@ -762,10 +773,11 @@ be used::
 The declaration of ``basis_set`` is completely standard Python, as is the next
 line, which iterates over the list. However, because the Psithon preprocessor
 wraps strings in quotes by default, we have to tell it that ``basis_set`` is a
-Python variable, not a string, by prefixing it with a dollar sign. The geometry
-specification supports delayed initialization of variable, which permits
-potential energy scans. As an example, we can scan both the angle and bond
-length in water::
+Python variable, not a string, by prefixing it with a dollar sign. 
+
+The geometry specification supports delayed initialization of variable,
+which permits potential energy scans. As an example, we can scan both the
+angle and bond length in water::
 
     molecule h2o{
       O
@@ -846,9 +858,9 @@ the |PSIfour| suite.
 Among these are automated computations of interaction energies through
 :py:func:`~wrappers.cp`, of a model chemistry applied to a database of systems through
 :py:func:`~wrappers.database`, and of several model chemistries together approximating greater
-accuracy through :py:func:`~wrappers.cbs`. 
+accuracy through :py:func:`~wrappers.complete_basis_set`. 
 These are discussed separately in section :ref:`sec:psithonFunc`.
 Note that the options documented for Python functions are placed as arguments
-in the command that calls the function 
+in the command that calls the function, 
 not in the ``set globals`` block or with any other ``set`` command.
 

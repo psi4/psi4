@@ -19,11 +19,11 @@ fnocc_subdirs = fnocc1 fnocc2 fnocc3 fnocc4
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh ci-multi
 
-dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5 dcft6
+dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5 dcft6 dcft7 dcft-grad1
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 sapt3 sapt5 dfmp2-1 dfmp2-2 dfmp2-3 ghosts
+df_subdirs = sapt1 sapt3 sapt5 dfmp2-1 dfmp2-2 dfmp2-3 ghosts dfmp2-4
 
 psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2 psimrcc-fd-freq1 psimrcc-fd-freq2
 
@@ -31,13 +31,13 @@ mints_subdirs = mints1 mints2 mints3 mints4 mints5 mints6
 
 matrix_subdirs = matrix1
 
-opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large gibbs
+opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 fd-gradient fd-freq-energy fd-freq-gradient fd-freq-gradient-large dft-freq gibbs
 
-mp2_subdirs = mp2-1 omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3
+mp2_subdirs = mp2-1 omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3 omp2_5-1 omp2_5-2 omp2-grad1 omp2-grad2 omp3-grad1 omp3-grad2 omp2_5-grad1 omp2_5-grad2 ocepa-grad1 ocepa-grad2 mp2-grad1 mp2-grad2 mp3-grad1 mp3-grad2 mp2_5-grad1 mp2_5-grad2 cepa0-grad1 cepa0-grad2 ocepa-freq1
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 scf-guess-read sad1 castup1 mom props1 props2 props3 dft1 dft3 dfscf-bz2 pubchem1 dft1-alt dft-b2plyp dft-pbe0-2 dft-dldf castup2 castup3 dft-grad dft-psivar
 
-python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3 psithon1
+python_test_subdirs = pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias pywrap-opt-sowreap pywrap-basis pywrap-db3 psithon1 pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-checkrun-rhf pywrap-checkrun-convcrit
 
 dftd3_subdirs = dftd3-energy dftd3-grad
 
@@ -58,7 +58,7 @@ $(cc_subdirs) \
 $(cepa_subdirs) \
 $(fnocc_subdirs) \
 $(python_test_subdirs) \
-${mcscf_subdirs} \
+$(mcscf_subdirs) \
 $(psimrcc_subdirs) \
 $(dcft_subdirs)
 
@@ -76,10 +76,11 @@ quicktestdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq \
   cc15 cc16 cc17 cc18 cc19 cc23 cc24 cc28 cc32 cc49 \
   fci-dipole cisd-h2o+-0 ci-multi \
   cisd-opt-fd rasci-h2o mpn-bh \
-  dcft1 mcscf1 sapt1 sad1 \
-  psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-1 omp2-2 omp2-3 \
-  omp2-4 omp2-5 omp3-1 omp3-2 omp3-3 omp3-4 omp3-5 ocepa1 ocepa2 ocepa3 pywrap-db1 pywrap-db2 \
-  pywrap-cbs1 pywrap-all pywrap-alias
+  mcscf1 sapt1 sad1 \
+  psimrcc-sp1 mints1 mints2 matrix1 opt1 opt1-fd gibbs omp2-2 \
+  omp3-1 omp2_5-2 ocepa1 fnocc2 fnocc4 \
+  mp2_5-grad1 ocepa-grad2 omp2-grad1 dcft-grad1 \
+  dcft1 dcft2 dcft3 dcft4 pywrap-db1 pywrap-db2 pywrap-cbs1 pywrap-all pywrap-alias  
 
 HAVE_MADNESS=@HAVE_MPI@
 ifeq ($(HAVE_MADNESS),1)
@@ -97,73 +98,83 @@ ifneq ($(have_mrcc),)
    subdirs += $(mrcc_subdirs)
 endif
 
-define runtests
-    for dir in $1; \
-	do \
-        (\
-        cd $${dir} &&\
-        echo "Testing $${dir}..." | tee -a ../../test-case-results &&\
-        $(MAKE) && cat $${dir}.test >> ../../test-case-results;\
-        );\
-        if [ $$? != 0 ]; then\
-         echo "\tFAILED" | tee -a ../test-case-results; exit 1;\
-        fi;\
-	done
+define gatherresults
+    ERRORS=0; \
+    echo > ../test-case-results; \
+    for dir in $1; do \
+        if [ -e $${dir}/$${dir}.passed ]; \
+        then echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.passed >> ../test-case-results;\
+        else ERRORS=1; \
+        fi; \
+    done; \
+    for dir in $1; do \
+        if [ ! -e $${dir}/$${dir}.passed ]; \
+        then echo "\n\nTEST FAILURE in $${dir}$$!!!";           \
+             cat $${dir}/$${dir}.test;                          \
+             echo;                                              \
+             echo "Testing $${dir}..." >> ../test-case-results; \
+             cat $${dir}/$${dir}.test >> ../test-case-results;  \
+             echo "\tFAILED" >>../test-case-results; \
+        fi; \
+    done; \
+    if [ $$ERRORS -eq 1 ]; then echo "One or more tests failed! Check test-case-results for more information.\n" && exit 1; fi;\
+    echo ERRORS = $$ERRORS
 endef
 
-tests:
-	$(call runtests, $(subdirs))
+tests: $(subdirs)
+	$(call gatherresults, $(subdirs))
 
-opttests:
-	$(call runtests, $(opt_subdirs))
+opttests: $(opt_subdirs)
+	$(call gatherresults, $(opt_subdirs))
 
-quicktests:
-	$(call runtests, $(quicktestdirs))
+quicktests: $(quicktestdirs)
+	$(call gatherresults, $(quicktestdirs))
 
-cepa_tests:
-	$(call runtests, $(cepa_subdirs))
+cepa_tests: $(cepa_subdirs)
+	$(call gatherresults, $(cepa_subdirs))
 
-fnocc_tests:
-	$(call runtests, $(fnocc_subdirs))
+fnocc_tests: $(fnocc_subdirs)
+	$(call gatherresults, $(fnocc_subdirs))
 
-cc_tests:
-	$(call runtests, $(cc_subdirs))
+cc_tests: $(cc_subdirs)
+	$(call gatherresults, $(cc_subdirs))
 
-ci_tests:
-	$(call runtests, $(ci_subdirs))
+ci_tests: $(ci_subdirs)
+	$(call gatherresults, $(ci_subdirs))
 
-mints_tests:
-	$(call runtests, $(mints_subdirs))
+mints_tests: $(mints_subdirs)
+	$(call gatherresults, $(mints_subdirs))
 
-mp2_tests:
-	$(call runtests, $(mp2_subdirs))
+mp2_tests: $(mp2_subdirs)
+	$(call gatherresults, $(mp2_subdirs))
 
-matrix_tests:
-	$(call runtests, $(matrix_subdirs))
+matrix_tests: $(matrix_subdirs)
+	$(call gatherresults, $(matrix_subdirs))
 
-mcscf_tests:
-	$(call runtests, $(mcscf_subdirs))
+mcscf_tests: $(mcscf_subdirs)
+	$(call gatherresults, $(mcscf_subdirs))
 
-scf_tests:
-	$(call runtests, $(scf_subdirs))
+scf_tests: $(scf_subdirs)
+	$(call gatherresults, $(scf_subdirs))
 
-df_tests:
-	$(call runtests, $(df_subdirs))
+df_tests: $(df_subdirs)
+	$(call gatherresults, $(df_subdirs))
 
-dcft_tests:
-	$(call runtests, $(dcft_subdirs))
+dcft_tests: $(dcft_subdirs)
+	$(call gatherresults, $(dcft_subdirs))
 
-psimrcc_tests:
-	$(call runtests, $(psimrcc_subdirs))
+psimrcc_tests: $(psimrcc_subdirs)
+	$(call gatherresults, $(psimrcc_subdirs))
 
-python_tests:
-	$(call runtests, $(python_test_subdirs))
+python_tests: $(python_test_subdirs)
+	$(call gatherresults, $(python_test_subdirs))
 
-dftd3_tests:
-	$(call runtests, $(dftd3_subdirs))
+dftd3_tests: $(dftd3_subdirs)
+	$(call gatherresults, $(dftd3_subdirs))
 
-longtests:
-	$(call runtests, $(longtest_subdirs))
+longtests: $(longtest_subdirs)
+	$(call gatherresults, $(longtest_subdirs)
 
 plugins:
 	for dir in $(plugin_subdirs); \
@@ -203,4 +214,9 @@ $(top_objdir)/config.status: $(top_srcdir)/configure
 
 Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
 	cd $(top_objdir) && CONFIG_FILES=tests/Makefile ./config.status
+
+.PHONY: $(subdirs)
+$(subdirs):
+	echo "Testing $@..."
+	$(MAKE) -C $@; true
 

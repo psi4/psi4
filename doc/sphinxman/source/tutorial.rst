@@ -19,6 +19,11 @@ The syntax is:
 
    >>> psi4 input-name output-name
 
+If you give an input name but no output name, then the output name will
+be the same as the input name (subtracting any ".in" or ".dat" suffix),
+plus a ".out" suffix.
+
+
 Running a Basic Hartree--Fock Calculation
 =========================================
 
@@ -80,7 +85,7 @@ before it can be run through the command ``psi4 input.dat output.dat``
 case one could also just type ``psi4``).  If it works, it should print
 the final energy as ::
 
-  @UHF Final Energy:   -38.92534160932308
+  @UHF Final Energy:   -38.92533462456894
 
 Notice we added a new keyword, ``set reference uhf``, to the input.  For
 open-shell molecules, we have a choice of unrestricted orbitals
@@ -100,28 +105,27 @@ vibrational frequency computations.  These can be specified by replacing
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
-:srcsample:`tu3-h2o-opt`.
+:srcsample:`tu3-h2o-opt`).
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu3-h2o-opt/input.dat
 
 This should perform a series of gradient computations.  The gradient points
 which way is downhill in energy, and the optimizer then modifies the
-geometry to follow the gradient.  After about 4 cycles, the geometry should
+geometry to follow the gradient.  After a few cycles, the geometry should
 converge with a message like ``Optimization is complete!``.  As indicated
 in the following table (printed by the optimizer at the end of the
-computation), the energy decreases with each step,
+computation and grep-able with ``~``), the energy decreases with each step,
 and the maximum force on each atom also decreases with each step (in
 principle these numbers could increase in some iterations, but here they do
 not). ::
 
-   ----------------------------------------------------------------------
-   Step         Energy             Delta(E)      MAX force   MAX Delta(q)
-   ----------------------------------------------------------------------
-     1    -76.026653665892    -76.026653665892    1.52e-02   1.52e-02
-     2    -76.026907793199     -0.000254127307    9.55e-03   9.55e-03
-     3    -76.027052927171     -0.000145133972    4.47e-04   4.47e-04
-     4    -76.027053472137     -0.000000544965    1.16e-04   1.16e-04
-   ----------------------------------------------------------------------
+   --------------------------------------------------------------------------------------------------------------- ~
+    Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~
+   --------------------------------------------------------------------------------------------------------------- ~
+       1     -76.026632734857    -76.026632734857      0.01523505      0.01245744      0.02742199      0.02277500  ~
+       2     -76.027022668419     -0.000389933562      0.00178749      0.00142923      0.01007985      0.00594840  ~
+       3     -76.027032729361     -0.000010060942      0.00014016      0.00008485      0.00077279      0.00044621  ~
+   --------------------------------------------------------------------------------------------------------------- ~
 
 To get harmonic vibrational frequencies, *first we must set up an input
 using the OPTIMIZED GEOMETRY*.  We can easily get the optimized geometry
@@ -131,7 +135,7 @@ and the bond angle is about 104.575 degrees.  It's good to give this many
 digits (or more) to make sure there's not significant roundoff error in the
 geometry when running a frequency computation.  So, our frequency
 computation input (which can be found as test case
-:srcsample:`tu4-h2o-freq` is:
+:srcsample:`tu4-h2o-freq`) is:
 
 .. literalinclude:: @SFNX_INCLUDE@samples/tu4-h2o-freq/input.dat
 
@@ -141,9 +145,9 @@ extracted from the *bottom* of the optimization output.  The input
 would then look like this::
 
    molecule h2o {
-     O     0.0000000000  -0.0000000000  -0.1224239500
-     H     0.0000000000  -1.4147069876   0.9714784639
-     H    -0.0000000000   1.4147069876   0.9714784639
+      O     0.0000000000   0.0000000000  -0.0647163165
+      H     0.0000000000  -0.7490459647   0.5135474533
+      H     0.0000000000   0.7490459647   0.5135474533
    }
    
    set basis cc-pVDZ
@@ -156,9 +160,9 @@ frequencies (roundoff errors of around 0.1 cm\ :sup:`-1` may exist)::
              Irrep      Harmonic Frequency
                              (cm-1)
            -----------------------------------------------
-                A1         1776.1735
-                A1         4113.8031
-                B2         4211.7879
+                A1         1776.2423
+                A1         4113.7717
+                B2         4211.8290
            -----------------------------------------------
 
 Notice that the symmetry type of the normal modes is specified (A1, A1,
@@ -166,12 +170,13 @@ B2).  The program also prints out the normal modes in terms of Cartesian
 coordinates of each atom.  For example, the normal mode at 1776 cm\ :sup:`-1` 
 is::
 
-      Frequency:       1776.17
+      Frequency:       1776.24
       Force constant:   0.1194
-                X       Y       Z
-     O        0.000   0.000  -0.067
-     H        0.000   0.416   0.536
-     H        0.000  -0.416   0.536
+            X       Y       Z           mass
+     O        0.000   0.000  -0.270      15.994915
+     H        0.000   0.418   0.538       1.007825
+     H        0.000  -0.418   0.538       1.007825
+
 
 where the table shows the displacements in the X, Y, and Z dimensions for
 each atom along the normal mode coordinate.  (This information could be used
@@ -212,23 +217,13 @@ dashes, like this::
    H   0.000000   0.000000   3.963929
    units angstrom
    
-   no_reorient
-   symmetry c1
    }
 
-Notice we have a couple of new keywords in the molecule specification.
-``no_reorient`` tells the program not to reorient the molecule
-to a different coordinate system (this is important for SAPT to make
-sure the same coordinate frame is used for the computations of the two
-monomers and for the dimer).  The next keyword tells |PSIfour| to run
-in C1 point-group symmetry (i.e., without using symmetry), even if a
-higher symmetry is detected.  SAPT computations know to turn off
-symmetry and fix orientation even without the user specifying these 
-molecule keywords.
 
-Here's the second half of the input::
+Here's the second half of the input, where we specify the computation
+options::
 
-   set globals {
+   set {
        basis jun-cc-pVDZ
        scf_type DF
        freeze_core True
@@ -238,7 +233,7 @@ Here's the second half of the input::
 
 Before, we have been setting keywords individually with commands like
 ``set basis cc-pVDZ``.  Because we have a few more options now, it's
-convenient to place them together into the ``set globals`` or ``set``
+convenient to place them together into the ``set`` or ``set globals``
 block, bounded by ``{...}``.  This
 will set all of these options as "global" options (meaning that they are
 visible to all parts of the program).  Most common |PSIfour| options can be
@@ -255,7 +250,7 @@ usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
 without diffuse :math:`d` functions on heavy atoms) [Papajak:2011:10]_. So,
 we'll use that as our standard basis set.  The SAPT code is designed to
 use density fitting techniques, because they introduce minimal errors
-whil providing much faster computations [Hohenstein:2010:184111]_ 
+while providing much faster computations [Hohenstein:2010:184111]_ 
 [Hohenstein:2010:014101]_. Since we're using density fitting for the SAPT,
 we might as well also use it for the Hartree--Fock computations that are
 performed as part of the SAPT.  We can specify that with 
@@ -396,5 +391,5 @@ tables (see the next section).
 
 The following section goes over Psithon in much more detail, but
 hopefully this example already makes it clear that many complex tasks
-can be done very easily in |PSIfour|
+can be done very easily in |PSIfour|.
 

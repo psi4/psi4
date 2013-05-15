@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-beta3+])
+define([psi_version],[4.0.0-beta4+])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -301,8 +301,14 @@ AC_CHECK_PROGS(PERL,perl,perl) AC_SUBST(PERL)
 # Check for python interpreter and libraries
 #  Version 2.6 is required because we import Python3 printing from future
 AC_PYTHON([2.6])
-
-
+AC_ARG_ENABLE([python-module],
+    [AC_HELP_STRING([--enable-python-module],
+      [Enable building PSI4 as a Python module. @<:@default=no@:>@]) ],
+    [
+      MAKE_PYTHON_MODULE=1
+      AC_DEFINE([MAKE_PYTHON_MODULE])
+      AC_SUBST([MAKE_PYTHON_MODULE])
+    ])
 
 AC_PROG_PDFLATEX
 AC_PROG_LATEX
@@ -688,11 +694,11 @@ AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
 AC_CHECK_DECLS([setenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_SETENV,1)])
 AC_CHECK_FUNC(setenv,[AC_DEFINE_UNQUOTED(HAVE_SETENV,1)])
 
-AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
-  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
-    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
-  ])
-])
+#AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
+#  AC_CHECK_LIB(m,finite,[AC_DEFINE_UNQUOTED(HAVE_FUNC_FINITE,1)],[
+#    AC_MSG_ERROR([Did not find isinf() or finite() functions.])
+#  ])
+#])
 
 AC_CHECK_LIB(m,erf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ERF,1)])
 
@@ -781,6 +787,26 @@ case $withval in
     ;;
 esac
 ],CDBG='' CXXDBG='')
+
+# Adjust the profiling flags.
+# The default is to not profile.  --with-profiling will turn on profiling.
+# Note: This must happen *after* AC_ARG_WITH(debug, ...) because the
+# "--with-debug" option will overwrite $CDBG and $CXXDBG.
+AC_ARG_WITH(profiling,[  --with-profiling        will turn on profiling],[
+case $withval in
+  yes)
+        CDBG='-g -pg -DPSIDEBUG'
+        CXXDBG='-g -pg -DPSIDEBUG'
+        LDFLAGS="$LDFLAGS -pg"
+    ;;
+  no)
+    ;;
+  *)
+    CDBG="$withval"
+    CXXDBG="$withval"
+    ;;
+esac
+])
 
 # Adjust the optimize flags.
 # The default is to optimize.  --with-opt=no or --without-opt will turn
@@ -893,7 +919,7 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-######## 
+########
 
 AC_CONFIG_FILES([
           boost/Makefile
@@ -928,11 +954,9 @@ AC_CONFIG_FILES([
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
-          src/lib/libmatrix/Makefile
-          src/lib/libdist_matrix/Makefile
+          src/lib/libthce/Makefile
           src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
-          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
@@ -940,22 +964,16 @@ AC_CONFIG_FILES([
           src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
-          src/lib/libsmartptr/Makefile
-          src/lib/libyeti/Makefile
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
           src/bin/psi4/gitversion.py
-          src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
           src/bin/detci/Makefile
-          src/bin/mp2/Makefile
-          src/bin/clag/Makefile
           src/bin/stable/Makefile
-          src/bin/cepa/Makefile
           src/bin/fnocc/Makefile
           src/bin/ccsort/Makefile
           src/bin/ccenergy/Makefile
@@ -965,16 +983,14 @@ AC_CONFIG_FILES([
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cceom/Makefile
-          src/bin/cis/Makefile
           src/bin/scf/Makefile
-          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
           src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/dftsapt/Makefile
-          src/bin/mints/Makefile
-          src/bin/deriv/Makefile
+          src/bin/mints_wrapper/Makefile
+          src/bin/deriv_wrapper/Makefile
           src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/findif/Makefile
@@ -998,6 +1014,8 @@ AC_CONFIG_FILES([
           tests/dcft4/Makefile
           tests/dcft5/Makefile
           tests/dcft6/Makefile
+          tests/dcft7/Makefile
+          tests/dcft-grad1/Makefile
           tests/scf1/Makefile
           tests/scf2/Makefile
           tests/scf3/Makefile
@@ -1015,11 +1033,13 @@ AC_CONFIG_FILES([
           tests/opt4/Makefile
           tests/opt5/Makefile
           tests/opt6/Makefile
+          tests/opt7/Makefile
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
           tests/fd-freq-gradient/Makefile
           tests/fd-freq-gradient-large/Makefile
+          tests/dft-freq/Makefile
           tests/gibbs/Makefile
           tests/castup1/Makefile
           tests/castup2/Makefile
@@ -1033,6 +1053,7 @@ AC_CONFIG_FILES([
           tests/dfmp2-1/Makefile
           tests/dfmp2-2/Makefile
           tests/dfmp2-3/Makefile
+          tests/dfmp2-4/Makefile
           tests/pywrap-db1/Makefile
           tests/pywrap-db2/Makefile
           tests/pywrap-cbs1/Makefile
@@ -1041,6 +1062,10 @@ AC_CONFIG_FILES([
           tests/pywrap-opt-sowreap/Makefile
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
+          tests/pywrap-checkrun-rhf/Makefile
+          tests/pywrap-checkrun-uhf/Makefile
+          tests/pywrap-checkrun-rohf/Makefile
+          tests/pywrap-checkrun-convcrit/Makefile
           tests/psithon1/Makefile
           tests/dftd3-energy/Makefile
           tests/dftd3-grad/Makefile
@@ -1156,6 +1181,25 @@ AC_CONFIG_FILES([
           tests/ocepa1/Makefile
           tests/ocepa2/Makefile
           tests/ocepa3/Makefile
+          tests/omp2_5-1/Makefile
+          tests/omp2_5-2/Makefile
+          tests/omp2-grad1/Makefile
+          tests/omp2-grad2/Makefile
+          tests/omp3-grad1/Makefile
+          tests/omp3-grad2/Makefile
+          tests/omp2_5-grad1/Makefile
+          tests/omp2_5-grad2/Makefile
+          tests/ocepa-grad1/Makefile
+          tests/ocepa-grad2/Makefile
+          tests/mp2-grad1/Makefile
+          tests/mp2-grad2/Makefile
+          tests/mp3-grad1/Makefile
+          tests/mp3-grad2/Makefile
+          tests/mp2_5-grad1/Makefile
+          tests/mp2_5-grad2/Makefile
+          tests/cepa0-grad1/Makefile
+          tests/cepa0-grad2/Makefile
+          tests/ocepa-freq1/Makefile
           tests/mp2-1/Makefile
           tests/matrix1/Makefile
           tests/pubchem1/Makefile
@@ -1198,12 +1242,6 @@ AC_CONFIG_FILES([
           plugins/mointegrals/Makefile
           plugins/mointegrals/input.dat
           plugins/mointegrals/mointegrals.cc
-          plugins/efp/Makefile
-          plugins/efp/__init__.py
-          plugins/efp/doc.rst
-          plugins/efp/efp.cc
-          plugins/efp/input.dat
-          plugins/efp/pymodule.py
 
           bin/psi4-config
 ])
@@ -1219,13 +1257,3 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 #fi
 
 AC_OUTPUT
-
-if test "$have_boost" == "0"; then
-    echo "====================================================================="
-    echo "Either your Boost is too old, missing components, missing altogether,"
-    echo "or you disabled use of system provided version."
-    echo ""
-    echo "The Boost provided in Psi4 will be compiled."
-    echo "====================================================================="
-fi
-

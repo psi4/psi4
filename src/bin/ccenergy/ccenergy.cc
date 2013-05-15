@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCENERGY
     \brief Enter brief description of file here
@@ -54,7 +76,7 @@ void X_build(void);
 void Wmbej_build(void);
 void t2_build(void);
 void tsave(void);
-int converged(void);
+int converged(double);
 double diagnostic(void);
 double d1diag(void);
 double new_d1diag(void);
@@ -259,6 +281,7 @@ PsiReturnType ccenergy(Options &options)
   fprintf(outfile, "  ----     ---------------------    ---------   ----------  ----------  ----------   --------\n");
   moinfo.ecc = energy();
   pair_energies(&emp2_aa, &emp2_ab);
+  double last_energy;
 
   moinfo.t1diag = diagnostic();
   moinfo.d1diag = d1diag();
@@ -359,11 +382,12 @@ PsiReturnType ccenergy(Options &options)
     if (!params.just_residuals)
       denom(); /* apply denominators to T1 and T2 */
 
-    if(converged()) {
+    if(converged(last_energy - moinfo.ecc)) {
       done = 1;
 
       tsave();
       tau_build(); taut_build();
+      last_energy = moinfo.ecc;
       moinfo.ecc = energy();
       moinfo.t1diag = diagnostic();
       moinfo.d1diag = d1diag();
@@ -381,6 +405,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.diis) diis(moinfo.iter);
     tsave();
     tau_build(); taut_build();
+    last_energy = moinfo.ecc;
     moinfo.ecc = energy();
     moinfo.t1diag = diagnostic();
     moinfo.d1diag = d1diag();
@@ -388,7 +413,7 @@ PsiReturnType ccenergy(Options &options)
     moinfo.d2diag = d2diag();
     update();
     checkpoint();
-  }
+  }  // end loop over iterations
   fprintf(outfile, "\n");
   if(!done) {
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
@@ -465,7 +490,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
-      Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] = 
+      Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
           moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   else {
@@ -480,7 +505,7 @@ PsiReturnType ccenergy(Options &options)
       // LAB TODO  reconsider variable names for ss/os cc
       Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os;
       Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo.ecc_ss*params.scscc_scale_ss;
-      Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os + 
+      Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os +
             moinfo.ecc_ss*params.scscc_scale_ss;
       Process::environment.globals["SCS-CCSD TOTAL ENERGY"] = moinfo.eref +
             moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss;
@@ -499,7 +524,7 @@ PsiReturnType ccenergy(Options &options)
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
-      Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] = 
+      Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
           moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   fprintf(outfile, "\n");
@@ -551,7 +576,7 @@ PsiReturnType ccenergy(Options &options)
     cc3_Wmnie();
     cc3_Wamef();
     cc3_Wabei();
-    params.ref == 0;
+//    params.ref == 0;
   }
 
   if(params.local) {

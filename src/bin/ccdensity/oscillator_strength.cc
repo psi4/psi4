@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -63,13 +85,13 @@ void oscillator_strength(struct TD_Params *S)
   f = 0;
 
   doccpi = init_int_array(moinfo.nirreps);
-  for(h=0; h < moinfo.nirreps; h++) 
+  for(h=0; h < moinfo.nirreps; h++)
     doccpi[h] = moinfo.frdocc[h] + moinfo.clsdpi[h];
 
   if((params.ref == 0) || (params.ref == 1)) {
     order = init_int_array(nmo);
 
-    reorder_qt(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, 
+    reorder_qt(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
                order, moinfo.orbspi, moinfo.nirreps);
 
     scf_qt = block_matrix(nmo, nmo);
@@ -82,10 +104,10 @@ void oscillator_strength(struct TD_Params *S)
     free_block(scf_pitzer);
   }
   else if(params.ref == 2) {
-    order_A = init_int_array(nmo); 
-    order_B = init_int_array(nmo); 
+    order_A = init_int_array(nmo);
+    order_B = init_int_array(nmo);
 
-    reorder_qt_uhf(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc, 
+    reorder_qt_uhf(doccpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
                   order_A,order_B, moinfo.orbspi, moinfo.nirreps);
 
     scf_qt_A = block_matrix(nmo, nmo);
@@ -124,23 +146,23 @@ void oscillator_strength(struct TD_Params *S)
     MUZ_MO=block_matrix(nmo,nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUX_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
-	    0,&(MUX_MO[0][0]),nmo);
+        0,&(MUX_MO[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUY_SO[0][0]),nso,
-	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
-	    0,&(MUY_MO[0][0]),nmo);
+        0,&(MUY_MO[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt[0][0]),nmo,&(MUZ_SO[0][0]),nso,
-	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt[0][0]),nmo,
-	    0,&(MUZ_MO[0][0]),nmo);
+        0,&(MUZ_MO[0][0]),nmo);
 
     free_block(scf_qt);
   }
-  else if((params.ref == 2)) {
+  else if(params.ref == 2) {
 
     MUX_MO_A = block_matrix(nmo,nmo);
     MUY_MO_A = block_matrix(nmo,nmo);
@@ -150,34 +172,34 @@ void oscillator_strength(struct TD_Params *S)
     MUZ_MO_B = block_matrix(nmo,nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUX_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
-	    0,&(MUX_MO_A[0][0]),nmo);
+        0,&(MUX_MO_A[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUX_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
-	    0,&(MUX_MO_B[0][0]),nmo);
+        0,&(MUX_MO_B[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUY_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
-	    0,&(MUY_MO_A[0][0]),nmo);
+        0,&(MUY_MO_A[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUY_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
-	    0,&(MUY_MO_B[0][0]),nmo);
+        0,&(MUY_MO_B[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_A[0][0]),nmo,&(MUZ_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_A[0][0]),nmo,
-	    0,&(MUZ_MO_A[0][0]),nmo);
+        0,&(MUZ_MO_A[0][0]),nmo);
 
     C_DGEMM('t','n',nmo,nso,nso,1,&(scf_qt_B[0][0]),nmo,&(MUZ_SO[0][0]),nso,
-  	    0,&(X[0][0]),nso);
+        0,&(X[0][0]),nso);
     C_DGEMM('n','n',nmo,nmo,nso,1,&(X[0][0]),nso,&(scf_qt_B[0][0]),nmo,
-	    0,&(MUZ_MO_B[0][0]),nmo);
+        0,&(MUZ_MO_B[0][0]),nmo);
 
     free_block(scf_qt_A);
     free_block(scf_qt_B);
@@ -242,14 +264,14 @@ void oscillator_strength(struct TD_Params *S)
   ds_x = lt_x * rt_x;
   ds_y = lt_y * rt_y;
   ds_z = lt_z * rt_z;
-  
+
   f_x = (2*S->cceom_energy*ds_x)/3;
   f_y = (2*S->cceom_energy*ds_y)/3;
   f_z = (2*S->cceom_energy*ds_z)/3;
-  
+
   f = f_x + f_y + f_z;
   S->OS = f;
-  
+
   fprintf(outfile,"\t<0|mu_e|n>              %11.8lf \t %11.8lf \t %11.8lf\n",
           lt_x,lt_y,lt_z);
   fprintf(outfile,"\t<n|mu_e|0>              %11.8lf \t %11.8lf \t %11.8lf\n",
@@ -259,16 +281,16 @@ void oscillator_strength(struct TD_Params *S)
   fflush(outfile);
 
   if((params.ref == 0) || (params.ref == 1)) {
-    free_block(MUX_MO); 
-    free_block(MUY_MO); 
+    free_block(MUX_MO);
+    free_block(MUY_MO);
     free_block(MUZ_MO);
   }
   else if(params.ref == 2) {
-    free_block(MUX_MO_A); 
-    free_block(MUY_MO_A); 
+    free_block(MUX_MO_A);
+    free_block(MUY_MO_A);
     free_block(MUZ_MO_A);
-    free_block(MUX_MO_B); 
-    free_block(MUY_MO_B); 
+    free_block(MUX_MO_B);
+    free_block(MUY_MO_B);
     free_block(MUZ_MO_B);
   }
 

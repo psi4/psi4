@@ -1,7 +1,7 @@
 #! Mk-MRCCSD frequencies. $^1A@@1$ O$@@3$ state described using
 #! the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
-test_freq = PsiMod.Vector(3)  #TEST
+test_freq = psi4.Vector(3)  #TEST
 test_freq.set(0,582.44)
 test_freq.set(1,937.49)
 test_freq.set(2,1013.22) #TEST
@@ -43,5 +43,5 @@ set psimrcc {
 }
 
 freq('psimrcc')
-fd_freq = PsiMod.reference_wavefunction().frequencies() #TEST
+fd_freq = psi4.wavefunction().frequencies()            #TEST
 compare_vectors(test_freq, fd_freq, 1,"Frequency test:") #TEST

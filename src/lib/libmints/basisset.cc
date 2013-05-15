@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*!
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
@@ -10,7 +32,6 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 
 #include <stdexcept>
 #include <cstdio>
@@ -40,7 +61,7 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
-once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
+bool BasisSet::initialized_shared_ = false;
 
 std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
@@ -57,7 +78,9 @@ bool has_ending (std::string const &fullString, std::string const &ending)
 
 BasisSet::BasisSet()
 {
-    call_once(initialize_singletons, initialized_shared_);
+    if (initialized_shared_ == false)
+        initialize_singletons();
+    initialized_shared_ = true;
 }
 
 boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
@@ -471,7 +494,7 @@ void BasisSet::refresh()
     shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
     shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
     shell_center_.clear();               shell_center_.resize(nshell(), 0);
-    function_center_.clear();            
+    function_center_.clear();
     center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
     center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
     center_to_shell_[0] = 0;
@@ -816,3 +839,80 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z)
       ao += INT_NCART(am);
   } // nshell
 }
+
+BasisSet BasisSet::concatenate(const BasisSet& b) const {
+
+    BasisSet temp;
+
+    temp.name_ = name_ + " + " + b.name_;
+    temp.molecule_ = molecule();
+
+    // Copy a's shells to temp
+    temp.shells_ = shells_;
+
+    // Append b's shells to temp
+    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    return temp;
+}
+
+boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& b) const {
+    return boost::shared_ptr<BasisSet>(new BasisSet(concatenate(*b.get())));
+}
+
+BasisSet BasisSet::add(const BasisSet& b) const {
+
+    BasisSet temp;
+
+    temp.name_ = name_ + " + " + b.name_;
+    temp.molecule_ = molecule();
+
+    // Copy a's shells to temp
+//    temp.shells_ = shells_;
+
+    // Append b's shells to temp
+//    std::vector<GaussianShell>::const_iterator iter = b.shells_.begin();
+//    for (; iter != b.shells_.end(); iter++)
+//        temp.shells_.push_back(*iter);
+
+//    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Loop over atoms
+    for (int atom=0; atom<molecule()->natom(); ++atom) {
+        for (int shella=0; shella<nshell_on_center(atom); ++shella)
+            temp.shells_.push_back(shell(atom, shella));
+
+        for (int shellb=0; shellb<b.nshell_on_center(atom); ++shellb)
+            temp.shells_.push_back(b.shell(atom, shellb));
+    }
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    // Sort by center number
+//    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+//    temp.refresh();
+
+    // Sort by AM in each center
+//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+//                  shell_sorter_am);
+//    }
+
+    return temp;
+}
+
+boost::shared_ptr<BasisSet> BasisSet::add(const boost::shared_ptr<BasisSet>& b) const {
+    return boost::shared_ptr<BasisSet>(new BasisSet(add(*b.get())));
+}
+
+
+//boost::shared_ptr<BasisSet> BasisSet::concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) const {
+//    return a->concatenate(b);
+//}

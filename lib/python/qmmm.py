@@ -1,12 +1,34 @@
+#
+#@BEGIN LICENSE
+#
+# PSI4: an ab initio quantum chemistry software package
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+#@END LICENSE
+#
+
 """Module with classes to integrate MM charges into
 a QM calculation.
 
 """
-import PsiMod
+import psi4
 import re
 import os
 import math
-import physconst
+import p4const
 from molutil import *
 from driver import *
 
@@ -39,51 +61,51 @@ class Diffuse(object):
         resulting density.
 
         """
-        basisChanged = PsiMod.has_option_changed("BASIS")
-        ribasisChanged = PsiMod.has_option_changed("DF_BASIS_SCF")
-        scftypeChanged = PsiMod.has_option_changed("SCF_TYPE")
+        basisChanged = psi4.has_option_changed("BASIS")
+        ribasisChanged = psi4.has_option_changed("DF_BASIS_SCF")
+        scftypeChanged = psi4.has_option_changed("SCF_TYPE")
 
-        basis = PsiMod.get_option("BASIS")
-        ribasis = PsiMod.get_option("DF_BASIS_SCF")
-        scftype = PsiMod.get_option("SCF_TYPE")
+        basis = psi4.get_option("BASIS")
+        ribasis = psi4.get_option("DF_BASIS_SCF")
+        scftype = psi4.get_option("SCF_TYPE")
 
-        PsiMod.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
+        psi4.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
         activate(self.molecule)
 
-        PsiMod.set_global_option("BASIS", self.basisname)
-        PsiMod.set_global_option("DF_BASIS_SCF", self.ribasisname)
-        PsiMod.set_global_option("SCF_TYPE", "DF")
+        psi4.set_global_option("BASIS", self.basisname)
+        psi4.set_global_option("DF_BASIS_SCF", self.ribasisname)
+        psi4.set_global_option("SCF_TYPE", "DF")
         energy('scf')
-        PsiMod.print_out("\n")
+        psi4.print_out("\n")
 
         self.fitGeneral()
 
-        PsiMod.clean()
+        psi4.clean()
 
-        PsiMod.set_global_option("BASIS", basis)
-        PsiMod.set_global_option("DF_BASIS_SCF", ribasis)
-        PsiMod.set_global_option("SCF_TYPE", scftype)
+        psi4.set_global_option("BASIS", basis)
+        psi4.set_global_option("DF_BASIS_SCF", ribasis)
+        psi4.set_global_option("SCF_TYPE", scftype)
 
         if not basisChanged:
-            PsiMod.revoke_option_changed("BASIS")
+            psi4.revoke_option_changed("BASIS")
         if not ribasisChanged:
-            PsiMod.revoke_option_changed("DF_BASIS_SCF")
+            psi4.revoke_option_changed("DF_BASIS_SCF")
         if not scftypeChanged:
-            PsiMod.revoke_option_changed("SCF_TYPE")
+            psi4.revoke_option_changed("SCF_TYPE")
 
     def fitGeneral(self):
         """Function to perform a general fit of diffuse charges
         to wavefunction density.
 
         """
-        PsiMod.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
-        self.wfn = PsiMod.reference_wavefunction()
+        psi4.print_out("    => Diffuse Charge Fitting (Determines da) <=\n\n")
+        self.wfn = psi4.wavefunction()
         self.Da = self.wfn.Da()
         self.basis = self.wfn.basisset()
-        parser = PsiMod.Gaussian94BasisSetParser()
-        self.ribasis = PsiMod.BasisSet.construct(parser, self.molecule, "DF_BASIS_SCF")
+        parser = psi4.Gaussian94BasisSetParser()
+        self.ribasis = psi4.BasisSet.construct(parser, self.molecule, "DF_BASIS_SCF")
 
-        fitter = PsiMod.DFChargeFitter()
+        fitter = psi4.DFChargeFitter()
         fitter.setPrimary(self.basis)
         fitter.setAuxiliary(self.ribasis)
         fitter.setD(self.Da)
@@ -103,7 +125,7 @@ class QMMM(object):
     def __init__(self):
         self.charges = []
         self.diffuses = []
-        self.extern = PsiMod.ExternalPotential()
+        self.extern = psi4.ExternalPotential()
 
     def addDiffuse(self, diffuse):
         """Function to add a diffuse charge field *diffuse*."""
@@ -121,7 +143,7 @@ class QMMM(object):
         position (*x*, *y*, *z*) Angstroms.
 
         """
-        self.charges.append([Q, x / physconst.psi_bohr2angstroms, y / physconst.psi_bohr2angstroms, z / physconst.psi_bohr2angstroms])
+        self.charges.append([Q, x / p4const.psi_bohr2angstroms, y / p4const.psi_bohr2angstroms, z / p4const.psi_bohr2angstroms])
 
     def __str__(self):
 

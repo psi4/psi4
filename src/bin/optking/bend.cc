@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file    bend.cc : Class for bending coordinate.
      \ingroup OPTKING
 */
@@ -261,16 +283,19 @@ void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
 void BEND::print_intco_dat(FILE *fp, int off) const {
   if (linear_bend) {
     if (s_frozen)
-      fprintf(fp, "L*%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+      fprintf(fp, "L*%6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
     else
-      fprintf(fp, "L %6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+      fprintf(fp, "L %6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
   }
   else {
     if (s_frozen)
-      fprintf(fp, "B*%6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+      fprintf(fp, "B*%6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
     else
-      fprintf(fp, "B %6d%6d%6d\n", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
+      fprintf(fp, "B %6d%6d%6d", s_atom[0]+1+off, s_atom[1]+1+off, s_atom[2]+1+off);
   }
+  if (s_has_fixed_eq_val)
+    fprintf(fp, "%10.5lf", s_fixed_eq_val);
+  fprintf(fp, "\n");
   fflush(fp);
 }
 

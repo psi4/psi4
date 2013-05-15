@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef SIEVE_H 
 #define SIEVE_H
 
@@ -145,6 +167,16 @@ public:
     inline bool function_significant(int m, int n, int r, int s) { 
         return function_pair_values_[m * (unsigned long int) nbf_ + n] * 
                function_pair_values_[r * (unsigned long int) nbf_ + s] >= sieve2_; } 
+
+    /// Is the shell pair (MN| ever significant according to sieve (no restriction on MN order)
+    inline bool shell_pair_significant(int M, int N) {
+        return shell_pair_values_[M * (unsigned long int) nshell_ + N] *
+               max_ >= sieve2_; }
+
+    /// Is the function pair (mn| ever significant according to sieve (no restriction on mn order)
+    inline bool function_pair_significant(int m, int n) {
+        return function_pair_values_[m * (unsigned long int) nbf_ + n] *
+               max_ >= sieve2_; }
 
     // => Indexing [these change after a call to sieve()] <= //
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "sapt0.h"
 #include "sapt2.h"
 
@@ -124,7 +146,7 @@ void SAPT2::disp20()
   free_block(tARBS);
   free_block(vARBS);
 
-  if (nat_orbs_) {
+  if (nat_orbs_t3_) {
     double **C_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals",
       foccA_,noccA_,0,no_nvirA_);
     double **C_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",

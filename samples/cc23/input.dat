@@ -17,15 +17,15 @@ set {
 }
 
 gradient('eom-ccsd')
-analytic_grad = PsiMod.get_gradient()
+analytic_grad = psi4.get_gradient()
 
 gradient('eom-ccsd', dertype=0)
-findif_grad = PsiMod.get_gradient()
+findif_grad = psi4.get_gradient()
 
 
 set findif points 5
 
 gradient('eom-ccsd', dertype=0)
-findif_grad = PsiMod.get_gradient()
+findif_grad = psi4.get_gradient()
 
 

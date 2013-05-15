@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include"psi4-dec.h"
 #include<libmints/vector.h>
 #include<libmints/matrix.h>
@@ -12,11 +34,10 @@
     #define omp_get_wtime() 0.0
 #endif
 
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 #include"ccsd.h"
 
 using namespace psi;
-using namespace cepa;
 
 namespace psi{ namespace fnocc{
 
@@ -35,7 +56,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -61,7 +82,7 @@ void CoupledCluster::CPU_I1ab_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -123,7 +144,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -175,7 +196,7 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -217,7 +238,7 @@ void CoupledCluster::I2ijkl_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
@@ -271,7 +292,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -312,7 +333,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempt;
   }
@@ -335,7 +356,7 @@ void CoupledCluster::I2iabj_quadratic(CCTaskParams params){
   // use I2iabj
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&integrals[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }
@@ -385,7 +406,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -415,7 +436,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
   // use I2iajb
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = tempv;
   }
@@ -448,7 +469,7 @@ void CoupledCluster::I2iajb_quadratic(CCTaskParams params){
 
   if (t2_on_disk){
      psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
+     psio->read_entry(PSIF_DCC_T2,"first",(char*)&integrals[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_DCC_T2,1);
      tb = integrals;
   }

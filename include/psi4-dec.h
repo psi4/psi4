@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
 
@@ -18,6 +40,7 @@ enum PsiReturnType {Success, Failure, Balk, EndLoop};
 extern FILE *outfile;
 //  extern PSIO *psio;
 extern char *psi_file_prefix;
+extern std::string outfile_name;
 extern bool verbose;
 
 // Very useful regex for matching floating point numbers
@@ -42,7 +65,7 @@ public:
         boost::shared_ptr<Wavefunction> wavefunction_;
         boost::shared_ptr<PointGroup> parent_symmetry_;
     public:
-        void init(char **envp);
+        void initialize();
 
         /// The symmetry of the molecule, before any displacements have been made
         boost::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
@@ -57,16 +80,10 @@ public:
         /// Return active molecule
         boost::shared_ptr<Molecule> molecule() const;
 
-        /// Set reference wavefunction
+        /// Set wavefunction
         void set_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction);
-        void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& wavefunction) const{
-            throw PSIEXCEPTION("set_reference_wavefunction(wfn) should be replaced with set_wavefunction(wfn)");
-        }
-        /// Get reference wavefunction
+        /// Get wavefunction
         boost::shared_ptr<Wavefunction> wavefunction() const;
-        boost::shared_ptr<Wavefunction> reference_wavefunction() const{
-            throw PSIEXCEPTION("reference_wavefunction() should be replaced with wavefunction()");
-        }
 
         /// Set gradient manually
         void set_gradient(const SharedMatrix g) { gradient_ = g; }
@@ -99,7 +116,7 @@ public:
         int argc_;
         char **argv_;
     public:
-        void init(int argc, char **argv);
+        void initialize(int argc, char **argv);
 
         int argc() const;
 

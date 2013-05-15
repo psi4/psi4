@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <libdpd/dpd.h>
@@ -44,15 +66,15 @@ double pseudoenergy(struct L_Params L_params)
       dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
       dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
       dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-  
+
       LIA_energy = dpd_file2_dot(&FME,&LIA);
       Lia_energy = dpd_file2_dot(&Fme,&Lia);
-  
+
       dpd_file2_close(&Lia);
       dpd_file2_close(&LIA);
       dpd_file2_close(&Fme);
       dpd_file2_close(&FME);
-  
+
       dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <ij||ab> (i>j,a>b)");
       dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
       LIJAB_energy = dpd_buf4_dot(&D, &LIJAB);
@@ -61,7 +83,7 @@ double pseudoenergy(struct L_Params L_params)
       Lijab_energy = dpd_buf4_dot(&D, &Lijab);
       dpd_buf4_close(&Lijab);
       dpd_buf4_close(&D);
-  
+
       dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
       dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
       LIjAb_energy = dpd_buf4_dot(&D, &LIjAb);
@@ -69,32 +91,32 @@ double pseudoenergy(struct L_Params L_params)
       dpd_buf4_close(&D);
     }
     else if(params.ref == 2) { /** UHF **/
-  
+
       dpd_file2_init(&Fme, PSIF_CC_OEI, 0, 2, 3, "Fme");
       dpd_file2_init(&FME, PSIF_CC_OEI, 0, 0, 1, "FME");
       dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
       dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-  
+
       LIA_energy = dpd_file2_dot(&FME,&LIA);
       Lia_energy = dpd_file2_dot(&Fme,&Lia);
-  
+
       dpd_file2_close(&Lia);
       dpd_file2_close(&LIA);
       dpd_file2_close(&Fme);
       dpd_file2_close(&FME);
-  
+
       dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 2, 7, 0, "D <IJ||AB> (I>J,A>B)");
       dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
       LIJAB_energy = dpd_buf4_dot(&D, &LIJAB);
       dpd_buf4_close(&LIJAB);
       dpd_buf4_close(&D);
-  
+
       dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 12, 17, 0, "D <ij||ab> (i>j,a>b)");
       dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
       Lijab_energy = dpd_buf4_dot(&D, &Lijab);
       dpd_buf4_close(&Lijab);
       dpd_buf4_close(&D);
-  
+
       dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
       dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
       LIjAb_energy = dpd_buf4_dot(&D, &LIjAb);
@@ -152,6 +174,8 @@ double pseudoenergy(struct L_Params L_params)
       return tval;
     }
   }
+
+  return 0.0;
 }
 
 }} // namespace psi::cclambda

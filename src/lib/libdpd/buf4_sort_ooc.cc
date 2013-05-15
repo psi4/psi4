@@ -1,6 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DPD
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -22,7 +44,7 @@ namespace psi {
 */
 
 int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
-    		      int pqnum, int rsnum, const char *label)
+                  int pqnum, int rsnum, const char *label)
 {
   int h,nirreps, row, col, all_buf_irrep, r_irrep;
   int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
@@ -38,7 +60,7 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #endif
 
   dpd_buf4_init(&OutBuf, outfilenum, all_buf_irrep, pqnum, rsnum,
-		pqnum, rsnum, 0, label);
+        pqnum, rsnum, 0, label);
 
   for(h=0; h < nirreps; h++) {
 
@@ -62,104 +84,104 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       memoryd = dpd_memfree()/2; /* use half the memory for each buf4 in the sort */
       if(InBuf->params->rowtot[h] && InBuf->params->coltot[h^all_buf_irrep]) {
 
-	rows_per_bucket = memoryd/InBuf->params->coltot[h^all_buf_irrep];
+    rows_per_bucket = memoryd/InBuf->params->coltot[h^all_buf_irrep];
 
-	/* enough memory for the whole matrix? */
-	if(rows_per_bucket > InBuf->params->rowtot[h]) 
-	  rows_per_bucket = InBuf->params->rowtot[h]; 
+    /* enough memory for the whole matrix? */
+    if(rows_per_bucket > InBuf->params->rowtot[h])
+      rows_per_bucket = InBuf->params->rowtot[h];
 
-	if(!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", stderr);
+    if(!rows_per_bucket) dpd_error("buf4_sort_pqsr: Not enough memory for one row!", stderr);
 
-	nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
+    nbuckets = (int) ceil(((double) InBuf->params->rowtot[h])/((double) rows_per_bucket));
 
-	rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
+    rows_left = InBuf->params->rowtot[h] % rows_per_bucket;
 
-	incore = 1;
-	if(nbuckets > 1) {
-	  incore = 0;
+    incore = 1;
+    if(nbuckets > 1) {
+      incore = 0;
 #if DPD_DEBUG
-	  fprintf(stderr, "buf4_sort_pqsr: memory information.\n");
-	  fprintf(stderr, "buf4_sort_pqsr: rowtot[%d] = %d\n", h, InBuf->params->rowtot[h]);
-	  fprintf(stderr, "buf4_sort_pqsr: nbuckets = %d\n", nbuckets);
-	  fprintf(stderr, "buf4_sort_pqsr: rows_per_bucket = %d\n", rows_per_bucket);
-	  fprintf(stderr, "buf4_sort_pqsr: rows_left = %d\n", rows_left);
-	  fprintf(stderr, "buf4_sort_pqsr: out-of-core algorithm used\n");
+      fprintf(stderr, "buf4_sort_pqsr: memory information.\n");
+      fprintf(stderr, "buf4_sort_pqsr: rowtot[%d] = %d\n", h, InBuf->params->rowtot[h]);
+      fprintf(stderr, "buf4_sort_pqsr: nbuckets = %d\n", nbuckets);
+      fprintf(stderr, "buf4_sort_pqsr: rows_per_bucket = %d\n", rows_per_bucket);
+      fprintf(stderr, "buf4_sort_pqsr: rows_left = %d\n", rows_left);
+      fprintf(stderr, "buf4_sort_pqsr: out-of-core algorithm used\n");
 #endif
-	}
+    }
 
       }
       else incore = 1;
 
       if(incore) {
 
-	dpd_buf4_mat_irrep_init(&OutBuf, h);
-      
-	dpd_buf4_mat_irrep_init(InBuf, h);
-	dpd_buf4_mat_irrep_rd(InBuf, h);
-      
-	for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	  p = OutBuf.params->roworb[h][pq][0];
-	  q = OutBuf.params->roworb[h][pq][1];
+    dpd_buf4_mat_irrep_init(&OutBuf, h);
 
-	  row = InBuf->params->rowidx[p][q];
-	      
-	  for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	    r = OutBuf.params->colorb[r_irrep][rs][0];
-	    s = OutBuf.params->colorb[r_irrep][rs][1];
+    dpd_buf4_mat_irrep_init(InBuf, h);
+    dpd_buf4_mat_irrep_rd(InBuf, h);
 
-	    sr = InBuf->params->colidx[s][r];
-	      
-	    OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][sr];
-	  }
-	}
+    for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
+      p = OutBuf.params->roworb[h][pq][0];
+      q = OutBuf.params->roworb[h][pq][1];
 
-	dpd_buf4_mat_irrep_close(InBuf, h);
-	dpd_buf4_mat_irrep_wrt(&OutBuf, h);
+      row = InBuf->params->rowidx[p][q];
 
-	dpd_buf4_mat_irrep_close(&OutBuf, h);
+      for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+        r = OutBuf.params->colorb[r_irrep][rs][0];
+        s = OutBuf.params->colorb[r_irrep][rs][1];
+
+        sr = InBuf->params->colidx[s][r];
+
+        OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][sr];
+      }
+    }
+
+    dpd_buf4_mat_irrep_close(InBuf, h);
+    dpd_buf4_mat_irrep_wrt(&OutBuf, h);
+
+    dpd_buf4_mat_irrep_close(&OutBuf, h);
       }
       else {  /* out-of-core sort option */
 
-	dpd_buf4_mat_irrep_init_block(InBuf, h, rows_per_bucket);
-	dpd_buf4_mat_irrep_init_block(&OutBuf, h, rows_per_bucket);
+    dpd_buf4_mat_irrep_init_block(InBuf, h, rows_per_bucket);
+    dpd_buf4_mat_irrep_init_block(&OutBuf, h, rows_per_bucket);
 
-	for(n=0; n < (rows_left ? nbuckets-1 : nbuckets); n++) {
+    for(n=0; n < (rows_left ? nbuckets-1 : nbuckets); n++) {
 
-	  dpd_buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_per_bucket);
+      dpd_buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_per_bucket);
 
-	  for(pq=0; pq < rows_per_bucket; pq++) {
-	    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	      r = OutBuf.params->colorb[r_irrep][rs][0];
-	      s = OutBuf.params->colorb[r_irrep][rs][1];
+      for(pq=0; pq < rows_per_bucket; pq++) {
+        for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+          r = OutBuf.params->colorb[r_irrep][rs][0];
+          s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	      sr = InBuf->params->colidx[s][r];
-	      
-	      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][pq][sr];
-	    }
-	  }
+          sr = InBuf->params->colidx[s][r];
 
-	  dpd_buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_per_bucket);
-	}
-	if(rows_left) {
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][pq][sr];
+        }
+      }
 
-	  dpd_buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_left);
+      dpd_buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_per_bucket);
+    }
+    if(rows_left) {
 
-	  for(pq=0; pq < rows_left; pq++) {
-	    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	      r = OutBuf.params->colorb[r_irrep][rs][0];
-	      s = OutBuf.params->colorb[r_irrep][rs][1];
+      dpd_buf4_mat_irrep_rd_block(InBuf, h, n*rows_per_bucket, rows_left);
 
-	      sr = InBuf->params->colidx[s][r];
-	      
-	      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][pq][sr];
-	    }
-	  }
+      for(pq=0; pq < rows_left; pq++) {
+        for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+          r = OutBuf.params->colorb[r_irrep][rs][0];
+          s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	  dpd_buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_left);
-	}
+          sr = InBuf->params->colidx[s][r];
 
-	dpd_buf4_mat_irrep_close_block(InBuf, h, rows_per_bucket);
-	dpd_buf4_mat_irrep_close_block(&OutBuf, h, rows_per_bucket);
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][pq][sr];
+        }
+      }
+
+      dpd_buf4_mat_irrep_wrt_block(&OutBuf, h, n*rows_per_bucket, rows_left);
+    }
+
+    dpd_buf4_mat_irrep_close_block(InBuf, h, rows_per_bucket);
+    dpd_buf4_mat_irrep_close_block(&OutBuf, h, rows_per_bucket);
 
       }
 
@@ -178,40 +200,40 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  /* Irreps on the source */
-	  Gpr = Gp^Gr;  Gqs = Gq^Gs;
+      /* Irreps on the source */
+      Gpr = Gp^Gr;  Gqs = Gq^Gs;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gpr);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gpr);
+      dpd_buf4_mat_irrep_init(InBuf, Gpr);
+      dpd_buf4_mat_irrep_rd(InBuf, Gpr);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		pr = InBuf->params->rowidx[P][R];
-			  
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  qs = InBuf->params->colidx[Q][S];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        pr = InBuf->params->rowidx[P][R];
 
- 		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][qs];
-			      
-		}
-	      }
-	    }
-	  }
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          qs = InBuf->params->colidx[Q][S];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gpr);
-	}
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][qs];
+
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gpr);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -233,39 +255,39 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gps = Gp^Gs;  Gqr = Gq^Gr;
+      Gps = Gp^Gs;  Gqr = Gq^Gr;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gps);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gps);
+      dpd_buf4_mat_irrep_init(InBuf, Gps);
+      dpd_buf4_mat_irrep_rd(InBuf, Gps);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		qr = InBuf->params->colidx[Q][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        qr = InBuf->params->colidx[Q][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  ps = InBuf->params->rowidx[P][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          ps = InBuf->params->rowidx[P][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][qr];
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][qr];
 
-		}
-	      }
-	    }
-	  }
+        }
+          }
+        }
+      }
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gps);
-	}
+      dpd_buf4_mat_irrep_close(InBuf, Gps);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -287,39 +309,39 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gpr = Gp^Gr;  Gsq = Gs^Gq;
+      Gpr = Gp^Gr;  Gsq = Gs^Gq;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gpr);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gpr);
+      dpd_buf4_mat_irrep_init(InBuf, Gpr);
+      dpd_buf4_mat_irrep_rd(InBuf, Gpr);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		pr = InBuf->params->rowidx[P][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        pr = InBuf->params->rowidx[P][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  sq = InBuf->params->colidx[S][Q];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          sq = InBuf->params->colidx[S][Q];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][sq];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gpr][pr][sq];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gpr);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gpr);
+    }
       }
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
       dpd_buf4_mat_irrep_close(&OutBuf, h);
@@ -337,41 +359,41 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* p->p; s->q; r->r; q->s = psrq */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	     
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gps = Gp^Gs;  Grq = Gr^Gq;
+      Gps = Gp^Gs;  Grq = Gr^Gq;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gps);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gps);
+      dpd_buf4_mat_irrep_init(InBuf, Gps);
+      dpd_buf4_mat_irrep_rd(InBuf, Gps);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		rq = InBuf->params->colidx[R][Q];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        rq = InBuf->params->colidx[R][Q];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  ps = InBuf->params->rowidx[P][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          ps = InBuf->params->rowidx[P][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][rq];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gps][ps][rq];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gps);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gps);
+    }
       }
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
       dpd_buf4_mat_irrep_close(&OutBuf, h);
@@ -394,18 +416,18 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
-	qp = InBuf->params->rowidx[q][p];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
+    qp = InBuf->params->rowidx[q][p];
 
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	  col = InBuf->params->colidx[r][s];
-		  
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][col];
-	}
+      col = InBuf->params->colidx[r][s];
+
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][col];
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -430,17 +452,17 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
-	qp = InBuf->params->rowidx[q][p];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
+    qp = InBuf->params->rowidx[q][p];
 
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
-	  sr = InBuf->params->colidx[s][r];
-		  
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][sr];
-	}
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
+      sr = InBuf->params->colidx[s][r];
+
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][qp][sr];
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -461,39 +483,39 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Grp = Gr^Gp; Gqs = Gq^Gs;
+      Grp = Gr^Gp; Gqs = Gq^Gs;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Grp);
-	  dpd_buf4_mat_irrep_rd(InBuf, Grp);
+      dpd_buf4_mat_irrep_init(InBuf, Grp);
+      dpd_buf4_mat_irrep_rd(InBuf, Grp);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		rp = InBuf->params->rowidx[R][P];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        rp = InBuf->params->rowidx[R][P];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  qs = InBuf->params->colidx[Q][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          qs = InBuf->params->colidx[Q][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grp][rp][qs];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grp][rp][qs];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Grp);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Grp);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -514,39 +536,39 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gsp = Gs^Gp; Gqr = Gq^Gr;
+      Gsp = Gs^Gp; Gqr = Gq^Gr;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gsp);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gsp);
+      dpd_buf4_mat_irrep_init(InBuf, Gsp);
+      dpd_buf4_mat_irrep_rd(InBuf, Gsp);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		qr = InBuf->params->colidx[Q][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        qr = InBuf->params->colidx[Q][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  sp = InBuf->params->rowidx[S][P];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          sp = InBuf->params->rowidx[S][P];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsp][sp][qr];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsp][sp][qr];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gsp);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gsp);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -575,41 +597,41 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* r->p; q->q; p->r; s->s = rqps */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Grq = Gr^Gq; Gps = Gp^Gs;
+      Grq = Gr^Gq; Gps = Gp^Gs;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Grq);
-	  dpd_buf4_mat_irrep_rd(InBuf, Grq);
+      dpd_buf4_mat_irrep_init(InBuf, Grq);
+      dpd_buf4_mat_irrep_rd(InBuf, Grq);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		rq = InBuf->params->rowidx[R][Q];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        rq = InBuf->params->rowidx[R][Q];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  ps = InBuf->params->colidx[P][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          ps = InBuf->params->colidx[P][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grq][rq][ps];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Grq][rq][ps];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Grq);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Grq);
+    }
       }
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
       dpd_buf4_mat_irrep_close(&OutBuf, h);
@@ -627,41 +649,41 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* r->p; q->q; s->r; p->s = sqpr */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gsq = Gs^Gq;  Gpr = Gp^Gr;
+      Gsq = Gs^Gq;  Gpr = Gp^Gr;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gsq);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gsq);
+      dpd_buf4_mat_irrep_init(InBuf, Gsq);
+      dpd_buf4_mat_irrep_rd(InBuf, Gsq);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		pr = InBuf->params->colidx[P][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        pr = InBuf->params->colidx[P][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  sq = InBuf->params->rowidx[S][Q];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          sq = InBuf->params->rowidx[S][Q];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][pr];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][pr];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gsq);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gsq);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -681,41 +703,41 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* r->p; p->q; q->r; s->s = qrps */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gqr = Gq^Gr;  Gps = Gp^Gs;
+      Gqr = Gq^Gr;  Gps = Gp^Gs;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gqr);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gqr);
+      dpd_buf4_mat_irrep_init(InBuf, Gqr);
+      dpd_buf4_mat_irrep_rd(InBuf, Gqr);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		qr = InBuf->params->rowidx[Q][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        qr = InBuf->params->rowidx[Q][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  ps = InBuf->params->colidx[P][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          ps = InBuf->params->colidx[P][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][ps];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][ps];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gqr);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gqr);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -728,48 +750,48 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       break;
 
     case rpsq:
-	  
+
 #ifdef DPD_TIMER
       timer_on("rpsq");
 #endif
 
       /* r->p; p->q; s->r; q->s = qspr */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
 
-	  Gqs = Gq^Gs;  Gpr = Gp^Gr;
+      Gqs = Gq^Gs;  Gpr = Gp^Gr;
 
-	  dpd_buf4_mat_irrep_init(InBuf, Gqs);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gqs);
+      dpd_buf4_mat_irrep_init(InBuf, Gqs);
+      dpd_buf4_mat_irrep_rd(InBuf, Gqs);
 
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
 
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		pr = InBuf->params->colidx[P][R];
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        pr = InBuf->params->colidx[P][R];
 
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  qs = InBuf->params->rowidx[Q][S];
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          qs = InBuf->params->rowidx[Q][S];
 
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][pr];
-			      
-		}
-	      }
-	    }
-	  }
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][pr];
 
-	  dpd_buf4_mat_irrep_close(InBuf, Gqs);
-	}
+        }
+          }
+        }
+      }
+
+      dpd_buf4_mat_irrep_close(InBuf, Gqs);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -789,25 +811,25 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* r->p; s->q; q->r; p->s = srpq */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       dpd_buf4_mat_irrep_init(InBuf, h);
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
 
-	col = InBuf->params->colidx[p][q];
-	  
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
+    col = InBuf->params->colidx[p][q];
 
-	  row = InBuf->params->rowidx[s][r];
-		  
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	}
+      row = InBuf->params->rowidx[s][r];
+
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -829,25 +851,25 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* r->p; s->q; p->r; q->s = rspq */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       dpd_buf4_mat_irrep_init(InBuf, h);
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
 
-	col = InBuf->params->colidx[p][q];
-	  
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
+    col = InBuf->params->colidx[p][q];
 
-	  row = InBuf->params->rowidx[r][s];
-		  
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	}
+      row = InBuf->params->rowidx[r][s];
+
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -869,40 +891,40 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* s->p; q->q; r->r; p->s = sqrp */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
-		  
-	  Gsq = Gs^Gq;  Grp = Gr^Gp;
-		  
-	  dpd_buf4_mat_irrep_init(InBuf, Gsq);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gsq);
-		  
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
-			  
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		rp = InBuf->params->colidx[R][P];
-			      
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  sq = InBuf->params->rowidx[S][Q];
-				  
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][rp];
-		      
-		}
-	      }
-	    }
-	  }
-	  dpd_buf4_mat_irrep_close(InBuf, Gsq);
-	}
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
+
+      Gsq = Gs^Gq;  Grp = Gr^Gp;
+
+      dpd_buf4_mat_irrep_init(InBuf, Gsq);
+      dpd_buf4_mat_irrep_rd(InBuf, Gsq);
+
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
+
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        rp = InBuf->params->colidx[R][P];
+
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          sq = InBuf->params->rowidx[S][Q];
+
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gsq][sq][rp];
+
+        }
+          }
+        }
+      }
+      dpd_buf4_mat_irrep_close(InBuf, Gsq);
+    }
       }
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
       dpd_buf4_mat_irrep_close(&OutBuf, h);
@@ -925,25 +947,25 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* s->p; r->q; q->r; p->s = srqp */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       dpd_buf4_mat_irrep_init(InBuf, h);
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
 
-	col = InBuf->params->colidx[q][p];
-	  
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
+    col = InBuf->params->colidx[q][p];
 
-	  row = InBuf->params->rowidx[s][r];
-		  
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	}
+      row = InBuf->params->rowidx[s][r];
+
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -968,20 +990,20 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_rd(InBuf, h);
 
       for(pq=0; pq < OutBuf.params->rowtot[h]; pq++) {
-	p = OutBuf.params->roworb[h][pq][0];
-	q = OutBuf.params->roworb[h][pq][1];
+    p = OutBuf.params->roworb[h][pq][0];
+    q = OutBuf.params->roworb[h][pq][1];
 
-	col = InBuf->params->colidx[q][p];
+    col = InBuf->params->colidx[q][p];
 
-	for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
-	  r = OutBuf.params->colorb[r_irrep][rs][0];
-	  s = OutBuf.params->colorb[r_irrep][rs][1];
+    for(rs=0; rs < OutBuf.params->coltot[r_irrep]; rs++) {
+      r = OutBuf.params->colorb[r_irrep][rs][0];
+      s = OutBuf.params->colorb[r_irrep][rs][1];
 
-	  row = InBuf->params->rowidx[r][s];
+      row = InBuf->params->rowidx[r][s];
 
-	  OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
+      OutBuf.matrix[h][pq][rs] = InBuf->matrix[h][row][col];
 
-	}
+    }
       }
 
       dpd_buf4_mat_irrep_close(InBuf, h);
@@ -1003,40 +1025,40 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 
       /* s->p; p->q; q->r; r->s = qrsp */
       dpd_buf4_mat_irrep_init(&OutBuf, h);
-	  
+
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
-		  
-	  Gqr = Gq^Gr;  Gsp = Gs^Gp;
-		  
-	  dpd_buf4_mat_irrep_init(InBuf, Gqr);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gqr);
-		  
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
-			  
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		qr = InBuf->params->rowidx[Q][R];
-			      			      
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  sp = InBuf->params->colidx[S][P];
-  
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][sp];
-		      
-		}
-	      }
-	    }
-	  }
-	  dpd_buf4_mat_irrep_close(InBuf, Gqr);
-	}
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
+
+      Gqr = Gq^Gr;  Gsp = Gs^Gp;
+
+      dpd_buf4_mat_irrep_init(InBuf, Gqr);
+      dpd_buf4_mat_irrep_rd(InBuf, Gqr);
+
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
+
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        qr = InBuf->params->rowidx[Q][R];
+
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          sp = InBuf->params->colidx[S][P];
+
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqr][qr][sp];
+
+        }
+          }
+        }
+      }
+      dpd_buf4_mat_irrep_close(InBuf, Gqr);
+    }
       }
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
       dpd_buf4_mat_irrep_close(&OutBuf, h);
@@ -1056,38 +1078,38 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
       dpd_buf4_mat_irrep_init(&OutBuf, h);
 
       for(Gp=0; Gp < nirreps; Gp++) {
-	Gq = Gp^h;
-	for(Gr=0; Gr < nirreps; Gr++) {
-	  Gs = Gr^r_irrep;
-		  
-	  Gqs = Gq^Gs;  Grp = Gr^Gp;
-		  
-	  dpd_buf4_mat_irrep_init(InBuf, Gqs);
-	  dpd_buf4_mat_irrep_rd(InBuf, Gqs);
-		  
-	  for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
-	    P = OutBuf.params->poff[Gp] + p;
-	    for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
-	      Q = OutBuf.params->qoff[Gq] + q;
-	      pq = OutBuf.params->rowidx[P][Q];
-			  
-	      for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
-		R = OutBuf.params->roff[Gr] + r;
-		rp = InBuf->params->colidx[R][P];
-			      
-		for(s=0; s < OutBuf.params->spi[Gs]; s++) {
-		  S = OutBuf.params->soff[Gs] + s;
-		  rs = OutBuf.params->colidx[R][S];
-		  qs = InBuf->params->rowidx[Q][S];
-				  
-		  OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][rp];
-		      
-		}
-	      }
-	    }
-	  }
-	  dpd_buf4_mat_irrep_close(InBuf, Gqs);
-	}
+    Gq = Gp^h;
+    for(Gr=0; Gr < nirreps; Gr++) {
+      Gs = Gr^r_irrep;
+
+      Gqs = Gq^Gs;  Grp = Gr^Gp;
+
+      dpd_buf4_mat_irrep_init(InBuf, Gqs);
+      dpd_buf4_mat_irrep_rd(InBuf, Gqs);
+
+      for(p=0; p < OutBuf.params->ppi[Gp]; p++) {
+        P = OutBuf.params->poff[Gp] + p;
+        for(q=0; q < OutBuf.params->qpi[Gq]; q++) {
+          Q = OutBuf.params->qoff[Gq] + q;
+          pq = OutBuf.params->rowidx[P][Q];
+
+          for(r=0; r < OutBuf.params->rpi[Gr]; r++) {
+        R = OutBuf.params->roff[Gr] + r;
+        rp = InBuf->params->colidx[R][P];
+
+        for(s=0; s < OutBuf.params->spi[Gs]; s++) {
+          S = OutBuf.params->soff[Gs] + s;
+          rs = OutBuf.params->colidx[R][S];
+          qs = InBuf->params->rowidx[Q][S];
+
+          OutBuf.matrix[h][pq][rs] = InBuf->matrix[Gqs][qs][rp];
+
+        }
+          }
+        }
+      }
+      dpd_buf4_mat_irrep_close(InBuf, Gqs);
+    }
       }
 
       dpd_buf4_mat_irrep_wrt(&OutBuf, h);
@@ -1098,7 +1120,7 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #endif
       break;
     }
-      
+
   }
 
   dpd_buf4_close(&OutBuf);
@@ -1106,6 +1128,7 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #ifdef DPD_TIMER
   timer_off("buf4_sort");
 #endif
+  return 0;
 }
 
 }

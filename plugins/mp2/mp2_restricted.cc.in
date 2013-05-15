@@ -4,7 +4,7 @@
 #include <libpsio/psio.h>
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
-#include "ccfiles.h"
+#include "psifiles.h"
 #define EXTERN
 #include "globals.h"
 #include "libdpd/dpd.gbl"

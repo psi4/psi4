@@ -1,0 +1,6 @@
+
+SRCDIR = @srcdir@
+
+include ../MakeVars
+include ../MakeRules
+

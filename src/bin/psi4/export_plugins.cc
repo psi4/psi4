@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/python.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -35,7 +57,8 @@ int py_psi_plugin_load(std::string fullpathname)
     int ret = 0;
 
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
 
     // Make sure the plugin isn't already loaded.
     if (plugins.count(uc) == 0) {
@@ -61,7 +84,8 @@ int py_psi_plugin_load(std::string fullpathname)
 int py_psi_plugin(std::string fullpathname)
 {
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
     }
@@ -80,7 +104,7 @@ int py_psi_plugin(std::string fullpathname)
     fflush(outfile);
 
     // Have the plugin copy the environment to get current options.
-    info.init_plugin(WorldComm, Process::environment, _default_chkpt_lib_, _default_psio_lib_, psi::yetiEnv);
+    info.init_plugin();
 
     // Call the plugin
     int ret = info.plugin(Process::environment.options);
@@ -99,7 +123,8 @@ int py_psi_plugin(std::string fullpathname)
 void py_psi_plugin_close(std::string fullpathname)
 {
     boost::filesystem::path pluginPath(fullpathname);
-    std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
+    boost::filesystem::path pluginStem = pluginPath.stem();
+    std::string uc = boost::algorithm::to_upper_copy(pluginStem.string());
     if (plugins.count(uc) > 0) {
         plugin_info& info = plugins[uc];
         plugin_close(info);

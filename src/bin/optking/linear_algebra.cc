@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file    linear_algebra.cc
     \ingroup optking
     \brief   linear algebra functions which call lapack and blas are in
@@ -86,11 +108,18 @@ bool opt_symm_matrix_eig(double **A, int dim, double *evals) {
   char cv = 'V';  // compute evals and evects
 //  char cl = 'L';  // lower triangle (upper in C) is necessary
   char cl = 'U';  // upper triangle (lower triangle in C) is necessary
-  int lwork = 3 * dim;
   int rval, i, j;
   double tval;
-  double * work = opt_init_array(lwork);
 
+// Call to discover optimal memory
+  double *work = opt_init_array(1);
+  int lwork = -1;
+  F_DSYEV(&cv, &cl, &dim, A[0], &dim, evals, work, &lwork, &rval);
+  lwork = (int) work[0];
+  opt_free_array(work);
+
+// Now allocate memory and go
+  work = opt_init_array(lwork);
   F_DSYEV(&cv, &cl, &dim, A[0], &dim, evals, work, &lwork, &rval);
 
   opt_free_array(work);
