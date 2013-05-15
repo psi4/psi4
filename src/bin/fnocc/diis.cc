@@ -1,8 +1,29 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include"ccsd.h"
-#include<../src/bin/cepa/blas.h>
+#include"blas.h"
 
 using namespace psi;
-using namespace cepa;
 
 /*================================================================
 
@@ -161,10 +182,10 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter,int&replace_diis_iter){
       F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
       psio->read(PSIF_DCC_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
       F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
-      if ( fabs( diisvec[j-1] ) < min ) {
-          min = fabs( diisvec[j-1] );
-          replace_diis_iter = j;
-      }
+      //if ( fabs( diisvec[j-1] ) < min ) {
+      //    min = fabs( diisvec[j-1] );
+      //    replace_diis_iter = j;
+      //}
   }
   psio->close(PSIF_DCC_OVEC,1);
   free(oldvector);

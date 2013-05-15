@@ -1,5 +1,5 @@
  
-.PHONY:	default all install clean realclean installation progman userman sphinxman
+.PHONY:	default all install clean realclean progman sphinxman
 
 subdirs = sphinxman
 

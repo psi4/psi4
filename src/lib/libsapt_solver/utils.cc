@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "sapt.h"
 #include "sapt0.h"
 #include "sapt2.h"
@@ -1348,6 +1370,29 @@ double **SAPT2::get_DF_ints(int filenum, const char *label, int startA,
   }
 
   return(A);
+}
+
+double **SAPT2::get_DF_ints_nongimp(int filenum, const char *label, int startA, 
+  int stopA, int startB, int stopB)
+{
+  int lengthA = stopA-startA;
+  int lengthB = stopB-startB;
+  int lengthAB = lengthA * lengthB;
+
+  double** AA = get_DF_ints(filenum,label,startA,stopA,startB,stopB);
+  
+  // So dirty that it could only go in Ed's code. Won't cause a memory leak though
+  double* g = AA[0];
+  double* n = AA[0]; 
+  
+  for (int ab = 0; ab < lengthAB; ab++) {
+    AA[ab] = n;
+    ::memmove(n,g,sizeof(double) * ndf_);
+    n += ndf_;
+    g += ndf_ + 3;
+  }
+
+  return AA;
 }
 
 void SAPT2::antisym(double *A, int nocc, int nvir)

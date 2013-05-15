@@ -1,34 +1,28 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /* This code includes correlation TPDMs. */
 
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <iomanip> 
-#include <vector>
-
-
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h> 
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
-#include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "occwave.h"
 #include "defines.h"
@@ -118,6 +112,15 @@ void OCCWave::tpdm_oovv()
                   ID("[O,V]"), ID("[V,O]"), 0, "V <OV|VO>");
     dpd_buf4_sort(&V, PSIF_OCC_DENSITY , psrq, ID("[O,O]"), ID("[V,V]"), "TPDM <OO|VV>");
     dpd_buf4_close(&V);
+
+
+    // For OMP2.5 G(IJ,AB) = 1/8 V(IB,AJ) 
+    if (wfn_type_ == "OMP2.5") {
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
+    dpd_buf4_scm(&G, 0.5);
+    dpd_buf4_close(&G);
+    }
 
     // G (IJ,AB) += 1/4 (2T_IJ^AB - T_JI^AB)
     dpd_buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -210,6 +213,8 @@ void OCCWave::tpdm_oooo()
     dpd_buf4_axpy(&V, &G, 1.0); // 1.0*V + G -> G
     dpd_buf4_close(&V);
     dpd_buf4_scm(&G, 0.125);
+    // For OMP2.5 G(IJ,KL) = 1/16 (V_IJKL + V_ILKJ) 
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
  }// end if (reference_ == "RESTRICTED") 
 
@@ -223,6 +228,8 @@ void OCCWave::tpdm_oooo()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "TPDM <OO|OO>");
     dpd_buf4_scm(&G, 0.25);
+    // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ) 
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
     // Beta-Beta spin case
@@ -234,6 +241,8 @@ void OCCWave::tpdm_oooo()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "TPDM <oo|oo>");
     dpd_buf4_scm(&G, 0.25);
+    // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ) 
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
     // Alpha-Beta spin case
@@ -245,6 +254,8 @@ void OCCWave::tpdm_oooo()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "TPDM <Oo|Oo>");
     dpd_buf4_scm(&G, 0.25);
+    // For OMP2.5 G(IJ,KL) = 1/8 (V_IJKL + V_ILKJ) 
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
  }// end if (reference_ == "UNRESTRICTED") 
@@ -267,10 +278,11 @@ void OCCWave::omp3_tpdm_vvvv()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
    
  if (reference_ == "RESTRICTED") {
-    // NOTE: A VVVV-sort takes too long time, hence I will not symmetrize the 
-    // TPDM VVVV-block. However, in future for analytical gradients 
-    // I need to symmetrize it.
+    // NOTE: A VVVV-sort takes too long time, and there is no OOC for psrq type sorting. 
+    // Hence I will not symmetrize the TPDM VVVV-block. 
+    // However, in for analytical gradients I need to symmetrize it.
     
+    if (time4grad == 0) {
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
@@ -282,6 +294,49 @@ void OCCWave::omp3_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+
+    // For OMP2.5 G_ABCD(2) = 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+        dpd_buf4_scm(&G, 0.5);
+        dpd_buf4_close(&G);
+    }
+    }// end if (time4grad == 0) 
+
+    else if (time4grad == 1) {
+    // Symmetrize the VVVV block
+    // buf_axpy assume that half of each buffer can be stored incore, hence it is a problem
+    // for 2 VVVV type matrices. 
+    dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
+    dpd_buf4_init(&L, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau_1 <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AD|CB>");    
+    // G_ABCD(2) = 1/4\sum_{M,N} T_MN^CB(1) (2T_MN^AD(1) - T_MN^DA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 0.0);
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|BD>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|BD>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <VV|VV>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    // G_ABCD(2) += 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&L);
+
+    if (wfn_type_ == "OMP2.5") {
+        dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                      ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+        dpd_buf4_scm(&G, 0.5);
+        dpd_buf4_close(&G);
+    }
+    } // end else if (time4grad == 1) 
 
     //Print 
     if (print_ > 3) {
@@ -305,6 +360,14 @@ void OCCWave::omp3_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+
+    // For OMP2.5 G_ABCD(2) = 1/16 \sum_{M,N} T_MN^CD(1) L_AB^MN(1) = 1/16 \sum_{M,N} T_MN^AB(1) T_MN^CD(1)
+    if (wfn_type_ == "OMP2.5") {
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
+    dpd_buf4_scm(&G, 0.5);
+    dpd_buf4_close(&G);
+    }
     
     // Beta-Beta spin case
     // G_abcd(2) = 1/8 \sum_{m,n} T_mn^cd(1) L_ab^mn(1) = 1/8 \sum_{m,n} T_mn^ab(1) T_mn^cd(1)
@@ -318,6 +381,14 @@ void OCCWave::omp3_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+
+    // OMP2.5: G_abcd(2) = 1/16 \sum_{m,n} T_mn^cd(1) L_ab^mn(1) = 1/16 \sum_{m,n} T_mn^ab(1) T_mn^cd(1)
+    if (wfn_type_ == "OMP2.5") {
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
+                  ID("[v,v]"), ID("[v,v]"), 0, "TPDM <vv|vv>");
+    dpd_buf4_scm(&G, 0.5);
+    dpd_buf4_close(&G);
+    }
     
     
     // Alpha-Beta spin case
@@ -332,6 +403,14 @@ void OCCWave::omp3_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+
+    // OMP2.5: G_AbCd(2) = 1/8 \sum_{M,n} T_Mn^Cd(1) L_Ab^Mn(1) = 1/8 \sum_{M,n} T_Mn^Ab(1) T_Mn^Cd(1)
+    if (wfn_type_ == "OMP2.5") {
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+                  ID("[V,v]"), ID("[V,v]"), 0, "TPDM <Vv|Vv>");
+    dpd_buf4_scm(&G, 0.5);
+    dpd_buf4_close(&G);
+    }
     
 
     //Print 
@@ -372,10 +451,11 @@ void OCCWave::ocepa_tpdm_vvvv()
     psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
    
  if (reference_ == "RESTRICTED") {
-    // NOTE: A VVVV-sort takes too long time, hence I will not symmetrize the 
-    // TPDM VVVV-block. However, in the case of analytical gradients 
-    // I need to symmetrize it.
+    // NOTE: A VVVV-sort takes too long time, and there is no OOC for psrq type sorting. 
+    // Hence I will not symmetrize the TPDM VVVV-block. 
+    // However, in for analytical gradients I need to symmetrize it.
     
+    if (time4grad == 0) {
     // G_ABCD(2) = 1/2\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
     dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
@@ -387,12 +467,45 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_close(&T);
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
+    }// end if (time4grad == 0) 
 
+    else if (time4grad == 1) {
+    // Symmetrize the VVVV block
+    // buf_axpy assume that half of each buffer can be stored incore, hence it is a problem
+    // for 2 VVVV type matrices. 
+    dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
+    dpd_buf4_init(&L, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AD|CB>");    
+    // G_ABCD(2) = 1/4\sum_{M,N} T_MN^CB(1) (2T_MN^AD(1) - T_MN^DA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 0.0);
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|BD>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|BD>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <VV|VV>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    // G_ABCD(2) += 1/4\sum_{M,N} T_MN^CD(1) (2T_MN^AB(1) - T_MN^BA(1))
+    dpd_contract444(&L, &T, &G, 1, 1, 0.25, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&T);
+    dpd_buf4_close(&L);
+    } // end else if (time4grad == 1)
+
+    /*
     if (time4grad == 1) {
     // Symmetrize the VVVV block
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
-    dpd_buf4_sort(&G, PSIF_OCC_DENSITY , psrq, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
+              ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prsq, ID("[V,V]"), ID("[V,V]"), "TPDM <AC|DB>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+                  ID("[V,V]"), ID("[V,V]"), 0, "TPDM <AC|DB>");
+    dpd_buf4_sort(&G, PSIF_OCC_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "TPDM <AD|CB>");
     dpd_buf4_close(&G);
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "TPDM <VV|VV>");    
@@ -402,7 +515,8 @@ void OCCWave::ocepa_tpdm_vvvv()
     dpd_buf4_close(&V);
     dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
-    }
+    } // enf if (time4grad == 1) 
+    */
 
     //Print 
     if (print_ > 3) {
@@ -502,6 +616,8 @@ void OCCWave::tpdm_ovov()
     dpd_buf4_axpy(&V, &G, 1.0); // 1.0*V + G -> G
     dpd_buf4_close(&V);
     dpd_buf4_scm(&G, -0.25);
+    // OMP2.5: G(IA,JB) = -1/8 (V_IAJB +  V_IBJA)
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
 
     /*
@@ -528,6 +644,7 @@ void OCCWave::tpdm_ovov()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "TPDM <OV|OV>");
     dpd_buf4_scm(&G, -0.5);
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
     // Build G_iajb
@@ -539,6 +656,7 @@ void OCCWave::tpdm_ovov()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "TPDM <ov|ov>");
     dpd_buf4_scm(&G, -0.5);
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
     // Build G_IaJb
@@ -550,6 +668,7 @@ void OCCWave::tpdm_ovov()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
                   ID("[O,v]"), ID("[O,v]"), 0, "TPDM <Ov|Ov>");
     dpd_buf4_scm(&G, -0.5);
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
  }// end if (reference_ == "UNRESTRICTED") 
@@ -579,6 +698,7 @@ void OCCWave::tpdm_vovo()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "TPDM <Vo|Vo>");
     dpd_buf4_scm(&G, -0.5);
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
     
     psio_->close(PSIF_OCC_DENSITY, 1);
@@ -607,6 +727,7 @@ void OCCWave::tpdm_ovvo()
     dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,v]"), ID("[V,o]"),
                   ID("[O,v]"), ID("[V,o]"), 0, "TPDM <Ov|Vo>");
     dpd_buf4_scm(&G, 0.5);
+    if (wfn_type_ == "OMP2.5") dpd_buf4_scm(&G, 0.5);
     dpd_buf4_close(&G);
    
     // VoOv block is here! 
@@ -629,6 +750,6 @@ void OCCWave::tpdm_ovvo()
 
 } // end of twopdm_ovvo
 
-
 }} // End Namespaces
+
 

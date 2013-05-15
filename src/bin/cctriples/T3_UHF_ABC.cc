@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,70 +36,70 @@ namespace cctriples {
  * C2, F, and E * intermediates.  This function will work for AAA or
  * BBB spin cases, * with either RHF/ROHF or UHF orbitals.  This is
  * analogous to the T3_UHF_AAA() * function *
- * 
+ *
  * Arguments: *
- * 
+ *
  *   double ***W: The target connected triples amplitudes in an *
  * nirreps x I x JK array.  The memory for this must be allocated *
  * externally. *
- * 
+ *
  *   double ***V: The target disconnected triples amplitudes (if *
  * requested) in an nirreps x I x JK array.  The memory for this *
  * must be allocated externally. *
- * 
+ *
  *   int disc: Boolean: 1 == computed disconnected triples; 0 == don't *
- * 
+ *
  *   int nirreps: Number of irreps. *
- * 
+ *
  *   int A: Absolute index of orbital A. *
- * 
+ *
  *   int Ga: Irrep of A. *
- * 
+ *
  *   int B: Absolute index of orbital B. *
- * 
+ *
  *   int Gb: Irrep of B. *
- * 
+ *
  *   int C: Absolute index of orbital C. *
- * 
+ *
  *   int Gc: Irrep of C. *
- * 
+ *
  *   dpdbuf4 *C2: Pointer to dpd buffer for double excitation amps, *
  * ordered (AB, IJ).  N.B. This is transposed relative to the
  * ordering *   used in the T3_UHF_AAA() routine. *
- * 
+ *
  *   dpdbuf4 *F: Pointer to dpd buffer for three-virtual-index *
  * intermediate, ordered (BC,IA). N.B. This is transposed relative *
  * to the ordering used in the T3_UHF_AAA() routine *
- * 
+ *
  *   dpdbuf4 *E: Pointer to dpd buffer for three-occupied-index *
  * intermediate, ordered (IJ,KA). *
- * 
+ *
  *   dpdfile *C1: If disconnected T3's are requested, pointer to dpd *
  * buffer for single-excitation amps. *
- * 
+ *
  *   dpdbuf4 *D: If disconnected T3's are requested, pointer to dpd *
  * buffer for <IJ||ab> integrals. *
- * 
+ *
  *   dpdfile2 *fIA: Pointer to the dpd file2 for the occ-vir block of *
  * the Fock matrix (or other appropriate one-electron operator). *
- * 
+ *
  *   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of *
  * the Fock matrix (or other appropriate one-electron operator). *   *
  * dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of *
  * the Fock matrix (or other appropriate one-electron operator). *   *
  * int *occpi: Number of occupied orbitals per irrep lookup array. *
- * 
+ *
  *   int *occ_off: Offset lookup for translating between absolute and *
  * relative orbital indices for occupied space. *
- * 
+ *
  *   int *virtpi: Number of virtual orbitals per irrep lookup array. *
- * 
+ *
  *   int *vir_off: Offset lookup for translating between absolute and *
  * relative orbital indices for virtual space. *
- * 
+ *
  *   double omega: a constant to add to the final denominators - *
  * needed for CC3 EOM *
- * 
+ *
  * ACS, December 2008. */
 
 void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
@@ -175,8 +197,8 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
   } /* Gij */
 
   /*=======================================*/
-  /* The terms that contribute as W[ij][k] *
-   /*=======================================*/
+  /* The terms that contribute as W[ij][k] */
+  /*=======================================*/
 
   for (Gd = 0; Gd < nirreps; Gd++) {
     /* -t_ijcd * F_kdab, rewritten as -t_cdij * F_abkd */
@@ -315,8 +337,8 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
   } /* Gl */
 
   /*=======================================*/
-  /* The terms that contribute to W[ik][j] *
-   /*=======================================*/
+  /* The terms that contribute to W[ik][j] */
+  /*=======================================*/
   for (Gd = 0; Gd < nirreps; Gd++) {
     /* +t_ikcd * F_jdab, rewritten as +t_cdik * F_abjd */
     Gcd = Gc ^ Gd;
@@ -469,8 +491,8 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
   } /* Gij */
 
   /*=======================================*/
-  /* The terms that contribute to W[jk][i] *
-   /*=======================================*/
+  /* The terms that contribute to W[jk][i] */
+  /*=======================================*/
   for (Gd = 0; Gd < nirreps; Gd++) {
     /* +t_kjcd * F_idab, rewritten as -t_cdjk * F_abid */
     Gcd = Gc ^ Gd;
@@ -851,7 +873,7 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
  ** will work for AAB or BBA spin cases with either RHF/ROHF or UHF
  ** orbitals.  Based on the T3_UHF_AAB() routine.
  **
- ** Arguments: 
+ ** Arguments:
  **
  **   double ***W: The target triples amplitudes in an nirreps x IJ x k
  **   array.  The memory for this must be allocated externally.
@@ -896,10 +918,10 @@ void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A,
  **
  **   dpdfile2 *fIJ: Pointer to the dpd file2 for the occ-occ block of
  **   the Fock matrix (or other appropriate one-electron operator).
- **   
+ **
  **   dpdfile2 *fAB: Pointer to the dpd file2 for the vir-vir block of
  **   the Fock matrix (or other appropriate one-electron operator).
- **   
+ **
  **   int *occpi: Number of occupied orbitals per irrep lookup array.
  **
  **   int *occ_off: Offset lookup for translating between absolute and

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
@@ -1674,7 +1696,7 @@ void Molecule::print_out_of_planes () const
     fprintf(outfile, "\n\n");
 }
 
-void Molecule::save_xyz(const std::string& filename) const
+void Molecule::save_xyz(const std::string& filename, bool save_ghosts) const
 {
 
     double factor = (units_ == Angstrom ? 1.0 : pc_bohr2angstroms);
@@ -1682,11 +1704,20 @@ void Molecule::save_xyz(const std::string& filename) const
     if (WorldComm->me() == 0) {
         FILE* fh = fopen(filename.c_str(), "w");
 
-        fprintf(fh,"%d\n\n", natom());
+        int N = natom();
+        if (!save_ghosts) {
+            N = 0;
+            for (int i = 0; i < natom(); i++) {
+                if (Z(i)) N++;
+            }
+        }
+
+        fprintf(fh,"%d\n\n", N);
 
         for (int i = 0; i < natom(); i++) {
             Vector3 geom = atoms_[i]->compute();
-            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+            if (save_ghosts || Z(i))
+                fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
 
         fclose(fh);

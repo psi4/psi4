@@ -10,10 +10,6 @@ molecule h2o {
 
 set {
     basis 6-31G**
-
-    r_convergence 11
-    e_convergence 11
-    d_convergence 11
 }
 
 optimize('ccsd')

@@ -1,35 +1,27 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_bin_occ_dpd_h__
 #define _psi_src_bin_occ_dpd_h_
-
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
-
-
-/** Required PSI3 includes */ 
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-
-#include "defines.h"
-#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -92,11 +84,11 @@ class SymBlockMatrix
   int *rowspi();
   int *colspi();
   bool load(PSIO* psio, int itap, const char *label, int dim);
-  bool load(shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
+  bool load(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, int dim);
   void write(PSIO* psio, int itap, bool saveSubBlocks);
-  void write(shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
-  void read(shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
-  void read(shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
+  void write(boost::shared_ptr<psi::PSIO> psio, int itap, bool saveSubBlocks);
+  void read(boost::shared_ptr<psi::PSIO> psio, int itap, bool readSubBlocks);
+  void read(boost::shared_ptr<psi::PSIO> psio, int itap, const char *label, bool readSubBlocks);
   void mgs();// Modified Gram-Schmidt
   void gs();// Gram-Schmidt
   void diagonalize(SymBlockMatrix* eigvectors, SymBlockVector* eigvalues);
@@ -105,8 +97,8 @@ class SymBlockMatrix
   void cdgesv(SymBlockVector* Xvec); // solve lineq via acml
   void lineq_flin(SymBlockVector* Xvec, double *det); // solve lineq via flin
   void lineq_pople(SymBlockVector* Xvec, int num_vecs, double cutoff); // solve lineq via pople    
-  void read_oooo(shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
-  void read_oovv(shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi, 
+  void read_oooo(boost::shared_ptr<psi::PSIO> psio, int itap, int *mosym, int *qt2pitzer, int *occ_off, int *occpi, Array3i *oo_pairidx);
+  void read_oovv(boost::shared_ptr<psi::PSIO> psio, int itap, int nocc, int *mosym, int *qt2pitzer, int *occ_off, int *vir_off, int *occpi,
                  int *virpi, Array3i *oo_pairidx, Array3i *vv_pairidx);
  
   

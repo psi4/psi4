@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include "mp2.h"
 #include "corr_grad.h"
 #include <lib3index/3index.h>
@@ -22,6 +44,86 @@ using namespace std;
 
 namespace psi {
 namespace dfmp2 {
+
+
+void DFMP2::compute_opdm_and_nos(const SharedMatrix Dnosym, SharedMatrix Dso, SharedMatrix Cno, SharedVector occ)
+{
+    // The density matrix
+    SharedMatrix c1MO_c1NO(new Matrix("NOs", nmo_, nmo_));
+    SharedVector occ_c1(new Vector("NO Occupations", nmo_));
+    Dnosym->diagonalize(c1MO_c1NO, occ_c1);
+    // Rotate the canonical MOs to NOs
+    SharedMatrix AO_c1MO = reference_wavefunction_->Ca_subset("AO");
+    SharedMatrix AO_c1NO = AO_c1MO->clone();
+    AO_c1NO->gemm(false, false, 1.0, AO_c1MO, c1MO_c1NO, 0.0);
+    // Reapply the symmetry to the AO dimension
+    SharedMatrix AO_SO = reference_wavefunction_->aotoso();
+    SharedMatrix SO_c1NO(new Matrix(nirrep_, (const int*)nsopi_, nmo_));
+    SO_c1NO->set_name("SO to C1 NO");
+    for(int h = 0; h < nirrep_; ++h){
+        int so_h = nsopi_[h];
+        if(so_h){
+            double **pAOSO = AO_SO->pointer(h);
+            double **pAONO = AO_c1NO->pointer(0);
+            double **pSONO = SO_c1NO->pointer(h);
+            C_DGEMM('T', 'N', so_h, nmo_, nso_, 1.0, pAOSO[0], so_h, pAONO[0], nmo_, 0.0, pSONO[0], nmo_);
+        }
+    }
+    // Now, copy over the full matrix, whenever nonzero columns are
+    for(int h = 0; h < nirrep_; ++h){
+        if (nsopi_[h] == 0) continue;
+        double *CStemp = new double[nsopi_[h]];
+        double **pC1 = SO_c1NO->pointer(h);
+        double **Smat = S_->pointer(h);
+        int symcol = 0;
+        for(int col = 0; col < nmo_; ++col){
+            // Compute orthonormalized self-overlap, to see if it's nonzero.
+            // If it is, grab this orbital and store it in the symmetry NO matrix.
+            C_DGEMV('n', nsopi_[h], nsopi_[h], 1.0, Smat[0],
+                    nsopi_[h], &(pC1[0][col]), nmo_, 0.0, CStemp, 1);
+            double overlap = C_DDOT(nsopi_[h], CStemp, 1, &(pC1[0][col]), nmo_);
+            if(overlap > 0.8){
+                for(int row = 0; row < nsopi_[h]; ++row){
+                    Cno->set(h, row, symcol, pC1[row][col]);
+                }
+                occ->set(h, symcol, occ_c1->get(col));
+                symcol++;
+            }
+        }
+        delete [] CStemp;
+        if(symcol != nmopi_[h]){
+            fprintf(outfile, "Problem determining natural orbital and density matrix symmetries.\n"
+                    "Future calls to oeprop will not work, using this density.  Try disabling symmetry.\n\n");
+            occ->zero();
+            Cno->zero();
+            Dso->zero();
+            return;
+        }
+    }
+
+    // Backtransform Density matrix to the SO basis
+    //
+    // D(SO) = C[SO->MO(c1)] D[MO] SO->MO[C1]t
+    //       = C[SO->MO(c1)] U[MO(c1)->NO(c1)] diag(NO occ) U[MO(c1)->NO(c1)]t C[SO->MO(c1)]t
+    //       = C[SO->NO(c1)] diag(NO occ) C[SO->NO(c1)]t
+    //
+    // Now we're finished with the MO(c1)->NO(c1) matrix, use it as scratch for diag(NO occ)
+    c1MO_c1NO->set_diagonal(occ_c1);
+    SharedMatrix temp(new Matrix(nirrep_, (const int*)nsopi_, nmo_));
+    for(int h = 0; h < nirrep_; ++h){
+        int so_h = nsopi_[h];
+        if(so_h){
+            double **ptemp = temp->pointer(h);
+            double **pDso = Dso->pointer(h);
+            double **pC   = SO_c1NO->pointer(h);
+            double **pOcc = c1MO_c1NO->pointer(0);
+            // temp = C[SO->MO(c1)] X diag(NO occ)
+            C_DGEMM('N', 'N', so_h, nmo_, nmo_, 1.0, pC[0], nmo_, pOcc[0], nmo_, 0.0, ptemp[0], nmo_);
+            // Da = C[SO->MO(c1)] X diag(NO occ)
+            C_DGEMM('N', 'T', so_h, so_h, nmo_, 1.0, ptemp[0], nmo_, pC[0], nmo_, 0.0, pDso[0], so_h);
+        }
+    }
+}
 
 void DFMP2::block_status(std::vector<int> inds, const char* file, int line)
 {
@@ -62,6 +164,7 @@ void DFMP2::common_init()
         reference_wavefunction_->semicanonicalize();
 
     copy(reference_wavefunction_);
+    name_ = "DF-MP2";
 
     energies_["Singles Energy"] = 0.0;
     energies_["Opposite-Spin Energy"] = 0.0;
@@ -152,6 +255,11 @@ SharedMatrix DFMP2::compute_gradient()
     timer_on("DFMP2 Z");
     form_Z();
     timer_off("DFMP2 Z");
+
+    if(options_.get_bool("ONEPDM")){
+        print_energies();
+        return SharedMatrix(new Matrix("NULL", 0, 0));
+    }
 
     timer_on("DFMP2 grad");
     form_gradient();
@@ -611,7 +719,7 @@ void DFMP2::print_energies()
     energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
 
     fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ====================> MP2 Energies <==================== \n");
+    fprintf(outfile, "\t ==================> DF-MP2 Energies <=================== \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Reference Energy",         energies_["Reference Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Singles Energy",           energies_["Singles Energy"]);
@@ -620,7 +728,7 @@ void DFMP2::print_energies()
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Correlation Energy",       energies_["Correlation Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "Total Energy",             energies_["Total Energy"]);
     fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t ==================> SCS-MP2 Energies <================== \n");
+    fprintf(outfile, "\t ================> DF-SCS-MP2 Energies <================= \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
     fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
@@ -632,16 +740,15 @@ void DFMP2::print_energies()
     fprintf(outfile, "\n");
     fflush(outfile);
 
-    // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
-    Process::environment.globals["DF-MP2 TOTAL ENERGY"] = energies_["Total Energy"];
-    Process::environment.globals["DF-MP2 SINGLES ENERGY"] = energies_["Singles Energy"];
-    Process::environment.globals["DF-MP2 SAME-SPIN ENERGY"] = energies_["Same-Spin Energy"];
-    Process::environment.globals["DF-MP2 OPPOSITE-SPIN ENERGY"] = energies_["Opposite-Spin Energy"];
-    Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
-    Process::environment.globals["SCS-DF-MP2 TOTAL ENERGY"] = energies_["SCS Total Energy"];
-    Process::environment.globals["SCS-DF-MP2 CORRELATION ENERGY"] = energies_["SCS Correlation Energy"];
+    Process::environment.globals["MP2 TOTAL ENERGY"] = energies_["Total Energy"];
+    Process::environment.globals["MP2 SINGLES ENERGY"] = energies_["Singles Energy"];
+    Process::environment.globals["MP2 SAME-SPIN ENERGY"] = energies_["Same-Spin Energy"];
+    Process::environment.globals["MP2 OPPOSITE-SPIN ENERGY"] = energies_["Opposite-Spin Energy"];
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
+    Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = energies_["SCS Total Energy"];
+    Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = energies_["SCS Correlation Energy"];
 
 }
 void DFMP2::print_gradients()
@@ -2133,96 +2240,129 @@ void RDFMP2::form_Z()
 
     psio_->open(PSIF_DFMP2_AIA, 1);
     psio_->read_entry(PSIF_DFMP2_AIA, "P", (char*) Ppqp[0], sizeof(double) * nmo * nmo);
-    psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
-    psio_->read_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
-
-    // => Lia += 1/2 A_pqia P_pq (unrelaxed) <= //
-
-    // > Factor the unrelaxed P^(2) (hopefully low rank) < //
-    std::pair<SharedMatrix, SharedMatrix> factor1 = Ppq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
-    SharedMatrix P1 = factor1.first;
-    SharedMatrix N1 = factor1.second;
-    double** P1p = P1->pointer();
-    double** N1p = N1->pointer();
-    //Ppq->print();
-    //P1->print();
-    //N1->print();
-
-    // > Back-transform the transition orbitals < //
-    SharedMatrix P1AO(new Matrix("P AO", nso, P1->colspi()[0]));
-    SharedMatrix N1AO(new Matrix("N AO", nso, N1->colspi()[0])); 
-    double** P1AOp = P1AO->pointer();
-    double** N1AOp = N1AO->pointer();
-
-    if (P1->colspi()[0]) {
-        C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
-    }
-
-    if (N1->colspi()[0]) {
-        C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
-    }
-    
-    // > Form the J/K-like matrices (P,N contributions are separable) < //
-    Cl.clear();
-    Cr.clear();
-    Cl.push_back(P1AO);
-    Cl.push_back(N1AO);
-    
-    jk->compute();
-
-    SharedMatrix J1 = J[0];
-    SharedMatrix K1 = K[0]; 
-    J1->subtract(J[1]);
-    K1->subtract(K[1]);
-    double** J1p = J1->pointer();
-    double** K1p = K1->pointer();
-
-    //J1->print();
-    //K1->print();
-
-    SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
-    double** APp = AP->pointer();
-
-    J1->scale(2.0);
-    K1->scale(1.0);
-    AP->add(J1);
-    AP->subtract(K1);
-
-    //AP->print();
-
-    // > Form the contribution to Lia from the J/K-like matrices < //
 
     SharedMatrix T(new Matrix("T", nocc, nso));
     double** Tp = T->pointer();
-
-    // L_ia += -1.0 (spin) C_mi { [ 4(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_na
-    C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
-    C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
-
-    //Lia->print();
-
-    // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
-
-    std::map<std::string, SharedMatrix>&b = cphf->b();
-    std::map<std::string, SharedMatrix>&x = cphf->x();
-
-    b["Lia"] = Lia;
-    cphf->compute_energy();
-    SharedMatrix Zia = x["Lia"];
-    Zia->scale(-1.0);
-
-    // > Add Pia and Pai into the OPDM < // 
     SharedMatrix dPpq(new Matrix("dP", nmo, nmo));
     double** dPpqp = dPpq->pointer();
-    double** Ziap = Zia->pointer();
-    for (int i = 0; i < nocc; i++) {
-        for (int a = 0; a < nvir; a++) {
-            dPpqp[i][a + nocc] = dPpqp[a + nocc][i] = Ziap[i][a];
+    SharedMatrix AP(new Matrix("A_mn^ls P_ls^(2)", nso, nso));
+    double** APp = AP->pointer();
+    SharedMatrix Dtemp;
+
+    if(options_.get_bool("OPDM_RELAX")){
+        psio_->read_entry(PSIF_DFMP2_AIA, "W", (char*) Wpq1p[0], sizeof(double) * nmo * nmo);
+        psio_->read_entry(PSIF_DFMP2_AIA, "Lia", (char*) Liap[0], sizeof(double) * (naocc + nfocc) * (navir + nfvir));
+
+        // => Lia += 1/2 A_pqia P_pq (unrelaxed) <= //
+
+        // > Factor the unrelaxed P^(2) (hopefully low rank) < //
+        std::pair<SharedMatrix, SharedMatrix> factor1 = Ppq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
+        SharedMatrix P1 = factor1.first;
+        SharedMatrix N1 = factor1.second;
+        double** P1p = P1->pointer();
+        double** N1p = N1->pointer();
+        //Ppq->print();
+        //P1->print();
+        //N1->print();
+
+        // > Back-transform the transition orbitals < //
+        SharedMatrix P1AO(new Matrix("P AO", nso, P1->colspi()[0]));
+        SharedMatrix N1AO(new Matrix("N AO", nso, N1->colspi()[0]));
+        double** P1AOp = P1AO->pointer();
+        double** N1AOp = N1AO->pointer();
+
+        if (P1->colspi()[0]) {
+            C_DGEMM('N','N',nso,P1->colspi()[0],nmo,1.0,Cp[0],nmo,P1p[0],P1->colspi()[0],0.0,P1AOp[0],P1->colspi()[0]);
         }
+
+        if (N1->colspi()[0]) {
+            C_DGEMM('N','N',nso,N1->colspi()[0],nmo,1.0,Cp[0],nmo,N1p[0],N1->colspi()[0],0.0,N1AOp[0],N1->colspi()[0]);
+        }
+
+        // > Form the J/K-like matrices (P,N contributions are separable) < //
+        Cl.clear();
+        Cr.clear();
+        Cl.push_back(P1AO);
+        Cl.push_back(N1AO);
+
+        jk->compute();
+
+        SharedMatrix J1 = J[0];
+        SharedMatrix K1 = K[0];
+        J1->subtract(J[1]);
+        K1->subtract(K[1]);
+        double** J1p = J1->pointer();
+        double** K1p = K1->pointer();
+
+        //J1->print();
+        //K1->print();
+
+        J1->scale(2.0);
+        K1->scale(1.0);
+        AP->add(J1);
+        AP->subtract(K1);
+
+        //AP->print();
+
+        // > Form the contribution to Lia from the J/K-like matrices < //
+
+
+        // L_ia += -1.0 (spin) C_mi { [ 4(mn|pq) - (mq|pn) - (mq|nq)] P_pq } C_na
+        C_DGEMM('T','N',nocc,nso,nso,1.0,Coccp[0],nocc,APp[0],nso,0.0,Tp[0],nso);
+        C_DGEMM('N','N',nocc,nvir,nso,1.0,Tp[0],nso,Cvirp[0],nvir,1.0,Liap[0],nvir);
+
+        //Lia->print();
+
+        // => (\delta_ij \delta_ab (\epsilon_a - \epsilon_i) + A_ia,jb) Z_jb = L_ia <= //
+
+        std::map<std::string, SharedMatrix>&b = cphf->b();
+        std::map<std::string, SharedMatrix>&x = cphf->x();
+
+        b["Lia"] = Lia;
+        cphf->compute_energy();
+        SharedMatrix Zia = x["Lia"];
+        Zia->scale(-1.0);
+
+        // > Add Pia and Pai into the OPDM < //
+        double** Ziap = Zia->pointer();
+        for (int i = 0; i < nocc; i++) {
+            for (int a = 0; a < nvir; a++) {
+                dPpqp[i][a + nocc] = dPpqp[a + nocc][i] = Ziap[i][a];
+            }
+        }
+
+        Ppq->add(dPpq);
+
+        Dtemp = Ppq->clone();
+        // Add in the reference contribution
+        for (int i = 0; i < nocc; ++i)
+            Dtemp->add(i, i, 1.0);
+        Ca_ = SharedMatrix(new Matrix("DF-MP2 Natural Orbitals", nsopi_, nmopi_));
+        epsilon_a_ = SharedVector(new Vector("DF-MP2 NO Occupations", nmopi_));
+        Da_ = SharedMatrix(new Matrix("DF-MP2 relaxed density", nsopi_, nsopi_));
+    }else{
+        // Don't relax the OPDM
+        Dtemp = Ppq->clone();
+        // Add in the reference contribution
+        for (int i = 0; i < nocc; ++i)
+            Dtemp->add(i, i, 1.0);
+        Ca_ = SharedMatrix(new Matrix("DF-MP2 (unrelaxed) Natural Orbitals", nsopi_, nmopi_));
+        epsilon_a_ = SharedVector(new Vector("DF-MP2 (unrelaxed) NO Occupations", nmopi_));
+        Da_ = SharedMatrix(new Matrix("DF-MP2 unrelaxed density", nsopi_, nsopi_));
     }
 
-    Ppq->add(dPpq);
+    compute_opdm_and_nos(Dtemp, Da_, Ca_, epsilon_a_);
+    Cb_ = Ca_;
+    epsilon_b_ = epsilon_a_;
+    Db_ = Da_;
 
+    if(options_.get_bool("ONEPDM")){
+        // Shut everything down; only the OPDM was requested
+        psio_->write_entry(PSIF_DFMP2_AIA,"P",(char*) Ppqp[0], sizeof(double) * nmo * nmo);
+        psio_->close(PSIF_DFMP2_AIA,1);
+        cphf->postiterations();
+        return;
+    }
     //Zia->print();
  
     // => Wik -= 1/2 A_pqik P_pq (relaxed) <= //
@@ -2337,13 +2477,13 @@ void RDFMP2::form_gradient()
     SharedMatrix P2(new Matrix("P", nmo, nmo)); 
     double** P2p = P2->pointer();
 
-    SharedMatrix Cocc = Ca_subset("AO", "OCC");
-    SharedMatrix C    = Ca_subset("AO", "ALL");
+    SharedMatrix Cocc = reference_wavefunction_->Ca_subset("AO", "OCC");
+    SharedMatrix C    = reference_wavefunction_->Ca_subset("AO", "ALL");
 
     double** Coccp = Cocc->pointer();
     double** Cp    = C->pointer();
 
-    SharedVector eps = epsilon_a_subset("AO", "ALL");
+    SharedVector eps = reference_wavefunction_->epsilon_a_subset("AO", "ALL");
     double* epsp = eps->pointer();
 
     // => Read-in <= //

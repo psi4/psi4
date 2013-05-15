@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file opt-params.h
     \ingroup optking
     \brief header for optimization parameters
@@ -28,6 +50,7 @@ struct OPT_PARAMS {
   std::string general_conv;
 
   double scale_connectivity;
+  double interfragment_scale_connectivity; // scaling distance to start connecting fragments
 
   enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
 
@@ -89,10 +112,15 @@ struct OPT_PARAMS {
 
   int consecutive_backsteps_allowed;
 
-  // list of atoms for frozen bonds, angles, dihedrals provided by user in input
+  // string of atoms for frozen [unchanging] bonds, angles, dihedrals provided by user in input
   std::string frozen_distance_str;
   std::string frozen_bend_str;  
   std::string frozen_dihedral_str;
+
+  // string of atoms for fixed [user-specified equilibrium] bonds, angles, dihedrals provided by user in input
+  std::string fixed_distance_str;
+  std::string fixed_bend_str;  
+  std::string fixed_dihedral_str;
 
 // ** Unlikely to need modified **
 
@@ -143,7 +171,7 @@ struct OPT_PARAMS {
   bool keep_intcos; // don't delete intco.dat
 
   // for intcos with user-specified equilibrium values - this is the force constant
-  double fixed_eq_val_force_constant;
+  //double fixed_eq_val_force_constant;
 
   // If a static line search is being done (which currently just outputs N geometries)
   // these control the min and the max of the largest internal coordinate displacement.

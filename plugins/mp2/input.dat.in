@@ -28,14 +28,14 @@ molecule n {
 set reference uhf
 set basis cc-pvdz
 
-eUHFMonomer = energy('scf')
+eUHFMonomer = scf()
 plugin("mp2.so")
 eUMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
 set reference rohf 
 
-eROHFMonomer = energy('scf')
+eROHFMonomer = scf()
 plugin("mp2.so")
 eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()

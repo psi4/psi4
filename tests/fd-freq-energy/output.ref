@@ -37,7 +37,7 @@ set globals {
 }
 
 # Test against Analytic second derivatives from PSI3 (for now).
-anal_freqs = PsiMod.Vector(3)   #TEST
+anal_freqs = psi4.Vector(3)   #TEST
 anal_freqs.set(0, 0, 2170.046)  #TEST
 anal_freqs.set(0, 1, 4140.002)  #TEST
 anal_freqs.set(0, 2, 4391.067)  #TEST
@@ -54,7 +54,7 @@ set globals { points 3 }
 
 frequencies('scf')
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                                 #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                           #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ")  #TEST
 
@@ -70,7 +70,7 @@ set globals { points 5 }
 
 frequencies('scf')
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                                  #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                            #TEST
 compare_vectors(anal_freqs, fd_freqs, 3,                                                  #TEST
  "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C1) ") #TEST
 
@@ -87,7 +87,7 @@ set globals { points 3 }
 
 frequencies('scf')
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                                 #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                           #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C2v) ") #TEST
 
@@ -102,7 +102,7 @@ set globals { points 5 }
 
 frequencies('scf')
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                                   #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                             #TEST
 compare_vectors(anal_freqs, fd_freqs, 3,                                                   #TEST
  "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C2v) ") #TEST
 
@@ -118,8 +118,8 @@ set globals { points 5 }
 
 frequencies('scf', irrep=1)
 
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                      #TEST
-a1_freqs = PsiMod.Vector(2)                                                   #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                #TEST
+a1_freqs = psi4.Vector(2)                                                   #TEST
 a1_freqs.set(0, 0, anal_freqs[0])                                             #TEST
 a1_freqs.set(0, 1, anal_freqs[1])                                             #TEST
 compare_vectors(a1_freqs, fd_freqs, 3, "A1 frequencies only (5-pt. formula)") #TEST
@@ -137,9 +137,9 @@ molecule h2o {
 set globals { points 5 }
 frequencies('scf', irrep=4)
 
-b2_freqs = PsiMod.Vector(1)                                                   #TEST
+b2_freqs = psi4.Vector(1)                                                   #TEST
 b2_freqs.set(0, 0, anal_freqs[2])                                             #TEST
-fd_freqs = PsiMod.reference_wavefunction().frequencies()                      #TEST
+fd_freqs = psi4.wavefunction().frequencies()                                #TEST
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 frequencies only (5-pt. formula)") #TEST
 
 --------------------------------------------------------------------------

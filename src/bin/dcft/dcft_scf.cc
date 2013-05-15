@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <map>
 #include "dcft.h"
 #include <cmath>
@@ -309,17 +331,39 @@ namespace psi{ namespace dcft{
       so_h_->add(T);
       so_h_->add(V);
 
-      epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
-      epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
-      Ca_->copy(reference_wavefunction_->Ca());
-      Cb_->copy(reference_wavefunction_->Cb());
-      moFa_->copy(reference_wavefunction_->Fa());
-      moFa_->transform(Ca_);
-      moFb_->copy(reference_wavefunction_->Fb());
-      moFb_->transform(Cb_);
-      // Find occupation. It shouldn't be called, at least in the current implementation
-      if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
-      update_scf_density();
+      std::string guess = options_.get_str("DCFT_GUESS");
+      if(guess != "DCFT"){
+          epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+          epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
+          Ca_->copy(reference_wavefunction_->Ca());
+          Cb_->copy(reference_wavefunction_->Cb());
+          moFa_->copy(reference_wavefunction_->Fa());
+          moFa_->transform(Ca_);
+          moFb_->copy(reference_wavefunction_->Fb());
+          moFb_->transform(Cb_);
+          update_scf_density();
+      }
+      else {
+          fprintf(outfile, "\n\n\tReading orbitals from previous job");
+          // Read the orbitals from the checkpoint file
+          double **aEvecs = chkpt_->rd_alpha_scf();
+          Ca_->set(aEvecs);
+          free_block(aEvecs);
+          double **bEvecs = chkpt_->rd_beta_scf();
+          Cb_->set(bEvecs);
+          free_block(bEvecs);
+
+          Fa_ = SharedMatrix(new Matrix("Alpha SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
+          Fb_ = SharedMatrix(new Matrix("Beta SO-basis Fock matrix", nirrep_, nsopi_, nsopi_));
+          Fa_->copy(so_h_);
+          Fb_->copy(so_h_);
+          moFa_->copy(so_h_);
+          moFb_->copy(so_h_);
+          moFa_->transform(Ca_);
+          moFb_->transform(Cb_);
+          update_scf_density();
+
+      }
       dcft_timer_off("DCFTSolver::scf_guess");
   }
 
@@ -335,42 +379,17 @@ namespace psi{ namespace dcft{
       // Escf = eNuc + 0.5 * (H + F) * (kappa + tau)
 
       scf_energy_ = enuc_;
-      scf_energy_ += 0.5 * kappa_a_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * kappa_b_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * kappa_a_->vector_dot(Fa_);
-      scf_energy_ += 0.5 * kappa_b_->vector_dot(Fb_);
+      scf_energy_ += 0.5 * kappa_so_a_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * kappa_so_b_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * kappa_so_a_->vector_dot(Fa_);
+      scf_energy_ += 0.5 * kappa_so_b_->vector_dot(Fb_);
 
-      scf_energy_ += 0.5 * a_tau_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * b_tau_->vector_dot(so_h_);
-      scf_energy_ += 0.5 * a_tau_->vector_dot(Fa_);
-      scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
+      scf_energy_ += 0.5 * tau_so_a_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
+      scf_energy_ += 0.5 * tau_so_a_->vector_dot(Fa_);
+      scf_energy_ += 0.5 * tau_so_b_->vector_dot(Fb_);
 
       dcft_timer_off("DCFTSolver::compute_scf_energy");
-  }
-
-  void
-  DCFTSolver::compute_energy_tau_squared()
-  {
-      dcft_timer_on("DCFTSolver::compute_energy_tau_squared");
-
-      SharedMatrix moHa(new Matrix("Core Hamiltonian in the MO basis (Alpha spin)", nirrep_, nmopi_, nmopi_));
-      SharedMatrix moHb(new Matrix("Core Hamiltonian in the MO basis (Beta spin)", nirrep_, nmopi_, nmopi_));
-
-      // Transform H and F to the MO basis
-
-      moHa->copy(so_h_);
-      moHb->copy(so_h_);
-      moHa->transform(Ca_);
-      moHb->transform(Cb_);
-
-      // Compute the correction: 0.5 * (H + F) * T_T
-
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moHa);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moHb);
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moFa_);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moFb_);
-
-      dcft_timer_off("DCFTSolver::compute_energy_tau_squared");
   }
 
   /**
@@ -388,20 +407,20 @@ namespace psi{ namespace dcft{
       SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
       SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
       // form FDS
-      tmp1->gemm(false, false, 1.0, kappa_a_, ao_s_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
       scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
       // form SDF
-      tmp1->gemm(false, false, 1.0, kappa_a_, Fa_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
       tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
       scf_error_a_->subtract(tmp2);
       // Orthogonalize
       scf_error_a_->transform(s_half_inv_);
 
       // form FDS
-      tmp1->gemm(false, false, 1.0, kappa_b_, ao_s_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
       scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
       // form SDF
-      tmp1->gemm(false, false, 1.0, kappa_b_, Fb_, 0.0);
+      tmp1->gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
       tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
       scf_error_b_->subtract(tmp2);
       // Orthogonalize
@@ -435,27 +454,27 @@ namespace psi{ namespace dcft{
       double newFraction = damp ? 1.0 : 1.0 - dampingFactor/100.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
-      Matrix old(kappa_a_);
+      Matrix old(kappa_so_a_);
       for (int h = 0; h < nirrep_; ++h) {
           for (int mu = 0; mu < nsopi_[h]; ++mu) {
               for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < naoccpi_[h]; ++i)
                       val += Ca_->get(h, mu, i) * Ca_->get(h, nu, i);
-                  kappa_a_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_a_->get(h, mu, nu));
+                  kappa_so_a_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_so_a_->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
           }
       }
-      old.copy(kappa_b_);
+      old.copy(kappa_so_b_);
       for (int h = 0; h < nirrep_; ++h) {
           for (int mu = 0; mu < nsopi_[h]; ++mu) {
               for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < nboccpi_[h]; ++i)
                       val += Cb_->get(h, mu, i) * Cb_->get(h, nu, i);
-                  kappa_b_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_b_->get(h, mu, nu));
+                  kappa_so_b_->set(h, mu, nu, newFraction*val + (1.0-newFraction) * kappa_so_b_->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
@@ -493,15 +512,16 @@ namespace psi{ namespace dcft{
       double *Gb = init_array(ntriso_);
       double *Va = init_array(ntriso_);
       double *Vb = init_array(ntriso_);
+
       int soOffset = 0;
       for(int h = 0; h < nirrep_; ++h){
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = kappa_a_->get(h, mu, nu);
-                  Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_->get(h,mu,nu);
-                  Tb[muNu] = b_tau_->get(h,mu,nu);
+                  Da[muNu] = kappa_so_a_->get(h, mu, nu);
+                  Db[muNu] = kappa_so_b_->get(h, mu, nu);
+                  Ta[muNu] = tau_so_a_->get(h,mu,nu);
+                  Tb[muNu] = tau_so_b_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];
@@ -1056,8 +1076,8 @@ namespace psi{ namespace dcft{
 
       dpdfile2 Gtau;
 
-      moFa_->copy(F0a_);
-      moFb_->copy(F0b_);
+      moFa_->copy(moF0a_);
+      moFb_->copy(moF0b_);
 
       // Copy MO basis GTau to the memory
 
@@ -1136,7 +1156,7 @@ namespace psi{ namespace dcft{
   * Builds the AO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G and X intermediates
   */
   void
-  DCFTSolver::build_tensors()
+  DCFTSolver::build_AO_tensors()
   {
       dcft_timer_on("DCFTSolver::build_tensors");
 
@@ -1272,8 +1292,8 @@ namespace psi{ namespace dcft{
       for(int h = 0; h < nirrep_; ++h){
           for(int i = 0 ; i < nsopi_[h]; ++i){
               for(int j = 0 ; j < nsopi_[h]; ++j){
-                  s_aa_1.matrix[h][i][j] = a_tau_->get(h, i, j);
-                  s_bb_1.matrix[h][i][j] = b_tau_->get(h, i, j);
+                  s_aa_1.matrix[h][i][j] = tau_so_a_->get(h, i, j);
+                  s_bb_1.matrix[h][i][j] = tau_so_b_->get(h, i, j);
               }
           }
       }
@@ -1481,10 +1501,10 @@ namespace psi{ namespace dcft{
           for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = kappa_a_->get(h, mu, nu);
-                  Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_->get(h,mu,nu);
-                  Tb[muNu] = b_tau_->get(h,mu,nu);
+                  Da[muNu] = kappa_so_a_->get(h, mu, nu);
+                  Db[muNu] = kappa_so_b_->get(h, mu, nu);
+                  Ta[muNu] = tau_so_a_->get(h,mu,nu);
+                  Tb[muNu] = tau_so_b_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];
@@ -1797,77 +1817,16 @@ namespace psi{ namespace dcft{
           soOffset += nsopi_[h];
       }
 
-      delete [] Ta;
-      delete [] Tb;
-      delete [] Va;
-      delete [] Vb;
-      delete [] Da;
-      delete [] Db;
-      delete [] Ga;
-      delete [] Gb;
+      free(Ta);
+      free(Tb);
+      free(Va);
+      free(Vb);
+      free(Da);
+      free(Db);
+      free(Ga);
+      free(Gb);
 
       dcft_timer_off("DCFTSolver::build_G");
-  }
-
-  /**
-   *  * Uses the orbital energies to determine the occupation according to
-   *  * the aufbau principle
-   *  */
-  void
-  DCFTSolver::find_occupation(SharedVector & evals_a, SharedVector & evals_b, bool forcePrint)
-  {
-      std::vector<std::pair<double, int> > pairs_a;
-      std::vector<std::pair<double, int> > pairs_b;
-
-      // Sort alpha eigenvectors
-      for (int h=0; h<evals_a->nirrep(); ++h) {
-          for (int i=0; i<evals_a->dimpi()[h]; ++i)
-              pairs_a.push_back(make_pair(evals_a->get(h, i), h));
-      }
-      sort(pairs_a.begin(),pairs_a.end());
-
-      // Sort beta eigenvectors
-      for (int h=0; h<evals_b->nirrep(); ++h) {
-          for (int i=0; i<evals_b->dimpi()[h]; ++i)
-              pairs_b.push_back(make_pair(evals_b->get(h, i), h));
-      }
-      sort(pairs_b.begin(),pairs_b.end());
-
-      // Check if user specified occupation. If not - determine it.
-      if(options_["SOCC"].has_changed() && options_["DOCC"].has_changed()){
-          for(int h = 0; h < nirrep_; ++h) {
-              nboccpi_[h] = options_["DOCC"][h].to_integer();
-              naoccpi_[h] = nboccpi_[h] + options_["SOCC"][h].to_integer();
-              navirpi_[h] = nmopi_[h] - naoccpi_[h];
-              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
-          }
-      } else if (!options_["SOCC"].has_changed() && !options_["DOCC"].has_changed()) {
-          memset(naoccpi_, 0, sizeof(int) * nirrep_);
-          memset(nboccpi_, 0, sizeof(int) * nirrep_);
-          for (int i=0; i < nalpha_; ++i)
-              naoccpi_[pairs_a[i].second]++;
-          for (int i=0; i < nbeta_; ++i)
-              nboccpi_[pairs_b[i].second]++;
-          for(int h = 0; h < nirrep_; ++h) {
-              navirpi_[h] = nmopi_[h] - naoccpi_[h];
-              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
-          }
-      } else {
-          throw PsiException("User must specify both DOCC and SOCC, or none of them", __FILE__, __LINE__);
-      }
-
-      if(print_ > 1 || forcePrint){
-          fprintf(outfile, "\t\t\t\tDOCC: [");
-          for (int h = 0; h < evals_a->nirrep(); ++h){
-              fprintf(outfile, "%3d ", nboccpi_[h]);
-          }
-          fprintf(outfile, "]\n");
-          fprintf(outfile, "\t\t\t\tSOCC: [");
-          for (int h = 0; h < evals_a->nirrep(); ++h){
-              fprintf(outfile, "%3d ", naoccpi_[h] - nboccpi_[h]);
-          }
-          fprintf(outfile, "]\n");
-      }
   }
 
 }} // Namespaces

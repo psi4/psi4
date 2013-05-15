@@ -14,16 +14,17 @@ molecule h2o {
 
 set globals {
     basis     cc-pvdz
-    scf_type  direct
     guess     sad
+    scf_type  direct
     sad_print 2
+    df_scf_guess false
 }
 
 set docc       [3, 0, 1, 1]
 
 set maxiter    1
-set e_convergence 0
-set d_convergence 0
+set e_convergence 1.0e1
+set d_convergence 1.0e1
 E1 = energy('scf')
 
 set maxiter    50
@@ -43,8 +44,8 @@ set basis cc-pvdz
 set docc [5]
 
 set maxiter 1
-set e_convergence 0
-set d_convergence 0
+set e_convergence 1.0e1
+set d_convergence 1.0e1
 E1_c1 = energy('scf')
 
 set maxiter 50

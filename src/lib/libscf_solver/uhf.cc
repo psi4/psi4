@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -14,7 +36,6 @@
 #include <libqt/qt.h>
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include "integralfunctors.h"
 #include "libtrans/integraltransform.h"
 #include "libdpd/dpd.h"
 
@@ -47,8 +68,8 @@ void UHF::common_init()
 
     Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));
     Fb_     = SharedMatrix(factory_->create_matrix("F beta"));
-    Da_     = SharedMatrix(factory_->create_matrix("D alpha"));
-    Db_     = SharedMatrix(factory_->create_matrix("D beta"));
+    Da_     = SharedMatrix(factory_->create_matrix("SCF alpha density"));
+    Db_     = SharedMatrix(factory_->create_matrix("SCF beta density"));
     Dt_     = SharedMatrix(factory_->create_matrix("D total"));
     Dtold_  = SharedMatrix(factory_->create_matrix("D total old"));
     Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
@@ -100,32 +121,24 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
-    if (scf_type_ == "OUT_OF_CORE" || scf_type_ == "PK" || scf_type_ == "DF" || scf_type_ == "PS") {
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = jk_->C_left();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the JK object
+    jk_->compute();
 
-        // Push the C matrix on
-        std::vector<SharedMatrix> & C = jk_->C_left();
-        C.clear();
-        C.push_back(Ca_subset("SO", "OCC"));
-        C.push_back(Cb_subset("SO", "OCC"));
-        
-        // Run the JK object
-        jk_->compute();
-
-        // Pull the J and K matrices off
-        const std::vector<SharedMatrix> & J = jk_->J();
-        const std::vector<SharedMatrix> & K = jk_->K();
-        J_->copy(J[0]);
-        J_->add(J[1]);
-        Ka_ = K[0];
-        Kb_ = K[1];
-        
-        Ga_->copy(J_);
-
-    } else {
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-    }
-
+    // Pull the J and K matrices off
+    const std::vector<SharedMatrix> & J = jk_->J();
+    const std::vector<SharedMatrix> & K = jk_->K();
+    J_->copy(J[0]);
+    J_->add(J[1]);
+    Ka_ = K[0];
+    Kb_ = K[1];
+    
+    Ga_->copy(J_);
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);
     Gb_->subtract(Kb_);
@@ -139,12 +152,7 @@ bool UHF::test_convergency()
 {
     double ediff = E_ - Eold_;
 
-    // RMS of the density
-    Matrix Drms;
-    Drms.copy(Dt_);
-    Drms.subtract(Dtold_);
-    Drms_ = 0.5 * Drms.rms();
-
+    // Drms was computed earlier
     if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
@@ -252,23 +260,26 @@ double UHF::compute_E()
     return Etotal;
 }
 
-void UHF::save_fock()
+void UHF::compute_orbital_gradient(bool save_fock)
 {
-    SharedMatrix FDSmSDFa = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix FDSmSDFb = form_FDSmSDF(Fb_, Db_);
+    SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
+    Drms_ = 0.5*(gradient_a->rms() + gradient_b->rms());
 
-    if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
-        diis_manager_->set_error_vector_size(2,
-                                             DIISEntry::Matrix, FDSmSDFa.get(),
-                                             DIISEntry::Matrix, FDSmSDFb.get());
-        diis_manager_->set_vector_size(2,
-                                       DIISEntry::Matrix, Fa_.get(),
-                                       DIISEntry::Matrix, Fb_.get());
-        initialized_diis_manager_ = true;
+    if(save_fock){
+        if (initialized_diis_manager_ == false) {
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
+            diis_manager_->set_error_vector_size(2,
+                                                 DIISEntry::Matrix, gradient_a.get(),
+                                                 DIISEntry::Matrix, gradient_b.get());
+            diis_manager_->set_vector_size(2,
+                                           DIISEntry::Matrix, Fa_.get(),
+                                           DIISEntry::Matrix, Fb_.get());
+            initialized_diis_manager_ = true;
+        }
+
+        diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
     }
-
-    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(), Fb_.get());
 }
 
 bool UHF::diis()
@@ -278,7 +289,7 @@ bool UHF::diis()
 
 void UHF::stability_analysis()
 {
-    if(scf_type_ == "DF"){
+    if(scf_type_ == "DF" || scf_type_ == "CD"){
         throw PSIEXCEPTION("Stability analysis has not been implemented for density fitted wavefunctions yet.");
     }else{
         // Build the Fock Matrix

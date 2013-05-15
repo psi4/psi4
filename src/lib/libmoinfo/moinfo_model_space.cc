@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
@@ -250,7 +272,7 @@ int MOInfo::get_ref_number(int n, ReferenceType ref_type)
     if(ref_type == UniqueOpenShellRefs) // o
         return(unique_open_shell_refs[n]);
     throw PSIEXCEPTION("MOInfo::get_ref_number(string str, int n) undefined space");
-    return(NULL);
+    return(-1);
 }
 
 /*!
@@ -267,7 +289,7 @@ int MOInfo::get_ref_size(ReferenceType ref_type)
     if(ref_type == UniqueOpenShellRefs) // o
         return(unique_open_shell_refs.size());
     throw PSIEXCEPTION("MOInfo::get_ref_size(string str) undefined space");
-    return(NULL);
+    return(-1);
 }
 
 vector<string> MOInfo::get_matrix_names(std::string str)

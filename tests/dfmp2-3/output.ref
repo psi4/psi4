@@ -40,7 +40,7 @@ ref_vals = [                                                 #TEST
              [ 0.0047224616,  0.0000000000, -0.0081795432],  #TEST
              [ 0.0094449331,  0.0000000000,  0.0000000000]   #TEST
            ]                                                 #TEST
-ref = PsiMod.Matrix(12, 3)                                   #TEST
+ref = psi4.Matrix(12, 3)                                   #TEST
 ref.set(ref_vals)                                            #TEST
 memory 250 mb
 molecule {
@@ -66,7 +66,7 @@ set {
 
 gradient("df-mp2")
 
-grad = PsiMod.reference_wavefunction().gradient()                                  #TEST
+grad = psi4.wavefunction().gradient()                                            #TEST
 compare_matrices(ref, grad, 7, "Analytic gradients, vs. 5 point numerical values") #TEST
 --------------------------------------------------------------------------
 

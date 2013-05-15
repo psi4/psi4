@@ -26,9 +26,9 @@ and return the MP2.5 energy. ::
     def run_mp2_5(name, **kwargs):
     
         energy('mp3', **kwargs)
-        e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
-        ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
-        ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
+        e_scf = psi4.get_variable('SCF TOTAL ENERGY')
+        ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
+        ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
     
         ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
         e_mp25 = e_scf + ce_mp25
@@ -47,25 +47,25 @@ The rationale for the changes is indicated in the comments below. ::
     
         # Run detci calculation and collect conventional quantities
         energy('mp3', **kwargs)
-        e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
-        ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
-        ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
+        e_scf = psi4.get_variable('SCF TOTAL ENERGY')
+        ce_mp2 = psi4.get_variable('MP2 CORRELATION ENERGY')
+        ce_mp3 = psi4.get_variable('MP3 CORRELATION ENERGY')
         e_mp2 = e_scf + ce_mp2  # reform mp2 and mp3 total energies for printing
         e_mp3 = e_scf + ce_mp3
     
         # Compute quantities particular to MP2.5
         ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
         e_mp25 = e_scf + ce_mp25
-        PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)  # add new method's important results
-        PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)         #     to PSI variable repository
-        PsiMod.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
-        PsiMod.set_variable('CURRENT ENERGY', e_mp25)  # geometry optimizer tracks this variable, permits
+        psi4.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)  # add new method's important results
+        psi4.set_variable('MP2.5 TOTAL ENERGY', e_mp25)         #     to PSI variable repository
+        psi4.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
+        psi4.set_variable('CURRENT ENERGY', e_mp25)  # geometry optimizer tracks this variable, permits
                                                        #     MP2.5 finite difference optimizations 
         # build string of title banner and print results
         banners = ''
-        banners += """PsiMod.print_out('\\n')\n"""
+        banners += """psi4.print_out('\\n')\n"""
         banners += """banner(' MP2.5 ')\n"""
-        banners += """PsiMod.print_out('\\n')\n\n"""
+        banners += """psi4.print_out('\\n')\n\n"""
         exec banners
     
         tables  = ''
@@ -76,7 +76,7 @@ The rationale for the changes is indicated in the comments below. ::
         tables += """  MP2 correlation energy:                  %16.8f\n""" % (ce_mp2)
         tables += """  MP2.5 correlation energy:                %16.8f\n""" % (ce_mp25)
         tables += """  MP3 correlation energy:                  %16.8f\n""" % (ce_mp3)
-        PsiMod.print_out(tables)  # prints nice header and table of all involved quantities to output file
+        psi4.print_out(tables)  # prints nice header and table of all involved quantities to output file
     
         return e_mp25 
 

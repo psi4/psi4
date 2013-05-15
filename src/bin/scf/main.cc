@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/python.hpp>
 
 #include <cstdlib>
@@ -16,6 +38,7 @@
 
 #include <libmints/mints.h>
 #include <libmints/writer.h>
+#include <libmints/writer_file_prefix.h>
 #include <psi4-dec.h>
 
 #include <libscf_solver/rhf.h>
@@ -23,6 +46,7 @@
 #include <libscf_solver/uhf.h>
 #include <libscf_solver/cuhf.h>
 #include <libscf_solver/ks.h>
+
 
 using namespace boost;
 using namespace std;
@@ -84,10 +108,12 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     WorldComm->sync();
 
     // Print a molden file
-    if ( options["MOLDEN_FILE"].has_changed() ) {
+    if ( options.get_bool("MOLDEN_WRITE") ) {
        boost::shared_ptr<MoldenWriter> molden(new MoldenWriter(scf));
-       molden->write(options.get_str("MOLDEN_FILE"));
+       std::string filename = get_writer_file_prefix() + ".molden";
+       molden->write(filename);
     }
+
     // Print molecular orbitals
     if ( options.get_bool("PRINT_MOS") ) {
        boost::shared_ptr<MOWriter> mo(new MOWriter(scf,options));

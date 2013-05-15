@@ -13,19 +13,19 @@ set globals {
 }
 
 # Test against Analytic second derivatives from PSI3. #TEST
-anal_freqs = PsiMod.Vector(3)  #TEST
+anal_freqs = psi4.Vector(3)  #TEST
 anal_freqs.set(0, 0, 2170.045) #TEST
 anal_freqs.set(0, 1, 4140.001) #TEST
 anal_freqs.set(0, 2, 4391.065) #TEST
-a1_freqs = PsiMod.Vector(2)
+a1_freqs = psi4.Vector(2)
 a1_freqs.set(0, 0, anal_freqs[0])
 a1_freqs.set(0, 1, anal_freqs[1])
-b2_freqs = PsiMod.Vector(1)
+b2_freqs = psi4.Vector(1)
 b2_freqs.set(0, 0, anal_freqs[2])
 
 h2o.update_geometry()
 
-displacements = PsiMod.fd_geoms_freq_1(-1)
+displacements = psi4.fd_geoms_freq_1(-1)
 
 h2o.reinterpret_coordentry(False)
 h2o.fix_orientation(True)        
@@ -38,7 +38,7 @@ print " %d displacements needed." % ndisp
 gradients = []
 
 for n, displacement in enumerate(displacements):
-  PsiMod.print_out("\n")
+  psi4.print_out("\n")
   banner("Loading displacement %d of %d" % (n+1, ndisp))
   print "    displacement %d" % (n+1)
 
@@ -46,13 +46,13 @@ for n, displacement in enumerate(displacements):
 
   gradient('scf')
 
-  G = PsiMod.get_gradient()
+  G = psi4.get_gradient()
   gradients.append(G)
 
-  PsiMod.clean()
+  psi4.clean()
 
-PsiMod.fd_freq_1(gradients, -1)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+psi4.fd_freq_1(gradients, -1)
+fd_freqs = psi4.wavefunction().frequencies()
 
 compare_vectors(anal_freqs, fd_freqs, 1,           #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from gradients to 0.1 cm^-1 (C1)")           #TEST

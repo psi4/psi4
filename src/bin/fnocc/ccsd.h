@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef CCSD_H
 #define CCSD_H
 
@@ -86,7 +108,7 @@ class CoupledCluster: public Wavefunction{
     void WriteBanner();
 
     /// allocate memory
-    void AllocateMemory();
+    virtual void AllocateMemory();
 
     /// some cc/qci diagrams
     void CPU_t1_vmeai(CCTaskParams params);
@@ -207,13 +229,10 @@ class DFCoupledCluster : public CoupledCluster{
     /// CCSD iterations
     PsiReturnType CCSDIterations();
 
-    /// (t)
-    PsiReturnType triples();
-
     void WriteBanner();
 
     /// allocate memory
-    void AllocateMemory();
+    virtual void AllocateMemory();
 
     /// update t1 amplitudes
     void UpdateT1();
@@ -222,7 +241,7 @@ class DFCoupledCluster : public CoupledCluster{
     void UpdateT2();
 
     /// v^4 CC diagram
-    void Vabcd1();
+    virtual void Vabcd1();
 
     /// workspace buffers.
     double*Abij,*Sbij;
@@ -233,6 +252,7 @@ class DFCoupledCluster : public CoupledCluster{
     ///  3-index integrals for density fitting.
     bool ischolesky_;
     long int nQ;
+    long int nQ_scf;
     double*Qmo,*Qov,*Qvv,*Qoo;
     void  ThreeIndexIntegrals();
 
@@ -243,15 +263,68 @@ class DFCoupledCluster : public CoupledCluster{
 
     /// generate t1-transformed 3-index integrals
     virtual void T1Integrals();
+    /// generate t1-transformed Fock matrix
+    virtual void T1Fock();
 
     /// evaluate cc diagrams
-    void CCResidual();
+    virtual void CCResidual();
 
     /// SCS-MP2 function and variables
     void SCS_MP2();
 
     /// SCS-CCSD function and variables
     void SCS_CCSD();
+
+    /// CIM SCS-CCSD function and variables
+    void Local_SCS_CCSD();
+    void Local_SCS_MP2();
+};
+
+// coupled pair class
+class CoupledPair : public CoupledCluster{
+
+  public:
+    CoupledPair(boost::shared_ptr<psi::Wavefunction>wfn,Options&options);
+    ~CoupledPair();
+
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+    double compute_energy();
+
+  protected:
+
+    /// coupled pair iterations
+    PsiReturnType CEPAIterations();
+
+    /// free memory
+    void finalize();
+
+    /// pair energies
+    void PairEnergy();
+    double * pair_energy;
+
+    /// what kind of coupled pair method?
+    char * cepa_type;
+    int cepa_level;
+
+    /// check energy
+    double CheckEnergy();
+
+    /// update t1 amplitudes
+    void UpdateT1();
+
+    /// update t2 amplitudes
+    void UpdateT2();
+
+    /// scs functions 
+    void SCS_CEPA();
+    void Local_SCS_CEPA();
+
+    /// compute opdm - only valid for cisd, acpf, aqcc, and cepa(0)
+    void OPDM();
+
+    /// banner
+    void WriteBanner();
 };
 
 }}

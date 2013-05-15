@@ -1,4 +1,26 @@
 /*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
+/*
 ** PSIFILES.H
 **
 ** This header file contains the definitions of the numbers assigned
@@ -24,8 +46,8 @@
 #define PSI_DEFAULT_FILE_PREFIX "psi"
 
 #define PSIF_OPTKING           1    /*-  -*/
-#define PSIF_FILE11            11   /*- geometry optimization, geometry, and gradient -*/
-#define PSIF_INTCO             12   /*- internal coordinates file, formerly intco.dat -*/
+#define PSIF_GRAD              11   /*- geometry optimization, geometry, and gradient; currently is an ASCII file like output.grad -*/
+#define PSIF_INTCO             12   /*- internal coordinates file, currently is ASCII file like output.intco -*/
 #define PSIF_3INDEX            16   /*-  -*/
 #define PSIF_DSCF              31   /*-  -*/
 #define PSIF_CHKPT             32   /*- new libpsio checkpoint file number -*/
@@ -246,12 +268,21 @@
 #define PSIF_DCC_QSO           267  /*- DFCC 3-index integrals -*/
 #define PSIF_DCC_SORT_START    270  /*- CEPA/CC integral sort starting file number -*/
 
+#define PSIF_SAPT_CCD          271  /*- SAPT2+ CCD Utility File -*/
+
+#define PSIF_HESS              272  /*- Hessian Utility File -*/
+
+#define PSIF_OCC_DPD           273  /*- OCC DPD -*/
+#define PSIF_OCC_DENSITY       274  /*- OCC Density -*/
+#define PSIF_OCC_IABC          275  /*- OCC out-of-core <IA|BC> -*/
+
 /* All of these one-electron quantities have been moved into PSIF_OEI
    Most integrals are real Hermitian hence only lower triangle of the matrix is written out */
 /* These macros give libpsio TOC strings for easy identification.     */
 #define PSIF_SO_S           "SO-basis Overlap Ints"
 #define PSIF_SO_T           "SO-basis Kinetic Energy Ints"
 #define PSIF_SO_V           "SO-basis Potential Energy Ints"
+#define PSIF_SO_H           "SO-basis Core Hamiltonian"
 #define PSIF_AO_S           "AO-basis Overlap Ints"
 #define PSIF_AO_MX          "AO-basis Mu-X Ints"
 #define PSIF_AO_MY          "AO-basis Mu-Y Ints"

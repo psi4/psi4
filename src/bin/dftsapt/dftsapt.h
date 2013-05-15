@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef DFTSAPT_H
 #define DFTSAPT_H
 
@@ -9,12 +31,16 @@ namespace psi {
 
 class JK;
 class Options;
+class Tensor;
 
 namespace dftsapt {
 
 class DFTSAPT {
 
 protected:
+
+    // SAPT type (until properly subclassed)
+    std::string type_;
 
     // Print flag
     int print_;
@@ -102,16 +128,30 @@ protected:
     boost::shared_ptr<Vector> eps_fvir_A_;
     // Monomer B eps vector (frozen vir)
     boost::shared_ptr<Vector> eps_fvir_B_;
+
+    // Shared matrices (Fock-like)
+    std::map<std::string, boost::shared_ptr<Matrix> > vars_;
+
+    // Number of frequency points in Casimir-Poldar
+    int freq_points_;   
+    // Frequency scale in Casimir-Poldar
+    double freq_scale_;
+    // Maximum number of terms in Casimir-Poldar susceptibility coupling
+    int freq_max_k_;
     
+    // => DFTSAPT <= //
+
     // Print author/sizing/spec info
     virtual void print_header() const;
     // Obligatory
-    virtual void print_trailer() const;
+    virtual void print_trailer();
 
     // Hartree-Fock-like terms (Elst, Exch, Ind)
     virtual void fock_terms();
     // MP2-like terms (Disp)
     virtual void mp2_terms();
+
+    // => Helper Methods <= //
 
     // Build the AO-basis dimer overlap matrix
     boost::shared_ptr<Matrix> build_S(boost::shared_ptr<BasisSet> basis);
@@ -120,33 +160,71 @@ protected:
 
     // Build the S_ij matrix in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij(boost::shared_ptr<Matrix> S);
-    // Build the S^2 expansion in the dimer occupied space
-    boost::shared_ptr<Matrix> build_Sij_2(boost::shared_ptr<Matrix> Sij);
     // Build the S^\infty expansion in the dimer occupied space
     boost::shared_ptr<Matrix> build_Sij_n(boost::shared_ptr<Matrix> Sij);
-    // Build the Cbar matrices
+    // Build the Cbar matrices from S^\infty
     std::map<std::string, boost::shared_ptr<Matrix> > build_Cbar(boost::shared_ptr<Matrix> S);
-
-    // Build a generalized density matrix
-    boost::shared_ptr<Matrix> build_D(boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
-    // Build the CPKS RHS (ov-space)
-    boost::shared_ptr<Matrix> build_w(boost::shared_ptr<Matrix> W, boost::shared_ptr<Matrix> L, boost::shared_ptr<Matrix> R);
 
     // Compute the CPKS solution
     std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > compute_x(boost::shared_ptr<JK> jk, boost::shared_ptr<Matrix> w_B, boost::shared_ptr<Matrix> w_A);
-    // Triple GEMM (all matrices must be square)
-    boost::shared_ptr<Matrix> triple(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C);
-    // Build the C_O matrix
-    boost::shared_ptr<Matrix> build_C_O(boost::shared_ptr<Matrix> C, boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> P);
-    // Build the C_X matrix
-    boost::shared_ptr<Matrix> build_C_X(boost::shared_ptr<Matrix> x, boost::shared_ptr<Matrix> C);
 
-    // Protected constructor (use factory below)
-    DFTSAPT();
-    // Common initialization
+    // Build the ExchInd20 potential in the monomer A ov space
+    boost::shared_ptr<Matrix> build_exch_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
+    // Build the Ind20 potential in the monomer A ov space
+    boost::shared_ptr<Matrix> build_ind_pot(std::map<std::string, boost::shared_ptr<Matrix> >& vars);
+
+    // Try out some TDHF Disp2
+    void tdhf_demo();
+    // Grab an uncoupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> uncoupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> Bar);
+    // Grab a coupled susceptibility in the RI basis
+    boost::shared_ptr<Matrix> coupled_susceptibility(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        std::map<std::string, boost::shared_ptr<Tensor> >& vars,
+        int nmax);
+    // Grab a coupled susceptibility in the RI basis (N^6)
+    boost::shared_ptr<Matrix> coupled_susceptibility_debug(
+        double omega, 
+        boost::shared_ptr<Vector> ea, 
+        boost::shared_ptr<Vector> er, 
+        boost::shared_ptr<Tensor> AaaT,
+        boost::shared_ptr<Tensor> AarT,
+        boost::shared_ptr<Tensor> ArrT,
+        boost::shared_ptr<Tensor> DarT);
+
+    // => Utility Routines <= //
+
+    // Inner product LT' * lambda * RT => Result
+    boost::shared_ptr<Matrix> inner(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> lambda = boost::shared_ptr<Matrix>());
+    // Fitting product RT * metric => Result
+    boost::shared_ptr<Tensor> fitting(
+        const std::string& name, 
+        boost::shared_ptr<Tensor> RT, 
+        boost::shared_ptr<Matrix> metric);
+    // DAXPY, alpha L + beta R => R
+    void axpy(
+        boost::shared_ptr<Tensor> LT, 
+        boost::shared_ptr<Tensor> RT, 
+        double alpha = 1.0,
+        double beta = 1.0);
+
+    // Double GEMM
+    boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
+    // Triple GEMM
+    boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
+
     void common_init();
 public:
-    // Destructor, frees memory
+    DFTSAPT();
     virtual ~DFTSAPT();
 
     // Factory constructor, call this with 3 converged SCF jobs (dimer, monomer A, monomer B)
@@ -155,6 +233,66 @@ public:
                                             boost::shared_ptr<Wavefunction> mA);
 
     // Compute the DFT-SAPT analysis
+    virtual double compute_energy();
+
+};
+
+class ASAPT : public DFTSAPT {
+
+friend class DFTSAPT;
+
+    // Local orbital population type
+    std::string population_type_;
+
+    // Local analysis results
+    std::map<std::string, boost::shared_ptr<Matrix> > local_vars_;
+    // 3-index tensors
+    std::map<std::string, boost::shared_ptr<Tensor> > tensors_;
+
+    // Localized occupied orbitals of monomer A (n x a)
+    boost::shared_ptr<Matrix> Locc_A_;
+    // Localized occupied orbitals of monomer B (n x b)
+    boost::shared_ptr<Matrix> Locc_B_;
+    // Localization transformation for monomer A (a x \bar a)
+    boost::shared_ptr<Matrix> Uocc_A_;
+    // Localization transformation for monomer B (b x \bar b)
+    boost::shared_ptr<Matrix> Uocc_B_;
+
+    // Local occupied orbital atomic population (renormalized) of monomer A (A x a)
+    boost::shared_ptr<Matrix> Q_A_;
+    // Local occupied orbital atomic population (renormalized) of monomer B (B x b)
+    boost::shared_ptr<Matrix> Q_B_;
+    // Molecular occupied orbital atomic assignment (renormalized) of monomer A (A x a)
+    boost::shared_ptr<Matrix> R_A_;
+    // Molecular occupied orbital atomic assignment (renormalized) of monomer B (B x b)
+    boost::shared_ptr<Matrix> R_B_;
+
+    // Print author/sizing/spec info
+    virtual void print_header() const;
+    // Obligatory
+    virtual void print_trailer();
+
+    // Compute L and U according to Localizer algorithm and tolerances
+    void localize(); 
+    // Compute Q and R
+    void populate();
+    // Compute Elst
+    void elst();
+    // Compute Exch
+    void exch();
+    // Compute Ind
+    void ind();
+    // Compute Disp
+    void disp();
+    // Analyze and output
+    void analyze();
+
+    void common_init();
+public:
+    ASAPT();
+    virtual ~ASAPT();
+
+    // Compute the A-SAPT analysis
     virtual double compute_energy();
 
 };
@@ -217,6 +355,27 @@ public:
     virtual ~CPKS_SAPT();
 
     void compute_cpks();
+};
+
+class GaussChebyshev {
+
+protected:
+    int npoint_;
+    double scale_;
+
+    std::vector<double> nodes_;
+    std::vector<double> weights_;
+
+public:
+    GaussChebyshev(int npoint, double scale);
+    ~GaussChebyshev();
+    
+    void print_header();
+    void compute();
+
+    std::vector<double>& nodes() { return nodes_; }
+    std::vector<double>& weights() { return weights_; }
+
 };
 
 }} // End namespace

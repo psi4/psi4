@@ -1,35 +1,35 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 // p_so(pitzer) = p_symblk + PitzerOffset[h]; where h=mosym[p_symblk]
 // p_symblk = pitzer2symblk[p_so(pitzer)];
 
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
 #include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
 
-
-/** Required PSI3 includes */ 
 #include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
-
 #include "occwave.h"
-#include "defines.h"
 
 using namespace boost;
 using namespace psi;
@@ -98,6 +98,10 @@ if (reference_ == "RESTRICTED") {
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
+
+        // Read orbital energies
+        epsilon_a_ = reference_wavefunction_->epsilon_a();
+        //epsilon_a_ = SharedVector(reference_wavefunction_->epsilon_a());
 	
 	/* Build mosym arrays */
 	mosym = new int [nmo_];
@@ -235,7 +239,7 @@ if (reference_ == "RESTRICTED") {
 /************************** occ_off & vir_off ***********************************************/
 /********************************************************************************************/ 
 /********************************************************************************************/ 
-    // occ_qt = occ_sym_block + occ_off =>convert occ sym block index to occ qt index
+    // occ_qt = occ_sym_block + occ_off => convert occ sym block index to occ qt index
     // general_qt = occ_sym_block + occ_off => convert occ sym block index to general qt index 
     // vir_qt = vir_sym_block + vir_off 
     // general_qt = vir_sym_block + vir_off + nocc
@@ -461,6 +465,10 @@ else if (reference_ == "UNRESTRICTED") {
         Escf=reference_wavefunction_->reference_energy();
 	Eref=Escf;
 	Eelec=Escf-Enuc;
+
+        // Read orbital energies
+        epsilon_a_ = reference_wavefunction_->epsilon_a();
+        epsilon_b_ = reference_wavefunction_->epsilon_b();
 	
 	/* Build mosym arrays */
 	mosym = new int [nmo_];

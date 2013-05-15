@@ -17,7 +17,7 @@ molecule c4nh4 {
 }
 
 # Test against analytic second derivatives from PSI3 (for now).
-anal_freqs = PsiMod.Vector(21)
+anal_freqs = psi4.Vector(21)
 anal_freqs.set(0, 0,  -184.0613)
 anal_freqs.set(0, 1,   236.5665)
 anal_freqs.set(0, 2,   601.8179)
@@ -40,7 +40,7 @@ anal_freqs.set(0,18,  3182.4027)
 anal_freqs.set(0,19,  3224.7634)
 anal_freqs.set(0,20,  3244.2997)
 
-a1_freqs = PsiMod.Vector(7)
+a1_freqs = psi4.Vector(7)
 a1_freqs.set(0, 0, anal_freqs[ 4])
 a1_freqs.set(0, 1, anal_freqs[ 7])
 a1_freqs.set(0, 2, anal_freqs[10])
@@ -49,12 +49,12 @@ a1_freqs.set(0, 4, anal_freqs[15])
 a1_freqs.set(0, 5, anal_freqs[16])
 a1_freqs.set(0, 6, anal_freqs[18])
 
-a2_freqs = PsiMod.Vector(3)
+a2_freqs = psi4.Vector(3)
 a2_freqs.set(0, 0, anal_freqs[6])
 a2_freqs.set(0, 1, anal_freqs[12])
 a2_freqs.set(0, 2, anal_freqs[19])
 
-b1_freqs = PsiMod.Vector(6)
+b1_freqs = psi4.Vector(6)
 b1_freqs.set(0, 0, anal_freqs[1])
 b1_freqs.set(0, 1, anal_freqs[3])
 b1_freqs.set(0, 2, anal_freqs[8])
@@ -62,7 +62,7 @@ b1_freqs.set(0, 3, anal_freqs[11])
 b1_freqs.set(0, 4, anal_freqs[14])
 b1_freqs.set(0, 5, anal_freqs[17])
 
-b2_freqs = PsiMod.Vector(5)
+b2_freqs = psi4.Vector(5)
 b2_freqs.set(0, 0, anal_freqs[0])
 b2_freqs.set(0, 1, anal_freqs[2])
 b2_freqs.set(0, 2, anal_freqs[5])
@@ -80,7 +80,7 @@ set globals {
 set findif {print 3}
 
 frequencies('scf',dertype=0,irrep=2)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
 compare_vectors(a2_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
@@ -112,7 +112,7 @@ set globals {
 }
 
 frequencies('scf', irrep=1)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
 compare_vectors(a1_freqs, fd_freqs, 3, "A1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -141,7 +141,7 @@ set globals {
 }
 
 frequencies('scf', irrep=2)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
 compare_vectors(a2_freqs, fd_freqs, 3, "A2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -171,7 +171,7 @@ set globals {
 }
 
 frequencies('scf', irrep=3)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 clean()
 
 compare_vectors(b1_freqs, fd_freqs, 3, "B1 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
@@ -201,7 +201,7 @@ set globals {
 }
 
 frequencies('scf', irrep=4)
-fd_freqs = PsiMod.reference_wavefunction().frequencies()
+fd_freqs = psi4.wavefunction().frequencies()
 
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
 del fd_freqs

@@ -1,37 +1,30 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string> 
-#include <iomanip>
-#include <vector> 
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
 
-
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libiwl/iwl.h>
 #include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-#include <libdiis/diismanager.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "occwave.h"
 #include "defines.h"
-#include "arrays.h"
 
 using namespace boost;
 using namespace psi;
@@ -120,6 +113,9 @@ fflush(outfile);
       break;  
     }
 
+    if (rms_t2 >= DIVERGE) {
+        throw PSIEXCEPTION("CEPA iterations are diverging");
+    }
 
 }
 while(fabs(DE) >= tol_Eod || rms_t2 >= tol_t2); 
@@ -139,6 +135,7 @@ fflush(outfile);
 else if (conver == 0) {
   fprintf(outfile,"\n ======================= CEPA IS NOT CONVERGED IN %2d ITERATIONS ============ \n", cc_maxiter);
   fflush(outfile);
+  throw PSIEXCEPTION("CEPA iterations did not converge");
 }
 
 }// end main

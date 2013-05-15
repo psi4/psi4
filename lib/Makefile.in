@@ -40,6 +40,10 @@ install:
 	$(INSTALL_DATA) $(srcdir)/python/*.py $(DESTDIR)$(pkgdatadir)/python
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/qcdb
 	$(INSTALL_DATA) $(srcdir)/python/qcdb/*.py $(DESTDIR)$(pkgdatadir)/python/qcdb
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/p4const
+	$(INSTALL_DATA) $(srcdir)/python/p4const/*.py $(DESTDIR)$(pkgdatadir)/python/p4const
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/p4util
+	$(INSTALL_DATA) $(srcdir)/python/p4util/*.py $(DESTDIR)$(pkgdatadir)/python/p4util
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
 	$(INSTALL_DATA) $(srcdir)/quadratures/1_sqrtx/* $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
@@ -50,9 +54,10 @@ install:
             (cd $${dir}; echo Making in $${dir}; $(MAKE) install) || exit 1; \
           done
 
-install_man: macro.psi
-	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $< $(DESTDIR)$(pkgdatadir)
+# Note: install_man is an obsolete target; we're keeping the commands around for reference.
+#install_man: macro.psi
+#	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
+#	$(INSTALL_DATA) $< $(DESTDIR)$(pkgdatadir)
 
 $(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
 	cd $(top_srcdir) && autoconf

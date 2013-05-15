@@ -10,6 +10,7 @@ Li
 set globals {
     reference rohf
     scf_type pk
+    df_scf_guess false
 }
 
 e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
@@ -29,9 +30,11 @@ R = 1
 set globals {
     reference rhf
     guess core
+    mp2_type conv
+    df_scf_guess true
 }
 
-e_cbs = cbs('conv-mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
 compare_values(-1.148287763304, e_cbs, 7, "H2 mp2 extrapolated energy with ccsd delta correction") #TEST
 
 clean()
@@ -44,6 +47,7 @@ He
 
 set globals {
     reference rhf
+    df_scf_guess false
 }
 
 e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)

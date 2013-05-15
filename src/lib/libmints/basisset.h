@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
@@ -12,10 +34,6 @@
 #include "molecule.h"
 
 #include <boost/shared_ptr.hpp>
-
-namespace boost {
-class once_flag;
-}
 
 namespace psi {
 
@@ -89,7 +107,7 @@ class BasisSet
     boost::shared_ptr<Molecule> molecule_;
 
     // Has static information been initialized?
-    static boost::once_flag initialized_shared_;
+    static bool initialized_shared_;
 
 public:
     BasisSet();
@@ -288,6 +306,26 @@ public:
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
 
+    /** Concatenates two basis sets together into a new basis without reordering anything.
+     *  Unless you know what you're doing, you should use the '+' operator instead of
+     *  this method.
+     */
+    BasisSet concatenate(const BasisSet& b) const;
+
+    boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& b) const;
+
+    /** Concatenates two basis sets together into a new basis without reordering anything.
+     *  Unless you know what you're doing, you should use the '+' operator instead of
+     *  this method.
+     */
+    //static boost::shared_ptr<BasisSet> concatenate(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
+
+    /** Adds this plus another basis set and returns the result. Equivalent to the '+' operator.
+     */
+    BasisSet add(const BasisSet& b) const;
+
+    boost::shared_ptr<BasisSet> add(const boost::shared_ptr<BasisSet>& b) const;
+
     // BasisSet friends
     friend class Gaussian94BasisSetParser;
     friend BasisSet operator +(const BasisSet& a, const BasisSet& b);
@@ -335,13 +373,13 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
     temp.refresh();
 
     // Sort by AM in each center
-    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
-        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
-                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
-                  shell_sorter_am);
-    }
+//    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+//        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+//                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+//                  shell_sorter_am);
+//    }
 
-    temp.refresh();
+//    temp.refresh();
 
     return temp;
 }
@@ -350,7 +388,6 @@ inline
 boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) {
     return boost::shared_ptr<BasisSet>(new BasisSet(*a.get() + *b.get()));
 }
-
 }
 
 #endif

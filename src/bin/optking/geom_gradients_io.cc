@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file    geom_gradients_io.cc
     \ingroup optking
     \brief   functions to read and write the geometry, the gradient and the Hessian
@@ -18,6 +40,7 @@
  #include <libmints/matrix.h>
  #include <libmints/wavefunction.h>
  #include <libparallel/parallel.h>
+ #include <libmints/writer_file_prefix.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
  #include "EFP.h"
@@ -70,13 +93,13 @@ void MOLECULE::read_geom_grad(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
-    
+
   SharedMatrix pgradient;
   if (psi::Process::environment.wavefunction()) {
     pgradient = psi::Process::environment.wavefunction()->gradient();
   } else {
     pgradient = psi::Process::environment.gradient();
-  }    
+  }
 
   Matrix& gradient = *pgradient.get();
 
@@ -116,7 +139,8 @@ void MOLECULE::read_geom_grad(void) {
   int junk;
 
   try {
-    fin.open(FILENAME_GEOM_GRAD_IN, ios_base::in);
+    // CDS: File11 isn't named this way anymore
+    fin.open("psi.file11.dat", ios_base::in);
     fin.clear();
     fin.exceptions(ios_base::failbit);
     fin.seekg(0);
@@ -191,7 +215,7 @@ void MOLECULE::read_geom_grad(void) {
     for (int i = 0; i < EFPfrag; ++i)
       EFPatom += AtomsinEFP[i];
     fprintf(outfile,"\t %d EFP fragments containing %d atoms.\n", EFPfrag, EFPatom);
-  }     
+  }
 
   double *QX;
   INTEGER *QZ, QNATOMS;
@@ -241,12 +265,12 @@ void MOLECULE::read_geom_grad(void) {
     double *efp_f = init_array(6);
     for (int i=0; i<6; ++i)
       efp_f[i] = -1 * QGrad[3*QNATOMS_real + 6*f + i];
-    
+
     efp_fragments[f]->set_forces(efp_f);
     free_array(efp_f);
   }
   free_array(QGrad);
-  
+
   if (Opt_params.efp_fragments) {
     energy = EFP::GetInstance()->GetEnergy();
   }
@@ -318,7 +342,8 @@ double ** OPT_DATA::read_cartesian_H(void) const {
 #if defined(OPTKING_PACKAGE_PSI)
   std::ifstream if_Hcart;
   try {
-    if_Hcart.open(FILENAME_CARTESIAN_H, ios_base::in);
+    std::string hess_fname = psi::get_writer_file_prefix() + ".hess";
+    if_Hcart.open(hess_fname.c_str(), ios_base::in);
     int n;
     if_Hcart >> n; // read natom
     if_Hcart >> n; // read natom*6 (?)
@@ -360,6 +385,10 @@ double ** OPT_DATA::read_cartesian_H(void) const {
     fprintf(outfile,"\tCartesian Hessian matrix read: \n");
     print_matrix(outfile, H_cart, Ncart, Ncart);
     fflush(outfile);
+  }
+  else {
+      fprintf(outfile, "\tCartesian Hessian matrix read in from external file.\n");
+      fflush(outfile);
   }
 
   return H_cart;

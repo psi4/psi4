@@ -1,32 +1,27 @@
-/** Standard library includes */
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-#include <fstream>
-#include <string>
-#include <iomanip>
-#include <vector>
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
 
- 
-/** Required PSI4 includes */
-#include <psifiles.h>
-#include <libciomr/libciomr.h>
-#include <libpsio/psio.h> 
-#include <libchkpt/chkpt.h>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp> 
 #include <libiwl/iwl.hpp>
-#include <libqt/qt.h>
-#include <libtrans/mospace.h>
 #include <libtrans/integraltransform.h>
-
-
-/** Required libmints includes */
-#include <libmints/mints.h>
-#include <libmints/factory.h>
-#include <libmints/wavefunction.h>
 
 #include "occwave.h"
 #include "defines.h"
@@ -55,6 +50,8 @@ if (reference_ == "RESTRICTED") {
 	HG1->gemm(false, false, 1.0, HmoA, g1symm, 0.0);
 	GFock->add(HG1);
 	Ecc_rdm = HG1->trace() + Enuc; // One-electron contribution to MP2L
+        Eopdm = Ecc_rdm;
+	//fprintf(outfile,"\tOPDM energy (a.u.)          : %12.14f\n", Ecc_rdm);
 
         // 2e-part
 	dpdbuf4 G, K, X, T, Y;
@@ -68,13 +65,13 @@ if (reference_ == "RESTRICTED") {
 if (wfn_type_ != "OMP2") { 
    // Build X intermediate 
    if (twopdm_abcd_type == "DIRECT" ) {
-        // With this algorithm cost changes to o2v4 + ov4 => o3v3 + o3v2, roughly v/o times faster 
+        // With this algorithm cost changes to v5 => o2v4 + o2v3, roughly v/o times faster 
  	// X_MNIC = 2\sum{E,F} t_MN^EF(1) * <IC|EF>   
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
              dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
         }
@@ -86,6 +83,14 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
 	dpd_buf4_close(&X);
+
+        // OMP2.5
+        if (wfn_type_ == "OMP2.5") { 
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
+        dpd_buf4_scm(&X, 0.5);
+	dpd_buf4_close(&X);
+        }
     }
 }// end if (wfn_type_ != "OMP2")  
 
@@ -198,41 +203,12 @@ else if (wfn_type_ != "OMP2") {
 
 if (wfn_type_ == "OMP2" && incore_iabc_ == 0) { 
       // Fai += 8 * \sum{e,m,f} <ma|ef> * G_mief 
-    /*
-    struct iwlbuf AA;
-    iwl_buf_init(&AA, PSIF_MO_TPDM, cutoff, 0, 0);
-    for(int h = 0; h < nirrep_; ++h){
-        dpd_buf4_mat_irrep_init(&G, h);
-        dpd_buf4_mat_irrep_rd(&G, h);
-        for(int ij = 0; ij < G.params->rowtot[h]; ++ij){
-            int i = G.params->roworb[h][ij][0];
-            int j = G.params->roworb[h][ij][1];
-            int hi = G.params->psym[i];
-            int hj = G.params->qsym[j];
-            for(int ab = 0; ab < G.params->coltot[h]; ++ab){
-                int a = G.params->colorb[h][ab][0];
-                int b = G.params->colorb[h][ab][1];
-                int ha = G.params->rsym[a];
-                int hb = G.params->ssym[b];
-                int A = a + nooA;// vir_qt => gen_qt
-                int B = b + nooA;
-                iwl_buf_wrt_val(&AA, i, j, A, B, G.matrix[h][ij][ab], 0, (FILE *) NULL, 0);
-            }
-        }
-        dpd_buf4_mat_irrep_close(&G, h);
-    }
-    //dpd_buf4_close(&G);
-    iwl_buf_flush(&AA, 1);
-    iwl_buf_close(&AA, 1);
-    */
-
       	IWL ERIIN(psio_.get(), PSIF_OCC_IABC, 0.0, 1, 1);
 	int ilsti,nbuf,index,fi;
 	double value = 0;
 
        SymBlockMatrix *Goovv = new SymBlockMatrix("TPDM <OO|VV>", nirrep_, oo_pairpiAA, vv_pairpiAA); 
        Goovv->zero();
-       //Goovv->read_oovv(psio_, PSIF_MO_TPDM, nooA, mosym, qt2pitzerA, occ_offA, vir_offA, occpiA, virtpiA, oo_pairidxAA, vv_pairidxAA);
        dpd_buf4_init(&G, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
                      ID("[O,O]"), ID("[V,V]"), 0, "TPDM <OO|VV>");
        Goovv->set(G);
@@ -333,7 +309,7 @@ if (wfn_type_ != "OMP2") {
        	// Fia += \sum{m,n,c} X_mnic * (2t_mn^ac(1) - tmn^ca(1)) 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
            dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau_1 <OO|VV>");
         }
@@ -420,6 +396,7 @@ else if (reference_ == "UNRESTRICTED") {
 	GFockA->add(HG1A);
 	GFockB->add(HG1B);
 	Ecc_rdm = HG1A->trace() + HG1B->trace() + Enuc; // One-electron contribution to MP2L
+        Eopdm = Ecc_rdm;
 
 /********************************************************************************************/
 /************************** 2e-part *********************************************************/
@@ -442,7 +419,7 @@ if (wfn_type_ != "OMP2") {
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
                   ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
         }
@@ -455,12 +432,20 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&T);
 	dpd_buf4_close(&X);
 
+        // OMP2.5
+        if (wfn_type_ == "OMP2.5") { 
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
+                  ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
+        dpd_buf4_scm(&X, 0.5);
+	dpd_buf4_close(&X);
+        }
+
 	// X_mnic = \sum{e,f} t_mn^ef * <ic||ef> = 2\sum{e,f} t_mn^ef * <ic|ef> 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "X <oo|ov>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
                   ID("[o,v]"), ID("[v,v]"), 0, "MO Ints <ov|vv>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
         }
@@ -473,12 +458,20 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&T);
 	dpd_buf4_close(&X);
 
+        // OMP2.5
+        if (wfn_type_ == "OMP2.5") { 
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
+                  ID("[o,o]"), ID("[o,v]"), 0, "X <oo|ov>");
+        dpd_buf4_scm(&X, 0.5);
+	dpd_buf4_close(&X);
+        }
+
         // X_MnIc = \sum{E,f} t_Mn^Ef * <Ic|Ef> 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "X <Oo|Ov>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,v]"),
                   ID("[O,v]"), ID("[V,v]"), 0, "MO Ints <Ov|Vv>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
         }
@@ -491,12 +484,20 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&T);
 	dpd_buf4_close(&X);
 
+        // OMP2.5
+        if (wfn_type_ == "OMP2.5") { 
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
+                  ID("[O,o]"), ID("[O,v]"), 0, "X <Oo|Ov>");
+        dpd_buf4_scm(&X, 0.5);
+	dpd_buf4_close(&X);
+        }
+
         // X_MnCi = \sum{E,f} t_Mn^Ef * <Ci|Ef> 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "X <Oo|Vo>");
         dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,v]"),
                   ID("[V,o]"), ID("[V,v]"), 0, "MO Ints <Vo|Vv>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
         }
@@ -508,6 +509,14 @@ if (wfn_type_ != "OMP2") {
 	dpd_buf4_close(&K);
 	dpd_buf4_close(&T);
 	dpd_buf4_close(&X);
+
+        // OMP2.5
+        if (wfn_type_ == "OMP2.5") { 
+        dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,o]"),
+                  ID("[O,o]"), ID("[V,o]"), 0, "X <Oo|Vo>");
+        dpd_buf4_scm(&X, 0.5);
+	dpd_buf4_close(&X);
+        }
 
   }// end main if for X
 } // end if (wfn_type_ != "OMP2") { 
@@ -750,7 +759,7 @@ if (wfn_type_ != "OMP2") {
        	// FIB += 2 * \sum{E,F,C} <EF||CI> * G_EFCB = 1/4  \sum{M,N,C} X_MNIC * t_MN^BC 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "X <OO|OV>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2_1 <OO|VV>");
         }
@@ -791,7 +800,7 @@ if (wfn_type_ != "OMP2") {
        	// FIB += 4 * \sum{e,F,c} <Fe|Ic> * G_FeBc =  \sum{M,n,C} X_MnIc * t_Mn^Bc 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
                   ID("[O,o]"), ID("[O,v]"), 0, "X <Oo|Ov>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
         }
@@ -878,7 +887,7 @@ if (wfn_type_ != "OMP2") {
        	// Fib += 2 * \sum{e,f,c} <ef||ci> * G_efcb = 1/4  \sum{m,n,c} X_mnic * t_mn^bc 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "X <oo|ov>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2_1 <oo|vv>");
         }
@@ -919,7 +928,7 @@ if (wfn_type_ != "OMP2") {
        	// Fib += 4 * \sum{E,f,C} <Ef|Ci> * G_EfCb =  \sum{M,n,C} X_MnCi * t_Mn^Cb 
         dpd_buf4_init(&X, PSIF_OCC_DENSITY, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "X <Oo|Vo>");
-        if (wfn_type_ == "OMP3") { 
+        if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5") { 
             dpd_buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2_1 <Oo|Vv>");
         }

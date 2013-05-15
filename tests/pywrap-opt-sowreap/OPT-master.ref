@@ -26,7 +26,7 @@
 --------------------------------------------------------------------------
 # This is a psi4 input file auto-generated from the gradient() wrapper.
 
-from PsiMod import *
+from psi4 import *
 from physconst import *
 from molutil import *
 from driver import *
@@ -42,7 +42,7 @@ from functional import *
 from pubchem import *
 from psifiles import *
 import pickle
-psi4_io = PsiMod.IOManager.shared_object()
+psi4_io = psi4.IOManager.shared_object()
 geometry("""
 0 1
 H
@@ -56,13 +56,13 @@ h2s = geometry("""
  H   -0.000000000000    0.965827951908    0.893152177096
 units angstrom
 ""","h2s")
-PsiMod.IO.set_default_namespace("h2s")
+psi4.IO.set_default_namespace("h2s")
 
-PsiMod.set_memory(256000000)
+psi4.set_memory(256000000)
 
-PsiMod.set_global_option('BASIS', 'STO-3G')
-PsiMod.set_global_option('CART_HESS_READ', 0)
-PsiMod.set_global_option('GEOM_MAXITER', 4)
+psi4.set_global_option('BASIS', 'STO-3G')
+psi4.set_global_option('CART_HESS_READ', 0)
+psi4.set_global_option('GEOM_MAXITER', 4)
 
 pickle_kw = ("""(dp0
 S'opt_datafile'

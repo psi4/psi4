@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
@@ -336,73 +358,11 @@ SharedMatrix Prop::Cb_so()
 }
 SharedMatrix Prop::Ca_ao()
 {
-    int nao = basisset_->nbf();
-    int nmo = Ca_so_->ncol();
-    SharedMatrix C = SharedMatrix(new Matrix("Ca (AO basis)", nao, nmo));
-    double** Cp = C->pointer();
-    int counter = 0;
-
-    std::vector<std::pair<double,int> > metric;
-    for (int h = 0; h < AO2USO_->nirrep(); h++) {
-        int nso = AO2USO_->colspi()[h];
-        int nmo = C->colspi()[h];
-        if (nso == 0 || nmo == 0) continue;
-        double** Ca = Ca_so_->pointer(h);
-        double** X = AO2USO_->pointer(h);
-
-        C_DGEMM('N','N',nao,nmo,nso,1.0,X[0],nso,Ca[0],nmo,0.0,&Cp[0][counter],nao);
-
-        for (int i = 0; i < nmo; i++) {
-            metric.push_back(make_pair(epsilon_a_->get(h,i),i+counter));
-        }
-
-        counter += nmo;
-    }
-
-    SharedMatrix C2(C->clone());
-    std::sort(metric.begin(),metric.end());
-
-    double** C2p = C2->pointer();
-    for (int i = 0; i < nmo; i++) {
-        C_DCOPY(nao,&Cp[0][metric[i].second],nmo,&C2p[0][i],nmo);
-    }
-
-    return C2;
+    return wfn_->Ca_subset("AO");
 }
 SharedMatrix Prop::Cb_ao()
 {
-    int nao = basisset_->nbf();
-    int nmo = Cb_so_->ncol();
-    SharedMatrix C = SharedMatrix(new Matrix("Cb (AO basis)", nao, nmo));
-    double** Cp = C->pointer();
-    int counter = 0;
-
-    std::vector<std::pair<double,int> > metric;
-    for (int h = 0; h < AO2USO_->nirrep(); h++) {
-        int nso = AO2USO_->colspi()[h];
-        int nmo = C->colspi()[h];
-        if (nso == 0 || nmo == 0) continue;
-        double** Cb = Cb_so_->pointer(h);
-        double** X = AO2USO_->pointer(h);
-
-        C_DGEMM('N','N',nao,nmo,nso,1.0,X[0],nso,Cb[0],nmo,0.0,&Cp[0][counter],nao);
-
-        for (int i = 0; i < nmo; i++) {
-            metric.push_back(make_pair(epsilon_a_->get(h,i),i+counter));
-        }
-
-        counter += nmo;
-    }
-
-    SharedMatrix C2(C->clone());
-    std::sort(metric.begin(),metric.end());
-
-    double** C2p = C2->pointer();
-    for (int i = 0; i < nmo; i++) {
-        C_DCOPY(nao,&Cp[0][metric[i].second],nmo,&C2p[0][i],nmo);
-    }
-
-    return C2;
+    return wfn_->Cb_subset("AO");
 }
 SharedMatrix Prop::Da_so()
 {
@@ -861,7 +821,6 @@ void OEProp::common_init()
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
     }
-    fprintf(outfile, "\nProperties computed using the %s density matrix\n", wfn_->name().c_str());
     fprintf(outfile, "\n\nProperties will be evaluated at %10.6f, %10.6f, %10.6f Bohr\n",
             origin_[0], origin_[1], origin_[2]);
 
@@ -917,6 +876,17 @@ bool from_string(T& t,
 
 void OEProp::compute()
 {
+    std::string name(wfn_->Da()->name());
+
+    // We want to strip out the Alpha part of the name, because we really use the full density
+    size_t pos = name.find("Alpha ");
+    if(pos != std::string::npos)
+        name.replace(pos, 6, "");
+    pos = name.find("alpha ");
+    if(pos != std::string::npos)
+        name.replace(pos, 6, "");
+
+    fprintf(outfile, "\nProperties computed using the %s density matrix\n", name.c_str());
 
     // Search for multipole strings, which are handled separately
     std::set<std::string>::const_iterator iter = tasks_.begin();
@@ -1281,8 +1251,6 @@ void OEProp::compute_quadrupole(bool transition)
 }
 void OEProp::compute_mo_extents()
 {
-    fprintf(outfile, "  MO Extents (<r^2>) [a.u.]:\n\n");
-
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Ca;
     SharedMatrix Cb;
@@ -1341,52 +1309,82 @@ void OEProp::compute_mo_extents()
 
     if (same_orbs_) {
 
-    // Dipoles
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        dipole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[1]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        dipole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[2]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        dipole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-    // Quadrupoles
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        quadrupole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[3]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        quadrupole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-    C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[5]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
-    for (int i = 0; i < nmo; i++) {
-        quadrupole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
-    }
-
-    char** labels = basisset_->molecule()->irrep_labels();
-    std::vector<boost::tuple<double,int,int> > metric;
-    for (int h = 0; h < epsilon_a_->nirrep(); h++) {
-        for (int i = 0; i < epsilon_a_->dimpi()[h]; i++) {
-            metric.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h,i),i,h));
+        // Dipoles
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            dipole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
         }
-    }
-    std::sort(metric.begin(),metric.end());
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[1]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            dipole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+        }
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[2]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            dipole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+        }
+        // Quadrupoles
+#if 0
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            quadrupole[0]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+        }
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[3]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            quadrupole[1]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+        }
+        C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Qpole[5]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
+        for (int i = 0; i < nmo; i++) {
+            quadrupole[2]->set(0,i,C_DDOT(nao,Ca->pointer()[i],nmo,temp->pointer()[i],1));
+        }
+#else
+        for (int i=0; i<Ca->ncol(); ++i) {
+            double sumx=0.0, sumy=0.0, sumz=0.0;
+            for (int k=0; k<Ca->nrow(); ++k) {
+                for (int l=0; l<Ca->nrow(); ++l) {
+                    double tmp = Ca->get(0, k, i) * Ca->get(0, l, i);
+                    sumx += ao_Qpole[0]->get(0, k, l) * tmp;
+                    sumy += ao_Qpole[3]->get(0, k, l) * tmp;
+                    sumz += ao_Qpole[5]->get(0, k, l) * tmp;
+                }
+            }
 
-    for (int i = 0; i < nmo; i++) {
-        int n = boost::get<1>(metric[i]);
-        int h = boost::get<2>(metric[i]);
+            quadrupole[0]->set(0, i, fabs(sumx));
+            quadrupole[1]->set(0, i, fabs(sumy));
+            quadrupole[2]->set(0, i, fabs(sumz));
+        }
+#endif
+        char** labels = basisset_->molecule()->irrep_labels();
+        std::vector<boost::tuple<double,int,int> > metric;
+        for (int h = 0; h < epsilon_a_->nirrep(); h++) {
+            for (int i = 0; i < epsilon_a_->dimpi()[h]; i++) {
+                metric.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h,i),i,h));
+            }
+        }
+        std::sort(metric.begin(),metric.end());
 
-        // TODO: Print polarity <\vec x> and extents <\vec x^2> - <\vec x>^2
-    }
+        fprintf(outfile, "\n  Orbital extents (a.u.):\n");
+        fprintf(outfile, "\t%10s%15s%15s%15s%15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
 
-    fprintf(outfile, "\n");
-    for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
-    fflush(outfile);
+        for (int i = 0; i < nmo; i++) {
+            int n = boost::get<1>(metric[i]);
+            int h = boost::get<2>(metric[i]);
+
+            double xx = quadrupole[0]->get(0, i),
+                   yy = quadrupole[1]->get(0, i),
+                   zz = quadrupole[2]->get(0, i);
+            fprintf(outfile, "\t%4d%3s%3d%15.10f%15.10f%15.10f%15.10f\n",
+                    i,
+                    labels[h],
+                    n,
+                    fabs(quadrupole[0]->get(0, i)),
+                    fabs(quadrupole[1]->get(0, i)),
+                    fabs(quadrupole[2]->get(0, i)),
+                    fabs(xx + yy + zz));
+        }
+
+        fprintf(outfile, "\n");
+        for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
+        fflush(outfile);
 
     } else {
 
@@ -1394,6 +1392,7 @@ void OEProp::compute_mo_extents()
         // This helps identify symmetry breaking
     }
 }
+
 boost::shared_ptr<Vector> OEProp::compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();

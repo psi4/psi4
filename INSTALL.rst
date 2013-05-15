@@ -49,11 +49,6 @@ I. Compilation Prerequisites
      will fail. The library is called ``python-devel`` for Fedora and
      ``python-dev`` for Ubuntu.
 
-* A version of MPI is required to compile distributed-parallel PSI; 
-  MPICH2 is recommended.
-  (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
-  seems to fix it.)
-
 * GNU utilities: (see http://www.gnu.org)
 
   * make
@@ -247,8 +242,8 @@ compiling and installing the PSI4 package.
      * Compiling for Mac
 
        PSI4 has been compiled on OS X 10.7 (Lion) and 10.8 (Mountain Lion). 
-       To get the compilers needed, it's easiest to install XCode.
-       However, XCode does not provide a Fortran compiler. Although
+       To get the compilers needed, it's easiest to install Xcode.
+       However, Xcode does not provide a Fortran compiler. Although
        Fortran compilers are not needed to compile Psi, a broken one can
        prevent Psi from configuring properly. Do not download the latest
        version of GFortran from the HPC website; this is unlikely to be
@@ -263,7 +258,7 @@ compiling and installing the PSI4 package.
           ../configure --with-plugins
 
        to the do-configure script. If you want to use the new LLVM compilers that
-       ship with XCode 4 (they compile quicker than GCC), use ::
+       ship with Xcode 4 (they compile quicker than GCC), use ::
        
           ../configure --with-plugins --with-cxx=llvm-g++
 
@@ -288,8 +283,7 @@ compiling and installing the PSI4 package.
      * ``--with-cxx=compiler`` --- Use this option to specify a C++ compiler.
        One should use compilers that generate reentrant code, if possible.
        The default search order for compilers is: xlC_r (AIX only), g++, c++,
-       icpc, cxx.  For distributed-parallel compilation, MPI is required and 
-       you need to use mpicxx (where this has been added to your PATH).
+       icpc, cxx.  
   
      * ``--with-fc=compiler`` --- Use this option to specify a Fortran-77 compiler,
        which is used to determine linking coventions for BLAS and LAPACK libraries
@@ -366,11 +360,6 @@ compiling and installing the PSI4 package.
        momentum level for second derivatives of the primitive Gaussian
        basis functions.  This is set to f-type functions (AM=3) by default.
   
-     * ``--with-max-am-r12=integer`` --- Specifies the maximum angular momentum
-       level for primitive Gaussian basis functions used in r_12 explicitly
-       correlated methods.  This is set to f-type functions (AM=3) by default.
-       Not yet active.
-  
      * ``--with-debug=yes/no`` --- Turns on debugging flags (-g) if yes.  This is
        set to no by default.
   
@@ -404,13 +393,13 @@ compiling and installing the PSI4 package.
   D. Boost Libraries
 
      PSI4 can use a user-provided boost C++ library, or, alternatively,
-     build the boost version 1.48.0 that comes bundled with the distribution.
+     build the boost version 1.53.0 that comes bundled with the distribution.
      By default, PSI4 will look in your include/library paths for
      a compatible and complete boost installation (boost 1.46 or newer). A
      boost installation in a nonstandard location can be specified by the
      ``--with-boost=PATH`` and ``--with-boost-libdir=PATH`` configure flags. If a
      default or user-specified boost installation is found to be incomplete,
-     incompatible, or nonexistent, boost 1.48.0 will be unpacked automatically
+     incompatible, or nonexistent, boost 1.53.0 will be unpacked automatically
      and built as part of the PSI4 build process.
 
      Required Compiled Boost Modules (all Boost 1.46.0 or later): 
@@ -587,6 +576,11 @@ BLAS and LAPACK recommendations when building PSI4:
     have access, though we have identified at least one case in which
     the Goto libraries yielded faulty DGEMM calls.  On Mac OS X
     systems, the vecLib package that comes with Xcode works well.
+
+    If you prefer to use the ACML
+    (http://developer.amd.com/tools/cpu-development/amd-core-math-library-acml/)
+    we highly recommend using the latest version. Older versions
+    of ACML have been known to cause problems.
 
 .. _`sec:install_IV_3`:
 

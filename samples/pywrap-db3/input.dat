@@ -1,8 +1,8 @@
-#! Test that Python Molecule class processes geometry like PsiMod Molecule class.
+#! Test that Python Molecule class processes geometry like psi4 Molecule class.
 
 import qcdb
 
-ref_geom = PsiMod.Matrix(16,3)
+ref_geom = psi4.Matrix(16,3)
 ref_geom.set(
       [[   0.710500000000,    -0.794637665924,    -1.230622098778],
        [   1.421000000000,    -0.794637665924,     0.000000000000],
@@ -96,7 +96,7 @@ units angstrom
 """)
 
 YYY.update_geometry()
-#geom_now = PsiMod.Matrix(16,3)
+#geom_now = psi4.Matrix(16,3)
 geom_now.set(YYY.geometry())
 geom_now.scale(psi_bohr2angstroms)
 

@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup DETCI
     \brief Enter brief description of file here
@@ -15,6 +37,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <boost/lexical_cast.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
@@ -201,8 +224,8 @@ void get_parameters(Options &options)
     }
   }  /* end ROHF parsing */
   else {
-    Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-    Parameters.Ms0 = 0;
+    throw InputException("Invalid DETCI reference " + Parameters.ref,
+      "REFERENCE", __FILE__, __LINE__);
   }
 
   if (options["MS0"].has_changed())
@@ -600,7 +623,7 @@ void get_parameters(Options &options)
     i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
     if (i != Parameters.ex_lvl) {
       std::string str = "Dim. of EX_ALLOW must be";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.ex_lvl) )->str();
+      str += boost::lexical_cast<std::string>( Parameters.ex_lvl) ;
       throw PsiException(str,__FILE__,__LINE__);
     }
     options.fill_int_array("EX_ALLOW", Parameters.ex_allow);
@@ -673,7 +696,7 @@ void get_parameters(Options &options)
     i = options["AVG_STATES"].size();
     if (i < 1 || i > Parameters.num_roots) {
       std::string str = "Invalid number of states to average (";
-      str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+      str += boost::lexical_cast<std::string>( i) ;
       str += ")";
       throw PsiException(str,__FILE__,__LINE__);
     }
@@ -686,7 +709,7 @@ void get_parameters(Options &options)
       if (Parameters.average_states[i] < 1) {
         std::string str = "AVG_STATES start numbering from 1.\n";
         str += "Invalid state number ";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << Parameters.average_states[i]) )->str();
+        str += boost::lexical_cast<std::string>( Parameters.average_states[i]) ;
         throw PsiException(str,__FILE__,__LINE__);
       }
       Parameters.average_states[i] -= 1; /* number from 1 externally */
@@ -696,7 +719,7 @@ void get_parameters(Options &options)
     if (options["AVG_WEIGHTS"].has_changed()) {
       if (options["AVG_WEIGHTS"].size() != Parameters.average_num) {
         std::string str = "Mismatched number of average weights (";
-        str += static_cast<std::ostringstream*>( &(std::ostringstream() << i) )->str();
+        str += boost::lexical_cast<std::string>( i) ;
         str += ")";
         throw PsiException(str,__FILE__,__LINE__);
       }

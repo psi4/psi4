@@ -187,6 +187,12 @@ cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state 
 cc9a:         ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical,  with Z-matrix input.
 
 
+cepa0-grad1:  CEPA0 cc-pVDZ gradient for the H2O molecule.
+
+
+cepa0-grad2:  CEPA cc-pVDZ gradient for the NO radical
+
+
 cepa1:        cc-pvdz H2O Test CEPA(1) Energy
 
 
@@ -220,7 +226,10 @@ cisd-sp:      6-31G** H2O Test CISD Energy Point
 cisd-sp-2:    6-31G** H2O Test CISD Energy Point
 
 
-dcft1:        DC-06 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
+dcft-grad1:   DCFT DC-06 gradient for the O2 molecule with cc-pVDZ basis set
+
+
+dcft1:        DC-06, DC-12, ODC-06 and ODC-12 calculation for the He dimer. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
 dcft2:        DC-06 calculation for the He dimer. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
@@ -238,6 +247,9 @@ dcft5:        DC-06 calculation for the O2 molecule (triplet ground state). This
 dcft6:        DCFT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals.  Only two-step algorithm is tested.
 
 
+dcft7:        DCFT calculation for the triplet O2 using ODC-06 and ODC-12 functionals.  Only simultaneous algorithm is tested.
+
+
 dfmp2-1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
 
@@ -247,6 +259,9 @@ dfmp2-2:      Density fitted MP2 energy of H2, using density fitted reference an
 dfmp2-3:      DF-MP2 cc-pVDZ frozen core gradient of benzene, computed at the DF-SCF cc-pVDZ geometry
 
 
+dfmp2-4:      conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+
+
 dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 
 
@@ -254,6 +269,9 @@ dft-b2plyp:   Double-hybrid density functional B2PYLP. Reproduces portion of Tab
 
 
 dft-dldf:     Dispersionless density functional (dlDF+D) internal match to Psi4 Extensive testing has been done to match supplemental info of Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+
+dft-freq:     Frequencies for H2O B3LYP/6-31G* at optimized geometry
 
 
 dft-grad:     DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
@@ -376,6 +394,24 @@ mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SC
 mp2-1:        All-electron MP2 6-31G** geometry optimization of water
 
 
+mp2-grad1:    MP2 cc-pVDZ gradient for the H2O molecule.
+
+
+mp2-grad2:    MP2 cc-pVDZ gradient for the NO radical
+
+
+mp2_5-grad1:  MP2.5 cc-pVDZ gradient for the H2O molecule.
+
+
+mp2_5-grad2:  MP2.5 cc-pVDZ gradient for the NO radical
+
+
+mp3-grad1:    MP3 cc-pVDZ gradient for the H2O molecule.
+
+
+mp3-grad2:    MP3 cc-pVDZ gradient for the NO radical
+
+
 mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
 
@@ -391,6 +427,15 @@ mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using M
 mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
 
 
+ocepa-freq1:  OCEPA cc-pVDZ freqs for C2H2
+
+
+ocepa-grad1:  OCEPA cc-pVDZ gradient for the H2O molecule.
+
+
+ocepa-grad2:  OCEPA cc-pVDZ gradient for the NO radical
+
+
 ocepa1:       OCEPA cc-pVDZ energy for the H2O molecule.
 
 
@@ -403,31 +448,55 @@ ocepa3:       OCEPA cc-pVDZ energy with ROHF initial guess for the NO radical
 omp2-1:       OMP2 cc-pVDZ energy for the H2O molecule.
 
 
-omp2-2:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+omp2-2:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
 
 
-omp2-3:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+omp2-3:       OMP2 cc-pVDZ energy for the NO radical
 
 
-omp2-4:       OMP2 cc-pVDZ energy for the NO radical
+omp2-4:       SCS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-omp2-5:       OMP2 cc-pVDZ energy with ROHF initial guess orbitals for the NO radical
+omp2-5:       SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp2-grad1:   OMP2 cc-pVDZ gradient for the H2O molecule.
+
+
+omp2-grad2:   OMP2 cc-pVDZ gradient for the NO radical
+
+
+omp2_5-1:     OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+omp2_5-2:     OMP2 cc-pVDZ energy for the H2O molecule.
+
+
+omp2_5-grad1:  OMP2.5 cc-pVDZ gradient for the H2O molecule.
+
+
+omp2_5-grad2:  OMP2.5 cc-pVDZ gradient for the NO radical
 
 
 omp3-1:       OMP3 cc-pVDZ energy for the H2O molecule
 
 
-omp3-2:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+omp3-2:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
 
 
-omp3-3:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+omp3-3:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
 
 
-omp3-4:       OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
+omp3-4:       SCS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
 
 
-omp3-5:       OMP3 cc-pVDZ energy with ROHF initial guess for the NO radical
+omp3-5:       SOS-OMP3 cc-pVDZ geometry optimization for the H2O molecule.
+
+
+omp3-grad1:   OMP3 cc-pVDZ gradient for the H2O molecule.
+
+
+omp3-grad2:   OMP3 cc-pVDZ gradient for the NO radical
 
 
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
@@ -452,6 +521,9 @@ opt5:         6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atom
 
 
 opt6:         Various constrained energy minimizations of HOOH with cc-pvdz RHF
+
+
+opt7:         Various constrained energy minimizations of HOOH with cc-pvdz RHF. For the "frozen" bonds, angles and dihedrals, these coordinates are constrained to remain at their initial values.  For "fixed" bonds, angles, or dihedrals, the equilibrium (final) value of the coordinate is provided by the user.
 
 
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
@@ -505,13 +577,25 @@ pywrap-basis:  SAPT calculation on bimolecular complex where monomers are unspec
 pywrap-cbs1:  Various basis set extrapolation tests
 
 
+pywrap-checkrun-convcrit:  Advanced python example sets different sets of scf/post-scf conv crit and check to be sure computation has actually converged to the expected accuracy.
+
+
+pywrap-checkrun-rhf:  This checks that all energy methods can run with a minimal input and set symmetry.
+
+
+pywrap-checkrun-rohf:  This checks that all energy methods can run with a minimal input and set symmetry.
+
+
+pywrap-checkrun-uhf:  This checks that all energy methods can run with a minimal input and set symmetry.
+
+
 pywrap-db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
 
 pywrap-db2:   Database calculation, run in sow/reap mode.
 
 
-pywrap-db3:   Test that Python Molecule class processes geometry like PsiMod Molecule class.
+pywrap-db3:   Test that Python Molecule class processes geometry like psi4 Molecule class.
 
 
 pywrap-opt-sowreap:  Finite difference optimization, run in sow/reap mode.
@@ -535,7 +619,7 @@ sapt1:        SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy,
 sapt2:        SAPT0 aug-cc-pVDZ computation of the benzene-methane interaction energy, using the aug-pVDZ-JKFIT DF basis for SCF, the aug-cc-pVDZ-RI DF basis for SAPT0 induction and dispersion, and the aug-pVDZ-JKFIT DF basis for SAPT0 electrostatics and induction. This example uses frozen core as well as asyncronous I/O while forming the DF integrals and CPHF coefficients.
 
 
-sapt3:        SAPT2+3 aug-cc-pVDZ computation of the water dimer interaction energy,  using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+sapt3:        SAPT2+3(CCD) aug-cc-pVDZ computation of the water dimer interaction energy,  using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
 
 
 sapt4:        SAPT2+(3) aug-cc-pVDZ computation of the formamide dimer interaction energy, using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI  for SAPT. This example uses frozen core as well as MP2 natural orbital  approximations.

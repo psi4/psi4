@@ -70,11 +70,11 @@ set sapt {
 
 energy('sapt0',cast_up=True)
 
-Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
-Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
-Eind  = PsiMod.get_variable("SAPT IND ENERGY")
-Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
-ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")
+Eelst = psi4.get_variable("SAPT ELST ENERGY")
+Eexch = psi4.get_variable("SAPT EXCH ENERGY")
+Eind  = psi4.get_variable("SAPT IND ENERGY")
+Edisp = psi4.get_variable("SAPT DISP ENERGY")
+ET    = psi4.get_variable("SAPT SAPT0 ENERGY")
 
 --------------------------------------------------------------------------
 

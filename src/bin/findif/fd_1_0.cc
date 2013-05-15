@@ -1,3 +1,25 @@
+/*
+ *@BEGIN LICENSE
+ *
+ * PSI4: an ab initio quantum chemistry software package
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ *@END LICENSE
+ */
+
 /*! \file
     \ingroup OPTKING
     \brief fd_1_0(): compute gradient using energies and finite-differences
@@ -7,6 +29,8 @@
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
+#include <libmints/writer_file_prefix.h>
+
 using namespace boost::python;
 
 namespace psi { namespace findif {
@@ -108,9 +132,13 @@ fd_1_0(Options &options, const boost::python::list& python_energies)
 
   free(g_cart);
 
-  GradientWriter grad(mol, gradient_matrix);
-  grad.write("psi.file11.dat");
-  fprintf(outfile,"\tGradient written to file11.\n");
+  // Print a gradient file
+  if ( options.get_bool("GRADIENT_WRITE") ) {
+    GradientWriter grad(mol, gradient_matrix);
+    std::string gradfile = get_writer_file_prefix() + ".grad";
+    grad.write(gradfile);
+    fprintf(outfile,"\tGradient written.\n");
+  }
 
   SharedMatrix sgradient(gradient_matrix.clone());
   if (Process::environment.wavefunction()) {
