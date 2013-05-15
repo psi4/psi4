@@ -795,8 +795,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("BASIS", "");
   /*- The name of the response auxiliary basis set -*/
   options.add_str("DF_BASIS_SAPT", "");
-  /*- The name of the electrostatic/exchange auxiliary basis set -*/
-  options.add_str("DF_BASIS_ELST", "");
   /*- The maximum number of iterations in CPKS -*/
   options.add_int("MAXITER", 100);
   /*- Convergence criterion for residual of the CPKS coefficients in the SAPT
@@ -811,13 +809,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
   /*- Fork pathway, until I properly subclass these things -*/
-  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT L-SAPT0");
+  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT ASAPT");
   /*- Relative convergence in orbital localization -*/
   options.add_double("LOCAL_CONVERGENCE",1.0E-12);
   /*- Maximum iterations in localization -*/
   options.add_int("LOCAL_MAXITER", 50);
   /*- Localization algorithm -*/
   options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
+  /*- Atomic population type -*/
+  options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
+  /*- The name of the monomer-local electrostatics auxiliary basis set -*/
+  options.add_str("DF_BASIS_ELST", "");
   
   }
   if(name == "DCFT"|| options.read_globals()) {
