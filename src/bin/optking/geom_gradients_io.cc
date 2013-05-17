@@ -43,6 +43,7 @@
  #include <libmints/writer_file_prefix.h>
 //****AVC****//
 #include <libefp_solver/efp_solver.h>
+#include <libmints/vector3.h>
 //****AVC****//
 #elif defined(OPTKING_PACKAGE_QCHEM)
  #include <qchem.h> // typedefs INTEGER
@@ -92,87 +93,66 @@ int read_natoms(void) {
 void MOLECULE::read_geom_grad(void) {
   int nfrag = fragments.size();
   int nallatom = g_natom();
-  int EFPfrag = 0;
+//****AVC****//
+  int EFPfrag = efp_fragments.size();
+//****AVC****//
 
 #if defined(OPTKING_PACKAGE_PSI)
-  EFPfrag = efp_fragments.size();
 
   using namespace psi;
 
-  SharedMatrix pgradient;
-
 //****AVC****//
-  if(Opt_params.efp_fragments_only)
-  {
-//    p_efp->SetGeometry();
+  if(Opt_params.efp_fragments)
     p_efp->Compute();
-    pgradient = psi::Process::environment.gradient();
-    pgradient->set_name("Gradient, EFP-Fragment-Only");
-  }
-  else
 //****AVC****//
-    if (psi::Process::environment.wavefunction()) {
+
+  SharedMatrix pgradient;
+  if (psi::Process::environment.wavefunction()) {
     pgradient = psi::Process::environment.wavefunction()->gradient();
   } else {
     pgradient = psi::Process::environment.gradient();
   }
 
   Matrix& gradient = *pgradient.get();
-
-for(int i=0; i<EFPfrag; i++)
-  for(int j=3; j<6; j++)
-    gradient.set(i,j,0.00);
-
-gradient.set(0,5,0.000514);
-gradient.set(1,5,0.000818);
+//****AVC****//
+  for(int i=0; i<EFPfrag; i++)
+    for(int j=3; j<6; j++)
+      gradient.set(i,j,0.00);
+  gradient.set(0,5,0.000514);
+  gradient.set(1,5,0.000818);
+//****AVC****//
 
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
-gradient.print();
-geometry.print();
 
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
 
-  // Now read in gradients for EFP fragments
-  for (int f=0; f<EFPfrag; ++f) {
-    //GRADIENT
-    double *efp_f = init_array(6);
-    for (int i=0; i<6; ++i)
-      efp_f[i] = -1 * gradient(nallatom + f, i);
+  int atom =0;
+//****AVC****//
+  for (int f=0; f<EFPfrag; ++f)
+  {
+    double **geom = efp_fragments[f]->get_xyz_pointer();
+    double *force  = efp_fragments[f]->get_forces_pointer();
+    double *com   = efp_fragments[f]->get_com_pointer();
 
-    //GEOMETRY
-    double **efp_xyz = init_matrix(3,3);
     for(int i=0; i<3; i++)
       for(int j=0; j<3; j++)
-        efp_xyz[i][j] = geometry(nallatom + 3*f + i, j);
+        geom[i][j] = geometry(efp_fragments[f]->get_libmints_mol_index()+i, j);
 
-    double *efp_com = init_array(3);
-    efp_com = p_efp->get_com(f);
+    for(int i=0; i<6; i++)
+      force[i] = - gradient(f, i); //NOTE THAT INDEXING HERE WILL PROBABLY NOT WORK GENERALLY
 
-    efp_fragments[f]->set_forces(efp_f);
-    efp_fragments[f]->set_xyz(efp_xyz);
-    efp_fragments[f]->set_com(efp_com);
-fprintf(outfile, "\nforce on fragment %d:", f);
-    print_array(outfile, efp_fragments[f]->get_forces_pointer(), 6);
-fprintf(outfile, "\nfragment %d geom:\n", f);
-    print_matrix(outfile, efp_fragments[f]->get_xyz_pointer(), 3, 3);
-fprintf(outfile, "\nfragment %d com:\n", f);
-    print_array(outfile, efp_fragments[f]->get_com_pointer(), 3);
-    free_array(efp_f);
-    free_matrix(efp_xyz);
-    free_array(efp_com);
+    for(int i=0; i<3; i++)
+      com[i] = p_efp->get_com(f)[i];
+
+
+fprintf(outfile, "\nFragment %d:\n", f);
+print_matrix(outfile, geom, 3, 3); fprintf(outfile, "\n");
+print_array(outfile, force, 6); fprintf(outfile, "\n");
+print_array(outfile, com, 3); fprintf(outfile, "\n");
+
   }
-
 //****AVC****//
-  fprintf(outfile, "\ncurrent energy: %f\n", energy);
-  fprintf(outfile, "\nnfrag: %d\n", nfrag);
-  fprintf(outfile, "\np_efp->get_frag_count(): %d\n", p_efp->get_frag_count());
-  fprintf(outfile, "\nEFPfrag: %d\n", EFPfrag);
-  fprintf(outfile, "\nnallatom: %d\n", nallatom);
-  p_efp->print_out();
-//****AVC****//
-
-  int atom =0;
   for (int f=0; f<nfrag; ++f) {
       double *Z = fragments[f]->g_Z_pointer();
       double **geom = fragments[f]->g_geom_pointer();
@@ -270,7 +250,8 @@ fprintf(outfile, "\nfragment %d com:\n", f);
 #endif
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
-  EFPfrag = 0;
+
+  int EFPfrag = 0;
   int EFPatom = 0;
   if (Opt_params.efp_fragments) {
     EFPfrag = EFP::GetInstance()->NFragments();
@@ -344,6 +325,7 @@ fprintf(outfile, "\nfragment %d com:\n", f);
     ::FileMan_Close(FILE_ENERGY);
     energy = E_tmp;
   }
+
 #endif
 
   // update interfragment reference points if they exist
@@ -352,6 +334,8 @@ fprintf(outfile, "\nfragment %d com:\n", f);
 
   return;
 }
+
+
 
 void MOLECULE::symmetrize_geom(void) {
 
@@ -380,6 +364,7 @@ void MOLECULE::write_geom(void) {
 
   double **geom_2D = g_geom_2D();
   psi::Process::environment.molecule()->set_geometry(geom_2D);
+psi::Process::environment.molecule()->print();
   psi::Process::environment.molecule()->update_geometry();
   free_matrix(geom_2D);
 

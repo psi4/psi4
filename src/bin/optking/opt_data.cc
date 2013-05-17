@@ -63,6 +63,10 @@ STEP_DATA::~STEP_DATA() {
 // save geometry and energy
 void STEP_DATA::save_geom_energy(double *geom_in, double energy_in, int Ncart) {
   array_copy(geom_in, geom, Ncart);
+fprintf(outfile, "\nSTEP_DATA::save_geom_energy(geom_in, energy_in, Ncart)"); fflush(outfile);
+fprintf(outfile, "\nNcart = %d", Ncart); fflush(outfile);
+fprintf(outfile, "\nenergy_in = %f\n", energy_in); fflush(outfile);
+print_array(outfile, geom, Ncart); fflush(outfile);
   energy = energy_in;
 }
 
@@ -606,6 +610,10 @@ void OPT_DATA::write(void) {
   opt_io_open(opt::OPT_IO_OPEN_OLD);
 
   fprintf(outfile,"\tWriting optimization data to binary file.\n");
+  fprintf(outfile,"\tNintco = %d \n", Nintco);
+  fprintf(outfile,"\tNcart = %d \n", Ncart);
+  fprintf(outfile,"\titeration = %d \n", iteration);
+  fprintf(outfile,"\tsteps.size() = %d \n", steps.size());
   opt_io_write_entry("Nintco", (char *) &Nintco, sizeof(int));
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );

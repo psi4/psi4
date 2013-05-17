@@ -54,11 +54,30 @@ using namespace std;
 //   a fragment of that size.  Otherwise, this is an empty constructor.
 
 MOLECULE::MOLECULE(int num_atoms) {
+//****AVC****//
+  using namespace psi;
+  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
-  if (num_atoms > 0) {
-    FRAG *one_frag = new FRAG(num_atoms);
-    fragments.push_back(one_frag);
+  if (num_atoms > 0)
+  {
+    for(int f=0; f< mol->nfragments(); f++)
+      if(mol->fragment_levels_[f] == psi::Molecule::EFP)
+      {
+        EFP_FRAG *one_frag = new EFP_FRAG();
+        one_frag->add_dummy_intcos(6);
+        one_frag->set_libmints_mol_index(mol->fragments_[f].first);
+fprintf(outfile, "\nmol->fragments_[%d].first = %d", f, mol->fragments_[f].first); fflush(outfile);
+        efp_fragments.push_back(one_frag);
+      }
+    if(mol->nfragments() > efp_fragments.size())
+    {
+      FRAG *one_frag = new FRAG(num_atoms);
+      fragments.push_back(one_frag);
+    }
   }
+fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), fragments.size() = %d", fragments.size());
+fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), efp_fragments.size() = %d\n\n", efp_fragments.size()); fflush(outfile);
+//****AVC****//
 
   return;
 }

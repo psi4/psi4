@@ -72,7 +72,6 @@ for(int i=0; i<6*efp_fragments.size(); i++)
 
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
-print_matrix(outfile, H_inv, Nintco, Nintco);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
 

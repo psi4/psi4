@@ -49,6 +49,7 @@ computed by QChem.
 
 #include "frag.h"
 #include "mem.h"
+#include "linear_algebra.h"
 
 namespace opt {
 
@@ -56,11 +57,13 @@ class EFP_FRAG : public FRAG {
 
   // values and forces are provided by QChem, not computed by optking
   // they will be of dimension 6
+  int libmints_mol_index;
   double *values;
   double *forces;
 //****AVC****//
   double **xyz_geom;
   double *com;
+  double *mass;
 //****AVC****//
 
   public:
@@ -71,6 +74,7 @@ class EFP_FRAG : public FRAG {
 //****AVC****//
     xyz_geom = init_matrix(3,3);
     com = init_array(3);
+    mass = init_array(6);
 //****AVC****//
   }
 
@@ -83,13 +87,16 @@ class EFP_FRAG : public FRAG {
 //****AVC****//
   void set_xyz(double ** xyz_in);
   void set_com(double *com_in);
+  void set_libmints_mol_index(int index) { libmints_mol_index = index; }
 //****AVC****//
   void set_forces(double * forces_in);
 
   double * get_values_pointer(void) const { return values; }
 //****AVC****//
   double ** get_xyz_pointer(void) const { return xyz_geom; }
-  double * get_com_pointer(void) const {return com; }
+  double * get_geom_array (void);
+  double * get_com_pointer(void) const { return com; }
+  int get_libmints_mol_index(void) const { return libmints_mol_index; }
 //****AVC****//
   double * get_forces_pointer(void) const { return forces; }
 

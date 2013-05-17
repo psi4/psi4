@@ -128,7 +128,9 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
 
   int cnt =0;
 
+fprintf(outfile, "\n cnt = %d	line_present = %d\n", cnt, (int)line_present);
   while (line_present) {
+fprintf(outfile, "\n cnt = %d", cnt);
 
     if ((vline[0] == "F") || (vline[0] == "F*")) { // read first and last atom for fragment
       bool frozen = has_asterisk(vline[0]);
