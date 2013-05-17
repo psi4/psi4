@@ -382,7 +382,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   long int o = ndoccact;
   long int v = nvirt;
 
-  int iter              = 0;
+  iter                  = 0;
   int diis_iter         = 0;
   int replace_diis_iter = 1;
   double nrm            = 1.0;
@@ -455,8 +455,8 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
       // diis extrapolation
       if (diis_iter > 1){
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
       eccsd = CheckEnergy();
@@ -2782,8 +2782,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
       // diis extrapolation
       if (diis_iter>2) {
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
 
@@ -2812,7 +2812,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       }
 
       if (diis_iter<=maxdiis) diis_iter++;
-      //if (replace_diis_iter<maxdiis) replace_diis_iter++;
+      //else if (replace_diis_iter<maxdiis) replace_diis_iter++;
       //else replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
@@ -4236,8 +4236,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
 
       // diis extrapolation
       if (diis_iter>1){
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
       // if cepa_no_singles, zero t1
