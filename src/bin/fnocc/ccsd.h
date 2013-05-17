@@ -168,7 +168,7 @@ class CoupledCluster: public Wavefunction{
     void TwoJminusK(CCTaskParams params);
 
     /// DIIS functions
-    void DIIS(double*c,long int nvec,long int n);
+    void DIIS(double*c,long int nvec,long int n,int replace_diis_iter);
     void DIISOldVector(long int iter,int diis_iter,int replace_diis_iter);
     double DIISErrorVector(int diis_iter,int replace_diis_iter,int iter);
     void DIISNewAmplitudes(int diis_iter,int&replace_diis_iter);
