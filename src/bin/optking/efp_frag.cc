@@ -128,7 +128,7 @@ fprintf(outfile, "\nEFP_FRAG::displace()\n");
       xyz_geom[i][j] = xyz_new[i][j] + com[j] + T[j];
 
 
-fprintf(outfile, "new geometry: ");
+fprintf(outfile, "new geometry: \n");
 print_matrix(outfile, xyz_geom, 3, 3);
 
 fprintf(outfile, "\n         Phi            T\n");
