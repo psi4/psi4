@@ -84,6 +84,11 @@ class MOLECULE {
     int n = 0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
+
+//****AVC****//
+    n += 3*efp_fragments.size();
+//****AVC****//
+
     return n;
   }
 
@@ -157,8 +162,10 @@ class MOLECULE {
   double g_energy(void) const { return energy; }
 
   void update_connectivity_by_distances(void) {
+printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragments.size());
     for (int i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_distances();
+printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragments.size());
   }
 
   void update_connectivity_by_bonds(void) {
@@ -217,7 +224,6 @@ class MOLECULE {
     int n=0;
     for (int i=0; i<fragments.size(); ++i)
       n += fragments[i]->add_auxiliary_bonds();
-printf("adding %d auxiliary bonds\n", n);
     return n;
   }
 
@@ -295,6 +301,16 @@ printf("adding %d auxiliary bonds\n", n);
         g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
+
+//****AVC****//
+    for (int f=0; f<efp_fragments.size(); f++)
+    {
+      g_frag = efp_fragments[f]->get_geom_array();
+      for (int i=0; i<3*3; i++)
+        g[3*3*f+i] = g_frag[i];
+    }
+//****AVC****//
+
     return g;
   }
 
@@ -315,10 +331,14 @@ for(int f=0; f<efp_fragments.size(); f++)
 {
   g_efp_frag = efp_fragments[f]->get_xyz_pointer();
   for(int i=0; i<3; i++)
+  {
     for(int xyz=0; xyz<3; xyz++)
       g[g_atom_offset(fragments.size()-1)+3*f+i][xyz] = g_efp_frag[i][xyz];
+printf("\n%15.7f %15.7f %15.7f\n", g[3*f+i][0], g[3*f+i][1], g[3*f+i][2]);
+  }
   free_matrix(g_efp_frag);
 }
+
 
 //****AVC****//
 

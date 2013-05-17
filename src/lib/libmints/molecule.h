@@ -158,12 +158,12 @@ protected:
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometry_variables_;
-    /// The list of atom ranges defining each fragment from parent molecule
-    std::vector<std::pair<int, int> > fragments_;
     /// A list describing how to handle each fragment
     std::vector<FragmentType> fragment_types_;
-    /// A list describing the treatment level of each fragment
-    std::vector<FragmentLevel> fragment_levels_;
+//****AVC****//
+// moved fragments_ to public
+// moved fragment_levels_ to public
+//****AVC****//
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
     /// Reinterpret the coord entries or not
@@ -175,6 +175,12 @@ protected:
     bool zmat_;
 
 public:
+//****AVC****//
+    /// The list of atom ranges defining each fragment from parent molecule
+    std::vector<std::pair<int, int> > fragments_;
+    /// A list describing the treatment level of each fragment
+    std::vector<FragmentLevel> fragment_levels_;
+//****AVC****//
     Molecule();
     /// Copy constructor.
     Molecule(const Molecule& other);

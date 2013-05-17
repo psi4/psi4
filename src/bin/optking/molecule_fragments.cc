@@ -64,7 +64,6 @@ void MOLECULE::fragmentize(void) {
   int i, j, xyz;
 
   if (fragments.size() != 1) return;
-
   int natom = fragments[0]->g_natom();
   const bool * const * const connectivity = fragments[0]->g_connectivity_pointer();
 

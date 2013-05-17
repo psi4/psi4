@@ -25,8 +25,6 @@
 */
 
 #include "efp_frag.h"
-#include <libmints/matrix.h>
-#include <libmints/vector3.h>
 
 #define EXTERN
 #include "globals.h"
@@ -59,6 +57,15 @@ void EFP_FRAG::set_xyz(double ** xyz_in) {
 void EFP_FRAG::set_com(double *com_in) {
   for(int i=0; i<3; i++)
     com[i] = com_in[i];
+}
+
+double * EFP_FRAG::get_geom_array(void) {
+    int cnt=0;
+    double * geom_array = init_array(3*3);
+    for (int i=0; i<3; ++i)
+      for (int xyz=0; xyz<3; ++xyz)
+        geom_array[cnt++] = xyz_geom[i][xyz];
+    return geom_array;
 }
 
 // we don't have a valid B matrix for these
@@ -102,41 +109,31 @@ double **EFP_FRAG::H_guess(void) {
 void EFP_FRAG::displace (int efp_frag_index, double *dq)
 {
 fprintf(outfile, "\nEFP_FRAG::displace()\n");
-  using namespace psi;
+  double *T = init_array(3);
+  double *Phi = init_array(3);
+  array_copy(dq, T, 3);
+  array_copy(dq+3, Phi, 3);
+  double phi = array_norm(Phi, 3);
 
-  Vector3 T(dq[0],dq[1],dq[2]);
-  Vector3 Phi(dq[3],dq[4],dq[5]);
-  double phi = Phi.norm();
-
-  SharedMatrix XYZ(new Matrix("XYZ", 3, 3));
-  SharedMatrix R_XYZ(new Matrix("R_XYZ", 3, 3));
-  SharedMatrix TR_XYZ(new Matrix("TR_XYZ", 3, 3));
-  for(int i=0; i<3; i++)
-    for(int j=0; j<3; j++)
-      XYZ->set(i,j,xyz_geom[i][j] - com[j]);
-
-  XYZ->print_out();
-  R_XYZ = XYZ->matrix_3d_rotation(Phi, phi, 0);
-  R_XYZ->print_out();
-  for(int i=0; i<3; i++)
-    for(int j=0; j<3; j++)
-      TR_XYZ->set(i,j, R_XYZ->get(i,j) + T.get(j) + com[j]);
-  TR_XYZ->print_out();
-
-  double *xyz_array = init_array(3*3);
+  double ** xyz_new = init_matrix(3,3);
 
   for(int i=0; i<3; i++)
     for(int j=0; j<3; j++)
-      xyz_array[3*i+j] = TR_XYZ->get(i,j);
+      xyz_new[i][j] = xyz_geom[i][j] - com[j];
 
-fprintf(outfile, "\nxyz_array\n");
-  print_array(outfile, xyz_array, 3*3);
-  p_efp->set_frag_coordinates(efp_frag_index, 1, xyz_array);
-  free_array(xyz_array);
+  rotate_vecs(Phi, phi, xyz_new, 3);
 
-fprintf(outfile, "\n Phi            T\n");
+  for(int i=0; i<3; i++)
+    for(int j=0; j<3; j++)
+      xyz_geom[i][j] = xyz_new[i][j] + com[j] + T[j];
+
+
+fprintf(outfile, "new geometry: ");
+print_matrix(outfile, xyz_geom, 3, 3);
+
+fprintf(outfile, "\n         Phi            T\n");
 for(int i=0; i<3; i++)
-  fprintf(outfile, "%-15.8f%-15.8f\n", Phi.get(i), T.get(i));
+  fprintf(outfile, "%15.8f%15.8f\n", Phi[i], T[i]);
 
 }
 //****AVC****//
