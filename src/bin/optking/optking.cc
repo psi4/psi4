@@ -92,12 +92,6 @@ OptReturnType optking(void) {
   MOLECULE *mol1;
   bool newly_generated_coordinates; // Are internal coordinates produced or read-in?
 
-//****AVC****//
-Opt_params.efp_fragments = true;
-if(Opt_params.efp_fragments)
-  p_efp = psi::Process::environment.get_efp();
-//****AVC****//
-
   print_title(); // print header
 
   try {
@@ -112,6 +106,12 @@ if(Opt_params.efp_fragments)
 
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
+
+//****AVC****//
+Opt_params.efp_fragments = true;
+if(Opt_params.efp_fragments)
+  p_efp = psi::Process::environment.get_efp();
+//****AVC****//
 
   if (if_intco.is_open()) { // old internal coordinates are present
 

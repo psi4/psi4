@@ -133,7 +133,7 @@ print_matrix(outfile, xyz_geom, 3, 3);
 
 fprintf(outfile, "\n         Phi            T\n");
 for(int i=0; i<3; i++)
-  fprintf(outfile, "%15.8f%15.8f\n", Phi[i], T[i]);
+  fprintf(outfile, "%15.8f%15.8f\n", phi*Phi[i], T[i]);
 
 }
 //****AVC****//

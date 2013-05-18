@@ -58,6 +58,9 @@ MOLECULE::MOLECULE(int num_atoms) {
   using namespace psi;
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
 
+  int grad_index = 0;
+  int geom_index = 0;
+
   if (num_atoms > 0)
   {
     for(int f=0; f< mol->nfragments(); f++)
@@ -65,15 +68,25 @@ MOLECULE::MOLECULE(int num_atoms) {
       {
         EFP_FRAG *one_frag = new EFP_FRAG();
         one_frag->add_dummy_intcos(6);
-        one_frag->set_libmints_mol_index(mol->fragments_[f].first);
-fprintf(outfile, "\nmol->fragments_[%d].first = %d", f, mol->fragments_[f].first); fflush(outfile);
+        one_frag->set_libmints_grad_index(grad_index);
+        one_frag->set_libmints_geom_index(geom_index);
         efp_fragments.push_back(one_frag);
+        grad_index += 1;
+        geom_index += 3;
+fprintf(outfile, "\nEFP: grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
+fprintf(outfile, "\nEFP: geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
       }
-    if(mol->nfragments() > efp_fragments.size())
-    {
-      FRAG *one_frag = new FRAG(num_atoms);
-      fragments.push_back(one_frag);
-    }
+      else
+      {
+        FRAG *one_frag = new FRAG(mol->fragments_[f].second - mol->fragments_[f].first);
+        one_frag->set_libmints_grad_index(grad_index);
+        one_frag->set_libmints_geom_index(geom_index);
+        fragments.push_back(one_frag);
+        grad_index += mol->fragments_[f].second - mol->fragments_[f].first;
+        geom_index += mol->fragments_[f].second - mol->fragments_[f].first;
+fprintf(outfile, "\nQM:  grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
+fprintf(outfile, "\nQM:  geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
+      }
   }
 fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), fragments.size() = %d", fragments.size());
 fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), efp_fragments.size() = %d\n\n", efp_fragments.size()); fflush(outfile);

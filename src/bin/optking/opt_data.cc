@@ -530,6 +530,10 @@ void STEP_DATA::read(int istep, int Nintco, int Ncart) {
 // read entry from binary file ; file pointer must be in right place for qchem code
 //write entry to binary file
 void STEP_DATA::write(int istep, int Nintco, int Ncart) {
+fprintf(outfile, "\nf_q\n");
+print_array(outfile, f_q, Nintco);
+fprintf(outfile, "\ndq\n");
+print_array(outfile, dq, Nintco);
   char lbl[80];
   sprintf(lbl, "f_q %d", istep);
   opt_io_write_entry(lbl, (char *) f_q, Nintco*sizeof(double));

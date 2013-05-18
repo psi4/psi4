@@ -48,6 +48,10 @@ class FRAG {
 
  protected: // private, except the efp derived class can access
   int natom;      //< number of atoms in fragment
+//****AVC****//
+  int libmints_grad_index;
+  int libmints_geom_index;
+//****AVC****//
   double *Z;      //< atomic numbers
   double **geom;  //< cartesian coordinates
   double **grad;  //< cartesian coordinates
@@ -168,6 +172,14 @@ class FRAG {
   bool present(const SIMPLE *one) const;
 
   int find(const SIMPLE *one) const;
+
+//****AVC****//
+  void set_libmints_grad_index(int index) { libmints_grad_index = index; }
+  void set_libmints_geom_index(int index) { libmints_geom_index = index; }
+  int get_libmints_grad_index(void) const { return libmints_grad_index; }
+  int get_libmints_geom_index(void) const { return libmints_geom_index; }
+//****AVC****//
+
 
   // displace fragment by dq ; forces and offset are provided for printing
   void displace(double *dq, double *fq, int atom_offset=0);
