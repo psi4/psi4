@@ -1471,9 +1471,9 @@ void OCCWave::mp2_5_manager()
 
             if (ekt_ip_ == "TRUE") {
                 ekt_ip();
-                ekt_ip();
                 fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
                 tstop();
+                exit(EXIT_SUCCESS);
             }
 
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
