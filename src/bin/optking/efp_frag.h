@@ -57,10 +57,11 @@ class EFP_FRAG : public FRAG {
 
   // values and forces are provided by QChem, not computed by optking
   // they will be of dimension 6
-  int libmints_mol_index;
   double *values;
   double *forces;
 //****AVC****//
+  int libmints_grad_index;
+  int libmints_geom_index;
   double **xyz_geom;
   double *com;
   double *mass;
@@ -87,7 +88,8 @@ class EFP_FRAG : public FRAG {
 //****AVC****//
   void set_xyz(double ** xyz_in);
   void set_com(double *com_in);
-  void set_libmints_mol_index(int index) { libmints_mol_index = index; }
+  void set_libmints_grad_index(int index) { libmints_grad_index = index; }
+  void set_libmints_geom_index(int index) { libmints_geom_index = index; }
 //****AVC****//
   void set_forces(double * forces_in);
 
@@ -96,7 +98,8 @@ class EFP_FRAG : public FRAG {
   double ** get_xyz_pointer(void) const { return xyz_geom; }
   double * get_geom_array (void);
   double * get_com_pointer(void) const { return com; }
-  int get_libmints_mol_index(void) const { return libmints_mol_index; }
+  int get_libmints_grad_index(void) const { return libmints_grad_index; }
+  int get_libmints_geom_index(void) const { return libmints_geom_index; }
 //****AVC****//
   double * get_forces_pointer(void) const { return forces; }
 

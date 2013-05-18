@@ -101,11 +101,6 @@ void MOLECULE::read_geom_grad(void) {
 
   using namespace psi;
 
-//****AVC****//
-  if(Opt_params.efp_fragments)
-    p_efp->Compute();
-//****AVC****//
-
   SharedMatrix pgradient;
   if (psi::Process::environment.wavefunction()) {
     pgradient = psi::Process::environment.wavefunction()->gradient();
@@ -114,12 +109,32 @@ void MOLECULE::read_geom_grad(void) {
   }
 
   Matrix& gradient = *pgradient.get();
-//****AVC****//
-  for(int i=0; i<EFPfrag; i++)
+
+//****AVC****//		//NONE OF THIS SHOULD END UP IN THE WORKING CODE -- JUST A HACK TO GET A REASONABLE GRADIENT
+  for(int i=0; i<2; i++)
     for(int j=3; j<6; j++)
       gradient.set(i,j,0.00);
   gradient.set(0,5,0.000514);
   gradient.set(1,5,0.000818);
+
+if(nfrag > 0)
+{
+fprintf(outfile, "\nWhat does the mixed gradient look like?\n");
+gradient.print();
+fprintf(outfile, "Looks a lot like an EFP-only gradient ...\n");
+fprintf(outfile, "\nFake gradient:\n");
+
+  SharedMatrix efp_grad = gradient.clone();
+  SharedMatrix qm_grad(new Matrix(nallatom - EFPfrag*3, 6));
+  vector<SharedMatrix> dummy_grad;
+  dummy_grad.push_back(efp_grad);
+  dummy_grad.push_back(qm_grad);
+
+  SharedMatrix mixed_grad = mixed_grad->vertcat(dummy_grad);
+
+  gradient = *mixed_grad.get();
+  gradient.print();
+}
 //****AVC****//
 
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
@@ -136,19 +151,24 @@ void MOLECULE::read_geom_grad(void) {
     double *com   = efp_fragments[f]->get_com_pointer();
 
     for(int i=0; i<3; i++)
-      for(int j=0; j<3; j++)
-        geom[i][j] = geometry(efp_fragments[f]->get_libmints_mol_index()+i, j);
+    {
+      force[i]   = - gradient(efp_fragments[f]->get_libmints_grad_index(), i);  //forces
+      force[i+3] = - gradient(efp_fragments[f]->get_libmints_grad_index(), i+3);//torques
 
-    for(int i=0; i<6; i++)
-      force[i] = - gradient(f, i); //NOTE THAT INDEXING HERE WILL PROBABLY NOT WORK GENERALLY
+      com[i] = p_efp->get_com(f)[i];  //center of mass
 
-    for(int i=0; i<3; i++)
-      com[i] = p_efp->get_com(f)[i];
+      for(int j=0; j<3; j++)          //geometry
+        geom[i][j] = geometry(efp_fragments[f]->get_libmints_geom_index()+i, j);
 
+      atom++;
+    }
 
-fprintf(outfile, "\nFragment %d:\n", f);
+fprintf(outfile, "\nEFP Fragment %d:\n", f);
+fprintf(outfile, "geom\n");
 print_matrix(outfile, geom, 3, 3); fprintf(outfile, "\n");
+fprintf(outfile, "force\n");
 print_array(outfile, force, 6); fprintf(outfile, "\n");
+fprintf(outfile, "com\n");
 print_array(outfile, com, 3); fprintf(outfile, "\n");
 
   }
@@ -159,18 +179,26 @@ print_array(outfile, com, 3); fprintf(outfile, "\n");
       double **grad = fragments[f]->g_grad_pointer();
 
       for (int i=0; i<fragments[f]->g_natom(); ++i) {
-          Z[i] = mol->Z(atom);
+          Z[i] = mol->Z(fragments[f]->get_libmints_geom_index()+i);
 
-          geom[i][0] = geometry(atom, 0);
-          geom[i][1] = geometry(atom, 1);
-          geom[i][2] = geometry(atom, 2);
+          geom[i][0] = geometry(fragments[f]->get_libmints_geom_index()+i, 0);
+          geom[i][1] = geometry(fragments[f]->get_libmints_geom_index()+i, 1);
+          geom[i][2] = geometry(fragments[f]->get_libmints_geom_index()+i, 2);
 
-          grad[i][0] = gradient(atom, 0);
-          grad[i][1] = gradient(atom, 1);
-          grad[i][2] = gradient(atom, 2);
+          grad[i][0] = gradient(fragments[f]->get_libmints_grad_index()+i, 0);
+          grad[i][1] = gradient(fragments[f]->get_libmints_grad_index()+i, 1);
+          grad[i][2] = gradient(fragments[f]->get_libmints_grad_index()+i, 2);
 
           atom++;
       }
+fprintf(outfile, "\nQM Fragment:\n"); fflush(outfile);
+fprintf(outfile, "Z\n");
+print_array(outfile, Z, fragments[f]->g_natom());
+fprintf(outfile, "geom\n");
+print_matrix(outfile, geom, fragments[f]->g_natom(), 3); fprintf(outfile, "\n");
+fprintf(outfile, "grad\n");
+print_matrix(outfile, grad, fragments[f]->g_natom(), 3); fprintf(outfile, "\n");
+
   }
 
 
@@ -363,9 +391,10 @@ void MOLECULE::write_geom(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   double **geom_2D = g_geom_2D();
+print_matrix(outfile, geom_2D, efp_fragments.size()*3, 3); fflush(outfile);
   psi::Process::environment.molecule()->set_geometry(geom_2D);
-psi::Process::environment.molecule()->print();
   psi::Process::environment.molecule()->update_geometry();
+
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
