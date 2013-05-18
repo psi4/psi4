@@ -383,7 +383,14 @@ void OCCWave::mp2_manager()
             fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -794,14 +801,6 @@ void OCCWave::mp3_manager()
 	Process::environment.globals["SCS-MP3-VDW CORRELATION ENERGY"] = Escsmp3vdw - Escf;
 	Process::environment.globals["SOS-PI-MP3 CORRELATION ENERGY"] = Esospimp3 - Escf;
 
-        // EKT
-        if (ekt_ip_ == "TRUE") { 
-	    omp3_response_pdms();
-	    gfock();
-            gfock_diag();
-            ekt_ip();
-        }
-
         // if scs on	
 	if (do_scs == "TRUE") {
 	    if (scs_type_ == "SCS") {
@@ -850,7 +849,14 @@ void OCCWave::mp3_manager()
             fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -1122,7 +1128,14 @@ void OCCWave::cepa_manager()
             fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+                exit(EXIT_SUCCESS);
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
@@ -1455,7 +1468,14 @@ void OCCWave::mp2_5_manager()
             fflush(outfile);
 	    mograd();
             coord_grad();
-            if (ekt_ip_ == "TRUE") ekt_ip();
+
+            if (ekt_ip_ == "TRUE") {
+                ekt_ip();
+                ekt_ip();
+                fprintf(outfile,"\tAn EKT computation for a non-OO method requested. Analytic gradients will not be computed! \n");
+                tstop();
+            }
+
 	    fprintf(outfile,"\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
 	    fflush(outfile);
         }
