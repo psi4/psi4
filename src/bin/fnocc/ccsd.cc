@@ -264,7 +264,11 @@ double CoupledCluster::compute_energy() {
 
      // now there should be space for t2
      if (t2_on_disk){
-        tb = (double*)malloc(o*o*v*v*sizeof(double));
+         tb = (double*)malloc(o*o*v*v*sizeof(double));
+         boost::shared_ptr<PSIO> psio (new PSIO());
+         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tb[0],o*o*v*v*sizeof(double));
+         psio->close(PSIF_DCC_T2,1);
      }
 
      bool do_cc = !options_.get_bool("RUN_MP4") && !options_.get_bool("RUN_MP3");
@@ -2536,8 +2540,6 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  //free(Fia);
-  //free(Fai);
   free(Qmo);
   free(Abij);
   free(Sbij);
@@ -3362,7 +3364,7 @@ void DFCoupledCluster::AllocateMemory() {
 
   double total_memory = dim+(o*o*v*v+o*v)+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
   long int max = nvirt*nvirt*nQmax > (nfzv+ndocc+nvirt)*ndocc*nQmax ? nvirt*nvirt*nQmax : (nfzv+ndocc+nvirt)*ndocc*nQmax;
-  double df_memory    = nQ*(o*o+o*v)+max;
+  double df_memory    = nQ*(o*o+o*v)+max + nso*nso*nQmax;
 
   total_memory       *= 8./1024./1024.;
   df_memory          *= 8./1024./1024.;

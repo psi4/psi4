@@ -809,7 +809,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Lambda in Pauli Blockade -*/
   options.add_double("PB_LAMBDA",1E5);
   /*- Fork pathway, until I properly subclass these things -*/
-  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT ASAPT");
+  options.add_str("DFT_SAPT_TYPE", "SAPT0", "SAPT0 DFT-SAPT");
   /*- Relative convergence in orbital localization -*/
   options.add_double("LOCAL_CONVERGENCE",1.0E-12);
   /*- Maximum iterations in localization -*/
@@ -820,6 +820,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("ASAPT_POPULATION_TYPE", "LOWDIN", "MULLIKEN LOWDIN");
   /*- The name of the monomer-local electrostatics auxiliary basis set -*/
   options.add_str("DF_BASIS_ELST", "");
+  /*- The name of the monomer-local electrostatics primary basis set -*/
+  options.add_str("BASIS_ELST", "");
   
   }
   if(name == "DCFT"|| options.read_globals()) {
