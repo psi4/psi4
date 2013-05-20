@@ -238,7 +238,7 @@ class DFCoupledCluster : public CoupledCluster{
     void UpdateT1();
 
     /// update t2 amplitudes
-    void UpdateT2();
+    virtual void UpdateT2();
 
     /// v^4 CC diagram
     virtual void Vabcd1();
@@ -247,7 +247,7 @@ class DFCoupledCluster : public CoupledCluster{
     double*Abij,*Sbij;
 
     /// check energy
-    double CheckEnergy();
+    virtual double CheckEnergy();
 
     ///  3-index integrals for density fitting.
     bool ischolesky_;
@@ -270,14 +270,14 @@ class DFCoupledCluster : public CoupledCluster{
     virtual void CCResidual();
 
     /// SCS-MP2 function and variables
-    void SCS_MP2();
+    virtual void SCS_MP2();
 
     /// SCS-CCSD function and variables
-    void SCS_CCSD();
+    virtual void SCS_CCSD();
 
     /// CIM SCS-CCSD function and variables
-    void Local_SCS_CCSD();
-    void Local_SCS_MP2();
+    virtual void Local_SCS_CCSD();
+    virtual void Local_SCS_MP2();
 };
 
 // coupled pair class
