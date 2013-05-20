@@ -27,6 +27,7 @@
 #include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
+#include <libmints/local.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
@@ -36,6 +37,7 @@
 using namespace boost;
 using namespace boost::python;
 using namespace psi;
+
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
@@ -586,6 +588,19 @@ void export_mints()
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
 
+    typedef boost::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>);
+
+    class_<Localizer, boost::shared_ptr<Localizer>, boost::noncopyable>("Localizer", "docstring", no_init).
+            def("build", localizer_with_type(&Localizer::build), "docstring").
+            staticmethod("build").
+            def("localize", &Localizer::localize, "Perform the localization procedure").
+            add_property("L", &Localizer::L, "Localized orbital coefficients").
+            add_property("U", &Localizer::U, "Orbital rotation matrix").
+            add_property("converged", &Localizer::converged, "Did the localization procedure converge?");
+
+    class_<BoysLocalizer, boost::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
+    class_<PMLocalizer, boost::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
+
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write, "docstring");
@@ -607,7 +622,4 @@ void export_mints()
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
-
-
-
 }

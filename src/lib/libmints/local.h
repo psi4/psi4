@@ -75,6 +75,7 @@ public:
     
     virtual ~Localizer();
 
+    static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C);
     static boost::shared_ptr<Localizer> build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
     static boost::shared_ptr<Localizer> build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options);
     
