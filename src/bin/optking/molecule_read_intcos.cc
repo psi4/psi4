@@ -344,6 +344,9 @@ fprintf(outfile, "\n cnt = %d", cnt);
       interfragments.push_back(one_IF);
 
     } // end of if vline[0] == 'I'
+    else if (vline[0] == "E") {  // EFP fragment definition 
+
+    }
     else {
       error << "Unknown initial character on line " << line_num << ".\n";
       throw(INTCO_EXCEPT(error.str().c_str()));
