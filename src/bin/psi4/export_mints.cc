@@ -248,6 +248,22 @@ void export_mints()
             def("exp", &GaussianShell::exp, "docstring").
             def("coef", &GaussianShell::coef, "docstring");
 
+    class_<OneBodyAOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
+            def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
+            add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
+
+    class_<OverlapInt, boost::shared_ptr<OverlapInt>, bases<OneBodyAOInt>, boost::noncopyable>("OverlapInt", "docstring", no_init);
+    class_<DipoleInt, boost::shared_ptr<DipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("DipoleInt", "docstring", no_init);
+    class_<QuadrupoleInt, boost::shared_ptr<QuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("QuadrupoleInt", "docstring", no_init);
+    class_<MultipoleInt, boost::shared_ptr<MultipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("MultipoleInt", "docstring", no_init);
+    class_<TracelessQuadrupoleInt, boost::shared_ptr<TracelessQuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("TracelessQuadrupoleInt", "docstring", no_init);
+    class_<ElectricFieldInt, boost::shared_ptr<ElectricFieldInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectricFieldInt", "docstring", no_init);
+    class_<KineticInt, boost::shared_ptr<KineticInt>, bases<OneBodyAOInt>, boost::noncopyable>("KineticInt", "docstring", no_init);
+    class_<PotentialInt, boost::shared_ptr<PotentialInt>, bases<OneBodyAOInt>, boost::noncopyable>("PotentialInt", "docstring", no_init);
+    class_<PseudospectralInt, boost::shared_ptr<PseudospectralInt>, bases<OneBodyAOInt>, boost::noncopyable>("PseudospectralInt", "docstring", no_init);
+    class_<ElectrostaticInt, boost::shared_ptr<ElectrostaticInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectrostaticInt", "docstring", no_init);
+    class_<NablaInt, boost::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
+    class_<AngularMomentumInt, boost::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
 
     typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
@@ -286,7 +302,19 @@ void export_mints()
             def("f12_double_commutator", &IntegralFactory::f12_double_commutator, f12_double_commutator_overloads("docstring")[return_value_policy<manage_new_object>()]);
             def("f12_squared", &IntegralFactory::f12_squared, f12_squared_overloads("docstring")[return_value_policy<manage_new_object>()]);
             def("erf_eri", &IntegralFactory::erf_eri, erf_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("erf_complement_eri", &IntegralFactory::erf_complement_eri, erf_complement_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("erf_complement_eri", &IntegralFactory::erf_complement_eri, erf_complement_eri_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_overlap", &IntegralFactory::ao_overlap, ao_overlap_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_dipole", &IntegralFactory::ao_dipole, ao_dipole_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_kinetic", &IntegralFactory::ao_kinetic, ao_kinetic_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_potential", &IntegralFactory::ao_potential, ao_potential_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral, ao_pseudospectral_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_nabla", &IntegralFactory::ao_nabla, ao_nabla_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum, ao_angular_momentum_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_quadrupole", &IntegralFactory::ao_quadrupole, return_value_policy<manage_new_object>(), "docstring").
+            //def("ao_multipoles", &IntegralFactory::ao_multipoles, "docstring").
+            def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, return_value_policy<manage_new_object>(), "docstring").
+            def("electric_field", &IntegralFactory::electric_field, return_value_policy<manage_new_object>(), "docstring").
+            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring");
 
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
