@@ -114,8 +114,10 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
   bool D_on[6];     // interfragment coordinates active
   bool D_frozen[6]; // interfragment coordinates frozen
   FRAG * frag1;
+  EFP_FRAG * efp_frag1;
   int first_atom, last_atom;
   int first_frag, second_frag;
+  int geom_index, grad_index;
   vector<string> vline;
   vector<int> A1; vector<int> A2; vector<int> A3;
   vector<int> B1; vector<int> B2; vector<int> B3;
@@ -126,11 +128,7 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
   // read in line and tokenize
   line_present = myline(fintco, vline, line_num);
 
-  int cnt =0;
-
-fprintf(outfile, "\n cnt = %d	line_present = %d\n", cnt, (int)line_present);
   while (line_present) {
-fprintf(outfile, "\n cnt = %d", cnt);
 
     if ((vline[0] == "F") || (vline[0] == "F*")) { // read first and last atom for fragment
       bool frozen = has_asterisk(vline[0]);
@@ -344,8 +342,27 @@ fprintf(outfile, "\n cnt = %d", cnt);
       interfragments.push_back(one_IF);
 
     } // end of if vline[0] == 'I'
-    else if (vline[0] == "E") {  // EFP fragment definition 
+    else if (vline[0] == "E") { // EFP fragment
+      if (vline.size() != 3) {
+        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
+        throw(INTCO_EXCEPT(error.str().c_str()));
+      }
+      if ( !stoi(vline[1], &geom_index) || !stoi(vline[2], &grad_index)) {
+        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
+        throw(INTCO_EXCEPT(error.str().c_str()));
+      }
 
+      --geom_index;
+      --grad_index;
+
+      // create fragment
+      efp_frag1 = new EFP_FRAG;
+      efp_frag1->add_dummy_intcos(6);
+      efp_frag1->set_libmints_geom_index(geom_index);
+      efp_frag1->set_libmints_grad_index(grad_index);
+      efp_fragments.push_back(efp_frag1);
+
+      line_present = myline(fintco, vline, line_num);
     }
     else {
       error << "Unknown initial character on line " << line_num << ".\n";

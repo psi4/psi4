@@ -110,14 +110,12 @@ void MOLECULE::read_geom_grad(void) {
 
   Matrix& gradient = *pgradient.get();
 
-/*
 //  AVC - NONE OF THIS SHOULD END UP IN THE WORKING CODE -- JUST A HACK TO GET A REASONABLE GRADIENT
   for(int i=0; i<2; i++)
     for(int j=3; j<6; j++)
       gradient.set(i,j,0.00);
   gradient.set(0,5,0.000514);
   gradient.set(1,5,0.000818);
-*/
 
 if(nfrag > 0)
 {

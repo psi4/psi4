@@ -87,6 +87,7 @@ class EFP_FRAG : public FRAG {
   void set_values(double * values_in);
 //****AVC****//
   void set_xyz(double ** xyz_in);
+  void set_geom_array(double * geom_array );
   void set_com(double *com_in);
   void set_libmints_grad_index(int index) { libmints_grad_index = index; }
   void set_libmints_geom_index(int index) { libmints_geom_index = index; }
