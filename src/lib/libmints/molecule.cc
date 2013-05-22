@@ -1743,10 +1743,11 @@ void Molecule::print_in_input_format() const
     }
 }
 
-void Molecule::print() const
+void Molecule::print(FragmentLevel type) const
 {
     if (WorldComm->me() == 0) {
-        if (natom()) {
+
+        if (natom(type)) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
             fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
@@ -1754,15 +1755,21 @@ void Molecule::print() const
             fprintf(outfile,"       Center              X                  Y                   Z       \n");
             fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
-            for(int i = 0; i < natom(); ++i){
-                Vector3 geom = atoms_[i]->compute();
-                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
-                for(int j = 0; j < 3; j++)
-                    fprintf(outfile, "  %17.12f", geom[j]);
-                fprintf(outfile,"\n");
+            for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+
+                if ( fragment_levels_[fragment] & type ) {
+
+                    for(int i = fragments_[fragment].first; i < fragments_[fragment].second; ++i){
+                        Vector3 geom = atoms_[i]->compute();
+                        fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                        for(int j = 0; j < 3; j++)
+                            fprintf(outfile, "  %17.12f", geom[j]);
+                        fprintf(outfile,"\n");
+                    }
+                    fprintf(outfile,"\n");
+                    fflush(outfile);
+                }
             }
-            fprintf(outfile,"\n");
-            fflush(outfile);
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
@@ -3536,5 +3543,18 @@ std::string Molecule::full_point_group() const {
   pg_with_n.replace(start_pos, n_integer.str().length(), n_integer.str());
 
   return  pg_with_n;
+}
+
+int Molecule::natom(FragmentLevel type) const{
+    int n = 0;
+    if (atoms_.size()) {
+        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+            if ( fragment_levels_[fragment] & type ) {
+                n += fragments_[fragment].second - fragments_[fragment].first;
+            }
+
+        }
+    }
+    return n;
 }
 

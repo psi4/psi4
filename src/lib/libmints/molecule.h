@@ -81,9 +81,12 @@ public:
         Real,    /*!< Include, as normal */
         Ghost    /*!< Include, but with ghost atoms */
     };
+    /// masks for classes of fragmenst to be acted upon by molecule functions
+    /// The next fragment type should be 4, and ALL should be 7.
     enum FragmentLevel {
-        QM,      /*!< Quantum mechanical */
-        EFP      /*!< Effective fragment potential */
+        QM  = 1,    /*!< Quantum mechanical */
+        EFP = 2,    /*!< Effective fragment potential */
+        ALL = 3     /*!< All atom types */
     };
 
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
@@ -253,7 +256,7 @@ public:
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom() const { return atoms_.size(); }
+    int natom(FragmentLevel type = QM) const; 
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
@@ -395,7 +398,7 @@ public:
     RotorType rotor_type(double tol = FULL_PG_TOL) const;
 
     /// Print the molecule
-    void print() const;
+    void print(FragmentLevel type = QM) const;
 
     /// Print the molecule, adding spacers
     void print_cluster() const;
