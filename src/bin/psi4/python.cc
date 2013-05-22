@@ -1343,8 +1343,6 @@ void Python::run(FILE *input)
 {
     using namespace boost::python;
     char *s = 0;
-    if (input == NULL)
-        return;
 
     if (!Py_IsInitialized()) {
         s = strdup("psi");
@@ -1398,12 +1396,6 @@ void Python::run(FILE *input)
         Py_DECREF(sysmod);
     }
     if (Py_IsInitialized()) {
-        // Stupid way to read in entire file.
-        char line[256];
-        std::stringstream file;
-        while(fgets(line, sizeof(line), input)) {
-            file << line;
-        }
 
         try {
             string inputfile;
@@ -1413,6 +1405,14 @@ void Python::run(FILE *input)
             PyRun_SimpleString(s);
 
             if (!interactive_python) {
+
+                // Stupid way to read in entire file.
+                char line[256];
+                std::stringstream file;
+                while(fgets(line, sizeof(line), input)) {
+                    file << line;
+                }
+
                 if (!skip_input_preprocess) {
                     // Process the input file
                     PyObject *input;
@@ -1448,11 +1448,10 @@ void Python::run(FILE *input)
             else { // interactive python
                 // Process the input file
                 PyObject *input;
+
                 PY_TRY(input, PyImport_ImportModule("interactive") );
                 PyObject *function;
                 PY_TRY(function, PyObject_GetAttrString(input, "run"));
-//                PyObject *pargs;
-//                PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
                 PyObject *ret;
                 PY_TRY( ret, PyEval_CallObject(function, NULL) );
             }

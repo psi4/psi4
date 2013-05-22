@@ -110,10 +110,19 @@ void export_mints()
     class_<Dimension>("Dimension", "docstring").
             def(init<int>()).
             def(init<int, const std::string&>()).
-            def("init", &Dimension::init, "docstring").
-            def("n", &Dimension::n, return_value_policy<copy_const_reference>(), "docstring").
-            def("name", &Dimension::name, return_value_policy<copy_const_reference>(), "docstring").
-            def("set_name", &Dimension::set_name, "docstring").
+            def("print_out",
+                &Dimension::print,
+                "docstring").
+            def("init",
+                &Dimension::init,
+                "Re-initializes the dimension object").
+            def("n", &Dimension::n,
+                return_value_policy<copy_const_reference>(),
+                "The order of the dimension").
+            add_property("name",
+                         make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
+                         &Dimension::set_name,
+                         "The name of the dimension. Used in printing.").
             def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
