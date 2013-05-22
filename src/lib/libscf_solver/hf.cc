@@ -357,13 +357,17 @@ void HF::integrals()
         jk_ = JK::build_JK();
     }
     catch(const BasisSetNotFound& e) {
-        fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        fprintf(outfile, "%s\n", e.what());
-        fprintf(outfile, "   Turning off DF and switching to PK method.\n");
-        fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        options_.set_str("SCF", "SCF_TYPE", "PK");
-        options_.set_bool("SCF", "DF_SCF_GUESS", false);
-        jk_ = JK::build_JK();
+        if (options_.get_str("SCF_TYPE") == "DF" || options_.get_int("DF_SCF_GUESS") == 1) {
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            fprintf(outfile, "%s\n", e.what());
+            fprintf(outfile, "   Turning off DF and switching to PK method.\n");
+            fprintf(outfile, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+            options_.set_str("SCF", "SCF_TYPE", "PK");
+            options_.set_bool("SCF", "DF_SCF_GUESS", false);
+            jk_ = JK::build_JK();
+        }
+        else
+            throw; // rethrow the error
     }
 
     // Tell the JK to print
