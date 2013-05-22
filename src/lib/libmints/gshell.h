@@ -56,6 +56,9 @@ private:
     std::vector<double> exp_;
     /// Contraction coefficients (of length nprimitives_)
     std::vector<double> coef_;
+    /// Original (un-normalized) contraction coefficients (of length nprimitives)
+    /// Only used in printing.
+    std::vector<double> original_coef_;
 
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;

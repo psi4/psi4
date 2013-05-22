@@ -849,22 +849,21 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     if (options["MRCC_LEVEL"].has_changed())
         exlevel = options.get_int("MRCC_LEVEL");
 
-    int nsing = 1;
+    // defaults pertaining to closed shell calculation
     int closed_shell = 1;
     int spatial_orbitals = 1;
+    int nsing = 1;
     int ndoub = 0;
-    if (pertcc && (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")) {
-        nsing = 0;
-        closed_shell = 0;
-        spatial_orbitals = 0;
-        ndoub = 1;
-    }
-
-    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF")
-        closed_shell = 0;
+    int ntrip = 0;
 
     int nsocc = active_socc.sum();
-    int ntrip = 0;
+
+    if (options.get_str("REFERENCE") == "ROHF" || options.get_str("REFERENCE") == "UHF") {
+        closed_shell = 0;
+        nsing = 0;
+        spatial_orbitals = 0;
+    }
+
     if (nsocc == 0) {
         nsing = 1;
         ntrip = 0;

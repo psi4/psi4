@@ -271,11 +271,6 @@ protected:
     /// Computes the center for a given property, for the current molecule
     Vector3 compute_center(const double *property) const;
 public:
-    /// Compute Mulliken Charges using a specialized Da
-    boost::shared_ptr<Vector> compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so);
-//aed
-    double*Qa,*Qb;
-    SharedMatrix Da_ao_custom_Da_so(boost::shared_ptr<Matrix>Da_so);
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
     /// Constructor, uses globals and Process::environment::reference wavefunction
