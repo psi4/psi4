@@ -296,7 +296,12 @@ inline int sign_of_double(double d) {
 // do hessian update
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
-fprintf(outfile, "\nAttempting H_update\n"); fflush(outfile);
+printf("\nAttempting H_update");
+printf("\nNintco is %d", Nintco);
+printf("\nNcart is %d\n", Ncart);
+fprintf(outfile, "\nAttempting H_update"); fflush(outfile);
+fprintf(outfile, "\nNintco is %d", Nintco); fflush(outfile);
+fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
 
   if (Opt_params.H_update == OPT_PARAMS::BFGS)
     fprintf(outfile,"\n\tPerforming BFGS update");
@@ -323,6 +328,13 @@ fprintf(outfile, "\nAttempting H_update\n"); fflush(outfile);
   q = mol.intco_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
 
+printf("\nforces read in\n");
+fprintf(outfile, "\nforces:\n");
+print_array(outfile, f, Nintco); fflush(outfile);
+printf("\ncoords read in\n");
+fprintf(outfile, "\ncoords:\n");
+print_array(outfile, x, Ncart); fflush(outfile);
+
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
     step_start = 0;
   }
@@ -335,7 +347,8 @@ fprintf(outfile, "\nAttempting H_update\n"); fflush(outfile);
   if ( (step_this-step_start) > steps_since_last_H)
     step_start = step_this - steps_since_last_H;
 
-  fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
+  printf(" with previous %d gradient(s).\n", step_this-step_start);
+  fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start); fflush(outfile);
 
   double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
   double gq, qq, qz, zz, phi;
@@ -352,8 +365,19 @@ fprintf(outfile, "\nAttempting H_update\n"); fflush(outfile);
     f_old = g_forces_pointer(i_step);
     x_old = g_geom_const_pointer(i_step);
 
+printf("\nold forces read in\n");
+fprintf(outfile, "\nold forces:\n");
+print_array(outfile, f_old, Nintco); fflush(outfile);
+printf("\nold coords read in\n");
+fprintf(outfile, "\nold coords:\n");
+print_array(outfile, x_old, Ncart); fflush(outfile);
+
     mol.set_geom_array(x_old);
-    q_old = mol.intco_values();
+    q_old = mol.intco_values();  //HOW DO WE HANDLE THIS FOR EFPs?
+
+printf("\nold internals read in\n");
+fprintf(outfile, "\nold internals:\n");
+print_array(outfile, q_old, Nintco); fflush(outfile);
 
     for (i=0;i<Nintco;++i) {
       // Turns out you don't have to correct for torsional changes through 180 in the forces.

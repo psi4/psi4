@@ -68,6 +68,24 @@ double * EFP_FRAG::get_geom_array(void) {
     return geom_array;
 }
 
+void EFP_FRAG::set_geom_array( double * geom_array )
+{
+fprintf(outfile, "\ngeom_array in:\n"); fflush(outfile);
+print_array(outfile, geom_array, 3*3); fflush(outfile);
+
+  int cnt = 0;
+  for (int a=0; a<3; a++)
+    for (int xyz=0; xyz<3; ++xyz)
+    {
+      xyz_geom[a][xyz] = geom_array[cnt++];
+fprintf(outfile, "\n%d xyz_geom[%d][%d] = %15.8f", cnt, a, xyz, xyz_geom[a][xyz]); fflush(outfile);
+    }
+
+printf("\nEFP_FRAG::set_geom_array\n");
+fprintf(outfile, "\nthe EFP_FRAG geometry was just set to:\n"); fflush(outfile);
+print_matrix(outfile, xyz_geom, 3, 3); fflush(outfile);
+}
+
 // we don't have a valid B matrix for these
 // add 6 bogus stretches
 void EFP_FRAG::add_dummy_intcos(int ndummy) {

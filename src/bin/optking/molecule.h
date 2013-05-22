@@ -334,7 +334,7 @@ for(int f=0; f<efp_fragments.size(); f++)
   {
     for(int xyz=0; xyz<3; xyz++)
       g[g_atom_offset(fragments.size()-1)+3*f+i][xyz] = g_efp_frag[i][xyz];
-printf("\n%15.7f %15.7f %15.7f\n", g[3*f+i][0], g[3*f+i][1], g[3*f+i][2]);
+printf("\n%d %d  %15.7f %15.7f %15.7f\n", f, i, g[3*f+i][0], g[3*f+i][1], g[3*f+i][2]);
   }
   free_matrix(g_efp_frag);
 }
@@ -379,8 +379,26 @@ printf("\n%15.7f %15.7f %15.7f\n", g[3*f+i][0], g[3*f+i][1], g[3*f+i][2]);
   void check_intrafragment_zero_angles(double const * const dq);
 
   void set_geom_array(double * array_in) {
+printf("\nentering set_geom_array() -- fragments.size() is %d and efp_fragments.size() is %d\n", fragments.size(), efp_fragments.size());
+printf("\n efp_fragments[%d]->get_libmints_geom_index() = %d \n", 0, efp_fragments[0]->get_libmints_geom_index());
+printf("\n efp_fragments[%d]->get_libmints_geom_index() = %d \n", 1, efp_fragments[1]->get_libmints_geom_index());
+
+
+for(int f=0; f<efp_fragments.size(); f++)
+{
+  double * xyz_array = &( array_in[3*efp_fragments[f]->get_libmints_geom_index()] );
+  printf("\nfragment %d:\n", f);
+  for(int i=0; i<3*3; i++)
+    printf("\n %15.8f", xyz_array[i]);
+}
+
     for (int f=0; f<fragments.size(); ++f)
       fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
+    for (int f=0; f<efp_fragments.size(); f++)
+    {
+      efp_fragments[f]->set_geom_array( &(array_in[3*efp_fragments[f]->get_libmints_geom_index()]) );
+    }
+printf("\nleaving set_geom_array()\n");
   }
 
   void fix_tors_near_180(void) {
