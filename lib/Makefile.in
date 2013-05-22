@@ -40,6 +40,10 @@ install:
 	$(INSTALL_DATA) $(srcdir)/python/*.py $(DESTDIR)$(pkgdatadir)/python
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/qcdb
 	$(INSTALL_DATA) $(srcdir)/python/qcdb/*.py $(DESTDIR)$(pkgdatadir)/python/qcdb
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/p4const
+	$(INSTALL_DATA) $(srcdir)/python/p4const/*.py $(DESTDIR)$(pkgdatadir)/python/p4const
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python/p4util
+	$(INSTALL_DATA) $(srcdir)/python/p4util/*.py $(DESTDIR)$(pkgdatadir)/python/p4util
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
 	$(INSTALL_DATA) $(srcdir)/quadratures/1_sqrtx/* $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx

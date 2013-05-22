@@ -27,6 +27,7 @@
 #include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
+#include <libmints/local.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
@@ -36,6 +37,7 @@
 using namespace boost;
 using namespace boost::python;
 using namespace psi;
+
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
@@ -108,10 +110,19 @@ void export_mints()
     class_<Dimension>("Dimension", "docstring").
             def(init<int>()).
             def(init<int, const std::string&>()).
-            def("init", &Dimension::init, "docstring").
-            def("n", &Dimension::n, return_value_policy<copy_const_reference>(), "docstring").
-            def("name", &Dimension::name, return_value_policy<copy_const_reference>(), "docstring").
-            def("set_name", &Dimension::set_name, "docstring").
+            def("print_out",
+                &Dimension::print,
+                "docstring").
+            def("init",
+                &Dimension::init,
+                "Re-initializes the dimension object").
+            def("n", &Dimension::n,
+                return_value_policy<copy_const_reference>(),
+                "The order of the dimension").
+            add_property("name",
+                         make_function(&Dimension::name, return_value_policy<copy_const_reference>()),
+                         &Dimension::set_name,
+                         "The name of the dimension. Used in printing.").
             def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
             def("__setitem__", &Dimension::set, "docstring");
 
@@ -586,6 +597,19 @@ void export_mints()
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);
 
+    typedef boost::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, boost::shared_ptr<BasisSet>, boost::shared_ptr<Matrix>);
+
+    class_<Localizer, boost::shared_ptr<Localizer>, boost::noncopyable>("Localizer", "docstring", no_init).
+            def("build", localizer_with_type(&Localizer::build), "docstring").
+            staticmethod("build").
+            def("localize", &Localizer::localize, "Perform the localization procedure").
+            add_property("L", &Localizer::L, "Localized orbital coefficients").
+            add_property("U", &Localizer::U, "Orbital rotation matrix").
+            add_property("converged", &Localizer::converged, "Did the localization procedure converge?");
+
+    class_<BoysLocalizer, boost::shared_ptr<BoysLocalizer>, bases<Localizer> >("BoysLocalizer", "docstring", no_init);
+    class_<PMLocalizer, boost::shared_ptr<PMLocalizer>, bases<Localizer> >("PMLocalizer", "docstring", no_init);
+
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", "docstring", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write, "docstring");
@@ -607,7 +631,4 @@ void export_mints()
     class_<FittedSlaterCorrelationFactor, bases<CorrelationFactor>, boost::noncopyable>("FittedSlaterCorrelationFactor", "docstring", no_init).
             def(init<double>()).
             def("exponent", &FittedSlaterCorrelationFactor::exponent);
-
-
-
 }

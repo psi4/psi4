@@ -135,7 +135,7 @@ commit 852ce99b5930ac2a9f1f6662a1e157a8c5953000
 Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
 Date:   Thu May 2 15:56:22 2013 -0400
 
-    don't be lazy, eugene
+    fixes extra characters left in last commit
 
 commit 26262b62863f07c0211d0765726328149ffb2b67
 Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
@@ -147,7 +147,7 @@ commit b2b1e0320c5cc2b776618a22bb134f807b31fec4
 Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
 Date:   Thu May 2 15:49:43 2013 -0400
 
-    doc updates
+    doc updates for dfcc procedure
 
 commit 047c5af09c204fc2e9279c745c0264e2637cef08
 Author: Justin Turney <justin.turney@gmail.com>
@@ -171,7 +171,7 @@ commit 64484f9cac17cedccdf3d95a457c43f2521282ec
 Author: Eugene DePrince <deprince@lawn-128-61-118-160.lawn.gatech.edu>
 Date:   Thu May 2 14:45:52 2013 -0400
 
-    document scf_type CD
+    adds documentation for scf_type CD
 
 commit df9db30f95819db157f356fa36e39d3b4d7840dc
 Author: Justin Turney <justin.turney@gmail.com>
@@ -335,7 +335,9 @@ commit eaafe81e86d6552e2d40791555e069c5beff6995
 Author: Eugene DePrince <deprince@Eugenes-MacBook-Pro.local>
 Date:   Wed May 1 21:06:31 2013 -0400
 
-    dfcc uses 2 sets of 3-index integrals, one for Fock, one for TEIs
+    DFCC module now uses 2 sets of 3-index integrals, one for the Fock
+    matrix build, and one for all other instances of the TEIs.  This
+    procedure is more similar to that in DF-MP2 now.
 
 commit 08ae186ca6cfab0903b1cdc34ab26c27b59909cb
 Author: Justin Turney <justin.turney@gmail.com>
@@ -448,7 +450,7 @@ commit 0f54dc24aa8d65eff43cb1234d3890b8face748f
 Author: Eugene DePrince <deprince@lawn-128-61-112-221.lawn.gatech.edu>
 Date:   Tue Apr 30 15:05:19 2013 -0400
 
-    don't want that!
+    removes some print statements for debugging.
 
 commit 40b274ee641864689264539f0e822808607f5cb8
 Merge: 42be493 bdedfea
@@ -900,7 +902,7 @@ commit 1b29532f287fa53341bdfbbfde57754839221be3
 Author: Eugene DePrince <deprince@lawn-128-61-125-221.lawn.gatech.edu>
 Date:   Fri Apr 19 16:27:10 2013 -0400
 
-    t1 and d1 diagnostics
+    adds t1 and d1 diagnostics to fnocc codes
 
 commit d6b3c5b5f38a069f228ce7b53b540974620b55bf
 Author: Justin Turney <justin.turney@gmail.com>

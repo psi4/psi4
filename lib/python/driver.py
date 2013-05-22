@@ -68,6 +68,7 @@ procedures = {
             'omp2.5'        : run_omp2_5,
             'dftsapt'       : run_dftsapt,
             'saptdft'       : run_dftsapt,
+            'asapt'         : run_asapt,
             'infsapt'       : run_infsapt,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
