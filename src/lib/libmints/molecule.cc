@@ -395,21 +395,36 @@ double Molecule::pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> m
     return V;
 }
 
-double Molecule::nuclear_repulsion_energy() const
+double Molecule::nuclear_repulsion_energy(FragmentLevel type) const
 {
     double e=0.0;
 
-    for (int i=1; i<natom(); ++i) {
+    for (int i=1; i<natom(ALL); ++i) {
         for (int j=0; j<i; ++j) {
-            double Zi = Z(i);
-            double Zj = Z(j);
-            double distance = xyz(i).distance(xyz(j));
-            e += Zi * Zj / distance;
+            if (atom_apropos(i, type) && atom_apropos(j, type)) {
+                double Zi = Z(i);
+                double Zj = Z(j);
+                double distance = xyz(i).distance(xyz(j));
+                e += Zi * Zj / distance;
+            }
         }
     }
 
     return e;
 }
+
+bool Molecule::atom_apropos(int atom, FragmentLevel type) const
+{
+    for (int frag=0; frag<fragments_.size(); ++frag) {
+        if ((atom >= fragments_[frag].first) && (atom < fragments_[frag].second)) {
+            if (fragment_levels_[frag] & type)
+                return true;
+            else
+                return false;
+        }
+    }
+}
+
 
 Matrix Molecule::nuclear_repulsion_energy_deriv1() const
 {

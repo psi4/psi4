@@ -536,7 +536,7 @@ void export_mints()
             def("save_to_checkpoint", &Molecule::save_to_chkpt, "Saves molecule information to checkpoint file arg2 with prefix arg3").
             def("init_with_io", &Molecule::init_with_psio, "Creates a new checkpoint file with information from arg2").
             def("add_atom", &Molecule::add_atom, "Adds to Molecule arg1 an atom with atomic number arg2, Cartesian coordinates in Bohr (arg3, arg4, arg5), atomic symbol arg6, mass arg7, charge arg8 (optional), and lineno arg9 (optional)").
-            def("natom", &Molecule::natom, MolNatom()).
+            def("natom", &Molecule::natom, MolNatom("Number of real atoms")).
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
@@ -569,10 +569,10 @@ void export_mints()
             def("set_ghost_fragments", &Molecule::set_ghost_fragments, "Sets the specified list arg2 of fragments to be Ghost").
             def("set_ghost_fragment", &Molecule::set_ghost_fragment, "Sets the specified fragment arg2 to be Ghost").
             def("atom_at_position", &Molecule::atom_at_position1, "Tests to see if an atom is at the position arg2 with a given tolerance arg3").
-            def("print_out", &Molecule::print, MolPrint()).
+            def("print_out", &Molecule::print, MolPrint("Prints the molecule in Cartesians in input units")).
             def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr").
             def("print_out_in_angstrom", &Molecule::print_in_angstrom, "Prints the molecule in Cartesians in Angstroms").
-            def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, "Computes nuclear repulsion energy").
+            def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy, MolNRE("Computes nuclear repulsion energy")).
             def("find_point_group", &Molecule::find_point_group, "Finds computational molecular point group, user can override this with the symmetry keyword").
             def("reset_point_group", &Molecule::reset_point_group, "Overrides symmetry from outside the molecule string").
             def("set_point_group", &Molecule::set_point_group, "Sets the molecular point group to the point group object arg2").
