@@ -33,6 +33,14 @@
 
 namespace psi {
 
+/// masks for classes of fragments to be acted upon by molecule functions
+/// The next fragment type should be 4, and ALL should be 7.
+enum FragmentLevel {
+    QMatom  = 1,    /*!< Quantum mechanical */
+    EFPatom = 2,    /*!< Effective fragment potential */
+    ALLatom = 3     /*!< All atom types */
+};
+
 class Vector3;
 
 
@@ -142,6 +150,8 @@ protected:
     std::string label_;
     /// Is this a ghost atom?
     bool ghosted_;
+    /// Domain of atom QM/EFP/etc.
+    FragmentLevel domain_;
 
     /// Different types of basis sets that can be assigned to this atom.
     //       option name, basis name
@@ -170,8 +180,8 @@ public:
      * ZMatrixEntry: ZMatrix storage.
      */
     enum CoordEntryType {CartesianCoord, ZMatrixCoord};
-    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label="");
-    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, const std::map<std::string, std::string>& basis);
+    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label="");
+    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label, const std::map<std::string, std::string>& basis);
     virtual ~CoordEntry();
 
     /// Computes the values of the coordinates (in whichever units were inputted), returning them in a Vector.
@@ -198,6 +208,11 @@ public:
     const bool& is_ghosted() const { return ghosted_; }
     /// Flag the atom as either ghost or real.
     void set_ghosted(bool ghosted) { ghosted_ = ghosted; }
+
+    /// Whether the current atom is ghosted or not.
+    const FragmentLevel& get_domain() const { return domain_; }
+    /// Flag the atom as either ghost or real.
+    void set_domain(enum FragmentLevel domain) { domain_= domain; }
 
     /// The nuclear charge of the current atom (0 if ghosted).
     const double& Z() const;
@@ -232,9 +247,9 @@ class CartesianEntry : public CoordEntry{
     boost::shared_ptr<CoordValue> y_;
     boost::shared_ptr<CoordValue> z_;
 public:
-    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
                    boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z);
-    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
                    boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis);
 
     const Vector3& compute();
@@ -244,7 +259,7 @@ public:
     std::string string_in_input_format();
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
     boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
-        boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
+        boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, domain_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
         return temp;
     }
 };
@@ -259,14 +274,14 @@ class ZMatrixEntry : public CoordEntry
     boost::shared_ptr<CoordValue> dval_;
 
 public:
-    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
-    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
                  const std::map<std::string, std::string>& basis,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
@@ -287,17 +302,17 @@ public:
     boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
         boost::shared_ptr<CoordEntry> temp;
         if(rto_ == 0 && ato_ == 0 && dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_));
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, domain_, label_, basissets_));
         }else if(ato_ == 0 && dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, domain_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map)));
         }else if(dto_ == 0){
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, domain_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map),
                                           atoms[ato_->entry_number()], aval_->clone(map)));
         }
         else {
-            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, domain_, label_, basissets_,
                                       atoms[rto_->entry_number()], rval_->clone(map),
                                       atoms[ato_->entry_number()], aval_->clone(map),
                                       atoms[dto_->entry_number()], dval_->clone(map)));

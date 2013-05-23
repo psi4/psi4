@@ -120,7 +120,7 @@ set efp {
 energy('efp')
 #energy('efpmolcompute')
 compare_values(709.019404868, efp_spec.nuclear_repulsion_energy(ALL), 6, "Nuclear Repulsion Energy:")
-compare_values(-0.0066095987170644, get_variable('CURRENT ENERGY'), 6, 'EFP Total (fails at 0.0015 b/c options not passed)')  #TEST
+compare_values(-0.0066095987170644, get_variable('CURRENT ENERGY'), 5, 'EFP Total (fails at 0.0015 b/c options not passed)')  #TEST
 
 grad = get_gradient()
 #compare_matrices(refEFP, grad, 6, "libefp printed gradients, vs. psi4 read-from-libefp gradients") #TEST
