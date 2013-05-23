@@ -362,10 +362,13 @@ public:
      */
     void symmetrize_to_abelian_group(double tol);
 
+    /// Check if atom is in active FragmentLevel
+    bool atom_apropos(int, FragmentLevel) const;
+
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
-    double nuclear_repulsion_energy() const;
+    double nuclear_repulsion_energy(FragmentLevel type = QM) const;
     /// Computes nuclear repulsion energy derivatives.
     Matrix nuclear_repulsion_energy_deriv1() const;
     /// Computes nuclear repulsion energy second derivatives.
