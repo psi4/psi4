@@ -3549,10 +3549,11 @@ int Molecule::natom(FragmentLevel type) const{
     int n = 0;
     if (atoms_.size()) {
         for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            if ( fragment_levels_[fragment] & type ) {
-                n += fragments_[fragment].second - fragments_[fragment].first;
+            if ( fragment_types_[fragment] != Absent ) {
+                if ( fragment_levels_[fragment] & type ) {
+                    n += fragments_[fragment].second - fragments_[fragment].first;
+                }
             }
-
         }
     }
     return n;
