@@ -277,7 +277,7 @@ boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
     // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
     // but to the fxyz array.
-    new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
+    new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0, QMatom);
     Vector3 center = new_basis->molecule_->fxyz(0);
 
     new_basis->nprimitive_ = 1;
@@ -707,7 +707,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     // but to the fxyz array.
     double x = 0.0;
     for (int A = 0; A < max_centers; A++) {
-        new_basis->molecule_->add_atom(0, x, x, x);
+        new_basis->molecule_->add_atom(0, x, x, x, QMatom);
         x += 1.0;
     }
 
@@ -754,7 +754,7 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     strcpy(label,lab.c_str());
 
     //Put the atomic info into mol
-    mol->add_atom(Z, 0.0, 0.0, 0.0, label, mass, charge);
+    mol->add_atom(Z, 0.0, 0.0, 0.0, QMatom, label, mass, charge);
     Vector3 v(0.0,0.0,0.0);
 
     //Assign the atomic molecule to bas

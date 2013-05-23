@@ -40,9 +40,14 @@ set efp print 1
 
 energy('efp')
 efp_spec.print_out()
+compare_values(18, efp_spec.natom(ALL), 6, "EFP/QM Natom")
+compare_values(13, efp_spec.natom(EFP), 6, "EFP    Natom")
+compare_values(5, efp_spec.natom(), 6, "    QM Natom")
+
 compare_values(242.328172712, efp_spec.nuclear_repulsion_energy(ALL), 6, "EFP/QM Nuclear Repulsion Energy")
-compare_values(94.4721763449, efp_spec.nuclear_repulsion_energy(EFP), 6, "EFP Nuclear Repulsion Energy")
-compare_values(53.3950916194, efp_spec.nuclear_repulsion_energy(), 6, "QM Nuclear Repulsion Energy")
+compare_values(94.4721763449, efp_spec.nuclear_repulsion_energy(EFP), 6, "EFP    Nuclear Repulsion Energy")
+compare_values(53.3950916194, efp_spec.nuclear_repulsion_energy(), 6, "    QM Nuclear Repulsion Energy")
+
 compare_values(0.0000275429423564, get_variable('CURRENT ENERGY'), 6, 'EFP/QM EFP Energy Total')  #TEST
 
 

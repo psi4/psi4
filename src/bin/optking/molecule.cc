@@ -64,7 +64,7 @@ MOLECULE::MOLECULE(int num_atoms) {
   if (num_atoms > 0)
   {
     for(int f=0; f< mol->nfragments(); f++)
-      if(mol->fragment_levels_[f] == psi::Molecule::EFP)
+      if(mol->fragment_levels_[f] == psi::EFPatom)
       {
         EFP_FRAG *one_frag = new EFP_FRAG();
         one_frag->add_dummy_intcos(6);
