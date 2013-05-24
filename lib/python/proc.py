@@ -2827,9 +2827,9 @@ def run_scfefp(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
 
     # initialize library
-    efp = PsiMod.efp_init()
+    #efp = PsiMod.efp_init()
     # set which atoms are qm
-    efp.SetQMAtoms()
+    #efp.set_qm_atoms()
     # TODO: provide efp a callback function that computes electron density at arbitrary points
 
     # process environment molecule needs to contain only qm atoms

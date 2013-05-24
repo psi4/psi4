@@ -16,7 +16,11 @@ namespace boost {
 template<class T> class shared_ptr;
 }
 
-namespace psi{ namespace efp{
+namespace psi{ 
+
+class Vector;
+
+namespace efp{
 
 
 class EFP {
@@ -38,8 +42,11 @@ class EFP {
         /// Compute energy and/or gradient
         void Compute();
 
-        /// Designate which atoms are qm atoms
-        void SetQMAtoms();
+        /// Wrapper to efp_get_point_charge_gradient
+        boost::shared_ptr<Vector> get_electrostatic_gradient();
+
+        /// Designate which atoms are qm atoms.  This function is just a wrapper to efp_set_point_charges
+        void set_qm_atoms();
 
         /// Returns EFP contribution to SCF energy
         double scf_energy_update();
@@ -88,6 +95,8 @@ class EFP {
 
         /// Prints private members of efp object
         void print_out(void);
+
+
 };
 
 }

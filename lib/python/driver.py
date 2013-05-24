@@ -686,6 +686,8 @@ def gradient(name, **kwargs):
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
         #RAK for EFP psi4.wavefunction().energy()
 
+        # TODO: add EFP contributions to the gradient
+
         optstash.restore()
         psi4.print_out('CURRENT ENERGY: %15.10f\n' % psi4.get_variable('CURRENT ENERGY'))
         return psi4.get_variable('CURRENT ENERGY')
