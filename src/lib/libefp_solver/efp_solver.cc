@@ -183,10 +183,55 @@ void EFP::add_fragments(std::vector<std::string> fnames)
 }
 
 /**
- * Provide list of coordinates of quantum mechanical atoms
+ * Get gradient of the interaction energy of the EFP electrostatics with the QM nuclei (point charges)
  */
-void EFP::SetQMAtoms(){
-    //TODO: extend molecule class and coordentry class to separate qm and efp atoms
+boost::shared_ptr<Vector> EFP::get_electrostatic_gradient() {
+
+    int natom = molecule_->natom();
+    boost::shared_ptr<Vector> grad ( new Vector( 3*natom ) );
+    double * grad_p = grad->pointer();
+
+    // verify natom matches the number of point charges in efp
+    enum efp_result res;
+    int n_ptc;
+    if ( res = efp_get_point_charge_count(efp_,&n_ptc) ) {
+        throw PsiException("EFP::get_electrostatic_gradient(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+    }
+    if ( n_ptc != natom ) {
+        throw PsiException("EFP::get_electrostatic_gradient(): natom does not match number of point charges in efp",__FILE__,__LINE__);
+    }
+    
+    if ( res = efp_get_point_charge_gradient(efp_,grad_p) ) {
+        throw PsiException("EFP::get_electrostatic_gradient(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+    }
+
+    return grad;
+}
+
+/**
+ * Provide list of coordinates of quantum mechanical atoms to efp_set_point_charges
+ */
+void EFP::set_qm_atoms(){
+
+    int natom = molecule_->natom();
+
+    boost::shared_ptr<Vector>   q (new Vector(natom));
+    boost::shared_ptr<Vector> xyz (new Vector(3*natom));
+
+    double * q_p   = q->pointer();
+    double * xyz_p = xyz->pointer();
+    for (int A = 0; A < natom; A++) {
+        if ( molecule_->Z(A) == 0.0 ) continue;
+        q_p[A]       = molecule_->Z(A);
+        xyz_p[3*A]   = molecule_->x(A);
+        xyz_p[3*A+1] = molecule_->y(A);
+        xyz_p[3*A+2] = molecule_->z(A);
+    }
+
+    enum efp_result res;
+    if ( res = efp_set_point_charges(efp_,natom,q_p,xyz_p) ) {
+        throw PsiException("EFP::SetQMAtoms(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+    }
 }
 
 /**
@@ -241,6 +286,7 @@ void EFP::set_frag_coordinates(int frag_idx, int type, double * coords) {
 // this function returns a shared matrix containing the efp contribution to the potential
 // felt by qm atoms in an scf procedure.
 boost::shared_ptr<Matrix> EFP::modify_Fock() {
+
 
     // get number of multipoles
     int * n_multipole = (int*)malloc(4*sizeof(int));
@@ -594,6 +640,8 @@ void EFP::print_out() {
  * Resetting of EFP options
  */
 void EFP::set_options() {
+
+    molecule_ = Process::environment.molecule();
 
     fprintf(outfile,"efp::set_options() passing options to libefp\n");
 
