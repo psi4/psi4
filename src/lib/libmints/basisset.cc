@@ -217,7 +217,6 @@ void BasisSet::print_detail(FILE* out) const
 {
     print_summary(out);
 
-    //TODO: Use unique atoms (C1 for now)
     if (WorldComm->me() == 0) {
         fprintf(out, "  ==> AO Basis Functions <==\n");
         fprintf(out, "\n");
@@ -228,7 +227,9 @@ void BasisSet::print_detail(FILE* out) const
             fprintf(out, "    cartesian\n");
         fprintf(out, "    ****\n");
     }
-    for (int A = 0; A < molecule_->natom(); A++) {
+
+    for (int uA = 0; uA < molecule_->nunique(); uA++) {
+        const int A = molecule_->unique(uA);
         if (WorldComm->me() == 0) {
             fprintf(out, "   %2s %3d\n",molecule_->symbol(A).c_str(),A+1);
         }
@@ -236,19 +237,9 @@ void BasisSet::print_detail(FILE* out) const
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
 
-        for (int Q = 0; Q < n_shell; Q++) {
-            const GaussianShell& shell = shells_[Q + first_shell];
+        for (int Q = 0; Q < n_shell; Q++)
+            shells_[Q + first_shell].print(out);
 
-            if (WorldComm->me() == 0) {
-                fprintf(outfile, "    %c %3d 1.00\n", shell.AMCHAR(),shell.nprimitive());
-            }
-            for (int K = 0; K < shell.nprimitive(); K++) {
-                if (WorldComm->me() == 0) {
-                    fprintf(outfile, "               %20.8f %20.8f\n",shell.exp(K), shell.coef(K));
-                }
-
-            }
-        }
         if (WorldComm->me() == 0){
             fprintf(out, "    ****\n");
         }
