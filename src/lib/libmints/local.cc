@@ -75,6 +75,10 @@ boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::sh
 
     return local;
 }
+boost::shared_ptr<Localizer> Localizer::build(const std::string& type, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C)
+{
+    return Localizer::build(type, primary, C, Process::environment.options);
+}
 boost::shared_ptr<Localizer> Localizer::build(boost::shared_ptr<BasisSet> primary, boost::shared_ptr<Matrix> C, Options& options)
 {
     return Localizer::build(options.get_str("LOCAL_TYPE"), primary, C, options);

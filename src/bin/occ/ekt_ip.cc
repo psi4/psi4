@@ -52,6 +52,13 @@ void OCCWave::ekt_ip()
      SharedVector ps_vecA = boost::shared_ptr<Vector>(new Vector("alpha pole strength vector", nirrep_, nmopi_));
      SharedVector eorbA = boost::shared_ptr<Vector>(new Vector("eorbA", nirrep_, nmopi_));
 
+     // For Non-OO methods
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED") GFock->scale(0.5);  
+     else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED") {
+              GFockA->scale(0.5);  
+              GFockB->scale(0.5);  
+     }
+
      // Diagonalize OPDM
      UvecA->zero();
      Diag_g1A->zero();
@@ -404,6 +411,13 @@ if (reference_ == "UNRESTRICTED") {
        delete eoccB;
 
 }// if (reference_ == "UNRESTRICTED") 
+
+     // For Non-OO methods
+     if (orb_opt_ == "FALSE" && reference_ == "RESTRICTED" && dertype == "FIRST") GFock->scale(2.0);  
+     else if (orb_opt_ == "FALSE" && reference_ == "UNRESTRICTED" && dertype == "FIRST") {
+              GFockA->scale(2.0);  
+              GFockB->scale(2.0);  
+     }
 
        GFock_primeA.reset();
        g1HalfA.reset();
