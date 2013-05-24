@@ -63,16 +63,16 @@ double VariableValue::compute()
     return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_];
 }
 
-CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label)
+CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label)
     : entry_number_(entry_number), computed_(false), Z_(Z),
-      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false), domain_(domain)
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false)
 {
 }
 
-CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain,
+CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
            const std::string& label, const std::map<std::string, std::string>& basis)
     : entry_number_(entry_number), computed_(false), Z_(Z),
-      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false), domain_(domain),
+      charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
       basissets_(basis)
 {
 }
@@ -100,7 +100,6 @@ bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) co
     if(other->Z_ != Z_) return false;
     if(other->mass_ != mass_) return false;
     if(other->ghosted_ != ghosted_) return false;
-    if(other->domain_ != domain_) return false;
     std::map<std::string, std::string>::const_iterator iter = basissets_.begin();
     std::map<std::string, std::string>::const_iterator stop = basissets_.end();
     for(; iter != stop; ++iter){
@@ -127,16 +126,16 @@ const std::string& CoordEntry::basisset(const std::string& type) const
 }
 
 
-CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, domain, label), x_(x), y_(y), z_(z)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
 {
 }
 
-CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z,
                const std::map<std::string, std::string>& basis)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, domain, label, basis), x_(x), y_(y), z_(z)
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis), x_(x), y_(y), z_(z)
 {
 }
 
@@ -186,18 +185,18 @@ void CartesianEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                            boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
                            boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
                            boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, domain, label),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)
 {
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, FragmentLevel domain, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
              const std::map<std::string, std::string>& basis,
              boost::shared_ptr<CoordEntry> rto,
              boost::shared_ptr<CoordValue> rval,
@@ -205,7 +204,7 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mas
              boost::shared_ptr<CoordValue> aval,
              boost::shared_ptr<CoordEntry> dto,
              boost::shared_ptr<CoordValue> dval)
-    : CoordEntry(entry_number, Z, charge, mass, symbol, domain, label, basis),
+    : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis),
       rto_(rto), rval_(rval),
       ato_(ato), aval_(aval),
       dto_(dto), dval_(dval)

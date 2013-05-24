@@ -218,7 +218,6 @@ Molecule& Molecule::operator=(const Molecule& other)
     units_                   = other.units_;
     input_units_to_au_       = other.input_units_to_au_;
     fragment_types_          = other.fragment_types_;
-    fragment_levels_         = other.fragment_levels_;
     geometry_variables_      = other.geometry_variables_;
     charge_specified_        = other.charge_specified_;
     multiplicity_specified_  = other.multiplicity_specified_;
@@ -284,7 +283,7 @@ void Molecule::clear()
     full_atoms_.empty();
 }
 
-void Molecule::add_atom(int Z, double x, double y, double z, FragmentLevel domain,
+void Molecule::add_atom(int Z, double x, double y, double z,
                         const char *label, double mass, double charge, int lineno)
 {
     lock_frame_ = false;
@@ -293,7 +292,7 @@ void Molecule::add_atom(int Z, double x, double y, double z, FragmentLevel domai
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, domain, l,
+        full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
                                                                                boost::shared_ptr<CoordValue>(new NumberValue(x)),
                                                                                boost::shared_ptr<CoordValue>(new NumberValue(y)),
                                                                                boost::shared_ptr<CoordValue>(new NumberValue(z)))));
@@ -394,34 +393,20 @@ double Molecule::pairwise_nuclear_repulsion_energy(boost::shared_ptr<Molecule> m
     return V;
 }
 
-double Molecule::nuclear_repulsion_energy(FragmentLevel type) const
+double Molecule::nuclear_repulsion_energy() const
 {
     double e=0.0;
 
-    for (int i=1; i<natom(ALLatom); ++i) {
+    for (int i=1; i<natom(); ++i) {
         for (int j=0; j<i; ++j) {
-            if (atom_apropos(i, type) && atom_apropos(j, type)) {
-                double Zi = Z(i);
-                double Zj = Z(j);
-                double distance = xyz(i).distance(xyz(j));
-                e += Zi * Zj / distance;
-            }
+            double Zi = Z(i);
+            double Zj = Z(j);
+            double distance = xyz(i).distance(xyz(j));
+            e += Zi * Zj / distance;
         }
     }
 
     return e;
-}
-
-bool Molecule::atom_apropos(int atom, FragmentLevel type) const
-{
-    for (int frag=0; frag<fragments_.size(); ++frag) {
-        if ((atom >= fragments_[frag].first) && (atom < fragments_[frag].second)) {
-            if (fragment_levels_[frag] & type)
-                return true;
-            else
-                return false;
-        }
-    }
 }
 
 
@@ -582,7 +567,6 @@ void Molecule::set_geometry(double** geom)
                 continue;
             }
 
-            // TODO: assuming all atoms are QM
             int entrynum = at->entry_number();
             double zval = at->Z();
             double charge = at->charge();
@@ -595,7 +579,6 @@ void Molecule::set_geometry(double** geom)
                                            charge,
                                            mass,
                                            symbol,
-                                           QMatom,
                                            label,
                                            boost::shared_ptr<CoordValue>(new NumberValue(geom[count][0]/input_units_to_au_)),
                                            boost::shared_ptr<CoordValue>(new NumberValue(geom[count][1]/input_units_to_au_)),
@@ -725,15 +708,13 @@ void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
     zvals = chkpt->rd_zvals();
     geom = chkpt->rd_geom();
 
-    // TODO: assuming all checkpoint atoms are QM
     for (int i=0; i<natoms; ++i) {
-        add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], QMatom, atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
+        add_atom((int)zvals[i], geom[i][0], geom[i][1], geom[i][2], atomic_labels[(int)zvals[i]], an2masses[(int)zvals[i]]);
     }
 
     // We need to make 1 fragment with all atoms
     fragments_.push_back(std::make_pair(0, natoms));
     fragment_types_.push_back(Real);
-    fragment_levels_.push_back(QMatom);
 
     // chkpt is already in AU set the conversion to 1
     input_units_to_au_ = 1.0;
@@ -818,8 +799,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
             }
 
             // Add it to the molecule.
-            // TODO: Assume xyz atoms are QM
-            add_atom((int)Z[atomSym], x, y, z, QMatom, atomSym.c_str(), an2masses[(int)Z[atomSym]]);
+            add_atom((int)Z[atomSym], x, y, z, atomSym.c_str(), an2masses[(int)Z[atomSym]]);
         }
         else {
             throw PSIEXCEPTION("Molecule::init_with_xyz: Malformed atom information line.\n"+line);
@@ -829,7 +809,6 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     // We need to make 1 fragment with all atoms
     fragments_.push_back(std::make_pair(0, natom));
     fragment_types_.push_back(Real);
-    fragment_levels_.push_back(QMatom);
     fragment_multiplicities_.push_back(0);
     fragment_charges_.push_back(0);
 
@@ -868,6 +847,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     // Split the input at newlines, storing the result in "lines"
     std::vector<std::string> lines;
     boost::split(lines, text, boost::is_any_of("\n"));
+
+    std::vector<FragmentLevel> fragment_levels;
 
     boost::shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
@@ -983,6 +964,11 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         unsigned int currentFragment = efp_nfrag - 1;
         std::vector<std::string> splitLine;
 
+        // Force no reorient
+        mol->set_orientation_fixed(true);
+        mol->move_to_com_ = false;
+        mol->symmetry_from_input_ = std::string ("c1");
+
         // Initialize all fragment names and library paths
         Process::environment.get_efp()->add_fragments(efp_fnames);
 
@@ -1079,12 +1065,19 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
             mol->fragment_types_.push_back(Real);
             if(regex_search(lines[lineNumber-1], reMatches, efpFileMarker_)) {
-                mol->fragment_levels_.push_back(EFPatom);
-                mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
-                mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
+                fragment_levels.push_back(EFPatom);
+                //mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
+                //mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
+                // Overwrite the overall molecule chgmult written before loop
+                if (mol->fragments_.size() == 1) {
+                    mol->fragment_multiplicities_.pop_back();
+                    mol->fragment_charges_.pop_back();
+                    mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
+                    mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
+                }
             }
             else
-                mol->fragment_levels_.push_back(QMatom);
+                fragment_levels.push_back(QMatom);
             firstAtom = atomCount;
 
             // Figure out how to handle the multiplicity
@@ -1115,12 +1108,12 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     mol->fragment_types_.push_back(Real);
     if(regex_search(lines[lines.size()-1], reMatches, efpFileMarker_)) {
-        mol->fragment_levels_.push_back(EFPatom);
+        fragment_levels.push_back(EFPatom);
         mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
         mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
     }
     else
-        mol->fragment_levels_.push_back(QMatom);
+        fragment_levels.push_back(QMatom);
 
     // Clean up the "--", efp, and charge/multiplicity specifiers - they're no longer needed
     for(int lineNumber = lines.size() - 1 ; lineNumber >= 0; --lineNumber){
@@ -1144,7 +1137,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     // Store coordinates, atom by atom
     for(int currentAtom=0; currentAtom < mol->fragments_.back().second; ) {
 
-        if((currentAtom == mol->fragments_[currentFragment].first) && (mol->fragment_levels_[currentFragment] == EFPatom)) {
+        if((currentAtom == mol->fragments_[currentFragment].first) && (fragment_levels[currentFragment] == EFPatom)) {
+        //if((currentAtom == mol->fragments_[currentFragment].first)){// && (mol->fragment_levels_[currentFragment] == EFPatom)) {
             // currentAtom begins an EFP fragment so read geometry of entire fragment from libefp
 
             unsigned int efp_natom = Process::environment.get_efp()->get_frag_atom_count(efpCount);
@@ -1185,9 +1179,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 boost::shared_ptr<CoordValue> yval(new NumberValue(frag_atom_coord[3*at+1]/mol->input_units_to_au_));
                 boost::shared_ptr<CoordValue> zval(new NumberValue(frag_atom_coord[3*at+2]/mol->input_units_to_au_));
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom+at, zVal, zVal,
-                                                                                            an2masses[(int)zVal], atomSym, EFPatom, atomLabel,
+                                                                                            an2masses[(int)zVal], atomSym, atomLabel,
                                                                                             xval, yval, zval)));
-//                mol->full_atoms_[full_atoms_.size()-1].set_domain(EFP);
                 ++currentAtom;
             }
             ++efpCount;
@@ -1234,14 +1227,14 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
                 boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVal, charge,
-                                                                                            an2masses[(int)zVal], atomSym, QMatom, atomLabel,
+                                                                                            an2masses[(int)zVal], atomSym, atomLabel,
                                                                                             xval, yval, zval)));
             }
             else if(numEntries == 1) {
                 // This is the first line of a Z-Matrix
                 zmatrix = true;
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                          an2masses[(int)zVal], atomSym, QMatom, atomLabel)));
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel)));
             }
             else if(numEntries == 3) {
                 // This is the second line of a Z-Matrix
@@ -1256,7 +1249,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                     rval->set_fixed(true);
 
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                          an2masses[(int)zVal], atomSym, QMatom, atomLabel,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
                                                                                           mol->full_atoms_[rTo], rval)));
             }
             else if(numEntries == 5) {
@@ -1281,7 +1274,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                     aval->set_fixed(true);
 
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                          an2masses[(int)zVal], atomSym, QMatom, atomLabel,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
                                                                                           mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
             }
             else if(numEntries == 7) {
@@ -1313,7 +1306,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                     dval->set_fixed(true);
 
                 mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVal, charge,
-                                                                                          an2masses[(int)zVal], atomSym, QMatom, atomLabel,
+                                                                                          an2masses[(int)zVal], atomSym, atomLabel,
                                                                                           mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                           aval, mol->full_atoms_[dTo], dval)));
             }
@@ -1333,6 +1326,25 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     if(pubcheminput)
         mol->symmetrize_to_abelian_group(1.0e-3);
 
+    // Filter out EFP from Molecule
+    for (int i=fragment_levels.size()-1; i>=0; --i) {
+        if (fragment_levels[i] == EFPatom) {
+            for (int j=mol->fragments_[i].second-1; j>=mol->fragments_[i].first; --j) {
+                //mol->full_atoms_[j]->print_in_input_format();
+                mol->full_atoms_.erase(mol->full_atoms_.begin() + j);
+            }
+            mol->fragment_charges_.erase(mol->fragment_charges_.begin()+i);
+            mol->fragment_multiplicities_.erase(mol->fragment_multiplicities_.begin()+i);
+            mol->fragments_.erase(mol->fragments_.begin()+i);
+        }
+    }
+    for (int i=0, atom=0; i<mol->fragments_.size(); ++i) {
+        int frlen = mol->fragments_[i].second - mol->fragments_[i].first;
+        mol->fragments_[i].first = atom;
+        mol->fragments_[i].second = atom + frlen;
+        atom += frlen;
+    }
+        
     return mol;
 }
 
@@ -1762,11 +1774,11 @@ void Molecule::print_in_input_format() const
     }
 }
 
-void Molecule::print(FragmentLevel type) const
+void Molecule::print() const
 {
     if (WorldComm->me() == 0) {
 
-        if (natom(type)) {
+        if (natom()) {
             if (pg_) fprintf(outfile,"    Molecular point group: %s\n", pg_->symbol().c_str());
             if (full_pg_) fprintf(outfile,"    Full point group: %s\n\n", full_point_group().c_str());
             fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
@@ -1774,21 +1786,15 @@ void Molecule::print(FragmentLevel type) const
             fprintf(outfile,"       Center              X                  Y                   Z       \n");
             fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
-            for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-
-                if ( fragment_levels_[fragment] & type ) {
-
-                    for(int i = fragments_[fragment].first; i < fragments_[fragment].second; ++i){
-                        Vector3 geom = atoms_[i]->compute();
-                        fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
-                        for(int j = 0; j < 3; j++)
-                            fprintf(outfile, "  %17.12f", geom[j]);
-                        fprintf(outfile,"\n");
-                    }
-                    fprintf(outfile,"\n");
-                    fflush(outfile);
-                }
+            for(int i = 0; i < natom(); ++i){
+                Vector3 geom = atoms_[i]->compute();
+                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", geom[j]);
+                fprintf(outfile,"\n");
             }
+            fprintf(outfile,"\n");
+            fflush(outfile);
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
@@ -3564,17 +3570,7 @@ std::string Molecule::full_point_group() const {
   return  pg_with_n;
 }
 
-int Molecule::natom(FragmentLevel type) const{
-    int n = 0;
-    if (atoms_.size()) {
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            if ( fragment_types_[fragment] != Absent ) {
-                if ( fragment_levels_[fragment] & type ) {
-                    n += fragments_[fragment].second - fragments_[fragment].first;
-                }
-            }
-        }
-    }
-    return n;
+int Molecule::natom() const{
+    return atoms_.size();
 }
 

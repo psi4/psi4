@@ -68,7 +68,7 @@ int read_natoms(void) {
   int natom=0;
 
 #if defined(OPTKING_PACKAGE_PSI)
-  natom = psi::Process::environment.molecule()->natom(psi::ALLatom);
+  natom = psi::Process::environment.molecule()->natom();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
