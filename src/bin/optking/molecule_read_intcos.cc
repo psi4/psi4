@@ -76,12 +76,14 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
   tokens.clear();
 
   while (read_next && !fin.eof()) {
-    getline(fin, sline);
-    if(sline.size() == 0)
-      line_present = false;
-    else
-      line_present = true;
-    //printf("getline read: %s\n", sline.c_str());
+//    getline(fin, sline);
+//    if(sline.size() == 0)
+//      line_present = false;
+//    else
+//      line_present = true;
+//    //printf("getline read: %s\n", sline.c_str());
+    line_present = getline(fin, sline);
+printf("getline read: %s\n", sline.c_str());
     read_next = false;
 
     if (line_present) {
@@ -104,7 +106,7 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
         return true;
     }
   }
-  //printf("myline returns false\n");
+printf("myline returns false\n");
   return false;
 }
 
@@ -127,6 +129,8 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
 
   // read in line and tokenize
   line_present = myline(fintco, vline, line_num);
+
+  int cnt =0;
 
   while (line_present) {
 
@@ -342,25 +346,35 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
       interfragments.push_back(one_IF);
 
     } // end of if vline[0] == 'I'
-    else if (vline[0] == "E") { // EFP fragment
-      if (vline.size() != 3) {
-        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
+//    else if (vline[0] == "E") { // EFP fragment
+//      if (vline.size() != 3) {
+//        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
+//        throw(INTCO_EXCEPT(error.str().c_str()));
+//      }
+//      if ( !stoi(vline[1], &geom_index) || !stoi(vline[2], &grad_index)) {
+//        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
+//        throw(INTCO_EXCEPT(error.str().c_str()));
+//      }
+//
+//      --geom_index;
+//      --grad_index;
+//
+//      // create fragment
+//      efp_frag1 = new EFP_FRAG;
+//      efp_frag1->add_dummy_intcos(6);
+//      efp_frag1->set_libmints_geom_index(geom_index);
+//      efp_frag1->set_libmints_grad_index(grad_index);
+//      efp_fragments.push_back(efp_frag1);
+
+    else if (vline[0] == "E") {  // EFP fragment definition 
+      fprintf(outfile,"\tAdding EFP fragment.\n");
+      fflush(outfile);
+      if (vline.size() != 2) {
+        error << "Format of EFP line is \"E integer(fragment number)\"\n" ;
         throw(INTCO_EXCEPT(error.str().c_str()));
       }
-      if ( !stoi(vline[1], &geom_index) || !stoi(vline[2], &grad_index)) {
-        error << "Format of fragment line is \"E integer(geom_index) integer(grad_index)\", line " << line_num << ".\n";
-        throw(INTCO_EXCEPT(error.str().c_str()));
-      }
-
-      --geom_index;
-      --grad_index;
-
-      // create fragment
-      efp_frag1 = new EFP_FRAG;
-      efp_frag1->add_dummy_intcos(6);
-      efp_frag1->set_libmints_geom_index(geom_index);
-      efp_frag1->set_libmints_grad_index(grad_index);
-      efp_fragments.push_back(efp_frag1);
+      EFP_FRAG * one_EFP = new EFP_FRAG();
+      efp_fragments.push_back(one_EFP);
 
       line_present = myline(fintco, vline, line_num);
     }

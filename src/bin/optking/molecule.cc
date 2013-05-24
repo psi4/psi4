@@ -706,8 +706,10 @@ void MOLECULE::print_intco_dat(FILE *fp_intco) {
     interfragments[I]->print_intco_dat(fp_intco, g_atom_offset(frag_a), g_atom_offset(frag_b));
   }
 
-  for (int i=0; i<efp_fragments.size(); i++)
-    fprintf(fp_intco,"E %d %d\n", efp_fragments[i]->get_libmints_geom_index()+1, efp_fragments[i]->get_libmints_grad_index()+1);
+//  for (int i=0; i<efp_fragments.size(); i++)
+//    fprintf(fp_intco,"E %d %d\n", efp_fragments[i]->get_libmints_geom_index()+1, efp_fragments[i]->get_libmints_grad_index()+1);
+  for (int e=0; e<efp_fragments.size(); ++e)
+    fprintf(fp_intco,"E %d\n", e);
 }
 
 // Apply strings of atoms for frozen and fixed coordinates; 

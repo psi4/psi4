@@ -97,6 +97,11 @@ void MOLECULE::read_geom_grad(void) {
   int EFPfrag = efp_fragments.size();
 //****AVC****//
 
+fprintf(outfile,"in read_geom_grad\n");
+fprintf(outfile,"nfrag %d\n", nfrag);
+fprintf(outfile,"EFPfrag %d\n", EFPfrag);
+fflush(outfile);
+
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
@@ -110,6 +115,10 @@ void MOLECULE::read_geom_grad(void) {
 
   Matrix& gradient = *pgradient.get();
 
+gradient.print_out();
+fflush(outfile);
+
+/*
 //  AVC - NONE OF THIS SHOULD END UP IN THE WORKING CODE -- JUST A HACK TO GET A REASONABLE GRADIENT
   for(int i=0; i<2; i++)
     for(int j=3; j<6; j++)
@@ -117,13 +126,7 @@ void MOLECULE::read_geom_grad(void) {
   gradient.set(0,5,0.000514);
   gradient.set(1,5,0.000818);
 
-if(nfrag > 0)
-{
-fprintf(outfile, "\nWhat does the mixed gradient look like?\n");
-gradient.print();
-fprintf(outfile, "Looks a lot like an EFP-only gradient ...\n");
-fprintf(outfile, "\nFake gradient:\n");
-
+if(nfrag > 0) {
   SharedMatrix efp_grad = gradient.clone();
   SharedMatrix qm_grad(new Matrix(nallatom - EFPfrag*3, 6));
   vector<SharedMatrix> dummy_grad;
@@ -140,18 +143,25 @@ fprintf(outfile, "\nFake gradient:\n");
   boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
 
+fprintf(outfile,"geometry:\n");
+geometry.print_out();
+fflush(outfile);
+
   energy = psi::Process::environment.globals["CURRENT ENERGY"];
+
+fprintf(outfile,"energy %15.10lf\n", energy);
+fflush(outfile);
 
   int atom =0;
 //****AVC****//
-  for (int f=0; f<EFPfrag; ++f)
-  {
+  for (int f=0; f<EFPfrag; ++f) {
     double **geom = efp_fragments[f]->get_xyz_pointer();
     double *force  = efp_fragments[f]->get_forces_pointer();
     double *com   = efp_fragments[f]->get_com_pointer();
 
-    for(int i=0; i<3; i++)
-    {
+fprintf(outfile, "index for fragment %d : %d\n", f, efp_fragments[f]->get_libmints_grad_index());
+
+    for(int i=0; i<3; i++) {
       force[i]   = - gradient(efp_fragments[f]->get_libmints_grad_index(), i);  //forces
       force[i+3] = - gradient(efp_fragments[f]->get_libmints_grad_index(), i+3);//torques
 
@@ -170,6 +180,7 @@ fprintf(outfile, "force\n");
 print_array(outfile, force, 6); fprintf(outfile, "\n");
 fprintf(outfile, "com\n");
 print_array(outfile, com, 3); fprintf(outfile, "\n");
+fflush(outfile);
 
   }
 //****AVC****//
@@ -391,11 +402,18 @@ void MOLECULE::write_geom(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   double **geom_2D = g_geom_2D();
+fprintf(outfile,"molecule::write_geom outputting to environment:\n");
 print_matrix(outfile, geom_2D, efp_fragments.size()*3, 3); fflush(outfile);
   psi::Process::environment.molecule()->set_geometry(geom_2D);
   psi::Process::environment.molecule()->update_geometry();
-
   free_matrix(geom_2D);
+fflush(outfile);
+
+/*
+  double *g = g_geom_array();
+  p_efp->set_coordinates(1,g); // type is POINTS
+  free_array(g);
+*/
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
