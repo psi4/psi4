@@ -84,6 +84,12 @@ public:
         Ghost    /*!< Include, but with ghost atoms */
     };
 
+    enum FragmentLevel {
+        QMatom  = 1,    /*!< Quantum mechanical */
+        EFPatom = 2,    /*!< Effective fragment potential */
+        ALLatom = 3     /*!< All atom types */
+    };
+
     typedef std::vector<boost::shared_ptr<CoordEntry> > EntryVector;
     typedef EntryVector::iterator EntryVectorIter;
 
@@ -176,8 +182,6 @@ public:
 //****AVC****//
     /// The list of atom ranges defining each fragment from parent molecule
     std::vector<std::pair<int, int> > fragments_;
-    /// A list describing the treatment level of each fragment
-    std::vector<FragmentLevel> fragment_levels_;
 //****AVC****//
     Molecule();
     /// Copy constructor.
@@ -230,7 +234,7 @@ public:
      * \param charge charge to use if non standard
      * \param lineno line number when taken from a string
      */
-    void add_atom(int Z, double x, double y, double z, FragmentLevel domain,
+    void add_atom(int Z, double x, double y, double z,
                   const char *symb = "", double mass = 0.0,
                   double charge = 0.0, int lineno = -1);
 
@@ -251,7 +255,7 @@ public:
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom(FragmentLevel type = QMatom) const; 
+    int natom() const; 
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
@@ -354,7 +358,7 @@ public:
     /**
      * Reinterpret the fragments for QM/EFP and build the atom list
      */
-    void reinterpret_fragments(FragmentLevel type);
+    void reinterpret_fragments();
 
     /**
      * Find the nearest point group within the tolerance specified, and adjust
@@ -362,13 +366,10 @@ public:
      */
     void symmetrize_to_abelian_group(double tol);
 
-    /// Check if atom is in active FragmentLevel
-    bool atom_apropos(int, FragmentLevel) const;
-
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
-    double nuclear_repulsion_energy(FragmentLevel type = QMatom) const;
+    double nuclear_repulsion_energy() const;
     /// Computes nuclear repulsion energy derivatives.
     Matrix nuclear_repulsion_energy_deriv1() const;
     /// Computes nuclear repulsion energy second derivatives.
@@ -401,7 +402,7 @@ public:
     RotorType rotor_type(double tol = FULL_PG_TOL) const;
 
     /// Print the molecule
-    void print(FragmentLevel type = QMatom) const;
+    void print() const;
 
     /// Print the molecule, adding spacers
     void print_cluster() const;
