@@ -1066,8 +1066,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             mol->fragment_types_.push_back(Real);
             if(regex_search(lines[lineNumber-1], reMatches, efpFileMarker_)) {
                 fragment_levels.push_back(EFPatom);
-                //mol->fragment_multiplicities_.push_back(Process::environment.get_efp()->get_frag_multiplicity(efpCount-1));
-                //mol->fragment_charges_.push_back(int (Process::environment.get_efp()->get_frag_charge(efpCount-1)));
                 // Overwrite the overall molecule chgmult written before loop
                 if (mol->fragments_.size() == 1) {
                     mol->fragment_multiplicities_.pop_back();
@@ -1329,10 +1327,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     // Filter out EFP from Molecule
     for (int i=fragment_levels.size()-1; i>=0; --i) {
         if (fragment_levels[i] == EFPatom) {
-            for (int j=mol->fragments_[i].second-1; j>=mol->fragments_[i].first; --j) {
-                //mol->full_atoms_[j]->print_in_input_format();
+            for (int j=mol->fragments_[i].second-1; j>=mol->fragments_[i].first; --j)
                 mol->full_atoms_.erase(mol->full_atoms_.begin() + j);
-            }
             mol->fragment_charges_.erase(mol->fragment_charges_.begin()+i);
             mol->fragment_multiplicities_.erase(mol->fragment_multiplicities_.begin()+i);
             mol->fragments_.erase(mol->fragments_.begin()+i);
@@ -1478,7 +1474,8 @@ void Molecule::reinterpret_coordentries()
 void Molecule::update_geometry()
 {
     if (fragments_.size() == 0)
-        throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
+        fprintf(outfile, "Warning: There are no quantum mechanical atoms in this molecule.\n");
+    //    throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
     // Idempotence condition
     if (lock_frame_) 

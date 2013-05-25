@@ -375,7 +375,6 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
       }
       EFP_FRAG * one_EFP = new EFP_FRAG();
       efp_fragments.push_back(one_EFP);
-
       line_present = myline(fintco, vline, line_num);
     }
     else {
