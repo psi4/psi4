@@ -113,10 +113,10 @@ boost::shared_ptr<Matrix> Localizer::fock_update(boost::shared_ptr<Matrix> Fc)
     double** L2p = L2->pointer();
     boost::shared_ptr<Matrix> U2(U_->clone());
     U2->copy(U_);
-    double** U2p = U_->pointer();
+    double** U2p = U2->pointer();
     for (int i = 0; i < nmo; i++) {
-        C_DCOPY(nso,&L2p[0][order[i].second],nmo,&L2p[0][i],nmo);
-        C_DCOPY(nmo,&U2p[0][order[i].second],nmo,&U2p[0][i],nmo);
+        C_DCOPY(nso,&L2p[0][order[i].second],nmo,&Lp[0][i],nmo);
+        C_DCOPY(nmo,&U2p[0][order[i].second],nmo,&Up[0][i],nmo);
     }   
  
     return Fl;

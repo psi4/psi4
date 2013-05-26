@@ -829,6 +829,13 @@ public:
     */
     static SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false, bool transB = false, bool transC = false);
 
+    /** Summation collapse along either rows (0) or columns (1), always producing a column matrix
+    * \param dim 0 (row sum) or 1 (col sum)
+    * \return \sum_{i} M_{ij} => T_j if dim = 0 or 
+    *         \sum_{j} M_{ij} => T_i if dim = 1
+    */
+    SharedMatrix collapse(int dim = 0);
+
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.  Only for symmetric matrices.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);

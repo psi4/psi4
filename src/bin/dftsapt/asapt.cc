@@ -21,6 +21,7 @@
  */
 
 #include "dftsapt.h"
+#include "vis.h"
 #include <libmints/mints.h>
 #include <libmints/sieve.h>
 #include <libmints/local.h>
@@ -66,6 +67,9 @@ boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
     ASAPT* sapt = new ASAPT();
 
     sapt->population_type_ = options.get_str("ASAPT_POPULATION_TYPE");
+    sapt->exch_scale_      = options.get_bool("ASAPT_EXCH_SCALE");
+    sapt->ind_scale_       = options.get_bool("ASAPT_IND_SCALE");
+    sapt->ind_resp_        = options.get_bool("ASAPT_IND_RESPONSE");
     
     sapt->elst_primary_A_ = eA->basisset();
     sapt->elst_primary_B_ = eB->basisset();
@@ -273,8 +277,8 @@ void ASAPT::localize()
     boost::shared_ptr<Matrix> FlA = localA->fock_update(FcA);
     FlA->set_name("FlA");    
 
-    FcA->print();
-    FlA->print();
+    //FcA->print();
+    //FlA->print();
 
     Locc_A_ = localA->L();
     Uocc_A_ = localA->U();;
@@ -283,8 +287,6 @@ void ASAPT::localize()
 
     boost::shared_ptr<Localizer> localB = Localizer::build(primary_, Cocc_B_, Process::environment.options);
     localB->localize();
-    Locc_B_ = localB->L();
-    Uocc_B_ = localB->U();
 
     int nb = eps_occ_B_->dimpi()[0];
     boost::shared_ptr<Matrix> FcB(new Matrix("FcB", nb, nb));
@@ -292,10 +294,14 @@ void ASAPT::localize()
     boost::shared_ptr<Matrix> FlB = localB->fock_update(FcB);
     FlB->set_name("FlB");    
 
-    FcB->print();
-    FlB->print();
+    //FcB->print();
+    //FlB->print();
+
+    Locc_B_ = localB->L();
+    Uocc_B_ = localB->U();
 
     fflush(outfile);
+
 }
 void ASAPT::populate()
 {
@@ -475,6 +481,9 @@ void ASAPT::populate()
 
     R_A_ = Matrix::doublet(Q_A_,Uocc_A_,false,true);
     R_B_ = Matrix::doublet(Q_B_,Uocc_B_,false,true);
+
+    // The ASAPT visualization and analysis container
+    vis_ = boost::shared_ptr<ASAPTVis>(new ASAPTVis(primary_,monomer_A_,monomer_B_,Locc_A_,Locc_B_,Q_A_,Q_B_));
 }
 void ASAPT::elst()
 {
@@ -723,8 +732,6 @@ void ASAPT::elst()
         }
     }
 
-    local_vars_["Elst"] = Elst_atoms;
-
     for (int k = 0; k < Elst10_terms.size(); k++) {
         Elst10 += Elst10_terms[k];
     }
@@ -737,6 +744,8 @@ void ASAPT::elst()
     fprintf(outfile,"    Elst10,r (L-DF)     = %18.12lf H\n",Elst10);
     fprintf(outfile,"\n");
     fflush(outfile);
+
+    vis_->vars()["Elst_AB"] = Elst_atoms;
 
     // ==> Setup Atomic Electrostatic Fields for Induction <== //
 
@@ -1085,27 +1094,6 @@ void ASAPT::exch()
         }
     }
 
-    //E_exch->print();
-
-    boost::shared_ptr<Matrix> Exch_atoms(new Matrix("Exch (A x B)", nA, nB));
-    double** Exch_atomsp = Exch_atoms->pointer();
-
-    double** Q2Ap = Q_A_->pointer();
-    double** Q2Bp = Q_B_->pointer();
-
-    for (int b = 0; b < nb; b++) {
-        for (int B = 0; B < nB; B++) {
-            for (int a = 0; a < na; a++) {
-                for (int A = 0; A < nA; A++) {
-                    Exch_atomsp[A][B] += Q2Ap[A][a] * Q2Bp[B][b] * E_exchp[a][b];
-                }
-            }
-        }
-    }
-
-    //Exch_atoms->print();
-    local_vars_["Exch"] = Exch_atoms;
-
     for (int k = 0; k < Exch10_2_terms.size(); k++) {
         Exch10_2 += Exch10_2_terms[k];
     }
@@ -1118,6 +1106,16 @@ void ASAPT::exch()
     fprintf(outfile,"    Exch10(S^2)         = %18.12lf H\n",Exch10_2);
     fprintf(outfile, "\n");
     fflush(outfile);
+
+    // => Exchange scaling <= //
+
+    if (exch_scale_) {
+        double scale = energies_["Exch10"] / energies_["Exch10(S^2)"];
+        E_exch->scale(scale);
+        fprintf(outfile,"    Scaling ASAPT Exchange by %11.3E to match S^\\infty\n\n", scale);
+    }
+    
+    vis_->vars()["Exch_ab"] = E_exch;
 }
 void ASAPT::ind()
 {
@@ -1249,7 +1247,7 @@ void ASAPT::ind()
     // ==> Uncoupled Targets <== //
 
     boost::shared_ptr<Matrix> Ind20u_AB_terms(new Matrix("Ind20 [A<-B] (a x B)", na, nB));
-    boost::shared_ptr<Matrix> Ind20u_BA_terms(new Matrix("Ind20 [B<-A] (b x A)", nb, nA));
+    boost::shared_ptr<Matrix> Ind20u_BA_terms(new Matrix("Ind20 [B<-A] (A x b)", nA, nb));
     double** Ind20u_AB_termsp = Ind20u_AB_terms->pointer();
     double** Ind20u_BA_termsp = Ind20u_BA_terms->pointer();
 
@@ -1257,7 +1255,7 @@ void ASAPT::ind()
     double Ind20u_BA = 0.0;
 
     boost::shared_ptr<Matrix> ExchInd20u_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB));
-    boost::shared_ptr<Matrix> ExchInd20u_BA_terms(new Matrix("ExchInd20 [B<-A] (b x A)", nb, nA));
+    boost::shared_ptr<Matrix> ExchInd20u_BA_terms(new Matrix("ExchInd20 [B<-A] (A x b)", nA, nb));
     double** ExchInd20u_AB_termsp = ExchInd20u_AB_terms->pointer();
     double** ExchInd20u_BA_termsp = ExchInd20u_BA_terms->pointer();
 
@@ -1265,7 +1263,7 @@ void ASAPT::ind()
     double ExchInd20u_BA = 0.0;
 
     boost::shared_ptr<Matrix> Indu_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB));
-    boost::shared_ptr<Matrix> Indu_BA_terms(new Matrix("Ind [B<-A] (b x A)", nb, nA));
+    boost::shared_ptr<Matrix> Indu_BA_terms(new Matrix("Ind [B<-A] (A x b)", nA, nb));
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
     double** Indu_BA_termsp = Indu_BA_terms->pointer();
 
@@ -1328,26 +1326,15 @@ void ASAPT::ind()
         for (int b = 0; b < nb; b++) {
             double Jval = 2.0 * C_DDOT(ns,x2Bp[b],1,wATp[b],1);
             double Kval = 2.0 * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
-            Ind20u_BA_termsp[b][A] = Jval;
+            Ind20u_BA_termsp[A][b] = Jval;
             Ind20u_BA += Jval;
-            ExchInd20u_BA_termsp[b][A] = Kval;
+            ExchInd20u_BA_termsp[A][b] = Kval;
             ExchInd20u_BA += Kval;
-            Indu_BA_termsp[b][A] = Jval + Kval;
+            Indu_BA_termsp[A][b] = Jval + Kval;
             Indu_BA += Jval + Kval;
         }
     
     } 
-
-    // ==> LO -> A transform <== //
-   
-    boost::shared_ptr<Matrix> IndAB_atoms = Matrix::doublet(Q_A_,Indu_AB_terms,false,false);
-    boost::shared_ptr<Matrix> IndBA_atoms = Matrix::doublet(Indu_BA_terms,Q_B_,true,true);
-
-    IndAB_atoms->set_name("Ind [B<-A] (A x B)");
-    IndBA_atoms->set_name("Ind [A<-B] (A x B)");
-
-    local_vars_["IndAB"] = IndAB_atoms;
-    local_vars_["IndBA"] = IndBA_atoms;
 
     double Ind20u = Ind20u_AB + Ind20u_BA;
     fprintf(outfile,"    Ind20,u (A<-B)      = %18.12lf H\n",Ind20u_AB);
@@ -1361,6 +1348,31 @@ void ASAPT::ind()
     fprintf(outfile,"    Exch-Ind20,u        = %18.12lf H\n",ExchInd20u);
     fprintf(outfile,"\n");
     fflush(outfile);
+
+    double Ind = Ind20u + ExchInd20u;
+    boost::shared_ptr<Matrix> Ind_AB_terms = Indu_AB_terms;
+    boost::shared_ptr<Matrix> Ind_BA_terms = Indu_BA_terms;
+
+    if (ind_resp_) {
+        throw PSIEXCEPTION("Finish coupled induction, Rob");
+    }
+
+    // => Induction scaling <= //
+
+    if (ind_scale_) {
+        double dHF = 0.0;
+        if (energies_["HF"] != 0.0) {
+            dHF = energies_["HF"] - energies_["Elst10,r"] - energies_["Exch10"] - energies_["Ind20,r"] - energies_["Exch-Ind20,r"];
+        }
+        double IndSAPT0 = energies_["Ind20,r"] + energies_["Exch-Ind20,r"] + dHF;
+        double scale = IndSAPT0 / Ind;
+        Ind_AB_terms->scale(scale);
+        Ind_BA_terms->scale(scale);
+        fprintf(outfile,"    Scaling ASAPT Induction by %11.3E to match SAPT0\n\n", scale);
+    }
+    
+    vis_->vars()["IndAB_aB"] = Ind_AB_terms;
+    vis_->vars()["IndBA_Ab"] = Ind_BA_terms;
 }
 void ASAPT::disp()
 {
@@ -1903,106 +1915,18 @@ void ASAPT::disp()
     //E_exch_disp20->print();
     //E_disp->print();
 
-    boost::shared_ptr<Matrix> Disp_atoms = Matrix::triplet(Q2A,E_disp,Q2B,false,false,true);
-    Disp_atoms->set_name("Disp (A x B)");
-
-    //Disp_atoms->print();
-    local_vars_["Disp"] = Disp_atoms;
-
     energies_["Disp20"] = Disp20;
     energies_["Exch-Disp20"] = ExchDisp20;
     fprintf(outfile,"    Disp20              = %18.12lf H\n",Disp20);
     fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",ExchDisp20);
     fprintf(outfile,"\n");
     fflush(outfile);
+
+    vis_->vars()["Disp_ab"] = E_disp;
 }
 void ASAPT::analyze()
 {
-    std::vector<std::string> keys;
-    keys.push_back("Elst"); 
-    keys.push_back("Exch"); 
-    keys.push_back("IndAB"); 
-    keys.push_back("IndBA"); 
-    keys.push_back("Disp"); 
-
-    boost::shared_ptr<Matrix> Tot(local_vars_["Elst"]->clone());
-    Tot->zero();
-    Tot->set_name("Total SAPT0 (A x B)");
-    for (int i = 0; i < keys.size(); i++) {
-        Tot->add(local_vars_[keys[i]]);
-    }
-    local_vars_["Total"] = Tot;
-
-    std::map<std::string, boost::shared_ptr<Matrix> > mA;
-    std::map<std::string, boost::shared_ptr<Matrix> > mB;
-
-    for (int i = 0; i < keys.size(); i++) {
-        std::string key = keys[i];
-        boost::shared_ptr<Matrix> T = local_vars_[key];
-        int nA = T->nrow();
-        int nB = T->ncol();
-        boost::shared_ptr<Matrix> TA(new Matrix(key,nA,1));
-        boost::shared_ptr<Matrix> TB(new Matrix(key,nB,1));
-        double** Tp = T->pointer();
-        double** TAp = TA->pointer();
-        double** TBp = TB->pointer();
-        for (int A = 0; A < nA; A++) {
-            for (int B = 0; B < nB; B++) {
-                TAp[A][0] += Tp[A][B];
-                TBp[B][0] += Tp[A][B];
-            }
-        }
-        mA[key] = TA;
-        mB[key] = TB;
-    } 
-    
-    /**
-    fprintf(outfile, "  L-SAPT0 Analysis [H]:\n\n");
-
-    fprintf(outfile, "   Diatomic Partition:\n\n");
-    for (int i = 0; i < keys.size(); i++) {
-        local_vars_[keys[i]]->print();
-    }
-     
-    fprintf(outfile, "   Monomer A Partition:\n\n");
-    for (int i = 0; i < keys.size(); i++) {
-        mA[keys[i]]->print();
-    }
-
-    fprintf(outfile, "   Monomer B Partition:\n\n");
-    for (int i = 0; i < keys.size(); i++) {
-        mB[keys[i]]->print();
-    }
-    **/
-
-    monomer_A_->save_xyz("mA.xyz",false);
-    monomer_B_->save_xyz("mB.xyz",false);
-
-    for (int i = 0; i < keys.size(); i++) {
-        std::string key = keys[i];
-        boost::shared_ptr<Matrix> TA = mA[key]; 
-        boost::shared_ptr<Matrix> TB = mB[key]; 
-        double** TAp = TA->pointer();
-        double** TBp = TB->pointer();
-        int nA = TA->nrow();
-        int nB = TB->nrow();
-
-        std::stringstream ssA;
-        ssA << key << "_A.dat";
-        FILE* fhA = fopen(ssA.str().c_str(),"w");
-        for (int A = 0; A < nA; A++) {
-            fprintf(fhA,"%24.16E\n", TAp[A][0]);
-        }
-        fclose(fhA);
-
-        std::stringstream ssB;
-        ssB << key << "_B.dat";
-        FILE* fhB = fopen(ssB.str().c_str(),"w");
-        for (int B = 0; B < nB; B++) {
-            fprintf(fhB,"%24.16E\n", TBp[B][0]);
-        }
-        fclose(fhB);
-    }
+    vis_->analyze();
 }
 
 }}
