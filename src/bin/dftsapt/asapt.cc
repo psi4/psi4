@@ -266,6 +266,16 @@ void ASAPT::localize()
 
     boost::shared_ptr<Localizer> localA = Localizer::build(primary_, Cocc_A_, Process::environment.options);
     localA->localize();
+
+    int na = eps_occ_A_->dimpi()[0];
+    boost::shared_ptr<Matrix> FcA(new Matrix("FcA", na, na));
+    FcA->set_diagonal(eps_occ_A_); 
+    boost::shared_ptr<Matrix> FlA = localA->fock_update(FcA);
+    FlA->set_name("FlA");    
+
+    FcA->print();
+    FlA->print();
+
     Locc_A_ = localA->L();
     Uocc_A_ = localA->U();;
 
@@ -275,6 +285,15 @@ void ASAPT::localize()
     localB->localize();
     Locc_B_ = localB->L();
     Uocc_B_ = localB->U();
+
+    int nb = eps_occ_B_->dimpi()[0];
+    boost::shared_ptr<Matrix> FcB(new Matrix("FcB", nb, nb));
+    FcB->set_diagonal(eps_occ_B_); 
+    boost::shared_ptr<Matrix> FlB = localB->fock_update(FcB);
+    FlB->set_name("FlB");    
+
+    FcB->print();
+    FlB->print();
 
     fflush(outfile);
 }
@@ -324,8 +343,8 @@ void ASAPT::populate()
         boost::shared_ptr<Matrix> S12(S->clone());
         S12->copy(S);
         S12->power(0.5);
-        boost::shared_ptr<Matrix> S12A = doublet(S12,L_A);
-        boost::shared_ptr<Matrix> S12B = doublet(S12,L_B);
+        boost::shared_ptr<Matrix> S12A = Matrix::doublet(S12,L_A);
+        boost::shared_ptr<Matrix> S12B = Matrix::doublet(S12,L_B);
         double** S12Ap = S12A->pointer();
         double** S12Bp = S12B->pointer();
         
@@ -353,8 +372,8 @@ void ASAPT::populate()
 
     } else if (population_type_ == "MULLIKEN") {
         
-        boost::shared_ptr<Matrix> SA = doublet(S,L_A);
-        boost::shared_ptr<Matrix> SB = doublet(S,L_B);
+        boost::shared_ptr<Matrix> SA = Matrix::doublet(S,L_A);
+        boost::shared_ptr<Matrix> SB = Matrix::doublet(S,L_B);
         double** SAp = SA->pointer();
         double** SBp = SB->pointer();
         double** LAp = L_A->pointer();
@@ -454,8 +473,8 @@ void ASAPT::populate()
     Q_A_ = Q2A; 
     Q_B_ = Q2B; 
 
-    R_A_ = doublet(Q_A_,Uocc_A_,false,true);
-    R_B_ = doublet(Q_B_,Uocc_B_,false,true);
+    R_A_ = Matrix::doublet(Q_A_,Uocc_A_,false,true);
+    R_B_ = Matrix::doublet(Q_B_,Uocc_B_,false,true);
 }
 void ASAPT::elst()
 {
@@ -740,7 +759,7 @@ void ASAPT::elst()
         Zxyzp[0][2] = mA->y(A);
         Zxyzp[0][3] = mA->z(A); 
         Vint->compute(Vtemp);
-        boost::shared_ptr<Matrix> Vbs = triplet(Cocc_B_,Vtemp,Cvir_B_,true,false,false);
+        boost::shared_ptr<Matrix> Vbs = Matrix::triplet(Cocc_B_,Vtemp,Cvir_B_,true,false,false);
         double** Vbsp = Vbs->pointer();
         fwrite(Vbsp[0],sizeof(double),nb*ns,WAbsf);
     }
@@ -752,7 +771,7 @@ void ASAPT::elst()
         Zxyzp[0][2] = mB->y(B);
         Zxyzp[0][3] = mB->z(B); 
         Vint->compute(Vtemp);
-        boost::shared_ptr<Matrix> Var = triplet(Cocc_A_,Vtemp,Cvir_A_,true,false,false);
+        boost::shared_ptr<Matrix> Var = Matrix::triplet(Cocc_A_,Vtemp,Cvir_A_,true,false,false);
         double** Varp = Var->pointer();
         fwrite(Varp[0],sizeof(double),na*nr,WBarf);
     }
@@ -960,8 +979,8 @@ void ASAPT::exch()
     W_B->scale(2.0);
     W_B->add(V_B);
 
-    boost::shared_ptr<Matrix> WAbs = triplet(Locc_B_,W_A,Cvir_B_,true,false,false);
-    boost::shared_ptr<Matrix> WBar = triplet(Locc_A_,W_B,Cvir_A_,true,false,false);
+    boost::shared_ptr<Matrix> WAbs = Matrix::triplet(Locc_B_,W_A,Cvir_B_,true,false,false);
+    boost::shared_ptr<Matrix> WBar = Matrix::triplet(Locc_A_,W_B,Cvir_A_,true,false,false);
     double** WBarp = WBar->pointer();
     double** WAbsp = WAbs->pointer();
     
@@ -974,10 +993,10 @@ void ASAPT::exch()
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
 
-    boost::shared_ptr<Matrix> Sab = triplet(L_A,S,L_B,true,false,false);
-    boost::shared_ptr<Matrix> Sba = triplet(L_B,S,L_A,true,false,false);
-    boost::shared_ptr<Matrix> Sas = triplet(L_A,S,Cvir_B_,true,false,false);
-    boost::shared_ptr<Matrix> Sbr = triplet(L_B,S,Cvir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Sab = Matrix::triplet(L_A,S,L_B,true,false,false);
+    boost::shared_ptr<Matrix> Sba = Matrix::triplet(L_B,S,L_A,true,false,false);
+    boost::shared_ptr<Matrix> Sas = Matrix::triplet(L_A,S,Cvir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Sbr = Matrix::triplet(L_B,S,Cvir_A_,true,false,false);
     double** Sabp = Sab->pointer();
     double** Sbap = Sba->pointer();
     double** Sasp = Sas->pointer();
@@ -1269,7 +1288,7 @@ void ASAPT::ind()
         }
 
         // Backtransform the amplitude to LO
-        boost::shared_ptr<Matrix> x2A = doublet(Uocc_A_,xA,true,false);
+        boost::shared_ptr<Matrix> x2A = Matrix::doublet(Uocc_A_,xA,true,false);
         double** x2Ap = x2A->pointer();
 
         // Zip up the Ind20 contributions
@@ -1302,7 +1321,7 @@ void ASAPT::ind()
         }
 
         // Backtransform the amplitude to LO
-        boost::shared_ptr<Matrix> x2B = doublet(Uocc_B_,xB,true,false);
+        boost::shared_ptr<Matrix> x2B = Matrix::doublet(Uocc_B_,xB,true,false);
         double** x2Bp = x2B->pointer();
 
         // Zip up the Ind20 contributions
@@ -1321,8 +1340,8 @@ void ASAPT::ind()
 
     // ==> LO -> A transform <== //
    
-    boost::shared_ptr<Matrix> IndAB_atoms = doublet(Q_A_,Indu_AB_terms,false,false);
-    boost::shared_ptr<Matrix> IndBA_atoms = doublet(Indu_BA_terms,Q_B_,true,true);
+    boost::shared_ptr<Matrix> IndAB_atoms = Matrix::doublet(Q_A_,Indu_AB_terms,false,false);
+    boost::shared_ptr<Matrix> IndBA_atoms = Matrix::doublet(Indu_BA_terms,Q_B_,true,true);
 
     IndAB_atoms->set_name("Ind [B<-A] (A x B)");
     IndBA_atoms->set_name("Ind [A<-B] (A x B)");
@@ -1415,75 +1434,75 @@ void ASAPT::disp()
 
     // => Auxiliary C matrices <= //
 
-    boost::shared_ptr<Matrix> Cr1 = triplet(D_B,S,Cavir_A_);
+    boost::shared_ptr<Matrix> Cr1 = Matrix::triplet(D_B,S,Cavir_A_);
     Cr1->scale(-1.0);
     Cr1->add(Cavir_A_);
-    boost::shared_ptr<Matrix> Cs1 = triplet(D_A,S,Cavir_B_);
+    boost::shared_ptr<Matrix> Cs1 = Matrix::triplet(D_A,S,Cavir_B_);
     Cs1->scale(-1.0);
     Cs1->add(Cavir_B_);
-    boost::shared_ptr<Matrix> Ca2 = triplet(D_B,S,Caocc_A_);
-    boost::shared_ptr<Matrix> Cb2 = triplet(D_A,S,Caocc_B_);
-    boost::shared_ptr<Matrix> Cr3 = triplet(D_B,S,Cavir_A_);
-    boost::shared_ptr<Matrix> CrX = triplet(triplet(D_A,S,D_B),S,Cavir_A_);
+    boost::shared_ptr<Matrix> Ca2 = Matrix::triplet(D_B,S,Caocc_A_);
+    boost::shared_ptr<Matrix> Cb2 = Matrix::triplet(D_A,S,Caocc_B_);
+    boost::shared_ptr<Matrix> Cr3 = Matrix::triplet(D_B,S,Cavir_A_);
+    boost::shared_ptr<Matrix> CrX = Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,Cavir_A_);
     Cr3->subtract(CrX);
     Cr3->scale(2.0);
-    boost::shared_ptr<Matrix> Cs3 = triplet(D_A,S,Cavir_B_);
-    boost::shared_ptr<Matrix> CsX = triplet(triplet(D_B,S,D_A),S,Cavir_B_);
+    boost::shared_ptr<Matrix> Cs3 = Matrix::triplet(D_A,S,Cavir_B_);
+    boost::shared_ptr<Matrix> CsX = Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,Cavir_B_);
     Cs3->subtract(CsX);
     Cs3->scale(2.0);
-    boost::shared_ptr<Matrix> Ca4 = triplet(triplet(D_A,S,D_B),S,Caocc_A_);
+    boost::shared_ptr<Matrix> Ca4 = Matrix::triplet(Matrix::triplet(D_A,S,D_B),S,Caocc_A_);
     Ca4->scale(-2.0);
-    boost::shared_ptr<Matrix> Cb4 = triplet(triplet(D_B,S,D_A),S,Caocc_B_);
+    boost::shared_ptr<Matrix> Cb4 = Matrix::triplet(Matrix::triplet(D_B,S,D_A),S,Caocc_B_);
     Cb4->scale(-2.0);
 
     // => Auxiliary V matrices <= //
 
-    boost::shared_ptr<Matrix> Jbr = triplet(Caocc_B_,J_A,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Jbr = Matrix::triplet(Caocc_B_,J_A,Cavir_A_,true,false,false);
     Jbr->scale(2.0);
-    boost::shared_ptr<Matrix> Kbr = triplet(Caocc_B_,K_A,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Kbr = Matrix::triplet(Caocc_B_,K_A,Cavir_A_,true,false,false);
     Kbr->scale(-1.0);
 
-    boost::shared_ptr<Matrix> Jas = triplet(Caocc_A_,J_B,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Jas = Matrix::triplet(Caocc_A_,J_B,Cavir_B_,true,false,false);
     Jas->scale(2.0);
-    boost::shared_ptr<Matrix> Kas = triplet(Caocc_A_,K_B,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Kas = Matrix::triplet(Caocc_A_,K_B,Cavir_B_,true,false,false);
     Kas->scale(-1.0);
 
-    boost::shared_ptr<Matrix> KOas = triplet(Caocc_A_,K_O,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> KOas = Matrix::triplet(Caocc_A_,K_O,Cavir_B_,true,false,false);
     KOas->scale(1.0);
-    boost::shared_ptr<Matrix> KObr = triplet(Caocc_B_,K_O,Cavir_A_,true,true,false);
+    boost::shared_ptr<Matrix> KObr = Matrix::triplet(Caocc_B_,K_O,Cavir_A_,true,true,false);
     KObr->scale(1.0);
 
-    boost::shared_ptr<Matrix> JBas = triplet(triplet(Caocc_A_,S,D_B,true,false,false),J_A,Cavir_B_);
+    boost::shared_ptr<Matrix> JBas = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),J_A,Cavir_B_);
     JBas->scale(-2.0);
-    boost::shared_ptr<Matrix> JAbr = triplet(triplet(Caocc_B_,S,D_A,true,false,false),J_B,Cavir_A_);
+    boost::shared_ptr<Matrix> JAbr = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),J_B,Cavir_A_);
     JAbr->scale(-2.0);
 
-    boost::shared_ptr<Matrix> Jbs = triplet(Caocc_B_,J_A,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Jbs = Matrix::triplet(Caocc_B_,J_A,Cavir_B_,true,false,false);
     Jbs->scale(4.0);
-    boost::shared_ptr<Matrix> Jar = triplet(Caocc_A_,J_B,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Jar = Matrix::triplet(Caocc_A_,J_B,Cavir_A_,true,false,false);
     Jar->scale(4.0);
 
-    boost::shared_ptr<Matrix> JAas = triplet(triplet(Caocc_A_,J_B,D_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> JAas = Matrix::triplet(Matrix::triplet(Caocc_A_,J_B,D_A,true,false,false),S,Cavir_B_);
     JAas->scale(-2.0);
-    boost::shared_ptr<Matrix> JBbr = triplet(triplet(Caocc_B_,J_A,D_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> JBbr = Matrix::triplet(Matrix::triplet(Caocc_B_,J_A,D_B,true,false,false),S,Cavir_A_);
     JBbr->scale(-2.0);
 
     // Get your signs right Hesselmann!
-    boost::shared_ptr<Matrix> Vbs = triplet(Caocc_B_,V_A,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Vbs = Matrix::triplet(Caocc_B_,V_A,Cavir_B_,true,false,false);
     Vbs->scale(2.0);
-    boost::shared_ptr<Matrix> Var = triplet(Caocc_A_,V_B,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Var = Matrix::triplet(Caocc_A_,V_B,Cavir_A_,true,false,false);
     Var->scale(2.0);
-    boost::shared_ptr<Matrix> VBas = triplet(triplet(Caocc_A_,S,D_B,true,false,false),V_A,Cavir_B_);
+    boost::shared_ptr<Matrix> VBas = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),V_A,Cavir_B_);
     VBas->scale(-1.0);
-    boost::shared_ptr<Matrix> VAbr = triplet(triplet(Caocc_B_,S,D_A,true,false,false),V_B,Cavir_A_);
+    boost::shared_ptr<Matrix> VAbr = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),V_B,Cavir_A_);
     VAbr->scale(-1.0);
-    boost::shared_ptr<Matrix> VRas = triplet(triplet(Caocc_A_,V_B,P_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> VRas = Matrix::triplet(Matrix::triplet(Caocc_A_,V_B,P_A,true,false,false),S,Cavir_B_);
     VRas->scale(1.0);
-    boost::shared_ptr<Matrix> VSbr = triplet(triplet(Caocc_B_,V_A,P_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> VSbr = Matrix::triplet(Matrix::triplet(Caocc_B_,V_A,P_B,true,false,false),S,Cavir_A_);
     VSbr->scale(1.0);
 
-    boost::shared_ptr<Matrix> Sas = triplet(Caocc_A_,S,Cavir_B_,true,false,false);
-    boost::shared_ptr<Matrix> Sbr = triplet(Caocc_B_,S,Cavir_A_,true,false,false);
+    boost::shared_ptr<Matrix> Sas = Matrix::triplet(Caocc_A_,S,Cavir_B_,true,false,false);
+    boost::shared_ptr<Matrix> Sbr = Matrix::triplet(Caocc_B_,S,Cavir_A_,true,false,false);
 
     boost::shared_ptr<Matrix> Qbr(Jbr->clone());
     Qbr->zero();
@@ -1505,8 +1524,8 @@ void ASAPT::disp()
     Qas->add(VBas);
     Qas->add(VRas);
 
-    boost::shared_ptr<Matrix> SBar = triplet(triplet(Caocc_A_,S,D_B,true,false,false),S,Cavir_A_);
-    boost::shared_ptr<Matrix> SAbs = triplet(triplet(Caocc_B_,S,D_A,true,false,false),S,Cavir_B_);
+    boost::shared_ptr<Matrix> SBar = Matrix::triplet(Matrix::triplet(Caocc_A_,S,D_B,true,false,false),S,Cavir_A_);
+    boost::shared_ptr<Matrix> SAbs = Matrix::triplet(Matrix::triplet(Caocc_B_,S,D_A,true,false,false),S,Cavir_B_);
 
     boost::shared_ptr<Matrix> Qar(Jar->clone());
     Qar->zero();
@@ -1884,7 +1903,7 @@ void ASAPT::disp()
     //E_exch_disp20->print();
     //E_disp->print();
 
-    boost::shared_ptr<Matrix> Disp_atoms = triplet(Q2A,E_disp,Q2B,false,false,true);
+    boost::shared_ptr<Matrix> Disp_atoms = Matrix::triplet(Q2A,E_disp,Q2B,false,false,true);
     Disp_atoms->set_name("Disp (A x B)");
 
     //Disp_atoms->print();

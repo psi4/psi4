@@ -80,8 +80,12 @@ public:
     
     // => Computers <= //
 
+    /// Print out the localization algorithm and parameters
     virtual void print_header() const = 0;
+    /// Perform the localization algorithm
     virtual void localize() = 0;
+    /// Given a Fock matrix in the original basis (usually diagonal), produce an ordered copy in the local basis, and reorder L and U
+    boost::shared_ptr<Matrix> fock_update(boost::shared_ptr<Matrix> F_orig);
 
     // => Accessors <= //
 
