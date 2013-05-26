@@ -217,11 +217,6 @@ protected:
         double alpha = 1.0,
         double beta = 1.0);
 
-    // Double GEMM
-    boost::shared_ptr<Matrix> doublet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, bool tA = false, bool tB = false);
-    // Triple GEMM
-    boost::shared_ptr<Matrix> triplet(boost::shared_ptr<Matrix> A, boost::shared_ptr<Matrix> B, boost::shared_ptr<Matrix> C, bool tA = false, bool tB = false, bool tC = false);
-
     void common_init();
 public:
     DFTSAPT();
