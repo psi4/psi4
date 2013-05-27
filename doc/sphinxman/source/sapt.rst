@@ -15,6 +15,11 @@ SAPT: Symmetry-Adapted Perturbation Theory
 
 *Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <src/lib/libsapt_solver>`
 
+.. warning:: In rare cases with systems having a high degree of symmetry, 
+   |Psifour| gives (very obviously) wrong answers for SAPT computations 
+   when the specification is in Z-matrix format. Use a Cartesian representation 
+   to avoid this problem.
+
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
@@ -273,6 +278,13 @@ charge-transfer results::
 
 These results are for the water dimer geometry shown above computed with 
 SAPT0/aug-cc-pVDZ. 
+
+It is possible to perform monomer-basis-only computations for any SAPT
+level with an input like the following, but, for reasons of accuracy, this
+is not reccommended. ::
+
+    energy('sapt0',sapt_basis='monomer')
+
 
 .. index:: 
    pair: SAPT; output
