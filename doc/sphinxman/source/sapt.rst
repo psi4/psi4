@@ -279,12 +279,6 @@ charge-transfer results::
 These results are for the water dimer geometry shown above computed with 
 SAPT0/aug-cc-pVDZ. 
 
-It is possible to perform monomer-basis-only computations for any SAPT
-level with an input like the following, but, for reasons of accuracy, this
-is not reccommended. ::
-
-    energy('sapt0',sapt_basis='monomer')
-
 
 .. index:: 
    pair: SAPT; output
@@ -304,7 +298,8 @@ level using only the monomer-centered basis.  To do this, simply add
 
 This procedure leads to faster compuations, but it converges more slowly
 towards the complete basis set limit than the default procedure, which uses
-the dimer-centered basis set.
+the dimer-centered basis set.  Hence, monomer-centered basis SAPT
+computations are not recommended.
 
 
 Interpreting SAPT Results
