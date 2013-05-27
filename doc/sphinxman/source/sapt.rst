@@ -69,7 +69,8 @@ of the two-electron integrals. The factorization of the SAPT energy
 expressions, as implemented in |PSIfour|, assumes the use of density-fitted
 two-electron integrals, therefore, the SAPT module cannot be run with
 exact integrals. In practice, we have found that the density-fitting
-approximation introduces negligable errors into the SAPT energy and greatly
+approximation introduces negligible errors into the SAPT energy 
+(often less than 0.01 kcal/mol for small dimers) and greatly
 improves efficiency. 
 
 A First Example
@@ -275,6 +276,24 @@ SAPT0/aug-cc-pVDZ.
 
 .. index:: 
    pair: SAPT; output
+
+Monomer-Centered Basis Computations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The charge-transfer analysis above is carried out by taking the
+difference between SAPT induction as calculated in the dimer-centered
+basis (i.e., each monomer sees the basis functions on both monomers)
+vs. the monomer-centered basis (i.e., each monomer utilizes only its
+own basis set).  It is also possible to run a SAPT computation at any
+level using only the monomer-centered basis.  To do this, simply add
+``sapt_basis='monomer'`` to the energy function, such as ::
+
+    energy('sapt2',sapt_basis='monomer')
+
+This procedure leads to faster compuations, but it converges more slowly
+towards the complete basis set limit than the default procedure, which uses
+the dimer-centered basis set.
+
 
 Interpreting SAPT Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^
