@@ -830,6 +830,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ASAPT_IND_SCALE", true);
     /*- Do ASAPT coupled response? (not recommended) -*/
     options.add_bool("ASAPT_IND_RESPONSE", false);
+    /*- Voxel ASAPT density saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_DENSITY_CLAMP", 0.5);
+    /*- Voxel ASAPT energy saturation (for uniform transfer functions) -*/
+    options.add_double("ASAPT_ENERGY_CLAMP", 0.005);
+    /*- Voxel ASAPT Gaussian scale for electrostatics (larger => tigher Gaussians) -*/
+    options.add_double("ASAPT_GAUSSIAN_SCALE", 2.0);
     /*- ASAPT minimum grid overages in bohr (LX, LY, LZ) -*/
     options.add("CUBIC_GRID_OVERAGE", new ArrayType());
     /*- ASAPT voxel spacing in bohr (DX, DY, DZ) -*/
