@@ -36,6 +36,23 @@ using namespace psi;
 using namespace boost;
 using namespace std;
 
+double GetBSRadius(unsigned Z)
+{
+    // Not sure where these numbers come from...
+    static const double BSRadii[55] = {
+        1.000,
+        1.001,                                                                                                                 1.012,
+        0.825, 1.408,                                                                       1.485, 1.452, 1.397, 1.342, 1.287, 1.243,
+        1.144, 1.364,                                                                       1.639, 1.716, 1.705, 1.683, 1.639, 1.595,
+        1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.650, 1.727, 1.760, 1.771, 1.749, 1.727,
+        1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881,
+    };
+    if (Z < sizeof BSRadii/sizeof BSRadii[0])
+        return BSRadii[Z];
+    else
+        return 1.881;
+};
+
 namespace psi {
 namespace dftsapt {
 
@@ -197,6 +214,12 @@ void ASAPTVis::drop_voxel()
     int na = Locc_A_->colspi()[0];
     int nb = Locc_B_->colspi()[0];
 
+    // ==> Saturation Scales <== //
+
+    double dens_scale = options_.get_double("ASAPT_DENSITY_CLAMP");
+    double int_scale  = options_.get_double("ASAPT_ENERGY_CLAMP");
+    double gauss_scale = options_.get_double("ASAPT_GAUSSIAN_SCALE");
+    
     // ==> Temporaries <== //
 
     boost::shared_ptr<Matrix> TA(Locc_A_->clone());
@@ -215,9 +238,51 @@ void ASAPTVis::drop_voxel()
     boost::shared_ptr<Matrix> DA;
     boost::shared_ptr<Matrix> DB;
 
+    boost::shared_ptr<Matrix> QA(new Matrix("QA",vars_["Elst_A"]->nrow(),5));
+    boost::shared_ptr<Matrix> QB(new Matrix("QA",vars_["Elst_B"]->nrow(),5));
+    double** QAp = QA->pointer();
+    double** QBp = QB->pointer();
+    int offsetA = 0;
+    for (int A = 0; A < monomer_A_->natom(); A++) {
+        if (monomer_A_->Z(A) == 0.0) continue;
+        QAp[offsetA][0] = monomer_A_->x(A);
+        QAp[offsetA][1] = monomer_A_->y(A);
+        QAp[offsetA][2] = monomer_A_->z(A);
+        double RBS = GetBSRadius(monomer_A_->true_atomic_number(A));
+        QAp[offsetA][4] = gauss_scale / (RBS * RBS);
+        offsetA++;
+    }
+    int offsetB = 0;
+    for (int B = 0; B < monomer_B_->natom(); B++) {
+        if (monomer_B_->Z(B) == 0.0) continue;
+        QBp[offsetB][0] = monomer_B_->x(B);
+        QBp[offsetB][1] = monomer_B_->y(B);
+        QBp[offsetB][2] = monomer_B_->z(B);
+        double RBS = GetBSRadius(monomer_B_->true_atomic_number(B));
+        QBp[offsetB][4] = gauss_scale / (RBS * RBS);
+        offsetB++;
+    }
+
+    // ==> The Grid: A Digital Frontier to Reshape the Chemist's Condition <== // 
+
     boost::shared_ptr<CubicDensityGrid> grid = boost::shared_ptr<CubicDensityGrid>(new CubicDensityGrid(primary_));
     grid->build_grid();
     grid->print_header();
+    
+    // ==> Elst <== //
+
+    fprintf(outfile, "    Saving Elst Voxel Partition.\n");
+
+    EAp = vars_["Elst_A"]->pointer();
+    EBp = vars_["Elst_B"]->pointer();
+    
+    C_DCOPY(QA->nrow(),EAp[0],1,&QAp[0][3],5);
+    C_DCOPY(QB->nrow(),EBp[0],1,&QBp[0][3],5);
+
+    grid->zero();
+    grid->compute_atomic(QA);
+    grid->compute_atomic(QB);
+    grid->drop_raw("Elst.raw",int_scale);
     
     // ==> Exch <== //
 
@@ -241,15 +306,18 @@ void ASAPTVis::drop_voxel()
     DA->add(DB); 
     DA->set_name("Exch");
 
-    grid->set_V(DA);
-    grid->compute();
-    grid->drop_raw();
+    grid->zero();
+    grid->compute_electronic(DA);
+    grid->drop_raw("Exch.raw",int_scale);
     
     // ==> IndAB <== //
 
     fprintf(outfile, "    Saving IndAB Voxel Partition.\n");
 
     EAp = vars_["IndAB_a"]->pointer();
+    EBp = vars_["IndAB_B"]->pointer();
+    
+    C_DCOPY(QB->nrow(),EBp[0],1,&QBp[0][3],5);
 
     TA->copy(Locc_A_);
     for (int a = 0; a < na; a++) {
@@ -258,17 +326,20 @@ void ASAPTVis::drop_voxel()
     DA = Matrix::doublet(TA,Locc_A_,false,true);
 
     DA->set_name("IndAB");
-    DA->scale(-1.0); // Induction is negative definite
 
-    grid->set_V(DA);
-    grid->compute();
-    grid->drop_raw();
+    grid->zero();
+    grid->compute_electronic(DA);
+    grid->compute_atomic(QB);
+    grid->drop_raw("IndAB.raw",int_scale);
 
     // ==> IndBA <== //
 
     fprintf(outfile, "    Saving IndBA Voxel Partition.\n");
 
     EBp = vars_["IndBA_b"]->pointer();
+    EAp = vars_["IndBA_A"]->pointer();
+    
+    C_DCOPY(QA->nrow(),EAp[0],1,&QAp[0][3],5);
 
     TB->copy(Locc_B_);
     for (int b = 0; b < nb; b++) {
@@ -277,11 +348,11 @@ void ASAPTVis::drop_voxel()
     DB = Matrix::doublet(TB,Locc_B_,false,true);
 
     DB->set_name("IndBA");
-    DB->scale(-1.0); // Induction is negative definite
 
-    grid->set_V(DB);
-    grid->compute();
-    grid->drop_raw();
+    grid->zero();
+    grid->compute_electronic(DB);
+    grid->compute_atomic(QA);
+    grid->drop_raw("IndBA.raw",int_scale);
 
     // ==> Disp <== //
 
@@ -304,11 +375,10 @@ void ASAPTVis::drop_voxel()
 
     DA->add(DB); 
     DA->set_name("Disp");
-    DA->scale(-1.0); // Dispersion is negative definite
 
-    grid->set_V(DA);
-    grid->compute();
-    grid->drop_raw();
+    grid->zero();
+    grid->compute_electronic(DA);
+    grid->drop_raw("Disp.raw",int_scale);
 
     // ==> Dens <== //
 
@@ -320,9 +390,9 @@ void ASAPTVis::drop_voxel()
     DA->add(DB); 
     DA->set_name("Dens");
 
-    grid->set_V(DA);
-    grid->compute();
-    grid->drop_raw();
+    grid->zero();
+    grid->compute_electronic(DA);
+    grid->drop_raw("Dens.raw",dens_scale);
 }
 
 CubicDensityGrid::CubicDensityGrid(
@@ -453,14 +523,15 @@ void CubicDensityGrid::print_header()
 
     fflush(outfile);
 }
-void CubicDensityGrid::compute()
+void CubicDensityGrid::zero()
+{
+    ::memset(v_, '\0', sizeof(double) * npoints_);
+}
+void CubicDensityGrid::compute_electronic(boost::shared_ptr<Matrix> D)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::compute: call build_grid first");
-    if (!V_) throw PSIEXCEPTION("CubicDensityGrid::compute: call set_V first");
    
-    ::memset(v_, '\0', sizeof(double) * npoints_);
-
-    points_->set_pointers(V_);
+    points_->set_pointers(D);
     boost::shared_ptr<Vector> rho = points_->point_value("RHO_A");
     double* rhop = rho->pointer();
 
@@ -468,15 +539,56 @@ void CubicDensityGrid::compute()
     for (int ind = 0; ind < blocks_.size(); ind++) {
         points_->compute_points(blocks_[ind]);
         size_t npoints = blocks_[ind]->npoints();
-        ::memcpy(&v_[offset],rhop,sizeof(double) * npoints);
+        C_DAXPY(npoints,1.0,rhop,1,&v_[offset],1);        
         offset += npoints;
     }
 }
-void CubicDensityGrid::drop_raw()
+void CubicDensityGrid::compute_atomic(boost::shared_ptr<Matrix> Q)
+{
+    if (Q->ncol() != 5) throw PSIEXCEPTION("CubicDensityGrid::compute_atomic: Q should be (x,y,z,V,\\alpha) in a.u.");
+    int natom = Q->nrow();
+    double** Qp = Q->pointer();
+
+    double* a = new double[natom];
+    double* N = new double[natom];
+    double* x = new double[natom];
+    double* y = new double[natom];
+    double* z = new double[natom];
+
+    for (int A = 0; A < natom; A++) {
+        x[A] = Qp[A][0];
+        y[A] = Qp[A][1];
+        z[A] = Qp[A][2];
+        a[A] = Qp[A][4];
+        N[A] = 0.5 * pow(M_PI / a[A], 3.0/2.0) * Qp[A][3]; 
+    }
+
+    #pragma omp parallel for
+    for (size_t ind = 0; ind < npoints_; ind++) {
+        double xp = x_[ind];
+        double yp = y_[ind];
+        double zp = z_[ind];
+        double val = 0.0; 
+        for (int A = 0; A < natom; A++) {
+            double R2 = (xp - x[A]) * (xp - x[A]) + 
+                        (yp - y[A]) * (yp - y[A]) + 
+                        (zp - z[A]) * (zp - z[A]);
+            val += N[A] * exp(-a[A] * R2);
+        }
+        v_[ind] += val;
+    }
+
+    delete[] a;
+    delete[] N;
+    delete[] x;
+    delete[] y;
+    delete[] z;
+}
+void CubicDensityGrid::drop_raw(const std::string& file, double clamp)
 {
     if (!npoints_) throw PSIEXCEPTION("CubicDensityGrid::drop_raw: call build_grid first");
-    if (!V_) throw PSIEXCEPTION("CubicDensityGrid::drop_raw: call set_V and compute first");
 
+    //ASCII Variant
     //std::stringstream ss2;
     //ss2 << V_->name() << ".debug";
     //FILE* fh2 = fopen(ss2.str().c_str(), "w");
@@ -484,6 +596,9 @@ void CubicDensityGrid::drop_raw()
     //    fprintf(fh2,"  %16zu %24.16E %24.16E %24.16E %24.16E\n", ind, x_[ind], y_[ind], z_[ind], v_[ind]);
     //}
     //fclose(fh2);
+
+    double s = 1.0 / clamp;
+    double maxval = 0.0;
 
     float* v2 = new float[npoints_];
     size_t offset = 0L;
@@ -497,7 +612,12 @@ void CubicDensityGrid::drop_raw()
                     for (int j = jstart; j < jstart + nj; j++) {
                         for (int k = kstart; k < kstart + nk; k++) {
                             size_t index = i * (N_[1] + 1L) * (N_[2] + 1L) + j * (N_[2] + 1L) + k;
-                            v2[index] = (float) v_[offset];
+                            double val = v_[offset];
+                            maxval = (maxval >= fabs(val) ? maxval : fabs(val));
+                            val = (val <= clamp ? val : clamp);
+                            val = (val >= -clamp ? val : -clamp);
+                            val *= s;
+                            v2[index] = val;
                             offset++;
                         }
                     }
@@ -505,10 +625,16 @@ void CubicDensityGrid::drop_raw()
             }
         }
     }
+
+    fprintf(outfile,"    Max val = %11.3E out of %11.3E: %s.\n", maxval, clamp, (clamp >= maxval ? "No clamping" : "Clamped")); 
+
+    //Dirty Hack: I love it!
+    v2[npoints_-1L] =  0.0;
+    v2[npoints_-2L] =  0.0;
+    v2[npoints_-3L] =  1.0;
+    v2[npoints_-4L] = -1.0;
     
-    std::stringstream ss;
-    ss << V_->name() << ".raw";
-    FILE* fh = fopen(ss.str().c_str(), "wb");
+    FILE* fh = fopen(file.c_str(), "wb");
     fwrite(v2,sizeof(float),npoints_,fh);
     fclose(fh);
 }
