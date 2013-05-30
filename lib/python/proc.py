@@ -2771,7 +2771,7 @@ def run_cepa(name, **kwargs):
             psi4.print_out("    Error: one-electron properties not implemented for %s\n" % lowername)
             psi4.print_out("\n")
         else:
-            oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
+            p4util.oeprop('DIPOLE','QUADRUPOLE','MULLIKEN_CHARGES','NO_OCCUPATIONS',title = cepa_level)
 
     # restore options
     optstash.restore()
