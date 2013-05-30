@@ -284,14 +284,14 @@ void export_mints()
             add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
             add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
-    typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
-    typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
-    class_<OneBodySOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
-            def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
-            def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
-            add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
-            add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
-            add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
+    //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
+    //typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
+    //class_<OneBodySOInt, boost::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt", "docstring", no_init).
+    //        def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
+    //        def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
+    //        add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
+    //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
+    //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
 
     class_<OverlapInt, boost::shared_ptr<OverlapInt>, bases<OneBodyAOInt>, boost::noncopyable>("OverlapInt", "docstring", no_init);
     class_<DipoleInt, boost::shared_ptr<DipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("DipoleInt", "docstring", no_init);
