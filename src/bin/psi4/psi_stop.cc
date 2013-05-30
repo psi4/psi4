@@ -54,8 +54,10 @@ int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
   fprintf(outfile, "\n*** PSI4 exiting successfully. Buy a developer a beer!\n");
 
   fflush(outfile);
-  fclose(outfile);
-  fclose(infile);
+  if (outfile)
+      fclose(outfile);
+  if (infile)
+      fclose(infile);
 
   infile = NULL;
   outfile = NULL;

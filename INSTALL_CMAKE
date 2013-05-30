@@ -1,4 +1,11 @@
-Psi4 can now be configured with CMAKE.  Builds must be performed in a separate
+Psi4 can now be configured with CMAKE.  Users familiar with configure scripts will
+probably prefer to use the configure.cmake script, which will call CMake with the
+appropriate options (run
+
+configure.cmake -h
+
+to see which options are available and how it should be used).  CMake can also be 
+invoked directly, as described below.  Builds must be performed in a separate
 build directory, and can be customized through command line arguments or by
 passing definitions to cmake.  As an example, we'll consider building the code
 from $PSI4/obj.  The basic cmake invocation would be
@@ -22,18 +29,25 @@ or
 These can be mixed in any order, with -D commands taking precedence.  Psi4
 currently recognizes the following options:-
 
-CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
+CXX              The C++ compiler. N.B. This must be set as an environmental variable, not a -D flag. (string)
+                 default:whichever compiler is first detected by cmake
+
+CXXFLAGS         Extra C++ compiler flags to be used in compilation (string)
                  default:""
 
-LD_FLAGS         Extra flags to be used in linking (string)
+F77SYMBOL        The Fortran compiler name mangling convention, used for linking external Fortran libraries,
+                 such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), 
+                 ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it
+                 automatically if a Fortran compiler is present, if not it will use lcu. (string)
+
+LDFLAGS          Extra flags to be used in linking (string)
                  default:""
 
 LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
                  default:""
 
-LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
-                 derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
-                 default:5
+MAX_AM_ERI       The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second
+                 derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
 
 PREFIX           The installation directory for psi4 (string)
                  default:/usr/local/psi4
