@@ -9,7 +9,7 @@ Notes on Options
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`~driver.database` function,
+   The few exceptions are documented for the :py:func:`~wrappers.database` function,
    where case structure must match the database file.
 
 .. _`op_c_bool`:
@@ -20,7 +20,7 @@ Notes on Options
 
 .. _`op_c_conv`:
 .. note:: Certain convergence and tolerance keywords, of type *double* (real numbers),
-   may be specified using either a real number of an integer; and integer *X* is then
+   may be specified using either a real number or an integer; and integer *X* is then
    treated as the number of converged decimal digits required. For example, to request
    as energy converged to :math:`10^{-6} E_h`, the user may set the ``e_convergence``
    keyword to 0.000001, 1.0e-6, or 6.
