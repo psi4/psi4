@@ -1354,7 +1354,128 @@ void ASAPT::ind()
     boost::shared_ptr<Matrix> Ind_BA_terms = Indu_BA_terms;
 
     if (ind_resp_) {
-        throw PSIEXCEPTION("Finish coupled induction, Rob");
+
+        fprintf(outfile, "  COUPLED INDUCTION (You asked for it!):\n\n");
+
+        // ==> Coupled Targets <== //
+
+        boost::shared_ptr<Matrix> Ind20r_AB_terms(new Matrix("Ind20 [A<-B] (a x B)", na, nB));
+        boost::shared_ptr<Matrix> Ind20r_BA_terms(new Matrix("Ind20 [B<-A] (A x b)", nA, nb));
+        double** Ind20r_AB_termsp = Ind20r_AB_terms->pointer();
+        double** Ind20r_BA_termsp = Ind20r_BA_terms->pointer();
+
+        double Ind20r_AB = 0.0; 
+        double Ind20r_BA = 0.0;
+
+        boost::shared_ptr<Matrix> ExchInd20r_AB_terms(new Matrix("ExchInd20 [A<-B] (a x B)", na, nB));
+        boost::shared_ptr<Matrix> ExchInd20r_BA_terms(new Matrix("ExchInd20 [B<-A] (A x b)", nA, nb));
+        double** ExchInd20r_AB_termsp = ExchInd20r_AB_terms->pointer();
+        double** ExchInd20r_BA_termsp = ExchInd20r_BA_terms->pointer();
+
+        double ExchInd20r_AB = 0.0; 
+        double ExchInd20r_BA = 0.0;
+
+        boost::shared_ptr<Matrix> Indr_AB_terms(new Matrix("Ind [A<-B] (a x B)", na, nB));
+        boost::shared_ptr<Matrix> Indr_BA_terms(new Matrix("Ind [B<-A] (A x b)", nA, nb));
+        double** Indr_AB_termsp = Indr_AB_terms->pointer();
+        double** Indr_BA_termsp = Indr_BA_terms->pointer();
+
+        double Indr_AB = 0.0; 
+        double Indr_BA = 0.0;
+
+        // => JK Object <= //
+
+        boost::shared_ptr<JK> jk = JK::build_JK();
+
+        // TODO: Account for 2-index overhead in memory
+        int nso = Cocc_A_->nrow();
+        long int jk_memory = (long int)memory_;
+        jk_memory -= 24 * nso * nso;
+        jk_memory -=  4 * na * nso;
+        jk_memory -=  4 * nb * nso;
+        if (jk_memory < 0L) {
+            throw PSIEXCEPTION("Too little static memory for ASAPT::induction");
+        }
+        jk->set_memory((unsigned long int )jk_memory);
+        jk->set_do_J(true);
+        jk->set_do_K(true);
+        jk->initialize();
+        jk->print_header();
+
+        // ==> Master Loop over perturbing atoms <== //
+    
+        int nC = std::max(nA,nB);
+
+        fseek(WBarf,0L,SEEK_SET);
+        fseek(WAbsf,0L,SEEK_SET);
+        
+        for (int C = 0; C < nC; C++) {
+            
+            if (C < nB) fread(wBp[0],sizeof(double),na*nr,WBarf); 
+            if (C < nA) fread(wAp[0],sizeof(double),nb*ns,WAbsf); 
+
+            fprintf(outfile,"    Responses for (A <- Atom B = %3d) and (B <- Atom A = %3d)\n\n",
+                    (C < nB ? C : nB - 1), (C < nA ? C : nA - 1));
+
+            std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > x_sol = compute_x(jk,wB,wA);
+            xA = x_sol.first;
+            xB = x_sol.second;
+            xA->scale(-1.0);
+            xB->scale(-1.0);
+
+            if (C < nB) {
+                // Backtransform the amplitude to LO
+                boost::shared_ptr<Matrix> x2A = Matrix::doublet(Uocc_A_,xA,true,false);
+                double** x2Ap = x2A->pointer();
+
+                // Zip up the Ind20 contributions
+                for (int a = 0; a < na; a++) {
+                    double Jval = 2.0 * C_DDOT(nr,x2Ap[a],1,wBTp[a],1);
+                    double Kval = 2.0 * C_DDOT(nr,x2Ap[a],1,uBTp[a],1);
+                    Ind20r_AB_termsp[a][C] = Jval;
+                    Ind20r_AB += Jval;
+                    ExchInd20r_AB_termsp[a][C] = Kval;
+                    ExchInd20r_AB += Kval;
+                    Indr_AB_termsp[a][C] = Jval + Kval;
+                    Indr_AB += Jval + Kval;
+                }
+            }
+
+            if (C < nA) { 
+                // Backtransform the amplitude to LO
+                boost::shared_ptr<Matrix> x2B = Matrix::doublet(Uocc_B_,xB,true,false);
+                double** x2Bp = x2B->pointer();
+
+                // Zip up the Ind20 contributions
+                for (int b = 0; b < nb; b++) {
+                    double Jval = 2.0 * C_DDOT(ns,x2Bp[b],1,wATp[b],1);
+                    double Kval = 2.0 * C_DDOT(ns,x2Bp[b],1,uATp[b],1);
+                    Ind20r_BA_termsp[C][b] = Jval;
+                    Ind20r_BA += Jval;
+                    ExchInd20r_BA_termsp[C][b] = Kval;
+                    ExchInd20r_BA += Kval;
+                    Indr_BA_termsp[C][b] = Jval + Kval;
+                    Indr_BA += Jval + Kval;
+                }
+            }
+        }
+
+        double Ind20r = Ind20r_AB + Ind20r_BA;
+        fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",Ind20r_AB);
+        fprintf(outfile,"    Ind20,r (A->B)      = %18.12lf H\n",Ind20r_BA);
+        fprintf(outfile,"    Ind20,r             = %18.12lf H\n",Ind20r);
+        fflush(outfile);
+
+        double ExchInd20r = ExchInd20r_AB + ExchInd20r_BA;
+        fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",ExchInd20r_AB);
+        fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",ExchInd20r_BA);
+        fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",ExchInd20r);
+        fprintf(outfile,"\n");
+        fflush(outfile);
+
+        Ind = Ind20r + ExchInd20r;
+        Ind_AB_terms = Indr_AB_terms;
+        Ind_BA_terms = Indr_BA_terms;
     }
 
     // => Induction scaling <= //
