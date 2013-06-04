@@ -48,9 +48,17 @@ debuggroup.add_argument('--with-debug',
 debuggroup.add_argument('--without-debug', 
                         action="store_false",
                         help='Do not add debug flags.')
+# ERD package
+erdgroup = parser.add_mutually_exclusive_group()
+erdgroup.add_argument('--with-erd',
+                        action="store_true",
+                        help='Add support for the ERD integral package.')
+erdgroup.add_argument('--without-erd', 
+                        action="store_false",
+                        help='Do not use the ERD integral package.')
 # F77 symbol
 parser.add_argument('--with-f77symbol',
-                    metavar='= CONVENTION',
+                    metavar='= lcu | lc | uc | ucu | detect',
                     type=str,
                     choices=['lcu', 'lc', 'uc', 'ucu', 'detect'],
                     default='detect',

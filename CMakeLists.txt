@@ -230,6 +230,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
 
+#
+# The ERD integrals package
+#
+set(ERDPATH http://sirius.chem.vt.edu/psi4extras/erd.tgz)
+include(ExternalProject)
+ExternalProject_Add(erd
+    URL = ${ERDPATH}
+    PREFIX = ${PROJECT_BINARY_DIR}/erd
+)
+
+#
+# Recursively add source directories
+#
 add_subdirectory(src)
 
 #
