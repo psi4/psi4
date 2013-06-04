@@ -90,6 +90,9 @@ class EFP {
         /// Print all of the EFP atoms
         void print_efp_geometry();
 
+        /// Number of EFP atoms
+        int efp_natom();
+
         /// Returns charge for a given fragment
         double get_frag_charge(int frag_idx);
 
