@@ -21,12 +21,15 @@
  */
 
 #include <boost/python.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/python/tuple.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
 #include <libmints/twobody.h>
 #include <libmints/integralparameters.h>
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
+#include <libmints/pybuffer.h>
 #include <libmints/local.h>
 #include <libmints/vector3.h>
 #include <lib3index/3index.h>
@@ -39,6 +42,24 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+dict matrix_array_interface(SharedMatrix mat, int irrep){
+	dict rv;
+	int rows = mat->rowspi(irrep);
+	int cols = mat->colspi(irrep);
+	rv["shape"] = boost::python::make_tuple(rows, cols);
+	rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
+	std::string typestr = is_big_endian() ? ">" : "<";
+	typestr += "f" + xtostring((int)sizeof(double));
+	rv["typestr"] = typestr;
+	return rv;
+}
+
+dict matrix_array_interface_c1(SharedMatrix mat){
+	if(mat->nirrep() != 1){
+		throw PSIEXCEPTION("Pointer export of multiple irrep matrices not yet implemented.");
+	}
+	return matrix_array_interface(mat, 0);
+}
 
 boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
 {
@@ -169,6 +190,9 @@ void export_mints()
             .value("Descending", descending)
             .export_values();
 
+    class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
+    		def("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
     typedef void   (Matrix::*matrix_one)(const SharedMatrix&);
@@ -237,7 +261,8 @@ void export_mints()
             def("save", matrix_save(&Matrix::save), "docstring").
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
-            def("remove_symmetry", &Matrix::remove_symmetry, "docstring");
+            def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
+            def("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
             def(init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -309,6 +334,7 @@ void export_mints()
     typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
+            add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
             add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring");
 
     class_<TwoElectronInt, boost::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);

@@ -25,6 +25,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/python/list.hpp>
+#include "pybuffer.h"
 
 namespace psi {
 
@@ -32,6 +33,7 @@ class IntegralFactory;
 class AOShellCombinationsIterator;
 class BasisSet;
 class GaussianShell;
+//template <class T> class PyBuffer;
 
 /*! \ingroup MINTS
  *  \class TwoBodyInt
@@ -70,6 +72,8 @@ protected:
     bool force_cartesian_;
     //! The order of the derivative integral buffers, after permuting shells
     unsigned char buffer_offsets_[4];
+    /// The PyBuffer object used for sharing the target_ buffer without copying data
+    PyBuffer<double> target_pybuffer_;
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -117,6 +121,10 @@ public:
         for(int i = 0; i < curr_buff_size_; ++i)
             ret_val.append(target_[i]);
         return ret_val;
+    }
+
+    const PyBuffer<double>* py_buffer_object() const {
+    	return &target_pybuffer_;
     }
 
     /// Returns the integral factory used to create this object
