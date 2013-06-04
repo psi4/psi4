@@ -2,6 +2,7 @@
  * EFP solver
  */ 
 
+#include <boost/regex.hpp>
 #include <cstdlib>
 #include <cstdio>
 #include <cmath>
@@ -31,6 +32,10 @@
 using namespace boost;
 using namespace std;
 using namespace psi;
+
+regex efpAtomSymbol("A\\d*([A-Z]{1,2})\\d*", regbase::normal | regbase::icase);
+smatch reMatches;
+
 
 // TODO: change allocated memory to shared pointers and ditch the deletes
 
@@ -706,6 +711,38 @@ void EFP::set_options() {
     fprintf(outfile, "\n");
 
     fprintf(outfile, "\n");
+}
+
+void EFP::print_efp_geometry() {
+    if ( nfrag_ == 0 ) return;
+
+    Molecule::GeometryUnits units = Process::environment.molecule()->units();
+    bool is_angstrom = ( units == Molecule::Angstrom ) ;
+
+    fprintf(outfile,"\n");
+    fprintf(outfile,"  ==> EFP Geometry <==\n\n");
+    fprintf(outfile,"    Geometry (in %s):\n\n", //, charge = %d, multiplicity = %d:\n\n",
+            is_angstrom ? "Angstrom" : "Bohr"); //, get_frag_multiplicity, multiplicity_);
+    fprintf(outfile,"     Center            X                  Y                  Z        \n");
+    fprintf(outfile,"    --------   -----------------  -----------------  -----------------\n");
+
+    for (int frag = 0; frag < nfrag_; frag++) {
+        double * xyz = get_frag_atom_coord(frag);
+        std::vector<std::string> symbol = get_frag_atom_label(frag);
+        int natom = symbol.size();
+        for (int i = 0; i < natom; i++) {
+            regex_match(symbol[i], reMatches, efpAtomSymbol);
+            fprintf(outfile,"   %5s     ",reMatches[1].str().c_str(),frag);
+            fflush(outfile);
+            for (int j = 0; j < 3; j++) {
+                fprintf(outfile,"  %17.12lf", xyz[i*3+j] * ( is_angstrom ? pc_bohr2angstroms : 1.0 ) );
+            }
+            fprintf(outfile," (EFP %3i)\n",frag+1);
+            fflush(outfile);
+        }
+
+    }
+    fprintf(outfile,"\n");
 }
 
 }
