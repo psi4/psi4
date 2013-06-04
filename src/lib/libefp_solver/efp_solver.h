@@ -87,6 +87,9 @@ class EFP {
         /// Returns atom label of all atoms in a given fragment
         std::vector<std::string> get_frag_atom_label(int frag_idx);
 
+        /// Print all of the EFP atoms
+        void print_efp_geometry();
+
         /// Returns charge for a given fragment
         double get_frag_charge(int frag_idx);
 
