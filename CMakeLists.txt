@@ -233,12 +233,12 @@ set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp
 #
 # The ERD integrals package
 #
-set(ERDPATH http://sirius.chem.vt.edu/psi4extras/erd.tgz)
-include(ExternalProject)
-ExternalProject_Add(erd
-    URL = ${ERDPATH}
-    PREFIX = ${PROJECT_BINARY_DIR}/erd
-)
+#set(ERDPATH http://sirius.chem.vt.edu/psi4extras/erd.tgz)
+#include(ExternalProject)
+#ExternalProject_Add(erd
+#    URL = ${ERDPATH}
+#    PREFIX = ${PROJECT_BINARY_DIR}/erd
+#)
 
 #
 # Recursively add source directories
