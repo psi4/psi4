@@ -160,7 +160,7 @@ if args.with_python != blankstring:
     cmakeflags['PYTHON'] = args.with_python
 # LAPACK
 if args.with_lapack != blankstring:
-    cmakeflags['LAPACK'] = args.with_lapack
+    cmakeflags['LAPACK'] = [args.with_lapack]
 # F77SYMBOL
 cmakeflags['F77SYMBOL'] = args.with_f77symbol
 
