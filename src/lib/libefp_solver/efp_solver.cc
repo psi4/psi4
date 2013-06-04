@@ -64,78 +64,78 @@ void EFP::common_init() {
     enum efp_result res;
     int print = options_.get_int("PRINT");
 
-fprintf(outfile,"efp::common_init reads efp options from local options_\n");
+//fprintf(outfile,"efp::common_init reads efp options from local options_\n");
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
 
-    elst_enabled_ = options_.get_bool("EFP_ELST");
-    pol_enabled_  = options_.get_bool("EFP_POL");
-    disp_enabled_ = options_.get_bool("EFP_DISP");
-    exch_enabled_ = options_.get_bool("EFP_EXCH");
+    //elst_enabled_ = options_.get_bool("EFP_ELST");
+    //pol_enabled_  = options_.get_bool("EFP_POL");
+    //disp_enabled_ = options_.get_bool("EFP_DISP");
+    //exch_enabled_ = options_.get_bool("EFP_EXCH");
 
-    std::string dertype = options_.get_str("DERTYPE");
+    //std::string dertype = options_.get_str("DERTYPE");
 
-fprintf(outfile, "\nDERTYPE: %s\n", dertype.c_str());
-    do_grad_ = false;
-    if (dertype == "FIRST")
-        do_grad_ = true;
+//fprintf(outfile, "\nDERTYPE: %s\n", dertype.c_str());
+    //do_grad_ = false;
+    //if (dertype == "FIRST")
+    //    do_grad_ = true;
 
-    if (elst_enabled_)
-        opts.terms |= EFP_TERM_ELEC;
-    if (pol_enabled_)
-        opts.terms |= EFP_TERM_POL;
-    if (disp_enabled_)
-        opts.terms |= EFP_TERM_DISP;
-    if (exch_enabled_)
-        opts.terms |= EFP_TERM_XR;
+    //if (elst_enabled_)
+    //    opts.terms |= EFP_TERM_ELEC;
+    //if (pol_enabled_)
+    //    opts.terms |= EFP_TERM_POL;
+    //if (disp_enabled_)
+    //    opts.terms |= EFP_TERM_DISP;
+    //if (exch_enabled_)
+    //    opts.terms |= EFP_TERM_XR;
 
-    std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
-    std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
+    //std::string elst_damping = options_.get_str("EFP_ELST_DAMPING");
+    //std::string disp_damping = options_.get_str("EFP_DISP_DAMPING");
 
-    if (elst_damping == "SCREEN")
-        opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
-    else if (elst_damping == "OVERLAP")
-        opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
-    else if (elst_damping == "OFF")
-        opts.elec_damp = EFP_ELEC_DAMP_OFF;
+    //if (elst_damping == "SCREEN")
+    //    opts.elec_damp = EFP_ELEC_DAMP_SCREEN;
+    //else if (elst_damping == "OVERLAP")
+    //    opts.elec_damp = EFP_ELEC_DAMP_OVERLAP;
+    //else if (elst_damping == "OFF")
+    //    opts.elec_damp = EFP_ELEC_DAMP_OFF;
 
-    if (disp_damping == "TT")
-        opts.disp_damp = EFP_DISP_DAMP_TT;
-    else if (disp_damping == "OVERLAP")
-        opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
-    else if (disp_damping == "OFF")
-        opts.disp_damp = EFP_DISP_DAMP_OFF;
+    //if (disp_damping == "TT")
+    //    opts.disp_damp = EFP_DISP_DAMP_TT;
+    //else if (disp_damping == "OVERLAP")
+    //    opts.disp_damp = EFP_DISP_DAMP_OVERLAP;
+    //else if (disp_damping == "OFF")
+    //    opts.disp_damp = EFP_DISP_DAMP_OFF;
 
-    molecule_ = Process::environment.molecule();
-    nfrag_ = options_["FRAGS"].size();
+    //molecule_ = Process::environment.molecule();
+    //nfrag_ = options_["FRAGS"].size();
 
-fprintf(outfile,"efp::common_init calls efp_create\n");
+//fprintf(outfile,"efp::common_init calls efp_create\n");
     efp_ = efp_create();
 
     if (!efp_)
         throw PsiException("EFP::common_init():", __FILE__, __LINE__);
 
-fprintf(outfile,"efp::common_init calls efp_set_opts\n");
+//fprintf(outfile,"efp::common_init calls efp_set_opts\n");
     if (res = efp_set_opts(efp_, &opts))
         throw PsiException("EFP::common_init(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
 
-    fprintf(outfile, "\n\n");
-    fprintf(outfile, "%s", efp_banner());
-    fprintf(outfile, "\n\n");
-    fprintf(outfile, "  ==> Calculation Information <==\n\n");
-    fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
+    //fprintf(outfile, "\n\n");
+    //fprintf(outfile, "%s", efp_banner());
+    //fprintf(outfile, "\n\n");
+    //fprintf(outfile, "  ==> Calculation Information <==\n\n");
+    //fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
 
-    if (disp_enabled_)
-        fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+    //if (disp_enabled_)
+    //    fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
 
-    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
-    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
-    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
-    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
-    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
-    fprintf(outfile, "\n");
+    //fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
+    //fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
+    //fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
+    //fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    //fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    //fprintf(outfile, "\n");
 
-    fprintf(outfile, "\n");
+    //fprintf(outfile, "\n");
 }
 
 /**
@@ -643,7 +643,7 @@ void EFP::set_options() {
 
     molecule_ = Process::environment.molecule();
 
-    fprintf(outfile,"efp::set_options() passing options to libefp\n");
+    //fprintf(outfile,"efp::set_options() passing options to libefp\n");
 
     struct efp_opts opts;
     memset(&opts, 0, sizeof(struct efp_opts));
@@ -688,6 +688,24 @@ void EFP::set_options() {
     enum efp_result res;
     if (res = efp_set_opts(efp_, &opts))
         throw PsiException("EFP::set_options(): " + std::string (efp_result_to_string(res)),__FILE__,__LINE__);
+
+    fprintf(outfile, "\n\n");
+    fprintf(outfile, "%s", efp_banner());
+    fprintf(outfile, "\n\n");
+    fprintf(outfile, "  ==> Calculation Information <==\n\n");
+    fprintf(outfile, "  Electrostatics damping: %12s\n", elst_damping.c_str());
+
+    if (disp_enabled_)
+        fprintf(outfile, "  Dispersion damping:     %12s\n", disp_damping.c_str());
+
+    fprintf(outfile, "  Electrostatics enabled:  %12d\n", elst_enabled_);
+    fprintf(outfile, "  Polarization enabled:    %12d\n", pol_enabled_);
+    fprintf(outfile, "  Dispersion enabled:      %12d\n", disp_enabled_);
+    fprintf(outfile, "  Exchanged enabled:       %12d\n", exch_enabled_);
+    fprintf(outfile, "  Gradient enabled:        %12d\n", do_grad_);
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "\n");
 }
 
 }
