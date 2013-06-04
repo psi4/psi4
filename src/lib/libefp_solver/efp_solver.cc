@@ -713,6 +713,16 @@ void EFP::set_options() {
     fprintf(outfile, "\n");
 }
 
+int EFP::efp_natom() {
+    if ( nfrag_ == 0 ) return 0;
+    int natom = 0;
+    for (int frag = 0; frag < nfrag_; frag++) {
+        std::vector<std::string> symbol = get_frag_atom_label(frag);
+        natom += symbol.size();
+    }
+    return natom;
+}
+
 void EFP::print_efp_geometry() {
     if ( nfrag_ == 0 ) return;
 
