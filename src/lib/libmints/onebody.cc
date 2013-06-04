@@ -220,6 +220,10 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
     if(!force_cartesian_){
         // Pure angular momentum (6d->5d, ...) transformation
         pure_transform(s1, s2, nchunk_);
+        buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
+    }
+    else{
+        buffer_size_ = nchunk_ * s1.ncartesian() * s2.ncartesian();
     }
 }
 
