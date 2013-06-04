@@ -187,7 +187,7 @@ def extract_cluster_indexing(mol, cluster_size=0):
 
 
 def new_set_attr(self, name, value):
-    """Function to redefine set_attr method of molecule class."""
+    """Function to redefine __setattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
     if isvar:
@@ -197,9 +197,8 @@ def new_set_attr(self, name, value):
 
     object.__setattr__(self, name, value)
 
-
 def new_get_attr(self, name):
-    """Function to redefine get_attr method of molecule class."""
+    """Function to redefine __getattr__ method of molecule class."""
     fxn = object.__getattribute__(self, "is_variable")
     isvar = fxn(name)
 

@@ -28,6 +28,7 @@
 #include <libmints/orbitalspace.h>
 #include <libmints/view.h>
 #include <libmints/local.h>
+#include <libmints/vector3.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
@@ -74,6 +75,16 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
 
 /* IntegralFactory overloads */
+/* Functions that return OneBodyAOInt objects */
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_overlap_overloads, IntegralFactory::ao_overlap, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(so_overlap_overloads, IntegralFactory::so_overlap, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_kinetic_overloads, IntegralFactory::ao_kinetic, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_potential_overloads, IntegralFactory::ao_potential, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_pseudospectral_overloads, IntegralFactory::ao_pseudospectral, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_dipole_overloads, IntegralFactory::ao_dipole, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_nabla_overloads, IntegralFactory::ao_nabla, 0, 1);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(ao_angular_momentum_overloads, IntegralFactory::ao_angular_momentum, 0, 1);
+/* Functions that return TwoBodyAOInt objects */
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(eri_overloads, IntegralFactory::eri, 0, 2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12_overloads, IntegralFactory::f12, 1, 3);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(f12g12_overloads, IntegralFactory::f12g12, 1, 3);
@@ -92,6 +103,9 @@ void export_mints()
     // the vector's data type.
     class_<std::vector<SharedMatrix > >("matrix_vector", "docstring").
             def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
+    // Other vector types
+    class_<std::vector<double> >("vector_of_doubles", "docstring").
+            def(vector_indexing_suite<std::vector<double>, true >());
 
     // Use typedefs to explicitly tell Boost.Python which function in the class
     // to use. In most cases, you should not be making Python specific versions
@@ -244,7 +258,7 @@ void export_mints()
             def("matrix", &CdSalcList::matrix, "docstring");
 
     class_<GaussianShell, boost::shared_ptr<GaussianShell> >("GaussianShell", "docstring", no_init).
-            add_property("nprimative", &GaussianShell::nprimitive, "docstring").
+            add_property("nprimitive", &GaussianShell::nprimitive, "docstring").
             add_property("nfunction", &GaussianShell::nfunction, "docstring").
             add_property("ncartesian", &GaussianShell::ncartesian, "docstring").
             add_property("am", &GaussianShell::am, "docstring").
@@ -252,13 +266,45 @@ void export_mints()
             add_property("AMCHAR", &GaussianShell::AMCHAR, "docstring").
             add_property("ncenter", &GaussianShell::ncenter, "docstring").
             add_property("function_index", &GaussianShell::function_index, &GaussianShell::set_function_index, "Basis function index where this shell starts.").
+            add_property("center", make_function(&GaussianShell::center, return_value_policy<return_by_value>()), "A Vector3 representing the center of the GaussianShell.").
+            add_property("exps", make_function(&GaussianShell::exps, return_value_policy<copy_const_reference>()), "The exponents of all the primitives").
+            add_property("coefs", make_function(&GaussianShell::coefs, return_value_policy<copy_const_reference>()), "The coefficients of all the primitives").
             def("is_cartesian", &GaussianShell::is_cartesian, "docstring").
             def("is_pure", &GaussianShell::is_pure, "docstring").
             def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
-            //def("center", &GaussianShell::center, "docstring").
-            def("exp", &GaussianShell::exp, "docstring").
+            def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive").
             def("coef", &GaussianShell::coef, "docstring");
 
+
+    class_<OneBodyAOInt, boost::shared_ptr<OneBodyAOInt>, boost::noncopyable>("OneBodyAOInt", "docstring", no_init).
+            def("compute_shell", &OneBodyAOInt::compute_shell, "docstring").
+            add_property("origin", &OneBodyAOInt::origin, &OneBodyAOInt::set_origin, "The origin about which the one body ints are being computed.").
+            add_property("basis", &OneBodyAOInt::basis, "The basis set on center one").
+            add_property("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
+            add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
+            add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
+
+    //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
+    //typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
+    //class_<OneBodySOInt, boost::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt", "docstring", no_init).
+    //        def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
+    //        def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
+    //        add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
+    //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
+    //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
+
+    class_<OverlapInt, boost::shared_ptr<OverlapInt>, bases<OneBodyAOInt>, boost::noncopyable>("OverlapInt", "docstring", no_init);
+    class_<DipoleInt, boost::shared_ptr<DipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("DipoleInt", "docstring", no_init);
+    class_<QuadrupoleInt, boost::shared_ptr<QuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("QuadrupoleInt", "docstring", no_init);
+    class_<MultipoleInt, boost::shared_ptr<MultipoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("MultipoleInt", "docstring", no_init);
+    class_<TracelessQuadrupoleInt, boost::shared_ptr<TracelessQuadrupoleInt>, bases<OneBodyAOInt>, boost::noncopyable>("TracelessQuadrupoleInt", "docstring", no_init);
+    class_<ElectricFieldInt, boost::shared_ptr<ElectricFieldInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectricFieldInt", "docstring", no_init);
+    class_<KineticInt, boost::shared_ptr<KineticInt>, bases<OneBodyAOInt>, boost::noncopyable>("KineticInt", "docstring", no_init);
+    class_<PotentialInt, boost::shared_ptr<PotentialInt>, bases<OneBodyAOInt>, boost::noncopyable>("PotentialInt", "docstring", no_init);
+    class_<PseudospectralInt, boost::shared_ptr<PseudospectralInt>, bases<OneBodyAOInt>, boost::noncopyable>("PseudospectralInt", "docstring", no_init);
+    class_<ElectrostaticInt, boost::shared_ptr<ElectrostaticInt>, bases<OneBodyAOInt>, boost::noncopyable>("ElectrostaticInt", "docstring", no_init);
+    class_<NablaInt, boost::shared_ptr<NablaInt>, bases<OneBodyAOInt>, boost::noncopyable>("NablaInt", "docstring", no_init);
+    class_<AngularMomentumInt, boost::shared_ptr<AngularMomentumInt>, bases<OneBodyAOInt>, boost::noncopyable>("AngularMomentumInt", "docstring", no_init);
 
     typedef void (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
@@ -291,13 +337,27 @@ void export_mints()
             def(init<boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet> >()).
             def(init<boost::shared_ptr<BasisSet> >()).
             def("shells_iterator", &IntegralFactory::shells_iterator_ptr, return_value_policy<manage_new_object>(), "docstring").
-            def("eri", &IntegralFactory::eri, eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("f12", &IntegralFactory::f12, f12_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("f12g12", &IntegralFactory::f12g12, f12g12_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("f12_double_commutator", &IntegralFactory::f12_double_commutator, f12_double_commutator_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("f12_squared", &IntegralFactory::f12_squared, f12_squared_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("erf_eri", &IntegralFactory::erf_eri, erf_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
-            def("erf_complement_eri", &IntegralFactory::erf_complement_eri, erf_complement_eri_overloads("docstring")[return_value_policy<manage_new_object>()]);
+            def("eri", &IntegralFactory::eri, eri_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("f12", &IntegralFactory::f12, f12_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("f12g12", &IntegralFactory::f12g12, f12g12_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("f12_double_commutator", &IntegralFactory::f12_double_commutator, f12_double_commutator_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("f12_squared", &IntegralFactory::f12_squared, f12_squared_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("erf_eri", &IntegralFactory::erf_eri, erf_eri_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("erf_complement_eri", &IntegralFactory::erf_complement_eri, erf_complement_eri_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_overlap", &IntegralFactory::ao_overlap, ao_overlap_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("so_overlap", &IntegralFactory::so_overlap, so_overlap_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_dipole", &IntegralFactory::ao_dipole, ao_dipole_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_kinetic", &IntegralFactory::ao_kinetic, ao_kinetic_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_potential", &IntegralFactory::ao_potential, ao_potential_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral, ao_pseudospectral_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_nabla", &IntegralFactory::ao_nabla, ao_nabla_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum, ao_angular_momentum_overloads("docstring")[return_value_policy<manage_new_object>()]).
+            def("ao_quadrupole", &IntegralFactory::ao_quadrupole, return_value_policy<manage_new_object>(), "docstring").
+            def("ao_multipoles", &IntegralFactory::ao_multipoles, return_value_policy<manage_new_object>(), "docstring").
+            def("so_multipoles", &IntegralFactory::so_multipoles, return_value_policy<manage_new_object>(), "docstring").
+            def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole, return_value_policy<manage_new_object>(), "docstring").
+            def("electric_field", &IntegralFactory::electric_field, return_value_policy<manage_new_object>(), "docstring").
+            def("electrostatic", &IntegralFactory::electrostatic, return_value_policy<manage_new_object>(), "docstring");
 
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
     typedef boost::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
