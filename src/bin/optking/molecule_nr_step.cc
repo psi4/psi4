@@ -66,20 +66,15 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
-fprintf(outfile, "\n dq         fq        \n");
-for(int i=0; i<6*efp_fragments.size(); i++)
-  fprintf(outfile, " %10.5f %10.5f\n", dq[i], fq[i]);
-
   // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
   opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
 
+fprintf(outfile, "\n NR step and forces \n");
 fprintf(outfile, "\n dq         fq        \n");
 for(int i=0; i<6*efp_fragments.size(); i++)
   fprintf(outfile, " %10.5f %10.5f\n", dq[i], fq[i]);
-
-fprintf(outfile, "\nin molecule_nr_step.cc line 52, Nintco = %d\n", Nintco);
 
   // Zero steps for frozen fragment
   for (f=0; f<fragments.size(); ++f) {
@@ -90,10 +85,9 @@ fprintf(outfile, "\nin molecule_nr_step.cc line 52, Nintco = %d\n", Nintco);
     }
   }
 
-fprintf(outfile, "\nin molecule_nr_step.cc line 63, Nintco = %d\n", Nintco);
-
   // applies maximum internal coordinate change
   apply_intrafragment_step_limit(dq);
+  apply_efpfragment_step_limit(dq);
 
 fprintf(outfile, "\nin molecule_nr_step.cc line 68, Nintco = %d\n", Nintco); fflush(outfile);
 

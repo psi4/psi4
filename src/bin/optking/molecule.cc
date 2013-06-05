@@ -54,45 +54,36 @@ using namespace std;
 //   a fragment of that size.  Otherwise, this is an empty constructor.
 
 MOLECULE::MOLECULE(int num_atoms) {
-//****AVC****//
-  using namespace psi;
-  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
-
   int grad_index = 0;
   int geom_index = 0;
+  using namespace psi;
 
-  if (num_atoms > 0)
-  {
-    for(int f=0; f< mol->nfragments(); f++)
-      //if(mol->fragment_levels_[f] == psi::EFPatom)
-      if (true)
-      {
-        EFP_FRAG *one_frag = new EFP_FRAG();
-        one_frag->add_dummy_intcos(6);
-        one_frag->set_libmints_grad_index(grad_index);
-        one_frag->set_libmints_geom_index(geom_index);
-        efp_fragments.push_back(one_frag);
-        grad_index += 1;
-        geom_index += 3;
-fprintf(outfile, "\nEFP: grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
-fprintf(outfile, "\nEFP: geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
-      }
-      else
-      {
-        FRAG *one_frag = new FRAG(mol->fragments_[f].second - mol->fragments_[f].first);
-        one_frag->set_libmints_grad_index(grad_index);
-        one_frag->set_libmints_geom_index(geom_index);
-        fragments.push_back(one_frag);
-        grad_index += mol->fragments_[f].second - mol->fragments_[f].first;
-        geom_index += mol->fragments_[f].second - mol->fragments_[f].first;
-fprintf(outfile, "\nQM:  grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
-fprintf(outfile, "\nQM:  geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
-      }
+// For now at least, we'll add efp fragments in "add_efp_fragments" not in this constructor
+/*
+  for(int f=0; f<p_efp->get_frag_count(); f++) {
+    EFP_FRAG *one_frag = new EFP_FRAG();
+    one_frag->add_dummy_intcos(6);
+    efp_fragments.push_back(one_frag);
+    //one_frag->set_libmints_grad_index(grad_index);
+    //one_frag->set_libmints_geom_index(geom_index);
+    //grad_index += 1;
+    //geom_index += 3;
+    //fprintf(outfile, "\nEFP: grad_index = %d", one_frag->get_libmints_grad_index()); fflush(outfile);
+    //fprintf(outfile, "\nEFP: geom_index = %d", one_frag->get_libmints_geom_index()); fflush(outfile);
   }
-fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), fragments.size() = %d", fragments.size());
-fprintf(outfile, "\nmolecule.cc, MOLECULE::MOLECULE(int num_atoms), efp_fragments.size() = %d\n\n", efp_fragments.size()); fflush(outfile);
-//****AVC****//
+*/
+  
+  // Add fragment with given number of atoms.
+  // If num_atoms == 0, don't add.  This will likely break some things for now.
+  if (num_atoms > 0) {
+    FRAG *one_frag = new FRAG(num_atoms);
+    fragments.push_back(one_frag);
+    //grad_index += mol->fragments_[f].second - mol->fragments_[f].first;
+    //geom_index += mol->fragments_[f].second - mol->fragments_[f].first;
+  }
 
+fprintf(outfile, "After molecule constructor: fragments.size()     = %lu\n", fragments.size());
+fprintf(outfile, "After molecule constructor: efp_fragments.size() = %lu\n", efp_fragments.size()); fflush(outfile);
   return;
 }
 
@@ -324,14 +315,24 @@ void MOLECULE::project_f_and_H(void) {
 }
 
 void MOLECULE::print_geom(void) {
+  if ( !g_qm_natom() ) {
+    fprintf(outfile,"There are no QM fragments present.\n");
+  }
+  else {
 #if defined(OPTKING_PACKAGE_QCHEM)
-  fprintf(outfile,"\tCartesian Geometry (au)\n");
+    fprintf(outfile,"\tCartesian Geometry (au)\n");
 #elif defined(OPTKING_PACKAGE_PSI)
-  fprintf(outfile,"\tCartesian Geometry (in Angstrom)\n");
+    fprintf(outfile,"\tCartesian Geometry (in Angstrom)\n");
 #endif
-  fflush(outfile);
-  for (int i=0; i<fragments.size(); ++i)
-    fragments[i]->print_geom(outfile);
+    for (int f=0; f<fragments.size(); ++f)
+      fragments[f]->print_geom(outfile);
+  }
+
+  if ( g_nefp_fragment() ) {
+    fprintf(outfile,"\tNew coordinates for EFP fragments:\n");
+    for (int f=0; f<efp_fragments.size(); ++f)
+      efp_fragments[f]->print_geom(outfile);
+  }
 }
 
 void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
@@ -352,10 +353,25 @@ void MOLECULE::apply_intrafragment_step_limit(double * & dq) {
       for (i=0; i<fragments[f]->g_nintco(); ++i)
         dq[g_intco_offset(f)+i] *= scale;
   }
+}
 
-fprintf(outfile, "\nMOLECULE::apply_intrafragment_step_limit(), fragments.size() = %d\n", fragments.size());
+void MOLECULE::apply_efpfragment_step_limit(double * & dq) {
+  int i, f;
+  double scale = 1.0;
+  double limit = Opt_params.interfragment_step_limit;
+  if (!efp_fragments.size()) return;
 
-  fflush(outfile);
+  for (int I=0; I<g_nintco_efp_fragment(); ++I)
+    if (scale * fabs(dq[g_efp_fragment_intco_offset(0)+I]) > limit)
+      scale = limit / fabs(dq[g_efp_fragment_intco_offset(0)+I]);
+
+  if (scale != 1.0) {
+    fprintf(outfile,"\tChange in EFP coordinate exceeds step limit of %10.5lf.\n", limit);
+    fprintf(outfile,"\tScaling EFP displacements by %10.5lf\n", scale);
+
+    for (int I=0; I<g_nintco_efp_fragment(); ++I)
+      dq[g_efp_fragment_intco_offset(0)+I] *= scale;
+  }
 }
 
 // don't let any angles get smaller than 0.0
@@ -400,8 +416,6 @@ void MOLECULE::H_guess(void) const {
   
       free_matrix(H_interfrag);
     }
-
-fprintf(outfile, "\nMOLECULE::H_guess() line 333: efp_fragments.size() = %d\n", efp_fragments.size());
 
     for (int I=0; I<efp_fragments.size(); ++I) {
       double **H_efp_frag = efp_fragments[I]->H_guess();
@@ -706,10 +720,9 @@ void MOLECULE::print_intco_dat(FILE *fp_intco) {
     interfragments[I]->print_intco_dat(fp_intco, g_atom_offset(frag_a), g_atom_offset(frag_b));
   }
 
-//  for (int i=0; i<efp_fragments.size(); i++)
-//    fprintf(fp_intco,"E %d %d\n", efp_fragments[i]->get_libmints_geom_index()+1, efp_fragments[i]->get_libmints_grad_index()+1);
-  for (int e=0; e<efp_fragments.size(); ++e)
-    fprintf(fp_intco,"E %d\n", e);
+  for (int i=0; i<efp_fragments.size(); i++)
+    fprintf(fp_intco,"E %d\n", i+1);
+    //fprintf(fp_intco,"E %d %d\n", efp_fragments[i]->get_libmints_geom_index()+1, efp_fragments[i]->get_libmints_grad_index()+1);
 }
 
 // Apply strings of atoms for frozen and fixed coordinates; 
@@ -858,41 +871,26 @@ std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
   return s;
 }
 
-// Add dummy EFP fragment which contains no atoms.  Read in the energy
-// and the forces from QChem.  This will only work (maybe:) for QChem
+// Add EFP fragment objects.
+// Geometry, gradients and energy are read by read_geom_grad()
 void MOLECULE::add_efp_fragments(void) {
 
-  // get number of EFP fragments
   int num_efp_frags;
-#if defined (OPTKING_PACKAGE_QCHEM)
+#if defined(OPTKING_PACKAGE_PSI)
+  num_efp_frags = p_efp->get_frag_count();
+#elif defined(OPTKING_PACKAGE_QCHEM)
   num_efp_frags = ::EFP::GetInstance()->NFragments();
 #endif
-  num_efp_frags = p_efp->get_frag_count();
-  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
 
-  // get energy -- Psi4 is reading the energy in geom_gradients_io.cc for EFP cases
-#if defined (OPTKING_PACKAGE_QCHEM)
-  energy = ::EFP::GetInstance()->GetEnergy();
-#endif
+  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
+  fprintf(outfile,"\tThere are %lu presently.\n", efp_fragments.size());
 
   EFP_FRAG *one_frag;
-
   for (int i=0; i<num_efp_frags; ++i) {
     one_frag = new EFP_FRAG();
-    // add 6 intcos just to act as placeholders ;
-    // we read external forces and don't compute B matrix for these
+    // Add 6 intcos just to act as placeholders.
+    // We read external forces and don't compute B matrix for these.
     one_frag->add_dummy_intcos(6);
-
-#if defined (OPTKING_PACKAGE_QCHEM)
-    // get gradient
-    double *g = init_array(6);
-    ::EFP::GetInstance()->GetGrad(i,g);
-    one_frag->set_forces(g);
-    free_array(g);
-#endif
-
-    // See note below on EFP values.
-
     efp_fragments.push_back(one_frag);
   }
 }
@@ -913,6 +911,21 @@ void MOLECULE::update_efp_values(void) {
     efp_fragments[i]->set_values(vals);
     free_array(vals);
   }
+}
+
+// This function for which the geometry is the current one will return
+// the values including the EFP coordinates.
+double * MOLECULE::intco_values(void) const {
+  GeomType x = g_geom_2D();
+  double *q = intco_values(x);
+
+  for (int f=0; f<efp_fragments.size(); ++f) {
+    double *v = efp_fragments[f]->get_values_pointer();
+
+    for (int i=0; i<6; ++i)
+      q[ g_efp_fragment_intco_offset(f) + i ] = v[i];
+  }
+  return q;
 }
 
 }

@@ -68,22 +68,11 @@ double * EFP_FRAG::get_geom_array(void) {
     return geom_array;
 }
 
-void EFP_FRAG::set_geom_array( double * geom_array )
-{
-fprintf(outfile, "\ngeom_array in:\n"); fflush(outfile);
-print_array(outfile, geom_array, 3*3); fflush(outfile);
-
+void EFP_FRAG::set_geom_array( double * geom_array ) {
   int cnt = 0;
   for (int a=0; a<3; a++)
     for (int xyz=0; xyz<3; ++xyz)
-    {
       xyz_geom[a][xyz] = geom_array[cnt++];
-fprintf(outfile, "\n%d xyz_geom[%d][%d] = %15.8f", cnt, a, xyz, xyz_geom[a][xyz]); fflush(outfile);
-    }
-
-printf("\nEFP_FRAG::set_geom_array\n");
-fprintf(outfile, "\nthe EFP_FRAG geometry was just set to:\n"); fflush(outfile);
-print_matrix(outfile, xyz_geom, 3, 3); fflush(outfile);
 }
 
 // we don't have a valid B matrix for these
@@ -99,11 +88,11 @@ void EFP_FRAG::add_dummy_intcos(int ndummy) {
 // We will assign a value of 0 to these on the first iteration; subsequently, the
 // values will be calculated as total Delta(q) from the start of the optimization
 void EFP_FRAG::print_intcos(FILE *fp) {
-  double *v = get_values_pointer();
+  double *v = values;
   fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
-  fprintf(fp,"\t     COM X        %20.10lf%20.10lf \n", v[0], v[0] * _bohr2angstroms);
-  fprintf(fp,"\t     COM Y        %20.10lf%20.10lf \n", v[1], v[1] * _bohr2angstroms);
-  fprintf(fp,"\t     COM Z        %20.10lf%20.10lf \n", v[2], v[2] * _bohr2angstroms);
+  fprintf(fp,"\t     COM X        %20.10lf%20.10lf \n", com[0], com[0] * _bohr2angstroms);
+  fprintf(fp,"\t     COM Y        %20.10lf%20.10lf \n", com[1], com[1] * _bohr2angstroms);
+  fprintf(fp,"\t     COM Z        %20.10lf%20.10lf \n", com[2], com[2] * _bohr2angstroms);
   fprintf(fp,"\t     alpha        %20.10lf%20.10lf \n", v[3], v[3] / _pi * 180.0);
   fprintf(fp,"\t     beta         %20.10lf%20.10lf \n", v[4], v[4] / _pi * 180.0);
   fprintf(fp,"\t     gamma        %20.10lf%20.10lf \n", v[5], v[5] / _pi * 180.0);

@@ -154,7 +154,7 @@ procedures = {
             'aqcc'          : run_cepa,
             'sdci'          : run_cepa,
             'dci'           : run_cepa,
-            'efp2'          : run_efp2,
+            #'efp2'          : run_efp2,
             'scfefp'        : run_scfefp,
             'efp'           : run_efp,
             # Upon adding a method to this list, add it to the docstring in energy() below

@@ -13,12 +13,14 @@ molecule efp_spec {
 }
 
 set {
-  print 10
+#  print 10
   step_type nr
+#  hess_update none
+  geom_maxiter 100
 }
 
 set efp {
- dertype first
+  dertype first
 }
 
 optimize('efp')

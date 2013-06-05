@@ -184,11 +184,9 @@ std::string py_get_outfile_name()
 void py_psi_prepare_options_for_module(std::string const & name)
 {
     // Tell the options object which module is about to run
-fprintf(outfile,"in py_psi_prepare_options for module %s\n", name.c_str());
     Process::environment.options.set_current_module(name);
     // Figure out the defaults for any options that have not been specified
     read_options(name, Process::environment.options, false);
-fprintf(outfile,"DERTYPE %s\n", Process::environment.options.get_str("DERTYPE").c_str());
     if (plugins.count(name)) {
         // Easy reference
         plugin_info& info = plugins[name];

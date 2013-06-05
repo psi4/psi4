@@ -83,7 +83,6 @@ bool myline(ifstream & fin, vector<string> & tokens, int & line_num) {
 //      line_present = true;
 //    //printf("getline read: %s\n", sline.c_str());
     line_present = getline(fin, sline);
-printf("getline read: %s\n", sline.c_str());
     read_next = false;
 
     if (line_present) {
@@ -106,7 +105,6 @@ printf("getline read: %s\n", sline.c_str());
         return true;
     }
   }
-printf("myline returns false\n");
   return false;
 }
 

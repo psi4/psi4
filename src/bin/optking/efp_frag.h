@@ -55,28 +55,24 @@ namespace opt {
 
 class EFP_FRAG : public FRAG {
 
-  // values and forces are provided by QChem, not computed by optking
-  // they will be of dimension 6
+  // Forces provided by libefp.
+  // values will be COM and 0 initially for first 3 and last 3 coordinates
   double *values;
   double *forces;
-//****AVC****//
   int libmints_grad_index;
   int libmints_geom_index;
   double **xyz_geom;
   double *com;
   double *mass;
-//****AVC****//
 
   public:
   // we will build a dummy fragment with no atoms
   EFP_FRAG() : FRAG(0) {
     values = init_array(6);
     forces = init_array(6);
-//****AVC****//
     xyz_geom = init_matrix(3,3);
     com = init_array(3);
     mass = init_array(6);
-//****AVC****//
   }
 
   ~EFP_FRAG() {
@@ -125,10 +121,6 @@ class EFP_FRAG : public FRAG {
 };
 
 }
-
-//****AVC****//
-//#endif
-//****AVC****//
 
 #endif
 
