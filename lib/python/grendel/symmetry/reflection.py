@@ -94,7 +94,6 @@ class Reflection(SymmetryOperation):
         """
         return self.principal_reflection
 
-    @CachedMethod
     def is_dihedral(self):
         """ Whether or not the reflection is a sigma_d
         """

@@ -1131,7 +1131,6 @@ class Molecule(object):
             return magnitude(com) < tol
 
 
-    #@cached_method
     def is_linear(self, tol=None):
         """ True if the molecule is linear to within `tol`.  All diatomics should return True.
 

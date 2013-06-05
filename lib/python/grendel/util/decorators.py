@@ -11,6 +11,7 @@ from functools import wraps
 #from new import instancemethod
 from types import MethodType as instancemethod
 import inspect
+from inspect import getargspec
 import sys
 from grendel import caching_enabled, type_checking_enabled
 import types
@@ -28,6 +29,8 @@ __all__ = []
 #                             Caching decorators                                 #
 #--------------------------------------------------------------------------------#
 
+#region Caching
+
 # TODO @language-hack Reset method...
 # TODO @language-hack Option to cache methods that take arguments by maintaining a dict of argument: result pairs.
 # TODO @language-hack Take an option (to __init__, which will need to be changed to args/kwargs form) to cache only certain arg sets (if function takes arguments)
@@ -35,8 +38,117 @@ __all__ = []
 # TODO @language-hack option for automatic state checking and resetting
 from grendel.util.strings import classname
 
-def CachedMethod(func):
-    """ Decorator for functions/methods with cached return values.
+
+class CachedMethod(object):
+    """
+    Descriptor that caches return values of methods by their arguments.
+    For now, if the method call depends on some mutable attribute of the
+    class, do not use this.  Perhaps later a state-checking mechanism
+    will be implemented that allows checking to see if dependent mutable
+    attributes have changed.
+    Note:  For now, functions with variable-length arguments and arbitrary
+    keyword arguments are not supported
+    """
+
+    def __init__(self, func):
+        self.func = func
+        self.__doc__ = self.func.__doc__
+        self.__name__ = self.func.__name__
+        self.argspec = getargspec(self.func)
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            # Unbound method version
+            return self
+        else:
+            # Bound method version
+            if not hasattr(instance, CachedMethod.cache_name(self.__name__)):
+                # Circumvent immutability checking, just for the cache
+                if isinstance(owner, Immutable):
+                    setattr_owner = object
+                else:
+                    setattr_owner = owner
+                setattr_owner.__setattr__(instance, CachedMethod.cache_name(self.__name__), dict())
+            return BoundCachedMethod(instance, self.func, owner)
+
+    @staticmethod
+    def cache_name(func_name):
+        return "__" + func_name + "_method_call_cache__"
+
+class BoundCachedMethod(object):
+
+    def __init__(self, im_self, im_func, im_class):
+        self.im_self = self.__self__ = im_self
+        self.im_func = self.__func__ = im_func
+        self.im_class = im_class
+        self.__doc__ = self.__func__.__doc__
+        self.__name__ = self.__func__.__name__
+        self.argspec = getargspec(self.__func__)
+        self.cache = getattr(self.im_self, CachedMethod.cache_name(self.__name__))
+
+    def __call__(self, *args, **kwargs):
+        args_needed = self.argspec.args[1:]
+        ArgNotFilled = object()
+        arg_key = [ArgNotFilled] * len(args_needed)
+        defaults = self.argspec.defaults
+        if defaults is None: defaults = []
+        for iarg, arg in enumerate(args):
+            try:
+                arg_key[iarg] = arg
+            except IndexError:
+                if len(defaults) == 0:
+                    raise TypeError("{0}() takes exactly {1} argument{2} ({3} given)".format(
+                        self.__name__, len(args_needed)+1, 's' if len(args_needed) != 0 else '',
+                        len(args) + len(kwargs) + 1
+                    ))
+                else:
+                    raise TypeError("{0}() takes at most {1} argument{2} ({3} given)".format(
+                        self.__name__, len(args_needed)+1, 's' if len(args_needed)-len(defaults) != 0 else '',
+                        len(args) + len(kwargs) + 1
+                    ))
+        for key, value in kwargs.items():
+            try:
+                idx = args_needed.index(key)
+            except ValueError:
+                raise TypeError("{0}() got an unexpected keyword argument '{1}'".format(
+                    self.__name__, key
+                ))
+            if arg_key[idx] is not ArgNotFilled:
+                raise TypeError("{0}() got multiple values for keyword argument '{1}'".format(
+                    self.__name__, key
+                ))
+            arg_key[idx] = value
+        for idef, default in enumerate(defaults[::-1]):
+            if arg_key[-idef-1] is ArgNotFilled:
+                arg_key[-idef-1] = default
+        if ArgNotFilled in arg_key:
+            if len(defaults) == 0:
+                raise TypeError("{0}() takes exactly {1} argument{2} ({3} given)".format(
+                    self.__name__, len(args_needed)+1, 's' if len(args_needed) != 0 else '',
+                    len(args) + len(kwargs) + 1
+                ))
+            else:
+                raise TypeError("{0}() takes at least {1} argument{2} ({3} given)".format(
+                    self.__name__, len(args_needed)-len(defaults)+1, 's' if len(args_needed)-len(defaults) != 0 else '',
+                    len(args) + len(kwargs) + 1
+                ))
+        arg_key = tuple(arg_key)
+        if arg_key in self.cache:
+            return self.cache[arg_key]
+        else:
+            rv = self.__func__(self.im_self, *arg_key)
+            self.cache[arg_key] = rv
+            return rv
+
+    def purge_cache(self):
+        self.cache.clear()
+
+
+
+def cached_method(func):
+    """
+    DEPRECATED
+    Decorator for functions/methods with cached return values.
     For now, this can only be used.  The decorator creates a method that stores the return value of the method call
     in a variable named _[func_name] (where [func_name] is the name of the function.
 
@@ -50,7 +162,7 @@ def CachedMethod(func):
     ...    def __init__(self, n):
     ...        self.n = n
     ...
-    ...    @CachedMethod
+    ...    @cached_method
     ...    def compute(self):
     ...        if self.n == 0: return 1
     ...        ret_val = 1
@@ -81,13 +193,6 @@ def CachedMethod(func):
     decorated.__name__ = func.__name__
     decorated.__doc__ = func.__doc__
     decorated.__dict__.update(func.__dict__)
-
-    # TODO: Figure out how to do this...
-    # def decorated_reset(self):
-    #     if self.current_attached_obj is None:
-    #         raise SyntaxError("Incorrect call sequence of CachedMethod.reset().  See CachedMethod docuemntation for help.")
-    #     self.current_attached_obj.__dict__[self.cached_var_name] = None
-    #     return
 
     return decorated
 
@@ -167,9 +272,13 @@ class CachedProperty(object):
             return self.func(obj)
 
 
+#endregion
+
 #--------------------------------------------------------------------------------#
 #                         Delegator defining decorators                          #
 #--------------------------------------------------------------------------------#
+
+#region | Delegator defining decorators |
 
 #TODO explain delegation in documentation, make docstrings of delegates reference this explanation
 #TODO check to make sure the user is not nesting delegation, which will break the decorator
@@ -247,10 +356,13 @@ def def_delegators(attribute, *symbols_to_delegate):
         delegate_dict[attribute] = []
     delegate_dict[attribute].extend(symbols_to_delegate)
 
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                       Assigning attributes to functions                        #
 #--------------------------------------------------------------------------------#
+
+#region | Assigning attributes to functions |
 
 def with_attributes(**kwargs):
     """ Decorator allowing the assignment of attributes to a function.
@@ -260,10 +372,13 @@ def with_attributes(**kwargs):
         return f
     return attribute_it
 
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                             Flexible arguments                                 #
 #--------------------------------------------------------------------------------#
+
+#region | Flexible arguments |
 
 def with_flexible_arguments(required=None, optional=None, what_to_call_it=None):
     """ Allows the creation of functions with case insensative, alternately named keyword arguments.
@@ -415,10 +530,13 @@ def with_flexible_arguments(required=None, optional=None, what_to_call_it=None):
         return _wrapped
     return wrap_it
 
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                                 Aliases                                        #
 #--------------------------------------------------------------------------------#
+
+#region | Aliases |
 
 # DOESN'T WORK
 #class MethodAlias(object):
@@ -485,10 +603,13 @@ def with_flexible_arguments(required=None, optional=None, what_to_call_it=None):
 #        return wrapped
 #    return _decorator
 
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                               Delayed Decoration                               #
 #--------------------------------------------------------------------------------#
+
+#region | Delayed Decoration |
 
 # Source: http://code.activestate.com/recipes/577993/
 
@@ -575,12 +696,13 @@ class DelayedDecorator(object):
             raise ValueError("Must supply instance or class to descriptor.")
         return deco
 
-
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                            Method Decorators                                   #
 #--------------------------------------------------------------------------------#
 
+#region | Method Decorators |
 see_abstract_doc = with_attributes(__needs_abstract_doc__=True)
 see_abstract_doc.__doc__ = """
 Add to the documentation of the method (or create it, if it is empty) a reference
@@ -624,10 +746,6 @@ Concrete implementation of abstract method `A.foo()`
 
 # TODO property alias as a simple subclass of property with one extra attribute (then implement in uses_method_decorators)
 
-
-#--------------------------------------------------------------------------------#
-#                    Completion of Method Decoration                             #
-#--------------------------------------------------------------------------------#
 
 def uses_method_decorators(cls):
     """
@@ -694,11 +812,13 @@ def uses_method_decorators(cls):
         #--------------------------------------------------------------------------------#
     return cls
 
+#endregion
 
 #--------------------------------------------------------------------------------#
 #                               Type Checking                                    #
 #--------------------------------------------------------------------------------#
 
+#region | Type Checking |
 # helper class, not a decorator
 #TODO @language-hack has_attribute-like "type" recognition (doable already with lambdas, but it would be nice to give a readable output)
 #TODO @language-hack SubclassOf (or TypeIsSubclassOf?) (or something more intuitive that will not be confusing (!))
@@ -1115,18 +1235,18 @@ typechecked = typechecked_function
 typechecked_method = typechecked_function
 typecheck = typechecked_function
 
+#endregion
+
 #####################
 # Dependent Imports #
 #####################
 
-
+from grendel.util.metaclasses import Immutable
 
 ###########
 # Aliases #
 ###########
 
-cached_method = function_alias('cached_method', CachedMethod)
-cachedmethod = function_alias('cachedmethod', CachedMethod)
-
+#cached_method = function_alias('cached_method', CachedMethod)
 
 
