@@ -1,0 +1,3353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+    <displacement number="1">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5065666219       -1.6638404812        0.8377287256
+O       -0.0311624073       -1.3155501761       -0.1169437148
+O        0.0311624073        1.3155501761       -0.1169437148
+H        1.5065666219        1.6638404812        0.8377287256</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78741347"/>
+    </displacement>
+    <displacement number="10">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5134900482       -1.6697149343        0.8303780996
+O       -0.0299770589       -1.3172949793       -0.1101071939
+O        0.0221510441        1.3140242344       -0.1140189211
+H        1.5213160630        1.6729856792        0.8353180370</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730926"/>
+    </displacement>
+    <displacement number="100">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5107537972       -1.6559140552        0.8314490634
+O       -0.0249312028       -1.3320991784       -0.1156509023
+O        0.0248602653        1.3181495677       -0.1055502955
+H        1.5108247347        1.6698636659        0.8313221560</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731662"/>
+    </displacement>
+    <displacement number="101">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5204484126       -1.6910718749        0.8292178323
+O       -0.0370653274       -1.3179121763       -0.1034394807
+O        0.0370061068        1.3317687185       -0.1136476572
+H        1.5205076331        1.6772153326        0.8294393271</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725916"/>
+    </displacement>
+    <displacement number="102">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5249895683       -1.7084242120        0.8279914066
+O       -0.0432924467       -1.3108159925       -0.0972137302
+O        0.0430458414        1.3384337443       -0.1177359296
+H        1.5252361736        1.6808064602        0.8285282747</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78707634"/>
+    </displacement>
+    <displacement number="103">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5240895757       -1.6974981192        0.8292271702
+O       -0.0399801309       -1.3272664282       -0.1034415022
+O        0.0399344564        1.3411506246       -0.1136452274
+H        1.5241352503        1.6836139229        0.8294295810</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78701127"/>
+    </displacement>
+    <displacement number="104">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4999619304       -1.6370555714        0.8314794500
+O       -0.0162426562       -1.3038434612       -0.1156583471
+O        0.0162163452        1.2899776261       -0.1055440899
+H        1.4999882413        1.6509214066        0.8312930086</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78697969"/>
+    </displacement>
+    <displacement number="105">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4984657265       -1.6256047166        0.8324906256
+O       -0.0132225233       -1.3203059363       -0.1216416943
+O        0.0130096565        1.2924261349       -0.1015301958
+H        1.4986785933        1.6534845180        0.8322512860</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78706048"/>
+    </displacement>
+    <displacement number="106">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4973778005       -1.6581182777        0.8327413002
+O       -0.0370677921       -1.3171241895       -0.1124510582
+O        0.0292328919        1.3138760183       -0.1163971124
+H        1.5052127008        1.6613664490        0.8376768920</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730175"/>
+    </displacement>
+    <displacement number="107">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5082725471       -1.6647679736        0.8180571929
+O       -0.0308830480       -1.3172624013       -0.0977654037
+O        0.0230647564        1.3140200762       -0.1017155209
+H        1.5160908387        1.6680102986        0.8229937533</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730332"/>
+    </displacement>
+    <displacement number="108">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5157668666       -1.6695882228        0.8427138020
+O       -0.0252723832       -1.3139572469       -0.1214140612
+O        0.0331075389        1.3172306868       -0.1175041475
+H        1.5079317109        1.6663147829        0.8377744282</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730829"/>
+    </displacement>
+    <displacement number="109">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5267923530       -1.6763461744        0.8278753070
+O       -0.0190941985       -1.3140827642       -0.1065770617
+O        0.0269118268        1.3173506032       -0.1026624727
+H        1.5189747246        1.6730783354        0.8229342489</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730675"/>
+    </displacement>
+    <displacement number="11">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5093032567       -1.6622022032        0.8303401645
+O       -0.0242102426       -1.3122907607       -0.1085868420
+O        0.0398628532        1.3187556436       -0.1006557559
+H        1.4936506461        1.6557373203        0.8204724549</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78696096"/>
+    </displacement>
+    <displacement number="110">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5321945809       -1.6796683788        0.8203863494
+O       -0.0161014079       -1.3141333018       -0.0990892245
+O        0.0239114263        1.3173980136       -0.0951707310
+H        1.5243845624        1.6764036670        0.8154436276</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730087"/>
+    </displacement>
+    <displacement number="111">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5360679892       -1.6821726560        0.8327827189
+O       -0.0132242801       -1.3124648214       -0.1109511587
+O        0.0288588468        1.3190255763       -0.1031574099
+H        1.5204334225        1.6756119012        0.8228958712</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78699753"/>
+    </displacement>
+    <displacement number="112">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4882003620       -1.6524221006        0.8277514652
+O       -0.0429885986       -1.3186789151       -0.1079361018
+O        0.0273191030        1.3122082763       -0.1158644652
+H        1.5038698576        1.6588927393        0.8376191234</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78695771"/>
+    </displacement>
+    <displacement number="113">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4918224805       -1.6547409711        0.8400120802
+O       -0.0402578542       -1.3170413660       -0.1197222557
+O        0.0324135469        1.3137905832       -0.1236678310
+H        1.4996667879        1.6579917539        0.8449480281</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78729561"/>
+    </displacement>
+    <displacement number="114">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4979794313       -1.6577546859        0.8263859522
+O       -0.0278756878       -1.3103489351       -0.1011242153
+O        0.0201086966        1.3210146150       -0.1151531682
+H        1.5057464225        1.6470890059        0.8314614528</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725068"/>
+    </displacement>
+    <displacement number="115">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5076694339       -1.6651116813        0.8244785055
+O       -0.0399876415       -1.3239515301       -0.1091653188
+O        0.0322314066        1.3068884301       -0.1029236550
+H        1.5154256688        1.6821747813        0.8291804898</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725241"/>
+    </displacement>
+    <displacement number="116">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5164658121       -1.6693176850        0.8362374174
+O       -0.0160788533       -1.3071613786       -0.1099504690
+O        0.0239578778        1.3243651462       -0.1161677459
+H        1.5085867876        1.6521139174        0.8314508191</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725693"/>
+    </displacement>
+    <displacement number="117">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5260919152       -1.6765981757        0.8344177008
+O       -0.0282010360       -1.3207916648       -0.1181128098
+O        0.0361031436        1.3102230209       -0.1039656811
+H        1.5181898077        1.6871668196        0.8292308117</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725623"/>
+    </displacement>
+    <displacement number="118">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5307917448       -1.6801540594        0.8335383506
+O       -0.0342298054       -1.3274613357       -0.1222335558
+O        0.0423351373        1.3031491703       -0.0977464000
+H        1.5226864129        1.7044662248        0.8280116268</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709941"/>
+    </displacement>
+    <displacement number="119">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5353197924       -1.6823790829        0.8393844079
+O       -0.0223311683       -1.3191836457       -0.1225537266
+O        0.0380624363        1.3118998587       -0.1045079261
+H        1.5195885244        1.6896628698        0.8292472663</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78694724"/>
+    </displacement>
+    <displacement number="12">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5149079839       -1.6722191446        0.8303788627
+O       -0.0319306047       -1.3189758775       -0.1106421194
+O        0.0162788193        1.3124094323       -0.1184298412
+H        1.5305597693        1.6787855898        0.8402631194</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78700088"/>
+    </displacement>
+    <displacement number="120">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4887524159       -1.6520116978        0.8214578766
+O       -0.0337982983       -1.3119139363       -0.0966787179
+O        0.0182076887        1.3193491151       -0.1146669582
+H        1.5043430256        1.6445765190        0.8314578210</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78690675"/>
+    </displacement>
+    <displacement number="121">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4930247395       -1.6539937083        0.8273661333
+O       -0.0217847736       -1.3034075572       -0.0971408687
+O        0.0142082545        1.3280752762       -0.1211418009
+H        1.5006012586        1.6293259892        0.8324865580</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709008"/>
+    </displacement>
+    <displacement number="122">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5014651042       -1.6589581927        0.8254138355
+O       -0.0320270467       -1.3155294104       -0.1046288247
+O        0.0320270467        1.3155294104       -0.1046288247
+H        1.5014651042        1.6589581927        0.8254138355</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719334"/>
+    </displacement>
+    <displacement number="123">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5042691853       -1.6639639369        0.8254257532
+O       -0.0358746122       -1.3188724556       -0.1056489649
+O        0.0202224219        1.3123563066       -0.1135083104
+H        1.5199213756        1.6704800860        0.8353015438</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719828"/>
+    </displacement>
+    <displacement number="124">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5199213756       -1.6704800860        0.8353015438
+O       -0.0202224219       -1.3123563066       -0.1135083104
+O        0.0358746122        1.3188724556       -0.1056489649
+H        1.5042691853        1.6639639369        0.8254257532</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719828"/>
+    </displacement>
+    <displacement number="125">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5227218425       -1.6754912568        0.8353287013
+O       -0.0240953353       -1.3156985887       -0.1145436905
+O        0.0240953353        1.3156985887       -0.1145436905
+H        1.5227218425        1.6754912568        0.8353287013</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720334"/>
+    </displacement>
+    <displacement number="126">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5241387983       -1.6779967686        0.8353333462
+O       -0.0260551871       -1.3173793050       -0.1150824952
+O        0.0182293702        1.3140836532       -0.1189584414
+H        1.5319646153        1.6812924205        0.8402776119</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78689502"/>
+    </displacement>
+    <displacement number="127">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5319646153       -1.6812924205        0.8402776119
+O       -0.0182293702       -1.3140836532       -0.1189584414
+O        0.0260551871        1.3173793050       -0.1150824952
+H        1.5241387983        1.6779967686        0.8353333462</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78689502"/>
+    </displacement>
+    <displacement number="128">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4922533300       -1.6532359186        0.8204673210
+O       -0.0379533212       -1.3170870920       -0.1001565048
+O        0.0301268871        1.3138676136       -0.1041399728
+H        1.5000797641        1.6564553970        0.8253991782</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78685002"/>
+    </displacement>
+    <displacement number="129">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5000797641       -1.6564553970        0.8253991782
+O       -0.0301268871       -1.3138676136       -0.1041399728
+O        0.0379533212        1.3170870920       -0.1001565048
+H        1.4922533300        1.6532359186        0.8204673210</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78685002"/>
+    </displacement>
+    <displacement number="13">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5071609821       -1.6496014892        0.8314591809
+O       -0.0220254610       -1.3226866474       -0.1156534691
+O        0.0219692292        1.3087646243       -0.1055481379
+H        1.5072172139        1.6635235123        0.8313124477</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736227"/>
+    </displacement>
+    <displacement number="130">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4979641070       -1.6439824316        0.8264845412
+O       -0.0279941102       -1.3242306299       -0.1111283198
+O        0.0200810364        1.3071616474       -0.1050530758
+H        1.5058771807        1.6610514141        0.8312668759</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725306"/>
+    </displacement>
+    <displacement number="131">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5075565200       -1.6787923361        0.8242862322
+O       -0.0399987555       -1.3101631090       -0.0990542164
+O        0.0321303008        1.3206490643       -0.1131309287
+H        1.5154249747        1.6683063809        0.8294689345</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725001"/>
+    </displacement>
+    <displacement number="132">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5163689879       -1.6552471593        0.8364318063
+O       -0.0160726590       -1.3211230391       -0.1201567838
+O        0.0238732429        1.3103744389       -0.1060573532
+H        1.5085684041        1.6659957595        0.8313523524</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725455"/>
+    </displacement>
+    <displacement number="133">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5260586770       -1.6905733885        0.8341292824
+O       -0.0283359965       -1.3069236413       -0.1077992588
+O        0.0360582344        1.3241191319       -0.1141831485
+H        1.5183364391        1.6733778979        0.8294231465</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725864"/>
+    </displacement>
+    <displacement number="134">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5305971914       -1.7080069457        0.8328682032
+O       -0.0346265017       -1.2998211460       -0.1015009858
+O        0.0421177622        1.3308445501       -0.1182866638
+H        1.5231059310        1.6769835416        0.8284894681</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78710426"/>
+    </displacement>
+    <displacement number="135">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5353259458       -1.6964997051        0.8390486774
+O       -0.0225283786       -1.3052768247       -0.1121393459
+O        0.0380453868        1.3258631472       -0.1147302478
+H        1.5198089377        1.6759133825        0.8293909379</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78695209"/>
+    </displacement>
+    <displacement number="136">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4887783174       -1.6383904835        0.8215078403
+O       -0.0339786690       -1.3257546065       -0.1065813631
+O        0.0182087736        1.3055655717       -0.1045722935
+H        1.5045482128        1.6585795183        0.8312158378</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78691149"/>
+    </displacement>
+    <displacement number="137">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4928638426       -1.6263598937        0.8274689555
+O       -0.0221531585       -1.3312619209       -0.1170405221
+O        0.0140221567        1.3002792829       -0.1010503756
+H        1.5009948444        1.6573425316        0.8321919637</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709478"/>
+    </displacement>
+    <displacement number="138">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4992363421       -1.6551048267        0.8254262262
+O       -0.0310344845       -1.3078213568       -0.1051372483
+O        0.0232107920        1.3045536981       -0.1090739905
+H        1.5070600346        1.6583724854        0.8303550343</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722810"/>
+    </displacement>
+    <displacement number="139">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5064819839       -1.6678430130        0.8254193231
+O       -0.0368606872       -1.3265684076       -0.1051266301
+O        0.0290319448        1.3233451992       -0.1090847207
+H        1.5143107263        1.6710662213        0.8303620493</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722640"/>
+    </displacement>
+    <displacement number="14">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5168022183       -1.6846707730        0.8292084871
+O       -0.0341594297       -1.3085525240       -0.1034375474
+O        0.0340865035        1.3223810829       -0.1136500025
+H        1.5168751446        1.6708422142        0.8294490843</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736279"/>
+    </displacement>
+    <displacement number="140">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5176919921       -1.6666801052        0.8353145393
+O       -0.0192672861       -1.3046169996       -0.1140133496
+O        0.0270907805        1.3079099745       -0.1101127091
+H        1.5098684977        1.6633871303        0.8303815410</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722890"/>
+    </displacement>
+    <displacement number="141">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5249354295       -1.6793171996        0.8353215016
+O       -0.0250442954       -1.3234256510       -0.1140243386
+O        0.0328728237        1.3266743188       -0.1101018318
+H        1.5171069012        1.6760685318        0.8303746904</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723596"/>
+    </displacement>
+    <displacement number="142">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5285500347       -1.6856744561        0.8353249333
+O       -0.0279467039       -1.3328213166       -0.1140296045
+O        0.0357777387        1.3360480604       -0.1100966203
+H        1.5207189999        1.6824477123        0.8303713131</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78701759"/>
+    </displacement>
+    <displacement number="143">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5341784918       -1.6850920407        0.8402700763
+O       -0.0191597874       -1.3218260968       -0.1184408584
+O        0.0348165920        1.3283484616       -0.1106313232
+H        1.5185216872        1.6785696760        0.8303721268</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78692947"/>
+    </displacement>
+    <displacement number="144">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4900249824       -1.6493556154        0.8204793593
+O       -0.0369420351       -1.3093948391       -0.1006663385
+O        0.0212944898        1.3028852797       -0.1085760330
+H        1.5056725278        1.6558651747        0.8303330337</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78688728"/>
+    </displacement>
+    <displacement number="145">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4956064212       -1.6487745358        0.8254297273
+O       -0.0281355093       -1.2984392718       -0.1051427894
+O        0.0203143526        1.2951491532       -0.1090683919
+H        1.5034275779        1.6520646544        0.8303514756</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78698872"/>
+    </displacement>
+    <displacement number="146">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5003923657       -1.6576566995        0.8386206929
+O       -0.0231749613       -1.3071163906       -0.1124173892
+O        0.0311536663        1.3241543441       -0.1184312267
+H        1.4924136606        1.6406187460        0.8337979446</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724642"/>
+    </displacement>
+    <displacement number="147">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5238113086       -1.6766840434        0.8220161600
+O       -0.0329700893       -1.3242069159       -0.1067871211
+O        0.0253149809        1.3069781345       -0.1003430279
+H        1.5314664169        1.6939128247        0.8266840106</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725199"/>
+    </displacement>
+    <displacement number="148">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4967839990       -1.6424982487        0.8397231306
+O       -0.0190330010       -1.3157815572       -0.1189381198
+O        0.0190330010        1.3157815572       -0.1189381198
+H        1.4967839990        1.6424982487        0.8397231306</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78728968"/>
+    </displacement>
+    <displacement number="149">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5270426457       -1.6915902109        0.8208490634
+O       -0.0371029904       -1.3153960352       -0.1000640526
+O        0.0371029904        1.3153960352       -0.1000640526
+H        1.5270426457        1.6915902109        0.8208490634</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78729043"/>
+    </displacement>
+    <displacement number="15">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5020347917       -1.6318466478        0.8324695939
+O       -0.0161196319       -1.3297511871       -0.1216360985
+O        0.0158759999        1.3018159575       -0.1015341454
+H        1.5022784238        1.6597818773        0.8322706716</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720234"/>
+    </displacement>
+    <displacement number="150">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5002047456       -1.6437279641        0.8387743233
+O       -0.0232594431       -1.3209354942       -0.1224544718
+O        0.0309781806        1.3103069317       -0.1084894525
+H        1.4924860080        1.6543565266        0.8337396226</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724400"/>
+    </displacement>
+    <displacement number="151">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5236058283       -1.6905093251        0.8217847882
+O       -0.0330738832       -1.3102746293       -0.0965067223
+O        0.0251214013        1.3208819092       -0.1107202383
+H        1.5315583102        1.6799020452        0.8270121939</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724962"/>
+    </displacement>
+    <displacement number="152">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5010179335       -1.6434647605        0.8323051627
+O       -0.0140154169       -1.3142162244       -0.1110622730
+O        0.0218688716        1.3173744941       -0.1070556131
+H        1.4931644788        1.6403064908        0.8273827450</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718964"/>
+    </displacement>
+    <displacement number="153">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5231194810       -1.6908612295        0.8282083431
+O       -0.0421252521       -1.3170406740       -0.1079740579
+O        0.0343273256        1.3136842471       -0.1118260957
+H        1.5309174076        1.6942176563        0.8331618321</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719587"/>
+    </displacement>
+    <displacement number="154">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4980735063       -1.6537631188        0.8386955849
+O       -0.0221741543       -1.2993420199       -0.1129503518
+O        0.0222730881        1.3132017573       -0.1229967394
+H        1.4979745725        1.6399033815        0.8388215278</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724801"/>
+    </displacement>
+    <displacement number="155">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5259367233       -1.6804729388        0.8220718061
+O       -0.0339114401       -1.3318685756       -0.1062916753
+O        0.0340287910        1.3179763760       -0.0960210498
+H        1.5258193724        1.6943651384        0.8218109405</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725437"/>
+    </displacement>
+    <displacement number="156">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5015799953       -1.6550122629        0.8376733697
+O       -0.0263128667       -1.3044840679       -0.1163916624
+O        0.0341453658        1.3077545872       -0.1124564514
+H        1.4937474961        1.6517417436        0.8327447657</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722652"/>
+    </displacement>
+    <displacement number="157">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5225865021       -1.6794119838        0.8229308366
+O       -0.0297937672       -1.3267365165       -0.1026571208
+O        0.0219734994        1.3234907134       -0.1065824686
+H        1.5304067699        1.6826577869        0.8278787743</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723445"/>
+    </displacement>
+    <displacement number="158">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5022618223       -1.6547340279        0.8312536197
+O       -0.0171895224       -1.2977640480       -0.1050454239
+O        0.0250853006        1.3148280015       -0.1111362092
+H        1.4943660441        1.6376700745        0.8264980350</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714592"/>
+    </displacement>
+    <displacement number="159">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5219659606       -1.6797480736        0.8294099920
+O       -0.0389683667       -1.3335001646       -0.1141755757
+O        0.0312298164        1.3162981824       -0.1078065794
+H        1.5297045109        1.6969500558        0.8341421847</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715726"/>
+    </displacement>
+    <displacement number="16">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5213179778       -1.7019784401        0.8279734930
+O       -0.0403855081       -1.3014827674       -0.0972105091
+O        0.0401124844        1.3290441809       -0.1177408044
+H        1.5215910015        1.6744170265        0.8285478421</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720651"/>
+    </displacement>
+    <displacement number="160">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4979745725       -1.6399033815        0.8388215278
+O       -0.0222730881       -1.3132017573       -0.1229967394
+O        0.0221741543        1.2993420199       -0.1129503518
+H        1.4980735063        1.6537631188        0.8386955849</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724801"/>
+    </displacement>
+    <displacement number="161">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5258193724       -1.6943651384        0.8218109405
+O       -0.0340287910       -1.3179763760       -0.0960210498
+O        0.0339114401        1.3318685756       -0.1062916753
+H        1.5259367233        1.6804729388        0.8220718061</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725437"/>
+    </displacement>
+    <displacement number="162">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4987934515       -1.6396763400        0.8323349324
+O       -0.0130157793       -1.3064057403       -0.1115499217
+O        0.0130157793        1.3064057403       -0.1115499217
+H        1.4987934515        1.6396763400        0.8323349324</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715939"/>
+    </displacement>
+    <displacement number="163">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5253347639       -1.6947505128        0.8282196191
+O       -0.0430685199       -1.3246678866       -0.1074346083
+O        0.0430685199        1.3246678866       -0.1074346083
+H        1.5253347639        1.6947505128        0.8282196191</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78716878"/>
+    </displacement>
+    <displacement number="164">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5021460379       -1.6407996602        0.8314681620
+O       -0.0172025247       -1.3115891912       -0.1151502570
+O        0.0249818301        1.3009737880       -0.1011275952
+H        1.4943667325        1.6514150634        0.8263797118</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714359"/>
+    </displacement>
+    <displacement number="165">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5218329343       -1.6935648657        0.8292366439
+O       -0.0389993557       -1.3195759688       -0.1039622015
+O        0.0311084742        1.3301946242       -0.1181158216
+H        1.5297238158        1.6829462103        0.8344114007</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715481"/>
+    </displacement>
+    <displacement number="166">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4924860080       -1.6543565266        0.8337396226
+O       -0.0309781806       -1.3103069317       -0.1084894525
+O        0.0232594431        1.3209354942       -0.1224544718
+H        1.5002047456        1.6437279641        0.8387743233</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724400"/>
+    </displacement>
+    <displacement number="167">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5315583102       -1.6799020452        0.8270121939
+O       -0.0251214013       -1.3208819092       -0.1107202383
+O        0.0330738832        1.3102746293       -0.0965067223
+H        1.5236058283        1.6905093251        0.8217847882</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724962"/>
+    </displacement>
+    <displacement number="168">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4960226352       -1.6556454189        0.8326936847
+O       -0.0351447428       -1.3154498122       -0.1119086739
+O        0.0351447428        1.3154498122       -0.1119086739
+H        1.4960226352        1.6556454189        0.8326936847</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719004"/>
+    </displacement>
+    <displacement number="169">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5282392847       -1.6788815914        0.8278461429
+O       -0.0210318057       -1.3157511256       -0.1070611321
+O        0.0210318057        1.3157511256       -0.1070611321
+H        1.5282392847        1.6788815914        0.8278461429</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720004"/>
+    </displacement>
+    <displacement number="17">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5084586624       -1.6608798211        0.8303712684
+O       -0.0251429256       -1.3062286179       -0.1095862576
+O        0.0251429256        1.3062286179       -0.1095862576
+H        1.5084586624        1.6608798211        0.8303712684</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733682"/>
+    </displacement>
+    <displacement number="170">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4966386275       -1.6552840897        0.8263440898
+O       -0.0259939181       -1.3087457090       -0.1006328100
+O        0.0260839160        1.3225584090       -0.1106319698
+H        1.4965486296        1.6414713898        0.8264907116</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714148"/>
+    </displacement>
+    <displacement number="171">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5275521700       -1.6791350781        0.8343956780
+O       -0.0301790269       -1.3225295744       -0.1186499232
+O        0.0302858213        1.3085939440       -0.1083310679
+H        1.5274453757        1.6930707085        0.8341553347</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715214"/>
+    </displacement>
+    <displacement number="172">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4924136606       -1.6406187460        0.8337979446
+O       -0.0311536663       -1.3241543441       -0.1184312267
+O        0.0231749613        1.3071163906       -0.1124173892
+H        1.5003923657        1.6576566995        0.8386206929</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724642"/>
+    </displacement>
+    <displacement number="173">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5314664169       -1.6939128247        0.8266840106
+O       -0.0253149809       -1.3069781345       -0.1003430279
+O        0.0329700893        1.3242069159       -0.1067871211
+H        1.5238113086        1.6766840434        0.8220161600</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725199"/>
+    </displacement>
+    <displacement number="174">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4931644788       -1.6403064908        0.8273827450
+O       -0.0218688716       -1.3173744941       -0.1070556131
+O        0.0140154169        1.3142162244       -0.1110622730
+H        1.5010179335        1.6434647605        0.8323051627</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718964"/>
+    </displacement>
+    <displacement number="175">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5309174076       -1.6942176563        0.8331618321
+O       -0.0343273256       -1.3136842471       -0.1118260957
+O        0.0421252521        1.3170406740       -0.1079740579
+H        1.5231194810        1.6908612295        0.8282083431</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719587"/>
+    </displacement>
+    <displacement number="176">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4965486296       -1.6414713898        0.8264907116
+O       -0.0260839160       -1.3225584090       -0.1106319698
+O        0.0259939181        1.3087457090       -0.1006328100
+H        1.4966386275        1.6552840897        0.8263440898</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714148"/>
+    </displacement>
+    <displacement number="177">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5274453757       -1.6930707085        0.8341553347
+O       -0.0302858213       -1.3085939440       -0.1083310679
+O        0.0301790269        1.3225295744       -0.1186499232
+H        1.5275521700        1.6791350781        0.8343956780</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715214"/>
+    </displacement>
+    <displacement number="178">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4937474961       -1.6517417436        0.8327447657
+O       -0.0341453658       -1.3077545872       -0.1124564514
+O        0.0263128667        1.3044840679       -0.1163916624
+H        1.5015799953        1.6550122629        0.8376733697</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722652"/>
+    </displacement>
+    <displacement number="179">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5304067699       -1.6826577869        0.8278787743
+O       -0.0219734994       -1.3234907134       -0.1065824686
+O        0.0297937672        1.3267365165       -0.1026571208
+H        1.5225865021        1.6794119838        0.8229308366</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723445"/>
+    </displacement>
+    <displacement number="18">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5157032757       -1.6735673631        0.8303712684
+O       -0.0309445727       -1.3250065436       -0.1095862576
+O        0.0309445727        1.3250065436       -0.1095862576
+H        1.5157032757        1.6735673631        0.8303712684</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733977"/>
+    </displacement>
+    <displacement number="180">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4943667325       -1.6514150634        0.8263797118
+O       -0.0249818301       -1.3009737880       -0.1011275952
+O        0.0172025247        1.3115891912       -0.1151502570
+H        1.5021460379        1.6407996602        0.8314681620</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714359"/>
+    </displacement>
+    <displacement number="181">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5297238158       -1.6829462103        0.8344114007
+O       -0.0311084742       -1.3301946242       -0.1181158216
+O        0.0389993557        1.3195759688       -0.1039622015
+H        1.5218329343        1.6935648657        0.8292366439</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715481"/>
+    </displacement>
+    <displacement number="182">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4978367978       -1.6525988343        0.8254138355
+O       -0.0291087268       -1.3061462594       -0.1046288247
+O        0.0291087268        1.3061462594       -0.1046288247
+H        1.4978367978        1.6525988343        0.8254138355</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78711940"/>
+    </displacement>
+    <displacement number="183">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5263381639       -1.6818197375        0.8353287013
+O       -0.0269788454       -1.3250932228       -0.1145436905
+O        0.0269788454        1.3250932228       -0.1145436905
+H        1.5263381639        1.6818197375        0.8353287013</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713218"/>
+    </displacement>
+    <displacement number="184">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4943660441       -1.6376700745        0.8264980350
+O       -0.0250853006       -1.3148280015       -0.1111362092
+O        0.0171895224        1.2977640480       -0.1050454239
+H        1.5022618223        1.6547340279        0.8312536197</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714592"/>
+    </displacement>
+    <displacement number="185">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5297045109       -1.6969500558        0.8341421847
+O       -0.0312298164       -1.3162981824       -0.1078065794
+O        0.0389683667        1.3335001646       -0.1141755757
+H        1.5219659606        1.6797480736        0.8294099920</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715726"/>
+    </displacement>
+    <displacement number="186">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5099608732       -1.6650222342        0.8367501849
+O       -0.0352676922       -1.3205416694       -0.1203999413
+O        0.0430879234        1.3100927595       -0.1063876280
+H        1.5021406420        1.6754711441        0.8316074060</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725153"/>
+    </displacement>
+    <displacement number="187">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5030002297       -1.6625393706        0.8387840786
+O       -0.0269807374       -1.3103420932       -0.1135009300
+O        0.0192287364        1.3210531958       -0.1275352769
+H        1.5107522306        1.6518282679        0.8438221499</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724937"/>
+    </displacement>
+    <displacement number="188">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5112887815       -1.6644100021        0.8238667685
+O       -0.0170520562       -1.3071980574       -0.0976425569
+O        0.0248992068        1.3242988349       -0.1037779244
+H        1.5034416309        1.6473092246        0.8191237343</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725619"/>
+    </displacement>
+    <displacement number="189">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5127891781       -1.6700350567        0.8367824477
+O       -0.0392107537       -1.3240229200       -0.1215313996
+O        0.0314217244        1.3068599215       -0.1152089922
+H        1.5205782073        1.6871980551        0.8415279656</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78726182"/>
+    </displacement>
+    <displacement number="19">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5048293062       -1.6545750192        0.8303712684
+O       -0.0222564579       -1.2968309757       -0.1095862576
+O        0.0222564579        1.2968309757       -0.1095862576
+H        1.5048293062        1.6545750192        0.8303712684</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709544"/>
+    </displacement>
+    <displacement number="190">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5208183177       -1.6715545002        0.8221410563
+O       -0.0290561572       -1.3207480767       -0.1058156836
+O        0.0369746535        1.3102238699       -0.0916737690
+H        1.5128998214        1.6820787069        0.8169184179</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724501"/>
+    </displacement>
+    <displacement number="191">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5140616776       -1.6694153427        0.8238732938
+O       -0.0208318447       -1.3103978855       -0.0985660446
+O        0.0129808591        1.3211851914       -0.1127313511
+H        1.5219126632        1.6586280367        0.8289941235</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725623"/>
+    </displacement>
+    <displacement number="192">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5062975837       -1.6498673514        0.8379169058
+O       -0.0313108942       -1.3293499307       -0.1270732757
+O        0.0312130231        1.3016682450       -0.1068850507
+H        1.5063954548        1.6775490370        0.8376114421</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731751"/>
+    </displacement>
+    <displacement number="193">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5063954548       -1.6775490370        0.8376114421
+O       -0.0312130231       -1.3016682450       -0.1068850507
+O        0.0313108942        1.3293499307       -0.1270732757
+H        1.5062975837        1.6498673514        0.8379169058</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731751"/>
+    </displacement>
+    <displacement number="194">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5078975686       -1.6493550283        0.8248995405
+O       -0.0128273645       -1.3158566868       -0.1041145297
+O        0.0128273645        1.3158566868       -0.1041145297
+H        1.5078975686        1.6493550283        0.8248995405</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730582"/>
+    </displacement>
+    <displacement number="195">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5162386843       -1.6850413766        0.8355433925
+O       -0.0432576840       -1.3152080193       -0.1147583817
+O        0.0432576840        1.3152080193       -0.1147583817
+H        1.5162386843        1.6850413766        0.8355433925</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730725"/>
+    </displacement>
+    <displacement number="196">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5173709117       -1.6564989781        0.8232402952
+O       -0.0250150441       -1.3295513127       -0.1124425518
+O        0.0251484903        1.3017296060       -0.0920025791
+H        1.5172374655        1.6843206848        0.8227748573</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731820"/>
+    </displacement>
+    <displacement number="197">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5172374655       -1.6843206848        0.8227748573
+O       -0.0251484903       -1.3017296060       -0.0920025791
+O        0.0250150441        1.3295513127       -0.1124425518
+H        1.5173709117        1.6564989781        0.8232402952</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731820"/>
+    </displacement>
+    <displacement number="198">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5029607971       -1.6486925026        0.8388420534
+O       -0.0271232303       -1.3242980201       -0.1235481470
+O        0.0191773216        1.3071258941       -0.1173928202
+H        1.5109067057        1.6658646286        0.8436689354</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725179"/>
+    </displacement>
+    <displacement number="199">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5100183632       -1.6788565711        0.8365018106
+O       -0.0353120370       -1.3068152839       -0.1102556735
+O        0.0431338234        1.3238465132       -0.1164364327
+H        1.5021965768        1.6618253417        0.8317603171</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725397"/>
+    </displacement>
+    <displacement number="2">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5175272237       -1.6705444514        0.8229668137
+O       -0.0249804281       -1.3156820815       -0.1021818029
+O        0.0249804281        1.3156820815       -0.1021818029
+H        1.5175272237        1.6705444514        0.8229668137</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78741351"/>
+    </displacement>
+    <displacement number="20">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5193184177       -1.6799496794        0.8303712684
+O       -0.0338590745       -1.3343869638       -0.1095862576
+O        0.0338590745        1.3343869638       -0.1095862576
+H        1.5193184177        1.6799496794        0.8303712684</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78711906"/>
+    </displacement>
+    <displacement number="200">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5112159292       -1.6504129390        0.8241017394
+O       -0.0170218501       -1.3210858683       -0.1078054104
+O        0.0248388978        1.3103818766       -0.0937117539
+H        1.5033988815        1.6611169307        0.8189854465</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725386"/>
+    </displacement>
+    <displacement number="201">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5127003060       -1.6837886260        0.8366296997
+O       -0.0391978671       -1.3101619740       -0.1113770982
+O        0.0313442996        1.3206932021       -0.1254586660
+H        1.5205538735        1.6732573979        0.8417760861</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725936"/>
+    </displacement>
+    <displacement number="202">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5141389391       -1.6554975310        0.8240116790
+O       -0.0208575605       -1.3244243718       -0.1087393538
+O        0.0130457181        1.3071881758       -0.1024614213
+H        1.5219507816        1.6727337270        0.8287591177</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725857"/>
+    </displacement>
+    <displacement number="203">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5207611444       -1.6854579578        0.8218130697
+O       -0.0292150959       -1.3069522031       -0.0955456282
+O        0.0369054481        1.3240479513       -0.1018469286
+H        1.5130707922        1.6683622096        0.8171495087</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724737"/>
+    </displacement>
+    <displacement number="204">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5037491358       -1.6484261248        0.8323588245
+O       -0.0177954481       -1.3174369971       -0.1120515930
+O        0.0099422506        1.3142522507       -0.1160225387
+H        1.5116023333        1.6516108711        0.8372853288</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719247"/>
+    </displacement>
+    <displacement number="205">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5105333189       -1.6784890529        0.8301546889
+O       -0.0262534497       -1.3001048041       -0.0989641580
+O        0.0340969010        1.3309913252       -0.1152257427
+H        1.5026898677        1.6476025317        0.8256052333</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721100"/>
+    </displacement>
+    <displacement number="206">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5104019026       -1.6506581142        0.8306363599
+O       -0.0261799570       -1.3277185408       -0.1192680825
+O        0.0339896042        1.3033211104       -0.0951139275
+H        1.5025922553        1.6750555446        0.8253156716</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720623"/>
+    </displacement>
+    <displacement number="207">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5131845293       -1.6834162806        0.8302725755
+O       -0.0300581582       -1.3033094951       -0.0999844861
+O        0.0221810576        1.3278979312       -0.1243153224
+H        1.5210616299        1.6588278444        0.8355972545</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721126"/>
+    </displacement>
+    <displacement number="208">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5133495617       -1.6557454073        0.8305620706
+O       -0.0300978779       -1.3311964181       -0.1203088972
+O        0.0223222543        1.3000681062       -0.1037989554
+H        1.5211251853        1.6868737192        0.8351158036</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721606"/>
+    </displacement>
+    <displacement number="209">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5202442812       -1.6858055790        0.8282250141
+O       -0.0381869527       -1.3135785412       -0.1069093660
+O        0.0459850240        1.3169106542       -0.1030213597
+H        1.5124462098        1.6824734660        0.8232757333</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718833"/>
+    </displacement>
+    <displacement number="21">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5028615490       -1.6614610569        0.8254227582
+O       -0.0339429909       -1.3171977123       -0.1051318627
+O        0.0261167699        1.3139523570       -0.1090794327
+H        1.5106877701        1.6647064122        0.8303585588</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730428"/>
+    </displacement>
+    <displacement number="210">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5077270513       -1.6611610023        0.8367792879
+O       -0.0343071609       -1.3128925528       -0.1209608204
+O        0.0343364482        1.2991270578       -0.1108077714
+H        1.5076977639        1.6749264973        0.8365593254</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731689"/>
+    </displacement>
+    <displacement number="211">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5053031597       -1.6664584653        0.8387151020
+O       -0.0279751808       -1.3181040387       -0.1129541882
+O        0.0281032232        1.3320193700       -0.1229920925
+H        1.5051751173        1.6525431340        0.8388012003</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730982"/>
+    </displacement>
+    <displacement number="212">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5090625015       -1.6606187011        0.8238630663
+O       -0.0160668789       -1.2993972529       -0.0980948166
+O        0.0160496023        1.3133267115       -0.1082679459
+H        1.5090797780        1.6466892425        0.8240697177</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725441"/>
+    </displacement>
+    <displacement number="213">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5150069528       -1.6739217819        0.8367596910
+O       -0.0401646828       -1.3316603059       -0.1209566355
+O        0.0401668499        1.3178384282       -0.1108111403
+H        1.5150047857        1.6877436596        0.8365781063</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78726055"/>
+    </displacement>
+    <displacement number="214">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5186770685       -1.6677917706        0.8220912587
+O       -0.0281085023       -1.3130744858       -0.1062966984
+O        0.0282538849        1.2992384897       -0.0960168668
+H        1.5185316859        1.6816277667        0.8217923281</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730665"/>
+    </displacement>
+    <displacement number="215">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5162722446       -1.6732328200        0.8238823982
+O       -0.0218109686       -1.3181860762       -0.0980994377
+O        0.0218237515        1.3321709473       -0.1082624907
+H        1.5162594618        1.6592479488        0.8240495517</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731999"/>
+    </displacement>
+    <displacement number="216">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5043050124       -1.6599665419        0.8377778665
+O       -0.0302071284       -1.3078524220       -0.1175096696
+O        0.0223743646        1.3045567078       -0.1214084824
+H        1.5121377762        1.6632622561        0.8427103071</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722893"/>
+    </displacement>
+    <displacement number="217">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5088405463       -1.6677464506        0.8376803804
+O       -0.0321619039       -1.3232621691       -0.1164024086
+O        0.0399992002        1.3264881492       -0.1124458180
+H        1.5010032500        1.6645204705        0.8327378677</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722299"/>
+    </displacement>
+    <displacement number="218">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5124680831       -1.6616962135        0.8229902267
+O       -0.0201727267       -1.3046148567       -0.1017100899
+O        0.0279883625        1.3078794431       -0.0977707786
+H        1.5046524473        1.6584316270        0.8180606634</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722612"/>
+    </displacement>
+    <displacement number="219">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5115536286       -1.6726887520        0.8377710221
+O       -0.0360172273       -1.3266033021       -0.1174987782
+O        0.0281796842        1.3233519830       -0.1214194862
+H        1.5193911716        1.6759400710        0.8427172639</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723404"/>
+    </displacement>
+    <displacement number="22">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5213160630       -1.6729856792        0.8353180370
+O       -0.0221510441       -1.3140242344       -0.1140189211
+O        0.0299770589        1.3172949793       -0.1101071939
+H        1.5134900482        1.6697149343        0.8303780996</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730926"/>
+    </displacement>
+    <displacement number="220">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5153583317       -1.6667705431        0.8229376934
+O       -0.0240395772       -1.3079590106       -0.1026679777
+O        0.0162245976        1.3046689832       -0.1065715008
+H        1.5231733114        1.6700605705        0.8278718066</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722530"/>
+    </displacement>
+    <displacement number="221">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5197088942       -1.6743503302        0.8229972459
+O       -0.0259661894       -1.3234194637       -0.1017207978
+O        0.0337871272        1.3266396834       -0.0977601820
+H        1.5118879563        1.6711301105        0.8180537554</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722639"/>
+    </displacement>
+    <displacement number="222">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5049594629       -1.6596848018        0.8313460921
+O       -0.0210019614       -1.3009907933       -0.1060609400
+O        0.0131889183        1.3116886463       -0.1201536689
+H        1.5127725060        1.6489869488        0.8364385385</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714342"/>
+    </displacement>
+    <displacement number="223">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5094878327       -1.6673948411        0.8312800911
+O       -0.0229820156       -1.3165534857       -0.1050606592
+O        0.0309122067        1.3336273231       -0.1111205032
+H        1.5015576416        1.6503210037        0.8264710928</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720508"/>
+    </displacement>
+    <displacement number="224">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5117847284       -1.6619560208        0.8294751897
+O       -0.0292102081       -1.3112489523       -0.1131278791
+O        0.0370899060        1.3008130303       -0.0990577321
+H        1.5039050305        1.6723919428        0.8242804431</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720308"/>
+    </displacement>
+    <displacement number="225">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5121727255       -1.6723326684        0.8313586363
+O       -0.0267542847       -1.3197524811       -0.1060540096
+O        0.0189659992        1.3305513345       -0.1201596569
+H        1.5199610110        1.6615338151        0.8364250518</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721098"/>
+    </displacement>
+    <displacement number="226">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5147021409       -1.6670333601        0.8294363440
+O       -0.0331573194       -1.3147323709       -0.1141907838
+O        0.0254515602        1.2975435580       -0.1077918801
+H        1.5224079001        1.6842221730        0.8341163415</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720735"/>
+    </displacement>
+    <displacement number="227">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5190603674       -1.6746824670        0.8294626548
+O       -0.0350593270       -1.3300433027       -0.1131337382
+O        0.0429166938        1.3195077996       -0.0990509421
+H        1.5112030006        1.6852179701        0.8242920471</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714388"/>
+    </displacement>
+    <displacement number="228">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5076977639       -1.6749264973        0.8365593254
+O       -0.0343364482       -1.2991270578       -0.1108077714
+O        0.0343071609        1.3128925528       -0.1209608204
+H        1.5077270513        1.6611610023        0.8367792879</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731689"/>
+    </displacement>
+    <displacement number="229">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5051751173       -1.6525431340        0.8388012003
+O       -0.0281032232       -1.3320193700       -0.1229920925
+O        0.0279751808        1.3181040387       -0.1129541882
+H        1.5053031597        1.6664584653        0.8387151020</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730982"/>
+    </displacement>
+    <displacement number="23">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4936506461       -1.6557373203        0.8204724549
+O       -0.0398628532       -1.3187556436       -0.1006557559
+O        0.0242102426        1.3122907607       -0.1085868420
+H        1.5093032567        1.6622022032        0.8303401645</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78696096"/>
+    </displacement>
+    <displacement number="230">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5090797780       -1.6466892425        0.8240697177
+O       -0.0160496023       -1.3133267115       -0.1082679459
+O        0.0160668789        1.2993972529       -0.0980948166
+H        1.5090625015        1.6606187011        0.8238630663</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725441"/>
+    </displacement>
+    <displacement number="231">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5150047857       -1.6877436596        0.8365781063
+O       -0.0401668499       -1.3178384282       -0.1108111403
+O        0.0401646828        1.3316603059       -0.1209566355
+H        1.5150069528        1.6739217819        0.8367596910</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78726055"/>
+    </displacement>
+    <displacement number="232">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5185316859       -1.6816277667        0.8217923281
+O       -0.0282538849       -1.2992384897       -0.0960168668
+O        0.0281085023        1.3130744858       -0.1062966984
+H        1.5186770685        1.6677917706        0.8220912587</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730665"/>
+    </displacement>
+    <displacement number="233">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5162594618       -1.6592479488        0.8240495517
+O       -0.0218237515       -1.3321709473       -0.1082624907
+O        0.0218109686        1.3181860762       -0.0980994377
+H        1.5162722446        1.6732328200        0.8238823982</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731999"/>
+    </displacement>
+    <displacement number="234">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5082143594       -1.6745930288        0.8301977109
+O       -0.0252661387       -1.2923399213       -0.0994636996
+O        0.0252206774        1.3200343884       -0.1197866648
+H        1.5082598207        1.6468985617        0.8306226750</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723949"/>
+    </displacement>
+    <displacement number="235">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5059579407       -1.6522409470        0.8323349324
+O       -0.0187889973       -1.3252346512       -0.1115499217
+O        0.0187889973        1.3252346512       -0.1115499217
+H        1.5059579407        1.6522409470        0.8323349324</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78728369"/>
+    </displacement>
+    <displacement number="236">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5082598207       -1.6468985617        0.8306226750
+O       -0.0252206774       -1.3200343884       -0.1197866648
+O        0.0252661387        1.2923399213       -0.0994636996
+H        1.5082143594        1.6745930288        0.8301977109</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723949"/>
+    </displacement>
+    <displacement number="237">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5154875300       -1.6873376012        0.8302350057
+O       -0.0310391415       -1.3110621640       -0.0994708504
+O        0.0310508301        1.3388684306       -0.1197762145
+H        1.5154758414        1.6595313346        0.8305820808</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724580"/>
+    </displacement>
+    <displacement number="238">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5180129252       -1.6819415877        0.8282196191
+O       -0.0372371064       -1.3059398021       -0.1074346083
+O        0.0372371064        1.3059398021       -0.1074346083
+H        1.5180129252        1.6819415877        0.8282196191</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78728050"/>
+    </displacement>
+    <displacement number="239">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5154758414       -1.6595313346        0.8305820808
+O       -0.0310508301       -1.3388684306       -0.1197762145
+O        0.0310391415        1.3110621640       -0.0994708504
+H        1.5154875300        1.6873376012        0.8302350057</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724580"/>
+    </displacement>
+    <displacement number="24">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5305597693       -1.6787855898        0.8402631194
+O       -0.0162788193       -1.3124094323       -0.1184298412
+O        0.0319306047        1.3189758775       -0.1106421194
+H        1.5149079839        1.6722191446        0.8303788627</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78700088"/>
+    </displacement>
+    <displacement number="240">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5117714549       -1.6757959888        0.8291675091
+O       -0.0293249660       -1.2975165355       -0.1029163199
+O        0.0370648390        1.3145735710       -0.1091729007
+H        1.5040315818        1.6587389533        0.8244917330</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720544"/>
+    </displacement>
+    <displacement number="241">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5093422734       -1.6534047285        0.8314547212
+O       -0.0230241655       -1.3304339443       -0.1151558409
+O        0.0307790046        1.3197184801       -0.1011210753
+H        1.5015874344        1.6641201926        0.8263922165</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720268"/>
+    </displacement>
+    <displacement number="242">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5049926194       -1.6458307680        0.8314642866
+O       -0.0210715033       -1.3149534744       -0.1161756974
+O        0.0132099067        1.2977553518       -0.1099427649
+H        1.5128542160        1.6630288907        0.8362241973</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714576"/>
+    </displacement>
+    <displacement number="243">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5190748646       -1.6885789657        0.8291934306
+O       -0.0351469407       -1.3162547829       -0.1029309286
+O        0.0429193691        1.3333237696       -0.1091578027
+H        1.5113024362        1.6715099790        0.8244653222</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714631"/>
+    </displacement>
+    <displacement number="244">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5145417469       -1.6807940774        0.8292250051
+O       -0.0332163108       -1.3008646812       -0.1039694053
+O        0.0253028231        1.3113828267       -0.1181095549
+H        1.5224552346        1.6702759318        0.8344239766</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720497"/>
+    </displacement>
+    <displacement number="245">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5121765020       -1.6584233538        0.8314373959
+O       -0.0268538423       -1.3337708763       -0.1161598641
+O        0.0189575660        1.3165616465       -0.1099581079
+H        1.5200727783        1.6756325837        0.8362505977</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721340"/>
+    </displacement>
+    <displacement number="246">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5021965768       -1.6618253417        0.8317603171
+O       -0.0431338234       -1.3238465132       -0.1164364327
+O        0.0353120370        1.3068152839       -0.1102556735
+H        1.5100183632        1.6788565711        0.8365018106</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725397"/>
+    </displacement>
+    <displacement number="247">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5109067057       -1.6658646286        0.8436689354
+O       -0.0191773216       -1.3071258941       -0.1173928202
+O        0.0271232303        1.3242980201       -0.1235481470
+H        1.5029607971        1.6486925026        0.8388420534</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725179"/>
+    </displacement>
+    <displacement number="248">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5033988815       -1.6611169307        0.8189854465
+O       -0.0248388978       -1.3103818766       -0.0937117539
+O        0.0170218501        1.3210858683       -0.1078054104
+H        1.5112159292        1.6504129390        0.8241017394</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725386"/>
+    </displacement>
+    <displacement number="249">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5205538735       -1.6732573979        0.8417760861
+O       -0.0313442996       -1.3206932021       -0.1254586660
+O        0.0391978671        1.3101619740       -0.1113770982
+H        1.5127003060        1.6837886260        0.8366296997</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725936"/>
+    </displacement>
+    <displacement number="25">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5120833383       -1.6672106733        0.8303712684
+O       -0.0280390779       -1.3156204511       -0.1095862576
+O        0.0280390779        1.3156204511       -0.1095862576
+H        1.5120833383        1.6672106733        0.8303712684</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78741524"/>
+    </displacement>
+    <displacement number="250">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5130707922       -1.6683622096        0.8171495087
+O       -0.0369054481       -1.3240479513       -0.1018469286
+O        0.0292150959        1.3069522031       -0.0955456282
+H        1.5207611444        1.6854579578        0.8218130697</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724737"/>
+    </displacement>
+    <displacement number="251">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5219507816       -1.6727337270        0.8287591177
+O       -0.0130457181       -1.3071881758       -0.1024614213
+O        0.0208575605        1.3244243718       -0.1087393538
+H        1.5141389391        1.6554975310        0.8240116790</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725857"/>
+    </displacement>
+    <displacement number="252">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4987441853       -1.6605914201        0.8327827334
+O       -0.0390064588       -1.3188049282       -0.1130072260
+O        0.0233364543        1.3122832668       -0.1208632442
+H        1.5144141898        1.6671130815        0.8426577583</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719656"/>
+    </displacement>
+    <displacement number="253">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5144141898       -1.6671130815        0.8426577583
+O       -0.0233364543       -1.3122832668       -0.1208632442
+O        0.0390064588        1.3188049282       -0.1130072260
+H        1.4987441853        1.6605914201        0.8327827334</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719656"/>
+    </displacement>
+    <displacement number="254">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5068356491       -1.6622354361        0.8180874845
+O       -0.0289736388       -1.3156002013       -0.0973024738
+O        0.0289736388        1.3156002013       -0.0973024738
+H        1.5068356491        1.6622354361        0.8180874845</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719315"/>
+    </displacement>
+    <displacement number="255">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5171306600       -1.6720636197        0.8427637664
+O       -0.0272239277       -1.3156375713       -0.1219787557
+O        0.0272239277        1.3156375713       -0.1219787557
+H        1.5171306600        1.6720636197        0.8427637664</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720315"/>
+    </displacement>
+    <displacement number="256">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5097206089       -1.6673002600        0.8180212288
+O       -0.0328081917       -1.3189311241       -0.0982426742
+O        0.0171723114        1.3124209125       -0.1061074264
+H        1.5253564892        1.6738104715        0.8278988933</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719651"/>
+    </displacement>
+    <displacement number="257">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5253564892       -1.6738104715        0.8278988933
+O       -0.0171723114       -1.3124209125       -0.1061074264
+O        0.0328081917        1.3189311241       -0.0982426742
+H        1.5097206089        1.6673002600        0.8180212288</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719651"/>
+    </displacement>
+    <displacement number="258">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4993314440       -1.6602254483        0.8264220943
+O       -0.0297732813       -1.3119590057       -0.1016297226
+O        0.0141493725        1.3194511532       -0.1196525310
+H        1.5149553529        1.6527333009        0.8364301809</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714295"/>
+    </displacement>
+    <displacement number="259">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5151265523       -1.6668441506        0.8361881423
+O       -0.0141842898       -1.3055586079       -0.1094517543
+O        0.0299199636        1.3259093242       -0.1116386015
+H        1.4993908785        1.6464934343        0.8264722351</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714770"/>
+    </displacement>
+    <displacement number="26">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5016907058       -1.6600978268        0.8387053480
+O       -0.0250699669       -1.3087258631       -0.1129522260
+O        0.0251835400        1.3226135647       -0.1229944580
+H        1.5015771327        1.6462101251        0.8388113575</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78735634"/>
+    </displacement>
+    <displacement number="260">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5062182775       -1.6625771445        0.8245022259
+O       -0.0380377508       -1.3222193401       -0.1086501674
+O        0.0380768959        1.3084987882       -0.0985439524
+H        1.5061791324        1.6762976963        0.8242619154</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713965"/>
+    </displacement>
+    <displacement number="261">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5178161773       -1.6717913513        0.8362810788
+O       -0.0179892351       -1.3087709798       -0.1104633885
+O        0.0180115917        1.3228013844       -0.1206750568
+H        1.5177938207        1.6577609468        0.8364273880</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714926"/>
+    </displacement>
+    <displacement number="262">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5091317625       -1.6676460830        0.8244486520
+O       -0.0419530658       -1.3256897584       -0.1096944994
+O        0.0264018612        1.3052597333       -0.1072817413
+H        1.5246829671        1.6880761081        0.8340976102</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714822"/>
+    </displacement>
+    <displacement number="263">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5246427376       -1.6740611096        0.8344336817
+O       -0.0262385683       -1.3190597776       -0.1175898120
+O        0.0419363075        1.3118338406       -0.0995786715
+H        1.5089449985        1.6812870466        0.8243048234</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714341"/>
+    </displacement>
+    <displacement number="264">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5021406420       -1.6754711441        0.8316074060
+O       -0.0430879234       -1.3100927595       -0.1063876280
+O        0.0352676922        1.3205416694       -0.1203999413
+H        1.5099608732        1.6650222342        0.8367501849</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725153"/>
+    </displacement>
+    <displacement number="265">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5107522306       -1.6518282679        0.8438221499
+O       -0.0192287364       -1.3210531958       -0.1275352769
+O        0.0269807374        1.3103420932       -0.1135009300
+H        1.5030002297        1.6625393706        0.8387840786</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724937"/>
+    </displacement>
+    <displacement number="266">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5034416309       -1.6473092246        0.8191237343
+O       -0.0248992068       -1.3242988349       -0.1037779244
+O        0.0170520562        1.3071980574       -0.0976425569
+H        1.5112887815        1.6644100021        0.8238667685</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725619"/>
+    </displacement>
+    <displacement number="267">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5205782073       -1.6871980551        0.8415279656
+O       -0.0314217244       -1.3068599215       -0.1152089922
+O        0.0392107537        1.3240229200       -0.1215313996
+H        1.5127891781        1.6700350567        0.8367824477</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78726182"/>
+    </displacement>
+    <displacement number="268">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5128998214       -1.6820787069        0.8169184179
+O       -0.0369746535       -1.3102238699       -0.0916737690
+O        0.0290561572        1.3207480767       -0.1058156836
+H        1.5208183177        1.6715545002        0.8221410563</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78724501"/>
+    </displacement>
+    <displacement number="269">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5219126632       -1.6586280367        0.8289941235
+O       -0.0129808591       -1.3211851914       -0.1127313511
+O        0.0208318447        1.3103978855       -0.0985660446
+H        1.5140616776        1.6694153427        0.8238732938</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725623"/>
+    </displacement>
+    <displacement number="27">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5126696643       -1.6669127313        0.8238727354
+O       -0.0189340131       -1.3087945119       -0.0980970834
+O        0.0189318508        1.3227518453       -0.1082652600
+H        1.5126718267        1.6529553979        0.8240596295</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736469"/>
+    </displacement>
+    <displacement number="270">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5025922553       -1.6750555446        0.8253156716
+O       -0.0339896042       -1.3033211104       -0.0951139275
+O        0.0261799570        1.3277185408       -0.1192680825
+H        1.5104019026        1.6506581142        0.8306363599</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720623"/>
+    </displacement>
+    <displacement number="271">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5116023333       -1.6516108711        0.8372853288
+O       -0.0099422506       -1.3142522507       -0.1160225387
+O        0.0177954481        1.3174369971       -0.1120515930
+H        1.5037491358        1.6484261248        0.8323588245</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719247"/>
+    </displacement>
+    <displacement number="272">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5026898677       -1.6476025317        0.8256052333
+O       -0.0340969010       -1.3309913252       -0.1152257427
+O        0.0262534497        1.3001048041       -0.0989641580
+H        1.5105333189        1.6784890529        0.8301546889</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721100"/>
+    </displacement>
+    <displacement number="273">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5211251853       -1.6868737192        0.8351158036
+O       -0.0223222543       -1.3000681062       -0.1037989554
+O        0.0300978779        1.3311964181       -0.1203088972
+H        1.5133495617        1.6557454073        0.8305620706</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721606"/>
+    </displacement>
+    <displacement number="274">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5124462098       -1.6824734660        0.8232757333
+O       -0.0459850240       -1.3169106542       -0.1030213597
+O        0.0381869527        1.3135785412       -0.1069093660
+H        1.5202442812        1.6858055790        0.8282250141</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718833"/>
+    </displacement>
+    <displacement number="275">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5210616299       -1.6588278444        0.8355972545
+O       -0.0221810576       -1.3278979312       -0.1243153224
+O        0.0300581582        1.3033094951       -0.0999844861
+H        1.5131845293        1.6834162806        0.8302725755</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721126"/>
+    </displacement>
+    <displacement number="276">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5061791324       -1.6762976963        0.8242619154
+O       -0.0380768959       -1.3084987882       -0.0985439524
+O        0.0380377508        1.3222193401       -0.1086501674
+H        1.5062182775        1.6625771445        0.8245022259</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713965"/>
+    </displacement>
+    <displacement number="277">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5149553529       -1.6527333009        0.8364301809
+O       -0.0141493725       -1.3194511532       -0.1196525310
+O        0.0297732813        1.3119590057       -0.1016297226
+H        1.4993314440        1.6602254483        0.8264220943</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714295"/>
+    </displacement>
+    <displacement number="278">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4993908785       -1.6464934343        0.8264722351
+O       -0.0299199636       -1.3259093242       -0.1116386015
+O        0.0141842898        1.3055586079       -0.1094517543
+H        1.5151265523        1.6668441506        0.8361881423</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714770"/>
+    </displacement>
+    <displacement number="279">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5246829671       -1.6880761081        0.8340976102
+O       -0.0264018612       -1.3052597333       -0.1072817413
+O        0.0419530658        1.3256897584       -0.1096944994
+H        1.5091317625        1.6676460830        0.8244486520</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714822"/>
+    </displacement>
+    <displacement number="28">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5113694506       -1.6675285846        0.8367694838
+O       -0.0372314873       -1.3222793205       -0.1209587722
+O        0.0372471338        1.3084854677       -0.1108094096
+H        1.5113538041        1.6813224374        0.8365687197</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736512"/>
+    </displacement>
+    <displacement number="280">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5089449985       -1.6812870466        0.8243048234
+O       -0.0419363075       -1.3118338406       -0.0995786715
+O        0.0262385683        1.3190597776       -0.1175898120
+H        1.5246427376        1.6740611096        0.8344336817</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714341"/>
+    </displacement>
+    <displacement number="281">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5177938207       -1.6577609468        0.8364273880
+O       -0.0180115917       -1.3228013844       -0.1206750568
+O        0.0179892351        1.3087709798       -0.1104633885
+H        1.5178161773        1.6717913513        0.8362810788</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714926"/>
+    </displacement>
+    <displacement number="282">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5010032500       -1.6645204705        0.8327378677
+O       -0.0399992002       -1.3264881492       -0.1124458180
+O        0.0321619039        1.3232621691       -0.1164024086
+H        1.5088405463        1.6677464506        0.8376803804</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722299"/>
+    </displacement>
+    <displacement number="283">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5121377762       -1.6632622561        0.8427103071
+O       -0.0223743646       -1.3045567078       -0.1214084824
+O        0.0302071284        1.3078524220       -0.1175096696
+H        1.5043050124        1.6599665419        0.8377778665</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722893"/>
+    </displacement>
+    <displacement number="284">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5046524473       -1.6584316270        0.8180606634
+O       -0.0279883625       -1.3078794431       -0.0977707786
+O        0.0201727267        1.3046148567       -0.1017100899
+H        1.5124680831        1.6616962135        0.8229902267</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722612"/>
+    </displacement>
+    <displacement number="285">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5193911716       -1.6759400710        0.8427172639
+O       -0.0281796842       -1.3233519830       -0.1214194862
+O        0.0360172273        1.3266033021       -0.1174987782
+H        1.5115536286        1.6726887520        0.8377710221</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723404"/>
+    </displacement>
+    <displacement number="286">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5118879563       -1.6711301105        0.8180537554
+O       -0.0337871272       -1.3266396834       -0.0977601820
+O        0.0259661894        1.3234194637       -0.1017207978
+H        1.5197088942        1.6743503302        0.8229972459</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722639"/>
+    </displacement>
+    <displacement number="287">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5231733114       -1.6700605705        0.8278718066
+O       -0.0162245976       -1.3046689832       -0.1065715008
+O        0.0240395772        1.3079590106       -0.1026679777
+H        1.5153583317        1.6667705431        0.8229376934</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722530"/>
+    </displacement>
+    <displacement number="288">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5015874344       -1.6641201926        0.8263922165
+O       -0.0307790046       -1.3197184801       -0.1011210753
+O        0.0230241655        1.3304339443       -0.1151558409
+H        1.5093422734        1.6534047285        0.8314547212</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720268"/>
+    </displacement>
+    <displacement number="289">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5128542160       -1.6630288907        0.8362241973
+O       -0.0132099067       -1.2977553518       -0.1099427649
+O        0.0210715033        1.3149534744       -0.1161756974
+H        1.5049926194        1.6458307680        0.8314642866</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714576"/>
+    </displacement>
+    <displacement number="29">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5223092634       -1.6741194818        0.8220815280
+O       -0.0310053318       -1.3224744393       -0.1062942307
+O        0.0311366183        1.3086101738       -0.0960189124
+H        1.5221779769        1.6879837473        0.8218016367</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78735698"/>
+    </displacement>
+    <displacement number="290">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5040315818       -1.6587389533        0.8244917330
+O       -0.0370648390       -1.3145735710       -0.1091729007
+O        0.0293249660        1.2975165355       -0.1029163199
+H        1.5117714549        1.6757959888        0.8291675091</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720544"/>
+    </displacement>
+    <displacement number="291">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5200727783       -1.6756325837        0.8362505977
+O       -0.0189575660       -1.3165616465       -0.1099581079
+O        0.0268538423        1.3337708763       -0.1161598641
+H        1.5121765020        1.6584233538        0.8314373959</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721340"/>
+    </displacement>
+    <displacement number="292">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5113024362       -1.6715099790        0.8244653222
+O       -0.0429193691       -1.3333237696       -0.1091578027
+O        0.0351469407        1.3162547829       -0.1029309286
+H        1.5190748646        1.6885789657        0.8291934306</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714631"/>
+    </displacement>
+    <displacement number="293">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5224552346       -1.6702759318        0.8344239766
+O       -0.0253028231       -1.3113828267       -0.1181095549
+O        0.0332163108        1.3008646812       -0.1039694053
+H        1.5145417469        1.6807940774        0.8292250051</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720497"/>
+    </displacement>
+    <displacement number="294">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5050885972       -1.6653433208        0.8254138355
+O       -0.0349544108       -1.3249068255       -0.1046288247
+O        0.0349544108        1.3249068255       -0.1046288247
+H        1.5050885972        1.6653433208        0.8254138355</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78711302"/>
+    </displacement>
+    <displacement number="295">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5162942845       -1.6641714910        0.8352944658
+O       -0.0173288274       -1.3029422159       -0.1134972406
+O        0.0329759677        1.3095028988       -0.1056598091
+H        1.5006471442        1.6576108081        0.8254326055</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712012"/>
+    </displacement>
+    <displacement number="296">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5006471442       -1.6576108081        0.8254326055
+O       -0.0329759677       -1.3095028988       -0.1056598091
+O        0.0173288274        1.3029422159       -0.1134972406
+H        1.5162942845        1.6641714910        0.8352944658</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712012"/>
+    </displacement>
+    <displacement number="297">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5235437223       -1.6768146728        0.8353085538
+O       -0.0231253648       -1.3217645027       -0.1135190712
+O        0.0387825910        1.3282364273       -0.1056384259
+H        1.5078864961        1.6703427481        0.8254189648</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712257"/>
+    </displacement>
+    <displacement number="298">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5078864961       -1.6703427481        0.8254189648
+O       -0.0387825910       -1.3282364273       -0.1056384259
+O        0.0231253648        1.3217645027       -0.1135190712
+H        1.5235437223        1.6768146728        0.8353085538</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712257"/>
+    </displacement>
+    <displacement number="299">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5191008573       -1.6691886776        0.8353287013
+O       -0.0212214623       -1.3062982119       -0.1145436905
+O        0.0212214623        1.3062982119       -0.1145436905
+H        1.5191008573        1.6691886776        0.8353287013</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712104"/>
+    </displacement>
+    <displacement number="3">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5009782514       -1.6604352218        0.8450384496
+O       -0.0343508369       -1.3154707832       -0.1242534388
+O        0.0343508369        1.3154707832       -0.1242534388
+H        1.5009782514        1.6604352218        0.8450384496</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78740809"/>
+    </displacement>
+    <displacement number="30">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5276706529       -1.6773590695        0.8146675455
+O       -0.0279875668       -1.3225598528       -0.0988921727
+O        0.0281782941        1.3086588704       -0.0885542663
+H        1.5274799256        1.6912600519        0.8143489151</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78734784"/>
+    </displacement>
+    <displacement number="300">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5015576416       -1.6503210037        0.8264710928
+O       -0.0309122067       -1.3336273231       -0.1111205032
+O        0.0229820156        1.3165534857       -0.1050606592
+H        1.5094878327        1.6673948411        0.8312800911</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720508"/>
+    </displacement>
+    <displacement number="301">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5127725060       -1.6489869488        0.8364385385
+O       -0.0131889183       -1.3116886463       -0.1201536689
+O        0.0210019614        1.3009907933       -0.1060609400
+H        1.5049594629        1.6596848018        0.8313460921</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714342"/>
+    </displacement>
+    <displacement number="302">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5039050305       -1.6723919428        0.8242804431
+O       -0.0370899060       -1.3008130303       -0.0990577321
+O        0.0292102081        1.3112489523       -0.1131278791
+H        1.5117847284        1.6619560208        0.8294751897</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720308"/>
+    </displacement>
+    <displacement number="303">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5199610110       -1.6615338151        0.8364250518
+O       -0.0189659992       -1.3305513345       -0.1201596569
+O        0.0267542847        1.3197524811       -0.1060540096
+H        1.5121727255        1.6723326684        0.8313586363</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78721098"/>
+    </displacement>
+    <displacement number="304">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5112030006       -1.6852179701        0.8242920471
+O       -0.0429166938       -1.3195077996       -0.0990509421
+O        0.0350593270        1.3300433027       -0.1131337382
+H        1.5190603674        1.6746824670        0.8294626548</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714388"/>
+    </displacement>
+    <displacement number="305">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5224079001       -1.6842221730        0.8341163415
+O       -0.0254515602       -1.2975435580       -0.1077918801
+O        0.0331573194        1.3147323709       -0.1141907838
+H        1.5147021409        1.6670333601        0.8294363440</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720735"/>
+    </displacement>
+    <displacement number="306">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5285259787       -1.6941467791        0.8207985689
+O       -0.0390730784       -1.3171244942       -0.1005631711
+O        0.0312835195        1.3137705114       -0.1044185545
+H        1.5363155376        1.6975007618        0.8257531783</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718488"/>
+    </displacement>
+    <displacement number="307">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4954662467       -1.6400486819        0.8396540843
+O       -0.0171439531       -1.3141681363       -0.1184107714
+O        0.0250061055        1.3173296830       -0.1144051449
+H        1.4876040942        1.6368871352        0.8347318535</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78717911"/>
+    </displacement>
+    <displacement number="308">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5274357146       -1.6830344744        0.8220030391
+O       -0.0358666884       -1.3335944627       -0.1067793465
+O        0.0281949128        1.3163591993       -0.1003505445
+H        1.5351074902        1.7002697378        0.8266968734</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715165"/>
+    </displacement>
+    <displacement number="309">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4967720814       -1.6513188545        0.8386073932
+O       -0.0202691029       -1.2977255571       -0.1124099231
+O        0.0282308767        1.3147584866       -0.1184389245
+H        1.4888103076        1.6342859249        0.8338114760</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714019"/>
+    </displacement>
+    <displacement number="31">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5270141631       -1.6776367364        0.8212188475
+O       -0.0370097189       -1.3291692284       -0.1104357846
+O        0.0373994300        1.3015360107       -0.0897798224
+H        1.5266244520        1.7052699540        0.8205667811</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719669"/>
+    </displacement>
+    <displacement number="310">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5306962009       -1.6979877648        0.8208490634
+O       -0.0400097459       -1.3247638006       -0.1000640526
+O        0.0400097459        1.3247638006       -0.1000640526
+H        1.5306962009        1.6979877648        0.8208490634</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715968"/>
+    </displacement>
+    <displacement number="311">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4931943394       -1.6362084830        0.8397231306
+O       -0.0161367953       -1.3063709170       -0.1189381198
+O        0.0161367953        1.3063709170       -0.1189381198
+H        1.4931943394        1.6362084830        0.8397231306</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715045"/>
+    </displacement>
+    <displacement number="312">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5272440684       -1.6968875764        0.8217905756
+O       -0.0359563308       -1.3196341409       -0.0965034573
+O        0.0280151781        1.3302913445       -0.1107230284
+H        1.5351852211        1.6862303728        0.8270059316</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714925"/>
+    </displacement>
+    <displacement number="313">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4965991985       -1.6374181996        0.8387810755
+O       -0.0203391611       -1.3115167956       -0.1224513515
+O        0.0280701039        1.3009385981       -0.1084930348
+H        1.4888682557        1.6479963971        0.8337333324</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713781"/>
+    </displacement>
+    <displacement number="314">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5267749205       -1.6972753819        0.8282048470
+O       -0.0450360195       -1.3263953971       -0.1079687842
+O        0.0372355154        1.3230604156       -0.1118314243
+H        1.5345754246        1.7006103635        0.8331653831</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78706638"/>
+    </displacement>
+    <displacement number="315">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4974302862       -1.6371924367        0.8323017321
+O       -0.0111235275       -1.3047917647       -0.1110567437
+O        0.0189745248        1.3079729811       -0.1070610855
+H        1.4895792890        1.6340112203        0.8273861187</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78705160"/>
+    </displacement>
+    <displacement number="316">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5330596756       -1.6824680399        0.8269503130
+O       -0.0270923135       -1.3226142605       -0.1112166736
+O        0.0272582554        1.3086424094       -0.1008340737
+H        1.5328937337        1.6964398910        0.8266704558</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714470"/>
+    </displacement>
+    <displacement number="317">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4911865282       -1.6519166761        0.8336591121
+O       -0.0290896967       -1.3086971989       -0.1079587132
+O        0.0292362422        1.3224760733       -0.1178956155
+H        1.4910399828        1.6381378017        0.8337652381</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713407"/>
+    </displacement>
+    <displacement number="318">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5363155376       -1.6975007618        0.8257531783
+O       -0.0312835195       -1.3137705114       -0.1044185545
+O        0.0390730784        1.3171244942       -0.1005631711
+H        1.5285259787        1.6941467791        0.8207985689</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78718488"/>
+    </displacement>
+    <displacement number="319">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4876040942       -1.6368871352        0.8347318535
+O       -0.0250061055       -1.3173296830       -0.1144051449
+O        0.0171439531        1.3141681363       -0.1184107714
+H        1.4954662467        1.6400486819        0.8396540843</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78717911"/>
+    </displacement>
+    <displacement number="32">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4967433667       -1.6563017897        0.8396974233
+O       -0.0189532241       -1.3018087185       -0.1089827960
+O        0.0193116019        1.3296756943       -0.1289586155
+H        1.4963849889        1.6284348139        0.8398140098</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719219"/>
+    </displacement>
+    <displacement number="320">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5328937337       -1.6964398910        0.8266704558
+O       -0.0272582554       -1.3086424094       -0.1008340737
+O        0.0270923135        1.3226142605       -0.1112166736
+H        1.5330596756        1.6824680399        0.8269503130</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714470"/>
+    </displacement>
+    <displacement number="321">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4910399828       -1.6381378017        0.8337652381
+O       -0.0292362422       -1.3224760733       -0.1178956155
+O        0.0290896967        1.3086971989       -0.1079587132
+H        1.4911865282        1.6519166761        0.8336591121</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713407"/>
+    </displacement>
+    <displacement number="322">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5323595261       -1.6967466136        0.8331543559
+O       -0.0363103055       -1.3154181552       -0.1123693452
+O        0.0363103055        1.3154181552       -0.1123693452
+H        1.5323595261        1.6967466136        0.8331543559</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709125"/>
+    </displacement>
+    <displacement number="323">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4918037038       -1.6378274063        0.8273567864
+O       -0.0199933826       -1.3157673145       -0.1065717756
+O        0.0199933826        1.3157673145       -0.1065717756
+H        1.4918037038        1.6378274063        0.8273567864</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78707976"/>
+    </displacement>
+    <displacement number="324">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5351852211       -1.6862303728        0.8270059316
+O       -0.0280151781       -1.3302913445       -0.1107230284
+O        0.0359563308        1.3196341409       -0.0965034573
+H        1.5272440684        1.6968875764        0.8217905756</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714925"/>
+    </displacement>
+    <displacement number="325">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4888682557       -1.6479963971        0.8337333324
+O       -0.0280701039       -1.3009385981       -0.1084930348
+O        0.0203391611        1.3115167956       -0.1224513515
+H        1.4965991985        1.6374181996        0.8387810755</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713781"/>
+    </displacement>
+    <displacement number="326">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5318505688       -1.6851900790        0.8278461429
+O       -0.0239013250       -1.3251523059       -0.1070611321
+O        0.0239013250        1.3251523059       -0.1070611321
+H        1.5318505688        1.6851900790        0.8278461429</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712991"/>
+    </displacement>
+    <displacement number="327">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4923893200       -1.6492658462        0.8326936847
+O       -0.0322125463       -1.3060733979       -0.1119086739
+O        0.0322125463        1.3060733979       -0.1119086739
+H        1.4923893200        1.6492658462        0.8326936847</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78711702"/>
+    </displacement>
+    <displacement number="328">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5311811427       -1.6854802221        0.8343859254
+O       -0.0330769823       -1.3319259019       -0.1186476521
+O        0.0331699452        1.3179617522       -0.1083329206
+H        1.5310881798        1.6994443718        0.8341646689</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78705295"/>
+    </displacement>
+    <displacement number="329">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4930227145       -1.6489411848        0.8263343659
+O       -0.0230899809       -1.2993636188       -0.1006306643
+O        0.0231652454        1.3131489366       -0.1106345222
+H        1.4929474500        1.6351558669        0.8265008422</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78703653"/>
+    </displacement>
+    <displacement number="33">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4960913199       -1.6566370215        0.8460506918
+O       -0.0282366630       -1.3086777586       -0.1203085889
+O        0.0284065234        1.3225321183       -0.1302875112
+H        1.4959214595        1.6427826619        0.8461154299</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78734677"/>
+    </displacement>
+    <displacement number="330">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5351074902       -1.7002697378        0.8266968734
+O       -0.0281949128       -1.3163591993       -0.1003505445
+O        0.0358666884        1.3335944627       -0.1067793465
+H        1.5274357146        1.6830344744        0.8220030391</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78715165"/>
+    </displacement>
+    <displacement number="331">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4888103076       -1.6342859249        0.8338114760
+O       -0.0282308767       -1.3147584866       -0.1184389245
+O        0.0202691029        1.2977255571       -0.1124099231
+H        1.4967720814        1.6513188545        0.8386073932</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78714019"/>
+    </displacement>
+    <displacement number="332">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5345754246       -1.7006103635        0.8331653831
+O       -0.0372355154       -1.3230604156       -0.1118314243
+O        0.0450360195        1.3263953971       -0.1079687842
+H        1.5267749205        1.6972753819        0.8282048470</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78706638"/>
+    </displacement>
+    <displacement number="333">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4895792890       -1.6340112203        0.8273861187
+O       -0.0189745248       -1.3079729811       -0.1070610855
+O        0.0111235275        1.3047917647       -0.1110567437
+H        1.4974302862        1.6371924367        0.8323017321</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78705160"/>
+    </displacement>
+    <displacement number="334">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5310881798       -1.6994443718        0.8341646689
+O       -0.0331699452       -1.3179617522       -0.1083329206
+O        0.0330769823        1.3319259019       -0.1186476521
+H        1.5311811427        1.6854802221        0.8343859254</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78705295"/>
+    </displacement>
+    <displacement number="335">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4929474500       -1.6351558669        0.8265008422
+O       -0.0231652454       -1.3131489366       -0.1106345222
+O        0.0230899809        1.2993636188       -0.1006306643
+H        1.4930227145        1.6489411848        0.8263343659</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78703653"/>
+    </displacement>
+    <displacement number="34">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5052127008       -1.6613664490        0.8376768920
+O       -0.0292328919       -1.3138760183       -0.1163971124
+O        0.0370677921        1.3171241895       -0.1124510582
+H        1.4973778005        1.6581182777        0.8327413002</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730175"/>
+    </displacement>
+    <displacement number="35">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5160908387       -1.6680102986        0.8229937533
+O       -0.0230647564       -1.3140200762       -0.1017155209
+O        0.0308830480        1.3172624013       -0.0977654037
+H        1.5082725471        1.6647679736        0.8180571929</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730332"/>
+    </displacement>
+    <displacement number="36">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5079317109       -1.6663147829        0.8377744282
+O       -0.0331075389       -1.3172306868       -0.1175041475
+O        0.0252723832        1.3139572469       -0.1214140612
+H        1.5157668666        1.6695882228        0.8427138020</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730829"/>
+    </displacement>
+    <displacement number="37">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5189747246       -1.6730783354        0.8229342489
+O       -0.0269118268       -1.3173506032       -0.1026624727
+O        0.0190941985        1.3140827642       -0.1065770617
+H        1.5267923530        1.6763461744        0.8278753070</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730675"/>
+    </displacement>
+    <displacement number="38">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5243845624       -1.6764036670        0.8154436276
+O       -0.0239114263       -1.3173980136       -0.0951707310
+O        0.0161014079        1.3141333018       -0.0990892245
+H        1.5321945809        1.6796683788        0.8203863494</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730087"/>
+    </displacement>
+    <displacement number="39">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5204334225       -1.6756119012        0.8228958712
+O       -0.0288588468       -1.3190255763       -0.1031574099
+O        0.0132242801        1.3124648214       -0.1109511587
+H        1.5360679892        1.6821726560        0.8327827189</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78699753"/>
+    </displacement>
+    <displacement number="4">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5228971202       -1.6738404973        0.8155161020
+O       -0.0219860373       -1.3157355264       -0.0947310912
+O        0.0219860373        1.3157355264       -0.0947310912
+H        1.5228971202        1.6738404973        0.8155161020</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78740843"/>
+    </displacement>
+    <displacement number="40">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5038698576       -1.6588927393        0.8376191234
+O       -0.0273191030       -1.3122082763       -0.1158644652
+O        0.0429885986        1.3186789151       -0.1079361018
+H        1.4882003620        1.6524221006        0.8277514652</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78695771"/>
+    </displacement>
+    <displacement number="41">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4996667879       -1.6579917539        0.8449480281
+O       -0.0324135469       -1.3137905832       -0.1236678310
+O        0.0402578542        1.3170413660       -0.1197222557
+H        1.4918224805        1.6547409711        0.8400120802</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78729561"/>
+    </displacement>
+    <displacement number="42">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5058771807       -1.6610514141        0.8312668759
+O       -0.0200810364       -1.3071616474       -0.1050530758
+O        0.0279941102        1.3242306299       -0.1111283198
+H        1.4979641070        1.6439824316        0.8264845412</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725306"/>
+    </displacement>
+    <displacement number="43">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5154249747       -1.6683063809        0.8294689345
+O       -0.0321303008       -1.3206490643       -0.1131309287
+O        0.0399987555        1.3101631090       -0.0990542164
+H        1.5075565200        1.6787923361        0.8242862322</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725001"/>
+    </displacement>
+    <displacement number="44">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5085684041       -1.6659957595        0.8313523524
+O       -0.0238732429       -1.3103744389       -0.1060573532
+O        0.0160726590        1.3211230391       -0.1201567838
+H        1.5163689879        1.6552471593        0.8364318063</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725455"/>
+    </displacement>
+    <displacement number="45">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5183364391       -1.6733778979        0.8294231465
+O       -0.0360582344       -1.3241191319       -0.1141831485
+O        0.0283359965        1.3069236413       -0.1077992588
+H        1.5260586770        1.6905733885        0.8341292824</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725864"/>
+    </displacement>
+    <displacement number="46">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5231059310       -1.6769835416        0.8284894681
+O       -0.0421177622       -1.3308445501       -0.1182866638
+O        0.0346265017        1.2998211460       -0.1015009858
+H        1.5305971914        1.7080069457        0.8328682032</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78710426"/>
+    </displacement>
+    <displacement number="47">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5198089377       -1.6759133825        0.8293909379
+O       -0.0380453868       -1.3258631472       -0.1147302478
+O        0.0225283786        1.3052768247       -0.1121393459
+H        1.5353259458        1.6964997051        0.8390486774</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78695209"/>
+    </displacement>
+    <displacement number="48">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5045482128       -1.6585795183        0.8312158378
+O       -0.0182087736       -1.3055655717       -0.1045722935
+O        0.0339786690        1.3257546065       -0.1065813631
+H        1.4887783174        1.6383904835        0.8215078403</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78691149"/>
+    </displacement>
+    <displacement number="49">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5009948444       -1.6573425316        0.8321919637
+O       -0.0140221567       -1.3002792829       -0.1010503756
+O        0.0221531585        1.3312619209       -0.1170405221
+H        1.4928638426        1.6263598937        0.8274689555</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709478"/>
+    </displacement>
+    <displacement number="5">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5072172139       -1.6635235123        0.8313124477
+O       -0.0219692292       -1.3087646243       -0.1055481379
+O        0.0220254610        1.3226866474       -0.1156534691
+H        1.5071609821        1.6496014892        0.8314591809</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736227"/>
+    </displacement>
+    <displacement number="50">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5015771327       -1.6462101251        0.8388113575
+O       -0.0251835400       -1.3226135647       -0.1229944580
+O        0.0250699669        1.3087258631       -0.1129522260
+H        1.5016907058        1.6600978268        0.8387053480</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78735634"/>
+    </displacement>
+    <displacement number="51">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5126718267       -1.6529553979        0.8240596295
+O       -0.0189318508       -1.3227518453       -0.1082652600
+O        0.0189340131        1.3087945119       -0.0980970834
+H        1.5126696643        1.6669127313        0.8238727354</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736469"/>
+    </displacement>
+    <displacement number="52">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5113538041       -1.6813224374        0.8365687197
+O       -0.0372471338       -1.3084854677       -0.1108094096
+O        0.0372314873        1.3222793205       -0.1209587722
+H        1.5113694506        1.6675285846        0.8367694838</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736512"/>
+    </displacement>
+    <displacement number="53">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5221779769       -1.6879837473        0.8218016367
+O       -0.0311366183       -1.3086101738       -0.0960189124
+O        0.0310053318        1.3224744393       -0.1062942307
+H        1.5223092634        1.6741194818        0.8220815280</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78735698"/>
+    </displacement>
+    <displacement number="54">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5274799256       -1.6912600519        0.8143489151
+O       -0.0281782941       -1.3086588704       -0.0885542663
+O        0.0279875668        1.3225598528       -0.0988921727
+H        1.5276706529        1.6773590695        0.8146675455</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78734784"/>
+    </displacement>
+    <displacement number="55">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5266244520       -1.7052699540        0.8205667811
+O       -0.0373994300       -1.3015360107       -0.0897798224
+O        0.0370097189        1.3291692284       -0.1104357846
+H        1.5270141631        1.6776367364        0.8212188475</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719669"/>
+    </displacement>
+    <displacement number="56">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4963849889       -1.6284348139        0.8398140098
+O       -0.0193116019       -1.3296756943       -0.1289586155
+O        0.0189532241        1.3018087185       -0.1089827960
+H        1.4967433667        1.6563017897        0.8396974233</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78719219"/>
+    </displacement>
+    <displacement number="57">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4959214595       -1.6427826619        0.8461154299
+O       -0.0284065234       -1.3225321183       -0.1302875112
+O        0.0282366630        1.3086777586       -0.1203085889
+H        1.4960913199        1.6566370215        0.8460506918</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78734677"/>
+    </displacement>
+    <displacement number="58">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5023779041       -1.6459453954        0.8323349324
+O       -0.0158975296       -1.3158231758       -0.1115499217
+O        0.0158975296        1.3158231758       -0.1115499217
+H        1.5023779041        1.6459453954        0.8323349324</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78729951"/>
+    </displacement>
+    <displacement number="59">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5118701176       -1.6532018634        0.8306023650
+O       -0.0281311661       -1.3294544478       -0.1197815238
+O        0.0281478872        1.3017037460       -0.0994671830
+H        1.5118533965        1.6809525652        0.8302163634</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731960"/>
+    </displacement>
+    <displacement number="6">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5168751446       -1.6708422142        0.8294490843
+O       -0.0340865035       -1.3223810829       -0.1136500025
+O        0.0341594297        1.3085525240       -0.1034375474
+H        1.5168022183        1.6846707730        0.8292084871</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78736279"/>
+    </displacement>
+    <displacement number="60">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5118533965       -1.6809525652        0.8302163634
+O       -0.0281478872       -1.3017037460       -0.0994671830
+O        0.0281311661        1.3294544478       -0.1197815238
+H        1.5118701176        1.6532018634        0.8306023650</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731960"/>
+    </displacement>
+    <displacement number="61">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5216763699       -1.6883334513        0.8282196191
+O       -0.0401483268       -1.3153066081       -0.1074346083
+O        0.0401483268        1.3153066081       -0.1074346083
+H        1.5216763699        1.6883334513        0.8282196191</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730057"/>
+    </displacement>
+    <displacement number="62">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5264741774       -1.6919394983        0.8272517519
+O       -0.0461155988       -1.3219636261       -0.1114598835
+O        0.0463156265        1.3082309263       -0.1011385106
+H        1.5262741497        1.7056721981        0.8269166638</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713453"/>
+    </displacement>
+    <displacement number="63">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5262741497       -1.7056721981        0.8269166638
+O       -0.0463156265       -1.3082309263       -0.1011385106
+O        0.0461155988        1.3219636261       -0.1114598835
+H        1.5264741774        1.6919394983        0.8272517519</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78713453"/>
+    </displacement>
+    <displacement number="64">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4973351096       -1.6282216119        0.8332812249
+O       -0.0099338400       -1.3228794775       -0.1174694500
+O        0.0097464553        1.3088663560       -0.1074694666
+H        1.4975224944        1.6422347334        0.8332277132</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712981"/>
+    </displacement>
+    <displacement number="65">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4975224944       -1.6422347334        0.8332277132
+O       -0.0097464553       -1.3088663560       -0.1074694666
+O        0.0099338400        1.3228794775       -0.1174694500
+H        1.4973351096        1.6282216119        0.8332812249</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78712981"/>
+    </displacement>
+    <displacement number="66">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5057464225       -1.6470890059        0.8314614528
+O       -0.0201086966       -1.3210146150       -0.1151531682
+O        0.0278756878        1.3103489351       -0.1011242153
+H        1.4979794313        1.6577546859        0.8263859522</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725068"/>
+    </displacement>
+    <displacement number="67">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5085867876       -1.6521139174        0.8314508191
+O       -0.0239578778       -1.3243651462       -0.1161677459
+O        0.0160788533        1.3071613786       -0.1099504690
+H        1.5164658121        1.6693176850        0.8362374174</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725693"/>
+    </displacement>
+    <displacement number="68">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5154256688       -1.6821747813        0.8291804898
+O       -0.0322314066       -1.3068884301       -0.1029236550
+O        0.0399876415        1.3239515301       -0.1091653188
+H        1.5076694339        1.6651116813        0.8244785055</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725241"/>
+    </displacement>
+    <displacement number="69">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5181898077       -1.6871668196        0.8292308117
+O       -0.0361031436       -1.3102230209       -0.1039656811
+O        0.0282010360        1.3207916648       -0.1181128098
+H        1.5260919152        1.6765981757        0.8344177008</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725623"/>
+    </displacement>
+    <displacement number="7">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5022784238       -1.6597818773        0.8322706716
+O       -0.0158759999       -1.3018159575       -0.1015341454
+O        0.0161196319        1.3297511871       -0.1216360985
+H        1.5020347917        1.6318466478        0.8324695939</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720234"/>
+    </displacement>
+    <displacement number="70">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5195885244       -1.6896628698        0.8292472663
+O       -0.0380624363       -1.3118998587       -0.1045079261
+O        0.0223311683        1.3191836457       -0.1225537266
+H        1.5353197924        1.6823790829        0.8393844079</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78694724"/>
+    </displacement>
+    <displacement number="71">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5226864129       -1.7044662248        0.8280116268
+O       -0.0423351373       -1.3031491703       -0.0977464000
+O        0.0342298054        1.3274613357       -0.1222335558
+H        1.5307917448        1.6801540594        0.8335383506</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709941"/>
+    </displacement>
+    <displacement number="72">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5006012586       -1.6293259892        0.8324865580
+O       -0.0142082545       -1.3280752762       -0.1211418009
+O        0.0217847736        1.3034075572       -0.0971408687
+H        1.4930247395        1.6539937083        0.8273661333</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709008"/>
+    </displacement>
+    <displacement number="73">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5043430256       -1.6445765190        0.8314578210
+O       -0.0182076887       -1.3193491151       -0.1146669582
+O        0.0337982983        1.3119139363       -0.0966787179
+H        1.4887524159        1.6520116978        0.8214578766</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78690675"/>
+    </displacement>
+    <displacement number="74">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5029368871       -1.6574892796        0.8377287256
+O       -0.0282521644       -1.3061650677       -0.1169437148
+O        0.0282521644        1.3061650677       -0.1169437148
+H        1.5029368871        1.6574892796        0.8377287256</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733604"/>
+    </displacement>
+    <displacement number="75">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5139076163       -1.6642335273        0.8229668137
+O       -0.0220982650       -1.3062836734       -0.1021818029
+O        0.0220982650        1.3062836734       -0.1021818029
+H        1.5139076163        1.6642335273        0.8229668137</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733405"/>
+    </displacement>
+    <displacement number="76">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5101915361       -1.6702174545        0.8377287256
+O       -0.0340817830       -1.3249295601       -0.1169437148
+O        0.0340817830        1.3249295601       -0.1169437148
+H        1.5101915361        1.6702174545        0.8377287256</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733710"/>
+    </displacement>
+    <displacement number="77">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5211421732       -1.6768812765        0.8229668137
+O       -0.0278721388       -1.3250747341       -0.1021818029
+O        0.0278721388        1.3250747341       -0.1021818029
+H        1.5211421732        1.6768812765        0.8229668137</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733903"/>
+    </displacement>
+    <displacement number="78">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5265070725       -1.6801578778        0.8155161020
+O       -0.0248640674       -1.3251345914       -0.0947310912
+O        0.0248640674        1.3251345914       -0.0947310912
+H        1.5265070725        1.6801578778        0.8155161020</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733499"/>
+    </displacement>
+    <displacement number="79">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5247524074       -1.6832437922        0.8229668137
+O       -0.0307730602       -1.3344616986       -0.1021818029
+O        0.0307730602        1.3344616986       -0.1021818029
+H        1.5247524074        1.6832437922        0.8229668137</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78711923"/>
+    </displacement>
+    <displacement number="8">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5215910015       -1.6744170265        0.8285478421
+O       -0.0401124844       -1.3290441809       -0.1177408044
+O        0.0403855081        1.3014827674       -0.0972105091
+H        1.5213179778        1.7019784401        0.8279734930</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78720651"/>
+    </displacement>
+    <displacement number="80">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4993023894       -1.6511640628        0.8377287256
+O       -0.0253513950       -1.2967741655       -0.1169437148
+O        0.0253513950        1.2967741655       -0.1169437148
+H        1.4993023894        1.6511640628        0.8377287256</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78709570"/>
+    </displacement>
+    <displacement number="81">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4973434693       -1.6540632506        0.8450384496
+O       -0.0314264088       -1.3060925502       -0.1242534388
+O        0.0314264088        1.3060925502       -0.1242534388
+H        1.4973434693        1.6540632506        0.8450384496</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78733156"/>
+    </displacement>
+    <displacement number="82">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5036050298       -1.6572093546        0.8313027315
+O       -0.0190878064       -1.2993739989       -0.1055460680
+O        0.0191291632        1.3132680984       -0.1156559520
+H        1.5035636730        1.6433152551        0.8314693101</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725300"/>
+    </displacement>
+    <displacement number="83">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5132378407       -1.6644947775        0.8294588516
+O       -0.0311759762       -1.3129876465       -0.1136522596
+O        0.0312627691        1.2991874052       -0.1034357062
+H        1.5131510478        1.6782950188        0.8291991357</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731354"/>
+    </displacement>
+    <displacement number="84">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5108247347       -1.6698636659        0.8313221560
+O       -0.0248602653       -1.3181495677       -0.1055502955
+O        0.0249312028        1.3320991784       -0.1156509023
+H        1.5107537972        1.6559140552        0.8314490634</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731662"/>
+    </displacement>
+    <displacement number="85">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5205076331       -1.6772153326        0.8294393271
+O       -0.0370061068       -1.3317687185       -0.1136476572
+O        0.0370653274        1.3179121763       -0.1034394807
+H        1.5204484126        1.6910718749        0.8292178323</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725916"/>
+    </displacement>
+    <displacement number="86">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5252361736       -1.6808064602        0.8285282747
+O       -0.0430458414       -1.3384337443       -0.1177359296
+O        0.0432924467        1.3108159925       -0.0972137302
+H        1.5249895683        1.7084242120        0.8279914066</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78707634"/>
+    </displacement>
+    <displacement number="87">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5241352503       -1.6836139229        0.8294295810
+O       -0.0399344564       -1.3411506246       -0.1136452274
+O        0.0399801309        1.3272664282       -0.1034415022
+H        1.5240895757        1.6974981192        0.8292271702</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78701127"/>
+    </displacement>
+    <displacement number="88">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4999882413       -1.6509214066        0.8312930086
+O       -0.0162163452       -1.2899776261       -0.1055440899
+O        0.0162426562        1.3038434612       -0.1156583471
+H        1.4999619304        1.6370555714        0.8314794500</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78697969"/>
+    </displacement>
+    <displacement number="89">
+        <molecule>
+            <xyz units="bohr">
+H       -1.4986785933       -1.6534845180        0.8322512860
+O       -0.0130096565       -1.2924261349       -0.1015301958
+O        0.0132225233        1.3203059363       -0.1216416943
+H        1.4984657265        1.6256047166        0.8324906256</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78706048"/>
+    </displacement>
+    <displacement number="9">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5106877701       -1.6647064122        0.8303585588
+O       -0.0261167699       -1.3139523570       -0.1090794327
+O        0.0339429909        1.3171977123       -0.1051318627
+H        1.5028615490        1.6614610569        0.8254227582</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78730428"/>
+    </displacement>
+    <displacement number="90">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5070600346       -1.6583724854        0.8303550343
+O       -0.0232107920       -1.3045536981       -0.1090739905
+O        0.0310344845        1.3078213568       -0.1051372483
+H        1.4992363421        1.6551048267        0.8254262262</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722810"/>
+    </displacement>
+    <displacement number="91">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5098684977       -1.6633871303        0.8303815410
+O       -0.0270907805       -1.3079099745       -0.1101127091
+O        0.0192672861        1.3046169996       -0.1140133496
+H        1.5176919921        1.6666801052        0.8353145393</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722890"/>
+    </displacement>
+    <displacement number="92">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5143107263       -1.6710662213        0.8303620493
+O       -0.0290319448       -1.3233451992       -0.1090847207
+O        0.0368606872        1.3265684076       -0.1051266301
+H        1.5064819839        1.6678430130        0.8254193231</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78722640"/>
+    </displacement>
+    <displacement number="93">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5171069012       -1.6760685318        0.8303746904
+O       -0.0328728237       -1.3266743188       -0.1101018318
+O        0.0250442954        1.3234256510       -0.1140243386
+H        1.5249354295        1.6793171996        0.8353215016</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78723596"/>
+    </displacement>
+    <displacement number="94">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5185216872       -1.6785696760        0.8303721268
+O       -0.0348165920       -1.3283484616       -0.1106313232
+O        0.0191597874        1.3218260968       -0.1184408584
+H        1.5341784918        1.6850920407        0.8402700763</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78692947"/>
+    </displacement>
+    <displacement number="95">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5207189999       -1.6824477123        0.8303713131
+O       -0.0357777387       -1.3360480604       -0.1100966203
+O        0.0279467039        1.3328213166       -0.1140296045
+H        1.5285500347        1.6856744561        0.8353249333</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78701759"/>
+    </displacement>
+    <displacement number="96">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5034275779       -1.6520646544        0.8303514756
+O       -0.0203143526       -1.2951491532       -0.1090683919
+O        0.0281355093        1.2984392718       -0.1051427894
+H        1.4956064212        1.6487745358        0.8254297273</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78698872"/>
+    </displacement>
+    <displacement number="97">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5056725278       -1.6558651747        0.8303330337
+O       -0.0212944898       -1.3028852797       -0.1085760330
+O        0.0369420351        1.3093948391       -0.1006663385
+H        1.4900249824        1.6493556154        0.8204793593</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78688728"/>
+    </displacement>
+    <displacement number="98">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5035636730       -1.6433152551        0.8314693101
+O       -0.0191291632       -1.3132680984       -0.1156559520
+O        0.0190878064        1.2993739989       -0.1055460680
+H        1.5036050298        1.6572093546        0.8313027315</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78725300"/>
+    </displacement>
+    <displacement number="99">
+        <molecule>
+            <xyz units="bohr">
+H       -1.5131510478       -1.6782950188        0.8291991357
+O       -0.0312627691       -1.2991874052       -0.1034357062
+O        0.0311759762        1.3129876465       -0.1136522596
+H        1.5132378407        1.6644947775        0.8294588516</xyz>
+        </molecule>
+        <energy type="molecular" value="-150.78731354"/>
+    </displacement>
+</project>
