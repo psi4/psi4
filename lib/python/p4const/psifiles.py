@@ -196,4 +196,7 @@ PSIF_DCC_QSO                =  267  # DFCC 3-index integrals
 PSIF_DCC_SORT_START         =  270  # CEPA/CC integral sort starting file number
 PSIF_SAPT_CCD               =  271  # SAPT2+ CCD Utility File
 PSIF_HESS                   =  272  # Hessian Utility File
+PSIF_OCC_DPD                =  273  # OCC DPD
+PSIF_OCC_DENSITY            =  274  # OCC Density
+PSIF_OCC_IABC               =  275  # OCC out-of-core <IA|BC>
 
