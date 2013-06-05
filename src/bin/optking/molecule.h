@@ -61,13 +61,9 @@ class MOLECULE {
     for (int i=0; i<interfragments.size(); ++i)
       delete interfragments[i];
     interfragments.clear();
-//****AVC****//
-//#if defined(OPTKING_PACKAGE_QCHEM)
     for (int i=0; i<efp_fragments.size(); ++i)
       delete efp_fragments[i];
     efp_fragments.clear();
-//#endif
-//****AVC****//
   }
 
   // if you have one fragment - make sure all atoms are bonded
@@ -80,15 +76,18 @@ class MOLECULE {
 
   int g_nefp_fragment(void) const { return efp_fragments.size(); };
 
-  int g_natom(void) const { // excludes atoms in efp fragments
+  int g_natom(void) const {
     int n = 0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
-
-//****AVC****//
     n += 3*efp_fragments.size();
-//****AVC****//
+    return n;
+  }
 
+  int g_qm_natom(void) const { // excludes efp
+    int n = 0;
+    for (int f=0; f<fragments.size(); ++f)
+      n += fragments[f]->g_natom();
     return n;
   }
 
@@ -124,11 +123,20 @@ class MOLECULE {
     return n;
   }
 
-  // given fragment index returns first atom in that fragment
+  // Given fragment index, returns the index of the first atom in that fragment.
   int g_atom_offset(int index) const {
     int n = 0;
     for (int f=1; f<=index; ++f)
       n += fragments[f-1]->g_natom();
+    return n;
+  }
+
+  // Given the EFP index, returns the index of the first atom of that EFP fragment.
+  int g_efp_atom_offset(int index) const {
+    int n = g_atom_offset(fragments.size()-1);  // Get offset for last fragment
+    if (fragments.size())
+      n += fragments.back()->g_natom();  // Add in atoms for last fragment;
+    n += 3*index;
     return n;
   }
 
@@ -162,10 +170,8 @@ class MOLECULE {
   double g_energy(void) const { return energy; }
 
   void update_connectivity_by_distances(void) {
-printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragments.size());
     for (int i=0; i<fragments.size(); ++i)
       fragments[i]->update_connectivity_by_distances();
-printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragments.size());
   }
 
   void update_connectivity_by_bonds(void) {
@@ -227,14 +233,10 @@ printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragment
     return n;
   }
 
-  // compute intco values from frag member geometries
-  double * intco_values(void) const {
-    GeomType x = g_geom_2D();
-    double *q = intco_values(x);
-    return q;
-  }
+  // Compute intco values from frag member geometries. INCLUDE EFP VALUES.
+  double * intco_values(void) const;
 
-  // compute intco values from given geometry ; empty space for EFP coordinates included
+  // Compute intco values from given geometry ; empty space for EFP coordinates included.
   double * intco_values(GeomType new_geom) const {
     double *q, *q_frag, *q_IF;
     q = init_array(g_nintco());
@@ -292,55 +294,45 @@ printf("\nupdate_connectivity_by_distances(), fragments.size() = %d\n", fragment
   double * g_u_vector(void) const; // reciprocal masses in vector
 
   double * g_geom_array(void) {
-    double *g, *g_frag;
+    double *g = init_array(3*g_natom());
 
-    g = init_array(3*g_natom());
     for (int f=0; f<fragments.size(); ++f) {
-      g_frag = fragments[f]->g_geom_array();
+      double *g_frag = fragments[f]->g_geom_array();
       for (int i=0; i<3*fragments[f]->g_natom(); ++i)
         g[3*g_atom_offset(f)+i] = g_frag[i];
       free_array(g_frag);
     }
 
-//****AVC****//
-    for (int f=0; f<efp_fragments.size(); f++)
-    {
-      g_frag = efp_fragments[f]->get_geom_array();
+    for (int f=0; f<efp_fragments.size(); f++) {
+      double *g_frag = efp_fragments[f]->get_geom_array();
       for (int i=0; i<3*3; i++)
-        g[3*3*f+i] = g_frag[i];
+        g[3*g_efp_atom_offset(f)+i] = g_frag[i];
+      free_array(g_frag);
     }
-//****AVC****//
 
     return g;
   }
 
-  double ** g_geom_2D(void) const {
-    double **g_frag;
-    double **g = init_matrix(g_natom()+3*g_nefp_fragment(),3);
+  double **g_geom_2D(void) const {
+    double **g = init_matrix(g_natom(),3);
 
     for (int f=0; f<fragments.size(); ++f) {
-      g_frag = fragments[f]->g_geom();
+      double **g_frag = fragments[f]->g_geom();
+
       for (int i=0; i<fragments[f]->g_natom(); ++i)
         for (int xyz=0; xyz<3; ++xyz)
           g[g_atom_offset(f)+i][xyz] = g_frag[i][xyz];
+
       free_matrix(g_frag);
     }
-//****AVC****//
-double **g_efp_frag;
-for(int f=0; f<efp_fragments.size(); f++)
-{
-  g_efp_frag = efp_fragments[f]->get_xyz_pointer();
-  for(int i=0; i<3; i++)
-  {
-    for(int xyz=0; xyz<3; xyz++)
-      g[g_atom_offset(fragments.size()-1)+3*f+i][xyz] = g_efp_frag[i][xyz];
-printf("\n%d %d  %15.7f %15.7f %15.7f\n", f, i, g[3*f+i][0], g[3*f+i][1], g[3*f+i][2]);
-  }
-  free_matrix(g_efp_frag);
-}
 
+    for(int f=0; f<efp_fragments.size(); f++) {
+      double **g_efp_frag = efp_fragments[f]->get_xyz_pointer();
 
-//****AVC****//
+      for(int i=0; i<3; i++)
+        for(int xyz=0; xyz<3; xyz++)
+          g[g_efp_atom_offset(f)+i][xyz] = g_efp_frag[i][xyz];
+    }
 
     return g;
   }
@@ -376,29 +368,17 @@ printf("\n%d %d  %15.7f %15.7f %15.7f\n", f, i, g[3*f+i][0], g[3*f+i][1], g[3*f+
   void linesearch_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);
+  void apply_efpfragment_step_limit(double * & dq);
   void check_intrafragment_zero_angles(double const * const dq);
 
   void set_geom_array(double * array_in) {
-printf("\nentering set_geom_array() -- fragments.size() is %d and efp_fragments.size() is %d\n", fragments.size(), efp_fragments.size());
-printf("\n efp_fragments[%d]->get_libmints_geom_index() = %d \n", 0, efp_fragments[0]->get_libmints_geom_index());
-printf("\n efp_fragments[%d]->get_libmints_geom_index() = %d \n", 1, efp_fragments[1]->get_libmints_geom_index());
 
-
-for(int f=0; f<efp_fragments.size(); f++)
-{
-  double * xyz_array = &( array_in[3*efp_fragments[f]->get_libmints_geom_index()] );
-  printf("\nfragment %d:\n", f);
-  for(int i=0; i<3*3; i++)
-    printf("\n %15.8f", xyz_array[i]);
-}
-
+    // These functions copy values so it's OK to pass pointers in
     for (int f=0; f<fragments.size(); ++f)
-      fragments[f]->set_geom_array( &(array_in[3*g_atom_offset(f)]) );
+      fragments[f]->set_geom_array( array_in + 3*g_atom_offset(f) );
+
     for (int f=0; f<efp_fragments.size(); f++)
-    {
-      efp_fragments[f]->set_geom_array( &(array_in[3*efp_fragments[f]->get_libmints_geom_index()]) );
-    }
-printf("\nleaving set_geom_array()\n");
+      efp_fragments[f]->set_geom_array( array_in + 3*g_efp_atom_offset(f) );
   }
 
   void fix_tors_near_180(void) {

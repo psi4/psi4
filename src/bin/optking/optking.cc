@@ -107,11 +107,8 @@ OptReturnType optking(void) {
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
 
-//****AVC****//
-Opt_params.efp_fragments = true;
-if(Opt_params.efp_fragments)
-  p_efp = psi::Process::environment.get_efp();
-//****AVC****//
+  if(Opt_params.efp_fragments)
+    p_efp = psi::Process::environment.get_efp();
 
   if (if_intco.is_open()) { // old internal coordinates are present
 
@@ -132,6 +129,7 @@ if(Opt_params.efp_fragments)
 
     // read geometry and gradient into the existing fragments
     mol1->read_geom_grad();
+fprintf(outfile,"done reading geom and grad\n"); fflush(outfile);
     mol1->set_masses();
 
   }
@@ -141,11 +139,16 @@ if(Opt_params.efp_fragments)
     newly_generated_coordinates = true;
 
     // read number of atoms ; make one fragment of that size ;
-fprintf(outfile,"optking.cc, line 138, read_natoms() = %d", read_natoms());
+    fprintf(outfile,"Creating molecule with %d atoms\n", read_natoms()); fflush(outfile);
     mol1 = new MOLECULE( read_natoms() );
+
+    fprintf(outfile, "Adding EFP fragments to molecule.\n"); fflush(outfile);
+    if (Opt_params.efp_fragments)
+      mol1->add_efp_fragments();
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
+fprintf(outfile,"Done with read_geom_grad()\n"); fflush(outfile);
 
     // Quit nicely if there is only one atom present
     if (mol1->g_natom() == 1) {
@@ -158,13 +161,14 @@ fprintf(outfile, "\njust before mol1->set_masses()\n"); fflush(outfile);
     mol1->set_masses();
 
     // use covalent radii to define bonds
-fprintf(outfile, "\njust before mol1->update_connectivity_by_distances()\n"); fflush(outfile);
     mol1->update_connectivity_by_distances();
+fprintf(outfile, "\ndone with mol1->update_connectivity_by_distances()\n"); fflush(outfile);
 
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
     mol1->fragmentize();
     mol1->print_connectivity(outfile);
+fprintf(outfile, "\ndone with fragmentize and connectivity 1\n"); fflush(outfile);
 
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       mol1->add_intrafragment_simples_by_connectivity();
@@ -200,13 +204,6 @@ fprintf(outfile, "\njust before mol1->update_connectivity_by_distances()\n"); ff
     }
 
   }
-
-#if defined(OPTKING_PACKAGE_QCHEM)
-  if (Opt_params.efp_fragments_only)
-    mol1 = new MOLECULE(0);       // construct an empty molecule
-  if (Opt_params.efp_fragments)
-    mol1->add_efp_fragments();    // add EFP fragments
-#endif
 
   // print geometry and gradient
   mol1->print_geom_grad(outfile);

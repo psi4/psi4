@@ -296,9 +296,6 @@ inline int sign_of_double(double d) {
 // do hessian update
 void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
-printf("\nAttempting H_update");
-printf("\nNintco is %d", Nintco);
-printf("\nNcart is %d\n", Ncart);
 fprintf(outfile, "\nAttempting H_update"); fflush(outfile);
 fprintf(outfile, "\nNintco is %d", Nintco); fflush(outfile);
 fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
@@ -328,11 +325,12 @@ fprintf(outfile, "\nNcart is %d\n", Ncart); fflush(outfile);
   q = mol.intco_values();
   mol.fix_tors_near_180(); // Fix configurations of torsions.
 
-printf("\nforces read in\n");
-fprintf(outfile, "\nforces:\n");
+fprintf(outfile, "\nData for Hessian update:\n");
+fprintf(outfile, "\nCurrent internal values:\n");
+print_array(outfile, q, Nintco); fflush(outfile);
+fprintf(outfile, "\nCurrent internal forces:\n");
 print_array(outfile, f, Nintco); fflush(outfile);
-printf("\ncoords read in\n");
-fprintf(outfile, "\ncoords:\n");
+fprintf(outfile, "\nCurrent coordinates:\n");
 print_array(outfile, x, Ncart); fflush(outfile);
 
   if (Opt_params.H_update_use_last == 0) { // use all available old gradients
@@ -347,7 +345,6 @@ print_array(outfile, x, Ncart); fflush(outfile);
   if ( (step_this-step_start) > steps_since_last_H)
     step_start = step_this - steps_since_last_H;
 
-  printf(" with previous %d gradient(s).\n", step_this-step_start);
   fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start); fflush(outfile);
 
   double *f_old, *x_old, *q_old, *dq, *dg, *tors_through_180;
@@ -365,18 +362,36 @@ print_array(outfile, x, Ncart); fflush(outfile);
     f_old = g_forces_pointer(i_step);
     x_old = g_geom_const_pointer(i_step);
 
-printf("\nold forces read in\n");
-fprintf(outfile, "\nold forces:\n");
+fprintf(outfile, "\nOld internal forces:\n");
 print_array(outfile, f_old, Nintco); fflush(outfile);
-printf("\nold coords read in\n");
-fprintf(outfile, "\nold coords:\n");
+fprintf(outfile, "\nOld cartesian coords:\n");
 print_array(outfile, x_old, Ncart); fflush(outfile);
 
+/* For normal internal coordinates, we recompute the values from the old
+  cartesian coordinates, to minimize problems due to redefinition of 
+  internal coordinates or the corrections for discontinuous changes.  However,
+  for EFP, we arbitrarily set the initial value of the coordinates to 0, so the
+  value is just the change since the beginning of the optimization.  We haven't been
+  storing these in opt_data, so we must compute them from the stored changes. */
     mol.set_geom_array(x_old);
-    q_old = mol.intco_values();  //HOW DO WE HANDLE THIS FOR EFPs?
+    q_old = mol.intco_values();
 
-printf("\nold internals read in\n");
-fprintf(outfile, "\nold internals:\n");
+    if (Opt_params.efp_fragments) {
+      int first = mol.g_efp_fragment_intco_offset(0);
+      for (int i=first; i < Nintco; ++i)
+        q_old[i] = q[i];
+
+      for (int s=i_step; s >= step_start; --s) {  
+        double *q_old_part = g_dq_pointer(s);
+
+fprintf(outfile,"old dq to subtract to calculate old q for EFP\n");
+print_array(outfile, q_old_part, Nintco);
+
+        for (int I=first; I < Nintco; ++I)
+          q_old[I] -= q_old_part[I];
+      }
+    }
+fprintf(outfile, "\nOld internals including efp:\n");
 print_array(outfile, q_old, Nintco); fflush(outfile);
 
     for (i=0;i<Nintco;++i) {
@@ -554,10 +569,6 @@ void STEP_DATA::read(int istep, int Nintco, int Ncart) {
 // read entry from binary file ; file pointer must be in right place for qchem code
 //write entry to binary file
 void STEP_DATA::write(int istep, int Nintco, int Ncart) {
-fprintf(outfile, "\nf_q\n");
-print_array(outfile, f_q, Nintco);
-fprintf(outfile, "\ndq\n");
-print_array(outfile, dq, Nintco);
   char lbl[80];
   sprintf(lbl, "f_q %d", istep);
   opt_io_write_entry(lbl, (char *) f_q, Nintco*sizeof(double));
@@ -641,7 +652,7 @@ void OPT_DATA::write(void) {
   fprintf(outfile,"\tNintco = %d \n", Nintco);
   fprintf(outfile,"\tNcart = %d \n", Ncart);
   fprintf(outfile,"\titeration = %d \n", iteration);
-  fprintf(outfile,"\tsteps.size() = %d \n", steps.size());
+  fprintf(outfile,"\tsteps.size() = %lu \n", steps.size());
   opt_io_write_entry("Nintco", (char *) &Nintco, sizeof(int));
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );

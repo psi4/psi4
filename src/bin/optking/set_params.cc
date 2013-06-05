@@ -311,7 +311,13 @@ void set_params(void)
     // These are not found in psi4/read_options.cc
     // Not sure if we need these.
   Opt_params.efp_fragments = false;
+  if (psi::Process::environment.get_efp()->get_frag_count() > 0)
+    Opt_params.efp_fragments = true;
+
+  /* For now, nothing mixed. */
   Opt_params.efp_fragments_only = false;
+  if ( Opt_params.efp_fragments )
+    Opt_params.efp_fragments_only = true;
 
 //IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
