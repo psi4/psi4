@@ -396,7 +396,7 @@ TAGL['%s-%s-reagent'            % (dbse, 'ch3cch'                )] = """ """
 TAGL['%s-%s-reagent'            % (dbse, 'ch3'                   )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'h2'                    )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'ch3chch2'              )] = """ """   
-TAGL['%s-%s-reagent'            % (dbse, 'cfhch2'                )] = """ """   
+TAGL['%s-%s-reagent'            % (dbse, 'chfch2'                )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'h'                     )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'isobutane'             )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'ch2cho'                )] = """ """   
@@ -584,7 +584,7 @@ H          1.30167000       1.30642000       0.00021000
 units angstrom
 """)
 
-GEOS['%s-%s-%s' % (dbse, 'cfhch2', 'reagent')] = qcdb.Molecule("""
+GEOS['%s-%s-%s' % (dbse, 'chfch2', 'reagent')] = qcdb.Molecule("""
 0 1
 F          1.15776000      -0.22307000       0.00001000
 C         -0.02076000       0.43302000      -0.00002000
