@@ -221,6 +221,10 @@ Bibliography
    U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill
    *J. Chem. Phys.* **135**, 104103 (2011).
 
+.. [Bozkaya:2013:omp2grad]
+   U. Bozkaya and C. D. Sherrill
+   *J. Chem. Phys.* **138**, 184103 (2013).
+
 .. [Bozkaya:2011:omp3]
    U. Bozkaya,
    *J. Chem. Phys.* **135**, 224103 (2011).
