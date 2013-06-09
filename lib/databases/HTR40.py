@@ -387,7 +387,7 @@ TAGL['%s-%s-reagent'            % (dbse, 'ch3cho'                )] = """ """
 TAGL['%s-%s-reagent'            % (dbse, 'ch2cn'                 )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'c2h4'                  )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'ch2chcn'               )] = """ """   
-TAGL['%s-%s-reagent'            % (dbse, 'hcc'                   )] = """ """  
+TAGL['%s-%s-reagent'            % (dbse, 'c2h'                   )] = """ """  
 TAGL['%s-%s-reagent'            % (dbse, 'ch4'                   )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'c2h3'                  )] = """ """   
 TAGL['%s-%s-reagent'            % (dbse, 'ch3cn'                 )] = """ """   
@@ -490,7 +490,7 @@ H         -0.75076000       1.57438000       0.00050000
 units angstrom
 """)
 
-GEOS['%s-%s-%s' % (dbse, 'hcc', 'reagent')] = qcdb.Molecule("""
+GEOS['%s-%s-%s' % (dbse, 'c2h', 'reagent')] = qcdb.Molecule("""
 0 2
 C          0.00000000       0.00000000       0.00000000
 C          1.21283562       0.00000000       0.00000000
