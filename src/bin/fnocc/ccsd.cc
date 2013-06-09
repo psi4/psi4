@@ -264,7 +264,11 @@ double CoupledCluster::compute_energy() {
 
      // now there should be space for t2
      if (t2_on_disk){
-        tb = (double*)malloc(o*o*v*v*sizeof(double));
+         tb = (double*)malloc(o*o*v*v*sizeof(double));
+         boost::shared_ptr<PSIO> psio (new PSIO());
+         psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+         psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tb[0],o*o*v*v*sizeof(double));
+         psio->close(PSIF_DCC_T2,1);
      }
 
      bool do_cc = !options_.get_bool("RUN_MP4") && !options_.get_bool("RUN_MP3");
@@ -382,7 +386,7 @@ PsiReturnType CoupledCluster::CCSDIterations() {
   long int o = ndoccact;
   long int v = nvirt;
 
-  int iter              = 0;
+  iter                  = 0;
   int diis_iter         = 0;
   int replace_diis_iter = 1;
   double nrm            = 1.0;
@@ -455,8 +459,8 @@ PsiReturnType CoupledCluster::CCSDIterations() {
 
       // diis extrapolation
       if (diis_iter > 1){
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
       eccsd = CheckEnergy();
@@ -1899,6 +1903,65 @@ void CoupledCluster::UpdateT1(long int iter){
    SCS functions.  get energy in terms of spin components
 
 ================================================================*/
+void DFCoupledCluster::Local_SCS_MP2(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+
+  boost::shared_ptr<PSIO> psio(new PSIO());
+
+  // df (ia|bj) formerly E2klcd
+  F_DGEMM('n','t',o*v,o*v,nQ,1.0,Qov,o*v,Qov,o*v,0.0,tempt,o*v);
+
+  SharedMatrix Rii = reference_wavefunction_->CIMTransformationMatrix();
+  // the dimension of the Rii transformation matrix:
+  int nocc = Rii->colspi()[0];
+  double**Rii_pointer = Rii->pointer();
+  // transform E2iajb back from quasi-canonical basis
+  F_DGEMM('N','T',v*v*o,o,o,1.0,tempt,v*v*o,&Rii_pointer[0][0],nocc,0.0,integrals,v*v*o);
+
+  if (t2_on_disk){
+     psio->open(PSIF_DCC_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_DCC_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_DCC_T2,1);
+     tb = tempv;
+  }
+  // transform t2 back from quasi-canonical basis
+  F_DGEMM('N','N',o,v*v*o,o,1.0,&Rii_pointer[0][0],nocc,tb,o,0.0,tempt,o);
+  // resort t(abji) -> t(abij)
+  for (int ab = 0; ab < v*v; ab++){
+      for (int i = 0; i < o; i++){
+          for (int j = 0; j < o; j++){
+              I1[i*o+j] = tempt[ab*o*o+j*o+i];
+          }
+      }
+      F_DCOPY(o*o,I1,1,tempt+ab*o*o,1);
+  }
+
+  // energy
+  SharedVector factor = reference_wavefunction_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+  for (int b = o; b < rs; b++){
+      for (int a = o; a < rs; a++){
+          for (int i = 0; i < o; i++){
+              for (int j = 0; j < o; j++){
+                  long int iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  long int ijab = (b-o)*o*o*v+(a-o)*o*o+i*o+j;
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])*factor_pointer[i];
+              }
+          }
+      }
+  }
+  emp2_os = osenergy;
+  emp2_ss = ssenergy;
+  emp2 = emp2_os + emp2_ss;
+
+  psio.reset();
+}
 void DFCoupledCluster::Local_SCS_CCSD(){
 
   long int v = nvirt;
@@ -2477,8 +2540,6 @@ double DFCoupledCluster::compute_energy() {
   // free some memory!
   free(Fij);
   free(Fab);
-  //free(Fia);
-  //free(Fai);
   free(Qmo);
   free(Abij);
   free(Sbij);
@@ -2510,7 +2571,7 @@ double DFCoupledCluster::compute_energy() {
       long int o = ndoccact;
       long int v = nvirt;
 
-      if (!isLowMemory) {
+      if (!isLowMemory && !reference_wavefunction_->isCIM() ) {
           // write (ov|vv) integrals, formerly E2abci, for (t)
           double *tempq = (double*)malloc(v*nQ*sizeof(double));
           // the buffer integrals was at least 2v^3, so these should definitely fit.
@@ -2605,8 +2666,9 @@ double DFCoupledCluster::compute_energy() {
       tstart();
 
       ccmethod = 0;
-      if (isLowMemory) status = lowmemory_triples();
-      else             status = triples();
+      if (isLowMemory)                           status = lowmemory_triples();
+      else if (reference_wavefunction_->isCIM()) status = local_triples();
+      else                                       status = triples();
 
       if (status == Failure){
          throw PsiException(
@@ -2722,8 +2784,8 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
 
       // diis extrapolation
       if (diis_iter>2) {
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
 
@@ -2752,7 +2814,7 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       }
 
       if (diis_iter<=maxdiis) diis_iter++;
-      //if (replace_diis_iter<maxdiis) replace_diis_iter++;
+      //else if (replace_diis_iter<maxdiis) replace_diis_iter++;
       //else replace_diis_iter = 1;
 
       time_t iter_stop = time(NULL);
@@ -2762,7 +2824,11 @@ PsiReturnType DFCoupledCluster::CCSDIterations() {
       iter++;
       if (iter==1){
          emp2 = eccsd;
-         SCS_MP2();
+         if ( reference_wavefunction_->isCIM() ) {
+             Local_SCS_MP2();
+         }else {
+             SCS_MP2();
+         }
       }
 
       // energy and amplitude convergence check
@@ -3298,7 +3364,7 @@ void DFCoupledCluster::AllocateMemory() {
 
   double total_memory = dim+(o*o*v*v+o*v)+(o*(o+1)*v*(v+1)+o*v)+o*o*v*v+2.*o*v+2.*v*v;
   long int max = nvirt*nvirt*nQmax > (nfzv+ndocc+nvirt)*ndocc*nQmax ? nvirt*nvirt*nQmax : (nfzv+ndocc+nvirt)*ndocc*nQmax;
-  double df_memory    = nQ*(o*o+o*v)+max;
+  double df_memory    = nQ*(o*o+o*v)+max + nso*nso*nQmax;
 
   total_memory       *= 8./1024./1024.;
   df_memory          *= 8./1024./1024.;
@@ -4172,8 +4238,8 @@ PsiReturnType CoupledPair::CEPAIterations(){
 
       // diis extrapolation
       if (diis_iter>1){
-         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v);
-         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v);
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,o*o*v*v+o*v,replace_diis_iter);
+         else                   DIIS(diisvec,maxdiis,o*o*v*v+o*v,replace_diis_iter);
          DIISNewAmplitudes(diis_iter,replace_diis_iter);
       }
       // if cepa_no_singles, zero t1

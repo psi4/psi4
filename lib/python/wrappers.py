@@ -985,7 +985,7 @@ def database(name, db_name, **kwargs):
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
-    if re.match(r'^sapt', lowername):
+    if re.match(r'^sapt', lowername) or re.match(r'^.*sapt', lowername):
         try:
             database.ACTV_SA
         except AttributeError:

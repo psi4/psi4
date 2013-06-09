@@ -78,7 +78,7 @@ public:
     int sum() const;
     int max() const;
 
-    void print(FILE* out=outfile) const;
+    void print() const;
 
     // Only used for python
     const int& get(int i) const { return blocks_[i]; }

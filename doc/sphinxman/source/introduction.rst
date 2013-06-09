@@ -234,7 +234,8 @@ Orbital-optimized second-order perturbation theory (OMP2)
 
 * "Analytic energy gradients for the orbital-optimized second-order 
   M\ |o_slash|\ ller--Plesset perturbation theory," U. Bozkaya and 
-  C. D. Sherrill, (unpublished).
+  C. D. Sherrill, *J. Chem. Phys.* **138**, 184103 (2013).
+  (doi: `10.1063/1.4803662 <http://dx.doi.org/10.1063/1.4803662>`_).
 
 Orbital-optimized third-order perturbation theory (OMP3)
 

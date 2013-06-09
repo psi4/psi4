@@ -55,6 +55,79 @@ ASAPT::~ASAPT()
 void ASAPT::common_init()
 {
 }
+boost::shared_ptr<ASAPT> ASAPT::build(boost::shared_ptr<Wavefunction> d,
+                                      boost::shared_ptr<Wavefunction> mA,
+                                      boost::shared_ptr<Wavefunction> mB,
+                                      boost::shared_ptr<Wavefunction> eA,
+                                      boost::shared_ptr<Wavefunction> eB)
+{
+    Options& options = Process::environment.options;
+
+    ASAPT* sapt = new ASAPT();
+
+    sapt->population_type_ = options.get_str("ASAPT_POPULATION_TYPE");
+    
+    sapt->elst_primary_A_ = eA->basisset();
+    sapt->elst_primary_B_ = eB->basisset();
+    sapt->elst_Cocc_A_    = eA->Ca_subset("AO","OCC");
+    sapt->elst_Cocc_B_    = eB->Ca_subset("AO","OCC");
+
+    sapt->print_ = options.get_int("PRINT");
+    sapt->debug_ = options.get_int("DEBUG");
+    sapt->bench_ = options.get_int("BENCH");
+
+    sapt->memory_ = (unsigned long int)(Process::environment.get_memory() * options.get_double("SAPT_MEM_FACTOR") * 0.125);
+
+    sapt->cpks_maxiter_ = options.get_int("MAXITER");
+    sapt->cpks_delta_ = options.get_double("D_CONVERGENCE");
+
+    sapt->dimer_     = d->molecule();
+    sapt->monomer_A_ = mA->molecule();
+    sapt->monomer_B_ = mB->molecule();
+
+    sapt->E_dimer_     = d->reference_energy();
+    sapt->E_monomer_A_ = mA->reference_energy();
+    sapt->E_monomer_B_ = mB->reference_energy();
+
+    sapt->primary_   = d->basisset();
+    sapt->primary_A_ = mA->basisset();
+    sapt->primary_B_ = mB->basisset();
+
+    if (sapt->primary_A_->nbf() != sapt->primary_B_->nbf() || sapt->primary_->nbf() != sapt->primary_A_->nbf()) {
+        throw PSIEXCEPTION("Monomer-centered bases not allowed in DFT-SAPT");
+    }
+
+    sapt->Cocc_A_     = mA->Ca_subset("AO","OCC");
+    sapt->Cvir_A_     = mA->Ca_subset("AO","VIR");
+    sapt->eps_occ_A_  = mA->epsilon_a_subset("AO","OCC");
+    sapt->eps_vir_A_  = mA->epsilon_a_subset("AO","VIR");
+
+    sapt->Caocc_A_    = mA->Ca_subset("AO","ACTIVE_OCC");
+    sapt->Cavir_A_    = mA->Ca_subset("AO","ACTIVE_VIR");
+
+    sapt->eps_focc_A_ = mA->epsilon_a_subset("AO","FROZEN_OCC");
+    sapt->eps_aocc_A_ = mA->epsilon_a_subset("AO","ACTIVE_OCC");
+    sapt->eps_avir_A_ = mA->epsilon_a_subset("AO","ACTIVE_VIR");
+    sapt->eps_fvir_A_ = mA->epsilon_a_subset("AO","FROZEN_VIR");
+
+    sapt->Cocc_B_     = mB->Ca_subset("AO","OCC");
+    sapt->Cvir_B_     = mB->Ca_subset("AO","VIR");
+    sapt->eps_occ_B_  = mB->epsilon_a_subset("AO","OCC");
+    sapt->eps_vir_B_  = mB->epsilon_a_subset("AO","VIR");
+
+    sapt->Caocc_B_    = mB->Ca_subset("AO","ACTIVE_OCC");
+    sapt->Cavir_B_    = mB->Ca_subset("AO","ACTIVE_VIR");
+
+    sapt->eps_focc_B_ = mB->epsilon_a_subset("AO","FROZEN_OCC");
+    sapt->eps_aocc_B_ = mB->epsilon_a_subset("AO","ACTIVE_OCC");
+    sapt->eps_avir_B_ = mB->epsilon_a_subset("AO","ACTIVE_VIR");
+    sapt->eps_fvir_B_ = mB->epsilon_a_subset("AO","FROZEN_VIR");
+
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    sapt->mp2fit_ = BasisSet::construct(parser, sapt->dimer_, "DF_BASIS_SAPT");
+
+    return boost::shared_ptr<ASAPT>(sapt);
+}
 double ASAPT::compute_energy()
 {
     energies_["HF"] = E_dimer_ - E_monomer_A_ - E_monomer_B_; // TODO: get dHF loaded correctly
@@ -201,7 +274,7 @@ void ASAPT::localize()
     boost::shared_ptr<Localizer> localB = Localizer::build(primary_, Cocc_B_, Process::environment.options);
     localB->localize();
     Locc_B_ = localB->L();
-    Uocc_B_ = localB->U();;
+    Uocc_B_ = localB->U();
 
     fflush(outfile);
 }
@@ -211,8 +284,8 @@ void ASAPT::populate()
 
     // => Sizing <= //
 
-    int na = Caocc_A_->colspi()[0];
-    int nb = Caocc_B_->colspi()[0];
+    int na = Cocc_A_->colspi()[0];
+    int nb = Cocc_B_->colspi()[0];
 
     int nA = 0;
     std::vector<int> cA;
@@ -359,7 +432,7 @@ void ASAPT::populate()
         fprintf(outfile,"\n");
     }
     if (print_ >= 1) {
-        fprintf(outfile,"    Ghost populations for Monomoer A:\n");
+        fprintf(outfile,"    Ghost populations for Monomer A:\n");
         for (int a = 0; a < na; a++) {
             fprintf(outfile,"    %4d %11.3E\n", a+1, normA[a]);
         } 
@@ -367,7 +440,7 @@ void ASAPT::populate()
 
         fprintf(outfile,"    Ghost populations for Monomer B:\n");
         for (int b = 0; b < nb; b++) {
-            fprintf(outfile,"    %4d %11.3E\n", b+1, normA[b]);
+            fprintf(outfile,"    %4d %11.3E\n", b+1, normB[b]);
         } 
         fprintf(outfile,"\n");
     }
@@ -390,9 +463,10 @@ void ASAPT::elst()
 
     // ==> Sizing <== //
 
-    int nn = primary_->nbf();
-    int na = Caocc_A_->colspi()[0];
-    int nb = Caocc_B_->colspi()[0];
+    int nn  = primary_->nbf();
+
+    int na = Cocc_A_->colspi()[0];
+    int nb = Cocc_B_->colspi()[0];
 
     int nA = 0;
     std::vector<int> cA;
@@ -412,79 +486,64 @@ void ASAPT::elst()
         }
     }
 
-    int nr = Cavir_A_->colspi()[0];
-    int ns = Cavir_B_->colspi()[0];
+    int nr = Cvir_A_->colspi()[0];
+    int ns = Cvir_B_->colspi()[0];
 
     // ==> DF ERI Setup (JKFIT Type, in Local Basis) <== //    
 
-    std::vector<int> mAlist;
-    std::vector<int> mBlist;
-    std::vector<int> nlist;
-    mAlist.push_back(0);
-    mBlist.push_back(1);
+    boost::shared_ptr<BasisSet> elstA = elst_primary_A_;
+    boost::shared_ptr<BasisSet> elstB = elst_primary_B_;
 
-    dimer_->set_orientation_fixed(true);
-    dimer_->set_com_fixed(true);
-    boost::shared_ptr<Molecule> mA = dimer_->extract_subsets(mAlist,nlist);
-    boost::shared_ptr<Molecule> mB = dimer_->extract_subsets(mBlist,nlist);
+    boost::shared_ptr<Molecule> mA = elstA->molecule();
+    boost::shared_ptr<Molecule> mB = elstB->molecule();
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> jkfitA = BasisSet::construct(parser, mA, "DF_BASIS_ELST");
     boost::shared_ptr<BasisSet> jkfitB = BasisSet::construct(parser, mB, "DF_BASIS_ELST");
+    int nnA = elstA->nbf();
+    int nnB = elstB->nbf();
     int nQA = jkfitA->nbf();
     int nQB = jkfitB->nbf();
 
     //mA->print();
     //mB->print();
     
-    boost::shared_ptr<DFERI> dfA = DFERI::build(primary_,jkfitA,Process::environment.options);
+    boost::shared_ptr<DFERI> dfA = DFERI::build(elstA,jkfitA,Process::environment.options);
     dfA->clear();
     std::vector<boost::shared_ptr<Matrix> > CsA;
-    CsA.push_back(Cocc_A_);
-    CsA.push_back(Cocc_B_);
-    CsA.push_back(Cvir_B_);
+    CsA.push_back(elst_Cocc_A_);
     boost::shared_ptr<Matrix> CallA = Matrix::horzcat(CsA);
     CsA.clear();
     dfA->set_C(CallA);
     dfA->set_memory(memory_);
     int offsetA = 0;
     dfA->add_space("a",offsetA,offsetA + na); offsetA += na;
-    dfA->add_space("b",offsetA,offsetA + nb); offsetA += nb;
-    dfA->add_space("s",offsetA,offsetA + ns); offsetA += ns;
     dfA->add_pair_space("Aaa2", "a", "a", -1.0);
-    dfA->add_pair_space("Vbs2", "b", "s", 0.0);
-    dfA->set_keep_raw_integrals(true);
     fprintf(outfile,"  ==> Local DF for Monomer A <==\n\n");
+    elstA->print();
     dfA->print_header();
     dfA->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsA = dfA->ints();
     boost::shared_ptr<Tensor> AaaT = intsA["Aaa2"];
-    boost::shared_ptr<Tensor> VbsT = intsA["Vbs2_temp"]; // (P|bs) striping
     dfA.reset();
 
-    boost::shared_ptr<DFERI> dfB = DFERI::build(primary_,jkfitB,Process::environment.options);
+    boost::shared_ptr<DFERI> dfB = DFERI::build(elstB,jkfitB,Process::environment.options);
     dfB->clear();
     std::vector<boost::shared_ptr<Matrix> > CsB;
-    CsB.push_back(Cocc_B_);
-    CsB.push_back(Cocc_A_);
-    CsB.push_back(Cvir_A_);
+    CsB.push_back(elst_Cocc_B_);
     boost::shared_ptr<Matrix> CallB = Matrix::horzcat(CsB);
     CsB.clear();
     dfB->set_C(CallB);
     dfB->set_memory(memory_);
     int offsetB = 0;
     dfB->add_space("b",offsetB,offsetB + nb); offsetB += nb;
-    dfB->add_space("a",offsetB,offsetB + na); offsetB += na;
-    dfB->add_space("r",offsetB,offsetB + nr); offsetB += nr;
     dfB->add_pair_space("Abb2", "b", "b", -1.0);
-    dfB->add_pair_space("Var2", "a", "r", 0.0);
-    dfB->set_keep_raw_integrals(true);
     fprintf(outfile,"  ==> Local DF for Monomer B <==\n\n");
+    elstB->print();
     dfB->print_header();
     dfB->compute();
     std::map<std::string, boost::shared_ptr<Tensor> >& intsB = dfB->ints();
     boost::shared_ptr<Tensor> AbbT = intsB["Abb2"];
-    boost::shared_ptr<Tensor> VarT = intsB["Var2_temp"]; // (Q|ar) striping
     dfB.reset();
 
     // ==> DF Nuclear Potential Setup (JKFIT Type, in Local Basis) <== //
@@ -700,6 +759,48 @@ void ASAPT::elst()
 
     // => Electronic Part <= //
 
+    boost::shared_ptr<DFERI> df2A = DFERI::build(primary_,jkfitB,Process::environment.options);
+    df2A->clear();
+    std::vector<boost::shared_ptr<Matrix> > Cs2A;
+    Cs2A.push_back(Cocc_A_);
+    Cs2A.push_back(Cvir_A_);
+    boost::shared_ptr<Matrix> Call2A = Matrix::horzcat(Cs2A);
+    Cs2A.clear();
+    df2A->set_C(Call2A);
+    df2A->set_memory(memory_);
+    int offset2A = 0;
+    df2A->add_space("a",offset2A,offset2A + na); offset2A += na;
+    df2A->add_space("r",offset2A,offset2A + nr); offset2A += nr;
+    df2A->add_pair_space("Aar2", "a", "r", 0.0);
+    df2A->set_keep_raw_integrals(true);
+    fprintf(outfile,"  ==> Electronic ESP for Monomer A <==\n\n");
+    df2A->print_header();
+    df2A->compute();
+    std::map<std::string, boost::shared_ptr<Tensor> >& ints2A = df2A->ints();
+    boost::shared_ptr<Tensor> VarT = ints2A["Aar2_temp"];
+    df2A.reset();
+
+    boost::shared_ptr<DFERI> df2B = DFERI::build(primary_,jkfitA,Process::environment.options);
+    df2B->clear();
+    std::vector<boost::shared_ptr<Matrix> > Cs2B;
+    Cs2B.push_back(Cocc_B_);
+    Cs2B.push_back(Cvir_B_);
+    boost::shared_ptr<Matrix> Call2B = Matrix::horzcat(Cs2B);
+    Cs2B.clear();
+    df2B->set_C(Call2B);
+    df2B->set_memory(memory_);
+    int offset2B = 0;
+    df2B->add_space("b",offset2B,offset2B + nb); offset2B += nb;
+    df2B->add_space("s",offset2B,offset2B + ns); offset2B += ns;
+    df2B->add_pair_space("Abs2", "b", "s", 0.0);
+    df2B->set_keep_raw_integrals(true);
+    fprintf(outfile,"  ==> Electronic ESP for Monomer B <==\n\n");
+    df2B->print_header();
+    df2B->compute();
+    std::map<std::string, boost::shared_ptr<Tensor> >& ints2B = df2B->ints();
+    boost::shared_ptr<Tensor> VbsT = ints2B["Abs2_temp"];
+    df2B.reset();
+
     FILE* Vbsf = VbsT->file_pointer();
     fseek(Vbsf,0L,SEEK_SET);
     boost::shared_ptr<Matrix> Jbs(new Matrix("Jbs",nb,ns));
@@ -754,8 +855,8 @@ void ASAPT::exch()
     // ==> Sizing <== //
 
     int nn = primary_->nbf();
-    int na = Caocc_A_->colspi()[0];
-    int nb = Caocc_B_->colspi()[0];
+    int na = Cocc_A_->colspi()[0];
+    int nb = Cocc_B_->colspi()[0];
 
     int nA = 0;
     std::vector<int> cA;
@@ -775,8 +876,8 @@ void ASAPT::exch()
         }
     }
 
-    int nr = Cavir_A_->colspi()[0];
-    int ns = Cavir_B_->colspi()[0];
+    int nr = Cvir_A_->colspi()[0];
+    int ns = Cvir_B_->colspi()[0];
 
     // ==> Stack Variables <== //
 
@@ -799,9 +900,9 @@ void ASAPT::exch()
 
     std::vector<boost::shared_ptr<Matrix> > Cs;
     Cs.push_back(L_A);
-    Cs.push_back(Cavir_A_);
+    Cs.push_back(Cvir_A_);
     Cs.push_back(L_B);
-    Cs.push_back(Cavir_B_);
+    Cs.push_back(Cvir_B_);
     boost::shared_ptr<Matrix> Call = Matrix::horzcat(Cs);
     Cs.clear();
 
@@ -809,10 +910,10 @@ void ASAPT::exch()
     df->set_memory(memory_);
 
     int offset = 0;
-    df->add_space("a",offset,offset+Caocc_A_->colspi()[0]); offset += Caocc_A_->colspi()[0];
-    df->add_space("r",offset,offset+Cavir_A_->colspi()[0]); offset += Cavir_A_->colspi()[0];
-    df->add_space("b",offset,offset+Caocc_B_->colspi()[0]); offset += Caocc_B_->colspi()[0];
-    df->add_space("s",offset,offset+Cavir_B_->colspi()[0]); offset += Cavir_B_->colspi()[0];
+    df->add_space("a",offset,offset+Cocc_A_->colspi()[0]); offset += Cocc_A_->colspi()[0];
+    df->add_space("r",offset,offset+Cvir_A_->colspi()[0]); offset += Cvir_A_->colspi()[0];
+    df->add_space("b",offset,offset+Cocc_B_->colspi()[0]); offset += Cocc_B_->colspi()[0];
+    df->add_space("s",offset,offset+Cvir_B_->colspi()[0]); offset += Cvir_B_->colspi()[0];
 
     df->add_pair_space("Aaa", "a", "a");
     df->add_pair_space("Abb", "b", "b");
@@ -1007,8 +1108,8 @@ void ASAPT::ind()
 
     int nn = primary_->nbf();
 
-    int na = Caocc_A_->colspi()[0];
-    int nb = Caocc_B_->colspi()[0];
+    int na = Cocc_A_->colspi()[0];
+    int nb = Cocc_B_->colspi()[0];
     int nA = 0;
     std::vector<int> cA;
     for (int A = 0; A < monomer_A_->natom(); A++) {
@@ -1027,8 +1128,8 @@ void ASAPT::ind()
         }
     }
 
-    int nr = Cavir_A_->colspi()[0];
-    int ns = Cavir_B_->colspi()[0];
+    int nr = Cvir_A_->colspi()[0];
+    int ns = Cvir_B_->colspi()[0];
     int nQ = mp2fit_->nbf();
     size_t naQ = na * (size_t) nQ;
     size_t nbQ = nb * (size_t) nQ;
@@ -1250,8 +1351,15 @@ void ASAPT::disp()
 
     int nn = primary_->nbf();
 
-    int na = Caocc_A_->colspi()[0];
-    int nb = Caocc_B_->colspi()[0];
+    int naa = Caocc_A_->colspi()[0];
+    int nab = Caocc_B_->colspi()[0];
+
+    int na  = Locc_A_->colspi()[0]; 
+    int nb  = Locc_B_->colspi()[0]; 
+
+    int nfa = na - naa;
+    int nfb = nb - nab;
+
     int nA = 0;
     std::vector<int> cA;
     for (int A = 0; A < monomer_A_->natom(); A++) {
@@ -1273,8 +1381,8 @@ void ASAPT::disp()
     int nr = Cavir_A_->colspi()[0];
     int ns = Cavir_B_->colspi()[0];
     int nQ = mp2fit_->nbf();
-    size_t naQ = na * (size_t) nQ;
-    size_t nbQ = nb * (size_t) nQ;
+    size_t naQ = naa * (size_t) nQ;
+    size_t nbQ = nab * (size_t) nQ;
 
     int nT = 1;
     #ifdef _OPENMP
@@ -1538,7 +1646,7 @@ void ASAPT::disp()
         throw PSIEXCEPTION("Too little static memory for DFTSAPT::mp2_terms");
     }
 
-    long int cost_r = 2L * na * nQ + 2L * nb * nQ;
+    long int cost_r = 2L * naa * nQ + 2L * nab * nQ;
     long int max_r = rem / (2L * cost_r);
     long int max_s = max_r;
     max_r = (max_r > nr ? nr : max_r);
@@ -1549,14 +1657,14 @@ void ASAPT::disp()
 
     // => Tensor Slices <= //
 
-    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_r*na,nQ));
-    boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_s*nb,nQ));
-    boost::shared_ptr<Matrix> Bas(new Matrix("Bas",max_s*na,nQ));
-    boost::shared_ptr<Matrix> Bbr(new Matrix("Bbr",max_r*nb,nQ));
-    boost::shared_ptr<Matrix> Cas(new Matrix("Cas",max_s*na,nQ));
-    boost::shared_ptr<Matrix> Cbr(new Matrix("Cbr",max_r*nb,nQ));
-    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",max_r*na,nQ));
-    boost::shared_ptr<Matrix> Dbs(new Matrix("Dbs",max_s*nb,nQ));
+    boost::shared_ptr<Matrix> Aar(new Matrix("Aar",max_r*naa,nQ));
+    boost::shared_ptr<Matrix> Abs(new Matrix("Abs",max_s*nab,nQ));
+    boost::shared_ptr<Matrix> Bas(new Matrix("Bas",max_s*naa,nQ));
+    boost::shared_ptr<Matrix> Bbr(new Matrix("Bbr",max_r*nab,nQ));
+    boost::shared_ptr<Matrix> Cas(new Matrix("Cas",max_s*naa,nQ));
+    boost::shared_ptr<Matrix> Cbr(new Matrix("Cbr",max_r*nab,nQ));
+    boost::shared_ptr<Matrix> Dar(new Matrix("Dar",max_r*naa,nQ));
+    boost::shared_ptr<Matrix> Dbs(new Matrix("Dbs",max_s*nab,nQ));
 
     // => Thread Work Arrays <= //
 
@@ -1566,11 +1674,11 @@ void ASAPT::disp()
     std::vector<boost::shared_ptr<Matrix> > V2ab;
     std::vector<boost::shared_ptr<Matrix> > Iab;
     for (int t = 0; t < nT; t++) {
-        Tab.push_back(boost::shared_ptr<Matrix>(new Matrix("Tab",na,nb)));
-        Vab.push_back(boost::shared_ptr<Matrix>(new Matrix("Vab",na,nb)));
+        Tab.push_back(boost::shared_ptr<Matrix>(new Matrix("Tab",naa,nab)));
+        Vab.push_back(boost::shared_ptr<Matrix>(new Matrix("Vab",naa,nab)));
         T2ab.push_back(boost::shared_ptr<Matrix>(new Matrix("T2ab",na,nb)));
         V2ab.push_back(boost::shared_ptr<Matrix>(new Matrix("V2ab",na,nb)));
-        Iab.push_back(boost::shared_ptr<Matrix>(new Matrix("Iab",na,nb)));
+        Iab.push_back(boost::shared_ptr<Matrix>(new Matrix("Iab",naa,nb)));
     }
 
     // => Pointers <= //
@@ -1650,7 +1758,6 @@ void ASAPT::disp()
         E_exch_disp20_threads.push_back(boost::shared_ptr<Matrix>(new Matrix("E_exch_disp20",na,nb)));
     }
 
-
     // => MO => LO Transform <= //
 
     double** UAp = Uocc_A_->pointer();
@@ -1705,17 +1812,17 @@ void ASAPT::disp()
 
                 // => Amplitudes, Disp20 <= //
 
-                C_DGEMM('N','T',na,nb,nQ,1.0,Aarp[(r)*na],nQ,Absp[(s)*nb],nQ,0.0,Vabp[0],nb);
-                for (int a = 0; a < na; a++) {
-                    for (int b = 0; b < nb; b++) {
+                C_DGEMM('N','T',naa,nab,nQ,1.0,Aarp[(r)*naa],nQ,Absp[(s)*nab],nQ,0.0,Vabp[0],nab);
+                for (int a = 0; a < naa; a++) {
+                    for (int b = 0; b < nab; b++) {
                         Tabp[a][b] = Vabp[a][b] / (eap[a] + ebp[b] - erp[r + rstart] - esp[s + sstart]);
                     }
                 }
 
-                C_DGEMM('N','N',na,nb,nb,1.0,Tabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
-                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,T2abp[0],nb);
-                C_DGEMM('N','N',na,nb,nb,1.0,Vabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
-                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,V2abp[0],nb);
+                C_DGEMM('N','N',naa,nb,nab,1.0,Tabp[0],nab,UBp[nfb],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,naa,1.0,UAp[nfa],na,Iabp[0],nb,0.0,T2abp[0],nb);
+                C_DGEMM('N','N',naa,nb,nab,1.0,Vabp[0],nab,UBp[nfb],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,naa,1.0,UAp[nfa],na,Iabp[0],nb,0.0,V2abp[0],nb);
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {
@@ -1728,20 +1835,20 @@ void ASAPT::disp()
 
                 // > Q1-Q3 < //
 
-                C_DGEMM('N','T',na,nb,nQ,1.0,Basp[(s)*na],nQ,Bbrp[(r)*nb],nQ,0.0,Vabp[0],nb);
-                C_DGEMM('N','T',na,nb,nQ,1.0,Casp[(s)*na],nQ,Cbrp[(r)*nb],nQ,1.0,Vabp[0],nb);
-                C_DGEMM('N','T',na,nb,nQ,1.0,Aarp[(r)*na],nQ,Dbsp[(s)*nb],nQ,1.0,Vabp[0],nb);
-                C_DGEMM('N','T',na,nb,nQ,1.0,Darp[(r)*na],nQ,Absp[(s)*nb],nQ,1.0,Vabp[0],nb);
+                C_DGEMM('N','T',naa,nab,nQ,1.0,Basp[(s)*naa],nQ,Bbrp[(r)*nab],nQ,0.0,Vabp[0],nab);
+                C_DGEMM('N','T',naa,nab,nQ,1.0,Casp[(s)*naa],nQ,Cbrp[(r)*nab],nQ,1.0,Vabp[0],nab);
+                C_DGEMM('N','T',naa,nab,nQ,1.0,Aarp[(r)*naa],nQ,Dbsp[(s)*nab],nQ,1.0,Vabp[0],nab);
+                C_DGEMM('N','T',naa,nab,nQ,1.0,Darp[(r)*naa],nQ,Absp[(s)*nab],nQ,1.0,Vabp[0],nab);
 
                 // > V,J,K < //
 
-                C_DGER(na,nb,1.0,&Sasp[0][s + sstart], ns,&Qbrp[0][r + rstart], nr,Vabp[0],nb);
-                C_DGER(na,nb,1.0,&Qasp[0][s + sstart], ns,&Sbrp[0][r + rstart], nr,Vabp[0],nb);
-                C_DGER(na,nb,1.0,&Qarp[0][r + rstart], nr,&SAbsp[0][s + sstart],ns,Vabp[0],nb);
-                C_DGER(na,nb,1.0,&SBarp[0][r + rstart],nr,&Qbsp[0][s + sstart], ns,Vabp[0],nb);
+                C_DGER(naa,nab,1.0,&Sasp[0][s + sstart], ns,&Qbrp[0][r + rstart], nr,Vabp[0],nab);
+                C_DGER(naa,nab,1.0,&Qasp[0][s + sstart], ns,&Sbrp[0][r + rstart], nr,Vabp[0],nab);
+                C_DGER(naa,nab,1.0,&Qarp[0][r + rstart], nr,&SAbsp[0][s + sstart],ns,Vabp[0],nab);
+                C_DGER(naa,nab,1.0,&SBarp[0][r + rstart],nr,&Qbsp[0][s + sstart], ns,Vabp[0],nab);
 
-                C_DGEMM('N','N',na,nb,nb,1.0,Vabp[0],nb,UBp[0],nb,0.0,Iabp[0],nb);
-                C_DGEMM('T','N',na,nb,na,1.0,UAp[0],na,Iabp[0],nb,0.0,V2abp[0],nb);
+                C_DGEMM('N','N',naa,nb,nab,1.0,Vabp[0],nab,UBp[nfb],nb,0.0,Iabp[0],nb);
+                C_DGEMM('T','N',na,nb,naa,1.0,UAp[nfa],na,Iabp[0],nb,0.0,V2abp[0],nb);
 
                 for (int a = 0; a < na; a++) {
                     for (int b = 0; b < nb; b++) {

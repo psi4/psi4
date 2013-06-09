@@ -87,7 +87,7 @@ int Dimension::max() const
     return s;
 }
 
-void Dimension::print(FILE *out) const
+void Dimension::print() const
 {
     fprintf(outfile, "  %s (n = %d): ", name_.c_str(), n_);
     for (int i=0; i<n(); ++i) {

@@ -1,38 +1,43 @@
 project(psi4)
 cmake_minimum_required(VERSION 2.8)
 
+enable_language(Fortran)
+
 # cmake modules are relative to this file
 get_filename_component(ROOT_SRC_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 set(CMAKE_MODULE_PATH "${ROOT_SRC_DIR}/cmake/")
 
+
 #
 # Command line options
 #
-include(cmake/GetValue.cmake)
 set(ALL_USEROPTS "")
 set(EMPTY "\"\"")
 
-#OPTION CXX_FLAGS        Extra C++ compiler flags to be used in compilation (string)
-get_value(useroptCXX_FLAGS   CXX_FLAGS   ${EMPTY})
+include(cmake/GetValue.cmake)
+#OPTION CXXFLAGS        Extra C++ compiler flags to be used in compilation (string)
+get_value(useroptCXX_FLAGS CXXFLAGS   ${EMPTY})
+#OPTION F77SYMBOL       The Fortran compiler name mangling convention, used for linking external Fortran libraries, such as BLAS. Values are lcu (lower case with traling underscore), lc (lower case), ucu (upper case with trailing underscore), uc (upper case). If omitted CMake will detect it automatically if a Fortran compiler is present, if not it will use lcu. (string)
+get_value(useroptF77SYMBOL F77SYMBOL  "detect")
 #OPTION LAPACK           Linker flags to use for Lapack (and BLAS), instead of detecting system library (string)
-get_value(useroptLAPACK      LAPACK   ${EMPTY})
+get_value(useroptLAPACK  LAPACK   ${EMPTY})
 #OPTION LD_FLAGS         Extra flags to be used in linking (string)
-get_value(useroptLD_FLAGS    LD_FLAGS   ${EMPTY})
+get_value(useroptLDFLAGS  LDFLAGS   ${EMPTY})
 #OPTION PREFIX           The installation directory for psi4 (string)
 get_value(CMAKE_INSTALL_PREFIX  PREFIX  "/usr/local/psi4")
 #OPTION PYTHON           Full path to python interpreter to use. If omitted Python will be detected. There should be a corresponding python-config script in this location for Psi to work, i.e. Python development version. (string)
-get_value(useroptPYTHON      PYTHON   ${EMPTY})
+get_value(useroptPYTHON  PYTHON   ${EMPTY})
 #OPTION USE_SYSTEM_BOOST Whether to use system boost, if detected. False forces Psi to build its own Boost. (boolean)
-get_value(useroptUSE_SYSTEM_BOOST   USE_SYSTEM_BOOST   TRUE)
-#OPTION LIBINT_MAX_AM    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to LIBINT_MAX_AM-1 and LIBINT_MAX_AM-2, respectively. (int)
-get_value(useroptLIBINT_MAX_AM   LIBINT_MAX_AM   5)
+get_value(useroptUSE_SYSTEM_BOOST  USE_SYSTEM_BOOST   TRUE)
+#OPTION MAX_AM_ERI    The maximum angular momentum to allow for integrals (1=p,2=d,3=f, etc.).  First and second derivatives are supported up to MAX_AM_ERI-1 and MAX_AM_ERI-2, respectively. (int)
+get_value(useroptLIBINT_MAX_AM  MAX_AM_ERI  5)
 
 set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${useroptLDFLAGS}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${useroptCXX_FLAGS}")
 # This will be echoed at the end of configure, and also output to a file so the build can be replicated
 set(CONFIGURE_CMD "${CMAKE_COMMAND} ${PROJECT_SOURCE_DIR}")
 foreach(opt ${ALL_USEROPTS})
-    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D ${opt}")
+    set(CONFIGURE_CMD "${CONFIGURE_CMD} -D${opt}")
 endforeach()
 
 #
@@ -126,7 +131,32 @@ endif()
 #if(NOT MKL_Found)
 #    find_package(LAPACK REQUIRED)   # "Finding LAPACK implies BLAS was found too"
 #endif()
-add_definitions(-DFC_SYMBOL=2)
+
+#
+# Fortran (yuk!) for external linking
+#
+if(useroptF77SYMBOL STREQUAL "detect")
+    if(CMAKE_Fortran_COMPILER)
+        include(cmake/FortranCInterface.cmake)
+        get_fc_symbol(FC_SYMBOL)
+    else()
+        set(FC_SYMBOL 2)
+    endif()
+else()
+    # The user told us what to do
+    if(useroptF77SYMBOL STREQUAL "ucu")
+        set(FC_SYMBOL 4)
+    elseif(useroptF77SYMBOL STREQUAL "lcu")
+        set(FC_SYMBOL 2)
+    elseif(useroptF77SYMBOL STREQUAL "uc")
+        set(FC_SYMBOL 3)
+    elseif(useroptF77SYMBOL STREQUAL "uc")
+        set(FC_SYMBOL 1)
+    else()
+        message(FATAL_ERROR "Invalid value ${useroptF77SYMBOL} passed in for the F77SYMBOL variable. Use lc, uc, ucu, or lcu.")
+    endif()
+endif()
+add_definitions(-DFC_SYMBOL=${FC_SYMBOL})
 
 #
 # Python Detection 
@@ -200,6 +230,19 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 set(PSILIB mints_wrapper dfmp2 scf ccenergy ccsort psimrcc transqt2 cctriples mp2 scf_solver fock dcft mcscf sapt dftsapt sapt_solver cchbar cclambda ccdensity transqt ccresponse detci occ mrcc fnocc cceom adc thermo functional disp thce 3index deriv_wrapper optking findif mints trans dpd chkpt iwl psio qt ciomr options moinfo util stable deriv scfgrad int util diis plugin parallel)
 
+#
+# The ERD integrals package
+#
+#set(ERDPATH http://sirius.chem.vt.edu/psi4extras/erd.tgz)
+#include(ExternalProject)
+#ExternalProject_Add(erd
+#    URL = ${ERDPATH}
+#    PREFIX = ${PROJECT_BINARY_DIR}/erd
+#)
+
+#
+# Recursively add source directories
+#
 add_subdirectory(src)
 
 #
