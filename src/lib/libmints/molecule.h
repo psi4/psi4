@@ -486,6 +486,14 @@ public:
     static boost::shared_ptr<Molecule> create_molecule_from_string(const std::string &geom);
 
     /**
+     * Regenerates a input file molecule specification string
+     * from the current state of the Molecule. Contains Cartesian
+     * geometry info, fragmentation, charges and multiplicities, 
+     * and any frame restriction.
+     */
+    std::string create_psi4_string_from_molecule() const;
+
+    /**
      * Sets all fragments in the molecule to be active.
      */
     void activate_all_fragments();
