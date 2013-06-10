@@ -27,9 +27,10 @@
 #include <boost/python/tuple.hpp>
 #include <boost/python/list.hpp>
 #include <sstream>
+#include <string>
 
-#define xtostring( x ) dynamic_cast< std::ostringstream & >( \
-        ( std::ostringstream() << std::dec << x ) ).str()
+//#define xtostring( x ) ( ( std::stringstream ) ( std::stringstream() << std::dec << x ) ).str()
+
 
 namespace psi {
 
@@ -73,7 +74,13 @@ class PyBuffer {
 			data_str += ">";
 		else
 			data_str += "<";
-		data_str += data_typestr() + xtostring((int)sizeof(T));
+        std::string tmpstr;
+        {
+            std::stringstream sstr;
+            sstr << (int)sizeof(T);
+            tmpstr = sstr.str();
+        }
+		data_str += data_typestr() + tmpstr;
 		interface_dict_["typestr"] = data_str;
 	}
 
