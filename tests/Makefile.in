@@ -27,7 +27,7 @@ df_subdirs = sapt1 sapt3 sapt5 dfmp2-1 dfmp2-2 dfmp2-3 ghosts dfmp2-4
 
 psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2 psimrcc-fd-freq1 psimrcc-fd-freq2
 
-mints_subdirs = mints1 mints2 mints3 mints4 mints5 mints6
+mints_subdirs = mints1 mints2 mints3 mints4 mints5 mints6 mints8
 
 matrix_subdirs = matrix1
 
