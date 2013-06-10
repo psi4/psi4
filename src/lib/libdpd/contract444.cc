@@ -58,6 +58,7 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
   long int size_Y, size_Z, size_file_X_row;
   int incore, nbuckets;
   long int memoryd, core, rows_per_bucket, rows_left, memtotal;
+  int nrows, ncols, nlinks;
 #if DPD_DEBUG
   int *xrow, *xcol, *yrow, *ycol, *zrow, *zcol;
   double byte_conv;
@@ -87,7 +88,6 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
     fprintf(stderr, "** Alignment error in contract444 **\n");
     dpd_error("dpd_contract444",stderr);
   }
-
 #endif
 
 
@@ -163,15 +163,13 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
       dpd_buf4_mat_irrep_init(Z, Hz);
       if(fabs(beta) > 0.0) dpd_buf4_mat_irrep_rd(Z, Hz);
 
-      if(Z->params->rowtot[Hz] &&
-     Z->params->coltot[Hz^GZ] &&
-     numlinks[Hx^symlink]) {
-    C_DGEMM(Xtrans?'t':'n', Ytrans?'t':'n',
-        Z->params->rowtot[Hz], Z->params->coltot[Hz^GZ],
-        numlinks[Hx^symlink], alpha,
-        &(X->matrix[Hx][0][0]), X->params->coltot[Hx^GX],
-        &(Y->matrix[Hy][0][0]), Y->params->coltot[Hy^GY], beta,
-        &(Z->matrix[Hz][0][0]), Z->params->coltot[Hz^GZ]);
+      if(Z->params->rowtot[Hz] && Z->params->coltot[Hz^GZ] && numlinks[Hx^symlink]) {
+         C_DGEMM(Xtrans?'t':'n', Ytrans?'t':'n',
+          Z->params->rowtot[Hz], Z->params->coltot[Hz^GZ],
+          numlinks[Hx^symlink], alpha,
+          &(X->matrix[Hx][0][0]), X->params->coltot[Hx^GX],
+          &(Y->matrix[Hy][0][0]), Y->params->coltot[Hy^GY], beta,
+          &(Z->matrix[Hz][0][0]), Z->params->coltot[Hz^GZ]);
       }
 
       dpd_buf4_mat_irrep_close(X, Hx);
@@ -195,50 +193,37 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
       dpd_buf4_mat_irrep_init(Z, Hz);
       if(fabs(beta) > 0.0) dpd_buf4_mat_irrep_rd(Z, Hz);
 
-      for(n=0; n < (rows_left ? nbuckets-1 : nbuckets); n++) {
+      for(n=0; n < nbuckets; n++) {
 
-    dpd_buf4_mat_irrep_rd_block(X, Hx, n*rows_per_bucket, rows_per_bucket);
+        if(n < (nbuckets-1)) 
+          dpd_buf4_mat_irrep_rd_block(X, Hx, n*rows_per_bucket, rows_per_bucket);
+        else
+          dpd_buf4_mat_irrep_rd_block(X, Hx, n*rows_per_bucket, rows_left);
 
-    if(!Xtrans && Ytrans) {
-      if(Z->params->coltot[Hz^GZ] && rows_per_bucket && numlinks[Hx^symlink])
-        C_DGEMM('n', 't', rows_per_bucket, Z->params->coltot[Hz^GZ],
-            numlinks[Hx^symlink], alpha, &(X->matrix[Hx][0][0]), numlinks[Hx^symlink],
+        if(!Xtrans && Ytrans) {
+          nrows = n < (nbuckets-1) ? rows_per_bucket : rows_left;
+          ncols = Z->params->coltot[Hz^GZ];
+          nlinks = numlinks[Hx^symlink];
+          if(nrows && ncols && nlinks)
+            C_DGEMM('n', 't', nrows, ncols, nlinks, 
+            alpha, &(X->matrix[Hx][0][0]), numlinks[Hx^symlink],
             &(Y->matrix[Hy][0][0]), numlinks[Hx^symlink], beta,
             &(Z->matrix[Hz][n*rows_per_bucket][0]), Z->params->coltot[Hz^GZ]);
-    }
-    else if(Xtrans && !Ytrans) {
-      /* CAUTION: We need to accumulate the results of DGEMM for
-             each bucket in this case.  So, we set beta="user value"
-             on the first bucket, but beta=1 for every bucket
-             thereafter. */
-      if(Z->params->coltot[Hz^GZ] && Z->params->rowtot[Hz] && rows_per_bucket)
-        C_DGEMM('t', 'n', Z->params->rowtot[Hz], Z->params->coltot[Hz^GZ],
-            rows_per_bucket, alpha, &(X->matrix[Hx][0][0]), X->params->coltot[Hx^GX],
-            &(Y->matrix[Hy][n*rows_per_bucket][0]), Y->params->coltot[Hy^GY], (n==0 ? beta : 1.0),
-            &(Z->matrix[Hz][0][0]), Z->params->coltot[Hz^GZ]);
-    }
-
-      }
-
-      if(rows_left) {
-
-    dpd_buf4_mat_irrep_rd_block(X, Hx, n*rows_per_bucket, rows_left);
-
-    if(!Xtrans && Ytrans) {
-      if(Z->params->coltot[Hz^GZ] && rows_left && numlinks[Hx^symlink])
-        C_DGEMM('n', 't', rows_left, Z->params->coltot[Hz^GZ],
-            numlinks[Hx^symlink], alpha, &(X->matrix[Hx][0][0]), numlinks[Hx^symlink],
-            &(Y->matrix[Hy][0][0]), numlinks[Hx^symlink], beta,
-            &(Z->matrix[Hz][n*rows_per_bucket][0]), Z->params->coltot[Hz^GZ]);
-    }
-    else if(Xtrans && !Ytrans) {
-      if(Z->params->coltot[Hz^GZ] && Z->params->rowtot[Hz] && rows_left)
-        C_DGEMM('t', 'n', Z->params->rowtot[Hz], Z->params->coltot[Hz^GZ],
-            rows_left, alpha, &(X->matrix[Hx][0][0]), X->params->coltot[Hx^GX],
-            &(Y->matrix[Hy][n*rows_per_bucket][0]), Y->params->coltot[Hy^GY], 1.0,
-            &(Z->matrix[Hz][0][0]), Z->params->coltot[Hz^GZ]);
-    }
-
+        }
+        else if(Xtrans && !Ytrans) {
+          /* CAUTION: We need to accumulate the results of DGEMM for
+          each bucket in this case.  So, we set beta="user value"
+          on the first bucket, but beta=1 for every bucket
+          thereafter. */
+          nrows = Z->params->rowtot[Hz];
+          ncols = Z->params->coltot[Hz^GZ];
+          nlinks = n < (nbuckets-1) ? rows_per_bucket : rows_left;
+          if(nrows && ncols && nlinks)
+            C_DGEMM('t', 'n', nrows, ncols, nlinks,
+            alpha, &(X->matrix[Hx][0][0]), X->params->coltot[Hx^GX],
+            &(Y->matrix[Hy][n*rows_per_bucket][0]), Y->params->coltot[Hy^GY], 
+            (n==0 ? beta : 1.0), &(Z->matrix[Hz][0][0]), Z->params->coltot[Hz^GZ]);
+        }
       }
 
       dpd_buf4_mat_irrep_close_block(X, Hx, rows_per_bucket);
@@ -246,8 +231,9 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
       dpd_buf4_mat_irrep_close(Y, Hy);
       dpd_buf4_mat_irrep_wrt(Z, Hz);
       dpd_buf4_mat_irrep_close(Z, Hz);
-    }
-  }
+
+    } // !incore
+  } // Hx
 
   return 0;
 }
