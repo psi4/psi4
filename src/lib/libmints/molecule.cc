@@ -1134,6 +1134,69 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     return mol;
 }
 
+std::string Molecule::create_psi4_string_from_molecule() const
+{
+    char buffer[120];
+    std::stringstream ss;
+
+    if (WorldComm->me() == 0) {
+        if (nallatom()) {
+            // append units and any other non-default molecule keywords
+            sprintf(buffer,"    units %-s\n", units_ == Angstrom ? "Angstrom" : "Bohr");
+            ss << buffer;
+
+            if (symmetry_from_input_ != "") {
+                sprintf(buffer,"    symmetry %s\n", symmetry_from_input_.c_str());
+                ss << buffer;
+            }
+            if (move_to_com_ == false) {
+                sprintf(buffer,"    no_com\n");
+                ss << buffer;
+            }
+            if (fix_orientation_ == true) {
+                sprintf(buffer,"    no_reorient\n");
+                ss << buffer;
+            }
+
+            // append atoms and coordentries and fragment separators with charge and multiplicity
+            for(int i = 0; i < nallatom(); ++i){
+                for(int fr=0; fr<fragments_.size(); ++fr) {
+                    if (i==fragments_[fr].first) {
+                        sprintf(buffer, "%s    %d %d\n", 
+                            fr==0 ? "" : "    --\n",
+                            fragment_charges_[fr], fragment_multiplicities_[fr]);
+                        ss << buffer;
+                    }
+                }
+                if (fZ(i) || (fsymbol(i) == "X")) {
+                    sprintf(buffer, "    %-8s", fsymbol(i).c_str());
+                    ss << buffer;
+                } else {
+                    std::string stmp = std::string("Gh(") + fsymbol(i) + ")";
+                    sprintf(buffer, "    %-8s", stmp.c_str());
+                    ss << buffer;
+                }
+                sprintf(buffer, "    %s", full_atoms_[i]->string_in_input_format().c_str());
+                ss << buffer;
+            }
+            sprintf(buffer,"\n");
+            ss << buffer;
+
+            // append any coordinate variables
+            if(geometry_variables_.size()){
+                std::map<std::string, double>::const_iterator iter;
+                for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                    sprintf(buffer, "    %-10s=%16.10f\n", iter->first.c_str(), iter->second);
+                    ss << buffer;
+                }
+                sprintf(buffer, "\n");
+                ss << buffer;
+            }
+        }
+    }
+    return ss.str();
+}
+
 void Molecule::symmetrize_to_abelian_group(double tol)
 {
     // The coordinates are a bit crude, so we symmetrize them

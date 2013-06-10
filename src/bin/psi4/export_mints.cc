@@ -540,6 +540,7 @@ void export_mints()
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
+            def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
             def("save_xyz", &Molecule::save_xyz, "Saves an XYZ file to arg2").
             def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2").
             def("Z", &Molecule::Z, return_value_policy<copy_const_reference>(), "Nuclear charge of atom").
