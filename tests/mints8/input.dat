@@ -1,0 +1,94 @@
+#! Patch of a glycine with a methyl group, to make alanine, then DF-SCF 
+#! energy calculation with the cc-pVDZ basis set
+
+eNuc =  256.652780316346650  #TEST
+eSCF = -321.8674683375353425 #TEST
+
+memory 500 MB
+
+molecule alanine {
+    N           -1.527107413251     0.745960643462     0.766603000356
+    C           -0.075844098953     0.811790225041     0.711418672248
+    C            0.503195220163    -0.247849447550    -0.215671574613
+    O           -0.351261319421    -0.748978309671    -1.089590304723
+    O            1.639498336738    -0.571249748886    -0.174705953194
+    H           -1.207655674855    -0.365913941094    -0.918035522052
+    C  2  rCC   3  aCCC   1  dCCCN
+    H  7  rCH1  2  aHCC1  3  dHCCC1
+    H  7  rCH2  2  aHCC2  3  dHCCC2
+    H  7  rCH3  2  aHCC3  3  dHCCC3
+    H            0.221781602033     1.772570540211     0.286988509018
+    H           -1.833601608592     0.108401996052     1.481873213172
+    H           -1.925572581453     1.640882152784     0.986471814808
+    
+    aCCC = 108.0
+    rCC = 1.4
+    dCCCN = 120
+    rCH1 = 1.08
+    rCH2 = 1.08
+    rCH3 = 1.08
+    aHCC1 = 109.0
+    aHCC2 = 109.0
+    aHCC3 = 109.0
+    dHCCC1 = 0.0
+    dHCCC2 = 120.0
+    dHCCC3 = 240.0
+no_reorient
+}
+
+#alanine.update_geometry()      # Test the nuclear repulsion energy, before SCF           #TEST
+
+set  {
+    basis cc-pVDZ
+    scf_type df
+}
+ 
+E = energy('scf')
+
+compare_values(eNuc, alanine.nuclear_repulsion_energy(), 6, "Mol1: Nuclear repulsion energy")  #TEST 
+compare_values(eSCF, E, 6, "Mol1: SCF Energy")                                      #TEST 
+gorig = alanine.geometry()
+
+gstring = alanine.create_psi4_string_from_molecule()
+nalanine = geometry(gstring)
+nalanine.update_geometry()
+gnew = nalanine.geometry()
+print_out(gstring)
+compare_matrices(gorig, gnew, 5, "Mol1: String recreates molecule")
+
+eNuc =  256.652780316346650  #TEST
+eSCF = -321.8674683375353425 #TEST
+
+molecule trimer {
+O 0.0 0.0 0.0
+H 1.0 0.0 0.0
+H 0.0 1.0 mouse
+--
+-2 3
+S 2.0 2.0 2.0
+H 3.0 2.0 2.0
+H 2.0 3.0 mouse
+--
+@Ne -2.0 -2.0 -2.0
+symmetry c1
+no_com
+units = bohr
+}
+
+trimer.mouse = 0.5
+set basis 6-31g*
+E = energy('scf')
+
+eSCF = -470.555455368  #TEST
+eNuc =   94.7867043256  #TEST
+compare_values(eNuc, trimer.nuclear_repulsion_energy(), 6, "Mol2: Nuclear repulsion energy")  #TEST 
+compare_values(eSCF, E, 6, "Mol2: SCF Energy")                                      #TEST 
+gorig = trimer.geometry()
+
+gstring = trimer.create_psi4_string_from_molecule()
+ntrimer= geometry(gstring)
+ntrimer.update_geometry()
+gnew = ntrimer.geometry()
+print_out(gstring)
+compare_matrices(gorig, gnew, 5, "Mol2: String recreates molecule")
+
