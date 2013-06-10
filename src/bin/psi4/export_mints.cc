@@ -49,7 +49,11 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
 	rv["shape"] = boost::python::make_tuple(rows, cols);
 	rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
 	std::string typestr = is_big_endian() ? ">" : "<";
-	typestr += "f" + xtostring((int)sizeof(double));
+    {
+        std::stringstream sstr;
+        sstr << (int)sizeof(double);
+        typestr += "f" + sstr.str();
+    }
 	rv["typestr"] = typestr;
 	return rv;
 }
