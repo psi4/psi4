@@ -54,7 +54,6 @@ if (reference_ == "RESTRICTED") {
       wogA->zero();
       kappaA->zero();
       kappa_barA->zero();
-    }
     
     // allocate memory 
     idprowA = new int[nidpA]; 
@@ -85,6 +84,13 @@ if (reference_ == "RESTRICTED") {
 	fflush(outfile);
       }
     }
+    }// end if nidpA != 0
+
+    else if (nidpA == 0) {
+            fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+            tstop();
+            exit(EXIT_SUCCESS);
+    }
      
 }// end if (reference_ == "RESTRICTED") 
 
@@ -102,6 +108,12 @@ else if (reference_ == "UNRESTRICTED") {
     fprintf(outfile,"\n\tNumber of alpha independent-pairs:%3d\n", nidpA);
     fprintf(outfile,"\tNumber of beta independent-pairs :%3d\n", nidpB);
     fflush(outfile);  
+
+    if (nidpA == 0 && nidpB == 0) {
+        fprintf(outfile,"\tThere is not any non-redundant orbital rotation pair! \n");
+        tstop();
+        exit(EXIT_SUCCESS);
+    }
     
     if (nidpA != 0) {
       idp_returnA = 1;
