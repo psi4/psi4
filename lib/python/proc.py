@@ -37,6 +37,7 @@ from p4regex import *
 #from extend_Molecule import *
 from molutil import *
 from functional import *
+from roa import *
 # never import driver, wrappers, or aliases into this file
 
 # ATTN NEW ADDITIONS!
@@ -1057,7 +1058,7 @@ def run_cc_property(name, **kwargs):
     """
     oneel_properties = ['dipole', 'quadrupole']
     twoel_properties = []
-    response_properties = ['polarizability', 'rotation', 'roa']
+    response_properties = ['polarizability', 'rotation', 'roa', 'roa_tensor']
     excited_properties = ['oscillator_strength', 'rotational_strength']
 
     one = []
@@ -1067,7 +1068,7 @@ def run_cc_property(name, **kwargs):
     invalid = []
 
     if 'properties' in kwargs:
-        properties = kwargs.pop('properties')
+        properties = kwargs['properties']
         properties = p4util.drop_duplicates(properties)
 
         for prop in properties:
@@ -1098,6 +1099,11 @@ def run_cc_property(name, **kwargs):
 
     if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
         raise ValidationError("Cannot (yet) compute response properties for excited states.")
+
+    if ('roa' in response):
+        # Perform distributed roa job
+        run_roa(name.lower(), **kwargs)
+        return #Don't do anything further
 
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("Computing both density- and response-based properties.")
