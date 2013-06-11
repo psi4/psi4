@@ -2767,7 +2767,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RUN_MP4",false);
       /*- do ccsd rather than qcisd? !expert -*/
       options.add_bool("RUN_CCSD",false);
-      /*- Use d3-index integrals to generate 4-index ERI's? 
+      /*- Use 3-index integrals to generate 4-index ERI's? 
       This keyword is used for testing purposes only.  Changing its
       value will have no effect on the computation.  !expert -*/
       options.add_bool("USE_DF_INTS",false);

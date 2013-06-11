@@ -2708,9 +2708,11 @@ def run_cepa(name, **kwargs):
         ['TRANSQT2', 'WFN'],
         ['FNOCC', 'NAT_ORBS'],
         ['FNOCC', 'RUN_CEPA'],
+        ['FNOCC', 'USE_DF_INTS'],
         ['FNOCC', 'CEPA_NO_SINGLES'])
 
     psi4.set_local_option('FNOCC','RUN_CEPA', True)
+    psi4.set_local_option('FNOCC','USE_DF_INTS', False)
 
     # what type of cepa?
     cepa_level = uppername
@@ -2754,12 +2756,14 @@ def run_cepa(name, **kwargs):
 
     # If the scf type is DF/CD, then the AO integrals were never written to disk
     if psi4.get_option('SCF', 'SCF_TYPE') == 'DF' or psi4.get_option('SCF', 'SCF_TYPE') == 'CD':
-        mints = psi4.MintsHelper()
-        mints.integrals()
+        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+            mints = psi4.MintsHelper()
+            mints.integrals()
 
     if psi4.get_option('FNOCC','NAT_ORBS') == False:
-       psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-       psi4.transqt2()
+        if psi4.get_option('FNOCC', 'USE_DF_INTS') == False:
+            psi4.set_local_option('TRANSQT2', 'WFN', 'CCSD')
+            psi4.transqt2()
 
     # run cepa
     psi4.fnocc()
