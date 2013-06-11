@@ -62,8 +62,15 @@ class DFFrozenNO : public FrozenNO {
     double compute_energy();
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
+
+    /// computes MP2 natural orbitals
     void ComputeNaturalOrbitals();
+
+    /// generates 3-index integrals and writes them to disk
     void ThreeIndexIntegrals();
+
+    /// generates 4-index eri's from 3-index integrals
+    void FourIndexIntegrals();
 
   protected:
 
