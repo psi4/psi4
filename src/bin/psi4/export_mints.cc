@@ -615,6 +615,8 @@ void export_mints()
             staticmethod("make_filename").
             def("construct", &BasisSet::construct, "docstring").
             staticmethod("construct").
+            def("zero_ao_basis_set", &BasisSet::zero_ao_basis_set, "Returns a BasisSet object that actually has a single s-function at the origin with an exponent of 0.0 and contraction of 1.0.").
+            staticmethod("zero_ao_basis_set").
             def("nbf", &BasisSet::nbf, "docstring").
             def("nao", &BasisSet::nao, "docstring").
             def("nprimitive", &BasisSet::nprimitive, "docstring").
