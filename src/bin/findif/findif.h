@@ -37,6 +37,7 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options);
 std::vector< SharedMatrix > fd_geoms_2_0(Options &options);
 std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int irrep=-1);
 std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep=-1);
+std::vector< SharedMatrix > atomic_displacements(Options &options);
 
 // functions to carry out finite-differences
 PsiReturnType fd_1_0(Options &options, const boost::python::list& energies);
@@ -76,6 +77,10 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 
 // to massweight columns of a shared matrix
 void mass_weight_columns_plus_one_half(SharedMatrix B);
+
+// displace an atomic coordinate
+void displace_atom(SharedMatrix geom, const int atom, const int coord,
+                   const int sign, const double disp_size);
 
 
 template <class T>
