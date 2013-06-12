@@ -119,7 +119,7 @@ int ccresponse(Options &options)
 
   if(params.prop == "POLARIZABILITY") polar();
   if(params.prop == "ROTATION") optrot();
-  if(params.prop == "ROA") roa();
+  if(params.prop == "ROA_TENSOR") roa();
 
   if(params.local) local_done();
 
