@@ -193,5 +193,48 @@ void mass_weight_columns_plus_one_half(SharedMatrix B) {
   }
 }
 
+void displace_atom(SharedMatrix geom, const int atom, const int coord, const int sign, const double disp_size) {
+
+  geom->add(0, atom, coord, sign * disp_size);
+
+  return;
+}
+
+std::vector< SharedMatrix > atomic_displacements(Options &options) {
+  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+
+  // This is the size in bohr because geometry is in bohr at this point
+  // This equals 0.1 angstrom displacement
+  double disp_size = 0.1 / pc_bohr2angstroms;
+
+  int natom = mol->natom();
+
+  // Geometry seems to be in bohr at this point
+  Matrix ref_geom_temp = mol->geometry();
+  SharedMatrix ref_geom(ref_geom_temp.clone());
+
+  std::vector< SharedMatrix > disp_geoms;
+
+  // Generate displacements
+  for(int atom=0; atom < natom; ++atom) {
+    for(int coord=0; coord < 3; ++coord) {
+      // plus displacement
+      SharedMatrix p_geom(ref_geom->clone());
+      displace_atom(p_geom, atom, coord, +1, disp_size);
+      disp_geoms.push_back(p_geom);
+      // minus displacement
+      SharedMatrix m_geom(ref_geom->clone());
+      displace_atom(m_geom, atom, coord, -1, disp_size);
+      disp_geoms.push_back(m_geom);
+    }
+  }
+
+  // put reference geometry in list
+  // disp_geoms.push_back(ref_geom);
+
+  return disp_geoms;
+
+}
+
 }}
 
