@@ -105,8 +105,6 @@ def format_options_for_input():
 
        - Does not cover local (as opposed to global) options.
 
-       - Does not work with array-type options.
-
     """
     commands = ''
     commands += """\npsi4.set_memory(%s)\n\n""" % (psi4.get_memory())
@@ -116,6 +114,8 @@ def format_options_for_input():
             if isinstance(chgdoptval, basestring):
                 commands += """psi4.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
             elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
+                commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+            elif isinstance(chgdoptval, list):
                 commands += """psi4.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
             else:
                 raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed.' % (chgdopt))
