@@ -70,7 +70,7 @@ protected:
     bool enable_pybuffer_;
 
     /// The PyBuffer object used for sharing the target_ buffer without copying data
-    PyBuffer<double> target_pybuffer_;
+    PyBuffer<double> pybuffer_;
 
     OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
 
@@ -116,7 +116,7 @@ public:
         if(!enable_pybuffer_) {
             throw PSIEXCEPTION("py_buffer object not enabled.  Used set_enable_pybuffer() first.");
         }
-    	return &target_pybuffer_;
+    	return &pybuffer_;
     }
 
     void set_enable_pybuffer(bool enable = true) {

@@ -12,6 +12,7 @@ import traceback
 from warnings import warn
 import numpy as np
 from numpy.lib.format import read_array_header_1_0, open_memmap
+import sys
 from grendel.chemistry import Molecule
 from grendel.util.containers import AliasedDict
 from grendel.util.decorators import typecheck
@@ -109,6 +110,12 @@ class UninitializedDependency(object):
         self.initialized = True
         return rv
 
+    def __getstate__(self):
+        raise AttributeError("UninitializedDependency instances are not pickleable")
+
+    def __setstate__(self):
+        raise AttributeError("UninitializedDependency instances are not pickleable")
+
 #================================================================================#
 
 #region | DatumGetter subclasses |
@@ -185,12 +192,16 @@ class TEIGetter(MemmapArrayGetter):
         # TODO copy memory instead, if possible
         # TODO symmetry
         nbf1, nbf2, nbf3, nbf4 = out.value.shape
+        ary = np.array(psimat)
+        out.value[...] = ary.reshape(out.shape)
         if physicist_notation:
-            for p, q, r, s in xproduct(*out.shape):
-                out.value[p, r, q, s] = psimat[0, p*nbf2 + q, r*nbf4 + s]
-        else:
-            for p, q, r, s in xproduct(*out.shape):
-                out.value[p, q, r, s] = psimat[0, p*nbf2 + q, r*nbf4 + s]
+            out.value[...] = out.value.transpose([0,2,1,3])
+        #if physicist_notation:
+        #    for p, q, r, s in xproduct(*out.shape):
+        #        out.value[p, r, q, s] = psimat[0, p*nbf2 + q, r*nbf4 + s]
+        #else:
+        #    for p, q, r, s in xproduct(*out.shape):
+        #        out.value[p, q, r, s] = psimat[0, p*nbf2 + q, r*nbf4 + s]
 
     def _get_tei(self, out, func_name, mints, correlation_factor, physicist_notation, C1=None, C2=None, C3=None, C4=None):
         getter_args = []
@@ -239,6 +250,7 @@ class MatrixGetter(MemmapArrayGetter):
 
     def _copy_in_matrix(self, out, psimat):
         # TODO Symmetry
+        #out.value[...] = np.array(psimat)
         for p, q in xproduct(*out.shape):
             out.value[p, q] = psimat[0, p, q]
 
@@ -473,7 +485,7 @@ class DFTwoCenterAOTEIGetter(AOTEIGetterWithComputer):
 class ArbitraryBasisDatumGetter(DatumGetter):
 
     def __init__(self, set_names):
-        self.basis_set_names = tuple(set_names)
+        self.basis_set_names = tuple(bsname.lower() for bsname in set_names)
 
     @abstractproperty
     def name(self):
@@ -492,7 +504,7 @@ class ArbitraryBasisAOTEIGetter(ArbitraryBasisDatumGetter, AOTEIGetterWithComput
     def name(self):
         return (
             "ao__"
-            "__".join(self.basis_set_names[:2])
+            + "__".join(self.basis_set_names[:2])
             + "___" + self.integral_type + "___"
             + "__".join(self.basis_set_names[2:])
         )
@@ -1105,7 +1117,7 @@ class CachedComputation(object):
             rv.append(self.get_datum(name))
         return rv
 
-    def clear_datum(self, name):
+    def clear_datum(self, name, fail_if_missing=False):
         if name in self.cached_data:
             d = self.cached_data[name]
             if isinstance(d, CachedMemmapArray):
@@ -1114,6 +1126,17 @@ class CachedComputation(object):
                 os.remove(fname)
             else:
                 del self.cached_data[name]
+            # Sync the parent shelf since self has been modified
+            if self.owner is not None:
+                self.owner.shelf.sync()
+        elif fail_if_missing:
+            raise ValueError("Datum '{0}' does not exist.  Known data names are:\n{1}".format(
+                name, "    " + "\n    ".join(self.cached_data.keys())
+            ))
+
+    def clear_all_data(self):
+        for datum_name in self.cached_data.keys():
+            self.clear_datum(datum_name)
 
     def get_lazy_attribute(self, needed_attr):
         self._psi_options_use()
@@ -1200,6 +1223,7 @@ class CachedComputation(object):
             load_successful = False
             # Try to load the memmap if we successfully retrieved a shape
             #   from the cached file.
+            tb = None
             if shape is not None:
                 try:
                     # The shape and dtype arguments present redundant information,
@@ -1213,13 +1237,15 @@ class CachedComputation(object):
                     #   and needs to be rewritten
                     load_successful = False
                     out = None
+                    tb = sys.last_traceback
                 except IOError:
                     # Raised if the file cannot be opened correctly.  This should never
                     #   really happen unless the file changes between the call to
                     #   CachedMemmapArray.read_file_metadata() and here.
                     load_successful = False
                     out = None
-                # Only compute the shape using the getter if we need to.
+                    tb = sys.last_traceback
+            # Only compute the shape using the getter if we need to.
             if not load_successful:
                 # We don't have the file, or the file is invalid,
                 #   so we need to first get the shape and then
@@ -1231,10 +1257,21 @@ class CachedComputation(object):
                 #   somehow corrupted and needs to be overwritten.  Warn the user
                 #   of the situation.
                 if exists(fname):
-                    warn( "File '{0}' is corrupted and will be overwritten."
-                          " Its data will be recomputed.".format(fname),
-                          FileOverwriteWarning
-                    )
+                    if tb is not None:
+                        warn(
+                            "File '{0}' is corrupted and will be overwritten."
+                            " Its data will be recomputed.  Traceback:\n    {1}".format(
+                                fname,
+                                "\n    ".join(traceback.format_tb(tb))),
+                            FileOverwriteWarning
+                        )
+                    else:
+                        warn(
+                            "File '{0}' is corrupted (couldn't get shape) and will be overwritten."
+                            " Its data will be recomputed.".format(
+                                fname),
+                            FileOverwriteWarning
+                        )
                 # Construct the CachedMemmapArray with force_overwrite=True since
                 #   we already checked for a valid file earlier and found that
                 #   we couldn't determine the shape.
@@ -1288,6 +1325,10 @@ class CachedComputation(object):
                     bs = self._basis_registry[bsname.lower()]
                     if isinstance(bs, UninitializedDependency):
                         bs = bs.initialize()
+                        if bsname == self.basis_name:
+                            self.basis = bs
+                        elif self.optional_argument_given('df_basis') and bsname == self.optional_arguments['df_basis']:
+                            self.df_basis = bs
                     sets.append(bs)
                 rv[needed_attr] = tuple(sets)
             else:
