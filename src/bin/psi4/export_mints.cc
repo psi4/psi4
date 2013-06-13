@@ -312,7 +312,7 @@ void export_mints()
             add_property("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
             add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
             add_property("py_buffer_object", make_function(&OneBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring").
+            def("set_enable_pybuffer", &OneBodyAOInt::set_enable_pybuffer, "docstring").
             add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;

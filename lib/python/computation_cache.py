@@ -522,7 +522,7 @@ class AOOEIGetterWithComputer(MemmapArrayGetter):
         #----------------------------------------#
         #region | Make the TwoBodyInt object |
         factory = psi4.IntegralFactory(*basis_sets)
-        computer = getattr(factory, self.integral_type)()
+        computer = getattr(factory, "ao_" + self.integral_type)()
         #endregion
         #----------------------------------------#
         #region | Compute the integrals and store them in out.value |
@@ -539,14 +539,18 @@ class AOOEIGetterWithComputer(MemmapArrayGetter):
         return
 
 class ArbitraryBasisAOOEIGetter(ArbitraryBasisDatumGetter, AOOEIGetterWithComputer):
+
     def __init__(self, integral_type, bs1, bs2=None):
         if bs2 is None: bs2 = bs1
         super(ArbitraryBasisAOOEIGetter, self).__init__((bs1, bs2))
-        AOTEIGetterWithComputer.__init__(self, integral_type)
+        AOOEIGetterWithComputer.__init__(self, integral_type)
 
     @property
     def name(self):
         return "ao__" + ("___" + self.integral_type + "___").join(self.basis_set_names)
+
+    def get_shape(self, basis_sets):
+        return tuple(bs.nbf() for bs in basis_sets)
 
     def __call__(self, out, basis_sets):
         self._compute_ints(out, basis_sets)
