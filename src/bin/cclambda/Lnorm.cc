@@ -57,62 +57,62 @@ void Lnorm(struct L_Params L_params)
 
   if(params.ref == 0 || params.ref == 1) { /** RHF/ROHF **/
     overlap0 = L0 * L_params.R0;
-    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+    dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
 
-    dpd_file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1A_lbl);
-    overlap1 = dpd_file2_dot(&LIA, &R1);
-    dpd_file2_close(&R1);
-    dpd_file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1B_lbl);
-    overlap1 += dpd_file2_dot(&Lia, &R1);
-    dpd_file2_close(&R1);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-    overlap2 = dpd_buf4_dot(&LIJAB, &R2);
-    dpd_buf4_close(&R2);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2BB_lbl);
-    overlap2 += dpd_buf4_dot(&Lijab, &R2);
-    dpd_buf4_close(&R2);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 0, 5, 0, 5, 0, R2AB_lbl);
-    overlap2 += dpd_buf4_dot(&LIjAb, &R2);
-    dpd_buf4_close(&R2);
+    dpd_->file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1A_lbl);
+    overlap1 = dpd_->file2_dot(&LIA, &R1);
+    dpd_->file2_close(&R1);
+    dpd_->file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1B_lbl);
+    overlap1 += dpd_->file2_dot(&Lia, &R1);
+    dpd_->file2_close(&R1);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+    overlap2 = dpd_->buf4_dot(&LIJAB, &R2);
+    dpd_->buf4_close(&R2);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2BB_lbl);
+    overlap2 += dpd_->buf4_dot(&Lijab, &R2);
+    dpd_->buf4_close(&R2);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 0, 5, 0, 5, 0, R2AB_lbl);
+    overlap2 += dpd_->buf4_dot(&LIjAb, &R2);
+    dpd_->buf4_close(&R2);
   }
   else {
     overlap0 = L0 * L_params.R0;
-    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
-    dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
-    dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+    dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
 
-    dpd_file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1A_lbl);
-    overlap1 = dpd_file2_dot(&LIA, &R1);
-    dpd_file2_close(&R1);
-    dpd_file2_init(&R1, PSIF_CC_RAMPS, L_irr, 2, 3, R1B_lbl);
-    overlap1 += dpd_file2_dot(&Lia, &R1);
-    dpd_file2_close(&R1);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2AA_lbl);
-    overlap2 = dpd_buf4_dot(&LIJAB, &R2);
-    dpd_buf4_close(&R2);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 12, 17, 12, 17, 0, R2BB_lbl);
-    overlap2 += dpd_buf4_dot(&Lijab, &R2);
-    dpd_buf4_close(&R2);
-    dpd_buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 22, 28, 22, 28, 0, R2AB_lbl);
-    overlap2 += dpd_buf4_dot(&LIjAb, &R2);
-    dpd_buf4_close(&R2);
+    dpd_->file2_init(&R1, PSIF_CC_RAMPS, L_irr, 0, 1, R1A_lbl);
+    overlap1 = dpd_->file2_dot(&LIA, &R1);
+    dpd_->file2_close(&R1);
+    dpd_->file2_init(&R1, PSIF_CC_RAMPS, L_irr, 2, 3, R1B_lbl);
+    overlap1 += dpd_->file2_dot(&Lia, &R1);
+    dpd_->file2_close(&R1);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 2, 7, 2, 7, 0, R2AA_lbl);
+    overlap2 = dpd_->buf4_dot(&LIJAB, &R2);
+    dpd_->buf4_close(&R2);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 12, 17, 12, 17, 0, R2BB_lbl);
+    overlap2 += dpd_->buf4_dot(&Lijab, &R2);
+    dpd_->buf4_close(&R2);
+    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, L_irr, 22, 28, 22, 28, 0, R2AB_lbl);
+    overlap2 += dpd_->buf4_dot(&LIjAb, &R2);
+    dpd_->buf4_close(&R2);
   }
 
   overlap = overlap0 + overlap1 + overlap2;
 
   fprintf(outfile,"\n\tInitial  <L|R>  =     %15.10lf\n", overlap);
 
-  dpd_file2_scm(&LIA, 1.0/overlap);
-  dpd_file2_scm(&Lia, 1.0/overlap);
-  dpd_buf4_scm(&LIJAB, 1.0/overlap);
-  dpd_buf4_scm(&Lijab, 1.0/overlap);
-  dpd_buf4_scm(&LIjAb, 1.0/overlap);
+  dpd_->file2_scm(&LIA, 1.0/overlap);
+  dpd_->file2_scm(&Lia, 1.0/overlap);
+  dpd_->buf4_scm(&LIJAB, 1.0/overlap);
+  dpd_->buf4_scm(&Lijab, 1.0/overlap);
+  dpd_->buf4_scm(&LIjAb, 1.0/overlap);
 
   fprintf(outfile,"\tNormalizing L...\n");
   fprintf(outfile,"\tL0 * R0 =     %15.10lf\n", overlap0/overlap);
@@ -120,11 +120,11 @@ void Lnorm(struct L_Params L_params)
   fprintf(outfile,"\tL2 * R2 =     %15.10lf\n", overlap2/overlap);
   fprintf(outfile,"\t <L|R>  =     %15.10lf\n", overlap/overlap);
 
-  dpd_file2_close(&LIA);
-  dpd_file2_close(&Lia);
-  dpd_buf4_close(&LIJAB);
-  dpd_buf4_close(&Lijab);
-  dpd_buf4_close(&LIjAb);
+  dpd_->file2_close(&LIA);
+  dpd_->file2_close(&Lia);
+  dpd_->buf4_close(&LIJAB);
+  dpd_->buf4_close(&Lijab);
+  dpd_->buf4_close(&LIjAb);
 
   tval = pseudoenergy(L_params);
   fprintf(outfile,"\tPseudoenergy or Norm of normalized L = %20.15lf\n",tval);

@@ -85,36 +85,36 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
       double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
 
-      dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 2, 3, "fia");
-      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+      dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 2, 2, "fij");
+      dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 3, 3, "fab");
+      dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 2, 3, "fia");
+      dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
 
-      dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-      dpd_buf4_init(&Fints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-      dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-      dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+      dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
+      dpd_->buf4_init(&Fints, PSIF_CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
+      dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
+      dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
 
-      dpd_file2_init(&S1, PSIF_CC_OEI, 0, 2, 3, "Sia");
-      dpd_file2_mat_init(&S1); 
-      dpd_buf4_init(&S2, PSIF_CC_MISC, 0, 10, 15, 12, 17, 0, "Sijab");
+      dpd_->file2_init(&S1, PSIF_CC_OEI, 0, 2, 3, "Sia");
+      dpd_->file2_mat_init(&S1); 
+      dpd_->buf4_init(&S2, PSIF_CC_MISC, 0, 10, 15, 12, 17, 0, "Sijab");
       for(h=0; h < nirreps; h++)
-	dpd_buf4_mat_irrep_init(&S2, h);
+	dpd_->buf4_mat_irrep_init(&S2, h);
 
-      dpd_file2_init(&Dab, PSIF_CC_OEI, 0, 3, 3, "Dab");
-      dpd_file2_mat_init(&Dab); 
+      dpd_->file2_init(&Dab, PSIF_CC_OEI, 0, 3, 3, "Dab");
+      dpd_->file2_mat_init(&Dab); 
 
-      dpd_buf4_init(&Gijab, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
+      dpd_->buf4_init(&Gijab, PSIF_CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
       for(h=0; h < nirreps; h++)
-	dpd_buf4_mat_irrep_init(&Gijab, h);
+	dpd_->buf4_mat_irrep_init(&Gijab, h);
 
-      dpd_buf4_init(&Gijka, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
+      dpd_->buf4_init(&Gijka, PSIF_CC_GAMMA, 0, 10, 30, 12, 30, 0, "Gijka");
       for(h=0; h < nirreps; h++)
-	dpd_buf4_mat_irrep_init(&Gijka, h);
+	dpd_->buf4_mat_irrep_init(&Gijka, h);
 
-      dpd_buf4_init(&Gidab, PSIF_CC_GAMMA, 0, 30, 15, 30, 17, 0, "Gidab");
+      dpd_->buf4_init(&Gidab, PSIF_CC_GAMMA, 0, 30, 15, 30, 17, 0, "Gidab");
       for(h=0; h < nirreps; h++)
-	dpd_buf4_mat_irrep_init(&Gidab, h);
+	dpd_->buf4_mat_irrep_init(&Gidab, h);
 
       WABC = (double ***) malloc(nirreps * sizeof(double **));
       VABC = (double ***) malloc(nirreps * sizeof(double **));
@@ -135,13 +135,13 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
 	    for(Gab=0; Gab < nirreps; Gab++) {
 	      Gc = Gab ^ Gijk;
-	      WABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      VABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      XABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+	      WABC[Gab] = dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+	      VABC[Gab] = dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+	      XABC[Gab] = dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
-	      Y[Ga] = dpd_block_matrix(virtpi[Ga],Fints.params->coltot[Gbc]);
+	      Y[Ga] = dpd_->dpd_block_matrix(virtpi[Ga],Fints.params->coltot[Gbc]);
 	    }
 
 	    for(i=0; i < occpi[Gi]; i++) {
@@ -154,21 +154,21 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 		  T3_UHF_AAA(WABC, VABC, 1, nirreps, I, Gi, J, Gj, K, Gk, &T2, &Fints, &Eints,
 			     &T1, &Dints, &fIA, &fIJ, &fAB, occpi, occ_off, virtpi, vir_off, 0.0);
 
-		  dpd_file2_mat_init(&T1);
-		  dpd_file2_mat_rd(&T1);
-		  dpd_file2_mat_init(&fIJ);
-		  dpd_file2_mat_rd(&fIJ);
-		  dpd_file2_mat_init(&fAB);
-		  dpd_file2_mat_rd(&fAB);
-		  dpd_file2_mat_init(&fIA);
-		  dpd_file2_mat_rd(&fIA);
+		  dpd_->file2_mat_init(&T1);
+		  dpd_->file2_mat_rd(&T1);
+		  dpd_->file2_mat_init(&fIJ);
+		  dpd_->file2_mat_rd(&fIJ);
+		  dpd_->file2_mat_init(&fAB);
+		  dpd_->file2_mat_rd(&fAB);
+		  dpd_->file2_mat_init(&fIA);
+		  dpd_->file2_mat_rd(&fIA);
 		  for(h=0; h < nirreps; h++) {
-		    dpd_buf4_mat_irrep_init(&T2, h);
-		    dpd_buf4_mat_irrep_rd(&T2, h);
-		    dpd_buf4_mat_irrep_init(&Dints, h);
-		    dpd_buf4_mat_irrep_rd(&Dints, h);
-		    dpd_buf4_mat_irrep_init(&Eints, h);
-		    dpd_buf4_mat_irrep_rd(&Eints, h);
+		    dpd_->buf4_mat_irrep_init(&T2, h);
+		    dpd_->buf4_mat_irrep_rd(&T2, h);
+		    dpd_->buf4_mat_irrep_init(&Dints, h);
+		    dpd_->buf4_mat_irrep_rd(&Dints, h);
+		    dpd_->buf4_mat_irrep_init(&Eints, h);
+		    dpd_->buf4_mat_irrep_rd(&Eints, h);
 		  }
 
 		  ij = Eints.params->rowidx[I][J];
@@ -242,7 +242,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
 		  for(Gab=0; Gab < nirreps; Gab++) {
 		    Gc = Gab ^ Gijk;
-		    XABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
+		    XABC[Gab] = dpd_->dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 		    for(ab=0; ab < Fints.params->coltot[Gab]; ab++) {
 		      for(c=0; c < virtpi[Gc]; c++) {
 			XABC[Gab][ab][c] = 2 * WABC[Gab][ab][c] + VABC[Gab][ab][c];
@@ -263,8 +263,8 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 		    nlinks = Fints.params->coltot[Gid];
 		    if(nrows && ncols && nlinks) {
 		      id = Fints.row_offset[Gid][I];
-		      Fints.matrix[Gid] = dpd_block_matrix(nrows,Fints.params->coltot[Gid]);
-		      dpd_buf4_mat_irrep_rd_block(&Fints, Gid, id, nrows);
+		      Fints.matrix[Gid] = dpd_->dpd_block_matrix(nrows,Fints.params->coltot[Gid]);
+		      dpd_->buf4_mat_irrep_rd_block(&Fints, Gid, id, nrows);
 		      Z = block_matrix(nrows, ncols);
 
 		      C_DGEMM('n','n', nrows, ncols, nlinks, 0.5, Fints.matrix[Gid][0], nlinks,
@@ -280,7 +280,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 			  S2.matrix[Gjk][jk][cd] -= Z[d][c];
 			}
 		      }
-		      dpd_free_block(Fints.matrix[Gid], nrows, Fints.params->coltot[Gid]);
+		      dpd_->free_dpd_block(Fints.matrix[Gid], nrows, Fints.params->coltot[Gid]);
 		      free_block(Z);
 		    } /* if nrows && ncols && nlinks */
 		  } /* Gd */
@@ -416,14 +416,14 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 		  }
 		  /**** T3 --> Gciab complete ****/
 
-		  dpd_file2_mat_close(&T1);
-		  dpd_file2_mat_close(&fIJ);
-		  dpd_file2_mat_close(&fAB);
-		  dpd_file2_mat_close(&fIA);
+		  dpd_->file2_mat_close(&T1);
+		  dpd_->file2_mat_close(&fIJ);
+		  dpd_->file2_mat_close(&fAB);
+		  dpd_->file2_mat_close(&fIA);
 		  for(h=0; h < nirreps; h++) {
-		    dpd_buf4_mat_irrep_close(&T2, h);
-		    dpd_buf4_mat_irrep_close(&Eints, h);
-		    dpd_buf4_mat_irrep_close(&Dints, h);
+		    dpd_->buf4_mat_irrep_close(&T2, h);
+		    dpd_->buf4_mat_irrep_close(&Eints, h);
+		    dpd_->buf4_mat_irrep_close(&Dints, h);
 		  }
 
 		} /* K */
@@ -432,13 +432,13 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
 	    for(Gab=0; Gab < nirreps; Gab++) {
 	      Gc = Gab ^ Gijk;
-	      dpd_free_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(XABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+	      dpd_->free_dpd_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+	      dpd_->free_dpd_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
+	      dpd_->free_dpd_block(XABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
-	      dpd_free_block(Y[Ga], virtpi[Ga],Fints.params->coltot[Gbc]);
+	      dpd_->free_dpd_block(Y[Ga], virtpi[Ga],Fints.params->coltot[Gbc]);
 	    }
 
 	  } /* Gk */
@@ -451,63 +451,63 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       free(VABC);
       free(XABC);
 
-      dpd_file2_mat_wrt(&Dab);
-      dpd_file2_mat_close(&Dab);
-      dpd_file2_close(&Dab);
+      dpd_->file2_mat_wrt(&Dab);
+      dpd_->file2_mat_close(&Dab);
+      dpd_->file2_close(&Dab);
 
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&S2, h);
-	dpd_buf4_mat_irrep_close(&S2, h);
+	dpd_->buf4_mat_irrep_wrt(&S2, h);
+	dpd_->buf4_mat_irrep_close(&S2, h);
       }
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&Gijab, h);
-	dpd_buf4_mat_irrep_close(&Gijab, h);
+	dpd_->buf4_mat_irrep_wrt(&Gijab, h);
+	dpd_->buf4_mat_irrep_close(&Gijab, h);
       }
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&Gijka, h);
-	dpd_buf4_mat_irrep_close(&Gijka, h);
+	dpd_->buf4_mat_irrep_wrt(&Gijka, h);
+	dpd_->buf4_mat_irrep_close(&Gijka, h);
       }
       for(h=0; h < nirreps; h++) {
-	dpd_buf4_mat_irrep_wrt(&Gidab, h);
-	dpd_buf4_mat_irrep_close(&Gidab, h);
+	dpd_->buf4_mat_irrep_wrt(&Gidab, h);
+	dpd_->buf4_mat_irrep_close(&Gidab, h);
       }
-      dpd_buf4_close(&Gijab);
-      dpd_buf4_close(&Gijka);
-      dpd_buf4_close(&Gidab);
-      dpd_buf4_close(&S2);
+      dpd_->buf4_close(&Gijab);
+      dpd_->buf4_close(&Gijka);
+      dpd_->buf4_close(&Gidab);
+      dpd_->buf4_close(&S2);
 
-      dpd_buf4_close(&T2);
-      dpd_buf4_close(&Fints);
-      dpd_buf4_close(&Eints);
-      dpd_buf4_close(&Dints);
+      dpd_->buf4_close(&T2);
+      dpd_->buf4_close(&Fints);
+      dpd_->buf4_close(&Eints);
+      dpd_->buf4_close(&Dints);
 
-      dpd_file2_mat_wrt(&S1);
-      dpd_file2_mat_close(&S1);
-      dpd_file2_close(&S1);
+      dpd_->file2_mat_wrt(&S1);
+      dpd_->file2_mat_close(&S1);
+      dpd_->file2_close(&S1);
 
-      dpd_file2_close(&T1);
-      dpd_file2_close(&fIJ);
-      dpd_file2_close(&fAB);
-      dpd_file2_close(&fIA);
+      dpd_->file2_close(&T1);
+      dpd_->file2_close(&fIJ);
+      dpd_->file2_close(&fAB);
+      dpd_->file2_close(&fIA);
 
       /*** T3 --> Dij ***/
 
-      dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
-      dpd_file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+      dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+      dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+      dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 2, 3, "fia");
+      dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
 
       dpdbuf4 EBBints;
-      dpd_buf4_init(&EBBints, PSIF_CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
+      dpd_->buf4_init(&EBBints, PSIF_CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
       dpdbuf4 FBBints;
-      dpd_buf4_init(&FBBints, PSIF_CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
+      dpd_->buf4_init(&FBBints, PSIF_CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
       dpdbuf4 T2BB;
-      dpd_buf4_init(&T2BB, PSIF_CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
+      dpd_->buf4_init(&T2BB, PSIF_CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
       dpdbuf4 DBBints;
-      dpd_buf4_init(&DBBints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+      dpd_->buf4_init(&DBBints, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
 
-      dpd_file2_init(&Dij, PSIF_CC_OEI, 0, 2, 2, "Dij");
-      dpd_file2_mat_init(&Dij);
+      dpd_->file2_init(&Dij, PSIF_CC_OEI, 0, 2, 2, "Dij");
+      dpd_->file2_mat_init(&Dij);
 
       int Gabc;
       for (Ga=0; Ga < nirreps; ++Ga) {
@@ -523,8 +523,8 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
                   //Allocate the memory for connected and disconnected triples
                   for (Gij=0; Gij < nirreps; ++Gij) {
                     Gk = Gij ^ Gabc;
-                    WIJK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
-                    VIJK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
+                    WIJK[Gij] = dpd_->dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
+                    VIJK[Gij] = dpd_->dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
                   }
 
                   T3_UHF_AAA_abc(WIJK, VIJK, 1, nirreps, A, Ga, B, Gb, C, Gc,
@@ -558,8 +558,8 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
                   //Deallocate the memory for connected and disconnected triples
                   for (Gij=0; Gij < nirreps; ++Gij) {
                     Gk = Gij ^ Gabc;
-                    dpd_free_block(WIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
-                    dpd_free_block(VIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
+                    dpd_->free_dpd_block(WIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
+                    dpd_->free_dpd_block(VIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
                   }
 
                 } // c
@@ -569,18 +569,18 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
         } // a
       } // Ga
 
-      dpd_file2_mat_wrt(&Dij);
-      dpd_file2_mat_close(&Dij);
-      dpd_file2_close(&Dij);
+      dpd_->file2_mat_wrt(&Dij);
+      dpd_->file2_mat_close(&Dij);
+      dpd_->file2_close(&Dij);
 
-      dpd_buf4_close(&EBBints);
-      dpd_buf4_close(&FBBints);
-      dpd_buf4_close(&DBBints);
-      dpd_buf4_close(&T2BB);
-      dpd_file2_close(&T1);
-      dpd_file2_close(&fij);
-      dpd_file2_close(&fia);
-      dpd_file2_close(&fab);
+      dpd_->buf4_close(&EBBints);
+      dpd_->buf4_close(&FBBints);
+      dpd_->buf4_close(&DBBints);
+      dpd_->buf4_close(&T2BB);
+      dpd_->file2_close(&T1);
+      dpd_->file2_close(&fij);
+      dpd_->file2_close(&fia);
+      dpd_->file2_close(&fab);
 
       return ET;
 

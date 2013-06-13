@@ -30,21 +30,8 @@
 
 #include <cstdio>
 #include "dpd.h"
-#define EXTERN
-#include "dpd.gbl"
 
 namespace psi {
 
-long int dpd_memfree(void)
-{
-  return dpd_main.memory - (dpd_main.memused - 
-			    dpd_main.memcache + 
-			    dpd_main.memlocked);
-}
-
-void dpd_memset(long int memory)
-{
-  dpd_main.memory = memory;
-}
 
 }

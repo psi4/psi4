@@ -112,15 +112,29 @@ PsiReturnType cctriples(Options &options)
   if(params.ref == 0) { /*** RHF ***/
     cachelist = cacheprep_rhf(2, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, NULL,
-         2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.occpi);
+    spaces.push_back(moinfo.occ_sym);
+    spaces.push_back(moinfo.virtpi);
+    spaces.push_back(moinfo.vir_sym);
+    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, memory, 0, cachefiles, cachelist, NULL,
+         2, spaces));
   }
   else if(params.ref == 2) { /*** UHF ***/
     cachelist = cacheprep_uhf(2, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, memory, 0, cachefiles,
-         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.aoccpi);
+    spaces.push_back(moinfo.aocc_sym);
+    spaces.push_back(moinfo.avirtpi);
+    spaces.push_back(moinfo.avir_sym);
+    spaces.push_back(moinfo.boccpi);
+    spaces.push_back(moinfo.bocc_sym);
+    spaces.push_back(moinfo.bvirtpi);
+    spaces.push_back(moinfo.bvir_sym);
+
+    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, memory, 0, cachefiles,
+         cachelist, NULL, 4, spaces));
   }
 
   count_ijk();
@@ -237,7 +251,7 @@ PsiReturnType cctriples(Options &options)
   Process::environment.globals["CURRENT ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ET+ moinfo.ecc;
 
-  dpd_close(0);
+//  dpd_->close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);

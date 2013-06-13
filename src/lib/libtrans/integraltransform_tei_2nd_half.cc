@@ -71,7 +71,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     IWL *iwl;
     if(useIWL_) iwl = new IWL;
@@ -103,7 +103,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     int ketCore = DPD_ID("[n,n]");
     int ketDisk = DPD_ID("[n>=n]+");
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
-    dpd_buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+    dpd_->buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
@@ -117,14 +117,14 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     else
         sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
                                               toupper(s3->label()), toupper(s4->label()));
-    dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+    dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                             label, braCore, ketCore, braDisk, ketDisk);
 
     for(int h=0; h < nirreps_; h++) {
         if(J.params->coltot[h] && J.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J.params->coltot[h]);
             if(rowsPerBucket > J.params->rowtot[h])
                 rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
@@ -145,15 +145,15 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
             fflush(outfile);
         }
 
-        dpd_buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
-        dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
         for(int n=0; n < nBuckets; n++) {
             if(nBuckets == 1)
                 thisBucketRows = rowsPerBucket;
             else
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-            dpd_buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( S1 S2 | n n ) -> ( S1 S2 | n S4 )
@@ -198,13 +198,13 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     } /* rs */
                 }
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
-        dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
-        dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&J);
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&J);
 
     if(useIWL_){
         iwl->flush(1);
@@ -224,7 +224,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         ketCore = DPD_ID("[n,n]");
         ketDisk = DPD_ID("[n>=n]+");
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
-        dpd_buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        dpd_->buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
@@ -238,14 +238,14 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         else
             sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
                                                   tolower(s3->label()), tolower(s4->label()));
-        dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < nirreps_; h++) {
             if(J.params->coltot[h] && J.params->rowtot[h]) {
-                memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+                memFree = static_cast<size_t>(dpd_->dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
                     rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
@@ -266,15 +266,15 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                 fflush(outfile);
             }
 
-            dpd_buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
             for(int n=0; n < nBuckets; n++){
                 if(nBuckets == 1)
                     thisBucketRows = rowsPerBucket;
                 else
                     thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-                dpd_buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
+                dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
                 for(int pq=0; pq < thisBucketRows; pq++) {
                     for(int Gr=0; Gr < nirreps_; Gr++) {
                         // Transform ( S1 S2 | n n ) -> ( S1 S2 | n s4 )
@@ -316,13 +316,13 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         } /* rs */
                     }
                 } /* pq */
-                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+                dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             }
-            dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
         }
-        dpd_buf4_close(&K);
-        dpd_buf4_close(&J);
+        dpd_->buf4_close(&K);
+        dpd_->buf4_close(&J);
 
         if(useIWL_){
             iwl->flush(1);
@@ -346,7 +346,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         braDisk = DPD_ID(s1, s2, Beta, true);
         ketDisk = DPD_ID("[n>=n]+");
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
-        dpd_buf4_init(&J, bHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        dpd_->buf4_init(&J, bHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
@@ -360,14 +360,14 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         else
             sprintf(label, "MO Ints (%c%c|%c%c)", tolower(s1->label()), tolower(s2->label()),
                                                   tolower(s3->label()), tolower(s4->label()));
-        dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
+        dpd_->buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
                                 label, braCore, ketCore, braDisk, ketDisk);
 
         for(int h=0; h < nirreps_; h++) {
             if (J.params->coltot[h] && J.params->rowtot[h]) {
-                memFree = static_cast<size_t>(dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+                memFree = static_cast<size_t>(dpd_->dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
                 rowsPerBucket = memFree/(2 * J.params->coltot[h]);
                 if(rowsPerBucket > J.params->rowtot[h])
                     rowsPerBucket = static_cast<size_t>(J.params->rowtot[h]);
@@ -389,15 +389,15 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                 fflush(outfile);
             }
 
-            dpd_buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_init_block(&J, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
             for(int n=0; n < nBuckets; n++) {
                 if(nBuckets == 1)
                     thisBucketRows = rowsPerBucket;
                 else
                     thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
-                dpd_buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
+                dpd_->buf4_mat_irrep_rd_block(&J, h, n*rowsPerBucket, thisBucketRows);
                 for(int pq=0; pq < thisBucketRows; pq++) {
                     for(int Gr=0; Gr < nirreps_; Gr++) {
                         // Transform ( s1 s2 | n n ) -> ( s1 s2 | n s4 )
@@ -440,13 +440,13 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         } /* rs */
                     }
                 } /* pq */
-                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+                dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             }
-            dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
         }
-        dpd_buf4_close(&K);
-        dpd_buf4_close(&J);
+        dpd_->buf4_close(&K);
+        dpd_->buf4_close(&J);
 
         psio_->close(bHtIntFile_, keepHtInts_);
 
@@ -477,5 +477,5 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     bbIntName_ = "";
 
     // Hand DPD control back to the user
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 }

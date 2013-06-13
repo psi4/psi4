@@ -241,7 +241,7 @@ IntegralTransform::generate_oei()
     free(T);
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     int soIntFile = PSIF_SO_TEI;
 
@@ -406,6 +406,6 @@ IntegralTransform::generate_oei()
         free(bFock);
     }
 
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 #endif
 }

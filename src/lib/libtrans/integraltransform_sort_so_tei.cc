@@ -109,7 +109,7 @@ IntegralTransform::presort_so_tei()
     free(T);
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     if(print_){
         fprintf(outfile, "\tPresorting SO-basis two-electron integrals.\n");
@@ -118,7 +118,7 @@ IntegralTransform::presort_so_tei()
 
     dpdfile4 I;
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
+    dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -382,11 +382,11 @@ IntegralTransform::presort_so_tei()
         free(bFock);
     }
 
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 
     alreadyPresorted_ = true;
 
-    dpd_file4_close(&I);
+    dpd_->file4_close(&I);
     psio_->close(PSIF_SO_PRESORT, 1);
 }
 

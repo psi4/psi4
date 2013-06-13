@@ -47,19 +47,19 @@ if (reference_ == "RESTRICTED") {
   dpdbuf4 K;
   
   /* Prepare the alpha and beta occ-occ Fock matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
+  dpd_->file2_mat_init(&F);
 
   /* Two-electron contributions */
 
   /* Prepare the <OO|OO> integral buffers */
-   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
+   dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,O]"), 0, "MO Ints <OO|OO>");
   // part-1
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -82,13 +82,13 @@ if (reference_ == "RESTRICTED") {
                 }
             }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
   
   
       // part-2
-      dpd_buf4_mat_irrep_init(&K, 0);
-      dpd_buf4_mat_irrep_rd(&K, 0);
+      dpd_->buf4_mat_irrep_init(&K, 0);
+      dpd_->buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -113,30 +113,30 @@ if (reference_ == "RESTRICTED") {
             }
 	  }
     }
-    dpd_buf4_mat_irrep_close(&K, 0);
+    dpd_->buf4_mat_irrep_close(&K, 0);
 
   /* Close the Integral buffers */
-  dpd_buf4_close(&K);
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->buf4_close(&K);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Build Fab **************************************************/
 /************************************************************************************************/  
   /* Prepare the alpha and beta vir-vir Fock matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
+  dpd_->file2_mat_init(&F);
 
   /* Two-electron contributions */
 
   /* Prepare the <OV|OV> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"),
                   ints->DPD_ID("[O,V]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OV|OV>");
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Ga=0; Ga < nirrep_; Ga++) {
@@ -161,16 +161,16 @@ if (reference_ == "RESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
   
   
   /* Prepare the <OO|VV> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[V,V]"), 0, "MO Ints <OO|VV>");
-      dpd_buf4_mat_irrep_init(&K, 0);
-      dpd_buf4_mat_irrep_rd(&K, 0);
+      dpd_->buf4_mat_irrep_init(&K, 0);
+      dpd_->buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
       for(int Ga=0; Ga < nirrep_; Ga++) {
@@ -196,32 +196,32 @@ if (reference_ == "RESTRICTED") {
 	    }
 	  }
     }
-    dpd_buf4_mat_irrep_close(&K, 0);
+    dpd_->buf4_mat_irrep_close(&K, 0);
 
   /* Close the <OV|OV> integral buffers */
-  dpd_buf4_close(&K);
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->buf4_close(&K);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Build Fia **************************************************/
 /************************************************************************************************/
   /* Prepare the alpha and beta occ-vir Fock matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
+  dpd_->file2_mat_init(&F);
 
 
   /* Two-electron contributions */
 
   /* Prepare the <OO|OV> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"),
                   ints->DPD_ID("[O,O]"), ints->DPD_ID("[O,V]"), 0, "MO Ints <OO|OV>");
   // part-1
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -245,12 +245,12 @@ if (reference_ == "RESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
   
       // part-2
-      dpd_buf4_mat_irrep_init(&K, 0);
-      dpd_buf4_mat_irrep_rd(&K, 0);
+      dpd_->buf4_mat_irrep_init(&K, 0);
+      dpd_->buf4_mat_irrep_rd(&K, 0);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -276,22 +276,22 @@ if (reference_ == "RESTRICTED") {
 	    }
 	  }
     }
-    dpd_buf4_mat_irrep_close(&K, 0);
+    dpd_->buf4_mat_irrep_close(&K, 0);
 
   /* Close the <OO|OV> integral buffers */
-  dpd_buf4_close(&K);
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->buf4_close(&K);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Set Fock ***************************************************/
 /************************************************************************************************/ 
    
     // <O|O> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
@@ -299,12 +299,12 @@ if (reference_ == "RESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
     // <V|V> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < virtpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
@@ -312,12 +312,12 @@ if (reference_ == "RESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
     // <O|V> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
@@ -326,7 +326,7 @@ if (reference_ == "RESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
      //1e-contr.
     FockA->add(HmoA);    
@@ -358,19 +358,19 @@ else if (reference_ == "UNRESTRICTED") {
   dpdbuf4 K;
   
   /* Prepare the alpha occ-occ Fock matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
+  dpd_->file2_mat_init(&F);
 
   /* Two-electron contributions */
 
   /* Prepare the <OO||OO> integral buffers */
-   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+   dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO||OO>");
    
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -393,19 +393,19 @@ else if (reference_ == "UNRESTRICTED") {
                 }
             }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
   
     
   /* Prepare the <Oo|Oo> integral buffers */
-   dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+   dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
                   ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");  
 
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -428,14 +428,14 @@ else if (reference_ == "UNRESTRICTED") {
                 }
             }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
 
   /* Close the Integral buffers */
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Build Fab **************************************************/
@@ -443,18 +443,18 @@ else if (reference_ == "UNRESTRICTED") {
   // F(AB) = h(AB) + \sum_{M} <AM||BM>  + \sum_{m} <Am|Bm> 
   
   /* Prepare the alpha vir-vir Fock matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
+  dpd_->file2_mat_init(&F);
 
   /* Two-electron contributions */
 
   /* Prepare the <OV||OV> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV||OV>");
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Ga=0; Ga < nirrep_; Ga++) {
@@ -480,18 +480,18 @@ else if (reference_ == "UNRESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
   
     
    /* Prepare the <Vo|Vo> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,o]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,o]"),
                   ID("[V,o]"), ID("[V,o]"), 0, "MO Ints <Vo|Vo>");
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Ga=0; Ga < nirrep_; Ga++) {
@@ -517,15 +517,15 @@ else if (reference_ == "UNRESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
     
 
   /* Close the buffers */  
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Build Fia **************************************************/
@@ -533,20 +533,20 @@ else if (reference_ == "UNRESTRICTED") {
   // F(IA) = h(IA) + \sum_{M} <IM||AM> + \sum_{m} <Im|Am>
   
   /* Prepare the alpha and beta occ-vir FockA matrix files */
-  dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
-  dpd_file2_mat_init(&F);
+  dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
+  dpd_->file2_mat_init(&F);
 
 
   /* Two-electron contributions */
 
   /* Prepare the <OO||OV> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "MO Ints <OO||OV>");
   
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -570,19 +570,19 @@ else if (reference_ == "UNRESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
     
     
    /* Prepare the <Oo|Vo> integral buffers */
-  dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
+  dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,o]"),
                   ID("[O,o]"), ID("[V,o]"), 0, "MO Ints <Oo|Vo>");
   
   for(int h=0; h < nirrep_; h++) {
 
-      dpd_buf4_mat_irrep_init(&K, h);
-      dpd_buf4_mat_irrep_rd(&K, h);
+      dpd_->buf4_mat_irrep_init(&K, h);
+      dpd_->buf4_mat_irrep_rd(&K, h);
 
       /* Loop over irreps of the target */
       for(int Gi=0; Gi < nirrep_; Gi++) {
@@ -606,23 +606,23 @@ else if (reference_ == "UNRESTRICTED") {
 		}
 	    }
     }
-    dpd_buf4_mat_irrep_close(&K, h);
+    dpd_->buf4_mat_irrep_close(&K, h);
   }
-  dpd_buf4_close(&K);
+  dpd_->buf4_close(&K);
 
   /* Close the buffers */  
-  dpd_file2_mat_wrt(&F);
-  dpd_file2_mat_close(&F);
-  dpd_file2_close(&F);
+  dpd_->file2_mat_wrt(&F);
+  dpd_->file2_mat_close(&F);
+  dpd_->file2_close(&F);
   
 /************************************************************************************************/
 /*********************************** Set Fock ***************************************************/
 /************************************************************************************************/ 
    
     // <O|O> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "Fock <O|O>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < occpiA[h]; ++j){
@@ -630,12 +630,12 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
     // <V|V> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "Fock <V|V>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < virtpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
@@ -643,12 +643,12 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
     // <O|V> block
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
-    dpd_file2_mat_init(&F);
-    dpd_file2_mat_rd(&F);
+    dpd_->file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "Fock <O|V>");
+    dpd_->file2_mat_init(&F);
+    dpd_->file2_mat_rd(&F);
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0 ; i < occpiA[h]; ++i){
             for(int j = 0 ; j < virtpiA[h]; ++j){
@@ -657,7 +657,7 @@ else if (reference_ == "UNRESTRICTED") {
             }
         }
     }
-    dpd_file2_close(&F);
+    dpd_->file2_close(&F);
     
      //1e-contr.
      FockA->add(HmoA);    

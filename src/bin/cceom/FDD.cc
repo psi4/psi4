@@ -52,42 +52,42 @@ void FDD(int i, int C_irr) {
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
     /* SIjAb += Fbe * CIjAe - FAE * CIjbE */
-    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract424(&CMnEf, &FAE, &Z, 3, 1, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
-    dpd_buf4_close(&CMnEf);
+    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract424(&CMnEf, &FAE, &Z, 3, 1, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
+    dpd_->buf4_close(&CMnEf);
 
-    dpd_buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
-    dpd_buf4_init(&Z2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
+    dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
+    dpd_->buf4_init(&Z2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
 
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_buf4_axpy(&Z, &SIjAb, 1.0);
-    dpd_buf4_axpy(&Z2, &SIjAb, 1.0);
-    dpd_buf4_close(&Z);
-    dpd_buf4_close(&Z2);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+    dpd_->buf4_axpy(&Z2, &SIjAb, 1.0);
+    dpd_->buf4_close(&Z);
+    dpd_->buf4_close(&Z2);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("FDD_Fbe",i,C_irr);
 #endif
 
     /* SIjAb -= FMJ * CImAb - FMI * CjMAb */
-    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract244(&FMI, &CMnEf, &Z, 0, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&FMI);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_buf4_axpy(&Z, &SIjAb, -1.0);
-    dpd_buf4_close(&Z);
-    dpd_buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
-    dpd_buf4_axpy(&Z, &SIjAb, -1.0);
-    dpd_buf4_close(&Z);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract244(&FMI, &CMnEf, &Z, 0, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&FMI);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
+    dpd_->buf4_close(&Z);
+    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
+    dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
+    dpd_->buf4_close(&Z);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("FDD_Fmj",i,C_irr);
@@ -104,96 +104,96 @@ void FDD(int i, int C_irr) {
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
     /* SIJAB += FBE * CIJAE - FAE * CIJBE */
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 5, 2, 7, 0, CMNEF_lbl);
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract424(&CMNEF, &FAE, &FP, 3, 1, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 5, 2, 7, 0, SIJAB_lbl);
-    dpd_buf4_axpy(&FP, &SIJAB, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
-    dpd_buf4_axpy(&FM, &SIJAB, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_close(&SIJAB);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
+    dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 5, 2, 7, 0, CMNEF_lbl);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract424(&CMNEF, &FAE, &FP, 3, 1, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
+    dpd_->buf4_close(&CMNEF);
+    dpd_->buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
+    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 5, 2, 7, 0, SIJAB_lbl);
+    dpd_->buf4_axpy(&FP, &SIJAB, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
+    dpd_->buf4_axpy(&FM, &SIJAB, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_close(&SIJAB);
 
     /* Sijab += Fbe * Cijae - Fae * Cijbe */
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 5, 2, 7, 0, Cmnef_lbl);
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
-    dpd_contract424(&Cmnef, &Fae, &FP, 3, 1, 0, 1.0, 0.0);
-    dpd_file2_close(&Fae);
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 5, 2, 7, 0, Sijab_lbl);
-    dpd_buf4_axpy(&FP, &Sijab, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
-    dpd_buf4_axpy(&FM, &Sijab, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_close(&Sijab);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
+    dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 2, 5, 2, 7, 0, Cmnef_lbl);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
+    dpd_->contract424(&Cmnef, &Fae, &FP, 3, 1, 0, 1.0, 0.0);
+    dpd_->file2_close(&Fae);
+    dpd_->buf4_close(&Cmnef);
+    dpd_->buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
+    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 2, 5, 2, 7, 0, Sijab_lbl);
+    dpd_->buf4_axpy(&FP, &Sijab, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
+    dpd_->buf4_axpy(&FM, &Sijab, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_close(&Sijab);
 
     /* SIjAb += Fbe * CIjAe - FAE * CIjbE */
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
-    dpd_contract424(&CMnEf, &Fae, &SIjAb, 3, 1, 0, 1.0, 1.0);
-    dpd_file2_close(&Fae);
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract244(&FAE, &CMnEf, &SIjAb, 1, 2, 1, 1.0, 1.0);
-    dpd_file2_close(&FAE);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
+    dpd_->contract424(&CMnEf, &Fae, &SIjAb, 3, 1, 0, 1.0, 1.0);
+    dpd_->file2_close(&Fae);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract244(&FAE, &CMnEf, &SIjAb, 1, 2, 1, 1.0, 1.0);
+    dpd_->file2_close(&FAE);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("Fbe_FDD ",i,C_irr);
 #endif
 
     /* SIJAB -= FMJ * CIMAB - FMI * CJMAB */
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, CMNEF_lbl);
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract424(&CMNEF, &FMI, &FM, 1, 0, 1, 1.0, 0.0);
-    dpd_file2_close(&FMI);
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
-    dpd_buf4_axpy(&FM, &SIJAB, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
-    dpd_buf4_axpy(&FP, &SIJAB, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_close(&SIJAB);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
+    dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, CMNEF_lbl);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract424(&CMNEF, &FMI, &FM, 1, 0, 1, 1.0, 0.0);
+    dpd_->file2_close(&FMI);
+    dpd_->buf4_close(&CMNEF);
+    dpd_->buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
+    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
+    dpd_->buf4_axpy(&FM, &SIJAB, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
+    dpd_->buf4_axpy(&FP, &SIJAB, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_close(&SIJAB);
 
     /* Sijab -= Fmj * Cimab - Fmi * Cjmab */
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 0, 7, 2, 7, 0, Cmnef_lbl);
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
-    dpd_contract424(&Cmnef, &Fmi, &FM, 1, 0, 1, 1.0, 0.0);
-    dpd_file2_close(&Fmi);
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 0, 7, 2, 7, 0, Sijab_lbl);
-    dpd_buf4_axpy(&FM, &Sijab, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
-    dpd_buf4_axpy(&FP, &Sijab, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_close(&Sijab);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
+    dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 0, 7, 2, 7, 0, Cmnef_lbl);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
+    dpd_->contract424(&Cmnef, &Fmi, &FM, 1, 0, 1, 1.0, 0.0);
+    dpd_->file2_close(&Fmi);
+    dpd_->buf4_close(&Cmnef);
+    dpd_->buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
+    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 0, 7, 2, 7, 0, Sijab_lbl);
+    dpd_->buf4_axpy(&FM, &Sijab, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
+    dpd_->buf4_axpy(&FP, &Sijab, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_close(&Sijab);
 
     /* SIjAb -= Fmj * CImAb - FMI * CjMAb */
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
-    dpd_contract424(&CMnEf, &Fmi, &SIjAb, 1, 0, 1, -1.0, 1.0);
-    dpd_file2_close(&Fmi);
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract244(&FMI, &CMnEf, &SIjAb, 0, 0, 0, -1.0, 1.0);
-    dpd_file2_close(&FMI);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
+    dpd_->contract424(&CMnEf, &Fmi, &SIjAb, 1, 0, 1, -1.0, 1.0);
+    dpd_->file2_close(&Fmi);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract244(&FMI, &CMnEf, &SIjAb, 0, 0, 0, -1.0, 1.0);
+    dpd_->file2_close(&FMI);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("Fmj_DD",i,C_irr);
@@ -210,96 +210,96 @@ void FDD(int i, int C_irr) {
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
     /* SIJAB += FBE * CIJAE - FAE * CIJBE */
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 5, 2, 7, 0, CMNEF_lbl);
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract424(&CMNEF, &FAE, &FP, 3, 1, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 5, 2, 7, 0, SIJAB_lbl);
-    dpd_buf4_axpy(&FP, &SIJAB, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
-    dpd_buf4_axpy(&FM, &SIJAB, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_close(&SIJAB);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEP");
+    dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 2, 5, 2, 7, 0, CMNEF_lbl);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract424(&CMNEF, &FAE, &FP, 3, 1, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
+    dpd_->buf4_close(&CMNEF);
+    dpd_->buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 2, 5, "FDD_FBEM");
+    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 2, 5, 2, 7, 0, SIJAB_lbl);
+    dpd_->buf4_axpy(&FP, &SIJAB, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 2, 5, 2, 5, 0, "FDD_FBEM");
+    dpd_->buf4_axpy(&FM, &SIJAB, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_close(&SIJAB);
 
     /* Sijab += Fbe * Cijae - Fae * Cijbe */
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "FDD_FbePB");
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 15, 12, 17, 0, Cmnef_lbl);
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
-    dpd_contract424(&Cmnef, &Fae, &FP, 3, 1, 0, 1.0, 0.0);
-    dpd_file2_close(&Fae);
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 12, 15, "FDD_FbeMB");
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 15, 12, 17, 0, Sijab_lbl);
-    dpd_buf4_axpy(&FP, &Sijab, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "FDD_FbeMB");
-    dpd_buf4_axpy(&FM, &Sijab, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_close(&Sijab);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "FDD_FbePB");
+    dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 12, 15, 12, 17, 0, Cmnef_lbl);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
+    dpd_->contract424(&Cmnef, &Fae, &FP, 3, 1, 0, 1.0, 0.0);
+    dpd_->file2_close(&Fae);
+    dpd_->buf4_close(&Cmnef);
+    dpd_->buf4_sort(&FP, PSIF_EOM_TMP, pqsr, 12, 15, "FDD_FbeMB");
+    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 12, 15, 12, 17, 0, Sijab_lbl);
+    dpd_->buf4_axpy(&FP, &Sijab, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 12, 15, 12, 15, 0, "FDD_FbeMB");
+    dpd_->buf4_axpy(&FM, &Sijab, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_close(&Sijab);
 
     /* SIjAb += Fbe * CIjAe - FAE * CIjbE */
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, CMnEf_lbl);
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
-    dpd_contract424(&CMnEf, &Fae, &SIjAb, 3, 1, 0, 1.0, 1.0);
-    dpd_file2_close(&Fae);
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract244(&FAE, &CMnEf, &SIjAb, 1, 2, 1, 1.0, 1.0);
-    dpd_file2_close(&FAE);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, CMnEf_lbl);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
+    dpd_->contract424(&CMnEf, &Fae, &SIjAb, 3, 1, 0, 1.0, 1.0);
+    dpd_->file2_close(&Fae);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract244(&FAE, &CMnEf, &SIjAb, 1, 2, 1, 1.0, 1.0);
+    dpd_->file2_close(&FAE);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("Fbe_FDD ",i,C_irr);
 #endif
 
     /* SIJAB -= FMJ * CIMAB - FMI * CJMAB */
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
-    dpd_buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, CMNEF_lbl);
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract424(&CMNEF, &FMI, &FM, 1, 0, 1, 1.0, 0.0);
-    dpd_file2_close(&FMI);
-    dpd_buf4_close(&CMNEF);
-    dpd_buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
-    dpd_buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
-    dpd_buf4_axpy(&FM, &SIJAB, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
-    dpd_buf4_axpy(&FP, &SIJAB, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_close(&SIJAB);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJM");
+    dpd_->buf4_init(&CMNEF, PSIF_EOM_CMNEF, C_irr, 0, 7, 2, 7, 0, CMNEF_lbl);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract424(&CMNEF, &FMI, &FM, 1, 0, 1, 1.0, 0.0);
+    dpd_->file2_close(&FMI);
+    dpd_->buf4_close(&CMNEF);
+    dpd_->buf4_sort(&FM, PSIF_EOM_TMP, qprs, 0, 7, "FDD_FMJP");
+    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
+    dpd_->buf4_axpy(&FM, &SIJAB, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "FDD_FMJP");
+    dpd_->buf4_axpy(&FP, &SIJAB, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_close(&SIJAB);
 
     /* Sijab -= Fmj * Cimab - Fmi * Cjmab */
-    dpd_buf4_init(&FM, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "FDD_FmjMB");
-    dpd_buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 17, 12, 17, 0, Cmnef_lbl);
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
-    dpd_contract424(&Cmnef, &Fmi, &FM, 1, 0, 1, 1.0, 0.0);
-    dpd_file2_close(&Fmi);
-    dpd_buf4_close(&Cmnef);
-    dpd_buf4_sort(&FM, PSIF_EOM_TMP, qprs, 10, 17, "FDD_FmjPB");
-    dpd_buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 17, 12, 17, 0, Sijab_lbl);
-    dpd_buf4_axpy(&FM, &Sijab, -1.0);
-    dpd_buf4_close(&FM);
-    dpd_buf4_init(&FP, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "FDD_FmjPB");
-    dpd_buf4_axpy(&FP, &Sijab, 1.0);
-    dpd_buf4_close(&FP);
-    dpd_buf4_close(&Sijab);
+    dpd_->buf4_init(&FM, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "FDD_FmjMB");
+    dpd_->buf4_init(&Cmnef, PSIF_EOM_Cmnef, C_irr, 10, 17, 12, 17, 0, Cmnef_lbl);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
+    dpd_->contract424(&Cmnef, &Fmi, &FM, 1, 0, 1, 1.0, 0.0);
+    dpd_->file2_close(&Fmi);
+    dpd_->buf4_close(&Cmnef);
+    dpd_->buf4_sort(&FM, PSIF_EOM_TMP, qprs, 10, 17, "FDD_FmjPB");
+    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 17, 12, 17, 0, Sijab_lbl);
+    dpd_->buf4_axpy(&FM, &Sijab, -1.0);
+    dpd_->buf4_close(&FM);
+    dpd_->buf4_init(&FP, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "FDD_FmjPB");
+    dpd_->buf4_axpy(&FP, &Sijab, 1.0);
+    dpd_->buf4_close(&FP);
+    dpd_->buf4_close(&Sijab);
 
     /* SIjAb -= Fmj * CImAb - FMI * CjMAb */
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, CMnEf_lbl);
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
-    dpd_contract424(&CMnEf, &Fmi, &SIjAb, 1, 0, 1, -1.0, 1.0);
-    dpd_file2_close(&Fmi);
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract244(&FMI, &CMnEf, &SIjAb, 0, 0, 0, -1.0, 1.0);
-    dpd_file2_close(&FMI);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, CMnEf_lbl);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
+    dpd_->contract424(&CMnEf, &Fmi, &SIjAb, 1, 0, 1, -1.0, 1.0);
+    dpd_->file2_close(&Fmi);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract244(&FMI, &CMnEf, &SIjAb, 0, 0, 0, -1.0, 1.0);
+    dpd_->file2_close(&FMI);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_close(&SIjAb);
 
 #ifdef EOM_DEBUG
     check_sum("Fmj_DD",i,C_irr);

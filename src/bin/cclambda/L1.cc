@@ -62,54 +62,54 @@ namespace psi { namespace cclambda {
       /* ground state inhomogeneous term is Fme */
       if (L_params.ground) {
 	if(params.ref == 0) {
-	  dpd_file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
-	  dpd_file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_close(&FME);
+	  dpd_->file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
+	  dpd_->file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_close(&FME);
 	}
 	else if(params.ref == 1) {
-	  dpd_file2_init(&Fme,PSIF_CC_OEI, 0, 0, 1, "Fme");
-	  dpd_file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
-	  dpd_file2_copy(&Fme, PSIF_CC_LAMBDA, "New Lia");
-	  dpd_file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_close(&Fme);
-	  dpd_file2_close(&FME);
+	  dpd_->file2_init(&Fme,PSIF_CC_OEI, 0, 0, 1, "Fme");
+	  dpd_->file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
+	  dpd_->file2_copy(&Fme, PSIF_CC_LAMBDA, "New Lia");
+	  dpd_->file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_close(&Fme);
+	  dpd_->file2_close(&FME);
 	}
 	else if(params.ref == 2) {
-	  dpd_file2_init(&Fme,PSIF_CC_OEI, 0, 2, 3, "Fme");
-	  dpd_file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
-	  dpd_file2_copy(&Fme, PSIF_CC_LAMBDA, "New Lia");
-	  dpd_file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_close(&Fme);
-	  dpd_file2_close(&FME);
+	  dpd_->file2_init(&Fme,PSIF_CC_OEI, 0, 2, 3, "Fme");
+	  dpd_->file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "FME");
+	  dpd_->file2_copy(&Fme, PSIF_CC_LAMBDA, "New Lia");
+	  dpd_->file2_copy(&FME, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_close(&Fme);
+	  dpd_->file2_close(&FME);
 	  /* If CCSD(T) gradient, add T3 contributions */
 	  if(params.wfn == "CCSD_T") {
-	    dpd_file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "SIA");
-	    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	    dpd_file2_axpy(&FME, &LIA, 1, 0);
-	    dpd_file2_close(&LIA);
-	    dpd_file2_close(&FME);
+	    dpd_->file2_init(&FME,PSIF_CC_OEI, 0, 0, 1, "SIA");
+	    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	    dpd_->file2_axpy(&FME, &LIA, 1, 0);
+	    dpd_->file2_close(&LIA);
+	    dpd_->file2_close(&FME);
 
-	    dpd_file2_init(&FME,PSIF_CC_OEI, 0, 2, 3, "Sia");
-	    dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
-	    dpd_file2_axpy(&FME, &LIA, 1, 0);
-	    dpd_file2_close(&LIA);
-	    dpd_file2_close(&FME);
+	    dpd_->file2_init(&FME,PSIF_CC_OEI, 0, 2, 3, "Sia");
+	    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+	    dpd_->file2_axpy(&FME, &LIA, 1, 0);
+	    dpd_->file2_close(&LIA);
+	    dpd_->file2_close(&FME);
 	  }
 	}
       }
       /* excited state - no inhomogenous term, first term is -energy*L*/
       else if (!params.zeta) {
 	if (params.ref == 0 || params.ref == 1) {
-	  dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-	  dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	  dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-	  dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-	  dpd_file2_axpy(&LIA, &newLIA, -1.0 * L_params.cceom_energy,0.0);
-	  dpd_file2_axpy(&Lia, &newLia, -1.0 * L_params.cceom_energy,0.0);
-	  dpd_file2_close(&LIA);
-	  dpd_file2_close(&newLIA);
-	  dpd_file2_close(&Lia);
-	  dpd_file2_close(&newLia);
+	  dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	  dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	  dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+	  dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+	  dpd_->file2_axpy(&LIA, &newLIA, -1.0 * L_params.cceom_energy,0.0);
+	  dpd_->file2_axpy(&Lia, &newLia, -1.0 * L_params.cceom_energy,0.0);
+	  dpd_->file2_close(&LIA);
+	  dpd_->file2_close(&newLIA);
+	  dpd_->file2_close(&Lia);
+	  dpd_->file2_close(&newLia);
 	}
 	else if (params.ref == 2) {
 	  /* do nothing - TDC did not change to increments for the UHF case */
@@ -118,138 +118,138 @@ namespace psi { namespace cclambda {
       /* solving zeta equations; inhomogeneous term is Xi */
       else {
 	if (params.ref == 0) {
-	  dpd_file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
-	  dpd_file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_close(&XIA);
+	  dpd_->file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
+	  dpd_->file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_close(&XIA);
 	}
 	else if (params.ref == 1) {
-	  dpd_file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
-	  dpd_file2_init(&Xia, PSIF_EOM_XI, 0, 0, 1, "Xia");
-	  dpd_file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_copy(&Xia, PSIF_CC_LAMBDA, "New Lia");
-	  dpd_file2_close(&XIA);
-	  dpd_file2_close(&Xia);
+	  dpd_->file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
+	  dpd_->file2_init(&Xia, PSIF_EOM_XI, 0, 0, 1, "Xia");
+	  dpd_->file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_copy(&Xia, PSIF_CC_LAMBDA, "New Lia");
+	  dpd_->file2_close(&XIA);
+	  dpd_->file2_close(&Xia);
 	}
 	else if(params.ref == 2) {
-	  dpd_file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
-	  dpd_file2_init(&Xia, PSIF_EOM_XI, 0, 2, 3, "Xia");
-	  dpd_file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
-	  dpd_file2_copy(&Xia, PSIF_CC_LAMBDA, "New Lia");
-	  dpd_file2_close(&XIA);
-	  dpd_file2_close(&Xia);
+	  dpd_->file2_init(&XIA, PSIF_EOM_XI, 0, 0, 1, "XIA");
+	  dpd_->file2_init(&Xia, PSIF_EOM_XI, 0, 2, 3, "Xia");
+	  dpd_->file2_copy(&XIA, PSIF_CC_LAMBDA, "New LIA");
+	  dpd_->file2_copy(&Xia, PSIF_CC_LAMBDA, "New Lia");
+	  dpd_->file2_close(&XIA);
+	  dpd_->file2_close(&Xia);
 	}
       }
 
       if(params.ref == 0 || params.ref == 1) {
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
       }
       else if(params.ref == 2) {
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
       }
 
       if(params.ref == 0) { /** RHF **/
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
 
 	/* L1 RHS += Lie*Fea */
-	dpd_file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAE");
-	dpd_contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1.0, 1.0);
-	dpd_file2_close(&LFAEt2);
+	dpd_->file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAE");
+	dpd_->contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1.0, 1.0);
+	dpd_->file2_close(&LFAEt2);
 
 	/* L1 RHS += -Lma*Fim */
-	dpd_file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMI");
-	dpd_contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1.0, 1.0);
-	dpd_file2_close(&LFMIt2);
+	dpd_->file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMI");
+	dpd_->contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1.0, 1.0);
+	dpd_->file2_close(&LFMIt2);
 
 	/* L1 RHS += Lme*Wieam */
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
-	dpd_contract422(&W, &LIA, &newLIA, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "2 W(ME,jb) + W(Me,Jb)");
+	dpd_->contract422(&W, &LIA, &newLIA, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&W);
 
-	dpd_file2_close(&LIA);
+	dpd_->file2_close(&LIA);
       }
       else if(params.ref == 1) { /** ROHF **/
 
 	/* L1 RHS += Lie*Fea */
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-	dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
 
-	dpd_file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAE");
-	dpd_file2_init(&LFaet2, PSIF_CC_OEI, 0, 1, 1, "Fae");
-	dpd_contract222(&Lia,&LFaet2,&newLia, 0, 1, 1.0, 1.0);
-	dpd_contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1.0, 1.0);
-	dpd_file2_close(&LFaet2);
-	dpd_file2_close(&LFAEt2);
+	dpd_->file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAE");
+	dpd_->file2_init(&LFaet2, PSIF_CC_OEI, 0, 1, 1, "Fae");
+	dpd_->contract222(&Lia,&LFaet2,&newLia, 0, 1, 1.0, 1.0);
+	dpd_->contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1.0, 1.0);
+	dpd_->file2_close(&LFaet2);
+	dpd_->file2_close(&LFAEt2);
 
 	/* L1 RHS += -Lma*Fim */
-	dpd_file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMI");
-	dpd_file2_init(&LFmit2,PSIF_CC_OEI, 0, 0, 0, "Fmi");
-	dpd_contract222(&LFmit2,&Lia,&newLia, 0, 1, -1.0, 1.0);
-	dpd_contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1.0, 1.0);
-	dpd_file2_close(&LFmit2);
-	dpd_file2_close(&LFMIt2);
+	dpd_->file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMI");
+	dpd_->file2_init(&LFmit2,PSIF_CC_OEI, 0, 0, 0, "Fmi");
+	dpd_->contract222(&LFmit2,&Lia,&newLia, 0, 1, -1.0, 1.0);
+	dpd_->contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1.0, 1.0);
+	dpd_->file2_close(&LFmit2);
+	dpd_->file2_close(&LFMIt2);
 
 	/* L1 RHS += Lme*Wieam */
-	dpd_buf4_init(&WMBEJ, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-	dpd_contract422(&WMBEJ, &LIA, &newLIA, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&WMBEJ);
+	dpd_->buf4_init(&WMBEJ, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+	dpd_->contract422(&WMBEJ, &LIA, &newLIA, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&WMBEJ);
 
-	dpd_buf4_init(&WMbEj, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-	dpd_contract422(&WMbEj, &Lia, &newLIA, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&WMbEj);
+	dpd_->buf4_init(&WMbEj, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+	dpd_->contract422(&WMbEj, &Lia, &newLIA, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&WMbEj);
 
-	dpd_buf4_init(&Wmbej, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
-	dpd_contract422(&Wmbej, &Lia, &newLia, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&Wmbej);
+	dpd_->buf4_init(&Wmbej, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "Wmbej");
+	dpd_->contract422(&Wmbej, &Lia, &newLia, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&Wmbej);
 
-	dpd_buf4_init(&WmBeJ, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
-	dpd_contract422(&WmBeJ, &LIA, &newLia, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&WmBeJ);
+	dpd_->buf4_init(&WmBeJ, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WmBeJ");
+	dpd_->contract422(&WmBeJ, &LIA, &newLia, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&WmBeJ);
 
-	dpd_file2_close(&LIA);
-	dpd_file2_close(&Lia);
+	dpd_->file2_close(&LIA);
+	dpd_->file2_close(&Lia);
       }
       else if(params.ref == 2) { /** UHF **/
 
 	/* L1 RHS += Lie*Fea */
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-	dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
 
-	dpd_file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAEt");
-	dpd_file2_init(&LFaet2, PSIF_CC_OEI, 0, 3, 3, "Faet");
-	dpd_contract222(&Lia,&LFaet2,&newLia, 0, 1, 1, 1);
-	dpd_contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1, 1);
-	dpd_file2_close(&LFaet2);
-	dpd_file2_close(&LFAEt2);
+	dpd_->file2_init(&LFAEt2, PSIF_CC_OEI, 0, 1, 1, "FAEt");
+	dpd_->file2_init(&LFaet2, PSIF_CC_OEI, 0, 3, 3, "Faet");
+	dpd_->contract222(&Lia,&LFaet2,&newLia, 0, 1, 1, 1);
+	dpd_->contract222(&LIA,&LFAEt2,&newLIA, 0, 1, 1, 1);
+	dpd_->file2_close(&LFaet2);
+	dpd_->file2_close(&LFAEt2);
 
 	/* L1 RHS += -Lma*Fim */
-	dpd_file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMIt");
-	dpd_file2_init(&LFmit2,PSIF_CC_OEI, 0, 2, 2, "Fmit");
-	dpd_contract222(&LFmit2,&Lia,&newLia, 0, 1, -1, 1);
-	dpd_contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1, 1);
-	dpd_file2_close(&LFmit2);
-	dpd_file2_close(&LFMIt2);
+	dpd_->file2_init(&LFMIt2,PSIF_CC_OEI, 0, 0, 0, "FMIt");
+	dpd_->file2_init(&LFmit2,PSIF_CC_OEI, 0, 2, 2, "Fmit");
+	dpd_->contract222(&LFmit2,&Lia,&newLia, 0, 1, -1, 1);
+	dpd_->contract222(&LFMIt2,&LIA,&newLIA, 0, 1, -1, 1);
+	dpd_->file2_close(&LFmit2);
+	dpd_->file2_close(&LFMIt2);
 
 	/* L1 RHS += Lme*Wieam */
-	dpd_buf4_init(&WMBEJ, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
-	dpd_contract422(&WMBEJ, &LIA, &newLIA, 0, 0, 1, 1);
-	dpd_buf4_close(&WMBEJ);
+	dpd_->buf4_init(&WMBEJ, PSIF_CC_HBAR, 0, 20, 20, 20, 20, 0, "WMBEJ");
+	dpd_->contract422(&WMBEJ, &LIA, &newLIA, 0, 0, 1, 1);
+	dpd_->buf4_close(&WMBEJ);
 
-	dpd_buf4_init(&WMbEj, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
-	dpd_contract422(&WMbEj, &Lia, &newLIA, 0, 0, 1, 1);
-	dpd_buf4_close(&WMbEj);
+	dpd_->buf4_init(&WMbEj, PSIF_CC_HBAR, 0, 20, 30, 20, 30, 0, "WMbEj");
+	dpd_->contract422(&WMbEj, &Lia, &newLIA, 0, 0, 1, 1);
+	dpd_->buf4_close(&WMbEj);
 
-	dpd_buf4_init(&Wmbej, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
-	dpd_contract422(&Wmbej, &Lia, &newLia, 0, 0, 1, 1);
-	dpd_buf4_close(&Wmbej);
+	dpd_->buf4_init(&Wmbej, PSIF_CC_HBAR, 0, 30, 30, 30, 30, 0, "Wmbej");
+	dpd_->contract422(&Wmbej, &Lia, &newLia, 0, 0, 1, 1);
+	dpd_->buf4_close(&Wmbej);
 
-	dpd_buf4_init(&WmBeJ, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
-	dpd_contract422(&WmBeJ, &LIA, &newLia, 0, 0, 1, 1);
-	dpd_buf4_close(&WmBeJ);
+	dpd_->buf4_init(&WmBeJ, PSIF_CC_HBAR, 0, 30, 20, 30, 20, 0, "WmBeJ");
+	dpd_->contract422(&WmBeJ, &LIA, &newLia, 0, 0, 1, 1);
+	dpd_->buf4_close(&WmBeJ);
 
-	dpd_file2_close(&LIA);
-	dpd_file2_close(&Lia);
+	dpd_->file2_close(&LIA);
+	dpd_->file2_close(&Lia);
       }
 
       /* L1 RHS += 1/2 Limef*Wefam */
@@ -257,22 +257,22 @@ namespace psi { namespace cclambda {
       /* Note: W(am,ef) is really Wabei (ei,ab) */
       if(params.ref == 0) { /** RHF **/
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAbEi (Ei,Ab)");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAbEi (Ei,Ab)");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
 	/*    dpd_contract442(&L2, &W, &newLIA, 0, 0, 1.0, 1.0); */
-	dpd_file2_mat_init(&newLIA);
-	dpd_file2_mat_rd(&newLIA);
+	dpd_->file2_mat_init(&newLIA);
+	dpd_->file2_mat_rd(&newLIA);
 	for(Gam=0; Gam < moinfo.nirreps; Gam++) {
 	  Gef = Gam; /* W is totally symmetric */
 	  Gim = Gef ^ L_irr; 
-	  dpd_buf4_mat_irrep_init(&L2, Gim);
-	  dpd_buf4_mat_irrep_rd(&L2, Gim);
-	  dpd_buf4_mat_irrep_shift13(&L2, Gim);
+	  dpd_->buf4_mat_irrep_init(&L2, Gim);
+	  dpd_->buf4_mat_irrep_rd(&L2, Gim);
+	  dpd_->buf4_mat_irrep_shift13(&L2, Gim);
 
 	  for(Gi=0; Gi < moinfo.nirreps; Gi++) {
 	    Ga = Gi ^ L_irr;
 	    Gm = Ga ^ Gam;
-	    W.matrix[Gam] = dpd_block_matrix(moinfo.occpi[Gm],W.params->coltot[Gam]);
+	    W.matrix[Gam] = dpd_->dpd_block_matrix(moinfo.occpi[Gm],W.params->coltot[Gam]);
 
 	    nrows = moinfo.occpi[Gi];
 	    ncols = moinfo.occpi[Gm] * W.params->coltot[Gam];
@@ -281,7 +281,7 @@ namespace psi { namespace cclambda {
 	      a = moinfo.vir_off[Ga] + A;
 	      am = W.row_offset[Gam][a];
 
-	      dpd_buf4_mat_irrep_rd_block(&W, Gam, am, moinfo.occpi[Gm]);
+	      dpd_->buf4_mat_irrep_rd_block(&W, Gam, am, moinfo.occpi[Gm]);
 
 	      if(nrows && ncols && moinfo.virtpi[Ga]) 
 		C_DGEMV('n',nrows,ncols,1,L2.shift.matrix[Gim][Gi][0],ncols,W.matrix[Gam][0],1,
@@ -289,125 +289,125 @@ namespace psi { namespace cclambda {
 
 	    }
 
-	    dpd_free_block(W.matrix[Gam], moinfo.occpi[Gm], W.params->coltot[Gam]);
+	    dpd_->free_dpd_block(W.matrix[Gam], moinfo.occpi[Gm], W.params->coltot[Gam]);
 	  }
-	  dpd_buf4_mat_irrep_close(&L2, Gim);
+	  dpd_->buf4_mat_irrep_close(&L2, Gim);
 	}
-	dpd_file2_mat_wrt(&newLIA);
-	dpd_file2_mat_close(&newLIA);
-	dpd_buf4_close(&L2);
-	dpd_buf4_close(&W);
+	dpd_->file2_mat_wrt(&newLIA);
+	dpd_->file2_mat_close(&newLIA);
+	dpd_->buf4_close(&L2);
+	dpd_->buf4_close(&W);
 
       }
       else if(params.ref == 1) { /** ROHF **/
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 7, 11, 7, 0, "WEIAB");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "LIJAB");
-	dpd_contract442(&L2, &W, &newLIA, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WEiAb");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-	dpd_contract442(&L2, &W, &newLIA, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 7, 11, 7, 0, "WEIAB");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "LIJAB");
+	dpd_->contract442(&L2, &W, &newLIA, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WEiAb");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+	dpd_->contract442(&L2, &W, &newLIA, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 7, 11, 7, 0, "Weiab");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "Lijab");
-	dpd_contract442(&L2, &W, &newLia, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WeIaB");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LiJaB");
-	dpd_contract442(&L2, &W, &newLia, 0, 0, 1.0, 1.0);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 7, 11, 7, 0, "Weiab");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "Lijab");
+	dpd_->contract442(&L2, &W, &newLia, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WeIaB");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LiJaB");
+	dpd_->contract442(&L2, &W, &newLia, 0, 0, 1.0, 1.0);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
       }
       else if(params.ref == 2) {
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 21, 7, 21, 7, 0, "WEIAB");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "LIJAB");
-	dpd_contract442(&L2, &W, &newLIA, 0, 0, 1, 1);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 26, 28, 26, 28, 0, "WEiAb");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-	dpd_contract442(&L2, &W, &newLIA, 0, 0, 1, 1);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 21, 7, 21, 7, 0, "WEIAB");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 7, 2, 7, 0, "LIJAB");
+	dpd_->contract442(&L2, &W, &newLIA, 0, 0, 1, 1);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 26, 28, 26, 28, 0, "WEiAb");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+	dpd_->contract442(&L2, &W, &newLIA, 0, 0, 1, 1);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 31, 17, 31, 17, 0, "Weiab");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 10, 17, 12, 17, 0, "Lijab");
-	dpd_contract442(&L2, &W, &newLia, 0, 0, 1, 1);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 25, 29, 25, 29, 0, "WeIaB");
-	dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 23, 29, 23, 29, 0, "LiJaB");
-	dpd_contract442(&L2, &W, &newLia, 0, 0, 1, 1);
-	dpd_buf4_close(&W);
-	dpd_buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 31, 17, 31, 17, 0, "Weiab");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 10, 17, 12, 17, 0, "Lijab");
+	dpd_->contract442(&L2, &W, &newLia, 0, 0, 1, 1);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 25, 29, 25, 29, 0, "WeIaB");
+	dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 23, 29, 23, 29, 0, "LiJaB");
+	dpd_->contract442(&L2, &W, &newLia, 0, 0, 1, 1);
+	dpd_->buf4_close(&W);
+	dpd_->buf4_close(&L2);
 
       }
 
       /* L1 RHS += -1/2 Lmnae*Wiemn */
       if(params.ref == 0) {
-	dpd_buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
-	dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
-	dpd_contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1.0, 1.0);
-	dpd_buf4_close(&LIjAb);
-	dpd_buf4_close(&WMbIj);
+	dpd_->buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
+	dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "2 LIjAb - LIjBa");
+	dpd_->contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1.0, 1.0);
+	dpd_->buf4_close(&LIjAb);
+	dpd_->buf4_close(&WMbIj);
       }
       else if(params.ref == 1) {
 
-	dpd_buf4_init(&WMBIJ, PSIF_CC_HBAR, 0, 10, 2, 10, 2, 0, "WMBIJ");
-	dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "LIJAB");
-	dpd_contract442(&WMBIJ, &LIJAB, &newLIA, 0, 2, -1.0, 1.0);
-	dpd_buf4_close(&LIJAB);
-	dpd_buf4_close(&WMBIJ);
+	dpd_->buf4_init(&WMBIJ, PSIF_CC_HBAR, 0, 10, 2, 10, 2, 0, "WMBIJ");
+	dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "LIJAB");
+	dpd_->contract442(&WMBIJ, &LIJAB, &newLIA, 0, 2, -1.0, 1.0);
+	dpd_->buf4_close(&LIJAB);
+	dpd_->buf4_close(&WMBIJ);
 
-	dpd_buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
-	dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-	dpd_contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1.0, 1.0);
-	dpd_buf4_close(&LIjAb);
-	dpd_buf4_close(&WMbIj);
+	dpd_->buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WMbIj");
+	dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+	dpd_->contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1.0, 1.0);
+	dpd_->buf4_close(&LIjAb);
+	dpd_->buf4_close(&WMbIj);
 
-	dpd_buf4_init(&Wmbij, PSIF_CC_HBAR, 0, 10, 2, 10, 2, 0, "Wmbij");
-	dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "Lijab");
-	dpd_contract442(&Wmbij, &Lijab, &newLia, 0, 2, -1.0, 1.0);
-	dpd_buf4_close(&Lijab);
-	dpd_buf4_close(&Wmbij);
+	dpd_->buf4_init(&Wmbij, PSIF_CC_HBAR, 0, 10, 2, 10, 2, 0, "Wmbij");
+	dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "Lijab");
+	dpd_->contract442(&Wmbij, &Lijab, &newLia, 0, 2, -1.0, 1.0);
+	dpd_->buf4_close(&Lijab);
+	dpd_->buf4_close(&Wmbij);
 
-	dpd_buf4_init(&WmBiJ, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WmBiJ");
-	dpd_buf4_init(&LiJaB, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LiJaB");
-	dpd_contract442(&WmBiJ, &LiJaB, &newLia, 0, 2, -1.0, 1.0);
-	dpd_buf4_close(&LiJaB);
-	dpd_buf4_close(&WmBiJ);
+	dpd_->buf4_init(&WmBiJ, PSIF_CC_HBAR, 0, 10, 0, 10, 0, 0, "WmBiJ");
+	dpd_->buf4_init(&LiJaB, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LiJaB");
+	dpd_->contract442(&WmBiJ, &LiJaB, &newLia, 0, 2, -1.0, 1.0);
+	dpd_->buf4_close(&LiJaB);
+	dpd_->buf4_close(&WmBiJ);
       }
       else if(params.ref == 2) {
 
-	dpd_buf4_init(&WMBIJ, PSIF_CC_HBAR, 0, 20, 2, 20, 2, 0, "WMBIJ");
-	dpd_buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "LIJAB");
-	dpd_contract442(&WMBIJ, &LIJAB, &newLIA, 0, 2, -1, 1);
-	dpd_buf4_close(&LIJAB);
-	dpd_buf4_close(&WMBIJ);
+	dpd_->buf4_init(&WMBIJ, PSIF_CC_HBAR, 0, 20, 2, 20, 2, 0, "WMBIJ");
+	dpd_->buf4_init(&LIJAB, PSIF_CC_LAMBDA, L_irr, 2, 5, 2, 7, 0, "LIJAB");
+	dpd_->contract442(&WMBIJ, &LIJAB, &newLIA, 0, 2, -1, 1);
+	dpd_->buf4_close(&LIJAB);
+	dpd_->buf4_close(&WMBIJ);
 
-	dpd_buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 24, 22, 24, 22, 0, "WMbIj");
-	dpd_buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
-	dpd_contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1, 1);
-	dpd_buf4_close(&LIjAb);
-	dpd_buf4_close(&WMbIj);
+	dpd_->buf4_init(&WMbIj, PSIF_CC_HBAR, 0, 24, 22, 24, 22, 0, "WMbIj");
+	dpd_->buf4_init(&LIjAb, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+	dpd_->contract442(&WMbIj, &LIjAb, &newLIA, 0, 2, -1, 1);
+	dpd_->buf4_close(&LIjAb);
+	dpd_->buf4_close(&WMbIj);
 
-	dpd_buf4_init(&Wmbij, PSIF_CC_HBAR, 0, 30, 12, 30, 12, 0, "Wmbij");
-	dpd_buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 15, 12, 17, 0, "Lijab");
-	dpd_contract442(&Wmbij, &Lijab, &newLia, 0, 2, -1, 1);
-	dpd_buf4_close(&Lijab);
-	dpd_buf4_close(&Wmbij);
+	dpd_->buf4_init(&Wmbij, PSIF_CC_HBAR, 0, 30, 12, 30, 12, 0, "Wmbij");
+	dpd_->buf4_init(&Lijab, PSIF_CC_LAMBDA, L_irr, 12, 15, 12, 17, 0, "Lijab");
+	dpd_->contract442(&Wmbij, &Lijab, &newLia, 0, 2, -1, 1);
+	dpd_->buf4_close(&Lijab);
+	dpd_->buf4_close(&Wmbij);
 
-	dpd_buf4_init(&WmBiJ, PSIF_CC_HBAR, 0, 27, 23, 27, 23, 0, "WmBiJ");
-	dpd_buf4_init(&LiJaB, PSIF_CC_LAMBDA, L_irr, 23, 29, 23, 29, 0, "LiJaB");
-	dpd_contract442(&WmBiJ, &LiJaB, &newLia, 0, 2, -1, 1);
-	dpd_buf4_close(&LiJaB);
-	dpd_buf4_close(&WmBiJ);
+	dpd_->buf4_init(&WmBiJ, PSIF_CC_HBAR, 0, 27, 23, 27, 23, 0, "WmBiJ");
+	dpd_->buf4_init(&LiJaB, PSIF_CC_LAMBDA, L_irr, 23, 29, 23, 29, 0, "LiJaB");
+	dpd_->contract442(&WmBiJ, &LiJaB, &newLia, 0, 2, -1, 1);
+	dpd_->buf4_close(&LiJaB);
+	dpd_->buf4_close(&WmBiJ);
       }
 
 
@@ -421,17 +421,17 @@ namespace psi { namespace cclambda {
 	/*     dpd_file2_close(&GAE); */
 
 	/* Above code replaced to remove disk-space and memory bottlenecks 7/26/05, -TDC */
-	dpd_file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
-	dpd_file2_mat_init(&GAE);
-	dpd_file2_mat_rd(&GAE);
-	dpd_file2_mat_init(&newLIA);
-	dpd_file2_mat_rd(&newLIA);
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+	dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
+	dpd_->file2_mat_init(&GAE);
+	dpd_->file2_mat_rd(&GAE);
+	dpd_->file2_mat_init(&newLIA);
+	dpd_->file2_mat_rd(&newLIA);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
 	for(Gei=0; Gei < moinfo.nirreps; Gei++) {
-	  dpd_buf4_mat_irrep_row_init(&W, Gei);
+	  dpd_->buf4_mat_irrep_row_init(&W, Gei);
 	  X = init_array(W.params->coltot[Gei]);
 	  for(ei=0; ei < W.params->rowtot[Gei]; ei++) {
-	    dpd_buf4_mat_irrep_row_rd(&W, Gei, ei);
+	    dpd_->buf4_mat_irrep_row_rd(&W, Gei, ei);
 	    e = W.params->roworb[Gei][ei][0];
 	    i = W.params->roworb[Gei][ei][1];
 	    Ge = W.params->psym[e];
@@ -457,35 +457,35 @@ namespace psi { namespace cclambda {
 		      GAE.matrix[Ge][E],1,1,newLIA.matrix[Gi][I],1);
 
 	  }
-	  dpd_buf4_mat_irrep_row_close(&W, Gei);
+	  dpd_->buf4_mat_irrep_row_close(&W, Gei);
 	  free(X);
 	}
-	dpd_buf4_close(&W);
-	dpd_file2_mat_wrt(&newLIA);
-	dpd_file2_mat_close(&newLIA);
-	dpd_file2_mat_close(&GAE);
-	dpd_file2_close(&GAE);
+	dpd_->buf4_close(&W);
+	dpd_->file2_mat_wrt(&newLIA);
+	dpd_->file2_mat_close(&newLIA);
+	dpd_->file2_mat_close(&GAE);
+	dpd_->file2_close(&GAE);
       }
       else if(params.ref == 1) {
 
-	dpd_file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
-	dpd_file2_init(&Gae, PSIF_CC_LAMBDA, L_irr, 1, 1, "Gae");
+	dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
+	dpd_->file2_init(&Gae, PSIF_CC_LAMBDA, L_irr, 1, 1, "Gae");
 
-	dpd_buf4_init(&WAMEF, PSIF_CC_HBAR, 0, 11, 5, 11, 7, 0, "WAMEF");
-	dpd_dot13(&GAE,&WAMEF,&newLIA, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WAMEF);
+	dpd_->buf4_init(&WAMEF, PSIF_CC_HBAR, 0, 11, 5, 11, 7, 0, "WAMEF");
+	dpd_->dot13(&GAE,&WAMEF,&newLIA, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WAMEF);
 
-	dpd_buf4_init(&WaMeF, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WaMeF");
-	dpd_dot13(&Gae,&WaMeF,&newLIA, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WaMeF);
+	dpd_->buf4_init(&WaMeF, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WaMeF");
+	dpd_->dot13(&Gae,&WaMeF,&newLIA, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WaMeF);
 
-	dpd_buf4_init(&Wamef, PSIF_CC_HBAR, 0, 11, 5, 11, 7, 0, "Wamef");
-	dpd_dot13(&Gae,&Wamef,&newLia, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&Wamef);
+	dpd_->buf4_init(&Wamef, PSIF_CC_HBAR, 0, 11, 5, 11, 7, 0, "Wamef");
+	dpd_->dot13(&Gae,&Wamef,&newLia, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&Wamef);
 
-	dpd_buf4_init(&WAmEf, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
-	dpd_dot13(&GAE,&WAmEf,&newLia, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WAmEf);
+	dpd_->buf4_init(&WAmEf, PSIF_CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");
+	dpd_->dot13(&GAE,&WAmEf,&newLia, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WAmEf);
 
 	/*
 	  dpd_buf4_init(&WAMEF, CC_HBAR, 0, 10, 5, 10, 7, 0, "WAMEF");
@@ -502,214 +502,214 @@ namespace psi { namespace cclambda {
 	  dpd_buf4_close(&WAmEf);
 	*/
 
-	dpd_file2_close(&Gae);
-	dpd_file2_close(&GAE);
+	dpd_->file2_close(&Gae);
+	dpd_->file2_close(&GAE);
       }
       else if(params.ref == 2) {
 
-	dpd_file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
-	dpd_file2_init(&Gae, PSIF_CC_LAMBDA, L_irr, 3, 3, "Gae");
+	dpd_->file2_init(&GAE, PSIF_CC_LAMBDA, L_irr, 1, 1, "GAE");
+	dpd_->file2_init(&Gae, PSIF_CC_LAMBDA, L_irr, 3, 3, "Gae");
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 21, 5, 21, 7, 0, "WAMEF");
-	dpd_dot13(&GAE,&W,&newLIA, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 21, 5, 21, 7, 0, "WAMEF");
+	dpd_->dot13(&GAE,&W,&newLIA, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 25, 29, 25, 29, 0, "WaMeF");
-	dpd_dot13(&Gae,&W,&newLIA, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 25, 29, 25, 29, 0, "WaMeF");
+	dpd_->dot13(&Gae,&W,&newLIA, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 31, 15, 31, 17, 0, "Wamef");
-	dpd_dot13(&Gae,&W,&newLia, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 31, 15, 31, 17, 0, "Wamef");
+	dpd_->dot13(&Gae,&W,&newLia, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 26, 28, 26, 28, 0, "WAmEf");
-	dpd_dot13(&GAE,&W,&newLia, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 26, 28, 26, 28, 0, "WAmEf");
+	dpd_->dot13(&GAE,&W,&newLia, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_file2_close(&Gae);
-	dpd_file2_close(&GAE);
+	dpd_->file2_close(&Gae);
+	dpd_->file2_close(&GAE);
 
       }
 
       /* L1 RHS += -Gmn*Wmina */
       if(params.ref == 0) {
-	dpd_file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
+	dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
 
-	dpd_buf4_init(&WmNiE, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
-	dpd_dot14(&GMI, &WmNiE, &newLIA, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WmNiE);
+	dpd_->buf4_init(&WmNiE, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "2WMnIe - WnMIe (Mn,eI)");
+	dpd_->dot14(&GMI, &WmNiE, &newLIA, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WmNiE);
 
-	dpd_file2_close(&GMI);
+	dpd_->file2_close(&GMI);
       }
       else if(params.ref == 1) {
 
-	dpd_file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
-	dpd_file2_init(&Gmi, PSIF_CC_LAMBDA, L_irr, 0, 0, "Gmi");
+	dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
+	dpd_->file2_init(&Gmi, PSIF_CC_LAMBDA, L_irr, 0, 0, "Gmi");
 
-	dpd_buf4_init(&WMNIE, PSIF_CC_HBAR, 0, 0, 11, 2, 11, 0, "WMNIE (M>N,EI)");
-	dpd_dot14(&GMI, &WMNIE, &newLIA, 0, 0, -1.0, 1.0); 
-	dpd_buf4_close(&WMNIE);
+	dpd_->buf4_init(&WMNIE, PSIF_CC_HBAR, 0, 0, 11, 2, 11, 0, "WMNIE (M>N,EI)");
+	dpd_->dot14(&GMI, &WMNIE, &newLIA, 0, 0, -1.0, 1.0); 
+	dpd_->buf4_close(&WMNIE);
 
-	dpd_buf4_init(&WmNiE, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WmNiE (mN,Ei)");
-	dpd_dot14(&Gmi, &WmNiE, &newLIA, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WmNiE);
+	dpd_->buf4_init(&WmNiE, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WmNiE (mN,Ei)");
+	dpd_->dot14(&Gmi, &WmNiE, &newLIA, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WmNiE);
 
-	dpd_buf4_init(&Wmnie, PSIF_CC_HBAR, 0, 0, 11, 2, 11, 0, "Wmnie (m>n,ei)");
-	dpd_dot14(&Gmi, &Wmnie, &newLia, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&Wmnie);
+	dpd_->buf4_init(&Wmnie, PSIF_CC_HBAR, 0, 0, 11, 2, 11, 0, "Wmnie (m>n,ei)");
+	dpd_->dot14(&Gmi, &Wmnie, &newLia, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&Wmnie);
 
-	dpd_buf4_init(&WMnIe, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe (Mn,eI)");
-	dpd_dot14(&GMI, &WMnIe, &newLia, 0, 0, -1.0, 1.0);
-	dpd_buf4_close(&WMnIe);
+	dpd_->buf4_init(&WMnIe, PSIF_CC_HBAR, 0, 0, 11, 0, 11, 0, "WMnIe (Mn,eI)");
+	dpd_->dot14(&GMI, &WMnIe, &newLia, 0, 0, -1.0, 1.0);
+	dpd_->buf4_close(&WMnIe);
 
-	dpd_file2_close(&Gmi);
-	dpd_file2_close(&GMI);
+	dpd_->file2_close(&Gmi);
+	dpd_->file2_close(&GMI);
 
       }
       else if(params.ref == 2) {
 
-	dpd_file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
-	dpd_file2_init(&Gmi, PSIF_CC_LAMBDA, L_irr, 2, 2, "Gmi");
+	dpd_->file2_init(&GMI, PSIF_CC_LAMBDA, L_irr, 0, 0, "GMI");
+	dpd_->file2_init(&Gmi, PSIF_CC_LAMBDA, L_irr, 2, 2, "Gmi");
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 0, 21, 2, 21, 0, "WMNIE (M>N,EI)");
-	dpd_dot14(&GMI, &W, &newLIA, 0, 0, -1, 1); 
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 21, 2, 21, 0, "WMNIE (M>N,EI)");
+	dpd_->dot14(&GMI, &W, &newLIA, 0, 0, -1, 1); 
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 23, 26, 23, 26, 0, "WmNiE (mN,Ei)");
-	dpd_dot14(&Gmi, &W, &newLIA, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 23, 26, 23, 26, 0, "WmNiE (mN,Ei)");
+	dpd_->dot14(&Gmi, &W, &newLIA, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 10, 31, 12, 31, 0, "Wmnie (m>n,ei)");
-	dpd_dot14(&Gmi, &W, &newLia, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 31, 12, 31, 0, "Wmnie (m>n,ei)");
+	dpd_->dot14(&Gmi, &W, &newLia, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_buf4_init(&W, PSIF_CC_HBAR, 0, 22, 25, 22, 25, 0, "WMnIe (Mn,eI)");
-	dpd_dot14(&GMI, &W, &newLia, 0, 0, -1, 1);
-	dpd_buf4_close(&W);
+	dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 22, 25, 22, 25, 0, "WMnIe (Mn,eI)");
+	dpd_->dot14(&GMI, &W, &newLia, 0, 0, -1, 1);
+	dpd_->buf4_close(&W);
 
-	dpd_file2_close(&Gmi);
-	dpd_file2_close(&GMI);
+	dpd_->file2_close(&Gmi);
+	dpd_->file2_close(&GMI);
       }
 
       /* CC3 T3->L1 */
       if(params.wfn == "CC3") {
 	if(params.ref == 0) { 
 
-	  dpd_file2_init(&XLD, PSIF_CC3_MISC, 0, 0, 1, "CC3 XLD");
-	  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-	  dpd_dot24(&XLD, &D, &newLIA, 0, 0, 1, 1);
-	  dpd_buf4_close(&D);
-	  dpd_file2_close(&XLD);
+	  dpd_->file2_init(&XLD, PSIF_CC3_MISC, 0, 0, 1, "CC3 XLD");
+	  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+	  dpd_->dot24(&XLD, &D, &newLIA, 0, 0, 1, 1);
+	  dpd_->buf4_close(&D);
+	  dpd_->file2_close(&XLD);
 
-	  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
-	  dpd_buf4_init(&Z, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
-	  dpd_contract442(&Z, &L2, &newLIA, 0, 2, -0.5, 1);
-	  dpd_buf4_close(&Z);
-	  dpd_buf4_close(&L2);
+	  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
+	  dpd_->buf4_init(&Z, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIFLN");
+	  dpd_->contract442(&Z, &L2, &newLIA, 0, 2, -0.5, 1);
+	  dpd_->buf4_close(&Z);
+	  dpd_->buf4_close(&L2);
 
-	  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-	  dpd_buf4_init(&Z, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIfLn");
-	  dpd_contract442(&Z, &L2, &newLIA, 0, 2, -1, 1);
-	  dpd_buf4_close(&Z);
-	  dpd_buf4_close(&L2);
+	  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+	  dpd_->buf4_init(&Z, PSIF_CC3_MISC, 0, 10, 0, 10, 0, 0, "CC3 ZIfLn");
+	  dpd_->contract442(&Z, &L2, &newLIA, 0, 2, -1, 1);
+	  dpd_->buf4_close(&Z);
+	  dpd_->buf4_close(&L2);
 
-	  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
-	  dpd_buf4_init(&Z, PSIF_CC3_MISC, 0, 11, 5, 11, 5, 0, "CC3 ZDFAN (AN,DF)");
-	  dpd_contract442(&L2, &Z, &newLIA, 0, 0, 0.5, 1);
-	  dpd_buf4_close(&Z);
-	  dpd_buf4_close(&L2);
+	  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
+	  dpd_->buf4_init(&Z, PSIF_CC3_MISC, 0, 11, 5, 11, 5, 0, "CC3 ZDFAN (AN,DF)");
+	  dpd_->contract442(&L2, &Z, &newLIA, 0, 0, 0.5, 1);
+	  dpd_->buf4_close(&Z);
+	  dpd_->buf4_close(&L2);
 
-	  dpd_buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
-	  dpd_buf4_init(&Z, PSIF_CC3_MISC, 0, 11, 5, 11, 5, 0, "CC3 ZDfAn (An,Df)");
-	  dpd_contract442(&L2, &Z, &newLIA, 0, 0, 1.0, 1);
-	  dpd_buf4_close(&Z);
-	  dpd_buf4_close(&L2);
+	  dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+	  dpd_->buf4_init(&Z, PSIF_CC3_MISC, 0, 11, 5, 11, 5, 0, "CC3 ZDfAn (An,Df)");
+	  dpd_->contract442(&L2, &Z, &newLIA, 0, 0, 1.0, 1);
+	  dpd_->buf4_close(&Z);
+	  dpd_->buf4_close(&L2);
 	}
       }
 
-      dpd_file2_close(&newLIA);
-      dpd_file2_close(&newLia);
+      dpd_->file2_close(&newLIA);
+      dpd_->file2_close(&newLia);
 
       /* newLia * Dia */
       if(params.ref == 0) { /** RHF **/
 
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_copy(&newLIA, PSIF_CC_LAMBDA, "New LIA Increment");
-	dpd_file2_close(&newLIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_copy(&newLIA, PSIF_CC_LAMBDA, "New LIA Increment");
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
 	if(params.local && local.filter_singles) local_filter_T1(&newLIA);
 	else {
-	  dpd_file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-	  dpd_file2_dirprd(&dIA, &newLIA);
-	  dpd_file2_close(&dIA);
+	  dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+	  dpd_->file2_dirprd(&dIA, &newLIA);
+	  dpd_->file2_close(&dIA);
 	}
-	dpd_file2_close(&newLIA);
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-	dpd_file2_copy(&LIA, PSIF_CC_LAMBDA, "New LIA");
-	dpd_file2_close(&LIA);
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
-	dpd_file2_axpy(&LIA, &newLIA, 1, 0);
-	dpd_file2_close(&LIA);
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	dpd_->file2_copy(&LIA, PSIF_CC_LAMBDA, "New LIA");
+	dpd_->file2_close(&LIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
+	dpd_->file2_axpy(&LIA, &newLIA, 1, 0);
+	dpd_->file2_close(&LIA);
 
-	dpd_file2_copy(&newLIA, PSIF_CC_LAMBDA, "New Lia");  /* spin-adaptation for RHF */
-	dpd_file2_close(&newLIA);
+	dpd_->file2_copy(&newLIA, PSIF_CC_LAMBDA, "New Lia");  /* spin-adaptation for RHF */
+	dpd_->file2_close(&newLIA);
       }
       else if(params.ref == 1) { /** ROHF **/
 
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_copy(&newLIA, PSIF_CC_LAMBDA, "New LIA Increment");
-	dpd_file2_close(&newLIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_copy(&newLIA, PSIF_CC_LAMBDA, "New LIA Increment");
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
-	dpd_file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-	dpd_file2_dirprd(&dIA, &newLIA);
-	dpd_file2_close(&dIA);
-	dpd_file2_close(&newLIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
+	dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+	dpd_->file2_dirprd(&dIA, &newLIA);
+	dpd_->file2_close(&dIA);
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-	dpd_file2_copy(&LIA, PSIF_CC_LAMBDA, "New LIA");
-	dpd_file2_close(&LIA);
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
-	dpd_file2_axpy(&LIA, &newLIA, 1, 0);
-	dpd_file2_close(&LIA);
-	dpd_file2_close(&newLIA);
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+	dpd_->file2_copy(&LIA, PSIF_CC_LAMBDA, "New LIA");
+	dpd_->file2_close(&LIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
+	dpd_->file2_axpy(&LIA, &newLIA, 1, 0);
+	dpd_->file2_close(&LIA);
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-	dpd_file2_copy(&newLia, PSIF_CC_LAMBDA, "New Lia Increment");
-	dpd_file2_close(&newLia);
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+	dpd_->file2_copy(&newLia, PSIF_CC_LAMBDA, "New Lia Increment");
+	dpd_->file2_close(&newLia);
 
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia Increment");
-	dpd_file2_init(&dia, PSIF_CC_DENOM, L_irr, 0, 1, "dia");
-	dpd_file2_dirprd(&dia, &newLia);
-	dpd_file2_close(&dia);
-	dpd_file2_close(&newLia);
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia Increment");
+	dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 0, 1, "dia");
+	dpd_->file2_dirprd(&dia, &newLia);
+	dpd_->file2_close(&dia);
+	dpd_->file2_close(&newLia);
 
-	dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-	dpd_file2_copy(&Lia, PSIF_CC_LAMBDA, "New Lia");
-	dpd_file2_close(&Lia);
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
-	dpd_file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia Increment");
-	dpd_file2_axpy(&Lia, &newLia, 1, 0);
-	dpd_file2_close(&Lia);
-	dpd_file2_close(&newLia);
+	dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+	dpd_->file2_copy(&Lia, PSIF_CC_LAMBDA, "New Lia");
+	dpd_->file2_close(&Lia);
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia");
+	dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "New Lia Increment");
+	dpd_->file2_axpy(&Lia, &newLia, 1, 0);
+	dpd_->file2_close(&Lia);
+	dpd_->file2_close(&newLia);
       }
       else if(params.ref == 2) {
 
-	dpd_file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
-	dpd_file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
-	dpd_file2_dirprd(&dIA, &newLIA);
-	dpd_file2_close(&dIA);
-	dpd_file2_close(&newLIA);
+	dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA");
+	dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
+	dpd_->file2_dirprd(&dIA, &newLIA);
+	dpd_->file2_close(&dIA);
+	dpd_->file2_close(&newLIA);
 
-	dpd_file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
-	dpd_file2_init(&dia, PSIF_CC_DENOM, L_irr, 2, 3, "dia");
-	dpd_file2_dirprd(&dia, &newLia);
-	dpd_file2_close(&dia);
-	dpd_file2_close(&newLia);
+	dpd_->file2_init(&newLia, PSIF_CC_LAMBDA, L_irr, 2, 3, "New Lia");
+	dpd_->file2_init(&dia, PSIF_CC_DENOM, L_irr, 2, 3, "dia");
+	dpd_->file2_dirprd(&dia, &newLia);
+	dpd_->file2_close(&dia);
+	dpd_->file2_close(&newLia);
       }
 
 #ifdef EOM_DEBUG

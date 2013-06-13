@@ -75,9 +75,9 @@ void rhf_sort_opdm(void)
 
   OPDM = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -87,12 +87,12 @@ void rhf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < virpi[h]; a++) {
       A = qt_vir[vir_off[h] + a];
@@ -102,14 +102,14 @@ void rhf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   if(params.relax_opdm || params.gradient) {
 
-    dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
-    dpd_file2_mat_init(&D);
-    dpd_file2_mat_rd(&D);
+    dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "DAI");
+    dpd_->file2_mat_init(&D);
+    dpd_->file2_mat_rd(&D);
     for(h=0; h < nirreps; h++) {
       for(a=0; a < virpi[h]; a++) {
         A = qt_vir[vir_off[h] + a];
@@ -120,8 +120,8 @@ void rhf_sort_opdm(void)
         }
       }
     }
-    dpd_file2_mat_close(&D);
-    dpd_file2_close(&D);
+    dpd_->file2_mat_close(&D);
+    dpd_->file2_close(&D);
 
   }
 
@@ -190,9 +190,9 @@ void uhf_sort_opdm(void)
   AOPDM = block_matrix(nmo,nmo);  
   BOPDM = block_matrix(nmo,nmo);  
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
    
   for(h=0; h < nirreps; h++) {
     for(i=0; i < aoccpi[h]; i++) {
@@ -204,12 +204,12 @@ void uhf_sort_opdm(void)
     }
   }
    
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "Dij");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 2, 2, "Dij");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
    
   for(h=0; h < nirreps; h++) {
     for(i=0; i < boccpi[h]; i++) {
@@ -221,12 +221,12 @@ void uhf_sort_opdm(void)
     }
   }
    
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
     
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
     
   for(h=0; h < nirreps; h++) {
     for(a=0; a < avirpi[h]; a++) {
@@ -238,12 +238,12 @@ void uhf_sort_opdm(void)
     }
   }
 
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "Dab");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 3, 3, "Dab");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
     
   for(h=0; h < nirreps; h++) {
     for(a=0; a < bvirpi[h]; a++) {
@@ -255,8 +255,8 @@ void uhf_sort_opdm(void)
     }
   }
     
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   /* Symmetrize AOPDM and BOPDM */
     
@@ -323,9 +323,9 @@ void rhf_sf_sort_opdm(void)
 
   OPDM = block_matrix(nmo,nmo);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "DIJ");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -335,12 +335,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "Dij");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 0, "Dij");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -350,12 +350,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "DAB");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < virpi[h]; a++) {
       A = qt_vir[vir_off[h] + a];
@@ -365,12 +365,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 1, "Dab");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(a=0; a < virpi[h]; a++) {
       A = qt_vir[vir_off[h] + a];
@@ -380,12 +380,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
+  dpd_->file2_mat_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DAI");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -395,12 +395,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
   
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "DIA");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -410,13 +410,13 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   /* Note that this component of the density is stored occ-vir */
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dai");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -426,12 +426,12 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
-  dpd_file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
-  dpd_file2_mat_init(&D);
-  dpd_file2_mat_rd(&D);
+  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 0, 1, "Dia");
+  dpd_->file2_mat_init(&D);
+  dpd_->file2_mat_rd(&D);
   for(h=0; h < nirreps; h++) {
     for(i=0; i < occpi[h]; i++) {
       I = qt_occ[occ_off[h] + i];
@@ -441,8 +441,8 @@ void rhf_sf_sort_opdm(void)
       }
     }
   }
-  dpd_file2_mat_close(&D);
-  dpd_file2_close(&D);
+  dpd_->file2_mat_close(&D);
+  dpd_->file2_close(&D);
 
   /* Symmetrize the OPDM */
 

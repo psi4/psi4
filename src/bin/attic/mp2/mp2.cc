@@ -168,7 +168,7 @@ mp2(Options & options)
     write_data();
   }
 
-  dpd_close(0);
+//  dpd_->close(0);
 
   cleanup();
 

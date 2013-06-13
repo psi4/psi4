@@ -40,16 +40,16 @@ void f_spinad(void)
   dpdbuf4 F, F1;
 
   if(params.ref == 0) { /*** RHF ***/
-    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-    dpd_buf4_scmcopy(&F, PSIF_CC_FINTS, "F 2<ia|bc> - <ia|cb>", 2);
-    dpd_buf4_sort_ooc(&F, PSIF_CC_TMP0, pqsr, 10, 5, "F <ia|cb>");
-    dpd_buf4_close(&F);
+    dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+    dpd_->buf4_scmcopy(&F, PSIF_CC_FINTS, "F 2<ia|bc> - <ia|cb>", 2);
+    dpd_->buf4_sort_ooc(&F, PSIF_CC_TMP0, pqsr, 10, 5, "F <ia|cb>");
+    dpd_->buf4_close(&F);
 
-    dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F 2<ia|bc> - <ia|cb>");
-    dpd_buf4_init(&F1, PSIF_CC_TMP0, 0, 10, 5, 10, 5, 0, "F <ia|cb>");
-    dpd_buf4_axpy(&F1, &F, -1);
-    dpd_buf4_close(&F1);
-    dpd_buf4_close(&F);
+    dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F 2<ia|bc> - <ia|cb>");
+    dpd_->buf4_init(&F1, PSIF_CC_TMP0, 0, 10, 5, 10, 5, 0, "F <ia|cb>");
+    dpd_->buf4_axpy(&F1, &F, -1);
+    dpd_->buf4_close(&F1);
+    dpd_->buf4_close(&F);
 
   }
 }
