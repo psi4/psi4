@@ -183,10 +183,48 @@ class Keyword(object):
                               "Check your code; you're doing something that doesn't make sense.")
 
 
+class SentinalValue(object):
+    """
+    SentinalValue objects mimic builtins like None and NotImplemented.  There is exactly
+    one instance of a SentinalValue with a given name, so "is" and "is not" can be
+    safely used, just as with None and NotImplemented.  SentinalValues can also be pickled
+    and unpickled without changing this behavior.
+    """
+    known_values = dict()
+
+    def __new__(cls, name):
+        if name in cls.known_values:
+            return cls.known_values[name]
+        else:
+            rv = object.__new__(cls)
+            rv.name = name
+            cls.known_values[rv] = rv
+            return rv
+
+    def __repr__(self):
+        return self.name
+
+    def __hash__(self):
+        return hash(self.name)
+
+    #def __eq__(self, other):
+    #    if isinstance(other, SentinalValue):
+    #        return self.name == other.name
+    #    else:
+    #        return False
+
+    class _SVUnloader(object):
+        def __init__(self, name):
+            self.name = name
+        def __call__(self):
+            return SentinalValue(self.name)
+
+    def __reduce__(self):
+        return SentinalValue._SVUnloader(self.name)
 
 ###############################################################
 # Some keywords that make sense to define for use many places #
 ###############################################################
 
-All = object()
-ArgumentNotGiven = object()
+All = SentinalValue("All")
+ArgumentNotGiven = SentinalValue("ArgumentNotGiven")

@@ -24,9 +24,11 @@
 #define _psi_src_lib_libmints_onebody_h_
 
 #include <vector>
+#include <exception.h>
 #include "typedefs.h"
 #include "vector3.h"
 #include <boost/python/list.hpp>
+#include "pybuffer.h"
 
 namespace psi {
 
@@ -63,6 +65,12 @@ protected:
     int nchunk_;
 
     int buffer_size_;
+
+    /// Whether or not to use the PyBuffer
+    bool enable_pybuffer_;
+
+    /// The PyBuffer object used for sharing the target_ buffer without copying data
+    PyBuffer<double> target_pybuffer_;
 
     OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
 
@@ -102,6 +110,17 @@ public:
         for(int i = 0; i < buffer_size_; ++i)
             ret_val.append(buffer_[i]);
         return ret_val;
+    }
+
+    const PyBuffer<double>* py_buffer_object() const {
+        if(!enable_pybuffer_) {
+            throw PSIEXCEPTION("py_buffer object not enabled.  Used set_enable_pybuffer() first.");
+        }
+    	return &target_pybuffer_;
+    }
+
+    void set_enable_pybuffer(bool enable = true) {
+        enable_pybuffer_ = enable;
     }
 
     /// Compute the integrals between basis function in the given shell pair.
