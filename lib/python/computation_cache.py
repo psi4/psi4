@@ -796,7 +796,7 @@ class CachedComputation(object):
 
     #region | Class Attributes |
 
-    PICKLE_VERSION = (2,0,0)
+    PICKLE_VERSION = (2,0,1)
 
     parser = psi4.Gaussian94BasisSetParser()
 
@@ -878,7 +878,7 @@ class CachedComputation(object):
                 tuple(next(k for k in self.optional_arguments if k not in ComputationCache.optional_attributes))
             ))
         self._custom_getters = dict()
-        self._basis_registry = dict()
+        self._basis_registry = AliasedDict()
         #endregion
         #========================================#
         #region psi options
@@ -913,6 +913,7 @@ class CachedComputation(object):
                 self, depends_on=[]
             )
         )
+        # basis, df_basis, and add the unit basis (a.k.a. zero basis) to the registry
         self.register_dependency(
             "basis",
             self.uninitialized_basis(self.basis_name)
@@ -931,6 +932,11 @@ class CachedComputation(object):
         )
         if self.optional_argument_given("df_basis"):
             self._basis_registry[self.optional_arguments['df_basis'].lower()] = self.df_basis
+        self._basis_registry[('unit','1','zero','one')] = UninitializedDependency(
+            CachedComputation.construct_unit_basis,
+            self, depends_on=['psi_molecule']
+        )
+        # other stuff
         self.register_dependency(
             "mints",
             UninitializedDependency(
@@ -1021,6 +1027,11 @@ class CachedComputation(object):
         if old_value != '':
             psi4.options.basis = old_value
         self._basis_registry[basis_name.lower()] = rv
+        return rv
+
+    def construct_unit_basis(self):
+        rv = psi4.BasisSet.zero_ao_basis_set()
+        self._basis_registry['unit'] = rv
         return rv
 
     def uninitialized_basis(self, basis_name):
@@ -1445,6 +1456,10 @@ class CachedComputationUnloader(object):
         #========================================#
         if self.pickler_version >= (2, 0, 0):
             for bsname in self.basis_sets_to_register:
+                if self.pickler_version >= (2, 0, 1):
+                    # changed _basis_registry from a dict to an AliasedDict,
+                    #   thus the keys will be frozenset objects
+                    bsname = next(iter(bsname))
                 if bsname not in rv._basis_registry:
                     rv.register_basis(bsname)
         return rv
