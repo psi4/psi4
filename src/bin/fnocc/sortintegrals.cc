@@ -299,7 +299,7 @@ void SortAllIntegrals(iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int n
   /**
     * first buffer (read in when Buf was initialized)
     */
-  bool fnocc = options.get_bool("NAT_ORBS");
+  bool fnocc = options.get_bool("NAT_ORBS") || options.get_bool("USE_DF_INTS");
   if (iscim) fnocc = true;
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
       p = (ULI) lblptr[idx++];

@@ -3056,11 +3056,8 @@ void DFCoupledCluster::T1Fock(){
             double dum = h[i*nmo+j] - temp3[(i+nfzc)*full+(j+nfzc)];
             dum += F_DDOT(nQ_scf,temp2,1,Qmo + (i+nfzc)*full + (j+nfzc) , full*full);
             Fij[i*o+j] = dum;
-//if (i==j) printf("%20.12lf %20.12lf\n",Fij[i*o+j],eps[i]);
         }
     }
-//printf("\n\n");
-//exit(0);
     // Fia
     for (int i = 0; i < o; i++) {
         for (int a = 0; a < v; a++) {
