@@ -195,7 +195,7 @@ void export_mints()
             .export_values();
 
     class_<PyBuffer<double>, shared_ptr<PyBuffer<double> > >("DoublePyBuffer", "Buffer interface to NumPy arrays").
-    		def("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
+    		add_property("__array_interface__", &PyBuffer<double>::array_interface, "docstring");
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
     typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
@@ -266,7 +266,7 @@ void export_mints()
             def("load", matrix_load(&Matrix::load), "docstring").
             def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring").
-            def("__array_interface__", matrix_array_interface_c1, "docstring");
+            add_property("__array_interface__", matrix_array_interface_c1, "docstring");
 
     class_<View, boost::noncopyable>("View", no_init).
             def(init<SharedMatrix, const Dimension&, const Dimension&>()).
@@ -311,6 +311,8 @@ void export_mints()
             add_property("basis", &OneBodyAOInt::basis, "The basis set on center one").
             add_property("basis1", &OneBodyAOInt::basis1, "The basis set on center one").
             add_property("basis2", &OneBodyAOInt::basis2, "The basis set on center two").
+            add_property("py_buffer_object", make_function(&OneBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
+            def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring").
             add_property("py_buffer", &OneBodyAOInt::py_buffer, "docstring");
 
     //typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;

@@ -1,6 +1,6 @@
 
-from psi4 import *
 import sys; sys.path.append('.so INSTALL DIRECTORY GOES HERE')
+from psi4 import *
 from molutil import *
 from driver import *
 

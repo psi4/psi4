@@ -21,6 +21,7 @@
  */
 
 #include <boost/foreach.hpp>
+#include <boost/python/tuple.hpp>
 #include <stdexcept>
 #include <exception.h>
 
@@ -70,7 +71,9 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
 }
 
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv)
-    : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1)
+    : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1),
+    enable_pybuffer_(false), target_pybuffer_(&target_, true)
+
 {
     force_cartesian_ = false;
     buffer_ = 0;
@@ -221,9 +224,15 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
         // Pure angular momentum (6d->5d, ...) transformation
         pure_transform(s1, s2, nchunk_);
         buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
+        if(enable_pybuffer_){
+            target_pybuffer_.set_shape(boost::python::make_tuple(nchunk_, s1.nfunction(), s2.nfunction()));
+        }
     }
     else{
         buffer_size_ = nchunk_ * s1.ncartesian() * s2.ncartesian();
+        if(enable_pybuffer_){
+            target_pybuffer_.set_shape(boost::python::make_tuple(nchunk_, s1.ncartesian(), s2.ncartesian()));
+        }
     }
 }
 

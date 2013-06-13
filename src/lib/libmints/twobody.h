@@ -119,12 +119,8 @@ public:
     const double *buffer() const { return target_; }
 
     /// Get a python list version of the current buffer
-    const boost::python::list py_buffer() const {
-        boost::python::list ret_val;
-        for(int i = 0; i < curr_buff_size_; ++i)
-            ret_val.append(target_[i]);
-        return ret_val;
-    }
+    /// DEPRECATED Use py_buffer_object when possible
+    const boost::python::list py_buffer() const;
 
     const PyBuffer<double>* py_buffer_object() const {
         if(!enable_pybuffer_) {
