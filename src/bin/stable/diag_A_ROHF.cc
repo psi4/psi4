@@ -51,7 +51,7 @@ void diag_A_ROHF(void)
     virtpi = moinfo.virtpi;
     rank = moinfo.rank;
 
-    dpd_buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+    dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
     /* Construct binary direct product array */
     dp = (int ***) malloc(nirreps * sizeof(int **));
     num_ai = init_int_array(nirreps);
@@ -121,8 +121,8 @@ void diag_A_ROHF(void)
 
         /* Apply T to move the zero rows and cols of the Hessian to the
        bottom */
-        dpd_buf4_mat_irrep_init(&A, h);
-        dpd_buf4_mat_irrep_rd(&A, h);
+        dpd_->buf4_mat_irrep_init(&A, h);
+        dpd_->buf4_mat_irrep_rd(&A, h);
 
         Y = block_matrix(num_ai[h], num_ai[h]); /* Scratch array */
         if(num_ai[h]) {
@@ -153,7 +153,7 @@ void diag_A_ROHF(void)
         free_int_matrix(dp[h]);
     free(dp);
 
-    dpd_buf4_close(&A);
+    dpd_->buf4_close(&A);
 }
 
 

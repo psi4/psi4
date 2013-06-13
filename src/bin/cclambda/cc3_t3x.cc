@@ -70,37 +70,37 @@ void cc3_t3x(void)
       }
     }
 
-    dpd_file2_init(&XLD, PSIF_CC3_MISC, 0, 0, 1, "CC3 XLD");
-    dpd_file2_mat_init(&XLD);
+    dpd_->file2_init(&XLD, PSIF_CC3_MISC, 0, 0, 1, "CC3 XLD");
+    dpd_->file2_mat_init(&XLD);
 
-    dpd_buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
+    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, 0, 0, 5, 2, 7, 0, "LIJAB");
+    dpd_->buf4_init(&L2AB, PSIF_CC_LAMBDA, 0, 0, 5, 0, 5, 0, "LIjAb");
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&L2, h);
-      dpd_buf4_mat_irrep_rd(&L2, h);
+      dpd_->buf4_mat_irrep_init(&L2, h);
+      dpd_->buf4_mat_irrep_rd(&L2, h);
 
-      dpd_buf4_mat_irrep_init(&L2AB, h);
-      dpd_buf4_mat_irrep_rd(&L2AB, h);
+      dpd_->buf4_mat_irrep_init(&L2AB, h);
+      dpd_->buf4_mat_irrep_rd(&L2AB, h);
     }
 
-    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+    dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+    dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
 
-    dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-    dpd_buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
-    dpd_buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
+    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
+    dpd_->buf4_init(&F, PSIF_CC3_HET1, 0, 10, 5, 10, 7, 0, "CC3 WABEI (IE,B>A)");
+    dpd_->buf4_init(&E, PSIF_CC3_HET1, 0, 0, 10, 2, 10, 0, "CC3 WMBIJ (I>J,MB)");
 
     T2AA = T2;
-    dpd_buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_buf4_init(&T2BA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
+    dpd_->buf4_init(&T2AB, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    dpd_->buf4_init(&T2BA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tiJaB");
     FAA = F;
-    dpd_buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
-    dpd_buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
+    dpd_->buf4_init(&FAB, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WaBeI (Ie,Ba)");
+    dpd_->buf4_init(&FBA, PSIF_CC3_HET1, 0, 10, 5, 10, 5, 0, "CC3 WAbEi (iE,bA)");
     EAA = E;
-    dpd_buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
-    dpd_buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
+    dpd_->buf4_init(&EAB, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WMbIj (Ij,Mb)");
+    dpd_->buf4_init(&EBA, PSIF_CC3_HET1, 0, 0, 10, 0, 10, 0, "CC3 WmBiJ (iJ,mB)");
 
     /* target T3 amplitudes go in here */
     W1 = (double ***) malloc(nirreps * sizeof(double **));
@@ -114,7 +114,7 @@ void cc3_t3x(void)
 
 	  for(Gab=0; Gab < nirreps; Gab++) {
 	    Gc = Gab ^ Gijk; /* totally symmetric */
-	    W1[Gab] = dpd_block_matrix(F.params->coltot[Gab], virtpi[Gc]);
+	    W1[Gab] = dpd_->dpd_block_matrix(F.params->coltot[Gab], virtpi[Gc]);
 	  }
 
 	  for(i=0; i < occpi[Gi]; i++) {
@@ -124,7 +124,7 @@ void cc3_t3x(void)
 	      for(k=0; k < occpi[Gk]; k++) {
 		K = occ_off[Gk] + k;
 
-		T3_AAA(W1, nirreps, I, Gi, J, Gj, K, Gk, &T2, &F, &E, &fIJ, &fAB, 
+		dpd_->T3_AAA(W1, nirreps, I, Gi, J, Gj, K, Gk, &T2, &F, &E, &fIJ, &fAB, 
 		       occpi, occ_off, virtpi, vir_off, 0.0);
 
 		/* X_KC <-- 1/4 t_IJKABC <IJ||AB> */
@@ -141,7 +141,7 @@ void cc3_t3x(void)
 		  C_DGEMV('t', nrows, ncols, 0.25, W1[Gab][0], ncols, L2.matrix[Gij][ij], 1,
 			  1.0, XLD.matrix[Gk][k], 1);
 
-		T3_AAB(W1, nirreps, I, Gi, J, Gj, K, Gk, &T2AA, &T2AB, &T2BA, 
+		dpd_->T3_AAB(W1, nirreps, I, Gi, J, Gj, K, Gk, &T2AA, &T2AB, &T2BA, 
 		       &FAA, &FAB, &FBA, &EAA, &EAB, &EBA, &fIJ, &fij, &fAB, &fab,
 		       occpi, occ_off, occpi, occ_off, virtpi, vir_off, virtpi, vir_off, 0.0);
 
@@ -188,7 +188,7 @@ void cc3_t3x(void)
 
 	  for(Gab=0; Gab < nirreps; Gab++) {
 	    Gc = Gab ^ Gijk; /* totally symmetric */
-	    dpd_free_block(W1[Gab], F.params->coltot[Gab], virtpi[Gc]);
+	    dpd_->free_dpd_block(W1[Gab], F.params->coltot[Gab], virtpi[Gc]);
 	  }
 	} /* Gk */
       } /* Gj */
@@ -196,32 +196,32 @@ void cc3_t3x(void)
 
     free(W1);
 
-    dpd_buf4_close(&E);
-    dpd_buf4_close(&F);
-    dpd_buf4_close(&T2);
-    dpd_file2_close(&fIJ);
-    dpd_file2_close(&fAB);
+    dpd_->buf4_close(&E);
+    dpd_->buf4_close(&F);
+    dpd_->buf4_close(&T2);
+    dpd_->file2_close(&fIJ);
+    dpd_->file2_close(&fAB);
 
-    dpd_buf4_close(&EAB);
-    dpd_buf4_close(&EBA);
-    dpd_buf4_close(&FAB);
-    dpd_buf4_close(&FBA);
-    dpd_buf4_close(&T2AB);
-    dpd_buf4_close(&T2BA);
-    dpd_file2_close(&fij);
-    dpd_file2_close(&fab);
+    dpd_->buf4_close(&EAB);
+    dpd_->buf4_close(&EBA);
+    dpd_->buf4_close(&FAB);
+    dpd_->buf4_close(&FBA);
+    dpd_->buf4_close(&T2AB);
+    dpd_->buf4_close(&T2BA);
+    dpd_->file2_close(&fij);
+    dpd_->file2_close(&fab);
 
     free_int_matrix(W_offset);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_close(&L2, h);
-      dpd_buf4_mat_irrep_close(&L2AB, h);
+      dpd_->buf4_mat_irrep_close(&L2, h);
+      dpd_->buf4_mat_irrep_close(&L2AB, h);
     }
-    dpd_buf4_close(&L2);
-    dpd_buf4_close(&L2AB);
+    dpd_->buf4_close(&L2);
+    dpd_->buf4_close(&L2AB);
 
-    dpd_file2_mat_wrt(&XLD);
-    dpd_file2_close(&XLD);
+    dpd_->file2_mat_wrt(&XLD);
+    dpd_->file2_close(&XLD);
   }
 }
 

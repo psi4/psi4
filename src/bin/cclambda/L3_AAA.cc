@@ -113,28 +113,28 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
   double ***W2;
   double L1, F1, D2, L2;
 
-  dpd_file2_mat_init(fIJ);
-  dpd_file2_mat_init(fAB);
-  dpd_file2_mat_rd(fIJ);
-  dpd_file2_mat_rd(fAB);
+  dpd_->file2_mat_init(fIJ);
+  dpd_->file2_mat_init(fAB);
+  dpd_->file2_mat_rd(fIJ);
+  dpd_->file2_mat_rd(fAB);
 
-  dpd_file2_mat_init(LIA);
-  dpd_file2_mat_rd(LIA);
-  dpd_file2_mat_init(FME);
-  dpd_file2_mat_rd(FME);
+  dpd_->file2_mat_init(LIA);
+  dpd_->file2_mat_rd(LIA);
+  dpd_->file2_mat_init(FME);
+  dpd_->file2_mat_rd(FME);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(T2, h);
-    dpd_buf4_mat_irrep_rd(T2, h);
+    dpd_->buf4_mat_irrep_init(T2, h);
+    dpd_->buf4_mat_irrep_rd(T2, h);
 
-    dpd_buf4_mat_irrep_init(E, h);
-    dpd_buf4_mat_irrep_rd(E, h);
+    dpd_->buf4_mat_irrep_init(E, h);
+    dpd_->buf4_mat_irrep_rd(E, h);
 
-    dpd_buf4_mat_irrep_init(LIJAB, h);
-    dpd_buf4_mat_irrep_rd(LIJAB, h);
+    dpd_->buf4_mat_irrep_init(LIJAB, h);
+    dpd_->buf4_mat_irrep_rd(LIJAB, h);
 
-    dpd_buf4_mat_irrep_init(D, h);
-    dpd_buf4_mat_irrep_rd(D, h);
+    dpd_->buf4_mat_irrep_init(D, h);
+    dpd_->buf4_mat_irrep_rd(D, h);
   }
 
   i = I - occ_off[Gi];
@@ -163,7 +163,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
   for(Gab=0; Gab < nirreps; Gab++) {
     Gc = Gab ^ Gijk; /* assumes totally symmetric! */
 
-    W2[Gab] = dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
+    W2[Gab] = dpd_->dpd_block_matrix(F->params->coltot[Gab], virtpi[Gc]);
 
     if(F->params->coltot[Gab] && virtpi[Gc]) {
       memset(W1[Gab][0], 0, F->params->coltot[Gab]*virtpi[Gc]*sizeof(double));
@@ -179,8 +179,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     cd = T2->col_offset[Gjk][Gc];
     id = F->row_offset[Gid][I];
 
-    F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
-    dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+    F->matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
     nrows = F->params->coltot[Gid];
     ncols = virtpi[Gc];
@@ -190,7 +190,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
 	      &(T2->matrix[Gjk][kj][cd]), nlinks, 1.0, W1[Gab][0], ncols);
 
-    dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
 
     /* +t_ikcd * F_jdab */
     Gab = Gjd = Gj ^ Gd; /* assumes totally symmetric! */
@@ -199,8 +199,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     cd = T2->col_offset[Gik][Gc];
     jd = F->row_offset[Gjd][J];
 
-    F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+    F->matrix[Gjd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gjd];
     ncols = virtpi[Gc];
@@ -210,7 +210,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
 	      &(T2->matrix[Gik][ik][cd]), nlinks, 1.0, W1[Gab][0], ncols);
 
-    dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
 
     /* -t_ijcd * F_kdab */
     Gab = Gkd = Gk ^ Gd; /* assumes totally symmetric! */
@@ -219,8 +219,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     cd = T2->col_offset[Gij][Gc];
     kd = F->row_offset[Gkd][K];
 
-    F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+    F->matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gkd];
     ncols = virtpi[Gc];
@@ -230,7 +230,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t', 't', nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 	      &(T2->matrix[Gij][ij][cd]), nlinks, 1.0, W1[Gab][0], ncols);
 
-    dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
 
   }
 
@@ -291,8 +291,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     bd = T2->col_offset[Gjk][Gb];
     id = F->row_offset[Gid][I];
 
-    F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
-    dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+    F->matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
     nrows = F->params->coltot[Gid];
     ncols = virtpi[Gb];
@@ -302,7 +302,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gid][0], nrows,
 	      &(T2->matrix[Gjk][kj][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-    dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
 
     /* +t_ikbd * F_jdca */
     Gca = Gjd = Gj ^ Gd; /* assumes totally symmetric! */
@@ -311,8 +311,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     bd = T2->col_offset[Gik][Gb];
     jd = F->row_offset[Gjd][J];
 
-    F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+    F->matrix[Gjd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gjd];
     ncols = virtpi[Gb];
@@ -322,7 +322,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gjd][0], nrows,
 	      &(T2->matrix[Gik][ik][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-    dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
 
     /* -t_ijbd * F_kdca */
     Gca = Gkd = Gk ^ Gd; /* assumes totally symmetric! */
@@ -331,8 +331,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     bd = T2->col_offset[Gij][Gb];
     kd = F->row_offset[Gkd][K];
 
-    F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+    F->matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gkd];
     ncols = virtpi[Gb];
@@ -342,7 +342,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gkd][0], nrows,
 	      &(T2->matrix[Gij][ij][bd]), nlinks, 1.0, W2[Gca][0], ncols);
 
-    dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
   }
 
   for(Gl=0; Gl < nirreps; Gl++) {
@@ -392,7 +392,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 	      &(E->matrix[Gji][ji][lb]), ncols, 1.0, W2[Gca][0], ncols);
   }
 
-  dpd_3d_sort(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
+  dpd_->sort_3d(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
 	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
 	      vir_off, virtpi, vir_off, F->params->colidx, bca, 1);
 
@@ -411,8 +411,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     ad = T2->col_offset[Gkj][Ga];
     id = F->row_offset[Gid][I];
 
-    F->matrix[Gid] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
-    dpd_buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
+    F->matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gid, id, virtpi[Gd]);
 
     nrows = F->params->coltot[Gid];
     ncols = virtpi[Ga];
@@ -422,7 +422,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gid][0], nrows,
 	      &(T2->matrix[Gkj][kj][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-    dpd_free_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
+    dpd_->free_dpd_block(F->matrix[Gid], virtpi[Gd], F->params->coltot[Gid]);
 
     /* -t_ikad * F_jdcb */
     Gcb = Gjd = Gj ^ Gd; /* assumes totally symmetric! */
@@ -431,8 +431,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     ad = T2->col_offset[Gik][Ga];
     jd = F->row_offset[Gjd][J];
 
-    F->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
+    F->matrix[Gjd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gjd, jd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gjd];
     ncols = virtpi[Ga];
@@ -442,7 +442,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, -1.0, F->matrix[Gjd][0], nrows,
 	      &(T2->matrix[Gik][ik][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-    dpd_free_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
+    dpd_->free_dpd_block(F->matrix[Gjd], virtpi[Gd], F->params->coltot[Gjd]);
 
     /* +t_ijad * F_kdcb */
     Gcb = Gkd = Gk ^ Gd; /* assumes totally symmetric! */
@@ -451,8 +451,8 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
     ad = T2->col_offset[Gij][Ga];
     kd = F->row_offset[Gkd][K];
 
-    F->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
-    dpd_buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
+    F->matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->buf4_mat_irrep_rd_block(F, Gkd, kd, virtpi[Gd]);
 
     nrows = F->params->coltot[Gkd];
     ncols = virtpi[Ga];
@@ -462,7 +462,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
       C_DGEMM('t','t',nrows, ncols, nlinks, 1.0, F->matrix[Gkd][0], nrows,
 	      &(T2->matrix[Gij][ij][ad]), nlinks, 1.0, W2[Gcb][0], ncols);
 
-    dpd_free_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
+    dpd_->free_dpd_block(F->matrix[Gkd], virtpi[Gd], F->params->coltot[Gkd]);
 
   }
 
@@ -514,7 +514,7 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 
   }
 
-  dpd_3d_sort(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
+  dpd_->sort_3d(W2, W1, nirreps, Gijk, F->params->coltot, F->params->colidx,
 	      F->params->colorb, F->params->rsym, F->params->ssym, vir_off, 
 	      vir_off, virtpi, vir_off, F->params->colidx, cba, 1);
 
@@ -691,21 +691,21 @@ void L3_AAA(double ***W1, int nirreps, int I, int Gi, int J, int Gj, int K, int 
 
   for(Gab=0; Gab < nirreps; Gab++) {
     Gc = Gab ^ Gijk; /* assumes totally symmetric! */
-    dpd_free_block(W2[Gab], F->params->coltot[Gab], virtpi[Gc]);
+    dpd_->free_dpd_block(W2[Gab], F->params->coltot[Gab], virtpi[Gc]);
   }
   free(W2);
 
-  dpd_file2_mat_close(fIJ);
-  dpd_file2_mat_close(fAB);
+  dpd_->file2_mat_close(fIJ);
+  dpd_->file2_mat_close(fAB);
 
-  dpd_file2_mat_close(FME);
-  dpd_file2_mat_close(LIA);
+  dpd_->file2_mat_close(FME);
+  dpd_->file2_mat_close(LIA);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_close(T2, h);
-    dpd_buf4_mat_irrep_close(E, h);
-    dpd_buf4_mat_irrep_close(D, h);
-    dpd_buf4_mat_irrep_close(LIJAB, h);
+    dpd_->buf4_mat_irrep_close(T2, h);
+    dpd_->buf4_mat_irrep_close(E, h);
+    dpd_->buf4_mat_irrep_close(D, h);
+    dpd_->buf4_mat_irrep_close(LIJAB, h);
   }
 }
 

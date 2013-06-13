@@ -218,15 +218,31 @@ PsiReturnType ccenergy(Options &options)
   if(params.ref == 2) { /** UHF **/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
-         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.aoccpi);
+    spaces.push_back(moinfo.aocc_sym);
+    spaces.push_back(moinfo.avirtpi);
+    spaces.push_back(moinfo.avir_sym);
+    spaces.push_back(moinfo.boccpi);
+    spaces.push_back(moinfo.bocc_sym);
+    spaces.push_back(moinfo.bvirtpi);
+    spaces.push_back(moinfo.bvir_sym);
+    dpd_list[0] = boost::shared_ptr<DPD>( new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
+         cachelist, NULL, 4, spaces));
 
     if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym,
-               moinfo.boccpi, moinfo.bocc_sym, moinfo.sopi, moinfo.sosym);
-      dpd_set_default(0);
+        std::vector<int*> aospaces;
+        aospaces.push_back(moinfo.aoccpi);
+        aospaces.push_back(moinfo.aocc_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+        aospaces.push_back(moinfo.boccpi);
+        aospaces.push_back(moinfo.bocc_sym);
+        aospaces.push_back(moinfo.sopi);
+        aospaces.push_back(moinfo.sosym);
+      dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles,
+                                                    cachelist, NULL, 4, aospaces));
+      dpd_->set_default(0);
     }
 
   }
@@ -234,15 +250,24 @@ PsiReturnType ccenergy(Options &options)
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
     priority = priority_list();
+    std::vector<int*> spaces;
+    spaces.push_back(moinfo.occpi);
+    spaces.push_back(moinfo.occ_sym);
+    spaces.push_back(moinfo.virtpi);
+    spaces.push_back(moinfo.vir_sym);
 
-    dpd_init(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles,
-         cachelist, priority, 2, moinfo.occpi, moinfo.occ_sym,
-         moinfo.virtpi, moinfo.vir_sym);
+    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles,
+         cachelist, priority, 2, spaces));
 
     if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-               2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
-      dpd_set_default(0);
+            std::vector<int*> aospaces;
+            aospaces.push_back(moinfo.occpi);
+            aospaces.push_back(moinfo.occ_sym);
+            aospaces.push_back(moinfo.sopi);
+            aospaces.push_back(moinfo.sosym);
+      dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+               2, aospaces));
+      dpd_->set_default(0);
     }
 
   }
@@ -419,8 +444,8 @@ PsiReturnType ccenergy(Options &options)
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
         params.convergence);
     fflush(outfile);
-    if( params.aobasis != "NONE" ) dpd_close(1);
-    dpd_close(0);
+//    if( params.aobasis != "NONE" ) dpd_->close(1);
+//    dpd_->close(0);
     cleanup();
 #ifdef TIME_CCENERGY
     timer_off("CCEnergy");
@@ -587,8 +612,8 @@ PsiReturnType ccenergy(Options &options)
   if(params.brueckner)
     Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
-  if( params.aobasis != "NONE" ) dpd_close(1);
-  dpd_close(0);
+//  if( params.aobasis != "NONE" ) dpd_->close(1);
+//  dpd_->close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);
@@ -680,54 +705,54 @@ void one_step(void) {
         Wmnij_build();
         t2_build();
         if ( (params.ref == 0) || (params.ref == 1) ) {
-          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-          dpd_file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
-          dpd_file2_close(&t1);
-          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
-            tval = dpd_file2_dot_self(&t1);
-          dpd_file2_close(&t1);
+          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+          dpd_->file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
+          dpd_->file2_close(&t1);
+          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
+            tval = dpd_->file2_dot_self(&t1);
+          dpd_->file2_close(&t1);
             fprintf(outfile,"\tNorm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
         }
       if (params.ref == 1) {
-          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
-          dpd_file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
-          dpd_file2_close(&t1);
+          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
+          dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
+          dpd_->file2_close(&t1);
         }
         else if (params.ref == 2) {
-          dpd_file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
-          dpd_file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
-          dpd_file2_close(&t1);
+          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
+          dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
+          dpd_->file2_close(&t1);
         }
     if (params.ref == 0) {
-          dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-          dpd_buf4_close(&t2);
-            dpd_buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
-            tval = dpd_buf4_dot_self(&t2);
+          dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+          dpd_->buf4_close(&t2);
+            dpd_->buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
+            tval = dpd_->buf4_dot_self(&t2);
             fprintf(outfile,"\tNorm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
-            dpd_buf4_close(&t2);
+            dpd_->buf4_close(&t2);
     }
     else if (params.ref == 1) {
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
-      dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
-      dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-      dpd_buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
+      dpd_->buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
+          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
+      dpd_->buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+      dpd_->buf4_close(&t2);
     }
     else if(params.ref ==2) {
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
-      dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
-      dpd_buf4_close(&t2);
-      dpd_buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-          dpd_buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-      dpd_buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
+      dpd_->buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
+      dpd_->buf4_close(&t2);
+      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+      dpd_->buf4_close(&t2);
     }
     }
     return;

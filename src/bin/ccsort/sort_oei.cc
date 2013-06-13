@@ -109,19 +109,19 @@ void sort_oei_uhf(void)
   filter(tmp_oei,b_oei,ioff,nmo,moinfo.nfzc,moinfo.nfzv);
   free(tmp_oei);
 
-  dpd_file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
-  dpd_file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
-  dpd_file2_init(&hAB, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
-  dpd_file2_init(&hab, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
-  dpd_file2_init(&hIA, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
-  dpd_file2_init(&hia, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
+  dpd_->file2_init(&hIJ, PSIF_CC_OEI, 0, 0, 0, "h(I,J)");
+  dpd_->file2_init(&hij, PSIF_CC_OEI, 0, 2, 2, "h(i,j)");
+  dpd_->file2_init(&hAB, PSIF_CC_OEI, 0, 1, 1, "h(A,B)");
+  dpd_->file2_init(&hab, PSIF_CC_OEI, 0, 3, 3, "h(a,b)");
+  dpd_->file2_init(&hIA, PSIF_CC_OEI, 0, 0, 1, "h(I,A)");
+  dpd_->file2_init(&hia, PSIF_CC_OEI, 0, 2, 3, "h(i,a)");
 
-  dpd_file2_mat_init(&hIJ);
-  dpd_file2_mat_init(&hij);
-  dpd_file2_mat_init(&hAB);
-  dpd_file2_mat_init(&hab);
-  dpd_file2_mat_init(&hIA);
-  dpd_file2_mat_init(&hia);
+  dpd_->file2_mat_init(&hIJ);
+  dpd_->file2_mat_init(&hij);
+  dpd_->file2_mat_init(&hAB);
+  dpd_->file2_mat_init(&hab);
+  dpd_->file2_mat_init(&hIA);
+  dpd_->file2_mat_init(&hia);
 
   /* Loop over alpha QT indices and convert to CC ordering */
   for(p=0; p < nactive; p++) {
@@ -173,26 +173,26 @@ void sort_oei_uhf(void)
     }
   }
 
-  dpd_file2_mat_wrt(&hIJ);
-  dpd_file2_mat_wrt(&hij);
-  dpd_file2_mat_wrt(&hAB);
-  dpd_file2_mat_wrt(&hab);
-  dpd_file2_mat_wrt(&hIA);
-  dpd_file2_mat_wrt(&hia);
+  dpd_->file2_mat_wrt(&hIJ);
+  dpd_->file2_mat_wrt(&hij);
+  dpd_->file2_mat_wrt(&hAB);
+  dpd_->file2_mat_wrt(&hab);
+  dpd_->file2_mat_wrt(&hIA);
+  dpd_->file2_mat_wrt(&hia);
 
-  dpd_file2_mat_close(&hIJ);
-  dpd_file2_mat_close(&hij);
-  dpd_file2_mat_close(&hAB);
-  dpd_file2_mat_close(&hab);
-  dpd_file2_mat_close(&hIA);
-  dpd_file2_mat_close(&hia);
+  dpd_->file2_mat_close(&hIJ);
+  dpd_->file2_mat_close(&hij);
+  dpd_->file2_mat_close(&hAB);
+  dpd_->file2_mat_close(&hab);
+  dpd_->file2_mat_close(&hIA);
+  dpd_->file2_mat_close(&hia);
 
-  dpd_file2_close(&hIJ);
-  dpd_file2_close(&hij);
-  dpd_file2_close(&hAB);
-  dpd_file2_close(&hab);
-  dpd_file2_close(&hIA);
-  dpd_file2_close(&hia);
+  dpd_->file2_close(&hIJ);
+  dpd_->file2_close(&hij);
+  dpd_->file2_close(&hAB);
+  dpd_->file2_close(&hab);
+  dpd_->file2_close(&hIA);
+  dpd_->file2_close(&hia);
 
   free(a_oei);
   free(b_oei);
@@ -237,13 +237,13 @@ void sort_oei_rhf(void)
     print_array(oei, nactive, outfile);
   }
 
-  dpd_file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
-  dpd_file2_init(&Hvv, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
-  dpd_file2_init(&Hov, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
+  dpd_->file2_init(&Hoo, PSIF_CC_OEI, 0, 0, 0, "h(i,j)");
+  dpd_->file2_init(&Hvv, PSIF_CC_OEI, 0, 1, 1, "h(a,b)");
+  dpd_->file2_init(&Hov, PSIF_CC_OEI, 0, 0, 1, "h(i,a)");
 
-  dpd_file2_mat_init(&Hoo);
-  dpd_file2_mat_init(&Hvv);
-  dpd_file2_mat_init(&Hov);
+  dpd_->file2_mat_init(&Hoo);
+  dpd_->file2_mat_init(&Hvv);
+  dpd_->file2_mat_init(&Hov);
 
   /* Loop over QT indices and convert to CC ordering */
   for(p=0; p < nactive; p++) {
@@ -294,17 +294,17 @@ void sort_oei_rhf(void)
     }
   }
 
-  dpd_file2_mat_wrt(&Hoo);
-  dpd_file2_mat_wrt(&Hvv);
-  dpd_file2_mat_wrt(&Hov);
+  dpd_->file2_mat_wrt(&Hoo);
+  dpd_->file2_mat_wrt(&Hvv);
+  dpd_->file2_mat_wrt(&Hov);
 
-  dpd_file2_mat_close(&Hoo);
-  dpd_file2_mat_close(&Hvv);
-  dpd_file2_mat_close(&Hov);
+  dpd_->file2_mat_close(&Hoo);
+  dpd_->file2_mat_close(&Hvv);
+  dpd_->file2_mat_close(&Hov);
 
-  dpd_file2_close(&Hoo);
-  dpd_file2_close(&Hvv);
-  dpd_file2_close(&Hov);
+  dpd_->file2_close(&Hoo);
+  dpd_->file2_close(&Hvv);
+  dpd_->file2_close(&Hov);
 
   free(oei);
 }

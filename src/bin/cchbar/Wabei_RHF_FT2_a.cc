@@ -66,22 +66,22 @@ void Wabei_RHF_FT2_a(void)
 
   /* Zaeib <-- - <mf|ae> t_mi^fb */
   /**** this contraction still requires storage of a full <ia|bc> set *****/
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
-  dpd_buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
-  dpd_contract444(&F, &T2, &Z, 1, 1, -1, 0);
-  dpd_buf4_close(&T2);
-  dpd_buf4_close(&F);
-  dpd_buf4_close(&Z);
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "tIAjb");
+  dpd_->buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
+  dpd_->contract444(&F, &T2, &Z, 1, 1, -1, 0);
+  dpd_->buf4_close(&T2);
+  dpd_->buf4_close(&F);
+  dpd_->buf4_close(&Z);
 
   /* Zaeib <-- <am|ef> [ 2 t_mi^fb - t_mi^bf ] */
 
-   dpd_buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
-  dpd_buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+   dpd_->buf4_init(&Z, PSIF_CC_TMP2, 0, 5, 10, 5, 10, 0, "Z(AE,ib)");
+  dpd_->buf4_init(&F, PSIF_CC_FINTS, 0, 11, 5, 11, 5, 0, "F <ai|bc>");
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&T2, h);
-    dpd_buf4_mat_irrep_rd(&T2, h);
+    dpd_->buf4_mat_irrep_init(&T2, h);
+    dpd_->buf4_mat_irrep_rd(&T2, h);
   }
 
   W = (double ***) malloc(nirreps * sizeof(double **));
@@ -91,14 +91,14 @@ void Wabei_RHF_FT2_a(void)
     /* allocate space for the input integrals */
     for(Gm=0; Gm < nirreps; Gm++) {
       Gam = Ga^Gm;
-      F.matrix[Gam] = dpd_block_matrix(occpi[Gm], F.params->coltot[Gam]);
+      F.matrix[Gam] = dpd_->dpd_block_matrix(occpi[Gm], F.params->coltot[Gam]);
     }
 
     /* allocate space for the reordered integrals, W[e][mf] and target, Z[e][ib] */
     for(Ge=0; Ge < nirreps; Ge++) {
       Gae = Ga^Ge; Gmf = Gae;
-      W[Ge] = dpd_block_matrix(virtpi[Ge], Z.params->coltot[Gmf]);
-      Z.matrix[Gae] = dpd_block_matrix(virtpi[Ge], Z.params->coltot[Gmf]);
+      W[Ge] = dpd_->dpd_block_matrix(virtpi[Ge], Z.params->coltot[Gmf]);
+      Z.matrix[Gae] = dpd_->dpd_block_matrix(virtpi[Ge], Z.params->coltot[Gmf]);
     }
 
     for(a=0; a < virtpi[Ga]; a++) {
@@ -109,7 +109,7 @@ void Wabei_RHF_FT2_a(void)
 	Gef = Gam;
 
  	/* read all <am|ef> integrals for given orbital index a --> F[m][ef] */
-	dpd_buf4_mat_irrep_rd_block(&F, Gam, F.params->start13[Gam][A], occpi[Gm]);
+	dpd_->buf4_mat_irrep_rd_block(&F, Gam, F.params->start13[Gam][A], occpi[Gm]);
       }
 
       for(Ge=0; Ge < nirreps; Ge++) {
@@ -140,7 +140,7 @@ void Wabei_RHF_FT2_a(void)
 	} /* e */
 
 	/* read all existing Z(ae,ib) for a given orbital index a -->  Z[e][ib] */
-	dpd_buf4_mat_irrep_rd_block(&Z, Gae, Z.params->start13[Gae][A], virtpi[Ge]);
+	dpd_->buf4_mat_irrep_rd_block(&Z, Gae, Z.params->start13[Gae][A], virtpi[Ge]);
 
 	/* contract W[e][mf] * T[mf][ib] -> Z[e][ib] */
 	if(virtpi[Ge] && Z.params->coltot[Gmf])
@@ -149,7 +149,7 @@ void Wabei_RHF_FT2_a(void)
 		  1.0, Z.matrix[Gae][0], Z.params->coltot[Gmf]);
 
 	/* write out the new Z(ae,ib) */
-	dpd_buf4_mat_irrep_wrt_block(&Z, Gae, Z.params->start13[Gae][A], virtpi[Ge]);
+	dpd_->buf4_mat_irrep_wrt_block(&Z, Gae, Z.params->start13[Gae][A], virtpi[Ge]);
 
       } /* Ge */
 
@@ -157,22 +157,22 @@ void Wabei_RHF_FT2_a(void)
 
     for(Gm=0; Gm < nirreps; Gm++) {
       Gam = Ga^Gm;
-      dpd_free_block(F.matrix[Gam], occpi[Gm], F.params->coltot[Gam]);
+      dpd_->free_dpd_block(F.matrix[Gam], occpi[Gm], F.params->coltot[Gam]);
     }
 
     for(Ge=0; Ge < nirreps; Ge++) {
       Gae = Ga^Ge; Gmf = Gae;
-      dpd_free_block(W[Ge], virtpi[Ge], Z.params->coltot[Gmf]);
-      dpd_free_block(Z.matrix[Gae], virtpi[Ge], Z.params->coltot[Gmf]);
+      dpd_->free_dpd_block(W[Ge], virtpi[Ge], Z.params->coltot[Gmf]);
+      dpd_->free_dpd_block(Z.matrix[Gae], virtpi[Ge], Z.params->coltot[Gmf]);
     }
 
   } /* Ga */
 
-  for(h=0; h < nirreps; h++) dpd_buf4_mat_irrep_close(&T2, h);
-  dpd_buf4_close(&T2);
-  dpd_buf4_sort_axpy(&Z, PSIF_CC_HBAR, prqs, 11, 5, "WAbEi (Ei,Ab)", 1);
-  dpd_buf4_close(&Z);
-  dpd_buf4_close(&F);
+  for(h=0; h < nirreps; h++) dpd_->buf4_mat_irrep_close(&T2, h);
+  dpd_->buf4_close(&T2);
+  dpd_->buf4_sort_axpy(&Z, PSIF_CC_HBAR, prqs, 11, 5, "WAbEi (Ei,Ab)", 1);
+  dpd_->buf4_close(&Z);
+  dpd_->buf4_close(&F);
 
 
 }

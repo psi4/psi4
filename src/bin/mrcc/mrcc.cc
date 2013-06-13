@@ -68,8 +68,8 @@ void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
 void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_tolerance)
 {
     for(int h = 0; h < nirrep; ++h){
-        dpd_buf4_mat_irrep_init(&K, h);
-        dpd_buf4_mat_irrep_rd(&K, h);
+        dpd_->buf4_mat_irrep_init(&K, h);
+        dpd_->buf4_mat_irrep_rd(&K, h);
         for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
             int p = K.params->roworb[h][pq][0];
             int q = K.params->roworb[h][pq][1];
@@ -82,7 +82,7 @@ void write_tei_to_disk(FILE* fort55, int nirrep, dpdbuf4& K, double ints_toleran
                             K.matrix[h][pq][rs], p+1, q+1, r+1, s+1);
             }
         }
-        dpd_buf4_mat_irrep_close(&K, h);
+        dpd_->buf4_mat_irrep_close(&K, h);
     }
 }
 
@@ -392,13 +392,13 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     // Just in case the buffer exists, delete it now
     dpdbuf4 Ibuf;
-    dpd_buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
+    dpd_->buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    dpd_buf4_scm(&Ibuf, 0.0);
-    dpd_buf4_close(&Ibuf);
+    dpd_->buf4_scm(&Ibuf, 0.0);
+    dpd_->buf4_close(&Ibuf);
 
 
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0,
+    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0,
                    ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
@@ -412,7 +412,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     bucket(mrccreader);
 
     // Close DPD file
-    dpd_file4_close(&I);
+    dpd_->file4_close(&I);
 
 
     /****START OF HACK****/
@@ -420,7 +420,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_set_default(ints.get_dpd_id());
+    dpd_->set_default(ints.get_dpd_id());
     fprintf(outfile, "    Transformation complete.\n\n");
     /****END HACK****/
 
@@ -444,23 +444,23 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     _default_psio_lib_->tocprint(PSIF_LIBTRANS_DPD);
-    dpd_buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+    dpd_->buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-    dpd_buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+    dpd_->buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    dpd_file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
+    dpd_->file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
                    "X (2e contribution)");
 
     // Check energy
     double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
     double E1e = one_particle->vector_dot(H);
-    double E2e = dpd_buf4_dot(&G, &D);
+    double E2e = dpd_->buf4_dot(&G, &D);
     fprintf(outfile, "\tEnergies recomputed from MRCC's density matrices:\n");
     fprintf(outfile, "\t\tOne-electron energy = %16.10f\n",E1e);
     fprintf(outfile, "\t\tTwo-electron energy = %16.10f\n",E2e);
     fprintf(outfile, "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
 
-    dpd_contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
+    dpd_->contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
     SharedMatrix X2mat(new Matrix(&X2));
 X->print();
 X2mat->print();
@@ -482,8 +482,8 @@ X->print();
     Lxy->subtract(X->transpose());
     Lxy->print();
 
-    dpd_buf4_close(&D);
-    dpd_buf4_close(&G);
+    dpd_->buf4_close(&D);
+    dpd_->buf4_close(&G);
 
     // At this point, the OPDM is the response OPDM
     if (debug) {
@@ -607,7 +607,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
     IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_set_default(ints.get_dpd_id());
+    dpd_->set_default(ints.get_dpd_id());
 
     // Obtain a single handle to the CCDENSITIES file
     FILE* ccdensities = fopen("CCDENSITIES", "r");
@@ -723,7 +723,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_set_default(ints.get_dpd_id());
+    dpd_->set_default(ints.get_dpd_id());
 
     fprintf(outfile, "    Transformation complete.\n\n");
     fprintf(outfile, "  Generating fort.55 integral file...");
@@ -739,13 +739,13 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     if (restricted) {
 
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        dpd_->buf4_close(&K);
 
         // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
         SharedMatrix moH(new Matrix(PSIF_MO_FZC, wave->nmopi(), wave->nmopi()));
@@ -763,37 +763,37 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         // We want only the permutationally unique integrals, hence [A>=A]+, see libtrans documenation for details
 
         // Load up alpha alpha
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), // On disk
                       0,
                       "MO Ints (AA|AA)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up beta beta
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // In memory
                       ints.DPD_ID("[a>=a]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (aa|aa)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);
 
         // Load up alpha beta
-        dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
+        dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0,
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // In memory
                       ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[a>=a]+"), // On disk
                       0,
                       "MO Ints (AA|aa)");
         write_tei_to_disk(fort55, nirrep, K, ints_tolerance);
-        dpd_buf4_close(&K);
+        dpd_->buf4_close(&K);
 
         // Write out separator
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", 0.0, 0, 0, 0, 0);

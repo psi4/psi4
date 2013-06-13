@@ -45,140 +45,140 @@ void sigmaSS(int i, int C_irr) {
 
   if (params.eom_ref == 0) { /* RHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 
     /* SIA = FAE*CIE */
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
 
     /* SIA -= FMI*CMA */
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
-    dpd_file2_close(&FMI);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
+    dpd_->file2_close(&FMI);
 
     /* SIA += WMAEI*CME */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "2 W(jb,ME) + W(Jb,Me)");
-    dpd_contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "2 W(jb,ME) + W(Jb,Me)");
+    dpd_->contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
-    dpd_file2_close(&CME);
-    dpd_file2_close(&SIA);
+    dpd_->file2_close(&CME);
+    dpd_->file2_close(&SIA);
   }
 
   else if (params.eom_ref == 1) { /* ROHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "Cme", i);
-    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
 
     /* SIA = FAE*CIE */
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
 
     /* SIA -= FMI*CMA */
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
-    dpd_file2_close(&FMI);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
+    dpd_->file2_close(&FMI);
 
     /* SIA += WMAEI*CME */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WMBEJ (JB,ME)");
-    dpd_contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WMBEJ (JB,ME)");
+    dpd_->contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* SIA += WmAeI*Cme */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WmBeJ (JB,me)");
-    dpd_contract422(&W, &Cme, &SIA, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WmBeJ (JB,me)");
+    dpd_->contract422(&W, &Cme, &SIA, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* Sia = Fae*Cie */
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
-    dpd_contract222(&Cme, &Fae, &Sia, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&Fae);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 1, 1, "Fae");
+    dpd_->contract222(&Cme, &Fae, &Sia, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&Fae);
 
     /* Sia -= Fmi*Cma */
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
-    dpd_contract222(&Fmi, &Cme, &Sia, 1, 1, -1.0, 1.0);
-    dpd_file2_close(&Fmi);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 0, 0, "Fmi");
+    dpd_->contract222(&Fmi, &Cme, &Sia, 1, 1, -1.0, 1.0);
+    dpd_->file2_close(&Fmi);
 
     /* Sia += Wmaei*Cme */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "Wmbej (jb,me)");
-    dpd_contract422(&W,&Cme,&Sia, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "Wmbej (jb,me)");
+    dpd_->contract422(&W,&Cme,&Sia, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* Sia += WMaEi*CME */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WMbEj (jb,ME)");
-    dpd_contract422(&W,&CME,&Sia, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WMbEj (jb,ME)");
+    dpd_->contract422(&W,&CME,&Sia, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
-    dpd_file2_close(&Cme);
-    dpd_file2_close(&Sia);
-    dpd_file2_close(&CME);
-    dpd_file2_close(&SIA);
+    dpd_->file2_close(&Cme);
+    dpd_->file2_close(&Sia);
+    dpd_->file2_close(&CME);
+    dpd_->file2_close(&SIA);
   }
   else { /* UHF */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 
     sprintf(lbl, "%s %d", "Sia", i);
-    dpd_file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
+    dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
     sprintf(lbl, "%s %d", "Cme", i);
-    dpd_file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
 
     /* SIA = FAE*CIE */
-    dpd_file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&FAE);
+    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    dpd_->contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&FAE);
 
     /* SIA -= FMI*CMA */
-    dpd_file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
-    dpd_file2_close(&FMI);
+    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    dpd_->contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
+    dpd_->file2_close(&FMI);
 
     /* SIA += WMAEI*CME */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 20, 20, 20, 20, 0, "WMBEJ (JB,ME)");
-    dpd_contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 20, 20, 20, 20, 0, "WMBEJ (JB,ME)");
+    dpd_->contract422(&W, &CME, &SIA, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* SIA += WmAeI*Cme */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 20, 30, 20, 30, 0, "WmBeJ (JB,me)");
-    dpd_contract422(&W, &Cme, &SIA, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 20, 30, 20, 30, 0, "WmBeJ (JB,me)");
+    dpd_->contract422(&W, &Cme, &SIA, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* Sia = Fae*Cie */
-    dpd_file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
-    dpd_contract222(&Cme, &Fae, &Sia, 0, 0, 1.0, 0.0);
-    dpd_file2_close(&Fae);
+    dpd_->file2_init(&Fae, PSIF_CC_OEI, H_IRR, 3, 3, "Fae");
+    dpd_->contract222(&Cme, &Fae, &Sia, 0, 0, 1.0, 0.0);
+    dpd_->file2_close(&Fae);
 
     /* Sia -= Fmi*Cma */
-    dpd_file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
-    dpd_contract222(&Fmi, &Cme, &Sia, 1, 1, -1.0, 1.0);
-    dpd_file2_close(&Fmi);
+    dpd_->file2_init(&Fmi, PSIF_CC_OEI, H_IRR, 2, 2, "Fmi");
+    dpd_->contract222(&Fmi, &Cme, &Sia, 1, 1, -1.0, 1.0);
+    dpd_->file2_close(&Fmi);
 
     /* Sia += Wmaei*Cme */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 30, 30, 30, 30, 0, "Wmbej (jb,me)");
-    dpd_contract422(&W,&Cme,&Sia, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 30, 30, 30, 30, 0, "Wmbej (jb,me)");
+    dpd_->contract422(&W,&Cme,&Sia, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
     /* Sia += WMaEi*CME */
-    dpd_buf4_init(&W, PSIF_CC_HBAR, H_IRR, 30, 20, 30, 20, 0, "WMbEj (jb,ME)");
-    dpd_contract422(&W,&CME,&Sia, 0, 0, 1.0, 1.0);
-    dpd_buf4_close(&W);
+    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 30, 20, 30, 20, 0, "WMbEj (jb,ME)");
+    dpd_->contract422(&W,&CME,&Sia, 0, 0, 1.0, 1.0);
+    dpd_->buf4_close(&W);
 
-    dpd_file2_close(&Cme);
-    dpd_file2_close(&Sia);
-    dpd_file2_close(&CME);
-    dpd_file2_close(&SIA);
+    dpd_->file2_close(&Cme);
+    dpd_->file2_close(&Sia);
+    dpd_->file2_close(&CME);
+    dpd_->file2_close(&SIA);
   }
 
 #ifdef EOM_DEBUG

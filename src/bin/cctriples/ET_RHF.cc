@@ -83,32 +83,32 @@ double ET_RHF(void)
   mkl_set_num_threads(1);
 #endif
 
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_init(&fIA);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_mat_rd(&fAB);
-  dpd_file2_mat_rd(&fIA);
+  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_mat_init(&fIJ);
+  dpd_->file2_mat_init(&fAB);
+  dpd_->file2_mat_init(&fIA);
+  dpd_->file2_mat_rd(&fIJ);
+  dpd_->file2_mat_rd(&fAB);
+  dpd_->file2_mat_rd(&fIA);
 
-  dpd_file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_file2_mat_init(&T1);
-  dpd_file2_mat_rd(&T1);
+  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  dpd_->file2_mat_init(&T1);
+  dpd_->file2_mat_rd(&T1);
 
-  dpd_buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
-  dpd_buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  dpd_->buf4_init(&Eints, PSIF_CC_EINTS, 0, 0, 10, 0, 10, 0, "E <ij|ka>");
+  dpd_->buf4_init(&Dints, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&T2, h);
-    dpd_buf4_mat_irrep_rd(&T2, h);
+    dpd_->buf4_mat_irrep_init(&T2, h);
+    dpd_->buf4_mat_irrep_rd(&T2, h);
 
-    dpd_buf4_mat_irrep_init(&Eints, h);
-    dpd_buf4_mat_irrep_rd(&Eints, h);
+    dpd_->buf4_mat_irrep_init(&Eints, h);
+    dpd_->buf4_mat_irrep_rd(&Eints, h);
 
-    dpd_buf4_mat_irrep_init(&Dints, h);
-    dpd_buf4_mat_irrep_rd(&Dints, h);
+    dpd_->buf4_mat_irrep_init(&Dints, h);
+    dpd_->buf4_mat_irrep_rd(&Dints, h);
   }
   ffile(&ijkfile,"ijk.dat", 0);
 
@@ -116,7 +116,7 @@ double ET_RHF(void)
      into and its own energy double - all else shared */
   Fints_array = (dpdbuf4 *) malloc(nthreads*sizeof(dpdbuf4));
   for (thread=0; thread<nthreads;++thread)
-    dpd_buf4_init(&(Fints_array[thread]), PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
+    dpd_->buf4_init(&(Fints_array[thread]), PSIF_CC_FINTS, 0, 10, 5, 10, 5, 0, "F <ia|bc>");
   ET_array = (double *) malloc(nthreads*sizeof(double));
   ijk_part = new int [nthreads];
 
@@ -223,26 +223,26 @@ double ET_RHF(void)
   fclose(ijkfile);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_close(&T2, h);
-    dpd_buf4_mat_irrep_close(&Eints, h);
-    dpd_buf4_mat_irrep_close(&Dints, h);
+    dpd_->buf4_mat_irrep_close(&T2, h);
+    dpd_->buf4_mat_irrep_close(&Eints, h);
+    dpd_->buf4_mat_irrep_close(&Dints, h);
   }
-  dpd_buf4_close(&T2);
-  dpd_buf4_close(&Eints);
-  dpd_buf4_close(&Dints);
+  dpd_->buf4_close(&T2);
+  dpd_->buf4_close(&Eints);
+  dpd_->buf4_close(&Dints);
 
-  dpd_file2_mat_close(&T1);
-  dpd_file2_close(&T1);
+  dpd_->file2_mat_close(&T1);
+  dpd_->file2_close(&T1);
 
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_mat_close(&fIA);
-  dpd_file2_close(&fIJ);
-  dpd_file2_close(&fAB);
-  dpd_file2_close(&fIA);
+  dpd_->file2_mat_close(&fIJ);
+  dpd_->file2_mat_close(&fAB);
+  dpd_->file2_mat_close(&fIA);
+  dpd_->file2_close(&fIJ);
+  dpd_->file2_close(&fAB);
+  dpd_->file2_close(&fIA);
 
   for (thread=0; thread<nthreads; ++thread)
-    dpd_buf4_close(&(Fints_array[thread]));
+    dpd_->buf4_close(&(Fints_array[thread]));
 
   free(Fints_array);
   free(ET_array);
@@ -354,8 +354,8 @@ void* ET_RHF_thread(void* thread_data_in)
                 for(Gab=0; Gab < nirreps; Gab++) {
                   Gc = Gab ^ Gijk;
 
-                  W0[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-                  W1[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  W0[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  W1[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
                 }
                 // timer_off("malloc");
 
@@ -368,9 +368,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gc = Gkj ^ Gd;
 
                   /* Set up F integrals */
-                  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
+                  Fints->matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   /* Set up T2 amplitudes */
@@ -387,7 +387,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gkj][kj][cd]), nlinks, 0.0,
                             &(W0[Gab][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
+                  dpd_->free_dpd_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
                 }
 
                 /* -E_jklc * t_ilab */
@@ -415,7 +415,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[ab][c] --> W[ac][b] */
-                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
@@ -425,9 +425,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gac = Gid = Gi ^ Gd;
                   Gb = Gjk ^ Gd;
 
-                  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
+                  Fints->matrix[Gid] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   bd = T2->col_offset[Gjk][Gb];
@@ -442,7 +442,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gjk][jk][bd]), nlinks, 1.0,
                             &(W1[Gac][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
+                  dpd_->free_dpd_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
                 }
 
                 /* -E_kjlb * t_ilac */
@@ -467,7 +467,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[ac][b] --> W[ca][b] */
-                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
@@ -477,9 +477,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gca = Gkd = Gk ^ Gd;
                   Gb = Gji ^ Gd;
 
-                  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
+                  Fints->matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   bd = T2->col_offset[Gji][Gb];
@@ -494,7 +494,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gji][ji][bd]), nlinks, 1.0,
                             &(W0[Gca][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
+                  dpd_->free_dpd_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
                 }
 
                 /* -E_ijlb * t_klca */
@@ -519,7 +519,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[ca][b] --> W[cb][a] */
-                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
@@ -529,9 +529,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gcb = Gkd = Gk ^ Gd;
                   Ga = Gij ^ Gd;
 
-                  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
+                  Fints->matrix[Gkd] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   ad = T2->col_offset[Gij][Ga];
@@ -546,7 +546,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gij][ij][ad]), nlinks, 1.0,
                             &(W1[Gcb][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
+                  dpd_->free_dpd_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
                 }
 
                 /* -E_jila * t_klcb */
@@ -571,7 +571,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[cb][a] --> W[bc][a] */
-                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
@@ -581,9 +581,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gbc = Gjd = Gj ^ Gd;
                   Ga = Gik ^ Gd;
 
-                  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
+                  Fints->matrix[Gjd] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   ad = T2->col_offset[Gik][Ga];
@@ -598,7 +598,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gik][ik][ad]), nlinks, 1.0,
                             &(W0[Gbc][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
+                  dpd_->free_dpd_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
                 }
 
                 /* -E_kila * t_jlbc */
@@ -623,7 +623,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[bc][a] --> W[ba][c] */
-                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
@@ -633,9 +633,9 @@ void* ET_RHF_thread(void* thread_data_in)
                   Gba = Gjd = Gj ^ Gd;
                   Gc = Gki ^ Gd;
 
-                  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
+                  Fints->matrix[Gjd] = dpd_->dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
           pthread_mutex_lock(&mut);
-                  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
+                  dpd_->buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
                   cd = T2->col_offset[Gki][Gc];
@@ -650,7 +650,7 @@ void* ET_RHF_thread(void* thread_data_in)
                             &(T2->matrix[Gki][ki][cd]), nlinks, 1.0,
                             &(W1[Gba][0][0]), ncols);
 
-                  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
+                  dpd_->free_dpd_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
                 }
 
                 /* -E_iklc * t_jlba */
@@ -675,7 +675,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 }
 
                 /* Sort W[ba][c] --> W[ab][c] */
-                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                dpd_->sort_3d(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
                        Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
                        vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
@@ -684,9 +684,9 @@ void* ET_RHF_thread(void* thread_data_in)
                 // timer_on("malloc");
                 for(Gab=0; Gab < nirreps; Gab++) {
                   Gc = Gab ^ Gijk;
-                  dpd_free_block(W1[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_->free_dpd_block(W1[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
 
-                  V[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  V[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
                 }
                 // timer_off("malloc");
 
@@ -791,9 +791,9 @@ void* ET_RHF_thread(void* thread_data_in)
                 for(Gab=0; Gab < nirreps; Gab++) {
                   Gc = Gab ^ Gijk;
 
-                  X[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-                  Y[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-                  Z[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  X[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  Y[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  Z[Gab] = dpd_->dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
                 }
                 // timer_off("malloc");
 
@@ -846,7 +846,7 @@ void* ET_RHF_thread(void* thread_data_in)
                 for(Gab=0; Gab < nirreps; Gab++) {
                   Gc = Gab ^ Gijk;
 
-                  dpd_free_block(V[Gab], Fints->params->coltot[Gab], virtpi[Gc]);
+                  dpd_->free_dpd_block(V[Gab], Fints->params->coltot[Gab], virtpi[Gc]);
                 }
                 // timer_off("malloc");
 
@@ -913,10 +913,10 @@ void* ET_RHF_thread(void* thread_data_in)
                 for(Gab=0; Gab < nirreps; Gab++) {
                   Gc = Gab ^ Gijk;
 
-                  dpd_free_block(W0[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-                  dpd_free_block(X[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-                  dpd_free_block(Y[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-                  dpd_free_block(Z[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_->free_dpd_block(W0[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_->free_dpd_block(X[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_->free_dpd_block(Y[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_->free_dpd_block(Z[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
                 }
                 // timer_off("malloc");
 

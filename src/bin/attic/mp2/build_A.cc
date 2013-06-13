@@ -60,34 +60,34 @@ void rhf_build_A(void)
   int I, J, A, B;
   int Asym, Bsym, Isym, Jsym;
   
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(AI,BJ)");
-  dpd_buf4_close(&D);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(AI,BJ)");
+  dpd_->buf4_close(&D);
 
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
-  dpd_buf4_scm(&Amat, 4.0);
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_sort_axpy(&D, PSIF_CC_MISC, sprq, 11, 11, "A(AI,BJ)", -1.0);
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-  dpd_buf4_sort_axpy(&C, PSIF_CC_MISC, qpsr, 11, 11, "A(AI,BJ)", -1.0);
-  dpd_buf4_close(&C);
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  dpd_->buf4_scm(&Amat, 4.0);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_->buf4_sort_axpy(&D, PSIF_CC_MISC, sprq, 11, 11, "A(AI,BJ)", -1.0);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+  dpd_->buf4_sort_axpy(&C, PSIF_CC_MISC, qpsr, 11, 11, "A(AI,BJ)", -1.0);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  dpd_->buf4_close(&Amat);
 
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_rd(&fAB);
+  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_->file2_mat_init(&fIJ);
+  dpd_->file2_mat_rd(&fIJ);
+  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_->file2_mat_init(&fAB);
+  dpd_->file2_mat_rd(&fAB);
 
   nirreps = mo.nirreps;
 
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
     for(ai=0; ai < Amat.params->rowtot[h]; ai++) {
       a = Amat.params->roworb[h][ai][0];
       i = Amat.params->roworb[h][ai][1];
@@ -106,15 +106,15 @@ void rhf_build_A(void)
         if((A==B)&&(Isym==Jsym)) Amat.matrix[h][ai][bj] -= fIJ.matrix[Isym][I][J];
       }
     }
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_close(&Amat);
 
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_close(&fAB);
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_close(&fIJ);
+  dpd_->file2_mat_close(&fAB);
+  dpd_->file2_close(&fAB);
+  dpd_->file2_mat_close(&fIJ);
+  dpd_->file2_close(&fIJ);
 }
 
 void uhf_build_A(void)
@@ -140,50 +140,50 @@ void rhf_sf_build_A(void)
   qt_vir = mo.qt_vir;
 
   /* Two-electron integral contributions */
-  dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(EM,AI)");
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
-  dpd_buf4_sort(&Amat, PSIF_CC_TMP0, psrq, 11, 11, "D <im|ea> (ei,am)");
-  dpd_buf4_scm(&Amat, 2.0);
-  dpd_buf4_copy(&Amat, PSIF_CC_TMP0, "A(EM,ai)");
-  dpd_buf4_init(&D, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "D <im|ea> (ei,am)");
-  dpd_buf4_axpy(&D, &Amat, -1.0);
-  dpd_buf4_close(&D);
-  dpd_buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-  dpd_buf4_sort(&C, PSIF_CC_TMP0, qpsr, 11, 11, "C <ai|bj>");
-  dpd_buf4_close(&C);
-  dpd_buf4_init(&C, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "C <ai|bj>");
-  dpd_buf4_axpy(&C, &Amat, -1.0);
-  dpd_buf4_close(&C);
-  dpd_buf4_copy(&Amat, PSIF_CC_TMP0, "A(em,ai)");
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(EM,AI)");
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_->buf4_sort(&Amat, PSIF_CC_TMP0, psrq, 11, 11, "D <im|ea> (ei,am)");
+  dpd_->buf4_scm(&Amat, 2.0);
+  dpd_->buf4_copy(&Amat, PSIF_CC_TMP0, "A(EM,ai)");
+  dpd_->buf4_init(&D, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "D <im|ea> (ei,am)");
+  dpd_->buf4_axpy(&D, &Amat, -1.0);
+  dpd_->buf4_close(&D);
+  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+  dpd_->buf4_sort(&C, PSIF_CC_TMP0, qpsr, 11, 11, "C <ai|bj>");
+  dpd_->buf4_close(&C);
+  dpd_->buf4_init(&C, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "C <ai|bj>");
+  dpd_->buf4_axpy(&C, &Amat, -1.0);
+  dpd_->buf4_close(&C);
+  dpd_->buf4_copy(&Amat, PSIF_CC_TMP0, "A(em,ai)");
+  dpd_->buf4_close(&Amat);
 
   /* Fock matrix contributions */
-  dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_file2_mat_init(&fIJ);
-  dpd_file2_mat_rd(&fIJ);
-  dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-  dpd_file2_mat_init(&fij);
-  dpd_file2_mat_rd(&fij);
-  dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_file2_mat_init(&fAB);
-  dpd_file2_mat_rd(&fAB);
-  dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-  dpd_file2_mat_init(&fab);
-  dpd_file2_mat_rd(&fab);
-  dpd_file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
-  dpd_file2_mat_init(&fIA);
-  dpd_file2_mat_rd(&fIA);
-  dpd_file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
-  dpd_file2_mat_init(&fia);
-  dpd_file2_mat_rd(&fia);
+  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  dpd_->file2_mat_init(&fIJ);
+  dpd_->file2_mat_rd(&fIJ);
+  dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+  dpd_->file2_mat_init(&fij);
+  dpd_->file2_mat_rd(&fij);
+  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  dpd_->file2_mat_init(&fAB);
+  dpd_->file2_mat_rd(&fAB);
+  dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+  dpd_->file2_mat_init(&fab);
+  dpd_->file2_mat_rd(&fab);
+  dpd_->file2_init(&fIA, PSIF_CC_OEI, 0, 0, 1, "fIA");
+  dpd_->file2_mat_init(&fIA);
+  dpd_->file2_mat_rd(&fIA);
+  dpd_->file2_init(&fia, PSIF_CC_OEI, 0, 0, 1, "fia");
+  dpd_->file2_mat_init(&fia);
+  dpd_->file2_mat_rd(&fia);
 
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(em=0; em < Amat.params->rowtot[h]; em++) {
       e = Amat.params->roworb[h][em][0];
@@ -207,17 +207,17 @@ void rhf_sf_build_A(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
 
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_close(&Amat);
 
-  dpd_buf4_init(&Amat, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,ai)");
+  dpd_->buf4_init(&Amat, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,ai)");
   
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(em=0; em < Amat.params->rowtot[h]; em++) {
       e = Amat.params->roworb[h][em][0];
@@ -241,17 +241,17 @@ void rhf_sf_build_A(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
 
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_close(&Amat);
 
-  dpd_buf4_init(&Amat, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(EM,ai)");
+  dpd_->buf4_init(&Amat, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(EM,ai)");
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&Amat, h);
-    dpd_buf4_mat_irrep_rd(&Amat, h);
+    dpd_->buf4_mat_irrep_init(&Amat, h);
+    dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(em=0; em < Amat.params->rowtot[h]; em++) {
       e = Amat.params->roworb[h][em][0];
@@ -282,38 +282,38 @@ void rhf_sf_build_A(void)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&Amat, h);
-    dpd_buf4_mat_irrep_close(&Amat, h);
+    dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    dpd_->buf4_mat_irrep_close(&Amat, h);
   }
-  dpd_buf4_sort(&Amat, PSIF_CC_TMP0, rspq, 11, 11, "A(em,AI)");
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_sort(&Amat, PSIF_CC_TMP0, rspq, 11, 11, "A(em,AI)");
+  dpd_->buf4_close(&Amat);
 
-  dpd_file2_mat_close(&fIJ);
-  dpd_file2_close(&fIJ);
-  dpd_file2_mat_close(&fij);
-  dpd_file2_close(&fij);
-  dpd_file2_mat_close(&fAB);
-  dpd_file2_close(&fAB);
-  dpd_file2_mat_close(&fab);
-  dpd_file2_close(&fab);
-  dpd_file2_mat_close(&fIA);
-  dpd_file2_close(&fIA);
-  dpd_file2_mat_close(&fia);
-  dpd_file2_close(&fia);
+  dpd_->file2_mat_close(&fIJ);
+  dpd_->file2_close(&fIJ);
+  dpd_->file2_mat_close(&fij);
+  dpd_->file2_close(&fij);
+  dpd_->file2_mat_close(&fAB);
+  dpd_->file2_close(&fAB);
+  dpd_->file2_mat_close(&fab);
+  dpd_->file2_close(&fab);
+  dpd_->file2_mat_close(&fIA);
+  dpd_->file2_close(&fIA);
+  dpd_->file2_mat_close(&fia);
+  dpd_->file2_close(&fia);
 
   /* Now sum all three A-matrix components and divide by 2 */
-  dpd_buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
-  dpd_buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,ai)");
-  dpd_buf4_axpy(&Amat2, &Amat, 1.0);
-  dpd_buf4_close(&Amat2);
-  dpd_buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(EM,ai)");
-  dpd_buf4_axpy(&Amat2, &Amat, 1.0);
-  dpd_buf4_close(&Amat2);
-  dpd_buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,AI)");
-  dpd_buf4_axpy(&Amat2, &Amat, 1.0);
-  dpd_buf4_close(&Amat2);
-  dpd_buf4_scm(&Amat, 0.5);
-  dpd_buf4_close(&Amat);
+  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  dpd_->buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,ai)");
+  dpd_->buf4_axpy(&Amat2, &Amat, 1.0);
+  dpd_->buf4_close(&Amat2);
+  dpd_->buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(EM,ai)");
+  dpd_->buf4_axpy(&Amat2, &Amat, 1.0);
+  dpd_->buf4_close(&Amat2);
+  dpd_->buf4_init(&Amat2, PSIF_CC_TMP0, 0, 11, 11, 11, 11, 0, "A(em,AI)");
+  dpd_->buf4_axpy(&Amat2, &Amat, 1.0);
+  dpd_->buf4_close(&Amat2);
+  dpd_->buf4_scm(&Amat, 0.5);
+  dpd_->buf4_close(&Amat);
 }
 
 void uhf_sf_build_A(void)

@@ -114,8 +114,13 @@ PsiReturnType transqt2(Options & options)
   cachefiles = init_int_array(PSIO_MAXUNIT);
   cachelist = cacheprep_rhf(params.cachelev, cachefiles); /* really just a placeholder */
 
-  dpd_init(0, nirreps, params.memory, 0, cachefiles, cachelist,
-       NULL, 2, moinfo.sopi, moinfo.sosym, moinfo.actpi, moinfo.actsym);
+  std::vector<int*> spaces;
+  spaces.push_back(moinfo.sopi);
+  spaces.push_back(moinfo.sosym);
+  spaces.push_back(moinfo.actpi);
+  spaces.push_back(moinfo.actsym);
+  dpd_list[0] = boost::shared_ptr<DPD>( new DPD(0, nirreps, params.memory, 0, cachefiles, cachelist,
+       NULL, 2, spaces));
 
   /*** Starting one-electron transforms and presort ***/
 
@@ -184,14 +189,14 @@ PsiReturnType transqt2(Options & options)
     fflush(outfile);
   }
   psio_open(PSIF_SO_PRESORT, 0);
-  dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
+  dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
   if(params.ref == 0 || params.ref == 1)
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D, NULL, F, NULL, params.ref);
   else
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D_a, D_b, F_a, F_b, params.ref);
-  dpd_file4_close(&I);
+  dpd_->file4_close(&I);
   psio_close(PSIF_SO_PRESORT, 1);
   timer_off("presort");
 
@@ -332,7 +337,7 @@ PsiReturnType transqt2(Options & options)
 
   /*** Two-electron transforms complete ***/
 
-  dpd_close(0);
+//  dpd_->close(0);
 
   cachedone_rhf(cachelist);
   free(cachefiles);

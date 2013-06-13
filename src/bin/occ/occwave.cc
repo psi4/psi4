@@ -272,7 +272,7 @@ else {
     ints->set_keep_iwl_so_ints(true);
     ints->set_keep_dpd_so_ints(true);
     ints->initialize();
-    dpd_set_default(ints->get_dpd_id());
+    dpd_->set_default(ints->get_dpd_id());
 
 }  // end if (reference_ == "RESTRICTED")
 
@@ -339,7 +339,7 @@ else if (reference_ == "UNRESTRICTED") {
     ints->set_keep_iwl_so_ints(true);
     ints->set_keep_dpd_so_ints(true);
     ints->initialize();
-    dpd_set_default(ints->get_dpd_id());
+    dpd_->set_default(ints->get_dpd_id());
 
 }// end if (reference_ == "UNRESTRICTED")
 }// end common_init

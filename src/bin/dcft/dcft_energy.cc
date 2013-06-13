@@ -42,50 +42,50 @@ DCFTSolver::compute_dcft_energy()
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // E += 1/4 L_IJAB G_IJAB
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+    dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
-    eGaa = dpd_buf4_dot(&G, &L);
-    dpd_buf4_close(&G);
+    eGaa = dpd_->buf4_dot(&G, &L);
+    dpd_->buf4_close(&G);
 
     // E += 1/4 gbar_IJAB L_IJAB
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    eIaa = dpd_buf4_dot(&I, &L);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    eIaa = dpd_->buf4_dot(&I, &L);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
 
     // E += L_IjAb G_IjAb
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
-    eGab =  dpd_buf4_dot(&G, &L);
-    dpd_buf4_close(&G);
+    eGab =  dpd_->buf4_dot(&G, &L);
+    dpd_->buf4_close(&G);
 
     // E += gbar_IjAb L_IjAb
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    eIab = dpd_buf4_dot(&I, &L);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    eIab = dpd_->buf4_dot(&I, &L);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
 
     // E += 1/4 L_ijab G_ijab
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+    dpd_->buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
-    eGbb = dpd_buf4_dot(&G, &L);
-    dpd_buf4_close(&G);
+    eGbb = dpd_->buf4_dot(&G, &L);
+    dpd_->buf4_close(&G);
 
 
     // E += 1/4 gbar_ijab L_ijab
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    eIbb = dpd_buf4_dot(&I, &L);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    eIbb = dpd_->buf4_dot(&I, &L);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 #if PRINT_ENERGY_COMPONENTS
@@ -119,31 +119,31 @@ DCFTSolver::compute_cepa0_energy()
      */
     dpdbuf4 I, L;
     // Alpha - Alpha
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    double eAA = 0.25 * dpd_buf4_dot(&L, &I);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    double eAA = 0.25 * dpd_->buf4_dot(&L, &I);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
 
     // Alpha - Beta
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    double eAB = dpd_buf4_dot(&L, &I);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    double eAB = dpd_->buf4_dot(&L, &I);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
 
     // Beta - Beta
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    dpd_->buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
-    double eBB = 0.25 * dpd_buf4_dot(&L, &I);
-    dpd_buf4_close(&I);
-    dpd_buf4_close(&L);
+    double eBB = 0.25 * dpd_->buf4_dot(&L, &I);
+    dpd_->buf4_close(&I);
+    dpd_->buf4_close(&L);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 

@@ -49,7 +49,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     }
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     if(print_){
         fprintf(outfile, "\tPresorting MO-basis TPDM.\n");
@@ -58,7 +58,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -171,11 +171,11 @@ IntegralTransform::presort_mo_tpdm_restricted()
     free(bucketRowDim);
     free(bucketSize);
 
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_file4_close(&I);
+    dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
@@ -191,7 +191,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     check_initialized();
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     if(print_){
         fprintf(outfile, "\tPresorting MO-basis TPDMs.\n");
@@ -200,7 +200,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -303,7 +303,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AA_TPDM, keepIwlMoTpdm_);
 
     // The alpha - beta spin case
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
+    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -350,7 +350,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AB_TPDM, keepIwlMoTpdm_);
 
     // The beta - beta spin case
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
+    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -407,10 +407,10 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     free(bucketRowDim);
     free(bucketSize);
 
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_file4_close(&I);
+    dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }

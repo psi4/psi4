@@ -89,28 +89,28 @@ void BL2_AO(int L_irr)
 
   /************************************* AA *****************************************/
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (1)");
-  dpd_buf4_scm(&tau1_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (1)");
+  dpd_->buf4_scm(&tau1_AO, 0.0);
 
-  dpd_set_default(0);
-  dpd_buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "LIJAB");
 
   halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
-  dpd_buf4_close(&tau);
-  dpd_buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau);
+  dpd_->buf4_close(&tau1_AO);
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (1)");
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (2)");
-  dpd_buf4_scm(&tau2_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (1)");
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (2)");
+  dpd_->buf4_scm(&tau2_AO, 0.0);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&tau1_AO, h);
-    dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-    dpd_buf4_mat_irrep_init(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau2_AO, h);
   }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -153,50 +153,50 @@ void BL2_AO(int L_irr)
   iwl_buf_close(&InBuf, 1);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau1_AO, h);
   }
-  dpd_buf4_close(&tau1_AO);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau2_AO);
 
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (2)");
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIJPQ (2)");
 
-  dpd_set_default(0);
-  dpd_buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New LIJAB");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New LIJAB");
 
   halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 1, 0.5, 1.0);
 
-  dpd_buf4_close(&t2);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&t2);
+  dpd_->buf4_close(&tau2_AO);
 
   /************************************* BB *****************************************/
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (1)");
-  dpd_buf4_scm(&tau1_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (1)");
+  dpd_->buf4_scm(&tau1_AO, 0.0);
 
-  dpd_set_default(0);
-  dpd_buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "Lijab");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "Lijab");
 
   halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
-  dpd_buf4_close(&tau);
-  dpd_buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau);
+  dpd_->buf4_close(&tau1_AO);
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (1)");
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (2)");
-  dpd_buf4_scm(&tau2_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (1)");
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (2)");
+  dpd_->buf4_scm(&tau2_AO, 0.0);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&tau1_AO, h);
-    dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-    dpd_buf4_mat_irrep_init(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau2_AO, h);
   }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -239,50 +239,50 @@ void BL2_AO(int L_irr)
   iwl_buf_close(&InBuf, 1);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau1_AO, h);
   }
-  dpd_buf4_close(&tau1_AO);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau2_AO);
 
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (2)");
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "Lijpq (2)");
 
-  dpd_set_default(0);
-  dpd_buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New Lijab");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 2, 7, 0, "New Lijab");
 
   halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 1, 0.5, 1.0);
 
-  dpd_buf4_close(&t2);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&t2);
+  dpd_->buf4_close(&tau2_AO);
 
   /************************************* AB *****************************************/
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (1)");
-  dpd_buf4_scm(&tau1_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (1)");
+  dpd_->buf4_scm(&tau1_AO, 0.0);
 
-  dpd_set_default(0);
-  dpd_buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&tau, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
 
   halftrans(&tau, 0, &tau1_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 0, 1.0, 0.0);
 
-  dpd_buf4_close(&tau);
-  dpd_buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau);
+  dpd_->buf4_close(&tau1_AO);
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (1)");
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (2)");
-  dpd_buf4_scm(&tau2_AO, 0.0);
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau1_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (1)");
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (2)");
+  dpd_->buf4_scm(&tau2_AO, 0.0);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_init(&tau1_AO, h);
-    dpd_buf4_mat_irrep_rd(&tau1_AO, h);
-    dpd_buf4_mat_irrep_init(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_rd(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_init(&tau2_AO, h);
   }
 
   iwl_buf_init(&InBuf, PSIF_SO_TEI, tolerance, 1, 1);
@@ -325,31 +325,31 @@ void BL2_AO(int L_irr)
   iwl_buf_close(&InBuf, 1);
 
   for(h=0; h < nirreps; h++) {
-    dpd_buf4_mat_irrep_wrt(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau2_AO, h);
-    dpd_buf4_mat_irrep_close(&tau1_AO, h);
+    dpd_->buf4_mat_irrep_wrt(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau2_AO, h);
+    dpd_->buf4_mat_irrep_close(&tau1_AO, h);
   }
-  dpd_buf4_close(&tau1_AO);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&tau1_AO);
+  dpd_->buf4_close(&tau2_AO);
 
 
-  dpd_set_default(1);
-  dpd_buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (2)");
+  dpd_->set_default(1);
+  dpd_->buf4_init(&tau2_AO, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjPq (2)");
 
-  dpd_set_default(0);
-  dpd_buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+  dpd_->set_default(0);
+  dpd_->buf4_init(&t2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
 
   halftrans(&t2, 0, &tau2_AO, 1, C, nirreps, T2_cd_row_start, T2_pq_row_start, 
 	    virtpi, orbspi, 1, 1.0, 1.0);
 
-  dpd_buf4_close(&t2);
-  dpd_buf4_close(&tau2_AO);
+  dpd_->buf4_close(&t2);
+  dpd_->buf4_close(&tau2_AO);
 
   free(T2_cd_row_start);
   free(T2_pq_row_start);
 
   /* Reset the default dpd back to 0 --- this stuff gets really ugly */
-  dpd_set_default(0);
+  dpd_->set_default(0);
 }
 
 void AO_contribute(int p, int q, int r, int s, double value, dpdbuf4 

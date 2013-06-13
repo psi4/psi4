@@ -47,21 +47,21 @@ double HXY(const char *pert_x, int irrep_x, double omega_x,
   char lbl[32];
 
   sprintf(lbl, "Z_%s_IA", pert_y);
-  dpd_file2_init(&z, PSIF_CC_TMP0, irrep_y, 0, 1, lbl);
+  dpd_->file2_init(&z, PSIF_CC_TMP0, irrep_y, 0, 1, lbl);
 
   sprintf(lbl, "X_%s_IA (%5.3f)", pert_y, omega_y);
-  dpd_file2_init(&Y1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
-  dpd_buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  dpd_dot24(&Y1, &I, &z, 0, 0, 1, 0);
-  dpd_buf4_close(&I);
-  dpd_file2_close(&Y1);
+  dpd_->file2_init(&Y1, PSIF_CC_OEI, irrep_y, 0, 1, lbl);
+  dpd_->buf4_init(&I, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  dpd_->dot24(&Y1, &I, &z, 0, 0, 1, 0);
+  dpd_->buf4_close(&I);
+  dpd_->file2_close(&Y1);
 
   sprintf(lbl, "X_%s_IA (%5.3f)", pert_x, omega_x);
-  dpd_file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
-  polar = 2.0 * dpd_file2_dot(&X1, &z);
-  dpd_file2_close(&X1);
+  dpd_->file2_init(&X1, PSIF_CC_OEI, irrep_x, 0, 1, lbl);
+  polar = 2.0 * dpd_->file2_dot(&X1, &z);
+  dpd_->file2_close(&X1);
 
-  dpd_file2_close(&z);
+  dpd_->file2_close(&z);
 
   return polar;
 }

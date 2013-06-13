@@ -51,7 +51,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
-    dpd_set_default(myDPDNum_);
+    dpd_->set_default(myDPDNum_);
 
     int nBuckets;
     int thisBucketRows;
@@ -74,16 +74,16 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     /*
      * (AA|AA) & (AA|aa) -> (AA|nn)
      */
-    dpd_buf4_init(&J1, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A,A]"),
+    dpd_->buf4_init(&J1, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A,A]"),
                   DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
-    dpd_buf4_init(&J2, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a,a]"),
+    dpd_->buf4_init(&J2, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a,a]"),
                   DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), 0, "MO TPDM (AA|aa)");
-    dpd_buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n,n]"),
+    dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n,n]"),
                   DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (AA|nn)");
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h]) rowsPerBucket = (size_t) J1.params->rowtot[h];
             nBuckets = static_cast<int>(ceil(static_cast<double>(J1.params->rowtot[h])/
@@ -103,7 +103,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             fflush(outfile);
         }
 
-        dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
         for(int n=0; n < nBuckets; n++){
 
             if(nBuckets == 1)
@@ -111,8 +111,8 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             else
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
 
-            dpd_buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( A A | A A ) -> ( A A | A n )
@@ -137,10 +137,10 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
 
-            dpd_buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_rd_block(&J2, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_rd_block(&J2, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( A A | a a ) -> ( A A | a n )
@@ -165,26 +165,26 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], nso_, 1.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
-            dpd_buf4_mat_irrep_close_block(&J2, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_close_block(&J2, h, rowsPerBucket);
         }
-        dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&J1);
-    dpd_buf4_close(&J2);
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&J1);
+    dpd_->buf4_close(&J2);
 
     /*
      * (aa|aa) -> (aa|nn)
      */
-    dpd_buf4_init(&J1, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a,a]"),
+    dpd_->buf4_init(&J1, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a,a]"),
                   DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), 0, "MO TPDM (aa|aa)");
-    dpd_buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[a>=a]+"), DPD_ID("[n,n]"),
+    dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[a>=a]+"), DPD_ID("[n,n]"),
                   DPD_ID("[a>=a]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (aa|nn)");
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h]) rowsPerBucket = (size_t) J1.params->rowtot[h];
             nBuckets = static_cast<int>(ceil(static_cast<double>(J1.params->rowtot[h])/
@@ -204,7 +204,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             fflush(outfile);
         }
 
-        dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
         for(int n=0; n < nBuckets; n++){
 
             if(nBuckets == 1)
@@ -212,8 +212,8 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             else
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
 
-            dpd_buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( a a | a a ) -> ( a a | a n )
@@ -238,13 +238,13 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
-            dpd_buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
         }
-        dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&J1);
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&J1);
 
     psio_->close(PSIF_TPDM_PRESORT, keepDpdMoTpdm_);
 
@@ -253,15 +253,15 @@ IntegralTransform::backtransform_tpdm_unrestricted()
         fflush(outfile);
     }
 
-    dpd_buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"),
+    dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"),
                   DPD_ID("[A>=A]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (AA|nn)");
-    dpd_buf4_sort(&K, PSIF_TPDM_HALFTRANS, rspq, DPD_ID("[n>=n]+"), DPD_ID("[A>=A]+"), "Half-Transformed TPDM (nn|AA)");
-    dpd_buf4_close(&K);
+    dpd_->buf4_sort(&K, PSIF_TPDM_HALFTRANS, rspq, DPD_ID("[n>=n]+"), DPD_ID("[A>=A]+"), "Half-Transformed TPDM (nn|AA)");
+    dpd_->buf4_close(&K);
 
-    dpd_buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[a>=a]+"), DPD_ID("[n>=n]+"),
+    dpd_->buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[a>=a]+"), DPD_ID("[n>=n]+"),
                   DPD_ID("[a>=a]+"), DPD_ID("[n>=n]+"), 0, "Half-Transformed TPDM (aa|nn)");
-    dpd_buf4_sort(&K, PSIF_TPDM_HALFTRANS, rspq, DPD_ID("[n>=n]+"), DPD_ID("[a>=a]+"), "Half-Transformed TPDM (nn|aa)");
-    dpd_buf4_close(&K);
+    dpd_->buf4_sort(&K, PSIF_TPDM_HALFTRANS, rspq, DPD_ID("[n>=n]+"), DPD_ID("[a>=a]+"), "Half-Transformed TPDM (nn|aa)");
+    dpd_->buf4_close(&K);
 
     if(print_){
         fprintf(outfile, "\tFirst half integral transformation complete.\n");
@@ -273,16 +273,16 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     /*
      * (nn|AA) & (nn|aa) -> (nn|nn)
      */
-    dpd_buf4_init(&J1, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[A,A]"),
+    dpd_->buf4_init(&J1, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[A,A]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[A>=A]+"), 0, "Half-Transformed TPDM (nn|AA)");
-    dpd_buf4_init(&J2, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[a,a]"),
+    dpd_->buf4_init(&J2, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[a,a]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[a>=a]+"), 0, "Half-Transformed TPDM (nn|aa)");
-    dpd_buf4_init(&K, PSIF_AO_TPDM, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
+    dpd_->buf4_init(&K, PSIF_AO_TPDM, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Basis TPDM (nn|nn)");
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h])
                 rowsPerBucket = static_cast<size_t>(J1.params->rowtot[h]);
@@ -303,7 +303,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             fflush(outfile);
         }
 
-        dpd_buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_init_block(&K, h, rowsPerBucket);
 
         for(int n=0; n < nBuckets; n++) {
             if(nBuckets == 1)
@@ -312,8 +312,8 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
 
 
-            dpd_buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 for(int Gr=0; Gr < nirreps_; Gr++) {
                     // Transform ( n n | A A ) -> ( n n | A n )
@@ -338,10 +338,10 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&J1, h, rowsPerBucket);
 
-            dpd_buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
-            dpd_buf4_mat_irrep_rd_block(&J2, h, n*rowsPerBucket, thisBucketRows);
+            dpd_->buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_rd_block(&J2, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
                 int PQ = n * rowsPerBucket + pq; // The absolute pq value
                 for(int Gr=0; Gr < nirreps_; Gr++) {
@@ -367,16 +367,16 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], nso_, 1.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_close_block(&J2, h, rowsPerBucket);
+            dpd_->buf4_mat_irrep_close_block(&J2, h, rowsPerBucket);
             sort_so_tpdm(&K, h, n*rowsPerBucket, thisBucketRows, (h == 0 && n == 0));
             if(write_dpd_so_tpdm_)
-                dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+                dpd_->buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
-        dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
+        dpd_->buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-    dpd_buf4_close(&K);
-    dpd_buf4_close(&J1);
-    dpd_buf4_close(&J2);
+    dpd_->buf4_close(&K);
+    dpd_->buf4_close(&J1);
+    dpd_->buf4_close(&J2);
 
     free_block(TMP);
 
@@ -384,6 +384,6 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     psio_->close(PSIF_AO_TPDM, 1);
 
     // Hand DPD control back to the user
-    dpd_set_default(currentActiveDPD);
+    dpd_->set_default(currentActiveDPD);
 }
 

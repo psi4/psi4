@@ -49,11 +49,11 @@ void sigma0S(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
     if (C_irr == H_IRR) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-      dpd_file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
-      S0 = dpd_file2_dot(&FME, &CME);
-      dpd_file2_close(&FME);
-      dpd_file2_close(&CME);
+      dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      dpd_->file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+      S0 = dpd_->file2_dot(&FME, &CME);
+      dpd_->file2_close(&FME);
+      dpd_->file2_close(&CME);
     }
     else {
       S0 = 0.0;
@@ -105,11 +105,11 @@ void sigma0D(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
     if (C_irr == H_IRR) {
       sprintf(lbl, "%s %d", "CMnEf", i);
-      dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-      dpd_buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-      S0 = dpd_buf4_dot(&D, &CMnEf);
-      dpd_buf4_close(&D);
-      dpd_buf4_close(&CMnEf);
+      dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+      dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+      S0 = dpd_->buf4_dot(&D, &CMnEf);
+      dpd_->buf4_close(&D);
+      dpd_->buf4_close(&CMnEf);
     }
     else {
       S0 = 0.0;
@@ -141,12 +141,12 @@ void sigmaSS_full(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
   /* SIA += RIA * <0|Hbar|0> */
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-    dpd_file2_axpy(&CME, &SIA, reference_expectation_value,0);
-    dpd_file2_close(&CME);
-    dpd_file2_close(&SIA);
+    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    dpd_->file2_axpy(&CME, &SIA, reference_expectation_value,0);
+    dpd_->file2_close(&CME);
+    dpd_->file2_close(&SIA);
   }
 
 #ifdef EOM_DEBUG
@@ -170,12 +170,12 @@ void sigmaDD_full(int i, int C_irr) {
   if (params.eom_ref == 0) { /* RHF */
   /* Sijab += Rijab * <0|Hbar|0> */
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_axpy(&CMnEf, &SIjAb, reference_expectation_value);
-    dpd_buf4_close(&CMnEf);
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_->buf4_axpy(&CMnEf, &SIjAb, reference_expectation_value);
+    dpd_->buf4_close(&CMnEf);
+    dpd_->buf4_close(&SIjAb);
   }
 #ifdef EOM_DEBUG
   check_sum("SigmaDD_full",i,C_irr);
@@ -196,11 +196,11 @@ void sigmaS0(int i, int C_irr) {
 
   if (C_irr == H_IRR) {
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_file2_init(&FAI, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
-        dpd_file2_axpy(&FAI, &SIA, reference_expectation_value, 0);
-      dpd_file2_close(&FAI);
-      dpd_file2_close(&SIA);
+    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    dpd_->file2_init(&FAI, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
+        dpd_->file2_axpy(&FAI, &SIA, reference_expectation_value, 0);
+      dpd_->file2_close(&FAI);
+      dpd_->file2_close(&SIA);
     }
 #ifdef EOM_DEBUG
   check_sum("SigmaS0",i,C_irr);
@@ -220,11 +220,11 @@ void sigmaD0(int i, int C_irr) {
 
   if (C_irr == H_IRR) {
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_buf4_init(&WAbIj, PSIF_CC_HBAR, H_IRR, 0, 5, 0, 5, 0, "WAbIj residual");
-        dpd_buf4_axpy(&WAbIj, &SIjAb, reference_expectation_value);
-      dpd_buf4_close(&WAbIj);
-      dpd_buf4_close(&SIjAb);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_->buf4_init(&WAbIj, PSIF_CC_HBAR, H_IRR, 0, 5, 0, 5, 0, "WAbIj residual");
+        dpd_->buf4_axpy(&WAbIj, &SIjAb, reference_expectation_value);
+      dpd_->buf4_close(&WAbIj);
+      dpd_->buf4_close(&SIjAb);
     }
 #ifdef EOM_DEBUG
   check_sum("SigmaD0",i,C_irr);
@@ -249,19 +249,19 @@ void sigmaDS_full(int i_root, int C_irr) {
   /* SIjAb += CIA * Fjb + Cjb * FIA */
   if (params.ref == 0) {
     sprintf(lbl, "%s %d", "CME", i_root);
-    dpd_file2_init(&CIA, PSIF_EOM_CME, C_irr, 0, 1, lbl);
-      dpd_file2_mat_init(&CIA);
-      dpd_file2_mat_rd(&CIA);
-    dpd_file2_init(&FBJ, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
-      dpd_file2_mat_init(&FBJ);
-      dpd_file2_mat_rd(&FBJ);
+    dpd_->file2_init(&CIA, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      dpd_->file2_mat_init(&CIA);
+      dpd_->file2_mat_rd(&CIA);
+    dpd_->file2_init(&FBJ, PSIF_CC_OEI, H_IRR, 0, 1, "FAI residual");
+      dpd_->file2_mat_init(&FBJ);
+      dpd_->file2_mat_rd(&FBJ);
 
     sprintf(lbl, "%s %d", "SIjAb", i_root);
-    dpd_buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 
     for(h=0; h < nirreps; h++) {
-      dpd_buf4_mat_irrep_init(&SIjAb, h);
-      dpd_buf4_mat_irrep_rd(&SIjAb, h);
+      dpd_->buf4_mat_irrep_init(&SIjAb, h);
+      dpd_->buf4_mat_irrep_rd(&SIjAb, h);
 
       for(row=0; row < SIjAb.params->rowtot[h]; row++) {
         i = SIjAb.params->roworb[h][row][0];
@@ -287,15 +287,15 @@ void sigmaDS_full(int i_root, int C_irr) {
             SIjAb.matrix[h][row][col] += (CIA.matrix[Jsym][J][B] * FBJ.matrix[Isym][I][A]);
         }
       }
-      dpd_buf4_mat_irrep_wrt(&SIjAb, h);
-      dpd_buf4_mat_irrep_close(&SIjAb, h);
+      dpd_->buf4_mat_irrep_wrt(&SIjAb, h);
+      dpd_->buf4_mat_irrep_close(&SIjAb, h);
     }
-    dpd_buf4_close(&SIjAb);
+    dpd_->buf4_close(&SIjAb);
 
-    dpd_file2_mat_close(&FBJ);
-    dpd_file2_close(&FBJ);
-    dpd_file2_mat_close(&CIA);
-    dpd_file2_close(&CIA);
+    dpd_->file2_mat_close(&FBJ);
+    dpd_->file2_close(&FBJ);
+    dpd_->file2_mat_close(&CIA);
+    dpd_->file2_close(&CIA);
   }
 #ifdef EOM_DEBUG
   check_sum("SigmaDS_full",i_root,C_irr);

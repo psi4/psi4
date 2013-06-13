@@ -55,27 +55,27 @@ void denom(int irrep, double root)
     occ_off = moinfo.occ_off;
     vir_off = moinfo.vir_off;
 
-    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_mat_init(&fIJ);
-    dpd_file2_mat_rd(&fIJ);
+    dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    dpd_->file2_mat_init(&fIJ);
+    dpd_->file2_mat_rd(&fIJ);
   
-    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
-    dpd_file2_mat_init(&fij);
-    dpd_file2_mat_rd(&fij);
+    dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 0, 0, "fij");
+    dpd_->file2_mat_init(&fij);
+    dpd_->file2_mat_rd(&fij);
   
-    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_mat_init(&fAB);
-    dpd_file2_mat_rd(&fAB);
+    dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    dpd_->file2_mat_init(&fAB);
+    dpd_->file2_mat_rd(&fAB);
   
-    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
-    dpd_file2_mat_init(&fab);
-    dpd_file2_mat_rd(&fab);
+    dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 1, 1, "fab");
+    dpd_->file2_mat_init(&fab);
+    dpd_->file2_mat_rd(&fab);
 
     sprintf(lbl, "dIjAb[%d]", irrep);
-    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
+    dpd_->buf4_init(&D, PSIF_CC_MISC, irrep, 0, 5, 0, 5, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
 
-      dpd_buf4_mat_irrep_init(&D, Gij);
+      dpd_->buf4_mat_irrep_init(&D, Gij);
 
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
 	i = D.params->roworb[Gij][ij][0];
@@ -105,12 +105,12 @@ void denom(int irrep, double root)
       }
     }
 
-    dpd_buf4_mat_irrep_wrt(&D, Gij);
-    dpd_buf4_mat_irrep_close(&D, Gij);
+    dpd_->buf4_mat_irrep_wrt(&D, Gij);
+    dpd_->buf4_mat_irrep_close(&D, Gij);
 
   }
 
-  dpd_buf4_close(&D);
+  dpd_->buf4_close(&D);
 
 }
   else if(params.ref == 2) { /** UHF **/
@@ -124,26 +124,26 @@ void denom(int irrep, double root)
     avir_off = moinfo.avir_off;
     bvir_off = moinfo.bvir_off;
 
-    dpd_file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-    dpd_file2_mat_init(&fIJ);
-    dpd_file2_mat_rd(&fIJ);
+    dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    dpd_->file2_mat_init(&fIJ);
+    dpd_->file2_mat_rd(&fIJ);
   
-    dpd_file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
-    dpd_file2_mat_init(&fij);
-    dpd_file2_mat_rd(&fij);
+    dpd_->file2_init(&fij, PSIF_CC_OEI, 0, 2, 2, "fij");
+    dpd_->file2_mat_init(&fij);
+    dpd_->file2_mat_rd(&fij);
   
-    dpd_file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-    dpd_file2_mat_init(&fAB);
-    dpd_file2_mat_rd(&fAB);
+    dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    dpd_->file2_mat_init(&fAB);
+    dpd_->file2_mat_rd(&fAB);
   
-    dpd_file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
-    dpd_file2_mat_init(&fab);
-    dpd_file2_mat_rd(&fab);
+    dpd_->file2_init(&fab, PSIF_CC_OEI, 0, 3, 3, "fab");
+    dpd_->file2_mat_init(&fab);
+    dpd_->file2_mat_rd(&fab);
 
     sprintf(lbl, "dIJAB[%d]", irrep);
-    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
+    dpd_->buf4_init(&D, PSIF_CC_MISC, irrep, 1, 6, 1, 6, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
-      dpd_buf4_mat_irrep_init(&D, Gij);
+      dpd_->buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
 	i = D.params->roworb[Gij][ij][0];
 	j = D.params->roworb[Gij][ij][1];
@@ -167,15 +167,15 @@ void denom(int irrep, double root)
 	  D.matrix[Gij][ij][ab] = 1.0/(fii + fjj - faa - fbb + root);
 	}
       }
-      dpd_buf4_mat_irrep_wrt(&D, Gij);
-      dpd_buf4_mat_irrep_close(&D, Gij);
+      dpd_->buf4_mat_irrep_wrt(&D, Gij);
+      dpd_->buf4_mat_irrep_close(&D, Gij);
     }
-    dpd_buf4_close(&D);
+    dpd_->buf4_close(&D);
 
     sprintf(lbl, "dijab[%d]", irrep);
-    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
+    dpd_->buf4_init(&D, PSIF_CC_MISC, irrep, 11, 16, 11, 16, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
-      dpd_buf4_mat_irrep_init(&D, Gij);
+      dpd_->buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
 	i = D.params->roworb[Gij][ij][0];
 	j = D.params->roworb[Gij][ij][1];
@@ -199,15 +199,15 @@ void denom(int irrep, double root)
 	  D.matrix[Gij][ij][ab] = 1.0/(fii + fjj - faa - fbb + root);
 	}
       }
-      dpd_buf4_mat_irrep_wrt(&D, Gij);
-      dpd_buf4_mat_irrep_close(&D, Gij);
+      dpd_->buf4_mat_irrep_wrt(&D, Gij);
+      dpd_->buf4_mat_irrep_close(&D, Gij);
     }
-    dpd_buf4_close(&D);
+    dpd_->buf4_close(&D);
 
     sprintf(lbl, "dIjAb[%d]", irrep);
-    dpd_buf4_init(&D, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
+    dpd_->buf4_init(&D, PSIF_CC_MISC, irrep, 22, 28, 22, 28, 0, lbl);
     for(Gij=0; Gij < nirreps; Gij++) {
-      dpd_buf4_mat_irrep_init(&D, Gij);
+      dpd_->buf4_mat_irrep_init(&D, Gij);
       for(ij=0; ij < D.params->rowtot[Gij]; ij++) {
 	i = D.params->roworb[Gij][ij][0];
 	j = D.params->roworb[Gij][ij][1];
@@ -231,19 +231,19 @@ void denom(int irrep, double root)
 	  D.matrix[Gij][ij][ab] = 1.0/(fii + fjj - faa - fbb + root);
 	}
       }
-      dpd_buf4_mat_irrep_wrt(&D, Gij);
-      dpd_buf4_mat_irrep_close(&D, Gij);
+      dpd_->buf4_mat_irrep_wrt(&D, Gij);
+      dpd_->buf4_mat_irrep_close(&D, Gij);
     }
-    dpd_buf4_close(&D);
+    dpd_->buf4_close(&D);
 
-    dpd_file2_mat_close(&fIJ);
-    dpd_file2_mat_close(&fij);
-    dpd_file2_mat_close(&fAB);
-    dpd_file2_mat_close(&fab);
-    dpd_file2_close(&fIJ);
-    dpd_file2_close(&fij);
-    dpd_file2_close(&fAB);
-    dpd_file2_close(&fab);
+    dpd_->file2_mat_close(&fIJ);
+    dpd_->file2_mat_close(&fij);
+    dpd_->file2_mat_close(&fAB);
+    dpd_->file2_mat_close(&fab);
+    dpd_->file2_close(&fIJ);
+    dpd_->file2_close(&fij);
+    dpd_->file2_close(&fAB);
+    dpd_->file2_close(&fab);
   }
 }
 
