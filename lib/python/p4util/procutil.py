@@ -80,10 +80,12 @@ def format_molecule_for_input(mol):
         #   (and possibly no_com/no_reorient) info. but this is only available
         #   for qcdb Molecules. Since save_string_xyz was added to libmints just
         #   for the sow/reap purpose, may want to unify these fns sometime.
-        try:
-            mol_string = mol.save_string_for_psi4()
-        except AttributeError:
-            mol_string = mol.save_string_xyz()
+        # the time for unification is nigh
+        mol_string = mol.create_psi4_string_from_molecule()
+        #try:
+        #    mol_string = mol.save_string_for_psi4()
+        #except AttributeError:
+        #    mol_string = mol.save_string_xyz()
 
         mol_name = mol.name()
 
