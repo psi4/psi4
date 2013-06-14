@@ -68,7 +68,7 @@ namespace psi { namespace cctriples {
       nirreps = moinfo.nirreps;
 
       params.wfn = options.get_str("WFN");
-      if( params.wfn != "CCSD" && params.wfn != "CCSD_T" &&
+      if( params.wfn != "CCSD" && params.wfn != "CCSD_T" && params.wfn != "CCSD_AT" &&
                 params.wfn != "BCCD" && params.wfn != "BCCD_T" ) {
         throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
       }
