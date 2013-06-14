@@ -40,10 +40,11 @@ NOISY_ZERO = 1.0E-8
 class LibmintsMolecule(object):
     """Class to store the elements, coordinates, fragmentation pattern,
     charge, multiplicity of a molecule. Largely replicates psi4's libmints
-    Molecule class, developed by Justin M. Turney with incremental
-    improvements by other psi4 developers. Major differences from the C++
-    class are: no basisset handling, no symmetry, no pubchem. This class
-    translated so that databases can function independently of psi4.
+    Molecule class, developed by Justin M. Turney and Andy M. Simmonett
+    with incremental improvements by other psi4 developers. Major
+    differences from the C++ class are: no basisset handling, no symmetry,
+    no pubchem, no efp, no discarding dummies. This class translated so
+    that databases can function independently of psi4.
 
     >>> H2OH2O = qcdb.Molecule(\"\"\"
         0 1
@@ -1023,7 +1024,7 @@ class LibmintsMolecule(object):
         text = ""
         if self.nallatom():
             text += "    Geometry (in %s), charge = %d, multiplicity = %d:\n\n" % \
-                    ("Angstrom" if self.units() == 'Angstrom' else "Bohr", 
+                    ("Angstrom" if self.units() == 'Angstrom' else "Bohr",
                     self.molecular_charge(), self.multiplicity())
             for i in range(self.nallatom()):
                 if self.fZ(i) or self.fsymbol(i) == "X":
@@ -1665,7 +1666,7 @@ class LibmintsMolecule(object):
             return 0
 
         elif depth == True or depth.upper() == 'TRUE':
-            # Freeze the number of core electrons corresponding to the 
+            # Freeze the number of core electrons corresponding to the
             # nearest previous noble gas atom.  This means that the 4p block
             # will still have 3d electrons active.  Alkali earth atoms will
             # have one valence electron in this scheme.
@@ -1908,7 +1909,7 @@ class LibmintsMolecule(object):
 
         >>> H2OH2O.save_string_xyz()
         6
-        -2 3 water_dimer
+        _
          O   -1.551007000000   -0.114520000000    0.000000000000
          H   -1.934259000000    0.762503000000    0.000000000000
          H   -0.599677000000    0.040712000000    0.000000000000
@@ -1925,8 +1926,7 @@ class LibmintsMolecule(object):
             for i in range(self.natom()):
                 if self.Z(i):
                     N += 1
-        text = "%d\n" % (N)
-        text += '%d %d %s\n' % (self.molecular_charge(), self.multiplicity(), self.name())
+        text = "%d\n\n" % (N)
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()

@@ -30,5 +30,6 @@ fenergy.write('\n')
 fenergy.close()
 
 # This line is for the output.ref record, not the docs
-print_basis_families()
+basstr = print_basis_families()
+print_out(basstr)
 

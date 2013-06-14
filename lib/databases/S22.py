@@ -44,6 +44,7 @@
   - ``'MX'`` mixed-influence systems
   - ``'DD'`` dispersion-dominated systems
   - ``'S11'`` smaller systems in S22
+  - ``'WATER'`` water dimer
 
 """
 import qcdb
@@ -59,6 +60,7 @@ HB = [1, 2, 3, 4, 5, 6, 7]
 MX = [13, 15, 16, 17, 18, 19, 21, 22]
 DD = [8, 9, 10, 11, 12, 14, 20]
 S11 = [1, 2, 3, 4, 8, 9, 10, 16, 17, 18, 19]
+WATER = [2]
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
