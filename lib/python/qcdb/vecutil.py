@@ -169,44 +169,95 @@ def determinant(mat):
     return det
 
 
-def diagonalize3x3symmat(A):
-    """Given an real symmetric 3x3 matrix A, compute the eigenvalues
+def diagonalize3x3symmat(M):
+    """Given an real symmetric 3x3 matrix *M*, compute the eigenvalues
 
     """
-    if len(A) != 3 or len(A[0]) != 3 or len(A[1]) != 3 or len(A[2]) != 3:
+    if len(M) != 3 or len(M[0]) != 3 or len(M[1]) != 3 or len(M[2]) != 3:
         raise ValidationError('diagonalize3x3symmat() only defined for arrays of dimension 3x3\n')
 
-    B = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]  # I is the identity matrix
-    p = A[0][1] * A[0][1] + A[0][2] * A[0][2] + A[1][2] * A[1][2]
-    if p == 0:
-        # A is diagonal
-        eig1 = A[0][0]
-        eig2 = A[1][1]
-        eig3 = A[2][2]
-    else:
-        q = (A[0][0] + A[1][1] + A[2][2]) / 3.0
-        p = (A[0][0] - q) ** 2 + (A[1][1] - q) ** 2 + (A[2][2] - q) ** 2 + 2.0 * p
-        p = math.sqrt(p / 6.0)
-        for i in range(3):
-            for j in range(3):
-                B[i][j] = (A[i][j] - q * B[i][j]) / p
-        # B = (A - q * I) / p
-        r = determinant(B) / 2.0
+    A = copy.deepcopy(M)  # Symmetric input matrix
+    Q = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]  # Storage buffer for eigenvectors
+    w = [A[0][0], A[1][1], A[2][2]]  # Storage buffer for eigenvalues
+    # sd, so                  # Sums of diagonal resp. off-diagonal elements
+    # s, c, t                 # sin(phi), cos(phi), tan(phi) and temporary storage
+    # g, h, z, theta          # More temporary storage
 
-        # In exact arithmetric for a symmetric matrix  -1 <= r <= 1
-        #    but computation error can leave it slightly outside this range.
-        if r <= -1:
-            phi = math.pi / 3
-        elif r >= 1:
-            phi = 0
+    # Calculate SQR(tr(A))
+    sd = 0.0
+    for i in range(3):
+        sd += math.fabs(w[i])
+    sd = sd * sd
+
+    # Main iteration loop
+    for nIter in range(50):
+
+        # Test for convergence
+        so = 0.0
+        for p in range(3):
+            for q in range(p + 1, 3):
+                so += math.fabs(A[p][q])
+        if so == 0.0:
+            return w, Q  # return eval, evec
+
+        if nIter < 4:
+            thresh = 0.2 * so / (3 * 3)
         else:
-            phi = math.acos(r) / 3.0
+            thresh = 0.0
 
-        # the eigenvalues satisfy eig3 <= eig2 <= eig1
-        eig1 = q + 2.0 * p * math.cos(phi)
-        eig3 = q + 2.0 * p * math.cos(phi + math.pi * (2.0 / 3.0))
-        eig2 = 3.0 * q - eig1 - eig3     # since trace(A) = eig1 + eig2 + eig3
-    return [eig1, eig2, eig3]
+        # Do sweep
+        for p in range(3):
+            for q in range(p + 1, 3):
+
+                g = 100.0 * math.fabs(A[p][q])
+                if nIter > 4  and (math.fabs(w[p]) + g == math.fabs(w[p])) and \
+                    (math.fabs(w[q]) + g == math.fabs(w[q])):
+                    A[p][q] = 0.0
+
+                elif math.fabs(A[p][q]) > thresh:
+
+                    # Calculate Jacobi transformation
+                    h = w[q] - w[p]
+                    if math.fabs(h) + g == math.fabs(h):
+                        t = A[p][q] / h
+                    else:
+                        theta = 0.5 * h / A[p][q]
+                        if theta < 0.0:
+                            t = -1.0 / (math.sqrt(1.0 + theta * theta) - theta)
+                        else:
+                            t = 1.0 / (math.sqrt(1.0 + theta * theta) + theta)
+
+                    c = 1.0 / math.sqrt(1.0 + t * t)
+                    s = t * c
+                    z = t * A[p][q]
+
+                    # Apply Jacobi transformation
+                    A[p][q] = 0.0
+                    w[p] -= z
+                    w[q] += z
+
+                    for r in range(p):
+                        t = A[r][p]
+                        A[r][p] = c * t - s * A[r][q]
+                        A[r][q] = s * t + c * A[r][q]
+
+                    for r in range(p + 1, q):
+                        t = A[p][r]
+                        A[p][r] = c * t - s * A[r][q]
+                        A[r][q] = s * t + c * A[r][q]
+
+                    for r in range(q + 1, 3):
+                        t = A[p][r]
+                        A[p][r] = c * t - s * A[q][r]
+                        A[q][r] = s * t + c * A[q][r]
+
+                    # Update eigenvectors
+                    for r in range(3):
+                        t = Q[r][p]
+                        Q[r][p] = c * t - s * Q[r][q]
+                        Q[r][q] = s * t + c * Q[r][q]
+
+    return None
 
 
 def zero(m, n):
