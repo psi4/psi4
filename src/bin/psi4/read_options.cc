@@ -2918,6 +2918,1334 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_str("LOCAL_TYPE", "BOYS", "BOYS PIPEK_MEZEY");
         options.add_int("MAXITER", 50);
     }
+  if (name == "CFOUR"|| options.read_globals()) {
+
+      /*- Specifies the way the :math:`\langle ab||cd \rangle` molecular orbital
+      integrals are handled in post-MP2 calculations. STANDARD (= 0) uses
+      directly the corresponding MO integrals and thus results in an
+      algorithm which in particular for large-scale calculations results
+      in excessive use of disk space (storage of all \langle ab||cd\rangle
+      integrals. AOBASIS (=2) uses an AO-based algorithm to evaluate all
+      terms involving the :math:`\langle ab||cd\rangle` integrals and
+      significantly reduces the amount of disk storage.  The use of
+      ABCDTYPE=AOBASIS is strongly recommended for all CC calculations up
+      to CCSD(T) and has been implemented for energy, gradient,
+      second-derivative, and excitation energy calculations. -*/
+      options.add_str("CFOUR_ABCDTYPE", "STANDARD", "STANDARD AOBASIS");
+
+      /*- Specifies the active orbitals used in a TCSCF calculation and
+      has to be used in combination with the keyword CORE_ORBITALS. The
+      active orbitals are specified by either NIRREP or 2*NIRREP integers
+      specifying the number of active orbitals of each symmetry type,
+      where NIRREP is the number of irreducible representations in the
+      computational point group. If there are no orbitals of a particular
+      symmetry type a zero must be entered. For more information and an
+      example see the keyword OCCUPATION. -*/
+      options.add("CFOUR_ACTIVE_ORBI", new ArrayType());
+
+      /*- Specifies treatment of anharmonc effects by calculating cubic
+      and/or quartic force fields. ANHARM=VIBROT (=3) requests calculation
+      of only those cubic constants of the form \phi_{nij}, where n is a
+      totally symmetric coordinate. These are sufficient to determine the
+      vibration-rotation interaction constants needed to calculate
+      vibrational corrections to rotational constants, but are {\it not}
+      sufficient to generate the corresponding cubic constants of
+      isotopologues that have a lower point-group symmetry ({\it i.e.} HOD
+      isotopologue of water). ANHARM=VPT2 (=1, note that the old keyword
+      ANHARM=CUBIC can be still used and is equivalent to ANHARM=VPT2)
+      generates all cubic constants and all quartic constants apart from
+      those of the form \phi_{ijkl}, which is enough for: 1) generation of
+      cubic constants of isotopologues (see manual entries associated with
+      anharmonic calculations for an example); 2) calculation of
+      vibrational energy levels with VPT2. This keyword also directs the
+      program to analyze resonances and calculate intensities of one- and
+      two-quantum transitions. ANHARM=FULLQUARTIC (=2) (not part of the
+      public release) is largely self-explanatory; it directs the program
+      to calculate all quartic constants. This is sufficient (but this has
+      not been implemented) to generate the full quartic force field of
+      all isotopologues. -*/
+      options.add_str("CFOUR_ANHARMONIC", "OFF", "CUBIC VPT2 FULLQUARTIC VIBROT OFF");
+
+      /*- Specifies which algorithmis used for ANHARM=VIBROT, ANHARM=VPT2,
+      and ANHARM=FULLQUARTIC calculations. IF STANDARD (=0) is chosen,
+      then simply invoking xcfour will cause a complete job to be run with
+      all second-derivative calculations being done in series. If
+      'PARALLEL (=1), then the job stops after the second-derivative
+      calculation at the reference geometry and generates out all input
+      geometries for the remaining calculation. These can be then
+      processed in 'parallel' (currently not recommended).  Note that it
+      is recommended to carry out all calculations with
+      ANH_ALGORITHM=PARALLEL, even when the actual calculation is carried
+      out in a sequential mode. -*/
+      options.add_str("CFOUR_ANH_ALGORITHM", "STANDARD", "STANDARD PARALLEL");
+
+      /*- Specifies whether the anharmonic force field is calculated using
+      analytic gradients (ANH_DERIVATIVES=FIRST) or analytic Hessians
+      (ANH_DERIVATIVES=SECOND). -*/
+      options.add_str("CFOUR_ANH_DERIVATIVES", "SECOND", "FIRST SECOND");
+
+      /*- Controls the stepsize used in anharmonic force field
+      calculations. The value is specified in reduced normal coordinates,
+      which are dimensionless. The actual stepsize used in the calculation
+      is 10$^6$ the value specified(as an integer) in the ZMAT file. -*/
+      options.add_int("CFOUR_ANH_STEPSIZE", 50000);
+
+      /*- Specifies whether nonabelian symmetry is to be exploited in
+      determining displacements for ANHARM=VIBROT or VPT2 calculations. If
+      set to NONABELIAN (= 0), maximum advantage will be taken of symmetry
+      and the full set of cubic force constants will be generated from a
+      skeleton set by application of the totally symmetric projection
+      operator. If set to ABELIAN (= 1), only the operations of the
+      abelian subgroup will be exploited.\\ ''It is important to point out
+      that the symmetrization currently works only for cubic constants.''
+      Therefore, if you require quartic force constants (for frequency
+      calculations), you MUST use the ABELIAN option. Moreover, the latter
+      work for only asymmetric tops and linear molecules. -*/
+      options.add_str("CFOUR_ANH_SYMMETRY", "ABELIAN", "ABELIAN NONABELIAN");
+
+      /*- Can be used to control the algorithm used by CFOUR when terms
+      involving \langle ab||cd\rangle molecular orbital integrals are
+      calculated in the atomic orbital basis (see keyword ABCDTYPE above).
+      MULTIPASS (= 0) uses an approach where the AO integral file is read
+      a number of times in order to ensure maximal vectorization and is
+      usually the optimal strategy on supercomputers; SINGLEPASS (= 1)
+      determines the contributions with only a single pass through the AO
+      integrals, but at the cost of significantly reduced vectorization.
+      In general, however, SINGLEPASS is definitely preferable on
+      workstations with RISC architectures. (Default : MULTIPASS on all
+      64-bit machines (e.g., CRAY-YMP) ; SINGLEPASS on all 32-bit machines
+      (e.g., IBM-RS6000, HP-735, SGI-Indigo, DEC alphastations)).
+      SPARSE_AO (=2) uses a sparse matrix algorithm which first rearranges
+      the integral matrix in order to get "well-occupied" and "very
+      sparse" blocks. "Well-occupied" blocks will be multiplied by matrix
+      multiplication while in "very sparse" blocks only the non-zero
+      elements are considered. The computational time is further reduced
+      using symmetrized and anti-symmetrized integral and amplitude
+      matrices in the multiplication. Substantial saving is assumed if
+      SPARSE_AO (=2) is used. -*/
+      options.add_str("CFOUR_AO_LADDERS", "SINGLEPASS", "MULTIPASS SINGLEPASS");
+
+      /*- Experimental Use!  ON (=1) requests and averaged SCF over two
+      states. So far only implemented for degenerate dublett-Pi states and
+      used in conjunction with SOPERT. -*/ 
+      options.add_bool("CFOUR_AV_SCF", false);
+
+      /*- Specifies the AO basis used in the calculation. One can either
+      specify a basis known to CFOUR or via BASIS=SPECIAL (=0) requests an
+      arbitrary basis (see non-standard basis-set input). However, the
+      latter must be available in the supplied GENBAS file. As standard
+      basis sets, currently the following are available: -*/
+      options.add_str("CFOUR_BASIS", "SPECIAL", "STO-3G 3-21G 4-31G 6-31G 6-31G* 6-31G** 6-311G 6-311G* 6-311G** DZ DZP TZ TZP TZ2P PVDZ PVTZ PVQZ PV5Z PV6Z PCVDZ PCVTZ PCVQZ PCV5Z PCV6Z AUG-PVDZ AUG-PVTZ AUG-PVTZ AUG-PVQZ AUG-PV5Z AUG-PV6Z D-AUG-PVDZ D-AUG-PVTZ D-AUG-PVQZ D-AUG-PV5Z D-AUG-PV6Z cc-pVDZ cc-pVTZ cc-pVQZ cc-pV5Z cc-pV6Z cc-pCVDZ cc-pCVTZ cc-pCVQZ cc-pCV5Z cc-pCV6Z PWCVDZ PWCVTZ PWCVQZ PWCV5Z PWCV6Z PwCVDZ PwCVTZ PwCVQZ PwCV5Z PwCV6Z svp dzp tzp tzp2p qz2p pz3d2f 13s9p4d3f WMR ANO0 ANO1 ANO2 EVEN_TEMPERED SPECIAL");
+
+      /*- experimental use -*/
+      //BREIT
+
+      /*- Specifies the convergence criterion in Brueckner based CC
+      calculations. The calculation is considered to be converged when the
+      absolute value of largest single excitation amplitudes falls below
+      10$^N$, where NNN is the value associated with the keyword. -*/
+      options.add_int("CFOUR_BRUCK_CONV", 4);
+
+      /*- Specifies whether Brueckner orbitals are to be determined for
+      the specified CC method. OFF(=0) Brueckner orbitals are not to be
+      determined, ON (=1) they are to be determined. -*/
+      options.add_bool("CFOUR_BRUECKNER", false);
+
+      //experimental use
+      //BUFFERSIZE
+
+      /*- Defines the level of calculation to be performed. -*/
+      options.add_str("CFOUR_CALC_LEVEL", "SCF", "SCF HF MBPT(2) MP2 MBPT(3) MP3 SDQ-MBPT(4) SDQ-MP4 MBPT(4) MP4 CCD CCSD CCSD(T) CCSDT-1 CCSDT-1b CCSDT-2 CCSDT-3 CCSDT-4 CCSDT CC2 CC3 QCISD QCISD(T) CID CISD UCC(4) B-CCD");
+
+      /*- The number of records held in the i/o cache used by the post-SCF
+      programs. The maximum number of records which can be held is 100. -*/
+      options.add_int("CFOUR_CACHE_RECS", 10);
+
+      //CCORBOPT
+      //experimental use
+
+      /*- Specifies the convergence criterion for the CC amplitude
+      equations. The amplitudes are considered to be converged when the
+      maximum of all (absolute) changes in the amplitudes is less than
+      10$^N$, where $N$ is the value associated with the keyword. -*/
+      options.add_int("CFOUR_CC_CONV", 7);
+
+      /*- Specifies the maximum number of expansion vectors used in the
+      iterative subspace to enhance convergence in the solution of the CC
+      equations. -*/
+      options.add_int("CFOUR_CC_EXPORDER", 5);
+
+      /*- Specifies the type of convergence acceleration used to solve the
+      CC equations. RLE (=0) uses the RLE methods of Purvis and Bartlett,
+      DIIS (=1) uses the DIIS approach by Pulay, NOJACOBI (=2) uses RLE
+      with continuous extrapolation, OFF (=3) uses no convergence
+      acceleration. In general, DIIS provides the best results and is
+      recommended, while OFF often results in poor convergence and thus
+      cannot be recommended. -*/
+      options.add_str("CFOUR_CC_EXTRAPOLATION", "DIIS", "RLE DIIS NOJACOBI OFF");
+
+      /*- Specifies the maximum number of iterations in solving the CC
+      amplitude equations. -*/
+      options.add_int("CFOUR_CC_MAXCYC", 50);
+
+      /*- Specifies which CC program is used. The available options are
+      VCC (=0), ECC (=1), MRCC (=2), and EXTERNAL (=3). The default for
+      all calculations is currently VCC which requests usage of xvcc, but
+      in many cases (e.g., for CCSD and CCSD(T)) 'ECC should be preferred
+      due to the better performance of xecc (available currently for CCSD,
+      CCSD+T, CCSD(T), and closed-shell CCSDT-n, CC3, and CCSDT). MRCC and
+      External are intended for CC programs outside the CFOUR suite, e.g.,
+      the general CC module mrcc written by M. Kallay (Budapest, Hungary).
+      Default: VCC Note: Using the option ECC is not recommended for ROHF
+      gradients. That is, if you are doing a geometry optimization with
+      ROHF as your reference wave function then it is safe to use the
+      option VCC. -*/
+      options.add_str("CFOUR_CC_PROGRAM", "VCC", "VCC ECC MRCC EXTERNAL");
+
+      /*- Specifies the molecular charge. -*/
+      options.add_int("CFOUR_CHARGE", 0);
+
+      /*- Specifies the convergence threshold (as 10^{-N} for CIS
+      calculations. -*/
+      options.add_int("CFOUR_CIS_CONV", 5);
+
+      //COMM_SIZE
+      //experimental use
+
+      /*- Signifies that one or more 'continuum' orbitals should be added
+      to the calculation. VIRTUAL and DVIRTUAL specify one or two orbital
+      which should be initially unoccupied (in the SCF calculation), while
+      OCCUPIED and DOCCUPIED specify one or two orbitals which should be
+      initially occupied. -*/
+      options.add_str("CFOUR_CONTINUUM", "NONE", "NONE VIRTUAL DVIRTUAL OCCUPIED DOCCUPIED");
+
+      /*- Specifies the contraction scheme used by the integral and
+      integral derivative program. SEGMENTED (=0) uses a segmented
+      contraction scheme; GENERAL(=1) uses a general contraction scheme,
+      and UNCONTRACTED(=2) uses the corresponding uncontracted sets. Note
+      that even for truly segmented basis sets, the integral programs run
+      significantly faster in the GENERAL mode. -*/
+      options.add_str("CFOUR_CONTRACTION", "GENERAL", "SEGMENTED GENERAL UNCONTRACTED");
+
+      /*- Specifies convergence criterion for geometry optimization. Job
+      terminates when RMS gradient is below $10^{-N}$ Hartree/bohr, where
+      $N$ is the value specified by CONVERGENCE. -*/
+      options.add_int("CFOUR_CONVERGENCE", 4);
+
+      /*- Specifies the type of coordinates used in the input file ZMAT.
+      The keyword INTERNAL (=0) means that the geometry is supplied in the
+      usual Z-matrix format, while CARTESIAN (=1) means that the geometry
+      is given in Cartesian coordinates. A third option is XYZINT (=2) for
+      which a Z-matrix connectivity is defined, but with values of the
+      internal coordinates defined implicitly by supplying Cartesian
+      coordinates. Note that geometry optimizations are currently only
+      possible for COORDINATES=INTERNAL and COORDINATES=XYZ2INT. -*/
+      options.add_str("CFOUR_COORDINATES", "INTERNAL", "INTERNAL CARTESIAN XYZINT");
+
+      /*- Specifies the core orbitals used in a TCSCF calculation and has
+      to be used in combination with the keyword ACTIVE_ORBI. The core
+      orbitals are specified by either NIRREP or 2*NIRREP integers
+      specifying the number of core orbitals of each symmetry type, where
+      NIRREP is the number of irreducible representations in the
+      computational point group. If there are no orbitals of a particular
+      symmetry type a zero must be entered. For more information and an
+      example see the keyword OCCUPATION. -*/
+      options.add("CFOUR_CORE_ORBITALS", new ArrayType());
+
+      /*- Specifies the convergence criterion for the iterative solution
+      of the CPHF and Z-vector equations. The solutions are considered to
+      be converged when the residual norm of the error vector falls below
+      10$^N$. -*/
+      options.add_int("CFOUR_CPHF_CONVER", 12);
+
+      /*- Specifies the maximum number of cycles allowed for the solution
+      of the CPHF- and/or Z-vector equations. -*/
+      options.add_int("CFOUR_CPHF_MAXCYC", 64);
+
+      /*- Specifies whether or not Hessian matrix is transformed
+      (nonlinearly) to curvilinear internal coordinates. A value of 0 (or
+      OFF) turns the transformation off if the analytic force constants
+      are not available, while it is always performed if CURVILINEAR=1 (or
+      ON). Values higher than 1 (or NO) unconditionally turn the
+      transformation off.(Default: ON if analytic Hessian is available,
+      OFF otherwise). -*/
+      options.add_bool("CFOUR_CURVILINEAR", true);
+
+      /*- Specifies whether the diagonal Born-Oppenheimer correction
+      (DBOC) to the energy is evaluated (ON =1) or not (OFF =0). DBOC
+      calculations are currently only available for HF-SCF and CCSD using
+      RHF or UHF reference functions. -*/
+      options.add_bool("CFOUR_DBOC", false);
+
+      /*- Specifies whether the Dipole Coupling Tensor (DCT) is calculated
+      (ON =1) or not (OFF =0). -*/
+      options.add_bool("CFOUR_DCT", false);
+
+      /*- Specifies whether or not energy derivatives are to be calculated
+      and if so whether first or second derivatives are computed. ZERO (=
+      0) derivatives are not calculated, FIRST (=1) first derivatives are
+      calculated, SECOND (=2) second derivatives are calculated.  Note
+      that this keyword usually needs not be set in any calculation since
+      it is automatically set if the appropriate other options in the
+      CFOUR namelist are turned on. -*/
+      options.add_str("CFOUR_DERIV_LEVEL", "ZERO", "ZERO FIRST SECOND");
+
+      /*- Specifies whether orbital-relaxed (RELAXED =0) or
+      orbital-unrelaxed (UNRELAXED =1) derivatives are computed in the CC
+      calculation. -*/
+      options.add_str("CFOUR_DIFF_TYPE", "RELAXED", "RELAXED UNRELAXED");
+
+      //DIRECT
+      //experimental use
+
+      //DIAG_MRCC
+      //experimental use
+
+      /*- Specifies which molecular orbitals will be dropped from the
+      post-SCF calculation. The orbitals are numbered in ascending order
+      from the most stable (negative energy) to the most unstable (largest
+      positive energy). Individual orbitals must be separated with a dash,
+      while x>y means orbitals x through y inclusive. For example, the
+      string 1>10-55-58>64, would result in orbitals
+      1,2,3,4,5,6,7,8,9,10,55,58,59,60,61,62,63 and 64 being dropped. For
+      UHF calculations, the appropriate orbitals are deleted for both spin
+      cases. No dropped virtual MOs are currently allowed for gradient or
+      property calculations. -*/
+      options.add("CFOUR_DROPMO", new ArrayType());
+
+      //EA_CALC
+      //experimental use
+
+      //EA_SYM
+      //experimental use
+
+      /*- Specifies whether effective core potentials (pseudopotentials)
+      are used (ON = 1) or not (OFF = 0). -*/
+      options.add_bool("CFOUR_ECP", false);
+
+      /*- Specifies which eigenvector of the totally symmetric part of the
+      block-factored Hessian is to be followed uphill in a transition
+      state search. Eigenvectors are indexed by their eigenvalues -- the
+      lowest eigenvalue is 1, the next lowest is 2, etc. The default is 1,
+      which should always be used if you are not looking for a specific
+      transition state which you know corresponds to motion along a
+      different mode. In the future, relatively sophisticated generation
+      of a guessed eigenvector will be implemented, but this is the way
+      things are for now. Of course, the value of EIGENVECTOR has no
+      meaning if METHOD is not set to TS. -*/
+      options.add_int("CFOUR_EIGENVECTOR", 1);
+
+      /*- Experimental use, ON = 1 requests the evaluation of electrical
+      anharmonicities -*/
+      options.add_bool("CFOUR_EL_ANHARM", false);
+
+      /*- Specifies the threshold used in converging CC-LR/EOM-CC
+      calculations. The iterative diagonalization is continued until the
+      RMS residual falls below 10^{-N} with N as the value specified with
+      this keyword. -*/
+      options.add_int("CFOUR_ESTATE_CONV", 5);
+
+      //EOM_NSING
+      //experimental use
+
+      //EOM_NTRIP
+      //experimental use
+
+      /*- Controls whether non-iterative triples corrections are applied
+      after various types of EOM-CCSD calculation. Works with EOMIP, might
+      work with EOMEE, certainly doesn't work with EOMEA. Use with great
+      caution, preferably after having a few drinks. -*/
+      options.add_bool("CFOUR_EOM_NONIT", false);
+
+      /*- For experimental use only. Selects the iterative diagonalization
+      algorithm for the EOMEE calculations. If set to DAVIDSON, the
+      general modified Davidson technique is used. If set to MULTIROOT, a
+      multi-root Davidson approach is invoked that evaluates all roots of
+      a symmetry block simultaneously. This approach is much more stable
+      if the roots are energetically close to each other. -*/
+      //options.add_str("CFOUR_EOM_NSTATES", "", "DAVIDSON MULTIROOT");
+
+      /*- Selects the excited state the EOMEE properties are calculated
+      for. Only valid if EOM_NSTATES = MULTIROOT is set. It always refers
+      to the corresponding state of the last symmetry block considered. -*/
+      //options.add_int("CFOUR_EOM_PROPSTA");
+
+      //EOMFOLLOW
+      //experimental use
+
+      //ESTATE_DIAG
+      //experimental use
+
+      //ESTATE_LOCK
+      //experimental use
+
+      /*- The maximum number of expansion vectors used in the solution of
+      EOMCC equations (Default : 20, hard-coded to 4 in triples
+      calculations) -*/
+      options.add_int("CFOUR_ESTATE_MAXCYC", 20);
+
+      /*- This keyword applies only to EOM-CC calculations and specifies
+      whether any excited or ionized state one-electron properties are to
+      be calculated. Proper use of this keyword requires a relatively
+      advanced knowledge of quantum chemistry and the available options
+      are discussed here. The options are : OFF (=0) [no properties or
+      transition moments are calculated]; EXPECTATION (=1) [transition
+      moments and dipole strengths are calculated along with selected
+      one-electron properties which are evaluated as expectation values];
+      UNRELAXED (=2) [selected one-electron properties are calculated in
+      an approximation that neglects relaxation of molecular orbitals];
+      RESPONSE (=3) [selected one-electron properties are calculated as
+      analytic first derivatives of the energy]. Except for EOMCC
+      calculations on two-electron systems (which are exact), properties
+      obtained by the three approaches will not be equivalent. The default
+      value for this keyword is slightly complicated. For TDA
+      calculations, the default is EXPECTATION since the evaluation of
+      transition moments involves only a negligible amount of additional
+      computation relative to the evaluation of the excitation energies.
+      For EOMCC, the default is OFF since evaluation of any transition
+      moments or properties requires approximately twice the computational
+      time. Transition moments and dipole strengths are evaluated by
+      default for all values of ESTATE_PROP other than OFF. -*/
+      options.add_str("CFOUR_ESTATE_PROP", "", "OFF EXPECTATION UNRELAXED RESPONSE");
+
+      /*- Specifies the number of excited states which are to be
+      determined in each irreducible representation of the computational
+      subgroup. The program attempts to find all of the lowest roots, but
+      this is not guaranteed because the eigenvalue problem is not solved
+      by direct matrix diagonalization, but rather by an iterative
+      (modified Davidson) algorithm. For excited state gradient
+      calculations, only one root (clearly) is used. In such a case, one
+      and only one non-zero entry in the string can be used, and this
+      value is usually set to one (i.e. ESTATE_SYM=0/1/0/0). (However
+      sometimes one wants to calculate the gradient for, say, the second
+      root of a given symmetry, and in such a case, one could use
+      ESTATE_SYM=0/2/0/0. What happens is that both roots are calculated,
+      but only the second one is used in the subsequent density matrix and
+      gradient calculation.) The format used for this keyword is identical
+      to hat used in the OCCUPATION keyword. For example, for a
+      computational subgroup having four symmetry species, the string
+      ESTATE_SYM=3/1/0/2 specifies that 6 total roots should be searched
+      for, three in the first block, one in the second block, and two in
+      the fourth block. It is also important to note that the %excite*
+      input, if present, takes precedence over this keyword, and the
+      latter is ignored when an %excite* record is found in the ZMAT file.
+      Default: All zeros. -*/ 
+      options.add("CFOUR_ESTATE_SYM", new ArrayType());
+
+      /*- Specifies whether just the excitation energies (OFF=0) or in
+      addition transition moments (EXPECTATION=1) are calculated. Note
+      that this keyword should not be used in excited-state calculations
+      involving analytic gradients and that transition moments are
+      essentially only available for EOM-CCSD/CCSD-LR. -*/
+      options.add_str("CFOUR_ESTATE_TRANS", "OFF", "OFF EXPECTATION");
+
+      /*- Tells the program, in the course of a geometry optimization, to
+      calculate the Hessian explicitly every N cycles. 0 means never
+      calculated explicitly. -*/ 
+      options.add_int("CFOUR_EVAL_HESS", 0);
+
+      /*- Specifies in CC calculations using mrcc the excitation level if
+      the calculation level has been chosen as CC(n), CI(n), or CCn(n)''. -*/
+      options.add_int("CFOUR_EXCITATION", 0);
+
+      /*- Specifies the type of EOM-CC/LR-CC treatment to be performed.
+      Available options are NONE (=0), EOMEE (=3, the EOM-CC/CC-LR
+      approach for the treatment of excited states), EOMIP (=4, the
+      EOM-CC/CC-LR approach for the treatment of ionized states), EOMEA
+      (=7, the EOM-CC/CC-LR approach for the treatment of
+      electron-attached states). -*/
+      options.add_str("CFOUR_EXCITE", "NONE", "NONE EOMEE EOMIP EOMEA");
+
+      /*- Specifies the strength of a Fermi-Contact pertubation as
+      required for finite-field calculations of spin densities and the FC
+      contributions to indirect spin-spin coupling constants. The value
+      must be specified as an integer and the FC strength used by the
+      program will be the value of the keyword $x 10^{-6}$. The atom for
+      which the FC perturbation is switched on is specified in the ZMAT
+      file after the CFOUR command line and potential basis set input, as
+      follows
+
+      %spin density
+       N
+
+      with N as the number of atom (in (X5,I3) format) in the order they
+      are written by JODA to the MOL file. Be aware that for some atoms,
+      the calculation has to be run in lower symmetry or even without
+      symmetry. (Default : 0) -*/
+      options.add_int("CFOUR_FC_FIELD", 0);
+
+      /*- Specifies the algorithm used to compute the harmonic force
+      constants in finite-difference calculations.GRADONLY (=0) evaluates
+      the force constants and dipole moment derivatives by numerical
+      differentiation of analytic gradients; ENERONLY (=1) evaluates the
+      force constants by second differences of energies (dipole moment
+      derivatives are not evaluated); while MIXED (=2) evaluates 1x1
+      blocks of symmetry-blocked force constants by second differences pf
+      energies and all other elements by first differences of gradients.
+      the GRADONLY and MIXED approaches may, of course, only be used hwen
+      using computational methods for which analytic gradients are
+      available. -*/
+      options.add_str("CFOUR_FD_CALCTYPE", "GRADONLY", "GRADONLY ENERONLY MIXED");
+
+      /*- Requests that only vibrational frequencies of certain symmetry
+      types are evaluated in a VIBRATION=FINDIF calculation. The numbers
+      of the irreducible representations for which vibrational analysis is
+      to be performed are separated by slashes. For example,
+      FD_IRREP=1/3/4 means compute the frequencies of modes transforming
+      as the first, third, and fourth irreducible representations. If a
+      symmetry is specified for which there are no vibrational modes, the
+      program will terminate. The labels of the irreducible
+      representations for this keyword are not usually the same as those
+      used in the rest of the calculation. Moreover, for some point
+      groups, for example, those of linear molecules, the two sets of
+      labels refer to different subgroups. There is as yet no
+      straightforward way to determine what they will be without starting
+      a calculation. If one runs the xjoda and then the xsymcor
+      executables, the relevant irreducible representations will be
+      listed. If all vibrational frequencies are desired, this keyword
+      need not be included.  Default : compute vibrational frequencies for
+      all irreducible representations -*/
+      options.add("CFOUR_FD_IRREPS", new ArrayType());
+
+      /*- Specifies whether or not rotational degrees of freedoms are
+      projected out from the symmetry-adapted coordinates in a finite
+      difference calculations. ON(=0) uses rotationally projected
+      coordinates, while OFF(=1) retains the rotational degrees of
+      freedom. At a stationary point on the potential energy surface, both
+      options will give equivalent harmonic force fields, but OFF should
+      be used at non-stationary points. -*/
+      options.add_bool("CFOUR_FD_PROJECT", true);
+
+      /*- Specifies the step length in mass-weighted coordinates (in
+      10**(-4) amu**0.5 bohr) used in generating the force constant matrix
+      by finite difference of Cartesian gradients. -*/
+      options.add_int("CFOUR_FD_STEPSIZE", 5);
+
+      /*- In finite difference calculations using the FINDIF option, this
+      keyword specifies the point group to be used in generating the
+      symmetry-adapted vibrational coordinates. FULL (= 0) specifies the
+      full molecular point group, COMP (= 1) specifies the Abelian
+      subgroup used in the electronic structure calculation. -*/
+      options.add_str("CFOUR_FD_USEGROUP", "FULL", "FULL COMP");
+
+      /*- This specifies the physical length (in integer words) of the
+      records used in the word-addressable direct access files used by
+      CFOUR. This value should always be chosen as a multiple of 512
+      bytes, as your local system manager certainly understands. -*/
+      options.add_int("CFOUR_FILE_RECSIZ", 2048);
+
+      /*- This option allows the splitting of files. Input is required in
+      the form FILE_STRIPE=N1/N2/N43/N4/N5, where N1, N2, N3, N4, and N5
+      specify the number of files in which MOINTS, GAMLAM, MOABCD, DERINT,
+      and DERGAM are splitted, respectively. -*/
+      options.add_str("CFOUR_FILE_STRIPE", "0/0/0/0/0");
+
+      /*- Specifies the field strength for a perturbation (defined within
+      a %perturbation section). The value must be given as an integer, and
+      the field strength used by the program will be then the value of the
+      keyword x10**(-6). -*/
+      options.add_int("CFOUR_FINITE_PERTURBATION", 0);
+
+      /*- This option is used to control the algorithm used for
+      construction of the Fock matrix in SCF calculations. PK (= 0) uses
+      the PK-supermatrix approach while AO (= 1) constructs the matrix
+      directly from the basis function integrals. In general, PK is
+      somewhat faster, but results in considerable use of disk space when
+      out-of-core algorithms are required. (Default : FOCK). -*/
+      options.add_str("CFOUR_FOCK", "", "PK AO");
+
+      //FREQ_ALGORIT
+      //experimental use
+
+      /*- Specifies whether in the correlation treatment all electron (OFF
+      =0) or only the valence electrons (ON =1) are considered. This
+      keyword provides an alternative to the DROPMO keyword, as it allows
+      frozen-core calculation without explicitly specifying the
+      corresponding inner-shell orbitals. -*/
+      options.add_bool("CFOUR_FROZEN_CORE", false);
+
+      /*- Specifies whether in the correlation treatment all virtual
+      orbitals (OFF=0) or only a subset of virtual orbitals (ON=1) are
+      used. In the latter case, the threshold for deleting virtual
+      orbitals based on the orbital energey needs to be specified in a
+      %frozen_virt section. -*/
+      options.add_bool("CFOUR_FROZEN_VIRT", false);
+
+      /*- Used to control the handling and storage of two-particle density
+      matrix elements with four virtual indices $\Gamma(abcd)$. DISK (=0)
+      directs the program to calculate and store all elements of
+      $\Gamma(abcd)$, while DIRECT (=1) tells the program to use
+      alternative algorithms in which $\Gamma(abcd)$ is calculated and
+      used ``on the fly''. Note that this option might be not available
+      for all type of calculations. -*/
+      options.add_str("CFOUR_GAMMA_ABCD", "DISK", "DISK DIRECT");
+
+      //GAMMA_ABCI
+      //see GAMMA_ABCD
+
+      /*- This keyword applies only to Hydrogen and Helium atoms and
+      specifies the number of contracted Gaussian functions per shell.
+      There is usually no need to use this keyword, but it can be useful
+      for using a subset of the functions in a particular entry in the
+      GENBAS file, particularly for generally contracted WMR basis sets.
+      For example, if entry H:BASIS in the GENBAS file contains 7
+      contracted s functions, 4 p functions and a single d function, then
+      setting GENBAS_1=730 would eliminate the last p function and the d
+      function. Default: use the unaltered GENBAS entry. -*/
+      options.add_str("CFOUR_GENBAS_1", "");
+
+      /*- This keyword performs the same function as GENBAS_1 above, but
+      applies to second-row atoms. -*/
+      options.add_str("CFOUR_GENBAS_2", "");
+
+      /*- This keyword performs the same function as GENBAS_1 and
+      GENBAS_2, but applies to third-row atoms. -*/
+      options.add_str("CFOUR_GENBAS_3", "");
+
+      /*- This keyword performs the same function as GENBAS_1, GENBAS_2,
+      and GENBAS_3, but applies to fourth-row atoms. -*/
+      options.add_str("CFOUR_GENBAS_4", "");
+
+      /*- Specifies the convergence criterion for geometry optimization.
+      The optimization terminates when the RMS gradient is below 10**(-N)
+      Hartree/bohr, where N is the specified value. -*/
+      options.add_int("CFOUR_GEO_CONV", 5);
+
+      /*- Specifies largest step (in millbohr) which is allowed in
+      geometry optimizations. -*/
+      options.add_int("CFOUR_GEO_MAXSTEP", 300);
+
+      /*- Specifies the used geometry optimization methods. The following
+      values are permitted: NR (=0) --- straightforward Newton-Raphson
+      search for minimum; RFA (=1) --- Rational Function Approximation
+      search for minimum (this method can be used to find minima when the
+      initial structure is in a region where the Hessian index is
+      nonzero); TS (=2) Cerjan-Miller eigenvector following search for a
+      transition state (can be started in a region where the Hessian index
+      is not equal to unity); MANR (=3) --- Morse-adjusted Newton-Raphson
+      search for minimum (very efficient minimization scheme, particularly
+      if the Hessian is available); SINGLE_POINT (=5) for a single-point
+      energy calculation. ENERONLY (=6) requests a geometry optimization
+      based on single-point energy calculations.  Default: SINGLE-POINT
+      (NR as soon as variables are marked to be optimized). -*/
+      options.add_str("CFOUR_GEO_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT ENERONLY");
+
+      /*- Specifies convergence criterion for geometry optimization. Job
+      terminates when RMS gradient is below $10^{-N}$ Hartree/bohr, where
+      $N$ is the value specified by CONVERGENCE. -*/
+      options.add_int("CFOUR_GEO_MAXCYC", 4);
+
+      /*- Specifies whether gauge-including atomic orbitals are used (ON)
+      or not (OFF). Default: ON for PROP=NMR and PROP=MAGNETIC, otherwise
+      OFF -*/
+      options.add_bool("CFOUR_GIAO", false);
+
+      //GIMIC
+      //experimental use
+
+      /*- Keyword used to control type of grid calculation (see later
+      section in this manual). Options are OFF (= 0), no grid calculation;
+      CARTESIAN (= 1), steps are in Cartesian coordinates (which must be
+      run with COORD=CARTESIAN); INTERNAL (= 2), steps are in Z-matrix
+      internal coordinates; QUADRATURE (= 3) steps are chosen for an
+      integration based on Gauss-Hermite quadrature. (Default : OFF) -*/
+      options.add_str("CFOUR_GRID", "OFF", "OFF CARTESIAN INTERNAL QUADRATURE");
+
+      //GRID_ALGO
+      //experimental use
+
+      /*- Where the initial SCF eigenvectors are read from. MOREAD means
+      to read from the disk (the `` JOBARC" file) and CORE means to use a
+      core Hamiltonian initial guess. If MOREAD is chosen but no disk file
+      is present, the core Hamiltonian is used. (Default : MOREAD) -*/
+      options.add_str("CFOUR_GUESS", "MOREAD", "MOREAD CORE");
+
+      /*- This keyword determines which action is taken by the linear
+      response program. ON (= 1) the full effective Hamiltonian is
+      calculated and written to disk; OFF (= 0) the ``lambda'' linear
+      response equations are solved. -*/
+      options.add_bool("CFOUR_HBAR", false);
+
+      //HESS_TYPE
+      //experimental use
+
+      /*- Control analysis of the stability of RHF, ROHF and UHF
+      wavefunctions, as well as a possible search for a lower SCF
+      solution. There are three possible options for this keyword. OFF
+      (=0) does nothing, while ON (=1) performs a stability analysis and
+      returns the number of negative eigenvalues in the orbital rotation
+      Hessian. A third option, FOLLOW (=2) performs the stability
+      analysis and then proceeds to rotate the SCF orbitals in the
+      direction of a particular negative eigenvalue of the orbital
+      rotation Hessian (see the explanation of keyword ROT_EVEC), after
+      which the SCF is rerun. -*/
+      options.add_str("CFOUR_HFSTABILITY", "OFF", "OFF ON FOLLOW");
+
+      //HF2_FILE
+      //experimental use
+
+      /*- This keyword can be used to significantly reduce disk i/o, and
+      should be implemented very soon. The following options are
+      available: OFF (= 0), no special algorithms are used (the default
+      case); ALL (=1) all quantities except the $\langle ab\vert\vert
+      cd\rangle$ molecular integral lists are held in core; PARTIAL (= 2),
+      the T2 and T1 vectors are held in core throughout the calculation;
+      (=4) all quantities except the $\langle ab\vert\vert cd\rangle$ and
+      $\langle ab\vert\vert ci\rangle$ integrals are held in core; (=5)
+      $\langle ij\vert\vert kl\rangle$ and $\langle ij\vert\vert
+      ka\rangle$ and two-index quantities are held in core; (=6) all
+      direct access files (MOINTS, GAMLAM, etc.) are held in core. At
+      present, these options have been implemented only in the energy code
+      (xvcc) and the excitation energy code (xvee). (Default : 0) -*/
+      options.add_str("CFOUR_INCORE", "OFF", "OFF ALL PARTIAL");
+
+      /*- Specifies whether an input for mrcc is written (ON,=0) or not
+      (OFF,=1) if CC_PROG=EXTERNAL has been specified. -*/
+      options.add_bool("CFOUR_INPUT_MRCC", true);
+
+      /*- This keyword defines what type of integral input will be written
+      by JODA. VMOL (=1) has to be used with the programs of CFOUR. Using
+      ARGOS (=0) input for Pitzer's ARGOS integral program will be
+      written. (Default : VMOL). -*/
+      options.add_str("CFOUR_INTEGRALS", "VMOL", "VMOL ARGOS");
+
+      /*- Controls amount of debug printing performed by Joda. The higher
+      the number, the more information is printed. Values of 25 or higher
+      generally do not produce anything of interest to the general user.
+      Do not set JODA_PRINT to 999 as this will cause the core vector to
+      be dumped to disk. -*/
+      options.add_int("CFOUR_JODA_PRINT", 0);
+
+      /*- Convergence threshold for linear equations controlled by
+      LINEQ_TYPE. Equations are iterated until smallest residual falls
+      below $10^{-N}$, where N is the value associated with this keyword. -*/
+      options.add_int("CFOUR_LINEQ_CONV", 7);
+
+      /*- Maximum subspace dimension for linear equation solutions. -*/
+      //options.add_int("CFOUR_LINEQ_EXPOR");
+
+      /*- Determines the algorithm used to solve linear equations
+      ($\Lambda$ and derivative $T$ and $\Lambda$). POPLE (=0) uses
+      Pople's method of successively orthogonalized basis vectors, while
+      DIIS (=1) uses Pulay's DIIS method. The latter offers the practical
+      advantage of requiring much less disk space, although it is not
+      guaranteed to converge. Moreover, POPLE has not been tested for some
+      time and should definitely be checked! (Default : DIIS) -*/
+      options.add_str("CFOUR_LINEQ_TYPE", "DIIS", "POPLE DIIS");
+
+      /*- The maximum number of iterations in all linear CC equations. -*/
+      options.add_int("CFOUR_LINEQ_MAXCY", 50);
+
+      //LINDEP_TOL
+
+      /*- This keyword is used by the SCF program to determine if the
+      orbital occupancy (by symmetry block) is allowed to change in the
+      course of the calculation. ON (= 1) locks the occupation to that set
+      by the keyword OCCUPATION [or the initial guess if OCCUPATION is
+      omitted]; OFF (= 0) permits the occupation to change. (Default : 1
+      if the occupation is specified with the OCCUPATION keyword and in
+      second and later steps of optimizations ; 0 if OCCUPATION is
+      omitted.) -*/
+      options.add_bool("CFOUR_LOCK_ORBOCC", false);
+
+      /*- Specifies largest step (in millibohr) which is allowed in
+      geometry optimizations. -*/
+      options.add_int("CFOUR_MAXSTEP", 300);
+
+      /*- Specifies the amount of core memory used in integer words
+      (default) or in the units specified via the keyword MEM_UNIT.
+      Default: 100 000 000 (approximately 381 or 762 MB for 32 or 64 bit
+      machines, respectively) -*/
+      options.add_int("CFOUR_MEMORY_SIZE", 100000000);
+
+      /*- Specifies the units in which the amount of requested core memory
+      is given. Possible choices are INTEGERWORDS (default), kB, MB, GB,
+      and TB. -*/
+      options.add_str("CFOUR_MEM_UNIT", "INTEGERWORDS", "INTEGERWORDS KB MB GB TB");
+
+      /*- Specifies the geometry optimization strategy. Four values are
+      permitted: 0 (or NR) -- Straightforward Newton-Raphson search for
+      minimum; 1 (or RFA) -- Rational Function Approximation search for
+      minimum (this method can be used to find minima when the initial
+      structure is in a region where the Hessian index is nonzero); 2 (or
+      TS) Cerjan-Miller eigenvector following search for a transition
+      state (can be started in a region where the Hessian index is not
+      equal to unity); 3 (or MANR) -- Morse-adjusted Newton-Raphson search
+      for minimum (very efficient minimization scheme, particularly if the
+      Hessian is available); 4 is currently unavailable; 5 (or
+      SINGLE_POINT) is a single point calculation. -*/
+      options.add_str("CFOUR_METHOD", "SINGLE_POINT", "NR RFA TS MANR SINGLE_POINT");
+
+      /*- Specifies the type of MRCC calculation. MK performs a MR-CC
+      calculation based on Mukherjee's ansatz. -*/
+      options.add_bool("CFOUR_MRCC", false);
+
+      /*- Specifies the spin multiplicity. -*/
+      options.add_int("CFOUR_MULTIPLICITY", 1);
+
+      /*- Calculation of non-adiabatic coupling. In case of ON(=1) the
+      method by Ichino, Gauss, Stanton is used to obtain the lambda
+      coupling, while in case of LVC(=3) the lambda coupling is computed
+      by means of the algorithm by Tajti and Szalay. Furthermore, NACV(=2)
+      requests the computation of the full non-adiabatic coupling. Note
+      that for calculations using NACOUPLING=LVC or NACOUPLING=NACV
+      options the multiroot diagonalization has to be used, as requested
+      via the keyword EOM_NSTATES=MULTIROOT. -*/
+      options.add_str("CFOUR_NACOUPLING", "OFF", "ON NACV LVC");
+
+      /*- Specifies what to do if negative eigenvalues are encountered in
+      the totally symmetric Hessian during an NR or MANR
+      geometry-optimization search. If NEGEVAL=ABORT (=0), the job will
+      terminate with an error message; if NEGEVAL=SWITCH (=1) the program
+      will just switch the eigenvalue to its absolute value and keep
+      plugging away (this is strongly discouraged!); and if NEGEVAL=-> RFA
+      (=2), the keyword GEO_METHOD is switched to RFA internally and the
+      optimization is continued. -*/
+      options.add_str("CFOUR_NEGEVAL", "ABORT", "ABORT SWITCH RFA");
+
+      /*- All components of spherical AO’s are normalized to 1. This
+      feature can help with numerical convergence issues if AO integrals
+      are involved. Currently only working for single-point energy
+      calculations. -*/
+      options.add_bool("CFOUR_NEWNORM", false);
+
+      /*- Specifies whether the reference function used in the correlation
+      energy calculation satisfies the (spin-orbital) HF equations or not.
+      Usually there is no need to set this parameter (OFF = 0 and ON =1),
+      since standard non-HF reference functions (QRHF and ROHF) set this
+      flag automatically. -*/
+      options.add_bool("CFOUR_NONHF", false);
+
+      /*- Specifies how many t amplitudes will be printed for each spin
+      case and excitation level. =N The largest N amplitudes for each spin
+      case and excitation level will be printed. -*/
+      options.add_int("CFOUR_NTOP_TAMP", 15);
+
+      /*- Specifies the orbital occupanc of the reference function in
+      terms of the occupation numbers of the orbitals and their
+      irreducible representations. The occupancy is specified by either
+      NIRREP or 2*NIRREP integers specifying the number of occupied
+      orbitals of each symmetry type, where NIRREP is the number of
+      irreducible representations in the computational point group. If
+      there are no orbitals of a particular symmetry type a zero must be
+      entered. If the reference function is for an open-shell system, two
+      strings of NIRREP occupation numbers separated by a slash are input
+      for the \alpha and \beta sets of orbitals.  An example of the use of
+      the OCCUPATION keyword for the water molecule would be
+      OCCUPATION=3-1-1-0. For the ^2A_1 water cation, an open-shell
+      system, the keyword would be specified by
+      OCCUPATION=3-1-1-0/2-1-1-0. It should be noted that the VMOL
+      integral program orders the irreducible representations in a strange
+      way, which most users do not perceive to be a logical order. Hence,
+      it is usually advisable initially to run just a single point
+      integral and HF-SCF calculation in order to determine the number and
+      ordering of the irreducible representations.  The occupation keyword
+      may be omitted, in which case an initial orbital occupancy is
+      determined by diagonalization of the core Hamiltonian. In many
+      cases, HF-SCF calculations run with the core Hamiltonian guess will
+      usually converge to the lowest energy HF-SCF solution, but this
+      should not be blindly assumed.  (Default : The occupation is given
+      by the core Hamiltonian initial guess). -*/
+      options.add("CFOUR_OCCUPATION", new ArrayType());
+
+      /*- Specifies which kind of open-shell CC treatment is employed. The
+      default is a spin-orbital CC treatment (SPIN-ORBITAL =1) which is
+      the only possible choice for UHF-CC schemes anyways. For ROHF-CC
+      treatments, the possible options are beside the standard
+      spin-orbital scheme a spin-restricted CC approach (SR-CC=3), as well
+      as a corresponding linear approximation (which in the literature
+      usually is referred to as partially-spin-adapted CC scheme)
+      (PSA-CC=1). SR-CC and PSA-CC are within the CCSD approximation
+      restricted to excitations defined by the first-order interacting
+      space arguments. With the keywords PSA-CC_FULL(=2) or SR-CC_FULL(=6)
+      inclusion of the so called "pseudo-triples" beyond the first-order
+      interacting space is also possible.  The two-determinant CC method
+      for open-shell singlet states can be activated by TD-CC (=8). -*/
+      options.add_str("CFOUR_OPEN-SHELL", "SPIN-ORBITAL", "SPIN-ORBITAL SR-CC PSA-CC_FULL SR-CC_FULL TD-CC");
+
+      /*- Specifies the maximum allowed number of geometry optimization
+      cycles. -*/
+      options.add_int("CFOUR_OPT_MAXCYC", 50);
+
+      /*- Specifies the type of molecular orbitals used in post-HF
+      calculations. STANDARD (=0) requests usage of the orbitals (from a
+      corresponding HF-SCF calculation) without any modification. These
+      are in the case of RHF/UHF the usual canonical HF orbitals and in
+      the case of ROHF calculations the standard ROHF-orbitals with equal
+      spatial parts for both the {\alpha$} and the \beta spin orbitals.
+      SEMICANONICAL (=1) forces in ROHF type calculations a transformation
+      to so-called semicanonical orbitals which diagonalize the
+      occupied-occupied and virtual-virtual blockes of the usual
+      Fock-matrices. The use of semicanonical orbitals is, for example,
+      required for ROHF-CCSD(T) calculations and for those calculations
+      also automatically set. LOCAL requests a localization of the HF
+      orbitals and this is currently done according to the Pipek-Mezey
+      localization criterion.  Note that it is strongly recommended not to
+      use this keyword unless you know what are you doing.  Default:
+      STANDARD except for ROHF-CCSD(T) and ROHF-MP4 calculations for which
+      SEMICANONICAL is the default. -*/
+      options.add_str("CFOUR_ORBITALS", "STANDARD", "STANDARD SEMICANONICAL");
+
+      //PARALLEL
+      //experimental use
+
+      //PARA_PRINT
+      //experimental use
+
+      //PARA_INT
+      //experimental use
+
+      /*- Specifies the type of perturbed orbitals used in energy
+      derivative calculations. STANDARD means that the gradient
+      formulation assumes that the perturbed orbitals are not those in
+      which the (perturbed) Fock matrix is diagonal. CANONICAL means that
+      the perturbed orbitals are assumed to be canonical. This keyword is
+      set automatically to CANONICAL in derivative calculations with
+      methods which include triple excitations (MBPT[4]/MP4, CCSD+T[CCSD],
+      CCSD[T], QCISD[T] and all iterative schemes like CCSDT-n and CC3)
+      apart from CCSDT. IJ_CANONICAL requests a canonical
+      perturbed-orbital treatment only for the occupied-occupied block of
+      the unperturbed density matrix in analytic derivative calculations.
+      For testing purpose, it is possible to force the use standard
+      perturbed orbitals even in case of iterative triple excitations via
+      the option FORCE_STANDA.  Note also that in case of unrelaxed
+      derivatives standard orbitals must be used.  Default : STANDARD for
+      all methods without triples (except CCSDT), CANONICAL for all
+      methods with triples in case of relaxed derivatives. -*/
+      options.add_str("CFOUR_PERT_ORB", "", "STANDARD CANONICAL IJ_CANONICAL");
+
+      /*- Specifies either single (=1, or SINGLE) or double (=2, DOUBLE)
+      sided numerical differentiation in the finite difference evaluation
+      of the Hessian. Two-sided numerical differentiation is considerably
+      more accurate than the single-sided method and its use is strongly
+      recommended for production work. -*/
+      options.add_str("CFOUR_POINTS", "DOUBLE", "SINGLE DOUBLE");
+
+      /*- Controls the amount of printing in the energy and energy
+      derivative calculation programs. Using a value of 1 will produce a
+      modest amount of additional output over the default value of 0,
+      which includes some useful information such as SCF eigenvectors,
+      Fock matrix elements, etc. -*/
+      options.add_int("CFOUR_PRINT", 0);
+
+      /*- Specifies whether and which molecular property is calculated.
+      OFF(=0) means that no property is calculated, FIRST_ORDER (=1)
+      requests computation of various one-electron first-order properties
+      (e.g., dipole moment, quadrupole moment, electric field gradient,
+      spin densities,etc.), SECOND_ORDER (=2, in the next release replaced
+      by STAT_POL) computes static electric polarizabilities, DYNAMICAL
+      (=7, in the next release replaced by DYN_POL) requests the
+      calculation of frequency-dependent polarizabilities (note that here
+      an additional input of the frequency is required), NMR (=5) requests
+      the calculation of NMR chemical shifts/chemical shielding tensors
+      (by default using GIAOs), J_FC requests the calculation of the
+      Fermi-Contact contribution to indirect spin-spin coupling constants,
+      J_SD the calculation of the corresponding spin-dipole contribution,
+      and J_SO the calculation of the corresponding spin-orbit
+      contribution to J; HYPERPOL (=22) invokes a calculation of static
+      hyperpolarizabilities, DYN_HYP (=23) requests the calculation of
+      frequency-dependent hyperpolarizabilities, SHG (=24) the calculation
+      of hyperpolarizabilities related to the second-harmonic
+      generation,OPT_REC (=25) the computation of hyperpolarizabilities
+      related to optical rectification, VERDET (=26) the calculation of
+      Verdet constants. -*/
+      options.add_str("CFOUR_PROPS", "OFF", "OFF FIRST_ORDER SECOND_ORDER NMR HYPERPOL DYN_HYP SHG OPT_REC VERDET");
+
+      /*- Allows storage of property integrals computed in xvdint on
+      internal files (e.g., MOINTS and GAMLAM, default choice INTERNAL
+      (=0)) or on external files (EXTERNAL, =1). -*/
+      options.add_str("CFOUR_PROP_INTEGRAL", "INTERNAL", "INTERNAL EXTERNAL");
+
+      /*- The presence of this keyword specifies that a QRHF based CC
+      calculation, or alternatively, an SCF calculation that uses the
+      QRHFGUES option, is to be performed. -*/
+      options.add_bool("CFOUR_QRHF_GENERAL", false);
+
+      /*- If this keyword is set to ON (=1), then the QRHF orbitals
+      specified by the QRHF_GENERAL, QRHF_ORBITAL and QRHF_SPIN keywords
+      are used as a starting guess for a restarted SCF procedure. This can
+      be an extremely useful way to converge "difficult" SCF solutions,
+      such as those that correspond to states that are not the lowest
+      states of a given symmetry. Note that when this option is used, the
+      calculation that is performed is not a QRHF-CC calcualtion; it is
+      instead a UHF-based or ROHF-based calculation, depending on what
+      type of reference is specified by the REFERENCE keyword. The QRHF
+      aspect of the calculation is used simply as a device to converge the
+      orbitals. -*/
+      options.add_bool("CFOUR_QRHFGUES", false);
+
+      /*- By default, in QRHF calculations, electrons are removed from the
+      highest occupied orbital in a symmetry block (symmetry block HOMO),
+      while electrons are added to the lowest unoccupied orbital within a
+      symmetry block (symmetry block LUMO). The purpose of the
+      QRHF_ORBITAL keyword is to allow additional flexibility in choosing
+      which orbitals will have their occupation numbers altered. The value
+      of this keyword gives the offset with respect to the default orbital
+      for the orbital which will be depopulated (or populated) in QRHF-CC
+      calculations. For calculations involving more than one removal or
+      addition of electrons, values are separated by commas and correspond
+      to the QRHF_GENERAL input on a one-to-one basis. For example,
+      specifying QRHF_GENERAL=2/-4,QRHF_ORBITAL=3/2 means that an electron
+      will be added to the third lowest virtual in symmetry block 2 and
+      another will be removed from the second highest occupied orbital in
+      symmetry block 4. Examples given later in this manual further
+      illustrate the QRHF input options and may help to clarify any
+      confusion resulting from this documentation. (Default : 1) -*/
+      options.add("CFOUR_QRHF_ORBITAL", new ArrayType());
+
+      /*- Specifies the spin of the electrons modified by the QRHF_GENERAL
+      and QRHF_ORBITAL keywords, where a value of 1 means alpha spin,
+      while 2 corresponds to a beta electron. By default, electrons that
+      are removed are assigned to beta spin, while added electrons are
+      alpha. Note that this option allows one to construct low-spin
+      determinants, which generally are unsuitable for single-reference
+      coupled-cluster calculations. An important exception is the
+      open-shell singlet coupled-cluster method (see keyword
+      OPEN-SHELL=TD-CC above). -*/
+      //options.add_int("CFOUR_QRHF_SPIN");
+
+      /*- ON (=1) requests a calculation of Raman intensities based on the
+      geometrical derivatives of the static polarizability tensor, while
+      DYN (=2) requests a calculation of Raman intensities based on the
+      derivatives of the dynamical polarizability tensor. -*/
+      options.add_str("CFOUR_RAMAN_INT", "OFF", "ON DYN OFF");
+
+      /*- Specifies whether Raman intensities are calculated with orbital
+      relaxation with respect to the electric field perturbation (RELAXED,
+      = 1) or without orbital relaxation (UNRELAXED, = 0). -*/
+      options.add_str("CFOUR_RAMAN_ORB", "UNRELAXED", "RELAXED UNRELAXED");
+
+      /*- Specifies whether or not relaxed density natural orbitals are to
+      be computed. This option only has meaning for a correlated
+      calculation. =0 Do not compute, =1 compute. -*/
+      options.add_bool("CFOUR_RDO", true);
+
+      /*- Specifies the type of SCF calculation to be performed. RHF (= 0)
+      requests a restricted Hartree-Fock reference; UHF (= 1) an
+      unrestricted Hartree-Fock reference; ROHF (= 2) a restricted
+      open-shell Hartree- Fock calculation; TCSCF (=3) a
+      two-configurational SCF calculation, and CASSCF (=4) a
+      complete-active space SCF calculations (currently not implemented). -*/
+      options.add_str("CFOUR_REFERENCE", "RHF", "RHF UHF ROHF TCSCF CASSCF");
+
+      /*- Specifies the treatment of relativistic effects. The default is
+      a non-relativistic treatment (OFF), while perturbational treatments
+      are invoked via MVD1 (mass-velocity and 1-electron Darwin
+      conribution), MVD2 (mass-velocity and 1- and 2-electron Darwin
+      contribution), DPT2 (second-order direct perturbation theory
+      approach), SF-DPT4 (scalar-relativistic part of fourth-order direct
+      perturbation theory, DPT4 (full fourth-order DPT including
+      spin-orbit corrections), SF-DPT6 (scalar-relativistic part of
+      sixth-order direct perturbation theory), SFREE (spin-free
+      treatment), X2C1E (spin-free X2C-1e treatment), or DPT (synonym with
+      DPT2). -*/
+      options.add_str("CFOUR_RELATIVISTIC", "OFF", "OFF MVD1 MVd2 DPT2 SF-DPT4 DPT4 SF-DPT6 SFREE X2C1E DPT");
+
+      /*- Specifies whether the relaxed density matrix is computed for
+      correlated wave functions. OFF (= 0) The relaxed density will not be
+      computed, ON (= 1) it will be computed. -*/
+      options.add_bool("CFOUR_RELAX_DENS", false);
+
+      /*- This option can be used to convert an analytically calculated
+      gradient vector to a particular normal coordinate representation. A
+      useful application is to calculate the gradient of an electronically
+      excited state in the normal coordinate representation of the ground
+      electronic state, as this provides a first approximation to
+      resonance Raman intensities (hence the name of the keyword).
+      Calculations that use the RESRAMAN option require the externally
+      supplied force constant matrix FCMFINAL, which is written to disk
+      during the course of both analytic and finite-difference vibrational
+      frequency calculations. No such transformation is performed if OFF
+      (=0); while ON (=1) directs the program to evaluate the gradient and
+      transform it to the chosen set of normal coordinates. A warning
+      message is printed if the force constant matrix is unavailable. -*/
+      options.add_bool("CFOUR_RES_RAMAN", false);
+
+      //RESET_FLAGS
+      //experimental use
+
+      /*- Offers the possibilty to restart a CC calculation which stopped
+      for various reasons, e.g. time limit, in the correlation part.
+      However, note that a restart which is specified by ON (= 1) needs
+      the following files of the previous unfinished calculation: JOBARC,
+      JAINDX, MOINTS, and MOABCD. -*/
+      options.add_bool("CFOUR_RESTART_CC", false);
+
+      /*- Specifies which eigenvector of the orbital rotation Hessian is
+      to be used to rotate the original SCF orbitals. By default, it will
+      use that associated with the lowest eigenvalue of the totally
+      symmetric part of the block-factored Hessian, as this choice often
+      leads to the lowest energy SCF solution. For RHF stability checks,
+      only those instabilities which correspond to RHF solutions will be
+      considered. It is important to understand that following
+      non-symmetric eigenvectors lowers the symmetry of the wavefunction
+      and that following RHF --> UHF stabilities leads to a UHF solution.
+      To converge the SCF roots associated with such instabilities, one
+      must run the calculation in reduced symmetry and as a closed-shell
+      UHF case, respectively. ROT_EVEC=n directs the program to follow the
+      vector associated with the nth lowest eigenvalue having the proper
+      symmetry (totally symmetric) and spin (RHF-->RHF or UHF-->UHF)
+      properties. 0 means use the lowest eigenvalue. -*/
+      options.add_int("CFOUR_ROT_EVEC", 0);
+
+      /*- Tells CFOUR whether to delete large files (AO integrals and
+      MOINTS file for now) when they are no longer needed. OFF (= 0) They
+      will not be saved, ON (= 1) they will be saved. -*/
+      options.add_bool("CFOUR_SAVE_INTS", false);
+
+      /*- Controls whether step scaling is based on the absolute step
+      length (1-norm) (=0 or MAG(S)) or the largest individual step in the
+      internal coordinate space (=1 or MAX(S)). -*/
+      options.add_str("CFOUR_SCALE_ON", "MAG(S)", "MAG(S) MAX(S)");
+
+      /*- Specifies the convergence criterion for the HF-SCF equations.
+      Equations are considered converged when the maximum change in
+      density matrix elements is less than 10$^{-N}$. -*/
+      options.add_int("CFOUR_SCF_CONV", 7);
+
+      /*- Controls the damping (in the first iterations (specified by
+      SCF_EXPSTART via D(new) = D(old) + X/1000 * [D(new) - D(old)] with X
+      as the value specified by the keyword. The default value is
+      currently 1000 (no damping), but a value of 500 is recommended in
+      particular for transition metal compounds where the SCF convergence
+      is often troublesome. -*/
+      options.add_int("CFOUR_SCF_DAMPING", 1000);
+
+      /*- Specifies the number (N) of density matrices to be used in the
+      DIIS convergence acceleration procedure. -*/
+      options.add_int("CFOUR_SCF_EXPORDER", 6);
+
+      /*- Specifies the first iteration in which the DIIS convergence
+      acceleration procedure is applied. -*/
+      options.add_int("CFOUR_SCF_EXPSTART", 8);
+
+      /*- Specifies whether or not the DIIS extrapolation is used to
+      accelerate convergence of the SCF procedure. OFF (=0): do not use
+      DIIS, ON (=1= use DIIS. -*/
+      options.add_bool("CFOUR_SCF_EXTRAPOLATION", true);
+
+      /*- Specifies the maximum number of SCF iterations. -*/
+      options.add_int("CFOUR_SCF_MAXCYC", 150);
+
+      /*- Specifies the strength of a spin-dipole pertubation as required
+      for finite-field calculations of the SD contributions to indirect
+      spin-spin coupling constants. The value must be specified as an
+      integer and the SD strength used by the program will be the value of
+      the keyword $x 10^{-6}$. (Default : 0, currently not implemented) -*/
+      options.add_int("CFOUR_SD_FIELD", 0);
+
+      //SOPERT
+      //Experimental Use!
+      //Default : OFF.
+      /*- Perturbative treatment of spin-orbit splittings in dublett-pi
+      states via multireference coupled-cluster theory. MKMRCC (=1)
+      requests a treatment based on Mukherjee's multireference
+      coupled-cluster theory.EMRCCSO (=2) requests the expectation value
+      of a similarity transformed spin-orbit operator. Please note that
+      symmetric orbitals are needed, e.g., using AV_SCF. For more
+      information on the theory see J. Chem. Phys. 136, 111103 (2012). -*/
+
+      /*- Specifies whether spherical harmonic (5d, 7f, 9g, etc.) or
+      Cartesian (6d, 10f, 15g, etc.) basis functions are to be used. ON (=
+      1) uses spherical harmonics, OFF (= 0) uses Cartesians. -*/
+      options.add_bool("CFOUR_SPHERICAL", true);
+
+      /*- Controls whether excitation energy calculations allow for a
+      ``spin flip'' which changes the $M_s$ quantum number. Such
+      calculations have some advantages for biradicals and are currently
+      implemented (together with gradients) for CIS and CIS(D)
+      calculations. Options are OFF and ON. -*/
+      options.add_bool("CFOUR_SPIN_FLIP", false);
+
+      /*- Experimental Use!  ON (=1) requests calculation of one-electron
+      spin-orbit integrals. MEANSO additionally gives a mean-field
+      treatment of the two-electron terms (spin-orbit mean field treatment
+      as described Mol. Phys. 98, 1823-1833 (2000)). -*/
+      options.add_str("CFOUR_SPIN_ORBIT", "OFF", "ON MEANSO OFF");
+
+      //SPINORBIT
+      //experimental use
+
+      /*- ON (=1) requests the spin-component scaled variant of the MP2
+      approach. This keyword has only an effect when CALC_LEVEL=MP2 is
+      specified and must be used together with REF=UHF. -*/
+      options.add_bool("CFOUR_SPIN_SCAL", false);
+
+      /*- Specifies whether nuclear spin-rotation tensors are computed
+      within a NMR chemical shift calculation (ON, =1) or not (OFF, =9).
+      In the case of electronic g-tensor calculations for open-shell
+      molecules this keyword controls the calculation of the electronic
+      spin-rotation tensor. -*/
+      options.add_bool("CFOUR_SPINROTATION", false);
+
+      /*- Specifies an Abelian subgroup to be used in a calculation.
+      Acceptable arguments are DEFAULT (=0); C1 (= 1); C2 (= 2); CS (= 3);
+      CI (= 4); C2V (= 5); C2H (= 6); D2 (= 7) and D2H (= 8). Use of C1 is
+      of course equivalent to setting SYMMETRY=OFF in the input. The
+      DEFAULT option (which is the default) uses the highest order Abelian
+      subgroup. -*/
+      options.add_str("CFOUR_SUBGROUP", "DEFAULT", "DEFAULT C1 C2 CS CI C2V C2H D2 D2H OFF");
+
+      /*- Is a somewhat complicated keyword to use. Allowed values are 0,
+      1, and 2, which specify the $x$,$y$, and $z$ axes, respectively. The
+      meaning of the keyword is best described by example : Suppose one is
+      running a calculation on water, and wishes to run it in the $C_s$
+      point group with the ``special plane being the one which bisects the
+      H-O-H bond angle. Now, what SUBGRPAXIS does is to specify which
+      Cartesian direction in the $C_{2v}$ frame becomes the special
+      direction in the $C_s$ frame. CFOUR will orient water in the $yz$
+      plane, so one wants the $y$ axis in the $C_{2v}$ frame to be the $z$
+      axis in the $C_s$ frame. Hence, for this case, one would specify
+      SUBGRPAXIS=2. Use of this keyword may be facilitated by studying
+      section D1 of this chapter, entitled ``Molecular Orientation.
+      However, when the true Abelian subgroup is either $C_{2v}$ or
+      $D_{2h}$, the CFOUR orientation is not well defined, and it may be
+      necessary to run the XJODA executable directly two times. If
+      SUBGROUP=0 in the first pass, then the reference orientation for the
+      true Abelian subgroup can be determined and the appropriate value of
+      SUBGRPAXIS selected. -*/
+      //options.add_int("CFOUR_SUBGRPAXIS");
+
+      /*- In principle can be used to force the SCF to converge a solution
+      for which the density matrix transforms as the totally symmetric
+      representation of the point group (i.e. no broken symmetry
+      solutions). The code seems to work in most cases, but has currently
+      been implemented for point groups with E type representation and not
+      for those with triply-, quadruply- or pentuply-degenerate
+      representations. Extending the code to those cases is probably
+      straightforward, and the reader is encouraged to do so if (s)he is
+      so inclined. SYM_CHECK=0 ``forces'' the high-symmetry solution;
+      SYM_CHECK=OVERRIDE (= 1) doesn't. The latter is the default. -*/
+      options.add_bool("CFOUR_SYM_CHECK", true);
+
+      /*- Specifies what subgroup of the full point group is to be used in
+      the energy and/or gradient calculation (The computational point
+      group). OFF (=1) forces a no symmetry run (in C_1) and ON (=0) runs
+      the calculation in the largest self-adjoint subgroup (D_2h and its
+      subgroups). -*/
+      options.add_bool("CFOUR_SYMMETRY", true);
+
+      /*- Specifies whether in a CCSDT calculation (using module ecc) the
+      T3 amplitudes are included in DIIS extrapolations (ON) or not (OFF). -*/
+      options.add_bool("CFOUR_T3_EXTRAP", false);
+
+      /*- Specifies how often the largest t amplitudes are to be printed.
+      =0 Amplitudes are printed at the beginning and end of the run, =1
+      Amplitudes are printed every iteration, =2 Amplitudes are printed
+      every other iteration, etc. -*/
+      options.add_int("CFOUR_TAMP_SUM", 5);
+
+      //TDHF
+      //experimental use
+
+      //TESTSUITE
+      //(currently not available)
+
+      /*- Specifies whether to calculate finite-temperature thermodynamic
+      corrections after a frequency calculation. OFF (=0) skips this; ON
+      (=1) gives abbreviated output; and VERBOSE (=2) gives elaborate
+      output that is separated by translation, rotation and vibration.
+      Default: ON (currently not available in public version) -*/
+      options.add_str("CFOUR_THERMOCHEMISTRY", "ON", "OFF ON VERBOSE");
+
+      //TRANGRAD
+      //experimental use
+
+      /*- Specifies whether or not translational invariance is exploited
+      in geometrical derivative calculations. USE(=0) specifies that
+      translational invariance is exploited, while IGNORE (=1) turns it
+      off. -*/
+      options.add_str("CFOUR_TRANS_INV", "USE", "USE IGNORE");
+
+      /*- Specifies whether in a correlated NMR chemical shift
+      calculations all perturbations are treated at once or sequentially.
+      Available option are SIMULTANEOUS (=0) and SEQUENTIAL (=1). The
+      latter is at least preferred for large-scale calculations, as it has
+      less demands on the available disk space. -*/
+      options.add_str("CFOUR_TREAT_PERT", "SIMULTANEOUS", "SIMULTANEOUS SEQUENTIAL");
+
+      /*- Specifies whether the T3 amplitudes are included (ON, =1) or not
+      included (OFF, =0) in the DIIS convergence acceleration during CCSDT
+      calculations. Inclusion of T3 speeds up convergence and allows tight
+      convergence, but on the other hand it increases disk space
+      requirements.note that this keyword is only available with module
+      xecc -*/
+      options.add_bool("CFOUR_T3_EXTRAPOL", false);
+
+      /*- Specifies the threshold value (given as an integer) for the
+      treatment of CPHF coefficients in second derivative calculations
+      using perturbed canonical orbitals. If a CPHF coefficient is above
+      the threshold, the corresponding orbital rotation is treated (at the
+      expense of additional CPU cost) using the standard non-canonical
+      procedures, while orbital pairs corresponding to CPHF coefficients
+      below the threshold are treated using perturbed canonical
+      representation.  Default: 25 Default: 1 (in the developer version) -*/
+      options.add_int("CFOUR_UIJ_THRESHOLD", 25);
+
+      /*- Specifies the units used for molecular geometry input. ANGSTROM
+      (= 0) uses Angstrom units, BOHR (= 1) specifies atomic units. -*/
+      options.add_str("CFOUR_UNITS", "ANGSTROM", "ANGSTROM BOHR");
+
+      //UNOS
+      //experimental use
+
+      /*- Specifies whether or not the Hessian update is carried out. OFF
+      (= 0) uses the initial Hessian (however supplied, either the default
+      guess or an FCMINT file), ON (= 1) updates it during subsequent
+      optimization cycles. (not in current public version). -*/
+      options.add_bool("CFOUR_UPDATE_HESSIAN", true);
+
+      //VIB_ALGORIT
+      //experimental use
+
+      //VIBPHASE
+      //experimental use
+
+      /*- Specifies whether (harmonic) vibrational frequencies are
+      calculated or not. If the default NO (=0) is specified then no
+      frequencies are calculated. For ANALYTIC, vibrational frequencies
+      are determined from analytically computed second derivatives, and
+      for FINDIF (=2) vibrational frequencies are calculated from a force
+      field obtained by numerical differentiation of analytically
+      evaluated gradients (or even single-point energies) using
+      symmetry-adapted mass-weighted Cartesian coordinates. If vibrational
+      frequencies are calculated, a normal mode analysis using the
+      computed force-constant matrix is performed, rotationally projected
+      frequencies are computed infrared intensities are determined, and
+      zero-point energies (ZPE) are evaluated. -*/
+      options.add_str("CFOUR_VIBRATION", "NO", "NO ANALYTIC FINDIF");
+
+      /*- This keyword defines what type of integral transformation is to
+      be performed in the program VTRAN. FULL/PARTIAL (=0) allows the
+      transformation program to choose the appropriate type of
+      transformation, while FULL (=1) requires a full integral
+      transformation and PARTIAL (=2) means an MBPT(2) Specific
+      transformation where the (ab $\vert$ cd) integrals are not formed. -*/
+      options.add_str("CFOUR_VTRAN", "FULL/PARTIAL", "FULL/PARTIAL FULL PARTIAL");
+
+      /*- Specifies the X-component of an external electric field. The
+      value must be specified as an integer and the field used by the
+      program will be the value of the keyword x10**(-6). This allows
+      field strengths |\varepsilon| > 10^{-6} to be used. -*/
+      options.add_int("CFOUR_XFIELD", 0);
+
+      /*- The tolerance for storing transformed integrals. Integrals less
+      than $10^{-N}$ are neglected and not stored on disk. -*/
+      options.add_int("CFOUR_XFORM_TOL", 11);
+
+      /*- Specifies the Y-component of an external electric field. The
+      value must be specified as an integer and the field used by the
+      program will be the value of the keyword x10**(-6). This allows
+      field strengths |\varepsilon| > 10^{-6} to be used. -*/
+      options.add_int("CFOUR_YFIELD", 0);
+
+      /*- Specifies the Z-component of an external electric field. The
+      value must be specified as an integer and the field used by the
+      program will be the value of the keyword x10**(-6). This allows
+      field strengths \varepsilon| > 10^{-6} to be used. -*/
+      options.add_int("CFOUR_ZFIELD", 0);
+
+  }
   return true;
 }
 
