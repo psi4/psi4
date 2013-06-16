@@ -108,6 +108,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Integral package to use. If compiled with ERD support, ERD is used where possible; LibInt is used otherwise. -*/
   options.add_str("INTEGRAL_PACKAGE", "ERD", "ERD LIBINT");
 
+  // Note that case-insensitive options are only functional as
+  //   globals, not as module-level, and should be defined sparingly
+
   /*- Base filename for text files written by PSI, such as the
   MOLDEN output file, the Hessian file, the internal coordinate file,
   etc. Use the add_str_i function to make this string case sensitive. -*/
@@ -120,6 +123,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("DF_BASIS_CC", "");
   /*- Assume external fields are arranged so that they have symmetry. It is up to the user to know what to do here. The code does NOT help you out in any way! !expert -*/
   options.add_bool("EXTERNAL_POTENTIAL_SYMMETRY", false);
+  /*- Text to be passed directly into CFOUR input files. May contain
+  molecule, options, percent blocks, etc. Access through ``cfour {...}``
+  block. -*/
+  options.add_str_i("CFOUR_LITERAL", "");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -2919,6 +2926,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         options.add_int("MAXITER", 50);
     }
   if (name == "CFOUR"|| options.read_globals()) {
+
+      // Options whereby PSI4 controls CFOUR
+
+      /*- Sets the OMP_NUM_THREADS environment variable before calling CFOUR.
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          that value is used. When set, this option overrides everything. Be aware
+          the ``-n`` command-line option described in section :ref:`sec:threading`
+          does not affect CFOUR.
+          !expert -*/
+      options.add_int("CFOUR_OMP_NUM_THREADS", 1);
+
+      // CFOUR's Internal Options
 
       /*- Specifies the way the :math:`\langle ab||cd \rangle` molecular orbital
       integrals are handled in post-MP2 calculations. STANDARD (= 0) uses

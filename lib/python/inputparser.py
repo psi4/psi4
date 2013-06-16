@@ -29,12 +29,17 @@ Psithon into standard Python. Particularly, forms psi4
 module calls that access the C++ side of Psi4.
 
 """
-import psi4
-import pubchem
 import re
 import os
 import sys
+import random
+import psi4
+import pubchem
 from psiexceptions import *
+
+
+# inputfile contents to be preserved from the processor
+literals = {}
 
 
 def bad_option_syntax(line):
@@ -205,6 +210,21 @@ def process_molecule_command(matchobj):
     return molecule
 
 
+def process_literal_blocks(matchobj):
+    """Function to process match of ``literals_psi4_yo-...``."""
+    return literals[matchobj.group(1)]
+
+
+def process_cfour_command(matchobj):
+    """Function to process match of ``cfour name? { ... }``."""
+    spaces = matchobj.group(1)
+    name = matchobj.group(2)
+    cfourblock = matchobj.group(3)
+
+    literalkey = str(random.randint(0, 99999))
+    literals[literalkey] = cfourblock
+    return spaces + "psi4.set_global_option(\"%s\", \"\"\"%s\n\"\"\")\n" % ('CFOUR_LITERAL',
+        'literals_psi4_yo-' + literalkey)
 
 
 def process_extract_command(matchobj):
@@ -261,6 +281,7 @@ def process_basis_file(matchobj):
 
     return command
 
+
 def process_filename(matchobj):
     """Function to process match of ``filename ...``."""
     spacing = str(matchobj.group(1))
@@ -268,6 +289,7 @@ def process_filename(matchobj):
     command = "%spsi4.IO.shared_object().set_pid(\"%s\")" % (spacing, filename)
 
     return command
+
 
 def process_basis_block(matchobj):
     """Function to process match of ``basis name { ... }``."""
@@ -610,9 +632,19 @@ def process_input(raw_input, print_level=1):
     #   your objname is in capture group #2
     #   your data is in capture group #3
 
+    # Sections that are truly to be taken literally (spaces included)
+    #   Must be stored then subbed in the end to escape the normal processing
+
+    # Process "cfour name? { ... }"
+    cfour = re.compile(r'^(\s*?)cfour[=\s]*(\w*?)\s*\{(.*?)\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(cfour, process_cfour_command, raw_input)
+
+    # Return from handling literal blocks to normal processing
+
     # Nuke all comments
     comment = re.compile(r'[^\\]#.*')
-    temp = re.sub(comment, '', raw_input)
+    temp = re.sub(comment, '', temp)
     # Now, nuke any escapes from comment lines
     comment = re.compile(r'\\#')
     temp = re.sub(comment, '#', temp)
@@ -693,6 +725,10 @@ def process_input(raw_input, print_level=1):
     file_pid = re.compile(r'(\s*?)filename\s*(\b.*\b)\s*$',
                             re.MULTILINE | re.IGNORECASE)
     temp = re.sub(file_pid, process_filename, temp)
+
+    # Process literal blocks by substituting back in
+    lit_block = re.compile(r'literals_psi4_yo-(\d*\d)')
+    temp = re.sub(lit_block, process_literal_blocks, temp)
 
     # imports
     imports = 'from psi4 import *\n'

@@ -32,6 +32,7 @@ import psi4
 import p4util
 import p4const
 from proc import *
+from interface_cfour import *
 from functional import *
 from p4regex import *
 # never import wrappers or aliases into this file
@@ -200,6 +201,9 @@ for ssuper in superfunctional_list():
     if ((not ssuper.is_c_hybrid()) and (not ssuper.is_c_lrc()) and (not ssuper.is_x_lrc())):
         procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
 
+# Integrate CFOUR with driver routines
+for ssuper in cfour_list():
+    procedures['energy'][ssuper] = run_cfour
 
 def energy(name, **kwargs):
     r"""Function to compute the single-point electronic energy.
