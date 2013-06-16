@@ -43,6 +43,10 @@ from p4xcpt import * #CU
 literals = {}
 
 
+# inputfile contents to be preserved from the processor
+literals = {}
+
+
 def bad_option_syntax(line):
     """Function to report bad syntax to screen and output file."""
     raise ValidationError('Unsupported syntax:\n\n%s\n\n' % (line))
