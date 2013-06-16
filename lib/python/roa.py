@@ -36,6 +36,8 @@ def run_roa(name, **kwargs):
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
         print(dip_quad_polar_list)
     db.close()
+    # Run new function (scatter.cc)
+    psi4.scatter()
 
 def initialize_database(database):
     database['inputs_generated'] = False
