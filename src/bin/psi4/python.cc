@@ -118,7 +118,10 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&);}
+    namespace ccresponse { 
+		PsiReturnType ccresponse(Options&);
+		void scatter();
+	}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace fnocc      { PsiReturnType fnocc(Options&);     }
@@ -590,6 +593,12 @@ double py_psi_ccresponse()
     py_psi_prepare_options_for_module("CCRESPONSE");
     ccresponse::ccresponse(Process::environment.options);
     return 0.0;
+}
+
+void py_psi_scatter()
+{
+    //py_psi_prepare_options_for_module("CCRESPONSE");
+    return ccresponse::scatter();
 }
 
 double py_psi_cceom()
@@ -1370,6 +1379,7 @@ BOOST_PYTHON_MODULE(psi4)
     def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
     def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
     def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    def("scatter", py_psi_scatter, "New Scatter function.");
     def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
     def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
     def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
