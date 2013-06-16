@@ -1228,6 +1228,10 @@ AC_CONFIG_FILES([
           tests/docs-psimod/Makefile
           tests/docs-dft/Makefile
           tests/docs-bases/Makefile
+          tests/cfour/Makefile
+          tests/cfour/sp-rhf-scf/Makefile
+          tests/cfour/MakeVars
+          tests/cfour/MakeRules
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile
