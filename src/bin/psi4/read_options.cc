@@ -3119,6 +3119,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- SUBSECTION CFOUR Internal -*/
 
+      // Options whereby PSI4 controls CFOUR
+
+      /*- Sets the OMP_NUM_THREADS environment variable before calling CFOUR.
+          If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
+          that value is used. When set, this option overrides everything. Be aware
+          the ``-n`` command-line option described in section :ref:`sec:threading`
+          does not affect CFOUR.
+          !expert -*/
+      options.add_int("CFOUR_OMP_NUM_THREADS", 1);
+
+      // CFOUR's Internal Options
+
       /*- Specifies the way the :math:`\langle ab||cd \rangle` molecular orbital
       integrals are handled in post-MP2 calculations. STANDARD (= 0) uses
       directly the corresponding MO integrals and thus results in an
