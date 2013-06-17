@@ -229,6 +229,7 @@ PsiReturnType ccenergy(Options &options)
     spaces.push_back(moinfo.bvir_sym);
     dpd_list[0] = boost::shared_ptr<DPD>( new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
          cachelist, NULL, 4, spaces));
+    dpd_set_default(0);
 
     if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
         std::vector<int*> aospaces;
@@ -242,7 +243,7 @@ PsiReturnType ccenergy(Options &options)
         aospaces.push_back(moinfo.sosym);
       dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles,
                                                     cachelist, NULL, 4, aospaces));
-      dpd_->set_default(0);
+      dpd_set_default(0);
     }
 
   }
@@ -258,6 +259,8 @@ PsiReturnType ccenergy(Options &options)
 
     dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles,
          cachelist, priority, 2, spaces));
+    dpd_set_default(0);
+
 
     if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int*> aospaces;
@@ -267,7 +270,7 @@ PsiReturnType ccenergy(Options &options)
             aospaces.push_back(moinfo.sosym);
       dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
                2, aospaces));
-      dpd_->set_default(0);
+      dpd_set_default(0);
     }
 
   }

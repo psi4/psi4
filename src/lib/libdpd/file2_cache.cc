@@ -48,7 +48,7 @@ void DPD::file2_cache_close(void)
 
     while(this_entry != NULL) {
 
-        dpd_->set_default(this_entry->dpdnum);
+        dpd_set_default(this_entry->dpdnum);
 
         /* Clean out each file2_cache entry */
         file2_init(&Outfile, this_entry->filenum, this_entry->irrep,
@@ -62,7 +62,7 @@ void DPD::file2_cache_close(void)
         this_entry = next_entry;
     }
 
-    dpd_->set_default(dpdnum);
+    dpd_set_default(dpdnum);
 }
 
 dpd_file2_cache_entry*
@@ -117,7 +117,7 @@ int DPD::file2_cache_add(dpdfile2 *File)
                 malloc(sizeof(struct dpd_file2_cache_entry));
 
         dpdnum = dpd_default;
-        dpd_->set_default(File->dpdnum);
+        dpd_set_default(File->dpdnum);
 
         this_entry->dpdnum = File->dpdnum;
         this_entry->filenum = File->filenum;
@@ -146,7 +146,7 @@ int DPD::file2_cache_add(dpdfile2 *File)
 
         File->incore = 1;
 
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
 
         return 0;
     }
@@ -175,7 +175,7 @@ int DPD::file2_cache_del(dpdfile2 *File)
         File->incore = 0;
 
         dpdnum = dpd_default;
-        dpd_->set_default(File->dpdnum);
+        dpd_set_default(File->dpdnum);
 
         /* Write all the data to disk and free the memory */
         if(!(this_entry->clean)) file2_mat_wrt(File);
@@ -194,7 +194,7 @@ int DPD::file2_cache_del(dpdfile2 *File)
         if(next_entry != NULL) next_entry->last = last_entry;
         if(last_entry != NULL) last_entry->next = next_entry;
 
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
     }
 
     return 0;

@@ -56,7 +56,7 @@ DCFTSolver::mp2_guess()
     _ints = new IntegralTransform(wfn, spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
-    dpd_->set_default(_ints->get_dpd_id());
+    dpd_set_default(_ints->get_dpd_id());
 
     fprintf(outfile, "\n\n\tTransforming two-electron integrals...\n");
     transform_integrals();

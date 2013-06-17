@@ -572,7 +572,7 @@ namespace psi{ namespace dcft{
             }
         }
 
-        dpd_->set_default(_ints->get_dpd_id());
+        dpd_set_default(_ints->get_dpd_id());
 
         /********** AA ***********/
         dpd_->buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -1206,7 +1206,7 @@ namespace psi{ namespace dcft{
           }
       }
 
-      dpd_->set_default(_ints->get_dpd_id());
+      dpd_set_default(_ints->get_dpd_id());
 
       /********** AA ***********/
       dpd_->buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),

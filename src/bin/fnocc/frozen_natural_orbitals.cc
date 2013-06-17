@@ -127,7 +127,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints->get_dpd_id());
+    dpd_set_default(ints->get_dpd_id());
 
     // orbital energies:
     int numAOcc = 0, numBOcc = 0, numAVir = 0, numBVir = 0;

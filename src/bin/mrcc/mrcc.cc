@@ -420,7 +420,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
     fprintf(outfile, "    Transformation complete.\n\n");
     /****END HACK****/
 
@@ -607,7 +607,7 @@ PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict&
     IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
 
     // Obtain a single handle to the CCDENSITIES file
     FILE* ccdensities = fopen("CCDENSITIES", "r");
@@ -723,7 +723,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
 
     fprintf(outfile, "    Transformation complete.\n\n");
     fprintf(outfile, "  Generating fort.55 integral file...");

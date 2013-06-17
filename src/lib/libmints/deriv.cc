@@ -594,7 +594,7 @@ SharedMatrix Deriv::compute()
                                               IntegralTransform::DPDOnly,    // Output buffer
                                               IntegralTransform::QTOrder,    // MO ordering
                                               IntegralTransform::None));     // Frozen orbitals?
-            dpd_->set_default(ints_transform->get_dpd_id());
+            dpd_set_default(ints_transform->get_dpd_id());
             ints_transform->backtransform_density();
 
             Da = factory_->create_shared_matrix("SO-basis OPDM");

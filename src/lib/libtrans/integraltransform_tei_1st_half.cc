@@ -60,7 +60,7 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
-    dpd_->set_default(myDPDNum_);
+    dpd_set_default(myDPDNum_);
 
     int nBuckets;
     int thisBucketRows;
@@ -312,5 +312,5 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     }
 
     // Hand DPD control back to the user
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 }

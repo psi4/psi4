@@ -49,7 +49,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     }
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_->set_default(myDPDNum_);
+    dpd_set_default(myDPDNum_);
 
     if(print_){
         fprintf(outfile, "\tPresorting MO-basis TPDM.\n");
@@ -171,7 +171,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     free(bucketRowDim);
     free(bucketSize);
 
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 
     tpdmAlreadyPresorted_ = true;
 
@@ -191,7 +191,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     check_initialized();
 
     int currentActiveDPD = psi::dpd_default;
-    dpd_->set_default(myDPDNum_);
+    dpd_set_default(myDPDNum_);
 
     if(print_){
         fprintf(outfile, "\tPresorting MO-basis TPDMs.\n");
@@ -407,7 +407,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     free(bucketRowDim);
     free(bucketSize);
 
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 
     tpdmAlreadyPresorted_ = true;
 

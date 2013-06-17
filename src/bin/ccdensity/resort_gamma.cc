@@ -57,10 +57,10 @@ void resort_gamma(void)
   nfzc = moinfo.nfzc;  nfzv = moinfo.nfzv;
 
   /* G(I,J) --> G'(I,J) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "DIJ");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "DIJ");
 
   dpd_->file2_mat_init(&g);
@@ -98,10 +98,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(i,j) --> G'(i,j) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 0, "Dij");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 0, "Dij");
 
   dpd_->file2_mat_init(&g);
@@ -139,10 +139,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(A,B) --> G'(A,B) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "DAB");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "DAB");
 
   dpd_->file2_mat_init(&g);
@@ -180,10 +180,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(a,b) --> G'(a,b) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 1, 1, "Dab");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 1, 1, "Dab");
 
   dpd_->file2_mat_init(&g);
@@ -221,10 +221,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(A,I) --> G'(A,I) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DAI");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DAI");
 
   dpd_->file2_mat_init(&g);
@@ -263,10 +263,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(a,i) --> G'(a,i) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dai");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dai");
 
   dpd_->file2_mat_init(&g);
@@ -305,10 +305,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(I,A) --> G'(I,A) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "DIA");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "DIA");
 
   dpd_->file2_mat_init(&g);
@@ -346,10 +346,10 @@ void resort_gamma(void)
   dpd_->file2_close(&gnew);
 
   /* G(i,a) --> G'(i,a) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->file2_init(&g, PSIF_CC_OEI, 0, 0, 1, "Dia");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->file2_init(&gnew, PSIF_CC_OEI_NEW, 0, 0, 1, "Dia");
 
   dpd_->file2_mat_init(&g);
@@ -388,10 +388,10 @@ void resort_gamma(void)
 
   
   /* G(IJ,KL) --> G'(IJ,KL) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "GIJKL");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "GIJKL");
 
   for(h=0; h < nirreps; h++) {
@@ -437,10 +437,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ij,kl) --> G'(ij,kl) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 2, 2, 2, 0, "Gijkl");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 2, 2, 2, 0, "Gijkl");
 
   for(h=0; h < nirreps; h++) {
@@ -485,10 +485,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Kl) --> G'(Ij,Kl) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 0, 0, 0, 0, "GIjKl");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 0, 0, 0, 0, "GIjKl");
 
   for(h=0; h < nirreps; h++) {
@@ -534,10 +534,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(IJ,KA) --> G'(IJ,KA) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "GIJKA");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "GIJKA");
 
   for(h=0; h < nirreps; h++) {
@@ -583,10 +583,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ij,ka) --> G'(ij,ka) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 10, 2, 10, 0, "Gijka");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 10, 2, 10, 0, "Gijka");
 
   for(h=0; h < nirreps; h++) {
@@ -632,10 +632,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Ka) --> G'(Ij,Ka) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 10, 0, 10, 0, "GIjKa");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 10, 0, 10, 0, "GIjKa");
 
   for(h=0; h < nirreps; h++) {
@@ -681,10 +681,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(IJ,AB) --> G'(IJ,AB) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "GIJAB");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "GIJAB");
 
   for(h=0; h < nirreps; h++) {
@@ -729,10 +729,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ij,ab) --> G'(ij,ab) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 2, 7, 2, 7, 0, "Gijab");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 2, 7, 2, 7, 0, "Gijab");
 
   for(h=0; h < nirreps; h++) {
@@ -777,10 +777,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ij,Ab) --> G'(Ij,Ab) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 0, 5, 0, 5, 0, "GIjAb");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 0, 5, 0, 5, 0, "GIjAb");
 
   for(h=0; h < nirreps; h++) {
@@ -825,10 +825,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(IB,JA) --> G'(IB,JA) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIBJA");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIBJA");
 
   for(h=0; h < nirreps; h++) {
@@ -873,10 +873,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ib,ja) --> G'(ib,ja) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "Gibja");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "Gibja");
 
   for(h=0; h < nirreps; h++) {
@@ -921,10 +921,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ib,Ja) --> G'(Ib,Ja) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbJa");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbJa");
 
   for(h=0; h < nirreps; h++) {
@@ -969,10 +969,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(iB,jA) --> G'(iB,jA) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBjA");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBjA");
 
   for(h=0; h < nirreps; h++) {
@@ -1017,10 +1017,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(iB,Ja) --> G'(iB,Ja) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GiBJa");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GiBJa");
 
   for(h=0; h < nirreps; h++) {
@@ -1065,10 +1065,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ib,jA) --> G'(Ib,jA) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 10, 10, 10, 10, 0, "GIbjA");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 10, 10, 10, 10, 0, "GIbjA");
 
   for(h=0; h < nirreps; h++) {
@@ -1113,10 +1113,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(CI,AB) --> G'(CI,AB) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "GCIAB");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "GCIAB");
 
   for(h=0; h < nirreps; h++) {
@@ -1162,10 +1162,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ci,ab) --> G'(ci,ab) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 7, 11, 7, 0, "Gciab");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 7, 11, 7, 0, "Gciab");
 
   for(h=0; h < nirreps; h++) {
@@ -1211,10 +1211,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(cI,aB) --> G'(cI,aB) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GcIaB");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GcIaB");
 
   for(h=0; h < nirreps; h++) {
@@ -1260,10 +1260,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ci,Ab) --> G'(Ci,Ab) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 11, 5, 11, 5, 0, "GCiAb");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 11, 5, 11, 5, 0, "GCiAb");
 
   for(h=0; h < nirreps; h++) {
@@ -1309,10 +1309,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(AB,CD) --> G'(AB,CD) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "GABCD");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "GABCD");
 
   for(h=0; h < nirreps; h++) {
@@ -1358,10 +1358,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(ab,cd) --> G'(ab,cd) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 7, 7, 7, 7, 0, "Gabcd");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 7, 7, 7, 7, 0, "Gabcd");
 
   for(h=0; h < nirreps; h++) {
@@ -1407,10 +1407,10 @@ void resort_gamma(void)
   dpd_->buf4_close(&Gnew);
 
   /* G(Ab,Cd) --> G'(Ab,Cd) */
-  dpd_->set_default(0);
+  dpd_set_default(0);
   dpd_->buf4_init(&G, PSIF_CC_GAMMA, 0, 5, 5, 5, 5, 0, "GAbCd");
 
-  dpd_->set_default(1);
+  dpd_set_default(1);
   dpd_->buf4_init(&Gnew, PSIF_CC_GAMMA_NEW, 0, 5, 5, 5, 5, 0, "GAbCd");
 
   for(h=0; h < nirreps; h++) {

@@ -71,7 +71,7 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
-    dpd_->set_default(myDPDNum_);
+    dpd_set_default(myDPDNum_);
 
     IWL *iwl;
     if(useIWL_) iwl = new IWL;
@@ -477,5 +477,5 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     bbIntName_ = "";
 
     // Hand DPD control back to the user
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 }

@@ -43,7 +43,7 @@ ADC::rhf_init_tensors()
     _ints = new IntegralTransform(reference_wavefunction_, spaces, IntegralTransform::Restricted);//printf("madeok\n");
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
-    dpd_->set_default(_ints->get_dpd_id());
+    dpd_set_default(_ints->get_dpd_id());
     // Make (OV|OV) integrals
     fprintf(outfile, "\n\t==> Transforming (OV|OV) Integrals <==\n");
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);

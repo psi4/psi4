@@ -54,7 +54,7 @@ void DPD::file4_cache_close(void)
 
     while(this_entry != NULL) {
 
-        dpd_->set_default(this_entry->dpdnum);
+        dpd_set_default(this_entry->dpdnum);
 
         /* Clean out each file4_cache entry */
         file4_init(&Outfile, this_entry->filenum, this_entry->irrep,
@@ -69,7 +69,7 @@ void DPD::file4_cache_close(void)
     }
 
     /* return the dpd_default to its original value */
-    dpd_->set_default(dpdnum);
+    dpd_set_default(dpdnum);
 }
 
 dpd_file4_cache_entry*
@@ -154,7 +154,7 @@ int DPD::file4_cache_add(dpdfile4 *File, unsigned int priority)
 
         /* save the current dpd_default value */
         dpdnum = dpd_default;
-        dpd_->set_default(File->dpdnum);
+        dpd_set_default(File->dpdnum);
 
         /* Read all data into core */
         this_entry->size = 0;
@@ -200,7 +200,7 @@ int DPD::file4_cache_add(dpdfile4 *File, unsigned int priority)
         dpd_main.memcache += this_entry->size;
 
         /* return dpd_value to its original value */
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
 
         return 0;
     }
@@ -226,7 +226,7 @@ int DPD::file4_cache_del(dpdfile4 *File)
 
         /* Save the current dpd_default */
         dpdnum = dpd_default;
-        dpd_->set_default(File->dpdnum);
+        dpd_set_default(File->dpdnum);
 
         /* Unlock the entry first */
         file4_cache_unlock(File);
@@ -256,7 +256,7 @@ int DPD::file4_cache_del(dpdfile4 *File)
         if(last_entry != NULL) last_entry->next = next_entry;
 
         /* Return the dpd_default to original value */
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
 
     }
 
@@ -404,7 +404,7 @@ int DPD::file4_cache_del_lru(void)
 
         /* Save the current dpd_default */
         dpdnum = dpd_default;
-        dpd_->set_default(this_entry->dpdnum);
+        dpd_set_default(this_entry->dpdnum);
 
         file4_init(&File, this_entry->filenum, this_entry->irrep,
                    this_entry->pqnum, this_entry->rsnum, this_entry->label);
@@ -413,7 +413,7 @@ int DPD::file4_cache_del_lru(void)
         file4_close(&File);
 
         /* Return the default DPD to its original value */
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
 
 #ifdef DPD_TIMER
         timer_off("cache_lru");
@@ -519,7 +519,7 @@ int DPD::file4_cache_del_low(void)
         /* save the current dpd default value */
         dpdnum = dpd_default;
 
-        dpd_->set_default(this_entry->dpdnum);
+        dpd_set_default(this_entry->dpdnum);
 
         file4_init(&File, this_entry->filenum, this_entry->irrep,
                    this_entry->pqnum, this_entry->rsnum, this_entry->label);
@@ -527,7 +527,7 @@ int DPD::file4_cache_del_low(void)
         file4_close(&File);
 
         /* return the default dpd to its original value */
-        dpd_->set_default(dpdnum);
+        dpd_set_default(dpdnum);
 
 #ifdef DPD_TIMER
         timer_off("cache_low");

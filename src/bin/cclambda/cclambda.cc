@@ -140,7 +140,7 @@ PsiReturnType cclambda(Options& options)
         aospaces.push_back(moinfo.sosym);
       dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
            2, aospaces));
-      dpd_->set_default(0);
+      dpd_set_default(0);
     }
 
   }
@@ -173,7 +173,7 @@ PsiReturnType cclambda(Options& options)
 
         dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
                4, aospaces));
-      dpd_->set_default(0);
+      dpd_set_default(0);
     }
   }
 
