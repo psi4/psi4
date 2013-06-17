@@ -26,18 +26,23 @@ def run_roa(name, **kwargs):
         print('Checking status')
         roa_stat(db)
 
-    # Gather results
+    # Compute ROA Scattering
     if db['jobs_complete']:
         dip_polar_list = []
         opt_rot_list = []
         dip_quad_polar_list = []
+        # Gather data
         synthesize_dipole_polar(db,dip_polar_list)
         synthesize_opt_rot(db,opt_rot_list)
         synthesize_dip_quad_polar(db,dip_quad_polar_list)
-        print(dip_quad_polar_list)
+        # Compute Scattering
+    #    roa_scatterize(dip_polar_list, opt_rot_list, dip_quad_polar_list)
+
+        #psi4.print_list(dip_polar_list)
+        #print(dip_quad_polar_list)
     db.close()
     # Run new function (scatter.cc)
-    psi4.scatter()
+    psi4.scatter(dip_polar_list, opt_rot_list, dip_quad_polar_list)
 
 def initialize_database(database):
     database['inputs_generated'] = False
@@ -149,7 +154,6 @@ def grab_psi4_matrix(outfile, matrix_name, row_tot):
                                     'lines'.format(matrix_name, n_tries))
                 else:
                     (index, x, y, z) = line.split()
-                    print(x)
                     matrix_data.append(float(x))
                     matrix_data.append(float(y))
                     matrix_data.append(float(z))
