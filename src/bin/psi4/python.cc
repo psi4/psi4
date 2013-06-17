@@ -120,7 +120,7 @@ namespace psi {
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { 
 		PsiReturnType ccresponse(Options&);
-		void scatter();
+		void scatter(std::vector<SharedMatrix> dip, std::vector<SharedMatrix> rot, std::vector<SharedMatrix> quad);
 	}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
@@ -595,10 +595,52 @@ double py_psi_ccresponse()
     return 0.0;
 }
 
-void py_psi_scatter()
+void py_psi_print_list(python::list py_list)
+{
+	return;
+}
+
+void py_psi_scatter(python::list dip_polar_list, python::list opt_rot_list, python::list dip_quad_polar_list)
 {
     //py_psi_prepare_options_for_module("CCRESPONSE");
-    return ccresponse::scatter();
+
+    // Convert python tensor lists into vectors of sharedmatrices
+    std::vector <SharedMatrix> dip_polar_tensors;
+    std::vector <SharedMatrix> opt_rot_tensors;
+    std::vector <SharedMatrix> dip_quad_polar_tensors;
+
+    int list_len = len(dip_polar_list);
+    for(int i=0; i < list_len; ++i) {
+        python::list dip_list  = extract<python::list>(dip_polar_list[i]);
+        python::list rot_list  = extract<python::list>(opt_rot_list[i]);
+        python::list quad_list = extract<python::list>(dip_quad_polar_list[i]);
+        SharedMatrix dip_mat(new Matrix(3, 3));
+        SharedMatrix rot_mat(new Matrix(3, 3));
+        SharedMatrix quad_mat(new Matrix(9, 3));
+        for(int row=0,j=0; row < 3; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+              dip_mat->set(row, col, extract<double>(dip_list[j]));
+              rot_mat->set(row, col, extract<double>(rot_list[j]));
+            }
+        }
+        for(int row=0,j=0; row < 9; ++row) {
+            for(int col=0; col < 3; ++col,++j) {
+                quad_mat->set(row, col, extract<double>(quad_list[j]));
+            }
+        }
+    dip_polar_tensors.push_back(dip_mat);
+    opt_rot_tensors.push_back(rot_mat);
+    dip_quad_polar_tensors.push_back(quad_mat);
+    }
+  
+//    for(std::vector<SharedMatrix>::iterator i=dip_polar_tensors.begin(); i != dip_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=opt_rot_tensors.begin(); i != opt_rot_tensors.end(); ++i)
+//        (*i)->print(stdout);
+//    for(std::vector<SharedMatrix>::iterator i=dip_quad_polar_tensors.begin(); i != dip_quad_polar_tensors.end(); ++i)
+//        (*i)->print(stdout);
+    
+    ccresponse::scatter(dip_polar_tensors, opt_rot_tensors, dip_quad_polar_tensors);
 }
 
 double py_psi_cceom()
@@ -837,6 +879,7 @@ bool py_psi_set_local_option_array(std::string const & module, std::string const
     }
     return true;
 }
+
 
 bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
 {
@@ -1257,6 +1300,8 @@ BOOST_PYTHON_MODULE(psi4)
 
     // OEProp/GridProp
     export_oeprop();
+
+    def("print_list", py_psi_print_list, "Prints a python list using a C function.");
 
 
     // Options
