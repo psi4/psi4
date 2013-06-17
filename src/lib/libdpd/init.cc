@@ -30,10 +30,14 @@
 #include <vector>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
-#include "dpd.gbl"
 #include "exception.h"
 
 namespace psi {
+
+boost::shared_ptr<DPD> dpd_ = boost::shared_ptr<DPD>(new DPD());
+int dpd_default = 0;
+boost::shared_ptr<DPD> dpd_list[2];
+dpd_gbl dpd_main;
 
 struct dpdpair{
     int *left_orbspi;
@@ -45,6 +49,30 @@ struct dpdpair{
     int permlr;
     int ler;
 };
+
+int dpd_set_default(int dpd_num)
+{
+  dpd_default = dpd_num;
+  dpd_ = dpd_list[dpd_num];
+  return 0;
+}
+
+DPD::DPD():
+    nirreps(0),
+    num_subspaces(0),
+    num_pairs(0),
+    numorbs(0),
+    orboff(0),
+    pairtot(0),
+    orbspi(0),
+    orbsym(0),
+    orbidx2(0),
+    pairidx(0),
+    orbs2(0),
+    pairorb(0),
+    params2(0),
+    params4(0)
+{}
 
 DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype,
          int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
@@ -629,7 +657,7 @@ int DPD::dpd_init(int dpd_num_in, int nirreps_in, long int memory_in, int cachet
     free(dp);
 
     /* Set the default DPD set to the current one */
-    dpd_default = dpd_num_in;
+//    dpd_set_default(dpd_num_in);
 
     /* Init the Cache Linked Lists */
     file2_cache_init();

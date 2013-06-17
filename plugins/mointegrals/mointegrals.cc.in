@@ -52,7 +52,7 @@ mointegrals(Options &options)
     IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted);
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
 
     /*
      * Now, loop over the DPD buffer, printing the integrals

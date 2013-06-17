@@ -107,6 +107,8 @@ int ccsort(Options &options)
     spaces.push_back(moinfo.bvir_sym);
     dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
          NULL, 4, spaces));
+    dpd_set_default(0);
+
   }
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
@@ -118,6 +120,8 @@ int ccsort(Options &options)
     spaces.push_back(moinfo.vir_sym);
     dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
          NULL, 2, spaces));
+    dpd_set_default(0);
+
   }
 
   /* run a small computation of memory and disk requirements */

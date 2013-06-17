@@ -49,7 +49,7 @@ IntegralTransform::backtransform_tpdm_restricted()
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
-    dpd_->set_default(myDPDNum_);
+    dpd_set_default(myDPDNum_);
 
     int nBuckets;
     int thisBucketRows;
@@ -236,5 +236,5 @@ IntegralTransform::backtransform_tpdm_restricted()
     psio_->close(PSIF_AO_TPDM, 1);
 
     // Hand DPD control back to the user
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 }

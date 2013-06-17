@@ -224,11 +224,21 @@ enum indices {pqrs, pqsr, prqs, prsq, psqr, psrq,
 /* Useful for the 3-index sorting function dpd_3d_sort() */
 enum pattern {abc, acb, cab, cba, bca, bac};
 
-static dpd_gbl dpd_main;
-static int dpd_default = 0;
+class DPD;
+extern dpd_gbl dpd_main;
+extern boost::shared_ptr<DPD> dpd_;
+extern int dpd_default;
+extern boost::shared_ptr<DPD> dpd_list[2];
+
+extern int dpd_set_default(int dpd_num);
 
 class DPD{
 public:
+//    static dpd_gbl dpd_main;
+//    static int dpd_default;
+//    static boost::shared_ptr<DPD> dpd_list[2];
+//    static boost::shared_ptr<DPD> dpd_;
+
     // These used to live in the dpd_data struct
     int nirreps;
     int num_subspaces;
@@ -248,6 +258,7 @@ public:
     DPD(int dpd_num, int nirreps, long int memory, int cachetype,
         int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
         int num_subspaces, std::vector<int*> &spaceArrays);
+    DPD();
 
     ~DPD();
 
@@ -492,16 +503,13 @@ public:
     }
 
 
-    static int set_default(int dpd_num)
-    {
-      dpd_default = dpd_num;
-      return 0;
-    }
 }; // Dpd class
 
-// These mimic the global objects that were used in the psi3 version
-static boost::shared_ptr<DPD> dpd_list[2];
-static boost::shared_ptr<DPD> dpd_;
+
+//    static dpd_gbl dpd_main;
+//    static int dpd_default;
+//    static boost::shared_ptr<DPD> dpd_list[2];
+//    static boost::shared_ptr<DPD> dpd_;
 
 
 

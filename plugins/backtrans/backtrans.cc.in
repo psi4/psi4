@@ -53,7 +53,7 @@ backtrans(Options &options)
                            IntegralTransform::QTOrder,
                            IntegralTransform::None,
                            false);
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
     ints.set_print(print);
     ints.set_keep_dpd_so_ints(1);
     ints.set_keep_iwl_so_ints(1);

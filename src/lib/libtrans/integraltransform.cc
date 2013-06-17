@@ -283,7 +283,7 @@ IntegralTransform::initialize()
     process_eigenvectors();
 
     // Return DPD control to the user
-    dpd_->set_default(currentActiveDPD);
+    dpd_set_default(currentActiveDPD);
 
     initialized_ = true;
 }

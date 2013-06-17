@@ -29,7 +29,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // Use the IntegralTransform object's DPD instance, for convenience
-    dpd_->set_default(ints.get_dpd_id());
+    dpd_set_default(ints.get_dpd_id());
     double aaE2 = 0.0, abE2 = 0.0 , bbE2 = 0.0, aE2 = 0.0, bE2 = 0.0, e2 = 0.0;
    
     if(ROHF){

@@ -407,7 +407,7 @@ void RHF::stability_analysis()
         ints.set_keep_dpd_so_ints(true);
         ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
         ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-        dpd_->set_default(ints.get_dpd_id());
+        dpd_set_default(ints.get_dpd_id());
         dpdbuf4 Asing, Atrip,I;
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
