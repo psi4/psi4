@@ -129,7 +129,7 @@ PsiReturnType cctriples(Options &options)
 
   if(params.ref == 0) { /** RHF **/
 
-    if(params.wfn=="CCSD_T") {
+    if(params.wfn=="CCSD_T" || params.wfn=="BCCD_T") {
       ET = ET_RHF();
       fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
       fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
