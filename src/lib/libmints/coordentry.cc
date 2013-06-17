@@ -150,6 +150,19 @@ void CartesianEntry::print_in_input_format()
     fprintf(outfile, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
+std::string CartesianEntry::string_in_input_format()
+{
+    std::string xstr(variable_to_string(x_, 12));
+    std::string ystr(variable_to_string(y_, 12));
+    std::string zstr(variable_to_string(z_, 12));
+
+    char buffer[120];
+    std::stringstream ss;
+    sprintf(buffer, "  %17s  %17s  %17s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
+    ss << buffer;
+    return ss.str();
+}
+
 const Vector3& CartesianEntry::compute()
 {
     if(computed_)
@@ -278,6 +291,54 @@ void ZMatrixEntry::print_in_input_format()
             rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
     }
 }
+
+
+std::string ZMatrixEntry::string_in_input_format()
+{
+    char buffer[120];
+    std::stringstream ss;
+
+    if(rto_ == 0 && ato_ == 0 && dto_ == 0){
+        /*
+         * The first atom
+         */
+        sprintf(buffer, "\n");
+        ss << buffer;
+    }else if(ato_ == 0 && dto_ == 0){
+        /*
+         * The second atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        sprintf(buffer, "  %5d %11s\n", rto, rval.c_str());
+        ss << buffer;
+    }else if(dto_ == 0){
+        /*
+         * The third atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 6);
+        sprintf(buffer, "  %5d %11s  %5d %11s\n", rto, rval.c_str(), ato, aval.c_str());
+        ss << buffer;
+    }else{
+        /*
+         * Remaining atoms
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 6);
+        int dto = dto_->entry_number() + 1;
+        std::string dval = variable_to_string(dval_, 6);
+        sprintf(buffer, "  %5d %11s  %5d %11s  %5d %11s\n",
+            rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
+        ss << buffer;
+    }
+    return ss.str();
+}
+
 /**
  * Computes the coordinates of the current atom's entry
  * @Return The Cartesian Coordinates, in Bohr
