@@ -35,7 +35,7 @@
 #include<libmints/matrix.h>
 #include<libtrans/mospace.h>
 #include<libtrans/integraltransform.h>
-#include<libiwl/iwl.h>
+#include<libiwl/iwl.hpp>
 #include"ccsd.h"
 #include"blas.h"
 #include"frozen_natural_orbitals.h"
@@ -569,6 +569,74 @@ void DFFrozenNO::ThreeIndexIntegrals() {
       Process::environment.globals["NAUX (CC)"] = (double)nQ;
   }
   fprintf(outfile,"\n");
+}
+
+/* 
+    build 4-index eri's from 3-index integrals 
+*/
+void DFFrozenNO::FourIndexIntegrals() {
+
+    fprintf(outfile,"  ==> Build 4-index ERI's from 3-index integrals <==\n");
+    fprintf(outfile,"\n");
+
+    long int o  = ndoccact;
+    long int v  = nvirt;
+    long int nQ = Process::environment.globals["NAUX (CC)"];
+
+    double ** Cap = Ca()->pointer();
+
+    // transform 3-index integrals to MO basis
+
+    psio_address addr1 = PSIO_ZERO;
+    psio_address addr2 = PSIO_ZERO;
+    double * buf1 = (double*)malloc(nso*nso*sizeof(double));
+    double * buf2 = (double*)malloc(nso*nso*sizeof(double));
+
+    boost::shared_ptr<PSIO> psio(new PSIO());
+    psio->open(PSIF_DCC_QSO,PSIO_OPEN_OLD);
+    for (int q = 0; q < nQ; q++) {
+        psio->read(PSIF_DCC_QSO,"Qso CC",(char*)&buf1[0],nso*nso*sizeof(double),addr1,&addr1);
+        F_DGEMM('n','n',nmo,nso,nso,1.0,&Cap[0][0],nmo,buf1,nso,0.0,buf2,nmo);
+        F_DGEMM('n','t',nmo,nmo,nso,1.0,&Cap[0][0],nmo,buf2,nmo,0.0,buf1,nmo);
+        for (int p = 0; p < nmo; p++) {
+            for (int q = p; q < nmo; q++) {
+                buf2[Position(p,q)] = buf1[p*nmo+q];
+            }
+        }
+        psio->write(PSIF_DCC_QSO,"Qmo CC",(char*)&buf2[0],nmo*(nmo+1)/2*sizeof(double),addr2,&addr2);
+    }
+    free(buf2);
+    free(buf1);
+
+    // hopefully nQ*nmo*(nmo+1)/2 will fit in memory
+    long int memory = Process::environment.get_memory();
+    if ( memory < nmo*(nmo+1)/2*nQ*sizeof(double) ) {
+        throw PsiException("Not enough memory (FourIndexIntegrals)",__FILE__,__LINE__);
+    }
+    double * Qmo = (double*)malloc(nmo*(nmo+1)/2*nQ*sizeof(double));
+
+    psio->read_entry(PSIF_DCC_QSO,"Qmo CC",(char*)&Qmo[0],nmo*(nmo+1)/2*nQ*sizeof(double));
+    psio->close(PSIF_DCC_QSO,1);
+
+    IWL * iwl = new IWL(psio.get(), PSIF_MO_TEI, 1.0e-16, 0, 0);
+    for (int p = nfzc; p < nmo; p++) {
+        for (int q = p; q < nmo; q++) {
+            int pq = Position(p,q);
+            for (int r = nfzc; r < nmo; r++) {
+                for (int s = r; s < nmo; s++) {
+                    int rs = Position(r,s);
+                    if ( rs > pq ) continue;
+                    double val = F_DDOT(nQ,Qmo+pq,nmo*(nmo+1)/2,Qmo+rs,nmo*(nmo+1)/2);
+                    iwl->write_value(p, q, r, s, val, false, outfile, 0);
+                }
+            }
+        }
+    }
+    iwl->flush(1);
+    iwl->set_keep_flag(1);
+    delete iwl;
+
+    free(Qmo);
 }
 
 /*

@@ -49,7 +49,11 @@ dict matrix_array_interface(SharedMatrix mat, int irrep){
 	rv["shape"] = boost::python::make_tuple(rows, cols);
 	rv["data"] = boost::python::make_tuple((long)mat->get_pointer(irrep), true);
 	std::string typestr = is_big_endian() ? ">" : "<";
-	typestr += "f" + xtostring((int)sizeof(double));
+    {
+        std::stringstream sstr;
+        sstr << (int)sizeof(double);
+        typestr += "f" + sstr.str();
+    }
 	rv["typestr"] = typestr;
 	return rv;
 }
@@ -335,7 +339,8 @@ void export_mints()
     class_<TwoBodyAOInt, boost::shared_ptr<TwoBodyAOInt>, boost::noncopyable>("TwoBodyAOInt", "docstring", no_init).
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring").
             add_property("py_buffer_object", make_function(&TwoBodyAOInt::py_buffer_object, return_internal_reference<>()), "docstring").
-            add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring");
+            add_property("py_buffer", &TwoBodyAOInt::py_buffer, "docstring").
+            def("set_enable_pybuffer", &TwoBodyAOInt::set_enable_pybuffer, "docstring");
 
     class_<TwoElectronInt, boost::shared_ptr<TwoElectronInt>, bases<TwoBodyAOInt>, boost::noncopyable>("TwoElectronInt", "docstring", no_init);
             def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "docstring");
@@ -535,6 +540,7 @@ void export_mints()
             def("multiplicity", &Molecule::multiplicity, "Gets the multiplicity (defined as 2Ms + 1)").
             def("nfragments", &Molecule::nfragments, "Gets the number of fragments in the molecule").
             def("print_in_input_format", &Molecule::print_in_input_format, "Prints the molecule as Cartesian or ZMatrix entries, just as inputted.").
+            def("create_psi4_string_from_molecule", &Molecule::create_psi4_string_from_molecule, "Gets a string reexpressing in input format the current states of the molecule").
             def("save_xyz", &Molecule::save_xyz, "Saves an XYZ file to arg2").
             def("save_string_xyz", &Molecule::save_string_xyz, "Saves the string of an XYZ file to arg2").
             def("Z", &Molecule::Z, return_value_policy<copy_const_reference>(), "Nuclear charge of atom").

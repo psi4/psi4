@@ -18,7 +18,7 @@ import types
 from grendel.util.abstract_bases import NonstringIterable, MethodLike
 from grendel.util.aliasing import function_alias, bindablepartial
 from grendel.util.exceptions import ProgrammerNeedsMoreCoffeeError
-from grendel.util.strings import indented, make_safe_identifier
+from grendel.util.strings import indented, make_safe_identifier, classname
 
 # Nothing here needs to be imported when the end-user says 'from grendel import *'
 __all__ = []
@@ -31,12 +31,9 @@ __all__ = []
 
 #region Caching
 
-# TODO @language-hack Reset method...
-# TODO @language-hack Option to cache methods that take arguments by maintaining a dict of argument: result pairs.
 # TODO @language-hack Take an option (to __init__, which will need to be changed to args/kwargs form) to cache only certain arg sets (if function takes arguments)
 # TODO @language-hack Take an option (to __init__, which will need to be changed to args/kwargs form) that is a list of cached methods that depend on self so that calling reset on this calls reset on the other method
 # TODO @language-hack option for automatic state checking and resetting
-from grendel.util.strings import classname
 
 
 class CachedMethod(object):
