@@ -1,0 +1,33 @@
+cfour {
+ROHF-MP4 energy calculation
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP4,BASIS=qz2p
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-0.002983751786, get_variable('mp2 singles correction'), 6, 'MP2 singles')
+compare_values(-0.155770420921, get_variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS corl')
+compare_values(-0.041785354569, get_variable('mp2 same-spin correlation energy'), 6, 'MP2 SS corl')
+compare_values(-0.200539527276, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
+compare_values(-55.785276787341, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-0.215858889, get_variable('mp3 correlation energy'), 6, 'MP3 corl')
+compare_values(-55.800596149, get_variable('mp3 total energy'), 6, 'MP3')
+compare_values(-55.807004598386, get_variable('mp4 total energy'), 6, 'MP4')
+compare_values(-0.222267338321, get_variable('mp4 correlation energy'), 6, 'MP4 corl')
+compare_values(-55.807004598386, get_variable('current energy'), 6, 'Current')
+compare_values(-0.222267338321, get_variable('current correlation energy'), 6, 'Current corl')
+compare_values(-55.5847372601, get_variable('current reference energy'), 6, 'Current ref')
+
+

@@ -1,0 +1,25 @@
+cfour {
+CCSD(T) energy calculation using frozen-core
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+ABCDTYPE=AOBASIS
+CC_PROG=ECC
+DROP_MO=1
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-76.307900311342, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-0.250330561135, get_variable('ccsd correlation energy'), 6, 'CCSD')
+compare_values(-76.313079021252, get_variable('ccsd total energy'), 6, 'CCSD')
+compare_values(-76.320175531445, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')

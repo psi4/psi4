@@ -1,0 +1,23 @@
+cfour {
+CCSD(T) single-point energy calculation using AO algorithms for ABCD terms
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+ABCDTYPE=AOBASIS
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-76.0627484601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-76.332940127333, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-76.338453951890, get_variable('ccsd total energy'), 6, 'CCSD')
+compare_values(-76.345717549886, get_variable('ccsd(t) total energy'), 6, 'CCSD(T)')
+

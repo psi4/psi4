@@ -1,0 +1,22 @@
+cfour {
+ROHF energy calculation
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=HF,BASIS=qz2p
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-55.5847372601, get_variable('scf total energy'), 6, 'SCF')
+compare_values(-55.5847372601, get_variable('current energy'), 6, 'SCF')
+compare_values(-55.5847372601, get_variable('current reference energy'), 6, 'SCF')
+
