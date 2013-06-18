@@ -101,8 +101,7 @@ int ccresponse(Options &options)
     spaces.push_back(moinfo.bocc_sym);
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
-         NULL, 4, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
   }
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
@@ -112,8 +111,7 @@ int ccresponse(Options &options)
     spaces.push_back(moinfo.occ_sym);
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-         2, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
   }
 
   if(params.local) local_init();
@@ -136,7 +134,7 @@ int ccresponse(Options &options)
 
   if(params.local) local_done();
 
-//  dpd_->close(0);
+  dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);

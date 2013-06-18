@@ -128,7 +128,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
         if(core_total > (core_total + 2*rowtot*coltot)) incore = 0;
         core_total += 2*rowtot*coltot;
     }
-    if(core_total > dpd_->dpd_memfree()) incore = 0;
+    if(core_total > dpd_memfree()) incore = 0;
 
     /* Init input and output buffers and read in all blocks of both */
 #ifdef DPD_TIMER
@@ -189,7 +189,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf/InBuf we can store in half of the core */
-                rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) rows_per_bucket);
@@ -294,7 +294,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -312,7 +312,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -396,7 +396,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -532,7 +532,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -550,7 +550,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -634,7 +634,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -1180,7 +1180,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -1198,7 +1198,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -1282,7 +1282,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -1415,7 +1415,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -1433,7 +1433,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -1517,7 +1517,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                         Gcol = Grow^my_irrep;
 
                         /* determine how many rows of InBuf we can store in the other half of the core */
-                        in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
+                        in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gcol]);
                         if(in_rows_per_bucket > InBuf->params->rowtot[Grow])
                             in_rows_per_bucket = InBuf->params->rowtot[Grow];
                         in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grow]/(double) in_rows_per_bucket);
@@ -1684,7 +1684,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -1694,7 +1694,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
 
                 /* determine how many rows of InBuf we can store in the other half of the core */
-                in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
+                in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
                 if(in_rows_per_bucket > InBuf->params->rowtot[Grs])
                     in_rows_per_bucket = InBuf->params->rowtot[Grs];
                 in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);
@@ -1878,7 +1878,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 Grs = Gpq^my_irrep;
 
                 /* determine how many rows of OutBuf we can store in half of the core */
-                out_rows_per_bucket = dpd_->dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
+                out_rows_per_bucket = dpd_memfree()/(2 * OutBuf.params->coltot[Grs]);
                 if(out_rows_per_bucket > OutBuf.params->rowtot[Gpq])
                     out_rows_per_bucket = OutBuf.params->rowtot[Gpq];
                 out_nbuckets = (int) ceil((double) OutBuf.params->rowtot[Gpq]/(double) out_rows_per_bucket);
@@ -1888,7 +1888,7 @@ int DPD::buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index,
                 buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
 
                 /* determine how many rows of InBuf we can store in the other half of the core */
-                in_rows_per_bucket = dpd_->dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
+                in_rows_per_bucket = dpd_memfree()/(2 * InBuf->params->coltot[Gpq]);
                 if(in_rows_per_bucket > InBuf->params->rowtot[Grs])
                     in_rows_per_bucket = InBuf->params->rowtot[Grs];
                 in_nbuckets = (int) ceil((double) InBuf->params->rowtot[Grs]/(double) in_rows_per_bucket);

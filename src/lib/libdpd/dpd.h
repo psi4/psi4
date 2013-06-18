@@ -156,6 +156,11 @@ struct dpd_file4_cache_entry {
 
 /* DPD File2 Cache entries */
 struct dpd_file2_cache_entry {
+    dpd_file2_cache_entry():
+        next(NULL),
+        last(NULL)
+    {
+    }
     int dpdnum;                         /* dpd structure reference */
     int filenum;                        /* libpsio unit number */
     int irrep;                          /* overall symmetry */
@@ -203,6 +208,15 @@ struct dpd_gbl {
     long int memcache;      /* Total memory in cache (locked and unlocked) */
     long int memlocked;     /* Total memory locked in the cache */
 
+    // The default C'tor will zero everything out properly
+    dpd_gbl():
+        file2_cache(NULL),
+        file4_cache(NULL),
+        file4_cache_least_recent(1),
+        file4_cache_most_recent(0),
+        file4_cache_low_del(0),
+        file4_cache_lru_del(0)
+    {}
     dpd_file2_cache_entry *file2_cache;
     dpd_file4_cache_entry *file4_cache;
     unsigned int file4_cache_most_recent;
@@ -224,20 +238,8 @@ enum indices {pqrs, pqsr, prqs, prsq, psqr, psrq,
 /* Useful for the 3-index sorting function dpd_3d_sort() */
 enum pattern {abc, acb, cab, cba, bca, bac};
 
-class DPD;
-extern dpd_gbl dpd_main;
-extern boost::shared_ptr<DPD> dpd_;
-extern int dpd_default;
-extern boost::shared_ptr<DPD> dpd_list[2];
-
-extern int dpd_set_default(int dpd_num);
-
 class DPD{
 public:
-//    static dpd_gbl dpd_main;
-//    static int dpd_default;
-//    static boost::shared_ptr<DPD> dpd_list[2];
-//    static boost::shared_ptr<DPD> dpd_;
 
     // These used to live in the dpd_data struct
     int nirreps;
@@ -262,11 +264,11 @@ public:
 
     ~DPD();
 
-    int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+    int init(int dpd_num, int nirreps, long int memory, int cachetype,
                  int *cachefiles, int **cachelist,
-                 struct dpd_file4_cache_entry *priority, int num_subspaces, ...);
-    int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
-                 int *cachefiles, int **cachelist, struct dpd_file4_cache_entry *priority,
+                 dpd_file4_cache_entry *priority, int num_subspaces, ...);
+    int init(int dpd_num, int nirreps, long int memory, int cachetype,
+                 int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
                  int num_subspaces, std::vector<int*> &spaceArrays);
 
     void dpd_error(const char *caller, FILE *outfile);
@@ -489,29 +491,23 @@ public:
                            dpdbuf4 *Sijab, dpdbuf4 *SIjAb, int *aoccpi, int *aocc_off, int *boccpi,
                            int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
                            double omega, FILE *outfile);
-
-    static long int dpd_memfree(void)
-    {
-      return dpd_main.memory - (dpd_main.memused -
-                    dpd_main.memcache +
-                    dpd_main.memlocked);
-    }
-
-    static void dpd_memset(long int memory)
-    {
-      dpd_main.memory = memory;
-    }
-
-
 }; // Dpd class
 
 
-//    static dpd_gbl dpd_main;
-//    static int dpd_default;
-//    static boost::shared_ptr<DPD> dpd_list[2];
-//    static boost::shared_ptr<DPD> dpd_;
-
-
+/*
+ * Static variables/functions to mimic the old C machinery
+ */
+extern dpd_gbl dpd_main;
+extern DPD* dpd_;
+extern int dpd_default;
+extern DPD* dpd_list[2];
+extern int dpd_set_default(int dpd_num);
+extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+            int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
+            int num_subspaces, std::vector<int*> &spaceArrays);
+extern int dpd_close(int dpd_num);
+extern long int dpd_memfree(void);
+extern void dpd_memset(long int memory);
 
 
 }// Namespace psi

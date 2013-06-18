@@ -61,7 +61,7 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label)
 
     for(h=0; h < InBuf->params->nirreps; h++) {
 
-        memoryd = dpd_->dpd_memfree()/2; /* use half the memory for each buf4 */
+        memoryd = dpd_memfree()/2; /* use half the memory for each buf4 */
 
         rowtot = InBuf->params->rowtot[h];
         coltot = InBuf->params->coltot[h^my_irrep];

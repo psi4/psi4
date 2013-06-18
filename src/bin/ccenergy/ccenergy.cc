@@ -227,8 +227,9 @@ PsiReturnType ccenergy(Options &options)
     spaces.push_back(moinfo.bocc_sym);
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>( new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
-         cachelist, NULL, 4, spaces));
+    delete[] dpd_list[0];
+    dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
+         cachelist, NULL, 4, spaces);
     dpd_set_default(0);
 
     if( params.aobasis != "NONE" ) { /* Set up new DPD's for AO-basis algorithm */
@@ -241,9 +242,8 @@ PsiReturnType ccenergy(Options &options)
         aospaces.push_back(moinfo.bocc_sym);
         aospaces.push_back(moinfo.sopi);
         aospaces.push_back(moinfo.sosym);
-      dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles,
-                                                    cachelist, NULL, 4, aospaces));
-      dpd_set_default(0);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, aospaces);
+        dpd_set_default(0);
     }
 
   }
@@ -257,10 +257,7 @@ PsiReturnType ccenergy(Options &options)
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
 
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles,
-         cachelist, priority, 2, spaces));
-    dpd_set_default(0);
-
+    dpd_init(0, moinfo.nirreps, params.memory, params.cachetype, cachefiles, cachelist, priority, 2, spaces);
 
     if( params.aobasis != "NONE") { /* Set up new DPD for AO-basis algorithm */
             std::vector<int*> aospaces;
@@ -268,9 +265,8 @@ PsiReturnType ccenergy(Options &options)
             aospaces.push_back(moinfo.occ_sym);
             aospaces.push_back(moinfo.sopi);
             aospaces.push_back(moinfo.sosym);
-      dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-               2, aospaces));
-      dpd_set_default(0);
+            dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+            dpd_set_default(0);
     }
 
   }
@@ -447,8 +443,8 @@ PsiReturnType ccenergy(Options &options)
     fprintf(outfile, "\t ** Wave function not converged to %2.1e ** \n",
         params.convergence);
     fflush(outfile);
-//    if( params.aobasis != "NONE" ) dpd_->close(1);
-//    dpd_->close(0);
+    if( params.aobasis != "NONE" ) dpd_close(1);
+    dpd_close(0);
     cleanup();
 #ifdef TIME_CCENERGY
     timer_off("CCEnergy");
@@ -615,8 +611,8 @@ PsiReturnType ccenergy(Options &options)
   if(params.brueckner)
     Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
-//  if( params.aobasis != "NONE" ) dpd_->close(1);
-//  dpd_->close(0);
+  if( params.aobasis != "NONE" ) dpd_close(1);
+  dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);

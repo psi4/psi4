@@ -83,7 +83,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h]) rowsPerBucket = (size_t) J1.params->rowtot[h];
             nBuckets = static_cast<int>(ceil(static_cast<double>(J1.params->rowtot[h])/
@@ -184,7 +184,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h]) rowsPerBucket = (size_t) J1.params->rowtot[h];
             nBuckets = static_cast<int>(ceil(static_cast<double>(J1.params->rowtot[h])/
@@ -282,7 +282,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
 
     for(int h=0; h < nirreps_; h++) {
         if(J1.params->coltot[h] && J1.params->rowtot[h]) {
-            memFree = static_cast<size_t>(dpd_->dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
+            memFree = static_cast<size_t>(dpd_memfree() - J1.params->coltot[h] - K.params->coltot[h]);
             rowsPerBucket = memFree/(2 * J1.params->coltot[h]);
             if(rowsPerBucket > J1.params->rowtot[h])
                 rowsPerBucket = static_cast<size_t>(J1.params->rowtot[h]);

@@ -272,8 +272,7 @@ IntegralTransform::initialize()
     cacheFiles_ = init_int_array(PSIO_MAXUNIT);
     cacheList_  = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
-    dpd_list[myDPDNum_] = boost::shared_ptr<DPD>( new DPD(myDPDNum_, nirreps_, memory_, 0,
-                                   cacheFiles_, cacheList_, NULL, numSpaces, spaceArray_));
+    dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_, cacheList_, NULL, numSpaces, spaceArray_);
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(transformationType_ == SemiCanonical){
@@ -303,7 +302,7 @@ IntegralTransform::set_psio(boost::shared_ptr<PSIO> psio)
 IntegralTransform::~IntegralTransform()
 {
     if (initialized_) {
-//        dpd_->close(myDPDNum_);
+        dpd_close(myDPDNum_);
         free_int_matrix(cacheList_);
         free(cacheFiles_);
         free(zeros_);

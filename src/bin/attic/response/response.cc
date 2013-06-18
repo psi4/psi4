@@ -97,7 +97,7 @@ int response(int argc, char *argv[])
     optrot();
   }
 
-//  dpd_->close(0);
+  dpd_close(0);
   cleanup();
   exit_io();
   exit(0);

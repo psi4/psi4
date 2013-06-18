@@ -100,7 +100,7 @@ int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
         size_Z = ((long) Z->params->rowtot[Hz]) * ((long) Z->params->coltot[Hz^GZ]);
         size_file_X_row = ((long) X->file.params->coltot[0]); /* need room for a row of the X->file */
 
-        memoryd = dpd_->dpd_memfree() - (size_Y + size_Z + size_file_X_row);
+        memoryd = dpd_memfree() - (size_Y + size_Z + size_file_X_row);
 
         if(X->params->rowtot[Hx] && X->params->coltot[Hx^GX]) {
 

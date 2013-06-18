@@ -90,8 +90,7 @@ PsiReturnType stability(Options & options)
     spaces.push_back(moinfo.bocc_sym);
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
-         NULL, 4, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
   } 
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
@@ -101,8 +100,7 @@ PsiReturnType stability(Options & options)
     spaces.push_back(moinfo.occ_sym);
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-         2, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
   }
 
   /* Final list of evals for pretty output */
@@ -149,7 +147,7 @@ PsiReturnType stability(Options & options)
   free_block(moinfo.A_evals);
   free(moinfo.rank);
 
-//  dpd_->close(0);
+  dpd_close(0);
   cleanup();
   exit_io();
   exit(PSI_RETURN_SUCCESS);
