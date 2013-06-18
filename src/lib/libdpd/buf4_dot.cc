@@ -45,7 +45,7 @@ double DPD::buf4_dot(dpdbuf4 *BufA, dpdbuf4 *BufB)
 
     for(h=0; h < nirreps; h++) {
 
-        memoryd = dpd_->dpd_memfree();
+        memoryd = dpd_memfree();
 
         if(BufA->params->rowtot[h] && BufA->params->coltot[h^my_irrep]) {
 

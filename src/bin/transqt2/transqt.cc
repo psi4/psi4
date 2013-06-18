@@ -119,9 +119,7 @@ PsiReturnType transqt2(Options & options)
   spaces.push_back(moinfo.sosym);
   spaces.push_back(moinfo.actpi);
   spaces.push_back(moinfo.actsym);
-  dpd_list[0] = boost::shared_ptr<DPD>( new DPD(0, nirreps, params.memory, 0, cachefiles, cachelist,
-       NULL, 2, spaces));
-  dpd_set_default(0);
+  dpd_init(0, nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
 
   /*** Starting one-electron transforms and presort ***/
 
@@ -338,7 +336,7 @@ PsiReturnType transqt2(Options & options)
 
   /*** Two-electron transforms complete ***/
 
-//  dpd_->close(0);
+  dpd_close(0);
 
   cachedone_rhf(cachelist);
   free(cachefiles);

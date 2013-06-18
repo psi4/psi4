@@ -74,7 +74,7 @@ void transtwo_rhf(void)
   dpd_->buf4_init(&K, PSIF_HALFT0, 0, 3, 5, 3, 8, 0, "Half-Transformed Ints (pq,ij)");
   for(h=0; h < nirreps; h++) {
 
-    memfree = (unsigned long int) (dpd_->dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+    memfree = (unsigned long int) (dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
     if(J.params->coltot[h]) {
       rows_per_bucket = memfree/(2 * J.params->coltot[h]);
       if(rows_per_bucket > J.params->rowtot[h]) rows_per_bucket = (unsigned long int) J.params->rowtot[h];
@@ -160,7 +160,7 @@ void transtwo_rhf(void)
   dpd_->buf4_init(&K, PSIF_CC_MISC, 0, 8, 5, 8, 8, 0, "MO Ints (ij,kl)");
   for(h=0; h < nirreps; h++) {
 
-    memfree = (unsigned long int) (dpd_->dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
+    memfree = (unsigned long int) (dpd_memfree() - J.params->coltot[h] - K.params->coltot[h]);
     if(J.params->coltot[h]) {
       rows_per_bucket = memfree/(2 * J.params->coltot[h]);
       if(rows_per_bucket > J.params->rowtot[h]) rows_per_bucket = (unsigned long int) J.params->rowtot[h];

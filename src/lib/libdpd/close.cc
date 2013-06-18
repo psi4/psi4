@@ -34,16 +34,16 @@ namespace psi {
 DPD::~DPD()
 {
     int h,i,j,k,cnt;
-#if 0
     /*  dpd_file2_cache_print(stdout); */
     file2_cache_close();
     /*  dpd_file4_cache_print(stdout);*/
     file4_cache_close();
 
-//    if(params4)
-//        for(i=0; i < num_pairs; i++)
-//            for(j=0; j < num_pairs; j++)
-//                free_int_matrix(params4[i][j].start13);
+#if 0
+    if(params4)
+        for(i=0; i < num_pairs; i++)
+            for(j=0; j < num_pairs; j++)
+                free_int_matrix(params4[i][j].start13);
 
     if(orboff){
         for(i=0; i < num_subspaces; i++)

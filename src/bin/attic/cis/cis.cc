@@ -256,7 +256,7 @@ PsiReturnType cis(Options & options, int argc, char *argv[])
 
   }
 
-//  dpd_->close(0);
+  dpd_close(0);
   if(params.ref == 0 || params.ref == 1) cachedone_rhf(cachelist);
   else if(params.ref == 2) cachedone_uhf(cachelist);
   free(cachefiles);

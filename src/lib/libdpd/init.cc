@@ -34,9 +34,9 @@
 
 namespace psi {
 
-boost::shared_ptr<DPD> dpd_ = boost::shared_ptr<DPD>(new DPD());
+DPD *dpd_ = NULL;
 int dpd_default = 0;
-boost::shared_ptr<DPD> dpd_list[2];
+DPD* dpd_list[2] = {NULL, NULL};
 dpd_gbl dpd_main;
 
 struct dpdpair{
@@ -55,6 +55,41 @@ int dpd_set_default(int dpd_num)
   dpd_default = dpd_num;
   dpd_ = dpd_list[dpd_num];
   return 0;
+}
+
+extern int dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+            int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
+            int num_subspaces, std::vector<int*> &spaceArrays)
+{
+    if(dpd_list[dpd_num])
+        throw PSIEXCEPTION("Attempting to initilize new DPD instance before the old one was freed.");
+    dpd_list[dpd_num] = new DPD(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
+                                priority, num_subspaces, spaceArrays);
+    dpd_default = dpd_num;
+    dpd_ = dpd_list[dpd_num];
+    return 0;
+}
+
+extern int dpd_close(int dpd_num)
+{
+    if(dpd_list[dpd_num] == 0)
+        throw PSIEXCEPTION("Attempting to close a non-existent DPD instance.");
+    delete dpd_list[dpd_num];
+    dpd_list[dpd_num] = 0;
+
+    return 0;
+}
+
+extern long int dpd_memfree(void)
+{
+  return dpd_main.memory - (dpd_main.memused -
+                dpd_main.memcache +
+                dpd_main.memlocked);
+}
+
+extern void dpd_memset(long int memory)
+{
+  dpd_main.memory = memory;
 }
 
 DPD::DPD():
@@ -78,13 +113,13 @@ DPD::DPD(int dpd_num, int nirreps, long int memory, int cachetype,
          int *cachefiles, int **cachelist, dpd_file4_cache_entry *priority,
          int num_subspaces, std::vector<int*> &spaceArrays)
 {
-    dpd_init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
+    init(dpd_num, nirreps, memory, cachetype, cachefiles, cachelist,
              priority, num_subspaces, spaceArrays);
 }
 
 /* This is the original function call, but is now just a wrapper to the same function
  * that takes the spaces in a vector instead of using variable argument lists */
-int DPD::dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
+int DPD::init(int dpd_num, int nirreps, long int memory, int cachetype,
              int *cachefiles, int **cachelist,
              dpd_file4_cache_entry *priority, int num_subspaces, ...)
 {
@@ -100,14 +135,14 @@ int DPD::dpd_init(int dpd_num, int nirreps, long int memory, int cachetype,
         spaceArrays.push_back(tmparray);
     }
     va_end(ap);
-    return dpd_init(dpd_num, nirreps, memory, cachetype, cachefiles,
+    return init(dpd_num, nirreps, memory, cachetype, cachefiles,
                     cachelist, priority, num_subspaces, spaceArrays);
 }
 
 /* This is the original function code, but modified to take a vector of the orbital
  * space information arrays, rather than a variable argument list; the former is
  * easier to construct for some code that creates an arbitrary number of spaces */
-int DPD::dpd_init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in,
+int DPD::init(int dpd_num_in, int nirreps_in, long int memory_in, int cachetype_in,
                   int *cachefiles_in, int **cachelist_in, dpd_file4_cache_entry *priority_in,
                   int num_subspaces_in, std::vector<int*> &spaceArrays_in)
 {
@@ -657,7 +692,7 @@ int DPD::dpd_init(int dpd_num_in, int nirreps_in, long int memory_in, int cachet
     free(dp);
 
     /* Set the default DPD set to the current one */
-//    dpd_set_default(dpd_num_in);
+//          dpd_set_default(dpd_num_in);
 
     /* Init the Cache Linked Lists */
     file2_cache_init();

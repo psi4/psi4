@@ -147,8 +147,10 @@ PsiReturnType ccdensity(Options& options)
     spaces.push_back(moinfo.occ_sym);
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-             2, spaces));
+    delete dpd_list[0];
+    dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+             2, spaces);
+    dpd_set_default(0);
 
   }
   else if(params.ref == 2) { /** UHF **/
@@ -163,8 +165,7 @@ PsiReturnType ccdensity(Options& options)
     spaces.push_back(moinfo.bocc_sym);
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
-             cachelist, NULL, 4, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
   }
 
   for (i=0; i<params.nstates; ++i) {
@@ -189,7 +190,7 @@ PsiReturnType ccdensity(Options& options)
       x_xi_zero(); /* make blank Xi */
       x_xi1();
       x_xi2();
-//      dpd_->close(0);
+      dpd_close(0);
       if(params.ref == 2) cachedone_uhf(cachelist);
       else cachedone_rhf(cachelist);
       free(cachefiles);
@@ -360,7 +361,7 @@ PsiReturnType ccdensity(Options& options)
     td_print();
   }
 
-//  dpd_->close(0);
+  dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);

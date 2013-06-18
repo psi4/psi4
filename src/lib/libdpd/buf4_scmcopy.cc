@@ -62,7 +62,7 @@ int DPD::buf4_scmcopy(dpdbuf4 *InBuf, int outfilenum, const char *label, double 
     for(h=0; h < InBuf->params->nirreps; h++) {
 
         /* select in-core or out-of-core algorithm */
-        memoryd = dpd_->dpd_memfree()/2; /* use half the memory for each buf4 */
+        memoryd = dpd_memfree()/2; /* use half the memory for each buf4 */
         if(InBuf->params->rowtot[h] && InBuf->params->coltot[h^all_buf_irrep]) {
 
             rows_per_bucket = memoryd/InBuf->params->coltot[h^all_buf_irrep];

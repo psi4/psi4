@@ -54,7 +54,7 @@ void b_sort(void)
       dpd_->buf4_mat_irrep_row_init(&B, h);
       rows_per_bucket = 0;
       if(B_s.params->coltot[h]) 
-    rows_per_bucket = dpd_->dpd_memfree()/(2 * B_s.params->coltot[h]);
+    rows_per_bucket = dpd_memfree()/(2 * B_s.params->coltot[h]);
       if(rows_per_bucket > B_s.params->rowtot[h]) rows_per_bucket = B_s.params->rowtot[h];
       nbuckets = (int) ceil((double) B_s.params->rowtot[h]/(double) rows_per_bucket);
       rows_left = 0;
@@ -125,7 +125,7 @@ void b_sort(void)
     for(h=0,nvirt=0; h < moinfo.nirreps; h++) nvirt += moinfo.virtpi[h];
     dpd_->buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
 
-    rows_per_bucket = dpd_->dpd_memfree()/(B_s.params->coltot[0] + nvirt);
+    rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + nvirt);
     if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
     nbuckets = (int) ceil((double) B_s.params->rowtot[0]/(double) rows_per_bucket);
     rows_left = B_s.params->rowtot[0] % rows_per_bucket;

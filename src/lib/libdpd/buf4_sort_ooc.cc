@@ -81,7 +81,7 @@ int DPD::buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
             /* p->p; q->q; s->r; r->s = pqsr */
 
             /* select algorithm for certain simple cases */
-            memoryd = dpd_->dpd_memfree()/2; /* use half the memory for each buf4 in the sort */
+            memoryd = dpd_memfree()/2; /* use half the memory for each buf4 in the sort */
             if(InBuf->params->rowtot[h] && InBuf->params->coltot[h^all_buf_irrep]) {
 
                 rows_per_bucket = memoryd/InBuf->params->coltot[h^all_buf_irrep];

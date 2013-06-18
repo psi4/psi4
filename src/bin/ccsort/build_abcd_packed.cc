@@ -252,7 +252,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   for(h=0,nvirt=0; h < moinfo.nirreps; h++) nvirt += moinfo.virtpi[h];
   dpd_->buf4_init(&B_s, PSIF_CC_BINTS, 0, 8, 8, 8, 8, 0, "B(+) <ab|cd> + <ab|dc>");
 
-  rows_per_bucket = dpd_->dpd_memfree()/(B_s.params->coltot[0] + nvirt);
+  rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + nvirt);
   if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
   nbuckets = (int) ceil((double) B_s.params->rowtot[0]/(double) rows_per_bucket);
   rows_left = B_s.params->rowtot[0] % rows_per_bucket;

@@ -129,8 +129,7 @@ PsiReturnType cclambda(Options& options)
     spaces.push_back(moinfo.occ_sym);
     spaces.push_back(moinfo.virtpi);
     spaces.push_back(moinfo.vir_sym);
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-         2, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, spaces);
 
     if(params.aobasis) { /* Set up new DPD for AO-basis algorithm */
         std::vector<int*> aospaces;
@@ -138,9 +137,8 @@ PsiReturnType cclambda(Options& options)
         aospaces.push_back(moinfo.occ_sym);
         aospaces.push_back(moinfo.sopi);
         aospaces.push_back(moinfo.sosym);
-      dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-           2, aospaces));
-      dpd_set_default(0);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 2, aospaces);
+        dpd_set_default(0);
     }
 
   }
@@ -157,8 +155,7 @@ PsiReturnType cclambda(Options& options)
     spaces.push_back(moinfo.bvirtpi);
     spaces.push_back(moinfo.bvir_sym);
 
-    dpd_list[0] = boost::shared_ptr<DPD>(new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles,
-         cachelist, NULL, 4, spaces));
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, spaces);
 
     if(params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
         std::vector<int*> aospaces;
@@ -170,10 +167,8 @@ PsiReturnType cclambda(Options& options)
         aospaces.push_back(moinfo.bocc_sym);
         aospaces.push_back(moinfo.sopi);
         aospaces.push_back(moinfo.sosym);
-
-        dpd_list[1] = boost::shared_ptr<DPD>(new DPD(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-               4, aospaces));
-      dpd_set_default(0);
+        dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 4, aospaces);
+        dpd_set_default(0);
     }
   }
 
@@ -278,7 +273,7 @@ PsiReturnType cclambda(Options& options)
       fprintf(outfile, "\t ** Lambda not converged to %2.1e ** \n",
           params.convergence);
       fflush(outfile);
-//      dpd_->close(0);
+      dpd_close(0);
       cleanup();
       exit_io();
       throw PsiException("cclambda: error", __FILE__, __LINE__);
@@ -297,7 +292,7 @@ PsiReturnType cclambda(Options& options)
 
   if(params.local) local_done();
 
-//  dpd_->close(0);
+  dpd_close(0);
 
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);

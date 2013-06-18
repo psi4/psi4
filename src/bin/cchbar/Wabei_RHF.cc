@@ -282,7 +282,7 @@ void Wabei_RHF(void)
       if(core_total > (core_total + 2*rowtot*coltot)) incore = 0;
       core_total += 2*rowtot*coltot;
     }
-    if(core_total > dpd_->dpd_memfree()) incore = 0;
+    if(core_total > dpd_memfree()) incore = 0;
     if(!incore && (params.print & 2)) 
       fprintf(outfile, "\nUsing out-of-core algorithm for (T2+T1*T1)*F -> Wabei.\n");
 
@@ -615,7 +615,7 @@ void ZFW(dpdbuf4 *Z, dpdbuf4 *F, dpdbuf4 *W, double alpha, double beta)
     dpd_->buf4_mat_irrep_rd(Z, Gib);
 
     /* how many rows of F/W can we store in half the remaining core? */
-    rows_per_bucket = dpd_->dpd_memfree()/(2 * F->params->coltot[Gea]);
+    rows_per_bucket = dpd_memfree()/(2 * F->params->coltot[Gea]);
     if(rows_per_bucket > F->params->rowtot[Gib])
       rows_per_bucket = F->params->rowtot[Gib];
     nbuckets = (int) ceil((double) F->params->rowtot[Gib]/(double) rows_per_bucket);

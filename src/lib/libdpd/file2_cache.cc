@@ -39,7 +39,7 @@ void DPD::file2_cache_init(void)
 void DPD::file2_cache_close(void)
 {
     int dpdnum;
-    struct dpd_file2_cache_entry *this_entry, *next_entry;
+    dpd_file2_cache_entry *this_entry, *next_entry;
     dpdfile2 Outfile;
 
     this_entry = dpd_main.file2_cache;
@@ -113,8 +113,8 @@ int DPD::file2_cache_add(dpdfile2 *File)
                                   File->label, File->dpdnum);
 
     if(this_entry == NULL) { /* New cache entry */
-        this_entry = (struct dpd_file2_cache_entry *)
-                malloc(sizeof(struct dpd_file2_cache_entry));
+        this_entry = (dpd_file2_cache_entry *)
+                malloc(sizeof(dpd_file2_cache_entry));
 
         dpdnum = dpd_default;
         dpd_set_default(File->dpdnum);
@@ -160,7 +160,7 @@ int DPD::file2_cache_add(dpdfile2 *File)
 int DPD::file2_cache_del(dpdfile2 *File)
 {
     int dpdnum;
-    struct dpd_file2_cache_entry *this_entry, *next_entry, *last_entry;
+    dpd_file2_cache_entry *this_entry, *next_entry, *last_entry;
 
     /* The input buffer isn't in the cache! */
     if(!File->incore) dpd_error("File2 cache delete error!", stderr);

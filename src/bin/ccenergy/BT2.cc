@@ -124,7 +124,7 @@ void BT2(void)
       dpd_->buf4_mat_irrep_init(&S, 0);
       dpd_->buf4_mat_irrep_rd(&S, 0);
 
-      rows_per_bucket = dpd_->dpd_memfree()/(B_s.params->coltot[0] + moinfo.nvirt);
+      rows_per_bucket = dpd_memfree()/(B_s.params->coltot[0] + moinfo.nvirt);
       if(rows_per_bucket > B_s.params->rowtot[0]) rows_per_bucket = B_s.params->rowtot[0];
       nbuckets = (int) ceil((double) B_s.params->rowtot[0]/(double) rows_per_bucket);
       rows_left = B_s.params->rowtot[0] % rows_per_bucket;

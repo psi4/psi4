@@ -132,7 +132,7 @@ void compute_X(const char *pert, int irrep, double omega)
   }
   if(!done) {
     fflush(outfile);
-//    dpd_->close(0);
+    dpd_close(0);
     cleanup();
     exit_io();
     throw PsiException("Failed to converge perturbed wavefunction",__FILE__,__LINE__);
