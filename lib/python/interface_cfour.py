@@ -50,10 +50,6 @@ def run_cfour(name, **kwargs):
     for a calculation calling Stanton and Gauss's CFOUR code.
 
     """
-    # TODO: Check to see if we really need to run the SCF code.
-    #scf_helper(name, **kwargs)
-    #vscf = psi4.get_variable('SCF TOTAL ENERGY')
-
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
     # of settings to be passed to psi4.cfour
@@ -66,7 +62,7 @@ def run_cfour(name, **kwargs):
     #fullname = level['fullname']
 
     # User can provide 'keep' to the method.
-    # When provided, do not delete the MRCC scratch directory.
+    # When provided, do not delete the CFOUR scratch directory.
     keep = False
     if 'keep' in kwargs:
         keep = kwargs['keep']
@@ -76,7 +72,6 @@ def run_cfour(name, **kwargs):
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = os.environ
-    #lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
     lenv['PATH'] = ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':')]) + ':' + lenv.get('PATH')
 
     # Need to move to the scratch directory, perferrably into a separate directory in that location
@@ -120,8 +115,9 @@ def run_cfour(name, **kwargs):
     psi4.print_out('======= End ZMAT input for CFOUR =======\n\n')
     print('\n====== Begin ZMAT input for CFOUR ======\n', open('ZMAT', 'r').read(), '======= End ZMAT input for CFOUR =======\n\n')
 
-    # Close output file
+    # Close output file and reopen
     psi4.close_outfile()
+    p4out = open(current_directory + '/' + psi4.outfile_name(), 'a')
 
     # Modify the environment:
     #    PGI Fortan prints warning to screen if STOP is used
@@ -138,26 +134,33 @@ def run_cfour(name, **kwargs):
 
     # Call xcfour, directing all screen output to the output file
     try:
-        if psi4.outfile_name() == 'stdout':
-            retcode = subprocess.call('xcfour', shell=True, env=lenv)
-        else:
-            retcode = subprocess.call('xcfour >> ' + current_directory + '/' + psi4.outfile_name(), shell=True, env=lenv)
-
-        if retcode < 0:
-            print('CFOUR was terminated by signal %d' % -retcode, file=sys.stderr)
-            exit(1)
-        elif retcode > 0:
-            print('CFOUR errored %d' % retcode, file=sys.stderr)
-            exit(1)
-
+        retcode = subprocess.Popen(['xcfour'], bufsize=0, stdout=subprocess.PIPE, env=lenv)
     except OSError as e:
-        print('Execution failed: %s' % e, file=sys.stderr)
-        exit(1)
+        sys.stderr.write('Program xcfour not found in path or execution failed: %s\n' % (e.strerror))
+        p4out.write('Program xcfour not found in path or execution failed: %s\n' % (e.strerror))
+        sys.exit(1)
+
+    c4out = ""
+    while retcode.returncode == None:
+        data = retcode.stdout.read(1)
+        if psi4.outfile_name() == 'stdout':
+            sys.stdout.write(data)
+        else:
+            p4out.write(data)
+            p4out.flush()
+        c4out += data
+        retcode.poll()
 
     # Restore the OMP_NUM_THREADS that the user set.
     if omp_num_threads_found == True:
         if psi4.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
             os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
+
+    import qcprograms
+    psivars = qcprograms.cfour.cfour_harvest(c4out)
+    for key in psivars.keys():
+        psi4.set_variable(key.upper(), psivars[key])
+
 
     # Scan iface file and grab the file energy.
     #e = 0.0
@@ -196,6 +199,7 @@ def run_cfour(name, **kwargs):
 
     # Reopen output file
     psi4.reopen_outfile()
+    psi4.print_variables()
 
     # If we're told to keep the files or the user provided a path, do nothing.
     if (yes.match(str(keep)) or ('path' in kwargs)):

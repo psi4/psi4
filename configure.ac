@@ -1229,9 +1229,34 @@ AC_CONFIG_FILES([
           tests/docs-dft/Makefile
           tests/docs-bases/Makefile
           tests/cfour/Makefile
-          tests/cfour/sp-rhf-scf/Makefile
           tests/cfour/MakeVars
           tests/cfour/MakeRules
+          tests/cfour/sp-rhf-scf/Makefile
+          tests/cfour/sp-rhf-cc3/Makefile
+          tests/cfour/sp-rhf-ccsd/Makefile
+          tests/cfour/sp-rhf-ccsd-ao/Makefile
+          tests/cfour/sp-rhf-ccsdt/Makefile
+          tests/cfour/sp-rhf-ccsd_t_/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ao/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ao-ecc/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-ecc/Makefile
+          tests/cfour/sp-rhf-ccsd_t_-fc/Makefile
+          tests/cfour/sp-rhf-mp2/Makefile
+          tests/cfour/sp-uhf-cc3/Makefile
+          tests/cfour/sp-uhf-ccsd/Makefile
+          tests/cfour/sp-uhf-ccsdt/Makefile
+          tests/cfour/sp-uhf-ccsd_t_/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ao/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ao-ecc/Makefile
+          tests/cfour/sp-uhf-ccsd_t_-ecc/Makefile
+          tests/cfour/sp-uhf-mp2/Makefile
+          tests/cfour/sp-uhf-scf/Makefile
+          tests/cfour/sp-rohf-ccsd/Makefile
+          tests/cfour/sp-rohf-ccsdt/Makefile
+          tests/cfour/sp-rohf-ccsd_t_/Makefile
+          tests/cfour/sp-rohf-mp2-sc/Makefile
+          tests/cfour/sp-rohf-mp4-sc/Makefile
+          tests/cfour/sp-rohf-scf/Makefile
           plugins/Makefile
           plugins/aointegrals/Makefile
           plugins/backtrans/Makefile
