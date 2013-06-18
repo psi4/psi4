@@ -107,6 +107,12 @@ psi_tests: $(psi_subdirs)
 infra_tests: $(infra_subdirs)
 	$(call gatherresults, $(infra_subdirs))
 
+sp_rhf_tests: $(sp_rhf_subdirs)
+	$(call gatherresults, $(sp_rhf_subdirs))
+
+sp_uhf_tests: $(sp_uhf_subdirs)
+	$(call gatherresults, $(sp_uhf_subdirs))
+
 plugins:
 	for dir in $(plugin_subdirs); \
 	do \

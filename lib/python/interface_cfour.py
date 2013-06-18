@@ -361,6 +361,7 @@ def run_cfour(name, **kwargs):
     os.chdir(current_directory)
     p4out.close()
     psi4.reopen_outfile()
+    psi4.print_variables()
 
     psi4.print_out('\n')
     p4util.banner(' Cfour %s %s Results ' % (name.lower(), calledby.capitalize()))
