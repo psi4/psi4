@@ -1060,6 +1060,7 @@ AC_CONFIG_FILES([
           tests/pywrap-all/Makefile
           tests/pywrap-alias/Makefile
           tests/pywrap-opt-sowreap/Makefile
+          tests/pywrap-freq-e-sowreap/Makefile
           tests/pywrap-basis/Makefile
           tests/pywrap-db3/Makefile
           tests/pywrap-checkrun-rhf/Makefile
