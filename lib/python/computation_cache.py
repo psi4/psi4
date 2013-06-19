@@ -11,14 +11,15 @@ import shelve
 import traceback
 from warnings import warn
 import numpy as np
-from numpy.lib.format import read_array_header_1_0, open_memmap
+from numpy.lib.format import read_array_header_1_0, open_memmap, read_magic
 import sys
 from grendel.chemistry import Molecule
 from grendel.util.containers import AliasedDict
-from grendel.util.decorators import typecheck
+from grendel.util.decorators import typecheck, LazyProperty
 from functools import partial
 from hashlib import md5
 import psi4
+import atexit
 # Create a trivial molecule so psi4 doesn't freak out about not having a Molecule
 #psi4.geometry("H 0 0 0\nH 0 0 1")
 
@@ -33,6 +34,38 @@ class ShapeMismatchWarning(Warning):
 
 class FileOverwriteWarning(Warning):
     pass
+
+enabled_warnings = AliasedDict({
+    (ShapeMismatchWarning, "ShapeMismatchWarning") : True,
+    (FileOverwriteWarning, "FileOverwriteWarning") : True
+})
+fail_warnings = AliasedDict({
+    (ShapeMismatchWarning, "ShapeMismatchWarning") : False,
+    (FileOverwriteWarning, "FileOverwriteWarning") : False
+})
+
+def enable_warning(w):
+    enabled_warnings[w] = True
+
+def disable_warning(w):
+    enabled_warnings[w] = False
+
+def enable_all_warnings():
+    for w in enabled_warnings:
+        enabled_warnings[w] = True
+
+def disable_all_warnings():
+    for w in enabled_warnings:
+        enabled_warnings[w] = False
+
+def raise_on_warning(w):
+    fail_warnings[w] = True
+
+def raise_warning(msg, warning_type):
+    if enabled_warnings[warning_type]:
+        warn(msg, warning_type)
+    if fail_warnings[warning_type]:
+        raise RuntimeError("Critical warning raised.")
 
 #================================================================================#
 
@@ -111,10 +144,7 @@ class UninitializedDependency(object):
         return rv
 
     def __getstate__(self):
-        raise AttributeError("UninitializedDependency instances are not pickleable")
-
-    def __setstate__(self):
-        raise AttributeError("UninitializedDependency instances are not pickleable")
+        raise TypeError("UninitializedDependency instances are not pickleable")
 
 #================================================================================#
 
@@ -128,6 +158,9 @@ class DatumGetter(object):
     @abstractmethod
     def __call__(self, *args, **kwargs):
         pass
+
+    def __getstate__(self):
+        raise TypeError("Instances of DatumGetter and its subclasses should never be pickled.")
 
 class SimpleMethodCallGetter(DatumGetter):
 
@@ -515,6 +548,24 @@ class ArbitraryBasisAOTEIGetter(ArbitraryBasisDatumGetter, AOTEIGetterWithComput
     def __call__(self, out, basis_sets, correlation_factor):
         self._compute_ints(out, basis_sets, correlation_factor)
 
+class GeneralCorrelationFactorAOTEIGetter(ArbitraryBasisAOTEIGetter):
+
+    def __init__(self, coefficients, exponents, *args, **kwargs):
+        super(GeneralCorrelationFactorAOTEIGetter, self).__init__(*args, **kwargs)
+        self.coefficients = coefficients
+        self.exponents = exponents
+
+    # noinspection PyMethodOverriding
+    def __call__(self, out, basis_sets):
+        cf = psi4.CorrelationFactor(len(self.coefficients))
+        coefs = psi4.Vector(len(self.coefficients))
+        expons = psi4.Vector(len(self.exponents))
+        for (ic, c), (ie, e) in zip(*map(enumerate, (self.coefficients, self.exponents))):
+            coefs.set(0, ic, c)
+            expons.set(0, ie, e)
+        cf.set_params(coefs, expons)
+        self._compute_ints(out, basis_sets, cf)
+
 class AOOEIGetterWithComputer(MemmapArrayGetter):
 
     VALID_INTEGRAL_TYPES = [
@@ -640,6 +691,13 @@ class ComputationCache(object):
             protocol=2,
             writeback=True
         )
+        def close_shelf(shelf):
+            try:
+                shelf.close()
+            except ValueError:
+                # If it's already closed, it's okay
+                pass
+        atexit.register(close_shelf, self.shelf)
         #endregion
 
     #endregion
@@ -768,15 +826,20 @@ class ComputationCache(object):
                 optional_arguments=optional_args,
                 **init_kwargs
             )
+            rv.shelf_key = key
             # Make sure the object is constructed successfully
             #   before shelving it
             self.shelf[key] = rv
         else:
             rv = self.shelf[key]
+            rv.shelf_key = key
             rv.owner = self
             if needed_data is not None:
                 rv.get_data(needed_data)
         return rv
+
+    def sync_computation(self, comp):
+        self.shelf[comp.shelf_key] = comp
 
     #endregion
 
@@ -1097,10 +1160,12 @@ class CachedComputation(object):
                 raise TypeError()
             name = custom_getter.name
         #----------------------------------------#
-        if (name not in self.cached_data
-            or not isinstance(self.cached_data[name], CachedDatum)
-            or not self.cached_data[name].filled
-        ):
+        if not self.has_datum(name):
+            if (name in self._custom_getters
+                and name in self.cached_data
+                and not self.cached_data[name].filled
+            ):
+                del self._custom_getters[name]
             self._fill_datum(
                 name, custom_getter,
                 pre_computation_callback=pre_computation_callback,
@@ -1108,7 +1173,7 @@ class CachedComputation(object):
             )
             # Sync the parent shelf since self has been modified
             if self.owner is not None:
-                self.owner.shelf.sync()
+                self.owner.sync_computation(self)
         return self.cached_data[name]
 
     def get_data(self, names):
@@ -1128,7 +1193,7 @@ class CachedComputation(object):
                 del self.cached_data[name]
             # Sync the parent shelf since self has been modified
             if self.owner is not None:
-                self.owner.shelf.sync()
+                self.owner.sync_computation(self)
         elif fail_if_missing:
             raise ValueError("Datum '{0}' does not exist.  Known data names are:\n{1}".format(
                 name, "    " + "\n    ".join(self.cached_data.keys())
@@ -1151,6 +1216,60 @@ class CachedComputation(object):
 
     def get_file_path(self, datum_name):
         return path_join(self.directory, datum_name + ".npy")
+
+    def store_datum(self, name, value):
+        """
+
+        @param name: str
+        @param value: object
+        @raise: NameError
+        """
+        if name in self.cached_data:
+            if not isinstance(value, np.ndarray) and not self.cached_data[name].filled:
+                if self.cached_data[name] == value:
+                    # Forgot to set the filled flag before
+                    self.cached_data[name].filled = True
+                else:
+                    raise NameError("Already have cached datum named '{0}'".format(name))
+        elif name in self.array_getters or name in self.other_getters:
+            raise NameError("Naming conflict:  Data storage operation requested for"
+                            " datum named '{0}', but a getter for this datum is "
+                            " already known in CachedComputation.{1}".format(
+                name,
+                "array_getters" if name in self.array_getters else 'other_getters'
+            ))
+        elif name in self._custom_getters:
+            raise NameError("Naming conflict:  Custom getter for datum named '{0}'"
+                            " already exists".format(
+                name
+            ))
+        #----------------------------------------#
+        if isinstance(value, np.ndarray):
+            out = CachedMemmapArray(
+                filename=self.get_file_path(name),
+                shape=value.shape,
+                # Force overwrite because if the file exists at this point,
+                #   it's not attached to self.cached_data, so it's useless
+                #   anyway.
+                force_overwrite=True
+            )
+            out.value[...] = value
+            out.filled = True
+            self.cached_data[name] = out
+        else:
+            # Store it as a regular Datum
+            out = CachedDatum(value)
+            out.filled = True
+            self.cached_data[name] = out
+            # Sync the parent shelf since self has been modified
+            if self.owner is not None:
+                self.owner.sync_computation(self)
+
+    def has_datum(self, name):
+        return (name in self.cached_data
+            and isinstance(self.cached_data[name], CachedDatum)
+            and self.cached_data[name].filled
+        )
 
     #endregion
 
@@ -1258,7 +1377,7 @@ class CachedComputation(object):
                 #   of the situation.
                 if exists(fname):
                     if tb is not None:
-                        warn(
+                        raise_warning(
                             "File '{0}' is corrupted and will be overwritten."
                             " Its data will be recomputed.  Traceback:\n    {1}".format(
                                 fname,
@@ -1266,7 +1385,7 @@ class CachedComputation(object):
                             FileOverwriteWarning
                         )
                     else:
-                        warn(
+                        raise_warning(
                             "File '{0}' is corrupted (couldn't get shape) and will be overwritten."
                             " Its data will be recomputed.".format(
                                 fname),
@@ -1293,6 +1412,8 @@ class CachedComputation(object):
                     # Remove the file caching the failure
                     remove(fname)
                     raise
+                else:
+                    out.filled = True
                 if post_computation_callback is not None:
                     post_computation_callback()
             self.cached_data[needed_name] = out
@@ -1372,6 +1493,7 @@ class CachedMemmapArray(CachedDatum):
     # Initialization #
     ##################
 
+    # noinspection PyMissingConstructor
     def __init__(self,
             filename,
             dtype="float64",
@@ -1385,8 +1507,9 @@ class CachedMemmapArray(CachedDatum):
         #   "w+" is always used.
         self.mmap_load_mode=mmap_load_mode
         self.shape = shape
-        self.value = self._load_value(force_overwrite)
-        super(CachedMemmapArray, self).__init__(self.value)
+        self.write_mode = False
+        self.force_overwrite = force_overwrite
+        self.filled = False
 
     ###################
     # Special Methods #
@@ -1395,12 +1518,16 @@ class CachedMemmapArray(CachedDatum):
     def __getstate__(self):
         state = self.__dict__.copy()
         # Just get rid of the value, leave everything else
-        del state['value']
+        if 'value' in state:
+            # remember, value only gets filled if it is accessed
+            del state['value']
         return state
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self.value = self._load_value(False)
+        # Note that the 'filled' attribute will stick with the class
+        #   from the pickled instance
+        self.force_overwrite = False
 
     #################
     # Class Methods #
@@ -1417,6 +1544,7 @@ class CachedMemmapArray(CachedDatum):
         """
         try:
             fp = open(filename)
+            major, minor = read_magic(fp)
             shape, order, dtype = read_array_header_1_0(fp)
             fp.close()
             return shape, order, dtype
@@ -1426,6 +1554,22 @@ class CachedMemmapArray(CachedDatum):
             return None, None, None
         except TypeError:
             return None, None, None
+
+    ##############
+    # Properties #
+    ##############
+
+    @LazyProperty
+    def value(self):
+        return self._load_value(self.force_overwrite)
+
+    ###########
+    # Methods #
+    ###########
+
+    def flush_value(self):
+        if self.filled:
+            self.value.flush()
 
     ###################
     # Private Methods #
@@ -1440,14 +1584,15 @@ class CachedMemmapArray(CachedDatum):
                     mmap_mode=self.mmap_load_mode
                 )
                 if self.shape is not None and self.shape != value.shape:
-                    warn("Loaded shape {0} does not match specified (or saved) shape {1}".format(
+                    raise_warning("Loaded shape {0} does not match specified (or saved) shape {1}".format(
                         value.shape, self.shape
                     ), ShapeMismatchWarning)
                 self.shape = value.shape
                 self.filled = True
+                self.write_mode = False
                 load_successful = True
             except ValueError as e:
-                warn( "File '{0}' is corrupted and will be overwritten."
+                raise_warning( "File '{0}' is corrupted and will be overwritten."
                       " Its data will be recomputed.  The following error was raised:\n{1}".format(
                     self.filename,
                     traceback.format_exc()),
@@ -1464,6 +1609,9 @@ class CachedMemmapArray(CachedDatum):
                 mode='w+',
                 dtype=self.dtype
             )
+            self.write_mode = True
+            # Make sure the value is flushed on exit
+            atexit.register(self.flush_value)
             self.filled = False
         return value
 

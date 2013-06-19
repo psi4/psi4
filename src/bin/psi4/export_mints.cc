@@ -97,6 +97,7 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
+
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2);
 
 /* IntegralFactory overloads */
