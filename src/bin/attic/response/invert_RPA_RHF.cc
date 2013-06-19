@@ -46,8 +46,8 @@ void invert_RPA_RHF(double omega)
   dpdbuf4 A, B;
   double ***C;
 
-  dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
-  dpd_->buf4_init(&B, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "B(AI,BJ)");
+  global_dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+  global_dpd_->buf4_init(&B, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "B(AI,BJ)");
 
   C = (double ***) malloc(moinfo.nirreps * sizeof(double **));
   moinfo.RPA_dim = init_int_array(moinfo.nirreps);
@@ -58,10 +58,10 @@ void invert_RPA_RHF(double omega)
 
     if(dim) {
 
-      dpd_->buf4_mat_irrep_init(&A, h);
-      dpd_->buf4_mat_irrep_rd(&A, h);
-      dpd_->buf4_mat_irrep_init(&B, h);
-      dpd_->buf4_mat_irrep_rd(&B, h);
+      global_dpd_->buf4_mat_irrep_init(&A, h);
+      global_dpd_->buf4_mat_irrep_rd(&A, h);
+      global_dpd_->buf4_mat_irrep_init(&B, h);
+      global_dpd_->buf4_mat_irrep_rd(&B, h);
 
       C[h] = block_matrix(2*dim, 2*dim);
 
@@ -91,12 +91,12 @@ void invert_RPA_RHF(double omega)
       free(work);
     }
 
-    dpd_->buf4_mat_irrep_close(&A, h);
-    dpd_->buf4_mat_irrep_close(&B, h);
+    global_dpd_->buf4_mat_irrep_close(&A, h);
+    global_dpd_->buf4_mat_irrep_close(&B, h);
   }
 
-  dpd_->buf4_close(&A);
-  dpd_->buf4_close(&B);
+  global_dpd_->buf4_close(&A);
+  global_dpd_->buf4_close(&B);
 
   moinfo.RPA_inv = C;
 }

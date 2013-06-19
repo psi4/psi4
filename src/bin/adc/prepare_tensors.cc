@@ -58,17 +58,17 @@ ADC::rhf_prepare_tensors()
     // exchange operator (EEO) method a.k.a Fock-like contraction
     // is not utilized because the construction of sigma-vector for ADC(2) is
     // far more demanding step.
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
-    dpd_->buf4_scmcopy(&V, PSIF_ADC, "A1234", -1.0);
-    dpd_->buf4_close(&V);
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_sort_axpy(&V, PSIF_ADC, prqs, ID("[O,V]"), ID("[O,V]"), "A1234", 2.0);
-    dpd_->buf4_close(&V);
-    dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
+    global_dpd_->buf4_scmcopy(&V, PSIF_ADC, "A1234", -1.0);
+    global_dpd_->buf4_close(&V);
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_sort_axpy(&V, PSIF_ADC, prqs, ID("[O,V]"), ID("[O,V]"), "A1234", 2.0);
+    global_dpd_->buf4_close(&V);
+    global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
     char **irrep_      = Process::environment.molecule()->irrep_labels();
     for(int h = 0;h < nirrep_;h++){
-        dpd_->buf4_mat_irrep_init(&Aovov, h);
-        dpd_->buf4_mat_irrep_rd(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_init(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
         for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->colorb[h][ia][1];
@@ -85,8 +85,8 @@ ADC::rhf_prepare_tensors()
             if(DEBUG_) printf("%d%3s, %10.7f\n", root+1, irrep_[h], omega[root]);
             omega_guess_->set(h,root, omega[root]);
             sprintf(lbl, "B^(%d)_[%d]12", root, h);
-            dpd_->file2_init(&B, PSIF_ADC, h, ID('O'), ID('V'), lbl);
-            dpd_->file2_mat_init(&B);
+            global_dpd_->file2_init(&B, PSIF_ADC, h, ID('O'), ID('V'), lbl);
+            global_dpd_->file2_mat_init(&B);
             for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
                 int i = Aovov.params->roworb[h][ia][0];
                 int a = Aovov.params->roworb[h][ia][1];
@@ -96,8 +96,8 @@ ADC::rhf_prepare_tensors()
                 int Isym = B.params->psym[i];
                 B.matrix[Isym][I][A] = lambda[ia][root];
             }
-            dpd_->file2_mat_wrt(&B);
-            dpd_->file2_mat_close(&B);
+            global_dpd_->file2_mat_wrt(&B);
+            global_dpd_->file2_mat_close(&B);
             fprintf(outfile, "\t%d%3s state: %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[h], omega[root], omega[root]*pc_hartree2ev);
             fprintf(outfile, "\t---------------------------------------------\n");
             int nprint;
@@ -105,55 +105,55 @@ ADC::rhf_prepare_tensors()
             else nprint = num_amps_;
             amps_write(&B, nprint, outfile);
             fprintf(outfile, "\n");
-            dpd_->file2_close(&B);
+            global_dpd_->file2_close(&B);
         }
         
         free(omega);
         free_block(lambda);
-        dpd_->buf4_mat_irrep_wrt(&Aovov, h);
-        dpd_->buf4_mat_irrep_close(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_wrt(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_close(&Aovov, h);
     }
-    dpd_->buf4_close(&Aovov);
+    global_dpd_->buf4_close(&Aovov);
     fflush(outfile);
 
     // Initialize 4-index tensors for this step of calculation.
-    dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
-    dpd_->buf4_copy(&Aovov, PSIF_ADC_SEM, "A3h3p1234");
-    dpd_->buf4_close(&Aovov);
+    global_dpd_->buf4_init(&Aovov, PSIF_ADC, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A1234");
+    global_dpd_->buf4_copy(&Aovov, PSIF_ADC_SEM, "A3h3p1234");
+    global_dpd_->buf4_close(&Aovov);
     
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&K, PSIF_ADC, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "2 K1234 - K1243");
     
-    dpd_->file2_init(&Xoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "XOO12");
+    global_dpd_->file2_init(&Xoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "XOO12");
     // XOO_{ij} <-- - \sum_{kab} (2K_{ikab} - K_{ikba}) <jk|ab>
-    dpd_->contract442(&K, &V, &Xoo, 0, 0, -1, 0);
-    dpd_->file2_init(&Aoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "AOO12");
+    global_dpd_->contract442(&K, &V, &Xoo, 0, 0, -1, 0);
+    global_dpd_->file2_init(&Aoo, PSIF_ADC_SEM, 0, ID('O'), ID('O'), "AOO12");
     // AOO_{ij} <-- ((XOO)_{ij} + (XOO)_{ji}) / 2
-    dpd_->file2_axpy(&Xoo, &Aoo, 0.5, 0);
-    dpd_->file2_axpy(&Xoo, &Aoo, 0.5, 1);
-    dpd_->file2_mat_init(&Aoo);
-    dpd_->file2_mat_rd(&Aoo);
-    dpd_->file2_close(&Xoo);
+    global_dpd_->file2_axpy(&Xoo, &Aoo, 0.5, 0);
+    global_dpd_->file2_axpy(&Xoo, &Aoo, 0.5, 1);
+    global_dpd_->file2_mat_init(&Aoo);
+    global_dpd_->file2_mat_rd(&Aoo);
+    global_dpd_->file2_close(&Xoo);
     
-    dpd_->file2_init(&Xvv, PSIF_ADC_SEM, 0, ID('V'), ID('V'), "XVV12");
+    global_dpd_->file2_init(&Xvv, PSIF_ADC_SEM, 0, ID('V'), ID('V'), "XVV12");
     // XVV_{ab} <-- - \sum_{ijc} (2K_{ijac} - K_{ijca}) <ij|bc>
-    dpd_->contract442(&K, &V, &Xvv, 2, 2, -1, 0);
-    dpd_->file2_init(&Avv, PSIF_ADC_SEM, 0, ID('V'), ID('V'), "AVV12");
+    global_dpd_->contract442(&K, &V, &Xvv, 2, 2, -1, 0);
+    global_dpd_->file2_init(&Avv, PSIF_ADC_SEM, 0, ID('V'), ID('V'), "AVV12");
     // AVV_{ab} <-- ((XVV)_{ab} + (XVV)_{ba}) / 2
-    dpd_->file2_axpy(&Xvv, &Avv, 0.5, 0);
-    dpd_->file2_axpy(&Xvv, &Avv, 0.5, 1);
-    dpd_->file2_mat_init(&Avv);
-    dpd_->file2_mat_rd(&Avv);
-    dpd_->file2_close(&Xvv);
+    global_dpd_->file2_axpy(&Xvv, &Avv, 0.5, 0);
+    global_dpd_->file2_axpy(&Xvv, &Avv, 0.5, 1);
+    global_dpd_->file2_mat_init(&Avv);
+    global_dpd_->file2_mat_rd(&Avv);
+    global_dpd_->file2_close(&Xvv);
     
-    dpd_->buf4_close(&K);
-    dpd_->buf4_close(&V);
+    global_dpd_->buf4_close(&K);
+    global_dpd_->buf4_close(&V);
 
     // A3h3p_{iajb} <-- \delta_{ij}(XVV)_{ab} + \delta_{ab}(XOO)_{ij}
-    dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
+    global_dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
     for(int h = 0;h < nirrep_;h++){
-        dpd_->buf4_mat_irrep_init(&Aovov, h);
-        dpd_->buf4_mat_irrep_rd(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_init(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
         for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->roworb[h][ia][1];
@@ -172,23 +172,23 @@ ADC::rhf_prepare_tensors()
                     + Avv.matrix[Asym][A][B] * (i==j) * (Asym==Bsym);
             }
         }
-        dpd_->buf4_mat_irrep_wrt(&Aovov, h);
-        dpd_->buf4_mat_irrep_close(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_wrt(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_close(&Aovov, h);
     }
-    dpd_->buf4_close(&Aovov);
-    dpd_->file2_mat_close(&Aoo);
-    dpd_->file2_close(&Aoo);
-    dpd_->file2_mat_close(&Avv);
-    dpd_->file2_close(&Avv);
+    global_dpd_->buf4_close(&Aovov);
+    global_dpd_->file2_mat_close(&Aoo);
+    global_dpd_->file2_close(&Aoo);
+    global_dpd_->file2_mat_close(&Avv);
+    global_dpd_->file2_close(&Avv);
     
     // Preparing D tensor for each irrep
-    dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
+    global_dpd_->buf4_init(&Aovov, PSIF_ADC_SEM, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "A3h3p1234");
     for(int h = 0;h < nirrep_;h++){
-        dpd_->buf4_mat_irrep_init(&Aovov, h);
-        dpd_->buf4_mat_irrep_rd(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_init(&Aovov, h);
+        global_dpd_->buf4_mat_irrep_rd(&Aovov, h);
         sprintf(lbl, "D_[%d]12", h);
-        dpd_->file2_init(&Dov, PSIF_ADC_SEM, h, ID('O'), ID('V'), lbl);
-        dpd_->file2_mat_init(&Dov);
+        global_dpd_->file2_init(&Dov, PSIF_ADC_SEM, h, ID('O'), ID('V'), lbl);
+        global_dpd_->file2_mat_init(&Dov);
         for(int ia = 0;ia < Aovov.params->rowtot[h];ia++){
             int i = Aovov.params->roworb[h][ia][0];
             int a = Aovov.params->roworb[h][ia][1];
@@ -198,12 +198,12 @@ ADC::rhf_prepare_tensors()
             int Isym = Dov.params->psym[i];
             Dov.matrix[Isym][I][A] = Aovov.matrix[h][ia][ia];
         }
-        dpd_->file2_mat_wrt(&Dov);
-        dpd_->file2_mat_close(&Dov);
-        dpd_->file2_close(&Dov);
-        dpd_->buf4_mat_irrep_close(&Aovov, h);
+        global_dpd_->file2_mat_wrt(&Dov);
+        global_dpd_->file2_mat_close(&Dov);
+        global_dpd_->file2_close(&Dov);
+        global_dpd_->buf4_mat_irrep_close(&Aovov, h);
     }
-    dpd_->buf4_close(&Aovov);
+    global_dpd_->buf4_close(&Aovov);
 
     psio_->close(PSIF_ADC, 1);
     psio_->close(PSIF_ADC_SEM, 1);

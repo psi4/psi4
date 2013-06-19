@@ -57,15 +57,15 @@ void diag(void)
     for(h=0; h < moinfo.nirreps; h++)
       singlet_evals[h] = init_array(params.rpi[h]);
 
-    dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
+    global_dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ)");
 
     for(h=0; h < moinfo.nirreps; h++) {
       dim = A_AA.params->rowtot[h];
       eps = init_array(dim);
       v = block_matrix(dim, dim);
 
-      dpd_->buf4_mat_irrep_init(&A_AA, h);
-      dpd_->buf4_mat_irrep_rd(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_init(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_rd(&A_AA, h);
 
       if(params.diag_method == "FULL")
 	sq_rsp(dim, dim, A_AA.matrix[h], eps, 1, v, 1e-14);
@@ -77,7 +77,7 @@ void diag(void)
 		  nroot, h);
       }
 
-      dpd_->buf4_mat_irrep_close(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_close(&A_AA, h);
 
       /*
 	fprintf(outfile, "RHF-CIS Singlet Eigenvectors for irrep %d:\n", h);
@@ -88,8 +88,8 @@ void diag(void)
       for(root=0; root < params.rpi[h]; root++) {
 
 	sprintf(lbl, "BIA(%d)[%d] singlet", root, h);
-	dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
-	dpd_->file2_mat_init(&B);
+	global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
+	global_dpd_->file2_mat_init(&B);
 	for(ck=0; ck < dim; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
 	  k = A_AA.params->roworb[h][ck][1];
@@ -101,9 +101,9 @@ void diag(void)
 
 	  B.matrix[Ksym][K][C] = v[ck][root];
 	}
-	dpd_->file2_mat_wrt(&B);
-	dpd_->file2_mat_close(&B);
-	dpd_->file2_close(&B);
+	global_dpd_->file2_mat_wrt(&B);
+	global_dpd_->file2_mat_close(&B);
+	global_dpd_->file2_close(&B);
 
 	singlet_evals[h][root] = eps[root];
       }
@@ -112,21 +112,21 @@ void diag(void)
       free(eps);
       free_block(v);
     }
-    dpd_->buf4_close(&A_AA);
+    global_dpd_->buf4_close(&A_AA);
 
     triplet_evals = (double **) malloc(moinfo.nirreps * sizeof(double *));
     for(h=0; h < moinfo.nirreps; h++)
       triplet_evals[h] = init_array(params.rpi[h]);
 
-    dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
+    global_dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(AI,BJ) triplet");
 
     for(h=0; h < moinfo.nirreps; h++) {
       dim = A_AA.params->rowtot[h];
       eps = init_array(dim);
       v = block_matrix(dim, dim);
 
-      dpd_->buf4_mat_irrep_init(&A_AA, h);
-      dpd_->buf4_mat_irrep_rd(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_init(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_rd(&A_AA, h);
 
       if(params.diag_method == "FULL") 
 	sq_rsp(dim, dim, A_AA.matrix[h], eps, 1, v, 1e-14);
@@ -138,14 +138,14 @@ void diag(void)
 		  nroot, h);
       }
 
-      dpd_->buf4_mat_irrep_close(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_close(&A_AA, h);
 
       /* Store the eigenvectors in DPD entries and save the eigenvalues*/
       for(root=0; root < params.rpi[h]; root++) {
 
 	sprintf(lbl, "BIA(%d)[%d] triplet", root, h);
-	dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
-	dpd_->file2_mat_init(&B);
+	global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
+	global_dpd_->file2_mat_init(&B);
 	for(ck=0; ck < dim; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
 	  k = A_AA.params->roworb[h][ck][1];
@@ -157,9 +157,9 @@ void diag(void)
 
 	  B.matrix[Ksym][K][C] = v[ck][root];
 	}
-	dpd_->file2_mat_wrt(&B);
-	dpd_->file2_mat_close(&B);
-	dpd_->file2_close(&B);
+	global_dpd_->file2_mat_wrt(&B);
+	global_dpd_->file2_mat_close(&B);
+	global_dpd_->file2_close(&B);
 
 	triplet_evals[h][root] = eps[root];
       }
@@ -167,7 +167,7 @@ void diag(void)
       free(eps);
       free_block(v);
     }
-    dpd_->buf4_close(&A_AA);
+    global_dpd_->buf4_close(&A_AA);
 
     moinfo.singlet_evals = singlet_evals;
     moinfo.triplet_evals = triplet_evals;
@@ -179,9 +179,9 @@ void diag(void)
     for(h=0; h < moinfo.nirreps; h++)
       uhf_evals[h] = init_array(params.rpi[h]);
 
-    dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
-    dpd_->buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
-    dpd_->buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
+    global_dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
+    global_dpd_->buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
+    global_dpd_->buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
     for(h=0; h < moinfo.nirreps; h++) {
       dim_A = A_AA.params->rowtot[h];
       dim_B = A_BB.params->rowtot[h];
@@ -192,26 +192,26 @@ void diag(void)
       eps = init_array(dim);
       v = block_matrix(dim, dim);
 
-      dpd_->buf4_mat_irrep_init(&A_AA, h);
-      dpd_->buf4_mat_irrep_rd(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_init(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_rd(&A_AA, h);
       for(ai=0; ai < dim_A; ai++)
 	for(bj=0; bj < dim_A; bj++)
 	  A[ai][bj] = A_AA.matrix[h][ai][bj];
-      dpd_->buf4_mat_irrep_close(&A_AA, h);
+      global_dpd_->buf4_mat_irrep_close(&A_AA, h);
 
-      dpd_->buf4_mat_irrep_init(&A_BB, h);
-      dpd_->buf4_mat_irrep_rd(&A_BB, h);
+      global_dpd_->buf4_mat_irrep_init(&A_BB, h);
+      global_dpd_->buf4_mat_irrep_rd(&A_BB, h);
       for(ai=0; ai < dim_B; ai++)
 	for(bj=0; bj < dim_B; bj++)
 	  A[ai+dim_A][bj+dim_A] = A_BB.matrix[h][ai][bj];
-      dpd_->buf4_mat_irrep_close(&A_BB, h);
+      global_dpd_->buf4_mat_irrep_close(&A_BB, h);
 
-      dpd_->buf4_mat_irrep_init(&A_AB, h);
-      dpd_->buf4_mat_irrep_rd(&A_AB, h);
+      global_dpd_->buf4_mat_irrep_init(&A_AB, h);
+      global_dpd_->buf4_mat_irrep_rd(&A_AB, h);
       for(ai=0; ai < dim_A; ai++)
 	for(bj=0; bj < dim_B; bj++)
 	  A[ai][bj+dim_A] = A[bj+dim_A][ai] = A_AB.matrix[h][ai][bj];
-      dpd_->buf4_mat_irrep_close(&A_AB, h);
+      global_dpd_->buf4_mat_irrep_close(&A_AB, h);
 
       if(params.diag_method == "FULL")
 	sq_rsp(dim, dim, A, eps, 1, v, 1e-12);
@@ -231,8 +231,8 @@ void diag(void)
       /* Store the eigenvectors in DPD entries and save the eigenvalues */
       for(root=0; root < params.rpi[h]; root++) {
 	sprintf(lbl, "BIA(%d)[%d]", root, h);
-	dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
-	dpd_->file2_mat_init(&B);
+	global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 0, 1, lbl);
+	global_dpd_->file2_mat_init(&B);
 	for(ck=0; ck < dim_A; ck++) {
 	  c = A_AA.params->roworb[h][ck][0];
 	  k = A_AA.params->roworb[h][ck][1];
@@ -244,13 +244,13 @@ void diag(void)
 
 	  B.matrix[Ksym][K][C] = v[ck][root];
 	}
-	dpd_->file2_mat_wrt(&B);
-	dpd_->file2_mat_close(&B);
-	dpd_->file2_close(&B);
+	global_dpd_->file2_mat_wrt(&B);
+	global_dpd_->file2_mat_close(&B);
+	global_dpd_->file2_close(&B);
 
 	sprintf(lbl, "Bia(%d)[%d]", root, h);
-	dpd_->file2_init(&B, PSIF_CC_OEI, h, 2, 3, lbl);
-	dpd_->file2_mat_init(&B);
+	global_dpd_->file2_init(&B, PSIF_CC_OEI, h, 2, 3, lbl);
+	global_dpd_->file2_mat_init(&B);
 	for(ck=0; ck < dim_B; ck++) {
 	  c = A_BB.params->roworb[h][ck][0];
 	  k = A_BB.params->roworb[h][ck][1];
@@ -262,9 +262,9 @@ void diag(void)
 
 	  B.matrix[Ksym][K][C] = v[ck+dim_A][root];
 	}
-	dpd_->file2_mat_wrt(&B);
-	dpd_->file2_mat_close(&B);
-	dpd_->file2_close(&B);
+	global_dpd_->file2_mat_wrt(&B);
+	global_dpd_->file2_mat_close(&B);
+	global_dpd_->file2_close(&B);
 
 	uhf_evals[h][root] = eps[root];
       }
@@ -273,9 +273,9 @@ void diag(void)
       free_block(v);
       free_block(A);
     }
-    dpd_->buf4_close(&A_AA);
-    dpd_->buf4_close(&A_BB);
-    dpd_->buf4_close(&A_AB);
+    global_dpd_->buf4_close(&A_AA);
+    global_dpd_->buf4_close(&A_BB);
+    global_dpd_->buf4_close(&A_AB);
 
     moinfo.uhf_evals = uhf_evals;
   }

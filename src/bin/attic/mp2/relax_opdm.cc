@@ -35,55 +35,55 @@ void relax_opdm(void)
   dpdfile2 D1, D2;
 
   if(params.ref == 0) {   
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DAI");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DAI");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DIA");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DIA");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "Dai");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "Dai");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "Dia");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "Dia");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(a,i)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
   }
   else if(params.ref == 2) {
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DAI");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DAI");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DIA");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 0, 1, "DIA");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "Dai");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "Dai");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
 
-    dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "Dia");
-    dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-    dpd_->file2_axpy(&D2, &D1, 1.0, 1);
-    dpd_->file2_close(&D2);
-    dpd_->file2_close(&D1);
+    global_dpd_->file2_init(&D1, PSIF_CC_OEI, 0, 2, 3, "Dia");
+    global_dpd_->file2_init(&D2, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+    global_dpd_->file2_axpy(&D2, &D1, 1.0, 1);
+    global_dpd_->file2_close(&D2);
+    global_dpd_->file2_close(&D1);
   }
 }
 

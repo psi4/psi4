@@ -40,144 +40,144 @@ void d_sort(void)
 
   if(params.ref == 2) { /*** UHF ***/
     /*** AA ***/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 0, 5, 1, "D <IJ|AB>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (I>J,A>B)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 0, 5, 1, "D <IJ|AB>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (I>J,A>B)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <IJ|AB>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (I>J,AB)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <IJ|AB>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (I>J,AB)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 7, 0, 5, 1, "D <IJ|AB>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (IJ,A>B)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 7, 0, 5, 1, "D <IJ|AB>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB> (IJ,A>B)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <IJ|AB>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB>");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <IJ|AB>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <IJ||AB>");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 20, 20, "D <IJ||AB> (IA,JB)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 20, 20, "D <IJ||AB> (IA,JB)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 20, 20, 20, 20, 0, "D <IJ||AB> (IA,JB)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 20, 21, "D <IJ||AB> (IA,BJ)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 20, 20, 20, 20, 0, "D <IJ||AB> (IA,JB)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 20, 21, "D <IJ||AB> (IA,BJ)");
+    global_dpd_->buf4_close(&D);
 
     /*** BB ***/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 10, 15, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,a>b)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 17, 10, 15, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,a>b)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 15, 10, 15, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,ab)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 12, 15, 10, 15, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,ab)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 17, 10, 15, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (ij,a>b)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 17, 10, 15, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (ij,a>b)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab>");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab>");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 30, 30, "D <ij||ab> (ia,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 30, 30, "D <ij||ab> (ia,jb)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 30, 30, 30, 30, 0, "D <ij||ab> (ia,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 30, 31, "D <ij||ab> (ia,bj)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 30, 30, 30, 30, 0, "D <ij||ab> (ia,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 30, 31, "D <ij||ab> (ia,bj)");
+    global_dpd_->buf4_close(&D);
 
     /*** AB ***/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, qpsr, 23, 29, "D <iJ|aB>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 24, 26, "D <Ij|Ab> (Ib,Aj)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 20, 30, "D <Ij|Ab> (IA,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 22, 28, 22, 28, 0, "D <Ij|Ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, qpsr, 23, 29, "D <iJ|aB>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 24, 26, "D <Ij|Ab> (Ib,Aj)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 20, 30, "D <Ij|Ab> (IA,jb)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 20, 30, 20, 30, 0, "D <Ij|Ab> (IA,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, rspq, 30, 20, "D <Ij|Ab> (ia,JB)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 20, 31, "D <Ij|Ab> (IA,bj)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 20, 30, 20, 30, 0, "D <Ij|Ab> (IA,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, rspq, 30, 20, "D <Ij|Ab> (ia,JB)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 20, 31, "D <Ij|Ab> (IA,bj)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 30, 20, 30, 20, 0, "D <Ij|Ab> (ia,JB)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 30, 21, "D <Ij|Ab> (ia,BJ)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 30, 20, 30, 20, 0, "D <Ij|Ab> (ia,JB)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 30, 21, "D <Ij|Ab> (ia,BJ)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 27, 25, "D <iJ|aB> (iB,aJ)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 27, 25, "D <iJ|aB> (iB,aJ)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 24, 26, 24, 26, 0, "D <Ij|Ab> (Ib,Aj)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 24, 27, "D <Ij|Ab> (Ib,jA)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 24, 26, 24, 26, 0, "D <Ij|Ab> (Ib,Aj)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 24, 27, "D <Ij|Ab> (Ib,jA)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 27, 25, 27, 25, 0, "D <iJ|aB> (iB,aJ)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 27, 24, "D <iJ|aB> (iB,Ja)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 27, 25, 27, 25, 0, "D <iJ|aB> (iB,aJ)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 27, 24, "D <iJ|aB> (iB,Ja)");
+    global_dpd_->buf4_close(&D);
   }
   else {  /*** RHF/ROHF ***/
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 0, 5, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,a>b)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 7, 0, 5, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,a>b)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,ab)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 2, 5, 0, 5, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (i>j,ab)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 7, 0, 5, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (ij,a>b)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 7, 0, 5, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab> (ij,a>b)");
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <ij|ab>");
-    dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab>");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 1, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_DINTS, "D <ij||ab>");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (ia,jb) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D <ij|ab> (ia,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D <ij|ab> (ia,jb)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (ai,jb) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, qprs, 11, 10, "D <ij|ab> (ai,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, qprs, 11, 10, "D <ij|ab> (ai,jb)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (aj,ib) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, rqps, 11, 10, "D <ij|ab> (aj,ib)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, rqps, 11, 10, "D <ij|ab> (aj,ib)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (bi,ja) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, spqr, 11, 10, "D <ij|ab> (bi,ja)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, spqr, 11, 10, "D <ij|ab> (bi,ja)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij||ab> (ia,jb) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D <ij||ab> (ia,jb)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij||ab>");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, prqs, 10, 10, "D <ij||ab> (ia,jb)");
+    global_dpd_->buf4_close(&D);
   
     /* <ij|ab> (ib,ja) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 10, 10, "D <ij|ab> (ib,ja)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, psrq, 10, 10, "D <ij|ab> (ib,ja)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (ib,aj) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij|ab> (ib,aj)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ib,ja)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij|ab> (ib,aj)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij|ab> (ia,bj) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij|ab> (ia,bj)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij|ab> (ia,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij|ab> (ia,bj)");
+    global_dpd_->buf4_close(&D);
 
     /* <ij||ab> (ia,bj) */
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij||ab> (ia,jb)");
-    dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij||ab> (ia,bj)");
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D <ij||ab> (ia,jb)");
+    global_dpd_->buf4_sort(&D, PSIF_CC_DINTS, pqsr, 10, 11, "D <ij||ab> (ia,bj)");
+    global_dpd_->buf4_close(&D);
 
     /* <ib|aj> (ib,aj) */
     /* just use <ij|ab> (ib,aj), dummy

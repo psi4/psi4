@@ -58,7 +58,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -175,7 +175,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_->file4_close(&I);
+    global_dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }
 
@@ -200,7 +200,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     dpdfile4 I;
     psio_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -303,7 +303,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AA_TPDM, keepIwlMoTpdm_);
 
     // The alpha - beta spin case
-    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[A>=A]+"), DPD_ID("[a>=a]+"), "MO TPDM (AA|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -350,7 +350,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     psio_->close(PSIF_MO_AB_TPDM, keepIwlMoTpdm_);
 
     // The beta - beta spin case
-    dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
+    global_dpd_->file4_init(&I, PSIF_TPDM_PRESORT, 0, DPD_ID("[a>=a]+"), DPD_ID("[a>=a]+"), "MO TPDM (aa|aa)");
     if(print_) {
         fprintf(outfile, "\tSorting File: %s nbuckets = %d\n", I.label, nBuckets);
         fflush(outfile);
@@ -411,6 +411,6 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
 
     tpdmAlreadyPresorted_ = true;
 
-    dpd_->file4_close(&I);
+    global_dpd_->file4_close(&I);
     psio_->close(PSIF_TPDM_PRESORT, 1);
 }

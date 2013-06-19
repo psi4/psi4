@@ -51,14 +51,14 @@ void spinad_amps(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
-    dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_LAMBDA, 0, 0, 1, "LIA");
+    global_dpd_->file2_copy(&T1, PSIF_CC_LAMBDA, "Lia");
+    global_dpd_->file2_close(&T1);
 
-    dpd_->buf4_init(&T2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "LIjAb");
-    dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIJAB");
-    dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "Lijab");
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_init(&T2, PSIF_CC_LAMBDA, 0, 2, 7, 0, 5, 1, "LIjAb");
+    global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "LIJAB");
+    global_dpd_->buf4_copy(&T2, PSIF_CC_LAMBDA, "Lijab");
+    global_dpd_->buf4_close(&T2);
 
   }
 }

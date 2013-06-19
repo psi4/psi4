@@ -160,27 +160,27 @@ void FrozenNO::ComputeNaturalOrbitals(){
         for(int b = doccpi_[h]; b < nmopi_[h]; ++b)               bVirEvals[bVirCount++] = epsB->get(h, b);
     }
 
-    dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
 
     // T(ijab) -> T(jiab)
-    dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "Tijab <OO|VV>");
-    dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, rpqs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
-    dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, prqs, ID("[O,O]"), ID("[V,V]"), "Tijab <OO|VV>");
+    global_dpd_->buf4_sort(&amps1, PSIF_LIBTRANS_DPD, rpqs, ID("[O,O]"), ID("[V,V]"), "Tjiab <OO|VV>");
+    global_dpd_->buf4_close(&amps1);
 
     // only worry about alpha-beta
-    dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tjiab <OO|VV>");
 
     double emp2_os = 0.0;
     double emp2_ss = 0.0;
     for(int h = 0; h < nirrep_; ++h){
 
-        dpd_->buf4_mat_irrep_init(&amps1, h);
-        dpd_->buf4_mat_irrep_rd(&amps1, h);
+        global_dpd_->buf4_mat_irrep_init(&amps1, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps1, h);
 
-        dpd_->buf4_mat_irrep_init(&amps2, h);
-        dpd_->buf4_mat_irrep_rd(&amps2, h);
+        global_dpd_->buf4_mat_irrep_init(&amps2, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps2, h);
 
         for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
             int i = amps1.params->roworb[h][ij][0];
@@ -197,10 +197,10 @@ void FrozenNO::ComputeNaturalOrbitals(){
                 emp2_ss += val1 * ( val1 - val2 ) / denom;
             }
         }
-        dpd_->buf4_mat_irrep_close(&amps1, h);
-        dpd_->buf4_mat_irrep_close(&amps2, h);
+        global_dpd_->buf4_mat_irrep_close(&amps1, h);
+        global_dpd_->buf4_mat_irrep_close(&amps2, h);
     }
-    dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps1);
 
     double escf = Process::environment.globals["SCF TOTAL ENERGY"];
     Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = emp2_os;
@@ -209,12 +209,12 @@ void FrozenNO::ComputeNaturalOrbitals(){
     Process::environment.globals["MP2 TOTAL ENERGY"] = emp2_os + emp2_ss + escf;
 
     // build amps1(ij,ab) = 2*T(ij,ab) - T(ji,ab)
-    dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_scm(&amps1, 2.0);
-    dpd_->buf4_axpy(&amps2, &amps1, -1.0);
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_scm(&amps1, 2.0);
+    global_dpd_->buf4_axpy(&amps2, &amps1, -1.0);
 
-    dpd_->buf4_close(&amps1);
-    dpd_->buf4_close(&amps2);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
 
     fprintf(outfile,"        OS MP2 correlation energy:       %20.12lf\n",emp2_os);
     fprintf(outfile,"        SS MP2 correlation energy:       %20.12lf\n",emp2_ss);
@@ -223,15 +223,15 @@ void FrozenNO::ComputeNaturalOrbitals(){
     fprintf(outfile,"\n");
 
     // scale amps by denominator
-    dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
 
-        dpd_->buf4_mat_irrep_init(&amps1, h);
-        dpd_->buf4_mat_irrep_rd(&amps1, h);
+        global_dpd_->buf4_mat_irrep_init(&amps1, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps1, h);
 
-        dpd_->buf4_mat_irrep_init(&amps2, h);
-        dpd_->buf4_mat_irrep_rd(&amps2, h);
+        global_dpd_->buf4_mat_irrep_init(&amps2, h);
+        global_dpd_->buf4_mat_irrep_rd(&amps2, h);
 
         for(int ij = 0; ij < amps1.params->rowtot[h]; ++ij){
             int i = amps1.params->roworb[h][ij][0];
@@ -245,31 +245,31 @@ void FrozenNO::ComputeNaturalOrbitals(){
             }
         }
 
-        dpd_->buf4_mat_irrep_wrt(&amps1, h);
-        dpd_->buf4_mat_irrep_close(&amps1, h);
-        dpd_->buf4_mat_irrep_wrt(&amps2, h);
-        dpd_->buf4_mat_irrep_close(&amps2, h);
+        global_dpd_->buf4_mat_irrep_wrt(&amps1, h);
+        global_dpd_->buf4_mat_irrep_close(&amps1, h);
+        global_dpd_->buf4_mat_irrep_wrt(&amps2, h);
+        global_dpd_->buf4_mat_irrep_close(&amps2, h);
     }
-    dpd_->buf4_close(&amps1);
-    dpd_->buf4_close(&amps2);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
 
     // build virtual-virtual block of opdm: sum(ijc) 2.0 * [ 2 t(ij,ac) - t(ji,ac) ] * t(ij,bc)
     dpdfile2 Dab;
-    dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
-    dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
-    dpd_->contract442(&amps1, &amps2, &Dab, 3, 3, 2.0, 0.0);
-    dpd_->buf4_close(&amps1);
-    dpd_->buf4_close(&amps2);
-    dpd_->file2_close(&Dab);
+    global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    global_dpd_->buf4_init(&amps2, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
+    global_dpd_->buf4_init(&amps1, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),ID("[O,O]"), ID("[V,V]"), 0, "Tijab <OO|VV>");
+    global_dpd_->contract442(&amps1, &amps2, &Dab, 3, 3, 2.0, 0.0);
+    global_dpd_->buf4_close(&amps1);
+    global_dpd_->buf4_close(&amps2);
+    global_dpd_->file2_close(&Dab);
 
     // diagonalize virtual-virtual block of opdm
     int symmetry = Ca_->symmetry();
     boost::shared_ptr<Matrix> D (new Matrix("Dab",nirrep_,aVirOrbsPI,aVirOrbsPI,symmetry));
 
-    dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
-    dpd_->file2_mat_init(&Dab);
-    dpd_->file2_mat_rd(&Dab);
+    global_dpd_->file2_init(&Dab, PSIF_LIBTRANS_DPD,    0, 1, 1, "Dab");
+    global_dpd_->file2_mat_init(&Dab);
+    global_dpd_->file2_mat_rd(&Dab);
     for (int h = 0; h < nirrep_; h++) {
         int v = Dab.params->rowtot[h];
 
@@ -280,7 +280,7 @@ void FrozenNO::ComputeNaturalOrbitals(){
             }
         }
     }
-    dpd_->file2_close(&Dab);
+    global_dpd_->file2_close(&Dab);
 
     // done with dpd and ints ... reset
     psio->close(PSIF_LIBTRANS_DPD, 1);

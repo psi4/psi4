@@ -50,19 +50,19 @@ void WabejDS(int i, int C_irr) {
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
-    dpd_->buf4_scm(&Z, 0);
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAbEi (Ei,Ab)");
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
+    global_dpd_->buf4_scm(&Z, 0);
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAbEi (Ei,Ab)");
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
 /*     dpd_contract244(&CME, &WAbEi, &Z, 1, 0, 0, 1.0, 0.0); */
-    dpd_->file2_mat_init(&CME);
-    dpd_->file2_mat_rd(&CME);
+    global_dpd_->file2_mat_init(&CME);
+    global_dpd_->file2_mat_rd(&CME);
     for(Gej=0; Gej < moinfo.nirreps; Gej++) {
       Gab = Gej ^ H_IRR;
       Gij = Gab ^ C_irr;
 
-      dpd_->buf4_mat_irrep_init(&Z, Gij);
-      dpd_->buf4_mat_irrep_shift13(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_init(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_shift13(&Z, Gij);
 
       for(Ge=0; Ge < moinfo.nirreps; Ge++) {
 	Gj = Ge ^ Gej;
@@ -70,11 +70,11 @@ void WabejDS(int i, int C_irr) {
 
 	nrows = moinfo.occpi[Gj];
 	length = nrows * W.params->coltot[Gab];
-	dpd_->buf4_mat_irrep_init_block(&W, Gej, nrows);
+	global_dpd_->buf4_mat_irrep_init_block(&W, Gej, nrows);
 
 	for(E=0; E < moinfo.virtpi[Ge]; E++) {
 	  e = moinfo.vir_off[Ge] + E;
-	  dpd_->buf4_mat_irrep_rd_block(&W, Gej, W.row_offset[Gej][e], nrows);
+	  global_dpd_->buf4_mat_irrep_rd_block(&W, Gej, W.row_offset[Gej][e], nrows);
 
 	  for(I=0; I < moinfo.occpi[Gi]; I++) {
 	    if(length)
@@ -83,22 +83,22 @@ void WabejDS(int i, int C_irr) {
 	  }
 	}
 
-	dpd_->buf4_mat_irrep_close_block(&W, Gej, nrows);
+	global_dpd_->buf4_mat_irrep_close_block(&W, Gej, nrows);
       }
 
-      dpd_->buf4_mat_irrep_wrt(&Z, Gij);
-      dpd_->buf4_mat_irrep_close(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_wrt(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_close(&Z, Gij);
 
     }
-    dpd_->file2_mat_close(&CME);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&W);
+    global_dpd_->file2_mat_close(&CME);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&W);
 
-    dpd_->buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
-    dpd_->buf4_close(&SIjAb);
-    dpd_->buf4_close(&Z);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+    global_dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_close(&Z);
   }
 
   else if (params.eom_ref == 1) { /* ROHF */
@@ -109,51 +109,51 @@ void WabejDS(int i, int C_irr) {
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
     /* SIJAB += WABEJ * CIE - WABEI * CJE */
-    dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
-    dpd_->buf4_init(&WABEI, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "WEIAB");
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
-    dpd_->contract244(&CME, &WABEI, &WP, 1, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&WABEI);
-    dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
-    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
-    dpd_->buf4_axpy(&WP, &SIJAB, 1.0);
-    dpd_->buf4_close(&WP);
-    dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
-    dpd_->buf4_axpy(&WM, &SIJAB, -1.0);
-    dpd_->buf4_close(&WM);
-    dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "WEIAB");
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->contract244(&CME, &WABEI, &WP, 1, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&WABEI);
+    global_dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
+    global_dpd_->buf4_axpy(&WP, &SIJAB, 1.0);
+    global_dpd_->buf4_close(&WP);
+    global_dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
+    global_dpd_->buf4_axpy(&WM, &SIJAB, -1.0);
+    global_dpd_->buf4_close(&WM);
+    global_dpd_->buf4_close(&SIJAB);
 
     /* Sijab += Wabej * Cie - Wabei * Cje */
-    dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
-    dpd_->buf4_init(&Wabei, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "Weiab");
-    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, Cme_lbl);
-    dpd_->contract244(&Cme, &Wabei, &WP, 1, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&Cme);
-    dpd_->buf4_close(&Wabei);
-    dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
-    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 0, 7, 2, 7, 0, Sijab_lbl);
-    dpd_->buf4_axpy(&WP, &Sijab, 1.0);
-    dpd_->buf4_close(&WP);
-    dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
-    dpd_->buf4_axpy(&WM, &Sijab, -1.0);
-    dpd_->buf4_close(&WM);
-    dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC_HBAR, H_IRR, 11, 7, 11, 7, 0, "Weiab");
+    global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, Cme_lbl);
+    global_dpd_->contract244(&Cme, &Wabei, &WP, 1, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&Cme);
+    global_dpd_->buf4_close(&Wabei);
+    global_dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
+    global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 0, 7, 2, 7, 0, Sijab_lbl);
+    global_dpd_->buf4_axpy(&WP, &Sijab, 1.0);
+    global_dpd_->buf4_close(&WP);
+    global_dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
+    global_dpd_->buf4_axpy(&WM, &Sijab, -1.0);
+    global_dpd_->buf4_close(&WM);
+    global_dpd_->buf4_close(&Sijab);
 
 
     /* SIjAb += WAbEj * CIE - WAbeI * Cje */
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
-    dpd_->buf4_init(&WAbEi, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WEiAb");
-    dpd_->contract244(&CME, &WAbEi, &SIjAb, 1, 0, 0, 1.0, 1.0);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&WAbEi);
-    dpd_->buf4_init(&WaBeI, PSIF_CC_HBAR, H_IRR, 10, 5, 10, 5, 0, "WeIaB (Ie,Ab)");
-    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, Cme_lbl);
-    dpd_->contract424(&WaBeI, &Cme, &SIjAb, 1, 1, 1, 1.0, 1.0);
-    dpd_->file2_close(&Cme);
-    dpd_->buf4_close(&WaBeI);
-    dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WEiAb");
+    global_dpd_->contract244(&CME, &WAbEi, &SIjAb, 1, 0, 0, 1.0, 1.0);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC_HBAR, H_IRR, 10, 5, 10, 5, 0, "WeIaB (Ie,Ab)");
+    global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, Cme_lbl);
+    global_dpd_->contract424(&WaBeI, &Cme, &SIjAb, 1, 1, 1, 1.0, 1.0);
+    global_dpd_->file2_close(&Cme);
+    global_dpd_->buf4_close(&WaBeI);
+    global_dpd_->buf4_close(&SIjAb);
   }
 
   else if (params.eom_ref == 2) {
@@ -164,52 +164,52 @@ void WabejDS(int i, int C_irr) {
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
     /* SIJAB += WABEJ * CIE - WABEI * CJE */
-    dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
-    dpd_->buf4_init(&WABEI, PSIF_CC_HBAR, H_IRR, 21, 7, 21, 7, 0, "WEIAB");
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
-    dpd_->contract244(&CME, &WABEI, &WP, 1, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&WABEI);
-    dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
-    dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
-    dpd_->buf4_axpy(&WP, &SIJAB, 1.0);
-    dpd_->buf4_close(&WP);
-    dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
-    dpd_->buf4_axpy(&WM, &SIJAB, -1.0);
-    dpd_->buf4_close(&WM);
-    dpd_->buf4_close(&SIJAB);
+    global_dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_P");
+    global_dpd_->buf4_init(&WABEI, PSIF_CC_HBAR, H_IRR, 21, 7, 21, 7, 0, "WEIAB");
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->contract244(&CME, &WABEI, &WP, 1, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&WABEI);
+    global_dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 0, 7, "WabejDS_M");
+    global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 7, 2, 7, 0, SIJAB_lbl);
+    global_dpd_->buf4_axpy(&WP, &SIJAB, 1.0);
+    global_dpd_->buf4_close(&WP);
+    global_dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "WabejDS_M");
+    global_dpd_->buf4_axpy(&WM, &SIJAB, -1.0);
+    global_dpd_->buf4_close(&WM);
+    global_dpd_->buf4_close(&SIJAB);
 
     /* Sijab += Wabej * Cie - Wabei * Cje */
-    dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "WabejDS_PB");
-    dpd_->buf4_init(&Wabei, PSIF_CC_HBAR, H_IRR, 31, 17, 31, 17, 0, "Weiab");
-    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, Cme_lbl);
-    dpd_->contract244(&Cme, &Wabei, &WP, 1, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&Cme);
-    dpd_->buf4_close(&Wabei);
-    dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 10, 17, "WabejDS_MB");
-    dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 17, 12, 17, 0, Sijab_lbl);
-    dpd_->buf4_axpy(&WP, &Sijab, 1.0);
-    dpd_->buf4_close(&WP);
-    dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "WabejDS_MB");
-    dpd_->buf4_axpy(&WM, &Sijab, -1.0);
-    dpd_->buf4_close(&WM);
-    dpd_->buf4_close(&Sijab);
+    global_dpd_->buf4_init(&WP, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "WabejDS_PB");
+    global_dpd_->buf4_init(&Wabei, PSIF_CC_HBAR, H_IRR, 31, 17, 31, 17, 0, "Weiab");
+    global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, Cme_lbl);
+    global_dpd_->contract244(&Cme, &Wabei, &WP, 1, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&Cme);
+    global_dpd_->buf4_close(&Wabei);
+    global_dpd_->buf4_sort(&WP, PSIF_EOM_TMP, qprs, 10, 17, "WabejDS_MB");
+    global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 17, 12, 17, 0, Sijab_lbl);
+    global_dpd_->buf4_axpy(&WP, &Sijab, 1.0);
+    global_dpd_->buf4_close(&WP);
+    global_dpd_->buf4_init(&WM, PSIF_EOM_TMP, C_irr, 10, 17, 10, 17, 0, "WabejDS_MB");
+    global_dpd_->buf4_axpy(&WM, &Sijab, -1.0);
+    global_dpd_->buf4_close(&WM);
+    global_dpd_->buf4_close(&Sijab);
 
 
     /* SIjAb += WAbEj * CIE - WAbeI * Cje */
     /* start here */
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
-    dpd_->buf4_init(&WAbEi, PSIF_CC_HBAR, H_IRR, 26, 28, 26, 28, 0, "WEiAb");
-    dpd_->contract244(&CME, &WAbEi, &SIjAb, 1, 0, 0, 1.0, 1.0);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&WAbEi);
-    dpd_->buf4_init(&WaBeI, PSIF_CC_HBAR, H_IRR, 24, 28, 24, 28, 0, "WeIaB (Ie,Ab)");
-    dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, Cme_lbl);
-    dpd_->contract424(&WaBeI, &Cme, &SIjAb, 1, 1, 1, 1.0, 1.0);
-    dpd_->file2_close(&Cme);
-    dpd_->buf4_close(&WaBeI);
-    dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, SIjAb_lbl);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->buf4_init(&WAbEi, PSIF_CC_HBAR, H_IRR, 26, 28, 26, 28, 0, "WEiAb");
+    global_dpd_->contract244(&CME, &WAbEi, &SIjAb, 1, 0, 0, 1.0, 1.0);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&WAbEi);
+    global_dpd_->buf4_init(&WaBeI, PSIF_CC_HBAR, H_IRR, 24, 28, 24, 28, 0, "WeIaB (Ie,Ab)");
+    global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, Cme_lbl);
+    global_dpd_->contract424(&WaBeI, &Cme, &SIjAb, 1, 1, 1, 1.0, 1.0);
+    global_dpd_->file2_close(&Cme);
+    global_dpd_->buf4_close(&WaBeI);
+    global_dpd_->buf4_close(&SIjAb);
   }
 
 #ifdef EOM_DEBUG

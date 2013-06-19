@@ -54,32 +54,32 @@ void build_A_RHF(void)
   nirreps = moinfo.nirreps;
 
   /* Two-electron integral contributions */
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(EM,AI)");
-  dpd_->buf4_close(&D);
-  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
-  dpd_->buf4_scm(&Amat, 4.0);
-  dpd_->buf4_close(&Amat);
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
-  dpd_->buf4_sort_axpy(&D, PSIF_CC_MISC, rqsp, 11, 11, "A(EM,AI)", -1);
-  dpd_->buf4_close(&D);
-  dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
-  dpd_->buf4_sort_axpy(&C, PSIF_CC_MISC, qpsr, 11, 11, "A(EM,AI)", -1);
-  dpd_->buf4_close(&C);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_sort(&D, PSIF_CC_MISC, rpsq, 11, 11, "A(EM,AI)");
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  global_dpd_->buf4_scm(&Amat, 4.0);
+  global_dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+  global_dpd_->buf4_sort_axpy(&D, PSIF_CC_MISC, rqsp, 11, 11, "A(EM,AI)", -1);
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&C, PSIF_CC_CINTS, 0, 10, 10, 10, 10, 0, "C <ia|jb>");
+  global_dpd_->buf4_sort_axpy(&C, PSIF_CC_MISC, qpsr, 11, 11, "A(EM,AI)", -1);
+  global_dpd_->buf4_close(&C);
 
   /* Fock matrix contributions */
-  dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
-  dpd_->file2_mat_init(&fIJ);
-  dpd_->file2_mat_rd(&fIJ);
-  dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
-  dpd_->file2_mat_init(&fAB);
-  dpd_->file2_mat_rd(&fAB);
+  global_dpd_->file2_init(&fIJ, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+  global_dpd_->file2_mat_init(&fIJ);
+  global_dpd_->file2_mat_rd(&fIJ);
+  global_dpd_->file2_init(&fAB, PSIF_CC_OEI, 0, 1, 1, "fAB");
+  global_dpd_->file2_mat_init(&fAB);
+  global_dpd_->file2_mat_rd(&fAB);
 
-  dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
+  global_dpd_->buf4_init(&Amat, PSIF_CC_MISC, 0, 11, 11, 11, 11, 0, "A(EM,AI)");
   
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(&Amat, h);
-    dpd_->buf4_mat_irrep_rd(&Amat, h);
+    global_dpd_->buf4_mat_irrep_init(&Amat, h);
+    global_dpd_->buf4_mat_irrep_rd(&Amat, h);
 
     for(em=0; em < Amat.params->rowtot[h]; em++) {
       e = Amat.params->roworb[h][em][0];
@@ -103,16 +103,16 @@ void build_A_RHF(void)
       }
     }
 
-    dpd_->buf4_mat_irrep_wrt(&Amat, h);
-    dpd_->buf4_mat_irrep_close(&Amat, h);
+    global_dpd_->buf4_mat_irrep_wrt(&Amat, h);
+    global_dpd_->buf4_mat_irrep_close(&Amat, h);
   }
 
-  dpd_->buf4_close(&Amat);
+  global_dpd_->buf4_close(&Amat);
 
-  dpd_->file2_mat_close(&fIJ);
-  dpd_->file2_close(&fIJ);
-  dpd_->file2_mat_close(&fAB);
-  dpd_->file2_close(&fAB);
+  global_dpd_->file2_mat_close(&fIJ);
+  global_dpd_->file2_close(&fIJ);
+  global_dpd_->file2_mat_close(&fAB);
+  global_dpd_->file2_close(&fAB);
 }
 
 

@@ -46,31 +46,31 @@ void tau_build(void)
 
   if(params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
 
-    dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");
-    dpd_->buf4_close(&tIJAB);
+    global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");
+    global_dpd_->buf4_close(&tIJAB);
 
-    dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
-    dpd_->buf4_copy(&tijab, PSIF_CC_TAMPS, "tauijab");
-    dpd_->buf4_close(&tijab);
+    global_dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+    global_dpd_->buf4_copy(&tijab, PSIF_CC_TAMPS, "tauijab");
+    global_dpd_->buf4_close(&tijab);
 
-    dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tauIjAb");
-    dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tauIjAb");
+    global_dpd_->buf4_close(&tIjAb);
 
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&tIA);
-    dpd_->file2_mat_rd(&tIA);
-    dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
-    dpd_->file2_mat_init(&tia);
-    dpd_->file2_mat_rd(&tia);
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&tIA);
+    global_dpd_->file2_mat_rd(&tIA);
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_mat_init(&tia);
+    global_dpd_->file2_mat_rd(&tia);
 
-    dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+    global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauIJAB, h);
-      dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
 
       for(ij=0; ij < tauIJAB.params->rowtot[h]; ij++) {
 	i = tauIJAB.params->roworb[h][ij][0];
@@ -97,18 +97,18 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauIJAB, h);
-      dpd_->buf4_mat_irrep_close(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_close(&tauIJAB, h);
     }
 
-    dpd_->buf4_close(&tauIJAB);
+    global_dpd_->buf4_close(&tauIJAB);
 
-    dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
+    global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauijab");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauijab, h);
-      dpd_->buf4_mat_irrep_rd(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_init(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
 
       for(ij=0; ij < tauijab.params->rowtot[h]; ij++) {
 	i = tauijab.params->roworb[h][ij][0];
@@ -135,18 +135,18 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauijab, h);
-      dpd_->buf4_mat_irrep_close(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_close(&tauijab, h);
     }
 
-    dpd_->buf4_close(&tauijab);
+    global_dpd_->buf4_close(&tauijab);
 
-    dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
+    global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjAb");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauIjAb, h);
-      dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
       for(ij=0; ij < tauIjAb.params->rowtot[h]; ij++) {
 	i = tauIjAb.params->roworb[h][ij][0];
@@ -170,50 +170,50 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauIjAb, h);
-      dpd_->buf4_mat_irrep_close(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_close(&tauIjAb, h);
     }
 
     /* This will generate the tauBA and tauIjbA files from tauIjAb */
-    dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, pqsr, 0, 5, "tauIjbA");
-    dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, psqr, 10, 10, "tauIjAb (Ib,jA)");
-    dpd_->buf4_close(&tauIjAb);
-    dpd_->buf4_init(&tauIjbA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjbA");
-    dpd_->buf4_sort(&tauIjbA, PSIF_CC_TAMPS, qprs,  0, 5, "tauiJaB");
-    dpd_->buf4_close(&tauIjbA);
+    global_dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, pqsr, 0, 5, "tauIjbA");
+    global_dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, psqr, 10, 10, "tauIjAb (Ib,jA)");
+    global_dpd_->buf4_close(&tauIjAb);
+    global_dpd_->buf4_init(&tauIjbA, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tauIjbA");
+    global_dpd_->buf4_sort(&tauIjbA, PSIF_CC_TAMPS, qprs,  0, 5, "tauiJaB");
+    global_dpd_->buf4_close(&tauIjbA);
 
-    dpd_->file2_mat_close(&tIA);
-    dpd_->file2_close(&tIA);
-    dpd_->file2_mat_close(&tia);
-    dpd_->file2_close(&tia);
+    global_dpd_->file2_mat_close(&tIA);
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_mat_close(&tia);
+    global_dpd_->file2_close(&tia);
   } /** RHF or ROHF **/
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
-    dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");
-    dpd_->buf4_close(&tIJAB);
+    global_dpd_->buf4_init(&tIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_copy(&tIJAB, PSIF_CC_TAMPS, "tauIJAB");
+    global_dpd_->buf4_close(&tIJAB);
 
-    dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
-    dpd_->buf4_copy(&tijab, PSIF_CC_TAMPS, "tauijab");
-    dpd_->buf4_close(&tijab);
+    global_dpd_->buf4_init(&tijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+    global_dpd_->buf4_copy(&tijab, PSIF_CC_TAMPS, "tauijab");
+    global_dpd_->buf4_close(&tijab);
 
-    dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-    dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tauIjAb");
-    dpd_->buf4_close(&tIjAb);
+    global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_copy(&tIjAb, PSIF_CC_TAMPS, "tauIjAb");
+    global_dpd_->buf4_close(&tIjAb);
 
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&tIA);
-    dpd_->file2_mat_rd(&tIA);
-    dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_->file2_mat_init(&tia);
-    dpd_->file2_mat_rd(&tia);
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&tIA);
+    global_dpd_->file2_mat_rd(&tIA);
+    global_dpd_->file2_init(&tia, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&tia);
+    global_dpd_->file2_mat_rd(&tia);
 
-    dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
+    global_dpd_->buf4_init(&tauIJAB, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tauIJAB");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauIJAB, h);
-      dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_init(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauIJAB, h);
 
       for(ij=0; ij < tauIJAB.params->rowtot[h]; ij++) {
 	i = tauIJAB.params->roworb[h][ij][0];
@@ -240,18 +240,18 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauIJAB, h);
-      dpd_->buf4_mat_irrep_close(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauIJAB, h);
+      global_dpd_->buf4_mat_irrep_close(&tauIJAB, h);
     }
 
-    dpd_->buf4_close(&tauIJAB);
+    global_dpd_->buf4_close(&tauIJAB);
 
-    dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
+    global_dpd_->buf4_init(&tauijab, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tauijab");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauijab, h);
-      dpd_->buf4_mat_irrep_rd(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_init(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauijab, h);
 
       for(ij=0; ij < tauijab.params->rowtot[h]; ij++) {
 	i = tauijab.params->roworb[h][ij][0];
@@ -278,18 +278,18 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauijab, h);
-      dpd_->buf4_mat_irrep_close(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauijab, h);
+      global_dpd_->buf4_mat_irrep_close(&tauijab, h);
     }
 
-    dpd_->buf4_close(&tauijab);
+    global_dpd_->buf4_close(&tauijab);
 
-    dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+    global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&tauIjAb, h);
-      dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_init(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_rd(&tauIjAb, h);
 
       for(ij=0; ij < tauIjAb.params->rowtot[h]; ij++) {
 	i = tauIjAb.params->roworb[h][ij][0];
@@ -313,21 +313,21 @@ void tau_build(void)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&tauIjAb, h);
-      dpd_->buf4_mat_irrep_close(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_wrt(&tauIjAb, h);
+      global_dpd_->buf4_mat_irrep_close(&tauIjAb, h);
     }
-    dpd_->buf4_close(&tauIjAb);
+    global_dpd_->buf4_close(&tauIjAb);
 
-    dpd_->file2_mat_close(&tIA);
-    dpd_->file2_close(&tIA);
-    dpd_->file2_mat_close(&tia);
-    dpd_->file2_close(&tia);
+    global_dpd_->file2_mat_close(&tIA);
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_mat_close(&tia);
+    global_dpd_->file2_close(&tia);
 
     /* This will generate the tauBA and tauIjbA files from tauIjAb */
-    dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
-    dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, pqsr, 22, 29, "tauIjbA");
-    dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, qpsr, 23, 29, "tauiJaB");
-    dpd_->buf4_close(&tauIjAb);
+    global_dpd_->buf4_init(&tauIjAb, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tauIjAb");
+    global_dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, pqsr, 22, 29, "tauIjbA");
+    global_dpd_->buf4_sort(&tauIjAb, PSIF_CC_TAMPS, qpsr, 23, 29, "tauiJaB");
+    global_dpd_->buf4_close(&tauIjAb);
 
   } /** UHF **/
 

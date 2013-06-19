@@ -39,17 +39,17 @@ void cc2_hbar_extra(void) {
 
   if(params.ref == 0) { /** RHF **/
     
-    dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbeJ (Me,Jb)");
-    dpd_->buf4_copy(&W1, PSIF_CC2_HET1, "CC2 2 W(ME,jb) + W(Me,Jb)");
-    dpd_->buf4_close(&W1);
-    dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
-    dpd_->buf4_init(&W2, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbEj (ME,jb)");
-    dpd_->buf4_axpy(&W2, &W1, 2);
-    dpd_->buf4_close(&W2);
-    dpd_->buf4_close(&W1);
-    dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
-    dpd_->buf4_sort(&W1, PSIF_CC2_HET1, rspq, 10, 10, "CC2 2 W(jb,ME) + W(Jb,Me)");
-    dpd_->buf4_close(&W1);
+    global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbeJ (Me,Jb)");
+    global_dpd_->buf4_copy(&W1, PSIF_CC2_HET1, "CC2 2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->buf4_close(&W1);
+    global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->buf4_init(&W2, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 WMbEj (ME,jb)");
+    global_dpd_->buf4_axpy(&W2, &W1, 2);
+    global_dpd_->buf4_close(&W2);
+    global_dpd_->buf4_close(&W1);
+    global_dpd_->buf4_init(&W1, PSIF_CC2_HET1, 0, 10, 10, 10, 10, 0, "CC2 2 W(ME,jb) + W(Me,Jb)");
+    global_dpd_->buf4_sort(&W1, PSIF_CC2_HET1, rspq, 10, 10, "CC2 2 W(jb,ME) + W(Jb,Me)");
+    global_dpd_->buf4_close(&W1);
 
     /*
     dpd_buf4_init(&W, CC_HBAR, 0, 11, 5, 11, 5, 0, "WAmEf");

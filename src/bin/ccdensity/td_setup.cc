@@ -41,343 +41,343 @@ void td_setup(struct TD_Params S)
   dpdbuf4 L2,R2;
 
   if((params.ref == 0) || (params.ref == 1)) {
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
-    dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+    global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "Lia 0 -1");
-    dpd_->file2_copy(&L1, PSIF_CC_GLG, "Lia");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "Lia 0 -1");
+    global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "LIJAB 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIJAB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "LIJAB 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "Lijab 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "Lijab");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "Lijab 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIjAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIjAb");
+    global_dpd_->buf4_close(&L2);
   }
   else if (params.ref == 2) {
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
-    dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 0, 1, "LIA 0 -1");
+    global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 2, 3, "Lia 0 -1");
-    dpd_->file2_copy(&L1, PSIF_CC_GLG, "Lia");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, 0, 2, 3, "Lia 0 -1");
+    global_dpd_->file2_copy(&L1, PSIF_CC_GLG, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "LIJAB 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIJAB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 2, 7, 2, 7, 0, "LIJAB 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 12, 17, 12, 17, 0, "Lijab 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "Lijab");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 12, 17, 12, 17, 0, "Lijab 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 22, 28, 22, 28, 0, "LIjAb 0 -1");
-    dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIjAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, 0, 22, 28, 22, 28, 0, "LIjAb 0 -1");
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GLG, "LIjAb");
+    global_dpd_->buf4_close(&L2);
   }
 
   if((params.ref==0) || (params.ref==1)) {
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
-    dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
+    global_dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1B_lbl);
-    dpd_->file2_copy(&L1, PSIF_CC_GL, "Lia");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1B_lbl);
+    global_dpd_->file2_copy(&L1, PSIF_CC_GL, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2AA_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIJAB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2AA_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2BB_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "Lijab");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2BB_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 0, 5, 0, 5, 0, S.L2AB_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIjAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 0, 5, 0, 5, 0, S.L2AB_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIjAb");
+    global_dpd_->buf4_close(&L2);
   }
   else if (params.ref == 2) {
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
-    dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 0, 1, S.L1A_lbl);
+    global_dpd_->file2_copy(&L1, PSIF_CC_GL, "LIA");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 2, 3, S.L1B_lbl);
-    dpd_->file2_copy(&L1, PSIF_CC_GL, "Lia");
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMPS, S.irrep, 2, 3, S.L1B_lbl);
+    global_dpd_->file2_copy(&L1, PSIF_CC_GL, "Lia");
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2AA_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIJAB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 2, 7, 2, 7, 0, S.L2AA_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIJAB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 12, 17, 12, 17, 0, S.L2BB_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "Lijab");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 12, 17, 12, 17, 0, S.L2BB_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "Lijab");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 22, 28, 22, 28, 0, S.L2AB_lbl);
-    dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIjAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMPS, S.irrep, 22, 28, 22, 28, 0, S.L2AB_lbl);
+    global_dpd_->buf4_copy(&L2, PSIF_CC_GL, "LIjAb");
+    global_dpd_->buf4_close(&L2);
   }
 
   if((params.ref == 0) || (params.ref == 1)) {
-    dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1A_lbl);
-    dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
-    dpd_->file2_close(&R1);
+    global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1A_lbl);
+    global_dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
+    global_dpd_->file2_close(&R1);
 
-    dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1B_lbl);
-    dpd_->file2_copy(&R1, PSIF_CC_GR, "Ria");
-    dpd_->file2_close(&R1);
+    global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1B_lbl);
+    global_dpd_->file2_copy(&R1, PSIF_CC_GR, "Ria");
+    global_dpd_->file2_close(&R1);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2AA_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIJAB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2AA_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIJAB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2BB_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "Rijab");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2BB_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "Rijab");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 0, 5, 0, 5, 0, S.R2AB_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIjAb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 0, 5, 0, 5, 0, S.R2AB_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIjAb");
+    global_dpd_->buf4_close(&R2);
   }
   else if (params.ref == 2) {
-    dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1A_lbl);
-    dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
-    dpd_->file2_close(&R1);
+    global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 0, 1, S.R1A_lbl);
+    global_dpd_->file2_copy(&R1, PSIF_CC_GR, "RIA");
+    global_dpd_->file2_close(&R1);
 
-    dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 2, 3, S.R1B_lbl);
-    dpd_->file2_copy(&R1, PSIF_CC_GR, "Ria");
-    dpd_->file2_close(&R1);
+    global_dpd_->file2_init(&R1, PSIF_CC_RAMPS, S.irrep, 2, 3, S.R1B_lbl);
+    global_dpd_->file2_copy(&R1, PSIF_CC_GR, "Ria");
+    global_dpd_->file2_close(&R1);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2AA_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIJAB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 2, 7, 2, 7, 0, S.R2AA_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIJAB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 12, 17, 12, 17, 0, S.R2BB_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "Rijab");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 12, 17, 12, 17, 0, S.R2BB_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "Rijab");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 22, 28, 22, 28, 0, S.R2AB_lbl);
-    dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIjAb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_RAMPS, S.irrep, 22, 28, 22, 28, 0, S.R2AB_lbl);
+    global_dpd_->buf4_copy(&R2, PSIF_CC_GR, "RIjAb");
+    global_dpd_->buf4_close(&R2);
   }
 
   if((params.ref==0) || (params.ref==1)) {
     if(S.irrep == 0) {
-      dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
-      dpd_->file2_scm(&L1, S.R0);
-      dpd_->file2_close(&L1);
+      global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
+      global_dpd_->file2_scm(&L1, S.R0);
+      global_dpd_->file2_close(&L1);
 
-      dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "Lia");
-      dpd_->file2_scm(&L1, S.R0);
-      dpd_->file2_close(&L1);
+      global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "Lia");
+      global_dpd_->file2_scm(&L1, S.R0);
+      global_dpd_->file2_close(&L1);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "LIJAB");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "LIJAB");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "Lijab");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 2, 7, 2, 7, 0, "Lijab");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
     }
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, qpsr, 0, 5, "LiJaB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, qpsr, 0, 5, "LiJaB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LIAJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LIAJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "Lijab");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "Liajb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "Liajb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LIAjb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LIAjb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LiaJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 0, 5, 0, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 10, 10, "LiaJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 10, 10, 10, 0, "LIAjb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, psrq, 10, 10, "LIbjA");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, rqps, 10, 10, "LjAIb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 10, 10, 10, 0, "LIAjb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, psrq, 10, 10, "LIbjA");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, rqps, 10, 10, "LjAIb");
+    global_dpd_->buf4_close(&L2);
   }
   else if(params.ref == 2) {
     if(S.irrep == 0) {
-      dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
-      dpd_->file2_scm(&L1, S.R0);
-      dpd_->file2_close(&L1);
+      global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 0, 1, "LIA");
+      global_dpd_->file2_scm(&L1, S.R0);
+      global_dpd_->file2_close(&L1);
 
-      dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 2, 3, "Lia");
-      dpd_->file2_scm(&L1, S.R0);
-      dpd_->file2_close(&L1);
+      global_dpd_->file2_init(&L1, PSIF_CC_GLG, 0, 2, 3, "Lia");
+      global_dpd_->file2_scm(&L1, S.R0);
+      global_dpd_->file2_close(&L1);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 15, 12, 17, 0, "Lijab");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 15, 12, 17, 0, "Lijab");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
 
-      dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
-      dpd_->buf4_scm(&L2, S.R0);
-      dpd_->buf4_close(&L2);
+      global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
+      global_dpd_->buf4_scm(&L2, S.R0);
+      global_dpd_->buf4_close(&L2);
     }
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, qpsr, 23, 29, "LiJaB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, qpsr, 23, 29, "LiJaB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 20, 20, "LIAJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 0, 5, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 20, 20, "LIAJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 15, 12, 17, 0, "Lijab");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 30, 30, "Liajb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 10, 15, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 30, 30, "Liajb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 20, 30, "LIAjb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 20, 30, "LIAjb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 23, 29, 23, 29, 0, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 30, 20, "LiaJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 23, 29, 23, 29, 0, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, prqs, 30, 20, "LiaJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 20, 30, 20, 30, 0, "LIAjb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, psrq, 24, 27, "LIbjA");
-    dpd_->buf4_sort(&L2, PSIF_CC_GLG, rqps, 27, 24, "LjAIb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GLG, 0, 20, 30, 20, 30, 0, "LIAjb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, psrq, 24, 27, "LIbjA");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GLG, rqps, 27, 24, "LjAIb");
+    global_dpd_->buf4_close(&L2);
   }
 
   if((params.ref==0) || (params.ref==1)) { /** RHF/ROHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, qpsr, 0, 5, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, pqsr, 0, 5, "LIjaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, qprs, 0, 5, "LiJAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, qpsr, 0, 5, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, pqsr, 0, 5, "LIjaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, qprs, 0, 5, "LiJAb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LIAJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LIAJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "Lijab");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "Liajb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "Liajb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LIAjb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LIAjb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LiaJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 0, 5, 0, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 10, 10, "LiaJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 10, 10, 10, 10, 0, "LIAjb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, psrq, 10, 10, "LIbjA");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, rqps, 10, 10, "LjAIb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 10, 10, 10, 10, 0, "LIAjb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, psrq, 10, 10, "LIbjA");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, rqps, 10, 10, "LjAIb");
+    global_dpd_->buf4_close(&L2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, qpsr, 23, 29, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, pqsr, 22, 29, "LIjaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, qprs, 23, 28, "LiJAb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, qpsr, 23, 29, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, pqsr, 22, 29, "LIjaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, qprs, 23, 28, "LiJAb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "LIJAB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 20, 20, "LIAJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 0, 5, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 20, 20, "LIAJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 10, 15, 12, 17, 0, "Lijab");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 30, 30, "Liajb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 10, 15, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 30, 30, "Liajb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 22, 28, 22, 28, 0, "LIjAb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 20, 30, "LIAjb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 20, 30, "LIAjb");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 23, 29, 23, 29, 0, "LiJaB");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 30, 20, "LiaJB");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 23, 29, 23, 29, 0, "LiJaB");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, prqs, 30, 20, "LiaJB");
+    global_dpd_->buf4_close(&L2);
 
-    dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 20, 30, 20, 30, 0, "LIAjb");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, psrq, 24, 27, "LIbjA");
-    dpd_->buf4_sort(&L2, PSIF_CC_GL, rqps, 27, 24, "LjAIb");
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_GL, S.irrep, 20, 30, 20, 30, 0, "LIAjb");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, psrq, 24, 27, "LIbjA");
+    global_dpd_->buf4_sort(&L2, PSIF_CC_GL, rqps, 27, 24, "LjAIb");
+    global_dpd_->buf4_close(&L2);
   }
 
   if((params.ref==0) || (params.ref==1)) { /** RHF/ROHF **/
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RIjAb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, qpsr, 0, 5, "RiJaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, pqsr, 0, 5, "RIjaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, qprs, 0, 5, "RiJAb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RIjAb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, qpsr, 0, 5, "RiJaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, pqsr, 0, 5, "RIjaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, qprs, 0, 5, "RiJAb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "RIJAB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RIAJB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "RIJAB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RIAJB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "Rijab");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "Riajb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "Rijab");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "Riajb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RIjAb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RIAjb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RIjAb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RIAjb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RiJaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RiaJB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 0, 5, 0, "RiJaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 10, 10, "RiaJB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 10, 10, 10, 10, 0, "RIAjb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, psrq, 10, 10, "RIbjA");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, rqps, 10, 10, "RjAIb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 10, 10, 10, 10, 0, "RIAjb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, psrq, 10, 10, "RIbjA");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, rqps, 10, 10, "RjAIb");
+    global_dpd_->buf4_close(&R2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 22, 28, 22, 28, 0, "RIjAb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, qpsr, 23, 29, "RiJaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, pqsr, 22, 29, "RIjaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, qprs, 23, 28, "RiJAb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 22, 28, 22, 28, 0, "RIjAb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, qpsr, 23, 29, "RiJaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, pqsr, 22, 29, "RIjaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, qprs, 23, 28, "RiJAb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "RIJAB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 20, 20, "RIAJB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 0, 5, 2, 7, 0, "RIJAB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 20, 20, "RIAJB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 10, 15, 12, 17, 0, "Rijab");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 30, 30, "Riajb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 10, 15, 12, 17, 0, "Rijab");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 30, 30, "Riajb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 22, 28, 22, 28, 0, "RIjAb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 20, 30, "RIAjb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 22, 28, 22, 28, 0, "RIjAb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 20, 30, "RIAjb");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 23, 29, 23, 29, 0, "RiJaB");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 30, 20, "RiaJB");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 23, 29, 23, 29, 0, "RiJaB");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, prqs, 30, 20, "RiaJB");
+    global_dpd_->buf4_close(&R2);
 
-    dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 20, 30, 20, 30, 0, "RIAjb");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, psrq, 24, 27, "RIbjA");
-    dpd_->buf4_sort(&R2, PSIF_CC_GR, rqps, 27, 24, "RjAIb");
-    dpd_->buf4_close(&R2);
+    global_dpd_->buf4_init(&R2, PSIF_CC_GR, S.irrep, 20, 30, 20, 30, 0, "RIAjb");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, psrq, 24, 27, "RIbjA");
+    global_dpd_->buf4_sort(&R2, PSIF_CC_GR, rqps, 27, 24, "RjAIb");
+    global_dpd_->buf4_close(&R2);
   }
 
   return;

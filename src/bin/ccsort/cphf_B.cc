@@ -45,15 +45,15 @@ void cphf_B(const char *cart)
   dpdfile2 L;
 
   psio_open(PSIF_MO_HESS, 1);
-  dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "B(AI,BJ)");
+  global_dpd_->buf4_init(&A, PSIF_MO_HESS, 0, 11, 11, 11, 11, 0, "B(AI,BJ)");
 
   if (!strcmp(cart, "X")) {
     irrep = moinfo.irrep_x;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_X_IA");
-    dpd_->file2_mat_init(&L);
-    dpd_->file2_mat_rd(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_X_IA");
+    global_dpd_->file2_mat_init(&L);
+    global_dpd_->file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
     vector = init_array(num_ai);
     for(row=0; row < num_ai; row++) {
@@ -63,12 +63,12 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       vector[row] = L.matrix[isym][i-A.params->qoff[isym]][a-A.params->poff[asym]];
     }
-    dpd_->file2_mat_close(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_close(&L);
+    global_dpd_->file2_close(&L);
 
     /* grab current irrep of MO Hessian */
-    dpd_->buf4_mat_irrep_init(&A, irrep);
-    dpd_->buf4_mat_irrep_rd(&A, irrep);
+    global_dpd_->buf4_mat_irrep_init(&A, irrep);
+    global_dpd_->buf4_mat_irrep_rd(&A, irrep);
 
 
     /* solve CPHF equations */
@@ -80,11 +80,11 @@ void cphf_B(const char *cart)
     }
     free(ipiv);
 
-    dpd_->buf4_mat_irrep_close(&A, irrep);
+    global_dpd_->buf4_mat_irrep_close(&A, irrep);
 
     /* sort CPHF solution to DPD format */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_X_AI");
-    dpd_->file2_mat_init(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_X_AI");
+    global_dpd_->file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];
       i = A.params->roworb[irrep][row][1];
@@ -92,17 +92,17 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       L.matrix[asym][a-A.params->poff[asym]][i-A.params->qoff[isym]] = vector[row];
     }
-    dpd_->file2_mat_wrt(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_wrt(&L);
+    global_dpd_->file2_close(&L);
   }
 
   if (!strcmp(cart, "Y")) {
     irrep = moinfo.irrep_y;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Y_IA");
-    dpd_->file2_mat_init(&L);
-    dpd_->file2_mat_rd(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Y_IA");
+    global_dpd_->file2_mat_init(&L);
+    global_dpd_->file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
     vector = init_array(num_ai);
     for(row=0; row < num_ai; row++) {
@@ -112,12 +112,12 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       vector[row] = L.matrix[isym][i-A.params->qoff[isym]][a-A.params->poff[asym]];
     }
-    dpd_->file2_mat_close(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_close(&L);
+    global_dpd_->file2_close(&L);
 
     /* grab current irrep of MO Hessian */
-    dpd_->buf4_mat_irrep_init(&A, irrep);
-    dpd_->buf4_mat_irrep_rd(&A, irrep);
+    global_dpd_->buf4_mat_irrep_init(&A, irrep);
+    global_dpd_->buf4_mat_irrep_rd(&A, irrep);
 
 
     /* solve CPHF equations */
@@ -129,11 +129,11 @@ void cphf_B(const char *cart)
     }
     free(ipiv);
 
-    dpd_->buf4_mat_irrep_close(&A, irrep);
+    global_dpd_->buf4_mat_irrep_close(&A, irrep);
 
     /* sort CPHF solution to DPD format */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Y_AI");
-    dpd_->file2_mat_init(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Y_AI");
+    global_dpd_->file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];
       i = A.params->roworb[irrep][row][1];
@@ -141,17 +141,17 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       L.matrix[asym][a-A.params->poff[asym]][i-A.params->qoff[isym]] = vector[row];
     }
-    dpd_->file2_mat_wrt(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_wrt(&L);
+    global_dpd_->file2_close(&L);
   }
 
   if (!strcmp(cart, "Z")) {
     irrep = moinfo.irrep_z;
 
     /* sort L elements into a single vector for lineq solver */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Z_IA");
-    dpd_->file2_mat_init(&L);
-    dpd_->file2_mat_rd(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 0, 1, "L_Z_IA");
+    global_dpd_->file2_mat_init(&L);
+    global_dpd_->file2_mat_rd(&L);
     num_ai = A.params->rowtot[irrep];
     vector = init_array(num_ai);
     for(row=0; row < num_ai; row++) {
@@ -161,8 +161,8 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       vector[row] = L.matrix[isym][i-A.params->qoff[isym]][a-A.params->poff[asym]];
     }
-    dpd_->file2_mat_close(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_close(&L);
+    global_dpd_->file2_close(&L);
 
     /*
       vector2 = init_array(num_ai);
@@ -170,8 +170,8 @@ void cphf_B(const char *cart)
     */
 
     /* grab current irrep of MO Hessian */
-    dpd_->buf4_mat_irrep_init(&A, irrep);
-    dpd_->buf4_mat_irrep_rd(&A, irrep);
+    global_dpd_->buf4_mat_irrep_init(&A, irrep);
+    global_dpd_->buf4_mat_irrep_rd(&A, irrep);
 
     /* solve CPHF equations */
     ipiv = init_int_array(num_ai);
@@ -182,7 +182,7 @@ void cphf_B(const char *cart)
     }
     free(ipiv);
 
-    dpd_->buf4_mat_irrep_close(&A, irrep);
+    global_dpd_->buf4_mat_irrep_close(&A, irrep);
 
     /*
       polar = 0.0;
@@ -193,8 +193,8 @@ void cphf_B(const char *cart)
     */
 
     /* sort CPHF solution to DPD format */
-    dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Z_AI");
-    dpd_->file2_mat_init(&L);
+    global_dpd_->file2_init(&L, PSIF_CC_OEI, irrep, 1, 0, "CPHF Ub_Z_AI");
+    global_dpd_->file2_mat_init(&L);
     for(row=0; row < num_ai; row++) {
       a = A.params->roworb[irrep][row][0];
       i = A.params->roworb[irrep][row][1];
@@ -202,11 +202,11 @@ void cphf_B(const char *cart)
       isym = A.params->qsym[i];
       L.matrix[asym][a-A.params->poff[asym]][i-A.params->qoff[isym]] = vector[row];
     }
-    dpd_->file2_mat_wrt(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_wrt(&L);
+    global_dpd_->file2_close(&L);
   }
 
-  dpd_->buf4_close(&A);
+  global_dpd_->buf4_close(&A);
   if (!strcmp(cart,"Z"))
     psio_close(PSIF_MO_HESS, 0);
   else

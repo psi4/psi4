@@ -72,8 +72,8 @@ void sort_pert(const char *pert, double **pertX, double **pertY, double **pertZ,
     }
 
     sprintf(lbl, "%s_IJ", prefix);
-    dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
-    dpd_->file2_mat_init(&f);
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 0, lbl);
+    global_dpd_->file2_mat_init(&f);
     for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
       Gq = irrep ^ Gp;
 
@@ -85,13 +85,13 @@ void sort_pert(const char *pert, double **pertX, double **pertY, double **pertZ,
 	}
       }
     }
-    dpd_->file2_mat_wrt(&f);
-    dpd_->file2_mat_close(&f);
-    dpd_->file2_close(&f);
+    global_dpd_->file2_mat_wrt(&f);
+    global_dpd_->file2_mat_close(&f);
+    global_dpd_->file2_close(&f);
 
     sprintf(lbl, "%s_AB", prefix);
-    dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
-    dpd_->file2_mat_init(&f);
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 1, 1, lbl);
+    global_dpd_->file2_mat_init(&f);
     for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
       Gq = irrep ^ Gp;
 
@@ -103,13 +103,13 @@ void sort_pert(const char *pert, double **pertX, double **pertY, double **pertZ,
 	}
       }
     }
-    dpd_->file2_mat_wrt(&f);
-    dpd_->file2_mat_close(&f);
-    dpd_->file2_close(&f);
+    global_dpd_->file2_mat_wrt(&f);
+    global_dpd_->file2_mat_close(&f);
+    global_dpd_->file2_close(&f);
 
     sprintf(lbl, "%s_IA", prefix);
-    dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
-    dpd_->file2_mat_init(&f);
+    global_dpd_->file2_init(&f, PSIF_CC_OEI, irrep, 0, 1, lbl);
+    global_dpd_->file2_mat_init(&f);
     for(Gp=0; Gp < moinfo.nirreps; Gp++) { /* irrep of left-hand MO */
       Gq = irrep ^ Gp;
 
@@ -121,9 +121,9 @@ void sort_pert(const char *pert, double **pertX, double **pertY, double **pertZ,
 	}
       }
     }
-    dpd_->file2_mat_wrt(&f);
-    dpd_->file2_mat_close(&f);
-    dpd_->file2_close(&f);
+    global_dpd_->file2_mat_wrt(&f);
+    global_dpd_->file2_mat_close(&f);
+    global_dpd_->file2_close(&f);
 
   }
 }

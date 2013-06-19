@@ -45,55 +45,55 @@ if (reference_ == "RESTRICTED") {
      psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
      
     // T_ij^ab = <ij|ab>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <OO|VV>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <OO|VV>");
+    global_dpd_->buf4_close(&K);
     
     // T_ij^ab = T_ij^ab / D_ij^ab
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    dpd_->buf4_dirprd(&D, &T);
-    dpd_->buf4_close(&D);
+    global_dpd_->buf4_dirprd(&D, &T);
+    global_dpd_->buf4_close(&D);
     
      // Build Tau(ij,ab) = 2*T(ij,ab) - T(ji,ab)
      // Build TAA(ij,ab) = T(ij,ab) - T(ji,ab)
-     dpd_->buf4_copy(&T, PSIF_OCC_DPD, "Tau <OO|VV>");
-     dpd_->buf4_copy(&T, PSIF_OCC_DPD, "T2AA <OO|VV>");
-     dpd_->buf4_sort(&T, PSIF_OCC_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "T2jiab <OO|VV>");
-     dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_copy(&T, PSIF_OCC_DPD, "Tau <OO|VV>");
+     global_dpd_->buf4_copy(&T, PSIF_OCC_DPD, "T2AA <OO|VV>");
+     global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "T2jiab <OO|VV>");
+     global_dpd_->buf4_init(&Tau, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
-     dpd_->buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&Tss, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2AA <OO|VV>");
-     dpd_->buf4_init(&Ttemp, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+     global_dpd_->buf4_init(&Ttemp, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2jiab <OO|VV>");
-     dpd_->buf4_scm(&Tau, 2.0);
-     dpd_->buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
-     dpd_->buf4_axpy(&Ttemp, &Tss, -1.0); // -1.0*Ttemp + Tss -> Tss
-     dpd_->buf4_close(&Ttemp);
-     dpd_->buf4_close(&Tau);
-     dpd_->buf4_close(&Tss);
+     global_dpd_->buf4_scm(&Tau, 2.0);
+     global_dpd_->buf4_axpy(&Ttemp, &Tau, -1.0); // -1.0*Ttemp + Tau -> Tau
+     global_dpd_->buf4_axpy(&Ttemp, &Tss, -1.0); // -1.0*Ttemp + Tss -> Tss
+     global_dpd_->buf4_close(&Ttemp);
+     global_dpd_->buf4_close(&Tau);
+     global_dpd_->buf4_close(&Tss);
      
-     if (print_ > 4) dpd_->buf4_print(&T, outfile, 1);
-     dpd_->buf4_close(&T);
+     if (print_ > 4) global_dpd_->buf4_print(&T, outfile, 1);
+     global_dpd_->buf4_close(&T);
 
 
     // Build amplitudes in chemist notation
     // T_IJ^AB => T'(IA,JB), T"(JA,IB)
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "T2 (OV|OV)");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[O,V]"), ID("[O,V]"), "T2pp (OV|OV)");
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "T2 (OV|OV)");
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[O,V]"), ID("[O,V]"), "T2pp (OV|OV)");
+    global_dpd_->buf4_close(&T);
 
     // Tau(IJ,AB) => Tau'(IA,JB), Tau"(JA,IB)
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Tau <OO|VV>");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "Tau (OV|OV)");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[O,V]"), ID("[O,V]"), "Taupp (OV|OV)");
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "Tau (OV|OV)");
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[O,V]"), ID("[O,V]"), "Taupp (OV|OV)");
+    global_dpd_->buf4_close(&T);
     
 
      psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -115,88 +115,88 @@ else if (reference_ == "UNRESTRICTED") {
      
      // Build T2AA
      // T_IJ^AB = <IJ||AB>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO||VV>");
-    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <OO|VV>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <OO|VV>");
+    global_dpd_->buf4_close(&K);
     
     
     // T_IJ^AB = T_IJ^AB / D_IJ^AB
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    dpd_->buf4_dirprd(&D, &T);
-    dpd_->buf4_close(&D);
-    if (print_ > 1) dpd_->buf4_print(&T, outfile, 1);
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_dirprd(&D, &T);
+    global_dpd_->buf4_close(&D);
+    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    global_dpd_->buf4_close(&T);
     
     
     // Build T2BB
     // T_ij^ab = <ij|ab>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo||vv>");
-    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <oo|vv>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <oo|vv>");
+    global_dpd_->buf4_close(&K);
     
     
     // T_ij^ab = T_ij^ab / D_ij^ab
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-    dpd_->buf4_dirprd(&D, &T);
-    dpd_->buf4_close(&D);
-    if (print_ > 1) dpd_->buf4_print(&T, outfile, 1);
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_dirprd(&D, &T);
+    global_dpd_->buf4_close(&D);
+    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    global_dpd_->buf4_close(&T);
     
     
     // Build T2AB
     // T_Ij^Ab = <Ij|Ab>
-    dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
-    dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <Oo|Vv>");
-    dpd_->buf4_close(&K);
+    global_dpd_->buf4_copy(&K, PSIF_OCC_DPD, "T2 <Oo|Vv>");
+    global_dpd_->buf4_close(&K);
     
     
     // T_Ij^Ab = T_Ij^Ab / D_Ij^Ab
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    dpd_->buf4_dirprd(&D, &T);
-    dpd_->buf4_close(&D);
-    if (print_ > 1) dpd_->buf4_print(&T, outfile, 1);
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_dirprd(&D, &T);
+    global_dpd_->buf4_close(&D);
+    if (print_ > 1) global_dpd_->buf4_print(&T, outfile, 1);
+    global_dpd_->buf4_close(&T);
     
     
     
     // Build amplitudes in chemist notation
     // T_IJ^AB => T(IA,JB)
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "T2 <OO|VV>");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "T2 (OV|OV)");
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[O,V]"), "T2 (OV|OV)");
+    global_dpd_->buf4_close(&T);
     
     // T_ij^ab => T(ia,jb)
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "T2 <oo|vv>");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[o,v]"), ID("[o,v]"), "T2 (ov|ov)");
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[o,v]"), ID("[o,v]"), "T2 (ov|ov)");
+    global_dpd_->buf4_close(&T);
     
     
     // T_Ij^Ab => T(IA,jb), T(jA,Ib)
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "T2 <Oo|Vv>");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[o,v]"), "T2 (OV|ov)");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[o,V]"), ID("[O,v]"), "T2 (oV|Ov)");
-    dpd_->buf4_close(&T);    
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , prqs, ID("[O,V]"), ID("[o,v]"), "T2 (OV|ov)");
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , qrps, ID("[o,V]"), ID("[O,v]"), "T2 (oV|Ov)");
+    global_dpd_->buf4_close(&T);    
    
     // T(IA,jb) => T(jb,IA)   
-    dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
+    global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"),
                   ID("[O,V]"), ID("[o,v]"), 0, "T2 (OV|ov)");
-    dpd_->buf4_sort(&T, PSIF_OCC_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "T2 (ov|OV)");
-    dpd_->buf4_close(&T);
+    global_dpd_->buf4_sort(&T, PSIF_OCC_DPD , rspq, ID("[o,v]"), ID("[O,V]"), "T2 (ov|OV)");
+    global_dpd_->buf4_close(&T);
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
     psio_->close(PSIF_OCC_DPD, 1);

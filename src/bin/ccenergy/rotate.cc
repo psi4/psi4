@@ -82,43 +82,43 @@ int rotate(void)
   /* First check to see if we've already converged the orbitals */
   max = 0.0;
   if(params.ref == 0) { /** RHF **/
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.occpi[h]; i++)
 	for(a=0; a < moinfo.virtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.aoccpi[h]; i++)
 	for(a=0; a < moinfo.avirtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
 
     for(h=0; h < nirreps; h++)
       for(i=0; i < moinfo.boccpi[h]; i++)
 	for(a=0; a < moinfo.bvirtpi[h]; a++)
 	  if(fabs(T1.matrix[h][i][a]) > max) max = fabs(T1.matrix[h][i][a]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
   }
 
   if(fabs(max) <= params.bconv) {
@@ -147,9 +147,9 @@ int rotate(void)
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
     max = 0.0;
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.occpi[h]; i++) {
 	ii = moinfo.qt2pitzer[moinfo.qt_occ[i] + moinfo.occ_off[h]];
@@ -161,8 +161,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_scf();
     scf_orig = chkpt_rd_scf();
@@ -392,9 +392,9 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.aoccpi[h]; i++) {
 	ii = moinfo.qt2pitzer_a[moinfo.qt_aocc[i] + moinfo.aocc_off[h]];
@@ -406,8 +406,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_alpha_scf();
     scf_a_orig = chkpt_rd_alpha_scf();
@@ -462,9 +462,9 @@ int rotate(void)
     U = block_matrix(nmo, nmo);
     for(i=0; i < nmo; i++) U[i][i] = 1.0;
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
     for(h=0; h < nirreps; h++) {
       for(i=0; i < moinfo.boccpi[h]; i++) {
 	ii = moinfo.qt2pitzer_b[moinfo.qt_bocc[i] + moinfo.bocc_off[h]];
@@ -476,8 +476,8 @@ int rotate(void)
 	}
       }
     }
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
 
     scf = chkpt_rd_beta_scf();
     scf_b_orig = chkpt_rd_beta_scf();

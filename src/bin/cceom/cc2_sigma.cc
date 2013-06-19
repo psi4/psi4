@@ -69,13 +69,13 @@ void cc2_sigma(int i, int C_irr)
     cc2_sigmaSS(i,C_irr);
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_->file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
-    dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
-    dpd_->dot24(&FME,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
-    dpd_->buf4_close(&CMnEf);
-    dpd_->file2_close(&FME);
-    dpd_->file2_close(&SIA);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&FME, PSIF_CC_OEI, H_IRR, 0, 1, "FME");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    global_dpd_->dot24(&FME,&CMnEf,&SIA, 0, 0, 1.0, 1.0);
+    global_dpd_->buf4_close(&CMnEf);
+    global_dpd_->file2_close(&FME);
+    global_dpd_->file2_close(&SIA);
 
     /*
     sprintf(lbl, "%s %d", "SIA", i);
@@ -89,25 +89,25 @@ void cc2_sigma(int i, int C_irr)
     dpd_file2_close(&SIA);
     */
 
-    dpd_->buf4_init(&C, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
-    dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
+    global_dpd_->buf4_init(&C, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
+    global_dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf");
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_->file2_init(&S, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
-    dpd_->file2_mat_init(&S);
-    dpd_->file2_mat_rd(&S);
+    global_dpd_->file2_init(&S, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_mat_init(&S);
+    global_dpd_->file2_mat_rd(&S);
     for(Gam=0; Gam < moinfo.nirreps; Gam++) {
       Gef = Gam ^ H_IRR;
       Gim = Gef ^ C_irr;
 
-      dpd_->buf4_mat_irrep_init(&C, Gim);
-      dpd_->buf4_mat_irrep_rd(&C, Gim);
-      dpd_->buf4_mat_irrep_shift13(&C, Gim);
+      global_dpd_->buf4_mat_irrep_init(&C, Gim);
+      global_dpd_->buf4_mat_irrep_rd(&C, Gim);
+      global_dpd_->buf4_mat_irrep_shift13(&C, Gim);
 
       for(Gi=0; Gi < moinfo.nirreps; Gi++) {
         Ga = Gi ^ C_irr;
         Gm = Ga ^ Gam;
 
-        W.matrix[Gam] = dpd_->dpd_block_matrix(moinfo.occpi[Gm], W.params->coltot[Gef]);
+        W.matrix[Gam] = global_dpd_->dpd_block_matrix(moinfo.occpi[Gm], W.params->coltot[Gef]);
 
         nrows = moinfo.occpi[Gi];
         ncols = moinfo.occpi[Gm] * W.params->coltot[Gef];
@@ -116,68 +116,68 @@ void cc2_sigma(int i, int C_irr)
           a = moinfo.vir_off[Ga] + A;
           am = W.row_offset[Gam][a];
 
-          dpd_->buf4_mat_irrep_rd_block(&W, Gam, am, moinfo.occpi[Gm]);
+          global_dpd_->buf4_mat_irrep_rd_block(&W, Gam, am, moinfo.occpi[Gm]);
 
           if(nrows && ncols && moinfo.virtpi[Ga])
             C_DGEMV('n',nrows,ncols,1,C.shift.matrix[Gim][Gi][0],ncols,W.matrix[Gam][0], 1,
                     1, &(S.matrix[Gi][0][A]), moinfo.virtpi[Ga]);
         }
 
-        dpd_->free_dpd_block(W.matrix[Gam], moinfo.occpi[Gm], W.params->coltot[Gef]);
+        global_dpd_->free_dpd_block(W.matrix[Gam], moinfo.occpi[Gm], W.params->coltot[Gef]);
       }
 
-      dpd_->buf4_mat_irrep_close(&C, Gim);
+      global_dpd_->buf4_mat_irrep_close(&C, Gim);
     }
-    dpd_->file2_mat_wrt(&S);
-    dpd_->file2_mat_close(&S);
-    dpd_->file2_close(&S);
-    dpd_->buf4_close(&C);
-    dpd_->buf4_close(&W);
+    global_dpd_->file2_mat_wrt(&S);
+    global_dpd_->file2_mat_close(&S);
+    global_dpd_->file2_close(&S);
+    global_dpd_->buf4_close(&C);
+    global_dpd_->buf4_close(&W);
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CMnEf", i);
-    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-    dpd_->buf4_init(&WMnIe, PSIF_CC_HBAR, H_IRR, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
-    dpd_->contract442(&WMnIe, &CMnEf, &SIA, 3, 3, 1.0, 1.0);
-    dpd_->buf4_close(&CMnEf);
-    dpd_->buf4_close(&WMnIe);
-    dpd_->file2_close(&SIA);
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&WMnIe, PSIF_CC_HBAR, H_IRR, 0, 11, 0, 11, 0, "WMnIe - 2WnMIe (Mn,eI)");
+    global_dpd_->contract442(&WMnIe, &CMnEf, &SIA, 3, 3, 1.0, 1.0);
+    global_dpd_->buf4_close(&CMnEf);
+    global_dpd_->buf4_close(&WMnIe);
+    global_dpd_->file2_close(&SIA);
 
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(Ij,Ab)");
-    dpd_->buf4_init(&WMbIj, PSIF_CC2_HET1, H_IRR, 10, 0, 10, 0, 0, "CC2 WMbIj");
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
-    dpd_->contract244(&CME, &WMbIj, &Z, 0, 0, 1, 1.0, 0.0);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&WMbIj);
-    dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "WmaijDS Z(jI,bA)");
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->buf4_axpy(&Z, &SIjAb,  -1.0);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(jI,bA)");
-    dpd_->buf4_axpy(&Z, &SIjAb,  -1.0);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(Ij,Ab)");
+    global_dpd_->buf4_init(&WMbIj, PSIF_CC2_HET1, H_IRR, 10, 0, 10, 0, 0, "CC2 WMbIj");
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->contract244(&CME, &WMbIj, &Z, 0, 0, 1, 1.0, 0.0);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&WMbIj);
+    global_dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "WmaijDS Z(jI,bA)");
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->buf4_axpy(&Z, &SIjAb,  -1.0);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WmaijDS Z(jI,bA)");
+    global_dpd_->buf4_axpy(&Z, &SIjAb,  -1.0);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_close(&SIjAb);
 
     sprintf(CME_lbl, "%s %d", "CME", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
-    dpd_->buf4_scm(&Z,0);
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, H_IRR, 11, 5, 11, 5, 0, "CC2 WAbEi (Ei,Ab)");
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(Ij,Ab)");
+    global_dpd_->buf4_scm(&Z,0);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, H_IRR, 11, 5, 11, 5, 0, "CC2 WAbEi (Ei,Ab)");
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
     /*dpd_contract244(&CME, &WAbEi, &Z, 1, 0, 0, 1.0, 0.0);*/
-    dpd_->file2_mat_init(&CME);
-    dpd_->file2_mat_rd(&CME);
+    global_dpd_->file2_mat_init(&CME);
+    global_dpd_->file2_mat_rd(&CME);
     for(Gej=0; Gej < moinfo.nirreps; Gej++) {
       Gab = Gej ^ H_IRR;
       Gij = Gab ^ C_irr;
 
-      dpd_->buf4_mat_irrep_init(&Z, Gij);
-      dpd_->buf4_mat_irrep_shift13(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_init(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_shift13(&Z, Gij);
 
       for(Ge=0; Ge < moinfo.nirreps; Ge++) {
         Gj = Ge ^ Gej;
@@ -185,11 +185,11 @@ void cc2_sigma(int i, int C_irr)
 
         nrows = moinfo.occpi[Gj];
         length = nrows * W.params->coltot[Gab];
-        dpd_->buf4_mat_irrep_init_block(&W, Gej, nrows);
+        global_dpd_->buf4_mat_irrep_init_block(&W, Gej, nrows);
 
         for(E=0; E < moinfo.virtpi[Ge]; E++) {
           e = moinfo.vir_off[Ge] + E;
-          dpd_->buf4_mat_irrep_rd_block(&W, Gej, W.row_offset[Gej][e], nrows);
+          global_dpd_->buf4_mat_irrep_rd_block(&W, Gej, W.row_offset[Gej][e], nrows);
 
           for(I=0; I < moinfo.occpi[Gi]; I++) {
             if(length)
@@ -198,16 +198,16 @@ void cc2_sigma(int i, int C_irr)
           }
         }
 
-        dpd_->buf4_mat_irrep_close_block(&W, Gej, nrows);
+        global_dpd_->buf4_mat_irrep_close_block(&W, Gej, nrows);
       }
 
-      dpd_->buf4_mat_irrep_wrt(&Z, Gij);
-      dpd_->buf4_mat_irrep_close(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_wrt(&Z, Gij);
+      global_dpd_->buf4_mat_irrep_close(&Z, Gij);
 
     }
-    dpd_->file2_mat_close(&CME);
-    dpd_->file2_close(&CME);
-    dpd_->buf4_close(&W);
+    global_dpd_->file2_mat_close(&CME);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->buf4_close(&W);
 
     /*
     dpd_buf4_sort(&Z, EOM_TMP, qpsr, 0, 5, "WabejDS Z(jI,bA)");
@@ -220,46 +220,46 @@ void cc2_sigma(int i, int C_irr)
     dpd_buf4_close(&SIjAb);
     */
 
-    dpd_->buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
-    dpd_->buf4_close(&SIjAb);
-    dpd_->buf4_close(&Z);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+    global_dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_close(&Z);
 
     sprintf(CMnEf_lbl, "%s %d", "CMnEf", i);
     sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
-    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "fAB");
-    dpd_->contract424(&CMnEf, &FAE, &Z, 3, 1, 0, 1.0, 0.0);
-    dpd_->file2_close(&FAE);
-    dpd_->buf4_close(&CMnEf);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(Ij,Ab)");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "fAB");
+    global_dpd_->contract424(&CMnEf, &FAE, &Z, 3, 1, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&FAE);
+    global_dpd_->buf4_close(&CMnEf);
 
-    dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
-    dpd_->buf4_init(&Z2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
+    global_dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fbe Z(jI,bA)");
+    global_dpd_->buf4_init(&Z2, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fbe Z(jI,bA)");
 
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
-    dpd_->buf4_axpy(&Z2, &SIjAb, 1.0);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_close(&Z2);
-    dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+    global_dpd_->buf4_axpy(&Z2, &SIjAb, 1.0);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_close(&Z2);
+    global_dpd_->buf4_close(&SIjAb);
 
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
-    dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
-    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "fIJ");
-    dpd_->contract244(&FMI, &CMnEf, &Z, 0, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&FMI);
-    dpd_->buf4_close(&CMnEf);
-    dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
-    dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-    dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
-    dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
-    dpd_->buf4_close(&Z);
-    dpd_->buf4_close(&SIjAb);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(Ij,Ab)");
+    global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "fIJ");
+    global_dpd_->contract244(&FMI, &CMnEf, &Z, 0, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&FMI);
+    global_dpd_->buf4_close(&CMnEf);
+    global_dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "FDD_Fmj Z(jI,bA)"); 
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+    global_dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "FDD_Fmj Z(jI,bA)");
+    global_dpd_->buf4_axpy(&Z, &SIjAb, -1.0);
+    global_dpd_->buf4_close(&Z);
+    global_dpd_->buf4_close(&SIjAb);
   }
   else if (params.eom_ref == 1) { /* ROHF */
     printf("ROHF EOM_CC2 is not currently implemented\n");
@@ -288,34 +288,34 @@ void cc2_sigmaSS(int i, int C_irr)
     /* sigmaSS */
 
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "CME", i);
-    dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
 
-    dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
-    dpd_->contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
-    dpd_->file2_close(&FAE);
+    global_dpd_->file2_init(&FAE, PSIF_CC_OEI, H_IRR, 1, 1, "FAE");
+    global_dpd_->contract222(&CME, &FAE, &SIA, 0, 0, 1.0, 0.0);
+    global_dpd_->file2_close(&FAE);
 
-    dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
-    dpd_->contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
-    dpd_->file2_close(&FMI);
+    global_dpd_->file2_init(&FMI, PSIF_CC_OEI, H_IRR, 0, 0, "FMI");
+    global_dpd_->contract222(&FMI, &CME, &SIA, 1, 1, -1.0, 1.0);
+    global_dpd_->file2_close(&FMI);
 
-    dpd_->buf4_init(&WMbEj, PSIF_CC2_HET1, H_IRR, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
-    dpd_->contract422(&WMbEj, &CME, &SIA, 0, 0, 1.0, 1.0);
-    dpd_->buf4_close(&WMbEj);
+    global_dpd_->buf4_init(&WMbEj, PSIF_CC2_HET1, H_IRR, 10, 10, 10, 10, 0, "CC2 2 W(jb,ME) + W(Jb,Me)");
+    global_dpd_->contract422(&WMbEj, &CME, &SIA, 0, 0, 1.0, 1.0);
+    global_dpd_->buf4_close(&WMbEj);
 
-    dpd_->file2_init(&Xme, PSIF_CC_OEI, C_irr, 0, 1, "XME");
-    dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
-    dpd_->contract422(&D, &CME, &Xme, 0, 0, 1, 0);
-    dpd_->buf4_close(&D);
+    global_dpd_->file2_init(&Xme, PSIF_CC_OEI, C_irr, 0, 1, "XME");
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 10, 10, 10, 10, 0, "D 2<ij|ab> - <ij|ba> (ia,jb)");
+    global_dpd_->contract422(&D, &CME, &Xme, 0, 0, 1, 0);
+    global_dpd_->buf4_close(&D);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
-    dpd_->contract422(&T2, &Xme, &SIA, 0, 0, 1, 1);
-    dpd_->buf4_close(&T2);
-    dpd_->file2_close(&Xme);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 10, 10, 10, 10, 0, "2 tIAjb - tIBja");
+    global_dpd_->contract422(&T2, &Xme, &SIA, 0, 0, 1, 1);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->file2_close(&Xme);
 
-    dpd_->file2_close(&CME);
-    dpd_->file2_close(&SIA);
+    global_dpd_->file2_close(&CME);
+    global_dpd_->file2_close(&SIA);
   }
   else if (params.eom_ref == 1) { /* ROHF */
     printf("ROHF CC2-LR is not currently implemented\n");

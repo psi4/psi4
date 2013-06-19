@@ -63,9 +63,9 @@ void analyze(void)
   nocc = moinfo.occpi[0];
   nso = moinfo.nso;
 
-  dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_mat_irrep_init(&T2, 0);
-  dpd_->buf4_mat_irrep_rd(&T2, 0);
+  global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_mat_irrep_init(&T2, 0);
+  global_dpd_->buf4_mat_irrep_rd(&T2, 0);
   T2trans = block_matrix(nocc*nocc, nso*nso);
   tmp = block_matrix(nvir, nso);
   tot1 = 0;
@@ -95,8 +95,8 @@ void analyze(void)
       }
     }
   }
-  dpd_->buf4_mat_irrep_close(&T2, 0);
-  dpd_->buf4_close(&T2);
+  global_dpd_->buf4_mat_irrep_close(&T2, 0);
+  global_dpd_->buf4_close(&T2);
   free_block(tmp);
   free_block(T2trans);
 
@@ -119,10 +119,10 @@ void analyze(void)
   ffile(&efile, (char *) "t1amps.dat", 1);
   amp_array = init_array(num_div);
 
-  dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-  dpd_->file2_print(&T1, outfile);
-  dpd_->file2_mat_init(&T1);
-  dpd_->file2_mat_rd(&T1);
+  global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+  global_dpd_->file2_print(&T1, outfile);
+  global_dpd_->file2_mat_init(&T1);
+  global_dpd_->file2_mat_rd(&T1);
   /*
   T1trans = block_matrix(nocc, nso);
 
@@ -153,8 +153,8 @@ void analyze(void)
   }
   /*  free_block(T1trans); */
 
-  dpd_->file2_mat_close(&T1);
-  dpd_->file2_close(&T1);
+  global_dpd_->file2_mat_close(&T1);
+  global_dpd_->file2_close(&T1);
 
   value2 = 0;
   for (i = num_div-1; i >= 0; i--) {

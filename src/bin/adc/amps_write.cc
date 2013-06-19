@@ -46,8 +46,8 @@ ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
     t1stack = (struct onestack*)malloc(length*sizeof(struct onestack));
     for(int m = 0; m < length; m++) { t1stack[m].value = 0; t1stack[m].i = 0; t1stack[m].a = 0; }
     
-    dpd_->file2_mat_init(B);
-    dpd_->file2_mat_rd(B);
+    global_dpd_->file2_mat_init(B);
+    global_dpd_->file2_mat_rd(B);
     
     int numt1 = 0;
     for(int h = 0;h < nirrep_;h++){
@@ -66,7 +66,7 @@ ADC::amps_write(dpdfile2 *B, int length, FILE *outfile)
             }
         }
     }
-    dpd_->file2_mat_close(B);
+    global_dpd_->file2_mat_close(B);
     
     for(int m = 0;m < ((numt1 < length) ? numt1 : length);m++){
         if(fabs(t1stack[m].value) > 1e-6){

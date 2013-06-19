@@ -36,63 +36,63 @@ void build_X(void)
 
   if(params.ref == 0) { 
 
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    dpd_->file2_copy(&I, PSIF_CC_OEI, "XAI");
-    dpd_->file2_close(&I);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+    global_dpd_->file2_copy(&I, PSIF_CC_OEI, "XAI");
+    global_dpd_->file2_close(&I);
 
-    dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
-    dpd_->file2_scm(&X, -1.0);
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    dpd_->file2_axpy(&I, &X, 1.0, 1);
-    dpd_->file2_close(&I);
-    dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
+    global_dpd_->file2_scm(&X, -1.0);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+    global_dpd_->file2_axpy(&I, &X, 1.0, 1);
+    global_dpd_->file2_close(&I);
+    global_dpd_->file2_close(&X);
 
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
-    dpd_->file2_copy(&I, PSIF_CC_OEI, "Xai");
-    dpd_->file2_close(&I);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'ai");
+    global_dpd_->file2_copy(&I, PSIF_CC_OEI, "Xai");
+    global_dpd_->file2_close(&I);
 
-    dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "Xai");
-    dpd_->file2_scm(&X, -1.0);
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
-    dpd_->file2_axpy(&I, &X, 1.0, 1);
-    dpd_->file2_close(&I);
-    dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "Xai");
+    global_dpd_->file2_scm(&X, -1.0);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'ia");
+    global_dpd_->file2_axpy(&I, &X, 1.0, 1);
+    global_dpd_->file2_close(&I);
+    global_dpd_->file2_close(&X);
 
     /* Build spatial orbital version of X for Zvector:
        X(A,I) = 1/2[X(A,I)+X(a,i)]  */
-    dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
-    dpd_->file2_copy(&X, PSIF_CC_MISC, "X(A,I)");
-    dpd_->file2_close(&X);
-    dpd_->file2_init(&X, PSIF_CC_MISC, 0, 1, 0, "X(A,I)");
-    dpd_->file2_init(&X2, PSIF_CC_OEI, 0, 1, 0, "Xai");
-    dpd_->file2_axpy(&X2, &X, 1.0, 0);
-    dpd_->file2_close(&X2);
-    dpd_->file2_scm(&X, 0.5);
-    dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
+    global_dpd_->file2_copy(&X, PSIF_CC_MISC, "X(A,I)");
+    global_dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_MISC, 0, 1, 0, "X(A,I)");
+    global_dpd_->file2_init(&X2, PSIF_CC_OEI, 0, 1, 0, "Xai");
+    global_dpd_->file2_axpy(&X2, &X, 1.0, 0);
+    global_dpd_->file2_close(&X2);
+    global_dpd_->file2_scm(&X, 0.5);
+    global_dpd_->file2_close(&X);
   }
   else if(params.ref == 2) { 
 
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
-    dpd_->file2_copy(&I, PSIF_CC_OEI, "XAI");
-    dpd_->file2_close(&I);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 1, 0, "I'AI");
+    global_dpd_->file2_copy(&I, PSIF_CC_OEI, "XAI");
+    global_dpd_->file2_close(&I);
 
-    dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
-    dpd_->file2_scm(&X, -1.0);
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
-    dpd_->file2_axpy(&I, &X, 1.0, 1);
-    dpd_->file2_close(&I);
-    dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
+    global_dpd_->file2_scm(&X, -1.0);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 0, 1, "I'IA");
+    global_dpd_->file2_axpy(&I, &X, 1.0, 1);
+    global_dpd_->file2_close(&I);
+    global_dpd_->file2_close(&X);
 
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 2, "I'ai");
-    dpd_->file2_copy(&I, PSIF_CC_OEI, "Xai");
-    dpd_->file2_close(&I);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 3, 2, "I'ai");
+    global_dpd_->file2_copy(&I, PSIF_CC_OEI, "Xai");
+    global_dpd_->file2_close(&I);
 
-    dpd_->file2_init(&X, PSIF_CC_OEI, 0, 3, 2, "Xai");
-    dpd_->file2_scm(&X, -1.0);
-    dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
-    dpd_->file2_axpy(&I, &X, 1.0, 1);
-    dpd_->file2_close(&I);
-    dpd_->file2_close(&X);
+    global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 3, 2, "Xai");
+    global_dpd_->file2_scm(&X, -1.0);
+    global_dpd_->file2_init(&I, PSIF_CC_OEI, 0, 2, 3, "I'ia");
+    global_dpd_->file2_axpy(&I, &X, 1.0, 1);
+    global_dpd_->file2_close(&I);
+    global_dpd_->file2_close(&X);
   }
 
 }

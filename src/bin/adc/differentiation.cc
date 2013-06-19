@@ -44,53 +44,53 @@ ADC::rhf_differentiate_omega(int irrep, int root)
     dpdbuf4 A, V, K, Z;
 
     sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
-    dpd_->file2_init(&S, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
+    global_dpd_->file2_init(&S, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
     sprintf(lbl, "D^(%d)_[%d]12", root, irrep);
-    dpd_->file2_init(&D, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
+    global_dpd_->file2_init(&D, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
     
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
     sprintf(lbl, "ZOOVV_[%d]1234", irrep);
-    dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
+    global_dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
     // ZOVOV_{jiab} <--   \sum_{c} <jc|ab> v_{ic}
-    dpd_->contract424(&V, &S, &Z, 1, 1, 1,  1, 0);
-    dpd_->buf4_close(&V);
+    global_dpd_->contract424(&V, &S, &Z, 1, 1, 1,  1, 0);
+    global_dpd_->buf4_close(&V);
         
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
     // ZOVOV_{ijab} <-- - \sum_{k} <ij|ak> v_{kb}
-    dpd_->contract424(&V, &S, &Z, 3, 0, 0, -1, 1);
-    dpd_->buf4_close(&V);
+    global_dpd_->contract424(&V, &S, &Z, 3, 0, 0, -1, 1);
+    global_dpd_->buf4_close(&V);
         
     // dB_{iajb} <-- - (2Z_{ijab}-Z_{ijba}+2Z_{jiab}-Z_{jiba}) / (\omega+e_i-e_a+e_j-e_b)^2
     sprintf(lbl, "BOOVV_[%d]1234", irrep);
-    dpd_->buf4_scmcopy(&Z, PSIF_ADC_SEM, lbl, -2.0);
-    dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, pqsr, ID("[O,O]"), ID("[V,V]"), lbl,  1.0);
-    dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qprs, ID("[O,O]"), ID("[V,V]"), lbl,  1.0);
-    dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qpsr, ID("[O,O]"), ID("[V,V]"), lbl, -2.0);
-    dpd_->buf4_close(&Z);
+    global_dpd_->buf4_scmcopy(&Z, PSIF_ADC_SEM, lbl, -2.0);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, pqsr, ID("[O,O]"), ID("[V,V]"), lbl,  1.0);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qprs, ID("[O,O]"), ID("[V,V]"), lbl,  1.0);
+    global_dpd_->buf4_sort_axpy(&Z, PSIF_ADC_SEM, qpsr, ID("[O,O]"), ID("[V,V]"), lbl, -2.0);
+    global_dpd_->buf4_close(&Z);
     
-    dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
+    global_dpd_->buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
     sprintf(lbl, "D_[%d]1234", irrep);
-    dpd_->buf4_init(&A, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
-    dpd_->buf4_dirprd(&A, &Z);
-    dpd_->buf4_dirprd(&A, &Z);
-    dpd_->buf4_close(&A);
+    global_dpd_->buf4_init(&A, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
+    global_dpd_->buf4_dirprd(&A, &Z);
+    global_dpd_->buf4_dirprd(&A, &Z);
+    global_dpd_->buf4_close(&A);
     
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
     // \dV_{ia} <-- \sum_{jbc} B_{jicb} <ja|cb>
-    dpd_->contract442(&Z, &V, &D, 1, 1, 1, 0);
-    dpd_->buf4_close(&V);
+    global_dpd_->contract442(&Z, &V, &D, 1, 1, 1, 0);
+    global_dpd_->buf4_close(&V);
     
-    dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
+    global_dpd_->buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
     // \dV_{ia} <-- - \sum_{jkb} <kj|bi> B_{jkab}
-    dpd_->contract442(&V, &Z, &D, 3, 3, -1, 0); //This is genuine
-    dpd_->buf4_close(&V);
-    dpd_->buf4_close(&Z);
+    global_dpd_->contract442(&V, &Z, &D, 3, 3, -1, 0); //This is genuine
+    global_dpd_->buf4_close(&V);
+    global_dpd_->buf4_close(&Z);
 
     // \frac{\partial \omega^{eigen}}{\partial omega} = V^t\frac{\partial A(\omega)}{\partial \omega}V
-    dot = dpd_->file2_dot(&S, &D);
+    dot = global_dpd_->file2_dot(&S, &D);
     
-    dpd_->file2_close(&S);
-    dpd_->file2_close(&D);
+    global_dpd_->file2_close(&S);
+    global_dpd_->file2_close(&D);
         
     return dot;
 }

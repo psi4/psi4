@@ -77,30 +77,30 @@ void build_Z_UHF(void)
      linear array, Z */
   Z = init_array(num_ai);
 
-  dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
-  dpd_->file2_mat_init(&X);
-  dpd_->file2_mat_rd(&X);
+  global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 1, 0, "XAI");
+  global_dpd_->file2_mat_init(&X);
+  global_dpd_->file2_mat_rd(&X);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < X.params->rowtot[h]; a++)
       for(i=0; i < X.params->coltot[h]; i++)
         Z[count++] = -X.matrix[h][a][i];
-  dpd_->file2_mat_close(&X);
-  dpd_->file2_close(&X);
+  global_dpd_->file2_mat_close(&X);
+  global_dpd_->file2_close(&X);
 
-  dpd_->file2_init(&X, PSIF_CC_OEI, 0, 3, 2, "Xai");
-  dpd_->file2_mat_init(&X);
-  dpd_->file2_mat_rd(&X);
+  global_dpd_->file2_init(&X, PSIF_CC_OEI, 0, 3, 2, "Xai");
+  global_dpd_->file2_mat_init(&X);
+  global_dpd_->file2_mat_rd(&X);
   for(h=0; h < nirreps; h++)
     for(a=0; a < X.params->rowtot[h]; a++)
       for(i=0; i < X.params->coltot[h]; i++)
         Z[count++] = -X.matrix[h][a][i];
-  dpd_->file2_mat_close(&X);
-  dpd_->file2_close(&X);
+  global_dpd_->file2_mat_close(&X);
+  global_dpd_->file2_close(&X);
 
   /* Now, build the full MO Hessian */
-  dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
-  dpd_->buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
-  dpd_->buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
+  global_dpd_->buf4_init(&A_AA, PSIF_CC_MISC, 0, 21, 21, 21, 21, 0, "A(AI,BJ)");
+  global_dpd_->buf4_init(&A_BB, PSIF_CC_MISC, 0, 31, 31, 31, 31, 0, "A(ai,bj)");
+  global_dpd_->buf4_init(&A_AB, PSIF_CC_MISC, 0, 21, 31, 21, 31, 0, "A(AI,bj)");
 
 
   dim_A = A_AA.params->rowtot[0];
@@ -114,30 +114,30 @@ void build_Z_UHF(void)
 
   A = block_matrix(num_ai, num_ai);
 
-  dpd_->buf4_mat_irrep_init(&A_AA, 0);
-  dpd_->buf4_mat_irrep_rd(&A_AA, 0);
+  global_dpd_->buf4_mat_irrep_init(&A_AA, 0);
+  global_dpd_->buf4_mat_irrep_rd(&A_AA, 0);
   for(ai=0; ai < dim_A; ai++)
     for(bj=0; bj < dim_A; bj++)
       A[ai][bj] = A_AA.matrix[0][ai][bj];
-  dpd_->buf4_mat_irrep_close(&A_AA, 0);
+  global_dpd_->buf4_mat_irrep_close(&A_AA, 0);
 
-  dpd_->buf4_mat_irrep_init(&A_BB, 0);
-  dpd_->buf4_mat_irrep_rd(&A_BB, 0);
+  global_dpd_->buf4_mat_irrep_init(&A_BB, 0);
+  global_dpd_->buf4_mat_irrep_rd(&A_BB, 0);
   for(ai=0; ai < dim_B; ai++)
     for(bj=0; bj < dim_B; bj++)
       A[ai+dim_A][bj+dim_A] = A_BB.matrix[0][ai][bj];
-  dpd_->buf4_mat_irrep_close(&A_BB, 0);
+  global_dpd_->buf4_mat_irrep_close(&A_BB, 0);
 
-  dpd_->buf4_mat_irrep_init(&A_AB, 0);
-  dpd_->buf4_mat_irrep_rd(&A_AB, 0);
+  global_dpd_->buf4_mat_irrep_init(&A_AB, 0);
+  global_dpd_->buf4_mat_irrep_rd(&A_AB, 0);
   for(ai=0; ai < dim_A; ai++)
     for(bj=0; bj < dim_B; bj++)
       A[ai][bj+dim_A] = A[bj+dim_A][ai] = A_AB.matrix[0][ai][bj];
-  dpd_->buf4_mat_irrep_close(&A_AB, 0);
+  global_dpd_->buf4_mat_irrep_close(&A_AB, 0);
 
-  dpd_->buf4_close(&A_AA);
-  dpd_->buf4_close(&A_BB);
-  dpd_->buf4_close(&A_AB);
+  global_dpd_->buf4_close(&A_AA);
+  global_dpd_->buf4_close(&A_BB);
+  global_dpd_->buf4_close(&A_AB);
 
   /*
   ipiv = init_int_array(num_ai);
@@ -156,9 +156,9 @@ void build_Z_UHF(void)
   for(ai=0; ai < num_ai; ai++) fprintf(outfile, "Z[%d] = %20.15f\n", ai, Z[ai]);
   */
 
-  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
-  dpd_->file2_scm(&D, 0.0);
-  dpd_->file2_mat_init(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 1, 0, "D(orb)(A,I)");
+  global_dpd_->file2_scm(&D, 0.0);
+  global_dpd_->file2_mat_init(&D);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
@@ -166,13 +166,13 @@ void build_Z_UHF(void)
         else D.matrix[h][a][i] = Z[count];
         count++;
       }
-  dpd_->file2_mat_wrt(&D);
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_wrt(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
-  dpd_->file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
-  dpd_->file2_scm(&D, 0.0);
-  dpd_->file2_mat_init(&D);
+  global_dpd_->file2_init(&D, PSIF_CC_OEI, 0, 3, 2, "D(orb)(a,i)");
+  global_dpd_->file2_scm(&D, 0.0);
+  global_dpd_->file2_mat_init(&D);
   for(h=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
@@ -180,9 +180,9 @@ void build_Z_UHF(void)
         else D.matrix[h][a][i] = Z[count];
         count++;
       }
-  dpd_->file2_mat_wrt(&D);
-  dpd_->file2_mat_close(&D);
-  dpd_->file2_close(&D);
+  global_dpd_->file2_mat_wrt(&D);
+  global_dpd_->file2_mat_close(&D);
+  global_dpd_->file2_close(&D);
 
   /* We're done with Z */
   free(Z);

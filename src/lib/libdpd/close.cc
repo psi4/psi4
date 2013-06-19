@@ -39,7 +39,7 @@ DPD::~DPD()
     /*  dpd_file4_cache_print(stdout);*/
     file4_cache_close();
 
-#if 0
+#if 1
     if(params4)
         for(i=0; i < num_pairs; i++)
             for(j=0; j < num_pairs; j++)

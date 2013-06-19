@@ -55,31 +55,31 @@ double d2diag_rhf(void)
   nirreps = moinfo.nirreps;
   max = 0.0;
 
-  dpd_->buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
-  dpd_->buf4_init(&Tijac, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->buf4_init(&Tijbc, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-  dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
+  global_dpd_->buf4_init(&Tikab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&Tjkab, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
+  global_dpd_->buf4_init(&Tijac, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->buf4_init(&Tijbc, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+  global_dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
 
   // Build diagnostic matrices To and Tv //
-  dpd_->contract442(&Tikab, &Tjkab, &To, 0, 0, 1, 0);
-  dpd_->contract442(&Tijac, &Tijbc, &Tv, 3, 3, 1, 0);
+  global_dpd_->contract442(&Tikab, &Tjkab, &To, 0, 0, 1, 0);
+  global_dpd_->contract442(&Tijac, &Tijbc, &Tv, 3, 3, 1, 0);
 
-  dpd_->buf4_close(&Tikab);
-  dpd_->buf4_close(&Tjkab);
-  dpd_->file2_close(&To);
-  dpd_->buf4_close(&Tijac);
-  dpd_->buf4_close(&Tijbc);
-  dpd_->file2_close(&Tv);
+  global_dpd_->buf4_close(&Tikab);
+  global_dpd_->buf4_close(&Tjkab);
+  global_dpd_->file2_close(&To);
+  global_dpd_->buf4_close(&Tijac);
+  global_dpd_->buf4_close(&Tijbc);
+  global_dpd_->file2_close(&Tv);
 
-  dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
-  dpd_->file2_mat_init(&To);
-  dpd_->file2_mat_rd(&To);
+  global_dpd_->file2_init(&To, PSIF_CC_TMP0, 0, 0, 0, "To");
+  global_dpd_->file2_mat_init(&To);
+  global_dpd_->file2_mat_rd(&To);
 
-  dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
-  dpd_->file2_mat_init(&Tv);
-  dpd_->file2_mat_rd(&Tv);
+  global_dpd_->file2_init(&Tv, PSIF_CC_TMP0, 0, 1, 1, "Tv");
+  global_dpd_->file2_mat_init(&Tv);
+  global_dpd_->file2_mat_rd(&Tv);
 
   for(h=0; h < nirreps; h++) {
     if(To.params->rowtot[h]) {
@@ -111,10 +111,10 @@ double d2diag_rhf(void)
     }
   }
 
-  dpd_->file2_mat_close(&To);
-  dpd_->file2_mat_close(&Tv);
-  dpd_->file2_close(&To);
-  dpd_->file2_close(&Tv);
+  global_dpd_->file2_mat_close(&To);
+  global_dpd_->file2_mat_close(&Tv);
+  global_dpd_->file2_close(&To);
+  global_dpd_->file2_close(&Tv);
 
   /*
   // Original algorithm

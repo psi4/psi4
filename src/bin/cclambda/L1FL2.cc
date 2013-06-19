@@ -56,19 +56,19 @@ void L1FL2(int L_irr)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_->file2_init(&L, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_->file2_mat_init(&L);
-    dpd_->file2_mat_rd(&L);
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_->file2_mat_init(&F);
-    dpd_->file2_mat_rd(&F);
+    global_dpd_->file2_init(&L, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_mat_init(&L);
+    global_dpd_->file2_mat_rd(&L);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_mat_init(&F);
+    global_dpd_->file2_mat_rd(&F);
 
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
 
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&newL2, h);
-      dpd_->buf4_mat_irrep_rd(&newL2, h);
+      global_dpd_->buf4_mat_irrep_init(&newL2, h);
+      global_dpd_->buf4_mat_irrep_rd(&newL2, h);
 
       for(row=0; row < newL2.params->rowtot[h]; row++) {
 	i = newL2.params->roworb[h][row][0];
@@ -90,62 +90,62 @@ void L1FL2(int L_irr)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&newL2, h);
-      dpd_->buf4_mat_irrep_close(&newL2, h);
+      global_dpd_->buf4_mat_irrep_wrt(&newL2, h);
+      global_dpd_->buf4_mat_irrep_close(&newL2, h);
       
     }
 
-    dpd_->buf4_close(&newL2);
+    global_dpd_->buf4_close(&newL2);
 
-    dpd_->file2_mat_close(&F);
-    dpd_->file2_close(&F);
-    dpd_->file2_mat_close(&L);
-    dpd_->file2_close(&L);
+    global_dpd_->file2_mat_close(&F);
+    global_dpd_->file2_close(&F);
+    global_dpd_->file2_mat_close(&L);
+    global_dpd_->file2_close(&L);
 
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_->file2_mat_init(&LIA);
-    dpd_->file2_mat_rd(&LIA);
-    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
-    dpd_->file2_mat_init(&Lia);
-    dpd_->file2_mat_rd(&Lia);
-    dpd_->file2_init(&FJB, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_->file2_mat_init(&FJB);
-    dpd_->file2_mat_rd(&FJB);
-    dpd_->file2_init(&Fjb, PSIF_CC_OEI, 0, 0, 1, "Fme");
-    dpd_->file2_mat_init(&Fjb);
-    dpd_->file2_mat_rd(&Fjb);
+    global_dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_mat_init(&LIA);
+    global_dpd_->file2_mat_rd(&LIA);
+    global_dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+    global_dpd_->file2_mat_init(&Lia);
+    global_dpd_->file2_mat_rd(&Lia);
+    global_dpd_->file2_init(&FJB, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_mat_init(&FJB);
+    global_dpd_->file2_mat_rd(&FJB);
+    global_dpd_->file2_init(&Fjb, PSIF_CC_OEI, 0, 0, 1, "Fme");
+    global_dpd_->file2_mat_init(&Fjb);
+    global_dpd_->file2_mat_rd(&Fjb);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
-    dpd_->file2_mat_init(&LIA);
-    dpd_->file2_mat_rd(&LIA);
-    dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
-    dpd_->file2_mat_init(&Lia);
-    dpd_->file2_mat_rd(&Lia);
-    dpd_->file2_init(&FJB, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_->file2_mat_init(&FJB);
-    dpd_->file2_mat_rd(&FJB);
-    dpd_->file2_init(&Fjb, PSIF_CC_OEI, 0, 2, 3, "Fme");
-    dpd_->file2_mat_init(&Fjb);
-    dpd_->file2_mat_rd(&Fjb);
+    global_dpd_->file2_init(&LIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_mat_init(&LIA);
+    global_dpd_->file2_mat_rd(&LIA);
+    global_dpd_->file2_init(&Lia, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+    global_dpd_->file2_mat_init(&Lia);
+    global_dpd_->file2_mat_rd(&Lia);
+    global_dpd_->file2_init(&FJB, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_mat_init(&FJB);
+    global_dpd_->file2_mat_rd(&FJB);
+    global_dpd_->file2_init(&Fjb, PSIF_CC_OEI, 0, 2, 3, "Fme");
+    global_dpd_->file2_mat_init(&Fjb);
+    global_dpd_->file2_mat_rd(&Fjb);
   
   }
 
   if(params.ref == 1) /** RHF/ROHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
   else if(params.ref == 2) /** UHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
 
   if(params.ref == 1 || params.ref == 2) {
     /* loop over row irreps of LIJAB */
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&newL2, h);
-      dpd_->buf4_mat_irrep_rd(&newL2, h);
+      global_dpd_->buf4_mat_irrep_init(&newL2, h);
+      global_dpd_->buf4_mat_irrep_rd(&newL2, h);
 
       /* loop over rows of irrep of LIJAB */
       for(row=0; row < newL2.params->rowtot[h]; row++) {
@@ -191,23 +191,23 @@ void L1FL2(int L_irr)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&newL2, h);
-      dpd_->buf4_mat_irrep_close(&newL2, h);
+      global_dpd_->buf4_mat_irrep_wrt(&newL2, h);
+      global_dpd_->buf4_mat_irrep_close(&newL2, h);
       
     }
-    dpd_->buf4_close(&newL2);
+    global_dpd_->buf4_close(&newL2);
   }
 
   if(params.ref == 1) /** RHF/ROHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
   else if(params.ref == 2) /** UHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "New Lijab");
 
   if(params.ref == 1 || params.ref == 2) {
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&newL2, h);
-      dpd_->buf4_mat_irrep_rd(&newL2, h);
+      global_dpd_->buf4_mat_irrep_init(&newL2, h);
+      global_dpd_->buf4_mat_irrep_rd(&newL2, h);
 
       for(row=0; row < newL2.params->rowtot[h]; row++) {
 	i = newL2.params->roworb[h][row][0];
@@ -251,23 +251,23 @@ void L1FL2(int L_irr)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&newL2, h);
-      dpd_->buf4_mat_irrep_close(&newL2, h);
+      global_dpd_->buf4_mat_irrep_wrt(&newL2, h);
+      global_dpd_->buf4_mat_irrep_close(&newL2, h);
       
     }
-    dpd_->buf4_close(&newL2);
+    global_dpd_->buf4_close(&newL2);
   }
 
   if(params.ref == 1) /** RHF/ROHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
   else if(params.ref == 2) /** UHF **/
-    dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
+    global_dpd_->buf4_init(&newL2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "New LIjAb");
 
   if(params.ref == 1 || params.ref == 2) {
     for(h=0; h < nirreps; h++) {
 
-      dpd_->buf4_mat_irrep_init(&newL2, h);
-      dpd_->buf4_mat_irrep_rd(&newL2, h);
+      global_dpd_->buf4_mat_irrep_init(&newL2, h);
+      global_dpd_->buf4_mat_irrep_rd(&newL2, h);
 
       for(row=0; row < newL2.params->rowtot[h]; row++) {
 	i = newL2.params->roworb[h][row][0];
@@ -297,23 +297,23 @@ void L1FL2(int L_irr)
 	}
       }
 
-      dpd_->buf4_mat_irrep_wrt(&newL2, h);
-      dpd_->buf4_mat_irrep_close(&newL2, h);
+      global_dpd_->buf4_mat_irrep_wrt(&newL2, h);
+      global_dpd_->buf4_mat_irrep_close(&newL2, h);
       
     }
   }
 
   if(params.ref == 1 || params.ref == 2) {
-    dpd_->buf4_close(&newL2);
+    global_dpd_->buf4_close(&newL2);
 
-    dpd_->file2_mat_close(&FJB);
-    dpd_->file2_close(&FJB);
-    dpd_->file2_mat_close(&Fjb);
-    dpd_->file2_close(&Fjb);
-    dpd_->file2_mat_close(&LIA);
-    dpd_->file2_close(&LIA);
-    dpd_->file2_mat_close(&Lia);
-    dpd_->file2_close(&Lia);
+    global_dpd_->file2_mat_close(&FJB);
+    global_dpd_->file2_close(&FJB);
+    global_dpd_->file2_mat_close(&Fjb);
+    global_dpd_->file2_close(&Fjb);
+    global_dpd_->file2_mat_close(&LIA);
+    global_dpd_->file2_close(&LIA);
+    global_dpd_->file2_mat_close(&Lia);
+    global_dpd_->file2_close(&Lia);
   }
 }
 

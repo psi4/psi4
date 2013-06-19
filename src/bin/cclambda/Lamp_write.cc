@@ -62,50 +62,50 @@ void Lamp_write(struct L_Params L_params) {
   L_irr = L_params.irrep;
 
   if(params.ref == 0) { /** RHF **/
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_close(&L2);
   }
   else if(params.ref == 1) { /** ROHF **/
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_close(&L1);
 
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "Lia");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest Lia Amplitudes:\n", outfile);
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIJAB Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
+    global_dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "Lijab");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest Lijab Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
+    global_dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_close(&L2);
   }
   else if(params.ref == 2) { /** UHF **/
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 0, 1, "LIA");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest LIA Amplitudes:\n", outfile);
-    dpd_->file2_close(&L1);
-    dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
+    global_dpd_->file2_close(&L1);
+    global_dpd_->file2_init(&L1, PSIF_CC_LAMBDA, L_irr, 2, 3, "Lia");
     amp_write_L1(&L1, params.num_amps, "\n\tLargest Lia Amplitudes:\n", outfile);
-    dpd_->file2_close(&L1);
+    global_dpd_->file2_close(&L1);
 
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "LIJAB");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIJAB Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
+    global_dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 12, 17, 12, 17, 0, "Lijab");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest Lijab Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
-    dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
+    global_dpd_->buf4_close(&L2);
+    global_dpd_->buf4_init(&L2, PSIF_CC_LAMBDA, L_irr, 22, 28, 22, 28, 0, "LIjAb");
     amp_write_L2(&L2, params.num_amps, "\n\tLargest LIjAb Amplitudes:\n", outfile);
-    dpd_->buf4_close(&L2);
+    global_dpd_->buf4_close(&L2);
   }
 }
 
@@ -123,8 +123,8 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, FILE *outfile)
   t1stack = (struct onestack *) malloc(length * sizeof(struct onestack));
   for(m=0; m < length; m++) { t1stack[m].value = 0; t1stack[m].i = 0; t1stack[m].a = 0; }
 
-  dpd_->file2_mat_init(L1);
-  dpd_->file2_mat_rd(L1);
+  global_dpd_->file2_mat_init(L1);
+  global_dpd_->file2_mat_rd(L1);
 
   numt1 = 0;
   for(h=0; h < nirreps; h++) {
@@ -146,7 +146,7 @@ void amp_write_L1(dpdfile2 *L1, int length, const char *label, FILE *outfile)
     }
   }
 
-  dpd_->file2_mat_close(L1);
+  global_dpd_->file2_mat_close(L1);
 
   for(m=0; m < ((numt1 < length) ? numt1 : length); m++)
     if(fabs(t1stack[m].value) > 1e-8) num2print++;
@@ -208,8 +208,8 @@ void amp_write_L2(dpdbuf4 *L2, int length, const char *label, FILE *outfile)
 
   numt2 = 0;
   for(h=0; h < nirreps; h++) {
-    dpd_->buf4_mat_irrep_init(L2, h);
-    dpd_->buf4_mat_irrep_rd(L2, h);
+    global_dpd_->buf4_mat_irrep_init(L2, h);
+    global_dpd_->buf4_mat_irrep_rd(L2, h);
 
     numt2 += L2->params->rowtot[h] * L2->params->coltot[h^Gijab];
 
@@ -231,7 +231,7 @@ void amp_write_L2(dpdbuf4 *L2, int length, const char *label, FILE *outfile)
       }
     }
 
-    dpd_->buf4_mat_irrep_close(L2, h);
+    global_dpd_->buf4_mat_irrep_close(L2, h);
   }
 
   for(m=0; m < ((numt2 < length) ? numt2 : length); m++)

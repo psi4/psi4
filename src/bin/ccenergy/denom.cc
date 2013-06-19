@@ -44,56 +44,56 @@ void denom(void)
   dpdfile2 newtIA, dIA, tIA, newtia, dia, tia;
 
   if (params.ref == 0) {
-    dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_copy(&newtIA, PSIF_CC_OEI, "New tIA Increment");
-    dpd_->file2_close(&newtIA);
+    global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_copy(&newtIA, PSIF_CC_OEI, "New tIA Increment");
+    global_dpd_->file2_close(&newtIA);
 
-    dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
+    global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
     if(params.local && local.filter_singles) {
       local_filter_T1(&newtIA);
     }
     else {
-      dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
-      dpd_->file2_dirprd(&dIA, &newtIA);
-      dpd_->file2_close(&dIA);
+      global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
+      global_dpd_->file2_dirprd(&dIA, &newtIA);
+      global_dpd_->file2_close(&dIA);
     }
-    dpd_->file2_close(&newtIA);
+    global_dpd_->file2_close(&newtIA);
 
     /* Add the new increment to the old tIA to get the New tIA */
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_copy(&tIA, PSIF_CC_OEI, "New tIA");
-    dpd_->file2_close(&tIA);
-    dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
-    dpd_->file2_axpy(&tIA, &newtIA, 1, 0);
-    dpd_->file2_close(&tIA);
-    dpd_->file2_close(&newtIA);
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_copy(&tIA, PSIF_CC_OEI, "New tIA");
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_init(&tIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
+    global_dpd_->file2_axpy(&tIA, &newtIA, 1, 0);
+    global_dpd_->file2_close(&tIA);
+    global_dpd_->file2_close(&newtIA);
   }
   else if (params.ref == 1) {
-    dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
-    dpd_->file2_dirprd(&dIA, &newtIA);
-    dpd_->file2_close(&dIA);
-    dpd_->file2_close(&newtIA); 
+    global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
+    global_dpd_->file2_dirprd(&dIA, &newtIA);
+    global_dpd_->file2_close(&dIA);
+    global_dpd_->file2_close(&newtIA); 
 
-    dpd_->file2_init(&newtia, PSIF_CC_OEI, 0, 0, 1, "New tia");
-    dpd_->file2_init(&dia, PSIF_CC_OEI, 0, 0, 1, "dia");
-    dpd_->file2_dirprd(&dia, &newtia);
-    dpd_->file2_close(&dia);
-    dpd_->file2_close(&newtia);
+    global_dpd_->file2_init(&newtia, PSIF_CC_OEI, 0, 0, 1, "New tia");
+    global_dpd_->file2_init(&dia, PSIF_CC_OEI, 0, 0, 1, "dia");
+    global_dpd_->file2_dirprd(&dia, &newtia);
+    global_dpd_->file2_close(&dia);
+    global_dpd_->file2_close(&newtia);
   }
   else if (params.ref == 2) {
-    dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
-    dpd_->file2_dirprd(&dIA, &newtIA);
-    dpd_->file2_close(&dIA);
-    dpd_->file2_close(&newtIA);
+    global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
+    global_dpd_->file2_dirprd(&dIA, &newtIA);
+    global_dpd_->file2_close(&dIA);
+    global_dpd_->file2_close(&newtIA);
 
-    dpd_->file2_init(&newtia, PSIF_CC_OEI, 0, 2, 3, "New tia");
-    dpd_->file2_init(&dia, PSIF_CC_OEI, 0, 2, 3, "dia");
-    dpd_->file2_dirprd(&dia, &newtia);
-    dpd_->file2_close(&dia);
-    dpd_->file2_close(&newtia);
+    global_dpd_->file2_init(&newtia, PSIF_CC_OEI, 0, 2, 3, "New tia");
+    global_dpd_->file2_init(&dia, PSIF_CC_OEI, 0, 2, 3, "dia");
+    global_dpd_->file2_dirprd(&dia, &newtia);
+    global_dpd_->file2_close(&dia);
+    global_dpd_->file2_close(&newtia);
   }
 
   dijabT2(); 

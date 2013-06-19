@@ -39,38 +39,38 @@ void cc2_WabijT2(void)
 
   if(params.ref == 0) { /*** RHF ***/
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+    global_dpd_->buf4_close(&W);
 
   }
 
   else if(params.ref == 1) { /*** ROHF ***/
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 Wabij (i>j,a>b)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 Wabij (i>j,a>b)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
+    global_dpd_->buf4_close(&W);
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 0, 5, 0, 5, 0, "CC2 WAbIj (Ij,Ab)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+    global_dpd_->buf4_close(&W);
 
   }
 
   else if(params.ref == 2) { /*** UHF ***/
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 WABIJ (I>J,A>B)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 2, 7, 2, 7, 0, "CC2 WABIJ (I>J,A>B)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIJAB");
+    global_dpd_->buf4_close(&W);
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 12, 17, 12, 17, 0, "CC2 Wabij (i>j,a>b)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 12, 17, 12, 17, 0, "CC2 Wabij (i>j,a>b)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tijab");
+    global_dpd_->buf4_close(&W);
 
-    dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 22, 28, 22, 28, 0, "CC2 WAbIj (Ij,Ab)");
-    dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
-    dpd_->buf4_close(&W);
+    global_dpd_->buf4_init(&W, PSIF_CC2_HET1, 0, 22, 28, 22, 28, 0, "CC2 WAbIj (Ij,Ab)");
+    global_dpd_->buf4_copy(&W, PSIF_CC_TAMPS, "New tIjAb");
+    global_dpd_->buf4_close(&W);
 
   }
 

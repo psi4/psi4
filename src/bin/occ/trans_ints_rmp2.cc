@@ -58,10 +58,10 @@ void OCCWave::trans_ints_rmp2()
      timer_on("Sort chem -> phys");
      timer_on("Sort (OV|OV) -> <OO|VV>");
      // (OV|OV) -> <OO|VV>
-     dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+     global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-     dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
-     dpd_->buf4_close(&K);
+     global_dpd_->buf4_sort(&K, PSIF_LIBTRANS_DPD , prqs, ID("[O,O]"), ID("[V,V]"), "MO Ints <OO|VV>");
+     global_dpd_->buf4_close(&K);
      timer_off("Sort (OV|OV) -> <OO|VV>");
      timer_off("Sort chem -> phys");
      
@@ -129,10 +129,10 @@ void OCCWave::denominators_rmp2()
     }
     
     // Build denominators
-    dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+    global_dpd_->buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     for(int h = 0; h < nirrep_; ++h){
-        dpd_->buf4_mat_irrep_init(&D, h);
+        global_dpd_->buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
             int j = D.params->roworb[h][row][1];
@@ -142,11 +142,11 @@ void OCCWave::denominators_rmp2()
                 D.matrix[h][row][col] = 1.0/(aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
-        dpd_->buf4_mat_irrep_wrt(&D, h);
-        dpd_->buf4_mat_irrep_close(&D, h);
+        global_dpd_->buf4_mat_irrep_wrt(&D, h);
+        global_dpd_->buf4_mat_irrep_close(&D, h);
     }
-    if (print_ > 2) dpd_->buf4_print(&D, outfile, 1);
-    dpd_->buf4_close(&D);
+    if (print_ > 2) global_dpd_->buf4_print(&D, outfile, 1);
+    global_dpd_->buf4_close(&D);
    
     delete [] aOccEvals;
     delete [] aVirEvals;

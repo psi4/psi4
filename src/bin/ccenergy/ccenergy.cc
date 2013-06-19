@@ -704,54 +704,54 @@ void one_step(void) {
         Wmnij_build();
         t2_build();
         if ( (params.ref == 0) || (params.ref == 1) ) {
-          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-          dpd_->file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
-          dpd_->file2_close(&t1);
-          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
-            tval = dpd_->file2_dot_self(&t1);
-          dpd_->file2_close(&t1);
+          global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+          global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "FAI residual");
+          global_dpd_->file2_close(&t1);
+          global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "FAI residual");
+            tval = global_dpd_->file2_dot_self(&t1);
+          global_dpd_->file2_close(&t1);
             fprintf(outfile,"\tNorm squared of <Phi_I^A|Hbar|0> = %20.15lf\n",tval);
         }
       if (params.ref == 1) {
-          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
-          dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
-          dpd_->file2_close(&t1);
+          global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 0, 1, "New tia");
+          global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
+          global_dpd_->file2_close(&t1);
         }
         else if (params.ref == 2) {
-          dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
-          dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
-          dpd_->file2_close(&t1);
+          global_dpd_->file2_init(&t1, PSIF_CC_OEI, 0, 2, 3, "New tia");
+          global_dpd_->file2_copy(&t1, PSIF_CC_OEI, "Fai residual");
+          global_dpd_->file2_close(&t1);
         }
     if (params.ref == 0) {
-          dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-          dpd_->buf4_close(&t2);
-            dpd_->buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
-            tval = dpd_->buf4_dot_self(&t2);
+          global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+          global_dpd_->buf4_close(&t2);
+            global_dpd_->buf4_init(&t2, PSIF_CC_HBAR, 0, 0, 5, 0, 5, 0, "WAbIj residual");
+            tval = global_dpd_->buf4_dot_self(&t2);
             fprintf(outfile,"\tNorm squared of <Phi^Ij_Ab|Hbar|0>: %20.15lf\n",tval);
-            dpd_->buf4_close(&t2);
+            global_dpd_->buf4_close(&t2);
     }
     else if (params.ref == 1) {
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
-      dpd_->buf4_close(&t2);
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
-      dpd_->buf4_close(&t2);
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-      dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
+      global_dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
+          global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
+      global_dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+          global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+      global_dpd_->buf4_close(&t2);
     }
     else if(params.ref ==2) {
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-      dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
-      dpd_->buf4_close(&t2);
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
-      dpd_->buf4_close(&t2);
-      dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-          dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
-      dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+      global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WABIJ residual");
+      global_dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+          global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "Wabij residual");
+      global_dpd_->buf4_close(&t2);
+      global_dpd_->buf4_init(&t2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+          global_dpd_->buf4_copy(&t2, PSIF_CC_HBAR, "WAbIj residual");
+      global_dpd_->buf4_close(&t2);
     }
     }
     return;

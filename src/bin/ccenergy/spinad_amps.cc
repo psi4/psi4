@@ -61,81 +61,81 @@ void spinad_amps(void)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_copy(&T1, PSIF_CC_OEI, "tia");
-    dpd_->file2_close(&T1);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_copy(&T1, PSIF_CC_OEI, "tia");
+    global_dpd_->file2_close(&T1);
 
-    dpd_->buf4_init(&T2AB1, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_copy(&T2AB1, PSIF_CC_TMP0, "tIjAb");
-    dpd_->buf4_sort(&T2AB1, PSIF_CC_TMP0, pqsr, 0, 5, "tIjBa");
-    dpd_->buf4_close(&T2AB1);
+    global_dpd_->buf4_init(&T2AB1, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_copy(&T2AB1, PSIF_CC_TMP0, "tIjAb");
+    global_dpd_->buf4_sort(&T2AB1, PSIF_CC_TMP0, pqsr, 0, 5, "tIjBa");
+    global_dpd_->buf4_close(&T2AB1);
 
-    dpd_->buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
-    dpd_->buf4_init(&T2AB2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjBa");
-    dpd_->buf4_axpy(&T2AB2, &T2AB1, -1.0);
-    dpd_->buf4_close(&T2AB2);
-    dpd_->buf4_close(&T2AB1);
+    global_dpd_->buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&T2AB2, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjBa");
+    global_dpd_->buf4_axpy(&T2AB2, &T2AB1, -1.0);
+    global_dpd_->buf4_close(&T2AB2);
+    global_dpd_->buf4_close(&T2AB1);
 
-    dpd_->buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 2, 7, 0, 5, 0, "tIjAb");
-    dpd_->buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tIJAB");
-    dpd_->buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tijab");
-    dpd_->buf4_close(&T2AB1);
+    global_dpd_->buf4_init(&T2AB1, PSIF_CC_TMP0, 0, 2, 7, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tIJAB");
+    global_dpd_->buf4_copy(&T2AB1, PSIF_CC_TAMPS, "tijab");
+    global_dpd_->buf4_close(&T2AB1);
 
     if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
 
       /*** Wmbej intermediates ***/
-      dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WmBEj");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WMBEJ");
-      dpd_->buf4_close(&W);
+      global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbeJ");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WmBEj");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WMBEJ");
+      global_dpd_->buf4_close(&W);
 
-      dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WmBeJ");
-      dpd_->buf4_close(&W);
+      global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WmBeJ");
+      global_dpd_->buf4_close(&W);
 
       /* WMBEJ = WMbeJ + WMbEj */
-      dpd_->buf4_init(&W1, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-      dpd_->buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
-      dpd_->buf4_axpy(&W2, &W1, 1);
-      dpd_->buf4_close(&W2);
-      dpd_->buf4_close(&W1);
+      global_dpd_->buf4_init(&W1, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+      global_dpd_->buf4_init(&W2, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMbEj");
+      global_dpd_->buf4_axpy(&W2, &W1, 1);
+      global_dpd_->buf4_close(&W2);
+      global_dpd_->buf4_close(&W1);
 
-      dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "Wmbej");
-      dpd_->buf4_close(&W);
+      global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 10, 10, 10, 10, 0, "WMBEJ");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "Wmbej");
+      global_dpd_->buf4_close(&W);
 
       /*** Wmnij intermediates ***/
 
-      dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
-      dpd_->buf4_copy(&W, PSIF_CC_TMP0, "WMnIj");
-      dpd_->buf4_sort(&W, PSIF_CC_TMP0, pqsr, 0, 0, "WMnJi");
-      dpd_->buf4_close(&W);
+      global_dpd_->buf4_init(&W, PSIF_CC_HBAR, 0, 0, 0, 0, 0, 0, "WMnIj");
+      global_dpd_->buf4_copy(&W, PSIF_CC_TMP0, "WMnIj");
+      global_dpd_->buf4_sort(&W, PSIF_CC_TMP0, pqsr, 0, 0, "WMnJi");
+      global_dpd_->buf4_close(&W);
 
-      dpd_->buf4_init(&W1, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnIj");
-      dpd_->buf4_init(&W2, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnJi");
-      dpd_->buf4_axpy(&W2, &W1, -1);
-      dpd_->buf4_close(&W2);
-      dpd_->buf4_close(&W1);
+      global_dpd_->buf4_init(&W1, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnIj");
+      global_dpd_->buf4_init(&W2, PSIF_CC_TMP0, 0, 0, 0, 0, 0, 0, "WMnJi");
+      global_dpd_->buf4_axpy(&W2, &W1, -1);
+      global_dpd_->buf4_close(&W2);
+      global_dpd_->buf4_close(&W1);
 
-      dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 2, 2, 0, 0, 0, "WMnIj");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WMNIJ");
-      dpd_->buf4_copy(&W, PSIF_CC_HBAR, "Wmnij");
-      dpd_->buf4_close(&W);
+      global_dpd_->buf4_init(&W, PSIF_CC_TMP0, 0, 2, 2, 0, 0, 0, "WMnIj");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "WMNIJ");
+      global_dpd_->buf4_copy(&W, PSIF_CC_HBAR, "Wmnij");
+      global_dpd_->buf4_close(&W);
     }
 
     /*** FMI and FAE intermediates ***/
 
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "FMIt");
-    dpd_->file2_copy(&F, PSIF_CC_OEI, "Fmit");
-    dpd_->file2_close(&F);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 0, "FMIt");
+    global_dpd_->file2_copy(&F, PSIF_CC_OEI, "Fmit");
+    global_dpd_->file2_close(&F);
 
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAEt");
-    dpd_->file2_copy(&F, PSIF_CC_OEI, "Faet");
-    dpd_->file2_close(&F);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 1, 1, "FAEt");
+    global_dpd_->file2_copy(&F, PSIF_CC_OEI, "Faet");
+    global_dpd_->file2_close(&F);
 
-    dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
-    dpd_->file2_copy(&F, PSIF_CC_OEI, "Fme");
-    dpd_->file2_close(&F);
+    global_dpd_->file2_init(&F, PSIF_CC_OEI, 0, 0, 1, "FME");
+    global_dpd_->file2_copy(&F, PSIF_CC_OEI, "Fme");
+    global_dpd_->file2_close(&F);
 
   }
 }

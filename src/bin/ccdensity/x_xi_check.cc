@@ -65,47 +65,47 @@ void x_xi_check(char *term_lbl) {
   */
  
   if (params.ref == 0) {
-    dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
-    dpd_->buf4_sort(&XIjAb, PSIF_EOM_XI, pqsr, 0, 5, "XIjbA");
-    dpd_->buf4_init(&XIjbA, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    global_dpd_->buf4_sort(&XIjAb, PSIF_EOM_XI, pqsr, 0, 5, "XIjbA");
+    global_dpd_->buf4_init(&XIjbA, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjbA");
     
     norm = norm_C_rhf(&XIA, &XIjAb, &XIjbA);
     
-    dpd_->file2_close(&XIA);
-    dpd_->buf4_close(&XIjAb);
-    dpd_->buf4_close(&XIjbA);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->buf4_close(&XIjAb);
+    global_dpd_->buf4_close(&XIjbA);
   }
   else if (params.ref == 1) {
-    dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 0, 1, "Xia");
-    dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
-    dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 0, 1, "Xia");
+    global_dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    global_dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "Xijab");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 0, 5, 0, 5, 0, "XIjAb");
 
     c_clean(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     
-    dpd_->file2_close(&XIA);
-    dpd_->file2_close(&Xia);
-    dpd_->buf4_close(&XIJAB);
-    dpd_->buf4_close(&Xijab);
-    dpd_->buf4_close(&XIjAb);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->file2_close(&Xia);
+    global_dpd_->buf4_close(&XIJAB);
+    global_dpd_->buf4_close(&Xijab);
+    global_dpd_->buf4_close(&XIjAb);
   }
   else if (params.ref == 2) {
-    dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
-    dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 2, 3, "Xia");
-    dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
-    dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
-    dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
+    global_dpd_->file2_init(&XIA, PSIF_EOM_XI, irrep, 0, 1, "XIA");
+    global_dpd_->file2_init(&Xia, PSIF_EOM_XI, irrep, 2, 3, "Xia");
+    global_dpd_->buf4_init(&XIJAB, PSIF_EOM_XI, irrep, 2, 7, 2, 7, 0, "XIJAB");
+    global_dpd_->buf4_init(&Xijab, PSIF_EOM_XI, irrep, 12, 17, 12, 17, 0, "Xijab");
+    global_dpd_->buf4_init(&XIjAb, PSIF_EOM_XI, irrep, 22, 28, 22, 28, 0, "XIjAb");
     
     norm = norm_C(&XIA, &Xia, &XIJAB, &Xijab, &XIjAb);
     
-    dpd_->file2_close(&XIA);
-    dpd_->file2_close(&Xia);
-    dpd_->buf4_close(&XIJAB);
-    dpd_->buf4_close(&Xijab);
-    dpd_->buf4_close(&XIjAb);
+    global_dpd_->file2_close(&XIA);
+    global_dpd_->file2_close(&Xia);
+    global_dpd_->buf4_close(&XIJAB);
+    global_dpd_->buf4_close(&Xijab);
+    global_dpd_->buf4_close(&XIjAb);
   }
 
   fprintf(outfile,"%7s, D(norm sigma)=%15.10lf\n", term_lbl, norm - old_norm);

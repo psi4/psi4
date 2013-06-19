@@ -188,14 +188,14 @@ PsiReturnType transqt2(Options & options)
     fflush(outfile);
   }
   psio_open(PSIF_SO_PRESORT, 0);
-  dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
+  global_dpd_->file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (pq,rs)");
   if(params.ref == 0 || params.ref == 1)
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D, NULL, F, NULL, params.ref);
   else
     file_build_presort(&I, PSIF_SO_TEI, params.tolerance, params.memory,
     !params.delete_tei, moinfo.ncore, D_a, D_b, F_a, F_b, params.ref);
-  dpd_->file4_close(&I);
+  global_dpd_->file4_close(&I);
   psio_close(PSIF_SO_PRESORT, 1);
   timer_off("presort");
 

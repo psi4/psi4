@@ -180,11 +180,11 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
 
     // Set up DIIS
     dpdbuf4 Laa, Lab, Lbb;
-    dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+    global_dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+    global_dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     DIISManager lambdaDiisManager(maxdiis_, "DCFT DIIS Lambdas",DIISManager::LargestError,DIISManager::InCore);
     if ((nalpha_ + nbeta_) > 1) {
@@ -195,9 +195,9 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
                                           DIISEntry::DPDBuf4, &Lab,
                                           DIISEntry::DPDBuf4, &Lbb);
     }
-    dpd_->buf4_close(&Laa);
-    dpd_->buf4_close(&Lab);
-    dpd_->buf4_close(&Lbb);
+    global_dpd_->buf4_close(&Laa);
+    global_dpd_->buf4_close(&Lab);
+    global_dpd_->buf4_close(&Lbb);
     cumulantDone_ = false;
     int nLambdaIterations = 0;
     // Start density cumulant (lambda) iterations
@@ -241,17 +241,17 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
         if(cumulant_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1){
             //Store the DIIS vectors
             dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
-            dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+            global_dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                           ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
-            dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+            global_dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                           ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-            dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+            global_dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                           ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-            dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+            global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                           ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-            dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+            global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                           ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-            dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+            global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                           ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
 
             if(lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)){
@@ -261,12 +261,12 @@ DCFTSolver::run_twostep_dcft_cumulant_updates() {
                 diisString += "/E";
                 lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
             }
-            dpd_->buf4_close(&Raa);
-            dpd_->buf4_close(&Rab);
-            dpd_->buf4_close(&Rbb);
-            dpd_->buf4_close(&Laa);
-            dpd_->buf4_close(&Lab);
-            dpd_->buf4_close(&Lbb);
+            global_dpd_->buf4_close(&Raa);
+            global_dpd_->buf4_close(&Rab);
+            global_dpd_->buf4_close(&Rbb);
+            global_dpd_->buf4_close(&Laa);
+            global_dpd_->buf4_close(&Lab);
+            global_dpd_->buf4_close(&Lbb);
         }
         // Save old DCFT energy
         old_total_energy_ = new_total_energy_;
@@ -394,11 +394,11 @@ DCFTSolver::run_simult_dcft()
     // Set up the DIIS manager
     DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
-    dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+    global_dpd_->buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                   ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-    dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    global_dpd_->buf4_init(&Lab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+    global_dpd_->buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                   ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(),
                                          DIISEntry::Matrix, scf_error_b_.get(),
@@ -410,9 +410,9 @@ DCFTSolver::run_simult_dcft()
                                    DIISEntry::DPDBuf4, &Laa,
                                    DIISEntry::DPDBuf4, &Lab,
                                    DIISEntry::DPDBuf4, &Lbb);
-    dpd_->buf4_close(&Laa);
-    dpd_->buf4_close(&Lab);
-    dpd_->buf4_close(&Lbb);
+    global_dpd_->buf4_close(&Laa);
+    global_dpd_->buf4_close(&Lab);
+    global_dpd_->buf4_close(&Lbb);
     while((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
             && cycle++ < maxiter_){
         std::string diisString;
@@ -463,17 +463,17 @@ DCFTSolver::run_simult_dcft()
         if(orbitals_convergence_ < diis_start_thresh_ && cumulant_convergence_ < diis_start_thresh_){
             //Store the DIIS vectors
             dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
-            dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+            global_dpd_->buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                           ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
-            dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+            global_dpd_->buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                           ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-            dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+            global_dpd_->buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                           ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
-            dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
+            global_dpd_->buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"),
                           ID("[O>O]-"), ID("[V>V]-"), 0, "Lambda <OO|VV>");
-            dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+            global_dpd_->buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                           ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-            dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
+            global_dpd_->buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"),
                           ID("[o>o]-"), ID("[v>v]-"), 0, "Lambda <oo|vv>");
             if(diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb,
                                        Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb)){
@@ -483,12 +483,12 @@ DCFTSolver::run_simult_dcft()
                 diisString += "/E";
                 diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
             }
-            dpd_->buf4_close(&Raa);
-            dpd_->buf4_close(&Rab);
-            dpd_->buf4_close(&Rbb);
-            dpd_->buf4_close(&Laa);
-            dpd_->buf4_close(&Lab);
-            dpd_->buf4_close(&Lbb);
+            global_dpd_->buf4_close(&Raa);
+            global_dpd_->buf4_close(&Rab);
+            global_dpd_->buf4_close(&Rbb);
+            global_dpd_->buf4_close(&Laa);
+            global_dpd_->buf4_close(&Lab);
+            global_dpd_->buf4_close(&Lbb);
         }
 
         // Transform the Fock matrix to the symmetrically orhogonalized basis set and digonalize it

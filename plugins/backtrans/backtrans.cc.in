@@ -112,13 +112,13 @@ backtrans(Options &options)
     }
     eOne  = eNuc + soOpdm.vector_dot(soOei);
 
-    dpd_->buf4_init(&G, PSIF_AO_TPDM, 0, ID("[n,n]"), ID("[n,n]"),
+    global_dpd_->buf4_init(&G, PSIF_AO_TPDM, 0, ID("[n,n]"), ID("[n,n]"),
                   ID("[n>=n]+"), ID("[n>=n]+"), 0, "SO Basis TPDM (nn|nn)");
-    dpd_->buf4_init(&I, PSIF_SO_PRESORT, 0, ID("[n,n]"), ID("[n,n]"),
+    global_dpd_->buf4_init(&I, PSIF_SO_PRESORT, 0, ID("[n,n]"), ID("[n,n]"),
                   ID("[n>=n]+"), ID("[n>=n]+"), 0, "SO Ints (nn|nn)");
-    eTwo   = dpd_->buf4_dot(&I, &G);
-    dpd_->buf4_close(&I);
-    dpd_->buf4_close(&G);
+    eTwo   = global_dpd_->buf4_dot(&I, &G);
+    global_dpd_->buf4_close(&I);
+    global_dpd_->buf4_close(&G);
 
     fprintf(outfile, "\n\tSO basis results\n");
     fprintf(outfile, "\tOne electron energy = %16.10f\n", eOne);
@@ -164,13 +164,13 @@ backtrans(Options &options)
       
         eOne = eNuc + moOpdm.vector_dot(moOei);
       
-        dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[A,A]"),
+        global_dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[A,A]"),
                       ID("[A>=A]+"), ID("[A>=A]+"),0, "MO TPDM (AA|AA)");
-        dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
                       ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-        eTwo   = dpd_->buf4_dot(&I, &G);
-        dpd_->buf4_close(&I);
-        dpd_->buf4_close(&G);
+        eTwo   = global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
    }else{
         Matrix aMoOei("Alpha MO OEI", nIrreps, orbspi, orbspi);
         IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_OEI, temp, nTriMo, 0, 0, outfile);
@@ -221,29 +221,29 @@ backtrans(Options &options)
         eOne = eNuc + aMoOpdm.vector_dot(aMoOei) + bMoOpdm.vector_dot(bMoOei);
      
         // Alpha-Alpha 
-        dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[A,A]"),
+        global_dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[A,A]"),
                       ID("[A>=A]+"), ID("[A>=A]+"),0, "MO TPDM (AA|AA)");
-        dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
                       ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-        eTwo = dpd_->buf4_dot(&I, &G);
-        dpd_->buf4_close(&I);
-        dpd_->buf4_close(&G);
+        eTwo = global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
         // Alpha-Beta
-        dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[a,a]"),
+        global_dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[A,A]"), ID("[a,a]"),
                       ID("[A>=A]+"), ID("[a>=a]+"),0, "MO TPDM (AA|aa)");
-        dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[a,a]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[a,a]"),
                       ID("[A>=A]+"), ID("[a>=a]+"), 0, "MO Ints (AA|aa)");
-        eTwo += dpd_->buf4_dot(&I, &G);
-        dpd_->buf4_close(&I);
-        dpd_->buf4_close(&G);
+        eTwo += global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
         // Beta-Beta
-        dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[a,a]"), ID("[a,a]"),
+        global_dpd_->buf4_init(&G, PSIF_TPDM_PRESORT, 0, ID("[a,a]"), ID("[a,a]"),
                       ID("[a>=a]+"), ID("[a>=a]+"),0, "MO TPDM (aa|aa)");
-        dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[a,a]"), ID("[a,a]"),
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[a,a]"), ID("[a,a]"),
                       ID("[a>=a]+"), ID("[a>=a]+"), 0, "MO Ints (aa|aa)");
-        eTwo += dpd_->buf4_dot(&I, &G);
-        dpd_->buf4_close(&I);
-        dpd_->buf4_close(&G);
+        eTwo += global_dpd_->buf4_dot(&I, &G);
+        global_dpd_->buf4_close(&I);
+        global_dpd_->buf4_close(&G);
    }
 
     fprintf(outfile, "\n\tMO basis results\n");

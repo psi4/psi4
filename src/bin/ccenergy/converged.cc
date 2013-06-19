@@ -47,214 +47,214 @@ int converged(double ediff)
 
   if(params.ref == 0) { /** RHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
-    dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1old);
-    dpd_->file2_mat_rd(&T1old);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1old);
+    global_dpd_->file2_mat_rd(&T1old);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1.params->rowtot[h]; row++)
 	for(col=0; col < T1.params->coltot[h]; col++)
 	  rms += (T1.matrix[h][row][col] - T1old.matrix[h][row][col]) *
 	    (T1.matrix[h][row][col] - T1old.matrix[h][row][col]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
-    dpd_->file2_mat_close(&T1old);
-    dpd_->file2_close(&T1old);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1old);
+    global_dpd_->file2_close(&T1old);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
 
   }
   else if(params.ref == 1) { /** ROHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
-    dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1old);
-    dpd_->file2_mat_rd(&T1old);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1old);
+    global_dpd_->file2_mat_rd(&T1old);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1.params->rowtot[h]; row++)
 	for(col=0; col < T1.params->coltot[h]; col++)
 	  rms += (T1.matrix[h][row][col] - T1old.matrix[h][row][col]) *
 	    (T1.matrix[h][row][col] - T1old.matrix[h][row][col]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
-    dpd_->file2_mat_close(&T1old);
-    dpd_->file2_close(&T1old);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1old);
+    global_dpd_->file2_close(&T1old);
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tia");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
-    dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tia");
-    dpd_->file2_mat_init(&T1old);
-    dpd_->file2_mat_rd(&T1old);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tia");
+    global_dpd_->file2_mat_init(&T1old);
+    global_dpd_->file2_mat_rd(&T1old);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1.params->rowtot[h]; row++)
 	for(col=0; col < T1.params->coltot[h]; col++)
 	  rms += (T1.matrix[h][row][col] - T1old.matrix[h][row][col]) *
 	    (T1.matrix[h][row][col] - T1old.matrix[h][row][col]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
-    dpd_->file2_mat_close(&T1old);
-    dpd_->file2_close(&T1old);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1old);
+    global_dpd_->file2_close(&T1old);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tijab");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tijab");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
   }
   else if(params.ref == 2) { /** UHF **/
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
-    dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
-    dpd_->file2_mat_init(&T1old);
-    dpd_->file2_mat_rd(&T1old);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 0, 1, "New tIA");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 0, 1, "tIA");
+    global_dpd_->file2_mat_init(&T1old);
+    global_dpd_->file2_mat_rd(&T1old);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1.params->rowtot[h]; row++)
 	for(col=0; col < T1.params->coltot[h]; col++)
 	  rms += (T1.matrix[h][row][col] - T1old.matrix[h][row][col]) *
 	    (T1.matrix[h][row][col] - T1old.matrix[h][row][col]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
-    dpd_->file2_mat_close(&T1old);
-    dpd_->file2_close(&T1old);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1old);
+    global_dpd_->file2_close(&T1old);
 
-    dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "New tia");
-    dpd_->file2_mat_init(&T1);
-    dpd_->file2_mat_rd(&T1);
-    dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 2, 3, "tia");
-    dpd_->file2_mat_init(&T1old);
-    dpd_->file2_mat_rd(&T1old);
+    global_dpd_->file2_init(&T1, PSIF_CC_OEI, 0, 2, 3, "New tia");
+    global_dpd_->file2_mat_init(&T1);
+    global_dpd_->file2_mat_rd(&T1);
+    global_dpd_->file2_init(&T1old, PSIF_CC_OEI, 0, 2, 3, "tia");
+    global_dpd_->file2_mat_init(&T1old);
+    global_dpd_->file2_mat_rd(&T1old);
     for(h=0; h < nirreps; h++)
       for(row=0; row < T1.params->rowtot[h]; row++)
 	for(col=0; col < T1.params->coltot[h]; col++)
 	  rms += (T1.matrix[h][row][col] - T1old.matrix[h][row][col]) *
 	    (T1.matrix[h][row][col] - T1old.matrix[h][row][col]);
 
-    dpd_->file2_mat_close(&T1);
-    dpd_->file2_close(&T1);
-    dpd_->file2_mat_close(&T1old);
-    dpd_->file2_close(&T1old);
+    global_dpd_->file2_mat_close(&T1);
+    global_dpd_->file2_close(&T1);
+    global_dpd_->file2_mat_close(&T1old);
+    global_dpd_->file2_close(&T1old);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "New tIJAB");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 2, 7, 2, 7, 0, "tIJAB");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "New tijab");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 12, 17, 12, 17, 0, "tijab");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
 
-    dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
-    dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "New tIjAb");
+    global_dpd_->buf4_init(&T2old, PSIF_CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
     for(h=0; h < nirreps; h++) {
-      dpd_->buf4_mat_irrep_init(&T2, h);
-      dpd_->buf4_mat_irrep_rd(&T2, h);
-      dpd_->buf4_mat_irrep_init(&T2old, h);
-      dpd_->buf4_mat_irrep_rd(&T2old, h);
+      global_dpd_->buf4_mat_irrep_init(&T2, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2, h);
+      global_dpd_->buf4_mat_irrep_init(&T2old, h);
+      global_dpd_->buf4_mat_irrep_rd(&T2old, h);
       for(row=0; row < T2.params->rowtot[h]; row++)
 	for(col=0; col < T2.params->coltot[h]; col++)
 	  rms += (T2.matrix[h][row][col] - T2old.matrix[h][row][col]) *
 	    (T2.matrix[h][row][col] - T2old.matrix[h][row][col]);
-      dpd_->buf4_mat_irrep_close(&T2, h);
-      dpd_->buf4_mat_irrep_close(&T2old, h);
+      global_dpd_->buf4_mat_irrep_close(&T2, h);
+      global_dpd_->buf4_mat_irrep_close(&T2old, h);
     }
-    dpd_->buf4_close(&T2old);
-    dpd_->buf4_close(&T2);
+    global_dpd_->buf4_close(&T2old);
+    global_dpd_->buf4_close(&T2);
   }
 
   rms = sqrt(rms);

@@ -51,12 +51,12 @@ void build_B_RHF(void)
 {
   dpdbuf4 D;
 
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
-  dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ)");
-  dpd_->buf4_close(&D);
-  dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>"); 
-  dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ) triplet");
-  dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+  global_dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ)");
+  global_dpd_->buf4_close(&D);
+  global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>"); 
+  global_dpd_->buf4_sort(&D, PSIF_MO_HESS, rpsq, 11, 11, "B(AI,BJ) triplet");
+  global_dpd_->buf4_close(&D);
 }
 
 }} // namespace psi::response
